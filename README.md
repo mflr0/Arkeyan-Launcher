@@ -23,20 +23,6 @@ on your computer.
 Finished a game, or played one on Windows or Linux? Please say so in an
 [issue](https://github.com/mflr0/Skylauncher/issues): it is how this table gets filled.
 
-## Supported discs
-
-The launcher checks your disc image (the SHA-256 of its `default.xex`). These Xbox 360 releases are supported (the names
-are the Redump ones):
-
-| Game | Disc |
-|---|---|
-| Spyro's Adventure | Skylanders - Spyro's Adventure (USA, Europe) (En,Fr,De,Es,It,Nl,Sv,No,Da,Fi) |
-| Giants | Skylanders - Giants (USA, Europe) (En,Fr,De,Es,It,Nl,Pt,Sv,No,Da,Fi) |
-| Swap Force | Skylanders - Swap Force (USA, Australia) (En,Fr) |
-| Swap Force | Skylanders - Swap Force (Europe) (Es,It) |
-
-Another release is refused with a message. If you own one, open an issue with its name: adding a release is usually quick.
-
 ## What you need
 
 - Your own copy of *Skylanders: Spyro's Adventure*, *Skylanders: Giants* or *Skylanders: Swap Force* for Xbox 360, as a disc image (`.iso`).
@@ -156,7 +142,7 @@ The reverse engineering is the author's own work; AI tools assist with the reimp
 
 ## Credits and licence
 
-Designed by dorydev.
+Made by mflr0, designed by dorydev.
 
 The ports are built with [XenonRecomp](https://github.com/hedge-dev/XenonRecomp) and
 [XenosRecomp](https://github.com/hedge-dev/XenosRecomp) (hedge-dev), [plume](https://github.com/renderbag/plume)
