@@ -1,7 +1,7 @@
 # Arkeyan Launcher
 
-A launcher for the native PC ports of *Skylanders: Spyro's Adventure*, *Skylanders: Giants* and *Skylanders: Swap Force*. You give it your own disc
-image, it builds the game on your computer, and you play. (Formerly Skylauncher: it updates itself to this version.)
+A launcher for the native PC ports of *Skylanders: Spyro's Adventure*, *Skylanders: Giants*, *Skylanders: Swap Force* and, as an experiment,
+*Skylanders: Trap Team*. You give it your own disc image, it builds the game on your computer, and you play. (Formerly Skylauncher: it updates itself to this version.)
 
 Arkeyan Launcher contains no game code and no game art. Everything shown from the game is read from your own disc and stays
 on your computer.
@@ -11,6 +11,7 @@ on your computer.
 | Spyro's Adventure | ![code recompiled: 100% (31k functions)](https://img.shields.io/badge/code%20recompiled-100%25%20%2831k%20functions%29-blue) ![Mac: playable](https://img.shields.io/badge/Mac-playable-brightgreen) ![Windows: playable](https://img.shields.io/badge/Windows-playable-brightgreen) ![Linux: container only](https://img.shields.io/badge/Linux-container%20only-yellow) |
 | Giants | ![code recompiled: 100% (23k functions)](https://img.shields.io/badge/code%20recompiled-100%25%20%2823k%20functions%29-blue) ![Mac: playable](https://img.shields.io/badge/Mac-playable-brightgreen) ![Windows: Wine only](https://img.shields.io/badge/Windows-Wine%20only-yellow) ![Linux: container only](https://img.shields.io/badge/Linux-container%20only-yellow) |
 | Swap Force | ![code recompiled: 100% (81k functions)](https://img.shields.io/badge/code%20recompiled-100%25%20%2881k%20functions%29-blue) ![Mac: playable](https://img.shields.io/badge/Mac-playable-brightgreen) ![Windows: Wine only](https://img.shields.io/badge/Windows-Wine%20only-yellow) ![Linux: container only](https://img.shields.io/badge/Linux-container%20only-yellow) |
+| Trap Team | ![code recompiled: 100% (30k functions)](https://img.shields.io/badge/code%20recompiled-100%25%20%2830k%20functions%29-blue) ![Mac: experimental](https://img.shields.io/badge/Mac-experimental-yellow) ![Windows: not tested](https://img.shields.io/badge/Windows-not%20tested-lightgrey) ![Linux: not tested](https://img.shields.io/badge/Linux-not%20tested-lightgrey) |
 
 ## The games
 
@@ -18,7 +19,8 @@ on your computer.
 |---|---|---|---|---|
 | Spyro's Adventure | ✅ | ✅ | ⚠️ tested in a container only | The story and the Heroic Challenges; a complete playthrough is not confirmed yet |
 | Giants | ✅ | ⚠️ tested in Wine only | ⚠️ tested in a container only | Chapter 1, and 78 of its 91 levels in an automatic tour (the other 13 are challenge levels the tour cannot start) |
-| Swap Force | ✅ new | ⚠️ tested in Wine only | ⚠️ tested in a container only | The tutorial, the first area of the story and the two-player arenas |
+| Swap Force | ✅ | ⚠️ tested in Wine only | ⚠️ tested in a container only | The tutorial, the first area of the story and the two-player arenas |
+| Trap Team (experimental) | ✅ new | ⚠️ not tested yet | ⚠️ not tested yet | The tutorial and the hub |
 
 Finished a game, or played one on Windows or Linux? Please say so in an
 [issue](https://github.com/mflr0/Skylauncher/issues): it is how this table gets filled.
@@ -28,7 +30,7 @@ game as far as you like and tell us in an issue what worked and what did not (Se
 
 ## What you need
 
-- Your own copy of *Skylanders: Spyro's Adventure*, *Skylanders: Giants* or *Skylanders: Swap Force* for Xbox 360, as a disc image (`.iso`).
+- Your own copy of *Skylanders: Spyro's Adventure*, *Skylanders: Giants*, *Skylanders: Swap Force* or *Skylanders: Trap Team* for Xbox 360, as a disc image (`.iso`).
 - Windows 10 or 11 (64-bit), a Mac with Apple Silicon, or a Linux PC (below).
 - Apple Silicon Mac required (M1 or later).
 - An internet connection the first time: INSTALL downloads the game tools (about 30 to 40 MB) and the compiler.
@@ -53,8 +55,11 @@ The launcher checks your disc's `default.xex`, so only these editions work (name
 | Spyro's Adventure | Skylanders - Spyro's Adventure (USA, Europe) (En,Fr,De,Es,It,Nl,Sv,No,Da,Fi) |
 | Giants | Skylanders - Giants (USA, Europe) (En,Fr,De,Es,It,Nl,Pt,Sv,No,Da,Fi) |
 | Swap Force | Skylanders - Swap Force (USA, Australia) (En,Fr), or Skylanders - Swap Force (Europe) (Es,It) |
+| Trap Team | Skylanders - Trap Team (Europe) (En,De), or Skylanders - Trap Team (Europe) (Fr,Nl) |
 
 Another edition is refused with a message. If you have one, tell us in an issue.
+
+Trap Team is off by default: turn it on in Settings > Launcher.
 
 ## Get started
 
@@ -89,6 +94,8 @@ to PLAY and on the Collection page.
 | LT / RT | LT / RT | 1 / 3 |
 | D-pad | D-pad | Arrow keys |
 
+In Trap Team, LT (1 on the keyboard) switches between your Skylander and the villain in your trap.
+
 On-screen buttons can show Xbox 360, Xbox One / Series, PlayStation, Nintendo or keyboard glyphs (Settings > Controls).
 
 ### Figures and the Toy Box
@@ -106,7 +113,11 @@ You don't need a real Portal of Power. The game has a virtual portal, and your f
 | Take a figure off a seat | X, then Take off | Delete |
 
 The **Collection** page of the launcher shows the same figures: their stats, backups, the trash, and the seats for the
-next game. You can also create figures from the catalogue there.
+next game. You can also create figures from the catalogue there, or a game's whole starter pack. Figures the chosen game
+cannot read stay in the list, greyed.
+
+For Trap Team, choose the villain a trap holds and whether it is evolved in the Collection, with the trap off the portal.
+No capture needed. The Toy Box shows both.
 
 To use a real portal (Wii, PlayStation, Xbox 360 or Xbox One), plug it in and choose it in Settings > Controls >
 Portal of Power. Then click **Test the portal**.
@@ -114,7 +125,7 @@ Portal of Power. Then click **Test the portal**.
 ## Settings
 
 - **Resolution scale:** Auto picks x1 on integrated graphics and x2 on dedicated cards. If the game is slow, use x1.
-- **Frame rate:** the default is 60 for Giants and Swap Force and 30 (the original) for Spyro's Adventure. 60, 120, 144, 240
+- **Frame rate:** the default is 60 for Giants and Swap Force and 30 (the original) for Spyro's Adventure and Trap Team. 60, 120, 144, 240
   and unlimited are experimental (Giants stops at 60); "Display refresh rate" follows the screen, up to 60.
 - **Portable mode:** put an empty file named `portable.txt` next to the launcher (on macOS, next to the app). The
   settings, saves, figures and games then live in a `data` folder beside it, for the launcher and for every game it
@@ -149,9 +160,11 @@ The developer docs are in `docs/`: `launcher_ui.md` covers the screens and theme
 
 ## Known issues
 
-- On a real Windows PC only Spyro's Adventure has been played; the other games were run in Wine. On Linux every game was
-  run in a container, none on a real PC yet.
-- Swap Force is new: not every mode has been played through yet.
+- On a real Windows PC only Spyro's Adventure has been played; Giants and Swap Force were run in Wine. On Linux those
+  three were run in a container, none on a real PC yet. Trap Team has been played on a Mac only.
+- Swap Force: not every mode has been played through yet.
+- Trap Team is tested as far as the hub: expect bugs and crashes beyond it. Above 30 FPS, its liquids ripple too fast.
+  Capturing a villain in a trap has not been verified, its voices follow the text language, and LB is not offered as a key yet.
 - The 60 fps option is experimental.
 - The Mac app is not notarized, and Windows SmartScreen may warn about the launcher (see Get started).
 
@@ -163,7 +176,8 @@ Vulkan and Direct3D 12 shaders, on your computer, from your disc. A runtime writ
 
 Every change is checked by automatic tests: each game is built from its disc, started and played for a few minutes by a
 script (frame rate, sound, the picture compared with a reference, saves, figures), and scripted tours load the games'
-levels one by one. Before a release, the Windows and Linux builds of every game are run too, in Wine and in a container.
+levels one by one. The Windows and Linux builds of Spyro's Adventure, Giants and Swap Force are also run in Wine and in a
+container.
 
 The reverse engineering is the author's own work; AI tools assist with the reimplementation and run these tests.
 
