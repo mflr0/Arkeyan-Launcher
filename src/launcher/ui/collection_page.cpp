@@ -741,25 +741,40 @@ namespace launcher_ui
             return; // a game the catalogue doesn't list yet has no seats to show
         ImGui::SetCursorScreenPos(at);
         ui::BeginCard("##hero-portal", size, { .panel = true, .padding = ui::space::M, .edge = live ? ui::color::Success : 0 });
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(ui::space::S, ui::space::XS));
+        const ui::ButtonOptions open{ .kind = ui::ButtonKind::Secondary, .size = ui::Size::Small, .tooltip = Tr("Open the Toy Box") };
+        const float titleW = ui::TextSize(ui::TextStyle::Body, Tr("On the portal"), nullptr, true).x;
+        const char* openLabel = titleW + ui::space::S + ui::ButtonWidth(Tr("Open the Toy Box"), open) <= size.x - 2 * ui::space::M
+            ? Tr("Open the Toy Box") : Tr("Toy Box");
+        const float linkW = ui::ButtonWidth(openLabel, open);
+        const float headerY = at.y + ui::space::M;
+        ImGui::SetCursorScreenPos(ImVec2(at.x + ui::space::M,
+            std::round(headerY + ui::height::Small / 2 - ui::CapMiddle(ui::TextStyle::Body, true))));
         ui::Text(ui::TextStyle::Body, Tr("On the portal"), ui::color::Dim, -1, true);
+        ImGui::SetCursorScreenPos(ImVec2(at.x + size.x - ui::space::M - linkW, headerY));
+        if (ui::Button(openLabel, open))
+            m_app.GoTo(Page::Collection);
+        float rowsY = headerY + ui::height::Small + ui::space::XS;
         if (live)
         {
-            ImGui::SameLine();
+            rowsY -= ui::space::XXS;
+            ImGui::SetCursorScreenPos(ImVec2(at.x + ui::space::M, rowsY));
             ui::Badge(Tr("Live"), ui::color::Success);
+            rowsY = ImGui::GetItemRectMax().y + ui::space::XXS;
         }
-        const ui::ButtonOptions open{ .kind = ui::ButtonKind::Ghost, .size = ui::Size::Small };
-        const float linkW = ui::ButtonWidth(Tr("Open the Toy Box"), open);
-        if (ImGui::GetItemRectMax().x + ui::space::S + linkW < at.x + size.x - ui::space::M)
-            ImGui::SetCursorScreenPos(ImVec2(at.x + size.x - ui::space::M - linkW, at.y + ui::space::M));
-        if (ui::Button(Tr("Open the Toy Box"), open))
-            m_app.GoTo(Page::Collection);
-        ImGui::SetCursorScreenPos(ImVec2(at.x + ui::space::M, std::max(ImGui::GetCursorScreenPos().y, at.y + ui::space::M + ui::height::Small) + ui::space::XS));
         const collection::Game* game = m_model.Game();
+        const auto shownSeat = [](const auto& seat) { return seat.id == "p1" || seat.id == "p2" || seat.id == "item"; };
+        const size_t count = std::count_if(game->seats.begin(), game->seats.end(), shownSeat);
+        const float rowH = count == 0 ? 0 : (at.y + size.y - ui::space::M - rowsY - (count - 1) * ui::space::XS) / count;
+        size_t rowIndex = 0;
         if (game != nullptr)
             for (size_t i = 0; i < game->seats.size(); i++)
             {
                 const std::string& seatId = game->seats[i].id;
                 if (seatId != "p1" && seatId != "p2" && seatId != "item") continue;
+                const float rowY = std::floor(rowsY + rowIndex * (rowH + ui::space::XS));
+                ImGui::SetCursorScreenPos(ImVec2(at.x + ui::space::M, rowY));
+                rowIndex++;
                 const Figure* figure = i < m_model.seats.size() ? m_model.Find(m_model.seats[i]) : nullptr;
                 const std::string seat = SeatName(i);
                 const std::string name = figure != nullptr ? Name(*figure) : Tf("{} · empty", seat);
@@ -776,7 +791,7 @@ namespace launcher_ui
                 row.subtitle = figure != nullptr ? detail.c_str() : nullptr;
                 row.titleStyle = figure != nullptr ? ui::TextStyle::Label : ui::TextStyle::Body;
                 row.subtitleStyle = ui::TextStyle::Body;
-                row.minHeight = ui::height::Large;
+                row.minHeight = std::floor(rowsY + rowIndex * rowH + (rowIndex - 1) * ui::space::XS) - rowY;
                 row.dim = figure == nullptr;
                 row.imageWidth = ui::height::Normal;
                 row.image = [&](ImDrawList* draw, ImVec2 picture, ImVec2 box) {
@@ -798,6 +813,7 @@ namespace launcher_ui
                 }
                 ImGui::PopID();
             }
+        ImGui::PopStyleVar();
         ui::EndCard();
     }
 

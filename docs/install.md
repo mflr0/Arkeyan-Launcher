@@ -30,7 +30,7 @@ The launcher finds the kit, runs it, shows its progress and then starts the game
    - **one line** under the steps with SkyBuild's last `@log` of the step: it replaces itself, it is never a log;
    - **Show details**: the log in a scrollable monospace panel, the current step above it;
    - on **failure**: a human headline ("Couldn't download the compiler. Check your connection."), SkyBuild's
-     `@error`, "Retry carries on from this step", and **Copy log**, **Open logs folder**, **Retry**;
+     `@error`, "Retry to continue from this step.", and **Copy log**, **Logs** (opens the logs folder), **Retry**;
    - **across a restart**: `[install.<sha256>] state=running|failed` and `pid=` are kept in `launcher.ini` while an install
      runs or after it failed. Next start, with the disc verified, the card comes back with the steps read from
      `install.log` ("Installation interrupted", **Resume**; Resume waits for an SkyBuild that is still running).
@@ -259,6 +259,22 @@ the pause between events (0.05 s).
   `10-install.png` (INSTALL), `11-installing.png`, `12-installing-compile.png`, `13-install-details.png`,
   `14-install-failed.png`, `15-installed.png` (PLAY after a retry), `16-game-data.png` and `17-install-interrupted.png`.
   `SKY_LAUNCHER_TEST_INSTALL=real` with the real kit takes a shot every `SKY_LAUNCHER_TEST_EVERY` seconds (default 120).
+- The detailed card measures and wraps its actions inside the padding; **Show details** keeps a neighbouring action
+  when the row wraps. The card ends above the device pills and grows upward with its message and log, stopping at the
+  page's top margin while the log scrolls. The device pills and portal panel keep the ordinary game page's exact rectangles
+  throughout installation, including interrupted updates. The portal header shares a baseline with a small secondary
+  **Open the Toy Box** button (**Toy Box** at compact widths); the seats fill the panel between equal outer padding.
+  Progress is the weighted overall percentage (steps take different amounts of time); a paused step has a pause icon.
+  An interrupted update keeps **Play without updating** for the installed build, without repeating the original download
+  estimate; choosing it closes the stopped card and restores **PLAY**. A first install offers neither that estimate
+  nor a play action while the card is open.
+- `SKY_LAUNCHER_TEST_INSTALL=layout` captures deterministic Giants display fixtures without a disc or build process:
+  the install states, an interrupted update from 0.8.1 to 0.8.4, a first interruption, failed/interrupted details,
+  tools downloading, startup, completion, failure before the first step and a long log, plus Home, Play and Settings controls.
+  `ArkeyanLauncherTest` checks rendered action bounds, the card's bottom anchor and unchanged device/panel rectangles in
+  English and French at `1024x680`, `1080x720` and `1600x1000`, including failed and interrupted cards with details open.
+  The `control-game` and `control-update` fixtures cover the ordinary page and an offered update.
+  Use `SKY_LAUNCHER_LANGUAGE` and `SKY_LAUNCHER_TEST_SIZE` for captures.
 - Try it by hand: `ninja -C build FakeSkyBuild`, then start the launcher with `SKY_LAUNCHER_KIT=$PWD/build/fake-kit`.
 
 ## Windows build from a Mac

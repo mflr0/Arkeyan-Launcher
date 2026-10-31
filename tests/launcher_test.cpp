@@ -1203,6 +1203,86 @@ int AchievementChecks()
     return g_failures - before;
 }
 
+// Measure the actual rendered card's controls, including the last action beyond the clip rectangle. Each language
+// runs in its own offscreen process with disposable paths, without a disc or an installer. Compare the submitted
+// device and panel rectangles against the ordinary game page at every supported capture size.
+static void InstallCardChecks(const std::filesystem::path& scratch)
+{
+    namespace fs = std::filesystem;
+    for (const char* language : { "en", "fr" })
+    for (const char* size : { "1024x680", "1080x720", "1600x1000" })
+    {
+        const fs::path root = scratch / "install-card" / language / size;
+        fs::create_directories(root / "home");
+        const fs::path shots = root / "shots";
+        SDL_Environment* environment = CreateGameEnvironment({
+            { "HOME", (root / "home").string() }, { "CFFIXED_USER_HOME", (root / "home").string() },
+            { "SDL_VIDEO_DRIVER", "offscreen" }, { "SDL_AUDIO_DRIVER", "disk" },
+            { "SKYLANDERS_DATA", (root / "data").string() }, { "SKY_LAUNCHER_DATA", (root / "launcher").string() },
+            { "SKY_COLLECTION", (root / "collection").string() }, { "SKY_SAVE_DIR", (root / "save").string() },
+            { "SKY_LAUNCHER_INI", (root / "launcher.ini").string() }, { "SKY_SETTINGS", (root / "settings.ini").string() },
+            { "SKY_LAUNCHER_NO_UPDATE_CHECK", "1" }, { "SKY_LAUNCHER_SHOTS", shots.string() },
+            { "SKY_LAUNCHER_LANGUAGE", language }, { "SKY_LAUNCHER_TEST_SIZE", size },
+            { "SKY_LAUNCHER_TEST_INSTALL", "layout" }, { "SKY_LAUNCHER_TEST_DROP", "" }
+        });
+        SDL_IOStream* log = SDL_IOFromFile((root / "output.log").string().c_str(), "wb");
+        const char* arguments[] = { SKYLAUNCHER_TEST_EXE, nullptr };
+        SDL_PropertiesID properties = SDL_CreateProperties();
+        SDL_SetPointerProperty(properties, SDL_PROP_PROCESS_CREATE_ARGS_POINTER, arguments);
+        SDL_SetPointerProperty(properties, SDL_PROP_PROCESS_CREATE_ENVIRONMENT_POINTER, environment);
+        SDL_SetNumberProperty(properties, SDL_PROP_PROCESS_CREATE_STDOUT_NUMBER, SDL_PROCESS_STDIO_REDIRECT);
+        SDL_SetPointerProperty(properties, SDL_PROP_PROCESS_CREATE_STDOUT_POINTER, log);
+        SDL_SetBooleanProperty(properties, SDL_PROP_PROCESS_CREATE_STDERR_TO_STDOUT_BOOLEAN, true);
+        SDL_Process* process = SDL_CreateProcessWithProperties(properties);
+        SDL_DestroyProperties(properties);
+        SDL_DestroyEnvironment(environment);
+        EXPECT(process != nullptr);
+        int exitCode = -1;
+        bool ended = false;
+        if (process != nullptr)
+        {
+            for (uint64_t start = SDL_GetTicks(); SDL_GetTicks() - start < 30000 && !ended; SDL_Delay(20))
+                ended = SDL_WaitProcess(process, false, &exitCode);
+            if (!ended) { SDL_KillProcess(process, true); SDL_WaitProcess(process, true, &exitCode); }
+            SDL_DestroyProcess(process);
+        }
+        if (log != nullptr) SDL_CloseIO(log);
+        EXPECT(ended && exitCode == 0);
+        const std::string output = ReadLogTail(root / "output.log");
+        if (output.find("FAIL") != std::string::npos) fprintf(stderr, "%s\n", output.c_str());
+        EXPECT(output.find("FAIL") == std::string::npos);
+        auto anchors = [&](const char* state) {
+            const std::string prefix = std::string("install anchors: ") + state + " ";
+            const size_t start = output.find(prefix);
+            EXPECT(start != std::string::npos);
+            if (start == std::string::npos) return std::string();
+            const size_t begin = start + prefix.size();
+            return output.substr(begin, output.find('\n', begin) - begin);
+        };
+        const std::string normal = anchors("control-game");
+        for (const char* state : { "11-installing", "12-install-checklist", "13-install-details", "14-install-failed",
+                                  "17-install-interrupted", "18-first-interrupted", "19-failed-details",
+                                  "20-interrupted-details", "21-tools", "22-starting", "23-finished", "24-start-failed",
+                                  "25-long-log", "control-update" })
+        {
+            const std::string actual = anchors(state);
+            if (actual != normal)
+                fprintf(stderr, "FAIL install anchors: %s (%s, %s)\n  normal: %s\n  actual: %s\n",
+                    state, language, size, normal.c_str(), actual.c_str());
+            EXPECT(!normal.empty() && actual == normal);
+        }
+        EXPECT(output.find("install play: ready without updating") != std::string::npos);
+        EXPECT(fs::exists(shots / "26-play-without-update.png"));
+        for (const char* state : { "14-install-failed", "17-install-interrupted", "18-first-interrupted",
+                                 "19-failed-details", "20-interrupted-details", "25-long-log" })
+        {
+            EXPECT(fs::exists(shots / (std::string(state) + ".png")));
+            EXPECT(output.find(std::string("install actions fit: ") + state) != std::string::npos);
+        }
+    }
+    printf("Install card: actions fit; device pills and portal panel keep their game-page rectangles in both languages at three sizes\n");
+}
+
 #include "launcher_control_checks.h"
 
 int main(int argc, char** argv)
@@ -1256,6 +1336,9 @@ int main(int argc, char** argv)
         printf("%d failures\n", g_failures);
         return g_failures == 0 ? 0 : 1;
     }
+    InstallCardChecks(scratch);
+    if (skyenv::Get("SKY_LAUNCHER_TEST_INSTALL_CARD_ONLY") != nullptr)
+        return g_failures == 0 ? 0 : 1;
     CollectionChecks(scratch);
     HoldChecks();
     EditChecks();

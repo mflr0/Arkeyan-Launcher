@@ -412,23 +412,31 @@ namespace launcher_ui
         bool running = progress.state == State::Running;
         bool failed = progress.state == State::Failed;
         bool interrupted = progress.state == State::Interrupted;
+        bool finished = progress.state == State::Done;
 
+        const float bottom = at.y + size.y;
+        const float top = at.y;
         ImGui::SetCursorScreenPos(at);
-        BeginCard("##install", size);
+        ImGui::SetNextWindowPos(ImVec2(at.x, bottom), ImGuiCond_Always, ImVec2(0, 1));
+        ImGui::SetNextWindowSizeConstraints(ImVec2(size.x, 0), size);
+        BeginCard("##install", ImVec2(size.x, 0), ImGuiChildFlags_AutoResizeY);
+        at = ImGui::GetWindowPos();
+        m_drawn["install-card-anchored"] = at.y >= top && at.y + ImGui::GetWindowHeight() == bottom ? "yes" : "no";
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(ui::space::S, ui::space::XS));
         ImDrawList* draw = ImGui::GetWindowDrawList();
         const float width = ImGui::GetContentRegionAvail().x;
         const float left = ImGui::GetCursorScreenPos().x;
         using RowState = InstallChecklist::RowState;
 
         // Title, and once stopped a close button on its right. The percentage is the bar's, said once.
-        const char* title = failed ? Tr("INSTALLATION STOPPED") : interrupted ? Tr("INSTALLATION INTERRUPTED") : Tr(m_s->installed.runtime.empty() ? N_("INSTALLING THE GAME") : N_("UPDATING THE GAME")); // a built game being rebuilt is an update
+        const char* title = finished ? Tr("Game installed: press PLAY") : failed ? Tr("INSTALLATION STOPPED") : interrupted ? Tr("INSTALLATION INTERRUPTED") : Tr(m_s->installed.runtime.empty() ? N_("INSTALLING THE GAME") : N_("UPDATING THE GAME")); // a built game being rebuilt is an update
         const ImVec2 titleAt = ImGui::GetCursorScreenPos();
-        ui::Text(ui::TextStyle::Title, title, failed ? ui::color::Danger : ui::color::Ink, -1);
+        ui::Text(ui::TextStyle::Title, title, failed ? ui::color::Danger : ui::color::Ink, width - (failed || interrupted ? ui::height::Normal + ui::space::S : 0));
         const float titleBottom = ImGui::GetCursorPosY();
         if (failed || interrupted)
         {
             const float closeSize = ui::HeightOf(ui::Size::Normal);
-            ImGui::SetCursorScreenPos(ImVec2(left + width - closeSize, titleAt.y - (closeSize - ui::SizeOf(ui::TextStyle::Title)) / 2));
+            ImGui::SetCursorScreenPos(ImVec2(left + width - closeSize, titleAt.y + ui::CapMiddle(ui::TextStyle::Title) - closeSize / 2));
             if (ui::IconButton("##closeinstall", ui::Icon::Cross, Tr("Close")))
             {
                 m_s->installView = m_s->kitUsed = false;
@@ -438,28 +446,20 @@ namespace launcher_ui
             ImGui::SetCursorPosY(titleBottom);
         }
 
-        // The overall bar with its percentage, then the step count and the times under it.
-        ImGui::Dummy(ImVec2(0, ui::space::XS));
+        // The weighted percentage is the one progress statement. Steps have very different costs.
+        ImGui::Dummy(ImVec2(0, ui::space::XXS));
         ui::ProgressBar(list.overall, -1, true);
+        std::string times;
+        if (list.elapsedMs > 0)
+            times = Tf("{} elapsed", InstallDuration(list.elapsedMs));
+        if (running)
         {
-            int stepNumber = list.current >= 0 ? list.current + 1 : int(list.rows.size());
-            std::string where = Tf("Step {} of {}", stepNumber, list.rows.size());
-            std::string times;
-            if (list.elapsedMs > 0)
-                times = Tf("{} elapsed", InstallDuration(list.elapsedMs));
-            if (running)
-            {
-                std::string timeLeft = InstallTimeLeft(list.etaMs);
-                times += (times.empty() || timeLeft.empty() ? "" : "  \xC2\xB7  ") + timeLeft;
-            }
-            const ImVec2 rowAt = ImGui::GetCursorScreenPos();
-            ui::Text(ui::TextStyle::Caption, where.c_str(), ui::color::InkSoft, -1);
-            ui::PushText(ui::TextStyle::Caption);
-            const float w = ImGui::CalcTextSize(times.c_str()).x;
-            ui::DrawText(draw, ImVec2(left + width - w, rowAt.y), ui::Col(ui::color::InkSoft), times.c_str());
-            ui::PopText();
+            const std::string remaining = InstallTimeLeft(list.etaMs);
+            if (!remaining.empty()) times += (times.empty() ? "" : " · ") + remaining;
         }
-        ImGui::Dummy(ImVec2(0, ui::space::XS));
+        if (!times.empty())
+            ui::Text(ui::TextStyle::Caption, times.c_str(), ui::color::InkSoft, width);
+        ImGui::Dummy(ImVec2(0, ui::space::XXS));
 
         // The checklist. With the details open, only the current step: the log takes the room.
         // Once stopped, the steps done fold into one line, to leave room for the message.
@@ -472,7 +472,7 @@ namespace launcher_ui
             case RowState::Done: ui::DrawStatusIcon(draw, ui::Status::Success, centre, iconSize); break;
             case RowState::Running: ui::DrawStatusIcon(draw, ui::Status::Busy, centre, iconSize); break;
             case RowState::Failed: ui::DrawStatusIcon(draw, ui::Status::Error, centre, iconSize); break;
-            case RowState::Stopped: ui::DrawIcon(draw, ui::Icon::Minus, centre, iconSize, ui::Col(ui::color::Dim)); break;
+            case RowState::Stopped: ui::DrawStatusIcon(draw, ui::Status::Info, ui::Icon::Pause, centre, iconSize); break;
             case RowState::Waiting: ui::DrawIcon(draw, ui::Icon::Unknown, centre, iconSize, ui::Col(ui::color::Edge)); break;
             }
         };
@@ -480,22 +480,25 @@ namespace launcher_ui
         if (fold && !m_s->installLog)
         {
             const ImVec2 rowAt = ImGui::GetCursorScreenPos();
-            rowIcon(RowState::Done, ImVec2(rowAt.x + iconSize / 2, rowAt.y + rowH / 2));
+            rowIcon(RowState::Done, ImVec2(rowAt.x + iconSize / 2, rowAt.y + ui::CapMiddle(ui::TextStyle::Body)));
             ImGui::SetCursorScreenPos(ImVec2(rowAt.x + textX, rowAt.y));
-            ui::Text(ui::TextStyle::Body, Tf("{} of {} steps done", list.current, list.rows.size()).c_str(), ui::color::InkSoft, -1);
+            ui::Text(ui::TextStyle::Body, Tr("Completed steps"), ui::color::InkSoft, -1);
             ImGui::SetCursorScreenPos(ImVec2(rowAt.x, rowAt.y + rowH));
         }
         for (size_t i = 0; i < list.rows.size(); i++)
         {
             const InstallChecklist::Row& row = list.rows[i];
             bool current = int(i) == list.current;
-            if ((m_s->installLog || fold) && !current)
+            if (((failed || interrupted) && list.current < 0) || ((m_s->installLog || fold) && !current))
                 continue;
             const ImVec2 rowAt = ImGui::GetCursorScreenPos();
-            rowIcon(row.state, ImVec2(rowAt.x + iconSize / 2, rowAt.y + rowH / 2 - 1));
+            rowIcon(current && running ? RowState::Running : row.state, ImVec2(rowAt.x + iconSize / 2, rowAt.y + ui::CapMiddle(ui::TextStyle::Body)));
             ImGui::SetCursorScreenPos(ImVec2(rowAt.x + textX, rowAt.y));
             unsigned ink = row.state == RowState::Waiting ? ui::color::Dim : row.state == RowState::Failed ? ui::color::Danger : current ? ui::color::Ink : ui::color::InkSoft;
-            ui::Text(ui::TextStyle::Body, row.title.c_str(), ink, -1, current);
+            const bool hasTime = (current && running) || (row.state == RowState::Done && row.timed && row.ms >= 1000);
+            const float timeSpace = hasTime ? ui::TextSize(ui::TextStyle::Caption, InstallDuration(row.ms).c_str()).x + ui::space::S : 0;
+            ui::Text(ui::TextStyle::Body, row.title.c_str(), ink, width - textX - timeSpace, current);
+            const float titleHeight = ImGui::GetItemRectSize().y;
             const float titleW = ImGui::GetItemRectSize().x;
 
             // Its time on the right: the running time, or how long a done step took.
@@ -528,7 +531,7 @@ namespace launcher_ui
                     ui::PopText();
                 }
             }
-            ImGui::SetCursorScreenPos(ImVec2(rowAt.x, rowAt.y + rowH));
+            ImGui::SetCursorScreenPos(ImVec2(rowAt.x, rowAt.y + std::max(rowH, titleHeight + ui::space::XS)));
         }
 
         // Under the steps: what SSABuild does now (one line that replaces itself), or why it stopped.
@@ -542,38 +545,79 @@ namespace launcher_ui
         }
         else if (failed)
         {
-            ui::Text(ui::TextStyle::Label, InstallFailureHeadline(list, progress).c_str(), ui::color::Ink, 0, true);
-            if (!progress.error.empty())
+            const std::string headline = InstallFailureHeadline(list, progress);
+            ui::Text(ui::TextStyle::Label, headline.c_str(), ui::color::Ink, 0, true);
+            if (!progress.error.empty() && progress.error != headline)
                 ui::Text(ui::TextStyle::Caption, progress.error.c_str(), ui::color::InkSoft);
-            ui::Text(ui::TextStyle::Caption, Tr("Retry carries on from this step."), ui::color::InkSoft);
+            ui::Text(ui::TextStyle::Caption, list.current < 0 ? Tr("Retry to start the installation.")
+                : Tr("Retry to continue from this step."), ui::color::InkSoft);
         }
         else if (interrupted)
             ui::Text(ui::TextStyle::Body, m_s->installPastPid != 0 ? Tr("The earlier install is still stopping. Resume in a moment.")
-                                                                  : Tr("Arkeyan Launcher closed during the install. Resume carries on."), ui::color::InkSoft);
+                                                                  : Tr("Arkeyan Launcher closed during the install. Resume to continue from this step."), ui::color::InkSoft);
 
-        // The log, in the space left above the buttons: monospace, scrollable, following its end.
-        const float buttonsH = ui::HeightOf(ui::Size::Normal) + ui::space::M;
+        struct Action { const char* label; ui::ButtonOptions options; ImVec2 offset; };
+        std::vector<Action> actions;
+        if (failed || interrupted)
+        {
+            actions.push_back({ failed ? Tr("Retry") : Tr("Resume"), { .kind = ui::ButtonKind::Primary, .disabled = m_s->installPastPid != 0 }, {} });
+            actions.push_back({ Tr("Copy log"), {}, {} });
+            actions.push_back({ Tr("Logs"), { .icon = ui::Icon::Folder, .tooltip = Tr("Open logs folder") }, {} });
+        }
+        actions.push_back({ m_s->installLog ? Tr("Hide details") : Tr("Show details"),
+            { .kind = failed || interrupted ? ui::ButtonKind::Ghost : ui::ButtonKind::Secondary }, {} });
+        if (running) actions.push_back({ Tr("Cancel"), {}, {} });
+        float actionX = 0, actionY = 0;
+        for (size_t i = 0; i < actions.size(); i++)
+        {
+            Action& action = actions[i];
+            const float w = ui::ButtonWidth(action.label, action.options);
+            // A ghost label keeps a neighbouring button on its row, so its inset never reads as a new left edge.
+            const float together = i + 2 == actions.size() && actions.back().options.kind == ui::ButtonKind::Ghost
+                ? w + ui::space::S + ui::ButtonWidth(actions.back().label, actions.back().options) : w;
+            if (actionX > 0 && actionX + together > width)
+            {
+                actionX = 0;
+                actionY += ui::height::Normal + ui::space::XS;
+            }
+            action.offset = ImVec2(actionX, actionY);
+            actionX += w + ui::space::S;
+        }
+        const float buttonsH = actionY + ui::height::Normal;
+
+        // The log follows its content, capped by the space available after reserving every row of actions.
         if (m_s->installLog)
         {
             ImGui::Dummy(ImVec2(0, ui::space::XXS));
-            float logH = std::max(60.0f, ImGui::GetContentRegionAvail().y - buttonsH);
+            const float room = size.y - (ImGui::GetCursorScreenPos().y - at.y) - buttonsH - ui::space::M - ui::space::XXS - ui::space::L;
+            float logH = room;
             ImFont* mono = ui::Ctx().fonts.mono;
             const float monoSize = ui::SizeOf(ui::TextStyle::Caption);
             {
-                // A whole number of lines (and its padding), so the line at the top is never half cut while it follows the end.
+                // Short logs take only their lines and padding. Long logs use all the space up to the page margin.
                 ImGui::PushFont(mono, monoSize);
-                const float step = ImGui::GetTextLineHeight() + ui::space::XXS / 2;
+                const float step = ImGui::GetTextLineHeight();
+                const float logPadding = 2 * (ui::space::S + ImGui::GetStyle().ChildBorderSize);
+                float lines = progress.logLines > progress.log.size() ? 1.0f : 0.0f;
+                const float logWidth = width - 2 * ui::space::S - ImGui::GetStyle().ScrollbarSize;
+                for (const std::string& line : progress.log)
+                    lines += std::max(1.0f, std::ceil(ImGui::CalcTextSize(line.c_str(), nullptr, false, logWidth).y / monoSize));
                 ImGui::PopFont();
-                logH = std::max(60.0f, std::floor((logH - 2 * ui::space::S) / step) * step + 2 * ui::space::S);
+                const float contentH = lines * step + logPadding;
+                logH = std::max(logPadding + step, std::min(logH, contentH));
             }
             ImGui::PushStyleColor(ImGuiCol_ChildBg, Rgb(ui::color::Inset));
             ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, ui::radius::Control);
             ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(ui::space::S, ui::space::S));
             ImGui::BeginChild("##installlog", ImVec2(0, logH), ImGuiChildFlags_Borders | ImGuiChildFlags_AlwaysUseWindowPadding);
             ImGui::PushTextWrapPos(0.0f); // the kit's lines are long and not ours: they wrap inside the box, nothing scrolls sideways
-            bool atBottom = ImGui::GetScrollY() >= ImGui::GetScrollMaxY() - 4;
+            ImGuiStorage* logState = ImGui::GetStateStorage();
+            const ImGuiID scrollKey = ImGui::GetID("##previous-log-bottom");
+            const float previousBottom = logState->GetFloat(scrollKey, 0);
+            const bool atBottom = ImGui::IsWindowAppearing() || ImGui::GetScrollY() >= previousBottom - ui::space::XXS;
+            m_drawn["install-log-follow"] = ImGui::GetScrollY() >= ImGui::GetScrollMaxY() - ui::space::XXS ? "yes" : "no";
             ImGui::PushFont(mono, monoSize);
-            ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, ui::space::XXS / 2));
+            ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
             if (progress.logLines > progress.log.size())
                 ImGui::TextColored(ImColor(Rgb(ui::color::Dim)), "%s", Tf("({} earlier lines in Copy log)", progress.logLines - progress.log.size()).c_str());
             for (const std::string& line : progress.log)
@@ -585,51 +629,49 @@ namespace launcher_ui
             ImGui::PopTextWrapPos();
             ImGui::PopStyleVar();
             ImGui::PopFont();
+            logState->SetFloat(scrollKey, ImGui::GetScrollMaxY());
             if (atBottom)
-                ImGui::SetScrollY(ImGui::GetScrollMaxY());
+                ImGui::SetScrollHereY(1.0f);
             ImGui::EndChild();
             ImGui::PopStyleVar(2);
             ImGui::PopStyleColor();
         }
 
-        // Buttons along the card's bottom edge: the action to take first (Retry, Resume), then the quieter ones; Cancel while it runs.
-        ImGui::SetCursorPosY(std::max(ImGui::GetCursorPosY(), ImGui::GetWindowHeight() - ui::space::L - ui::HeightOf(ui::Size::Normal)));
-        if (failed || interrupted)
+        ImGui::Dummy(ImVec2(0, ui::space::XXS));
+        const ImVec2 buttonsAt = ImGui::GetCursorScreenPos();
+        m_drawn["install-actions-fit"] = "yes";
+        for (size_t i = 0; i < actions.size(); i++)
         {
-            ImGui::BeginDisabled(m_s->installPastPid != 0);
-            if (ui::Button(failed ? Tr("Retry") : Tr("Resume"), { .kind = ui::ButtonKind::Primary }))
+            const Action& action = actions[i];
+            ImGui::SetCursorScreenPos(ImVec2(left + action.offset.x, buttonsAt.y + action.offset.y));
+            const bool hit = ui::Button(action.label, action.options);
+            const ImVec2 min = ImGui::GetItemRectMin(), max = ImGui::GetItemRectMax();
+            if (min.x < left || max.x > left + width || max.y > at.y + std::min(size.y, ImGui::GetWindowHeight()) - ui::space::L)
+                m_drawn["install-actions-fit"] = "no";
+            if (!hit) continue;
+            if ((failed || interrupted) && i == 0)
                 StartInstall();
-            ImGui::EndDisabled();
-            ImGui::SameLine();
-            if (ui::Button(Tr("Copy log")))
+            else if ((failed || interrupted) && i == 1)
             {
                 std::string text;
-                if (m_s->installPast.state == State::Idle)
-                    text = m_s->installer.FullLog();
-                if (m_s->kitUsed && !progress.error.empty())
-                    text += progress.error + "\n";
-                for (const std::string& line : m_s->installPast.log)
-                    text += line + "\n";
+                if (m_s->installPast.state == State::Idle) text = m_s->installer.FullLog();
+                if (m_s->kitUsed && !progress.error.empty()) text += progress.error + "\n";
+                for (const std::string& line : m_s->installPast.log) text += line + "\n";
                 SDL_SetClipboardText(text.c_str());
                 Toast(Tr("Log copied"), ui::ToastKind::Success);
             }
-            ImGui::SameLine();
-            if (ui::Button(Tr("Open logs folder"), { .icon = ui::Icon::Folder }))
+            else if ((failed || interrupted) && i == 2)
                 OpenFolder(GameInstallFolder(m_s->installSha));
-            ImGui::SameLine();
-        }
-        if (ui::Button(m_s->installLog ? Tr("Hide details") : Tr("Show details"), { .kind = failed || interrupted ? ui::ButtonKind::Ghost : ui::ButtonKind::Secondary }))
-            m_s->installLog = !m_s->installLog;
-        if (running)
-        {
-            const ui::ButtonOptions cancel;
-            ImGui::SameLine(ImGui::GetWindowWidth() - ui::space::L - ui::ButtonWidth(Tr("Cancel"), cancel));
-            if (ui::Button(Tr("Cancel"), cancel))
+            else if (running && i == actions.size() - 1)
             {
                 m_s->installer.Cancel();
                 m_s->kitDownload.Cancel();
             }
+            else
+                m_s->installLog = !m_s->installLog;
         }
+        ImGui::SetCursorScreenPos(ImVec2(left, buttonsAt.y + buttonsH));
+        ImGui::PopStyleVar();
         EndCard();
     }
 
@@ -638,6 +680,122 @@ namespace launcher_ui
     // install read back after a restart.
     void App::TestInstallScript(uint64_t now)
     {
+        // Deterministic display fixtures: no disc, installer or figure writes. The real install script below still
+        // exercises the fake kit; these also cover a first install and an interrupted update with a playable build.
+        const char* mode = LauncherEnv("SKY_LAUNCHER_TEST_INSTALL");
+        if (mode != nullptr && std::string_view(mode) == "layout")
+        {
+            using State = InstallProgress::State;
+            struct Fixture { const char* name; State state; bool details = false, built = false; };
+            static const Fixture fixtures[] = {
+                { "10-install", State::Idle }, { "11-installing", State::Running },
+                { "12-install-checklist", State::Running }, { "13-install-details", State::Running, true },
+                { "14-install-failed", State::Failed }, { "15-installed", State::Idle, false, true },
+                { "16-game-data", State::Idle, false, true }, { "17-install-interrupted", State::Interrupted, false, true },
+                { "18-first-interrupted", State::Interrupted }, { "19-failed-details", State::Failed, true },
+                { "20-interrupted-details", State::Interrupted, true, true }, { "21-tools", State::Running },
+                { "22-starting", State::Running }, { "23-finished", State::Done, true, true },
+                { "24-start-failed", State::Failed }, { "25-long-log", State::Interrupted, true, true },
+                { "26-play-without-update", State::Idle, false, true }, { "control-home", State::Idle, false, true },
+                { "control-game", State::Idle, false, true }, { "control-update", State::Idle, false, true },
+                { "control-settings", State::Idle, false, true }
+            };
+            static int settledFrames = 0;
+            if (m_testBegan != 0)
+            {
+                if (++settledFrames < 6 || now < m_testBegan) return;
+                const Fixture& previous = fixtures[m_testStep - 1];
+                Screenshot(previous.name);
+                if (m_page == Page::Play)
+                {
+                    fprintf(stderr, "install anchors: %s controller=%s portal=%s panel=%s\n", previous.name,
+                        m_drawn["install-controller-rect"].c_str(), m_drawn["install-portal-rect"].c_str(), m_drawn["install-panel-rect"].c_str());
+                    if (previous.state != State::Idle && m_drawn["install-card-anchored"] != "yes")
+                    {
+                        fprintf(stderr, "FAIL install card: %s must end above the pills and stay below the top margin\n", previous.name);
+                        m_testFailures++;
+                    }
+                }
+                if (previous.state != State::Idle && m_drawn["install-actions-fit"] != "yes")
+                {
+                    fprintf(stderr, "FAIL install actions: %s (%s) exceed card padding\n", previous.name, i18n::Current().c_str());
+                    m_testFailures++;
+                }
+                else if (previous.state == State::Failed || previous.state == State::Interrupted)
+                    fprintf(stderr, "install actions fit: %s (%s)\n", previous.name, i18n::Current().c_str());
+                if (std::string_view(previous.name) == "25-long-log" && m_drawn["install-log-follow"] != "yes")
+                {
+                    fprintf(stderr, "FAIL install log: new details follow the last line\n");
+                    m_testFailures++;
+                }
+            }
+            if (m_testStep >= int(std::size(fixtures)))
+            {
+                m_running = false;
+                return;
+            }
+            if (m_testStep > 0 && std::string_view(fixtures[m_testStep - 1].name) == "26-play-without-update")
+            {
+                const bool playable = !m_s->installView && m_s->skipUpdate && SlotStatus(m_s).button == Tr("PLAY");
+                fprintf(stderr, "%s\n", playable ? "install play: ready without updating" : "FAIL install play: stopped card still blocks PLAY");
+                if (!playable) m_testFailures++;
+            }
+            const Fixture& fixture = fixtures[m_testStep];
+            const std::string_view name = fixture.name;
+            if (m_testStep == 0) SelectGame(*FindGame("giants"));
+            m_s->disc = DiscState::Ready;
+            m_s->check.status = GameSourceStatus::Ok;
+            m_s->check.xexSha256 = "install-card-fixture";
+            m_s->installSha = m_s->check.xexSha256;
+            m_s->discPath = (GameInstallFolder("") / "disc.iso").string();
+            m_s->installed = fixture.built ? InstalledGame{ "fixture-runtime", "0.7.1", "0.8.1" } : InstalledGame{};
+            if (fixture.state == State::Done) m_s->installed.gameVersion = "0.8.4";
+            m_gameUpdates = fixture.built && (fixture.state == State::Interrupted || name == "control-update")
+                ? std::vector<GameUpdate>{ { "giants", "0.8.4", "v0.7.1" } } : std::vector<GameUpdate>{};
+            m_s->skipUpdate = false;
+            m_testPlayWithout = false;
+            m_s->installView = fixture.state != State::Idle;
+            m_s->installLog = fixture.details;
+            m_s->installPast = {};
+            m_s->installPast.state = fixture.state;
+            if (name != "22-starting" && name != "24-start-failed")
+            {
+                for (const char* step : { "toolchain", "disc", "recompile", "shaders" })
+                    m_s->installPast.steps.push_back({ step, step, 0, 0 });
+                m_s->installPast.done = 201;
+                m_s->installPast.total = 1118;
+            }
+            if (name == "21-tools") m_s->installPast.steps = { { "kit", "Downloading the game tools", 0, 0 } };
+            if (fixture.state == State::Failed)
+                m_s->installPast.error = "The compiler stopped before the game was built.";
+            if (name == "24-start-failed")
+            {
+                m_s->installPast.startFailed = true;
+                m_s->installPast.error = Tr("The game tools are incomplete.");
+            }
+            m_s->installPast.action = name == "21-tools" ? Tr("Downloading the game tools")
+                : name == "22-starting" ? Tr("Starting the installer") : "Preparing the next group of shaders";
+            m_s->installPast.log = { "== Translating the shaders", "Preparing the next group of shaders", "201 / 1118" };
+            if (name == "25-long-log")
+                for (int i = 0; i < 100; i++) m_s->installPast.log.push_back(fmt::format("Preparing the next group of shader objects: {}", i));
+            m_s->installPast.logLines = m_s->installPast.log.size();
+            if (name == "26-play-without-update")
+            {
+                m_s->installView = true;
+                m_s->installPast.state = State::Interrupted;
+                m_gameUpdates = { { "giants", "0.8.4", "v0.7.1" } };
+                m_testPlayWithout = true;
+            }
+            m_quitPrompt = false;
+            m_toasts.Clear();
+            m_page = name == "16-game-data" ? Page::GameSettings : name == "control-home" ? Page::Home
+                : name == "control-settings" ? Page::Settings : Page::Play;
+            m_gameTab = GameTab::Game;
+            m_testStep++;
+            settledFrames = 0;
+            m_testBegan = now + 200;
+            return;
+        }
         InstallProgress progress = m_s->installer.Snapshot();
         if (m_testReal)
         {

@@ -1794,6 +1794,11 @@ namespace launcher_ui
                 RefreshGamepads();
                 ui::OpenMenu("##controllers", {.above = true});
             }
+            if (m_testInstall)
+            {
+                const ImVec2 min = ImGui::GetItemRectMin(), max = ImGui::GetItemRectMax();
+                m_drawn["install-controller-rect"] = fmt::format("{},{},{},{}", min.x, min.y, max.x, max.y);
+            }
             // PLAY WITH: the choices, the one in use checked.
             if (ui::BeginMenu("##controllers"))
             {
@@ -1815,6 +1820,11 @@ namespace launcher_ui
                 {
                     m_tab = SettingsTab::Controls;
                     GoTo(Page::Settings);
+                }
+                if (m_testInstall)
+                {
+                    const ImVec2 min = ImGui::GetItemRectMin(), max = ImGui::GetItemRectMax();
+                    m_drawn["install-portal-rect"] = fmt::format("{},{},{},{}", min.x, min.y, max.x, max.y);
                 }
             }
         }
@@ -1845,7 +1855,7 @@ namespace launcher_ui
         }
         else if (update && !installing && state.buttonEnabled)
         {
-            if (const GameUpdate* pending = PendingUpdate(*m_s))
+            if (const GameUpdate* pending = PendingUpdate(*m_s); pending != nullptr && !detailed)
             {
                 std::string size;
                 if (KitNeedsFetch(*m_s))
@@ -1859,27 +1869,28 @@ namespace launcher_ui
                 ui::Text(ui::TextStyle::Caption, offer.c_str(), ui::color::InkSoft);
             }
             ImGui::SetCursorScreenPos(ImVec2(left, ImGui::GetCursorScreenPos().y));
-            if (ui::Button(Tr("Play without updating"), { .kind = ui::ButtonKind::Ghost, .size = ui::Size::Small, .overArt = true }) || m_testPlayWithout)
+            if (ui::Button(Tr("Play without updating"), { .kind = detailed ? ui::ButtonKind::Secondary : ui::ButtonKind::Ghost, .size = ui::Size::Small, .overArt = true }) || m_testPlayWithout)
             {
                 m_testPlayWithout = false;
                 m_s->skipUpdate = true;
+                if (detailed) m_s->installView = false;
             }
         }
 
-        if (ready && !installing && !running && !m_s->fromCopy)
+        if (ready && !detailed && !installing && !running && !m_s->fromCopy)
         {
             ImGui::SetCursorScreenPos(ImVec2(left, position.y + margin));
             if (ui::Button(Tr("Change disc..."), { .kind = ui::ButtonKind::Ghost, .size = ui::Size::Small, .overArt = true }))
                 Browse();
             ui::Tooltip(m_s->discPath.c_str());
         }
-        if (ready && !installing && !running && install)
+        if (ready && !detailed && !installing && !running && install)
         {
             ImGui::SetCursorScreenPos(ImVec2(left, pillY + ui::height::Small + ui::space::M));
             ui::Text(ui::TextStyle::Caption, Tf("Builds the game on your PC: about {} min, {} GB, internet needed once.",
                 InstallMinutesFor(m_s->game.id), InstallGigabytes).c_str(), ui::color::InkSoft, leftW);
         }
-        if (ready && !m_s->fromCopy && m_s->copy.state == gamedata::State::Damaged)
+        if (ready && !detailed && !m_s->fromCopy && m_s->copy.state == gamedata::State::Damaged)
         {
             ImGui::SetCursorScreenPos(ImVec2(left, position.y + margin + ui::height::Normal));
             ui::StatusPill(ui::Status::Error, Tr("Game data damaged: using the disc image."));
@@ -1890,6 +1901,11 @@ namespace launcher_ui
             DrawHeroSteps(ImVec2(left + leftW + ui::space::L, foot - panelH), ImVec2(panelW, panelH));
         else
             m_s->collection->DrawHeroPortal(ImVec2(left + leftW + ui::space::L, foot - panelH), ImVec2(panelW, panelH), running);
+        if (m_testInstall)
+        {
+            const ImVec2 min = ImGui::GetItemRectMin(), max = ImGui::GetItemRectMax();
+            m_drawn["install-panel-rect"] = fmt::format("{},{},{},{}", min.x, min.y, max.x, max.y);
+        }
 
         m_heroNavigation.Column(0);
         // Achievements keep their entry point over the painting.

@@ -27,6 +27,7 @@ Hold to clear the caches.	Maintenez pour vider les caches.
 Launcher settings	Réglages du launcher
 Logs folder	Dossier des journaux
 Open the Toy Box	Ouvrir la Toy Box
+Toy Box	Toy Box
 Sep	sept.
 Oct	oct.
 Nov	nov.
@@ -303,11 +304,10 @@ Arkeyan Launcher couldn't find its own file.	Arkeyan Launcher n'a pas trouvé so
 Arkeyan Launcher is up to date.	Arkeyan Launcher est à jour.
 Arkeyan Launcher is up to date. A game update is available.	Arkeyan Launcher est à jour. Une mise à jour du jeu est disponible.
 Arkeyan Launcher on GitHub	Arkeyan Launcher sur GitHub
-Arkeyan Launcher closed during the install. Resume carries on.	Arkeyan Launcher a été fermé pendant l'installation. Reprendre continue.
+Arkeyan Launcher closed during the install. Resume to continue from this step.	Arkeyan Launcher a été fermé pendant l'installation. Appuyez sur Reprendre pour continuer à cette étape.
 Arkeyan Launcher {} is installed. Restart to use it.	Arkeyan Launcher {} est installé. Redémarrez pour l'utiliser.
 Something went wrong while {}.	Un problème est survenu pendant l'étape « {} ».
 Starting the installer	Démarrage de l'installateur
-Step {} of {}	Étape {} sur {}
 Stop	Arrêter
 Support	Assistance
 System default	Langue du système
@@ -408,7 +408,7 @@ Virtual (no portal needed)	Virtuel (aucun portail nécessaire)
 Virtual portal chosen.	Portail virtuel choisi.
 Wait for the installation to finish	Attendez la fin de l'installation
 No tearing, a little more latency.	Pas de déchirure, un peu plus de latence.
-Retry carries on from this step.	Réessayer reprend à cette étape.
+Retry to continue from this step.	Appuyez sur Réessayer pour continuer à cette étape.
 What's new	Nouveautés
 What's new in {}	Nouveautés de {}
 Widescreen	Écran large
@@ -444,7 +444,6 @@ nothing yet	0 octet
 {} has no {} for this computer	{} n'a pas de {} pour cet ordinateur
 {} is busy: try again when it is done	{} est occupé : réessayez quand il aura terminé
 {} of {}	{} sur {}
-{} of {} steps done	{} étapes sur {} terminées
 {} settings	Réglages de {}
 {} stopped unexpectedly (exit code {}).\n\nPress Report to save a report file with the log and where the game stopped.	{} s'est arrêté de façon inattendue (code {}).\n\nAppuyez sur « Signaler » pour enregistrer un fichier de rapport avec le journal et l'endroit où le jeu s'est arrêté.
 {} x {} for the 3D scene	{} x {} pour la scène 3D
@@ -894,3 +893,6 @@ Code	Code
 Shaders	Shaders
 Ready	Prêt
 Install	Installer
+Logs	Journaux
+Completed steps	Étapes terminées
+Retry to start the installation.	Appuyez sur Réessayer pour lancer l'installation.
