@@ -126,7 +126,11 @@ namespace launcher_ui
     {
         if (!slot.installed.runtime.empty())
             return slot.installed.gameVersion;
-        return slot.kit ? slot.kit->GameVersion(slot.game.id) : std::string();
+        if (std::string version = slot.kit ? slot.kit->GameVersion(slot.game.id) : std::string(); !version.empty())
+            return version;
+        // Only the shown game has its kit looked up: the release says the others'.
+        const GameUpdate* latest = PendingUpdate(slot);
+        return latest != nullptr ? latest->version : std::string();
     }
 
     void App::SetInstallState(const std::string& sha, const char* state)

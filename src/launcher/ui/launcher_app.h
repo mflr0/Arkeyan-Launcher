@@ -463,7 +463,7 @@ namespace launcher_ui
         bool AnyGameUpdate() const;
         const GameUpdate* PendingUpdate(const GameSlot& slot) const; // the game's entry in the release's games line, if any
         std::string WantedKitTag(const GameSlot& slot) const;        // the release whose kit INSTALL / UPDATE must be using
-        std::string GameVersion(const GameSlot& slot) const;         // "0.8.2": the built game's, else the kit's; "" when unknown
+        std::string GameVersion(const GameSlot& slot) const;         // "0.8.2": the built game's, else the kit's, else the release's; "" when unknown
         void StartInstall();
         void PollInstall();
         // "Update all" (Home): the games with an update, one after the other (docs/updates.md).

@@ -46,7 +46,7 @@ namespace ui
         // space::XXS above and below, drawn by the caller, called with the box's top left and size.
         std::function<void(ImDrawList*, ImVec2 at, ImVec2 size)> image;
         float imageWidth = 0;
-        const char* note = nullptr;     // a small word after the title (a version)
+        const char* note = nullptr;     // a small word at the end of the subtitle's line (a version)
         const Status* status = nullptr; // the subtitle's state: its icon before it, in its colour
         Icon statusIcon = Icon::None;   // that icon when the state has its own (a disc, an update), else the status's
         float leadWidth = 0;            // the leading column's width (the icon or the image centred in it): one per list

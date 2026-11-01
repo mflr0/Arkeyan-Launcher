@@ -191,28 +191,10 @@ namespace ui
         // The title (and subtitle) cut with "..." before the trailing part, never under it.
         const float room = right - x;
         const unsigned titleInk = options.dim ? color::Dim : color::Ink;
-        float noteW = 0;
-        if (options.note != nullptr)
-        {
-            PushText(TextStyle::Caption);
-            noteW = ImGui::CalcTextSize(options.note).x + space::XS;
-            PopText();
-            PushText(titleStyle, titleBold);
-            if (ImGui::CalcTextSize(title).x + noteW > room) // the name comes first: a note that would cut it is left out
-                noteW = 0;
-            PopText();
-        }
         PushText(titleStyle, titleBold);
-        const std::string shown = Ellipsize(title, room - noteW);
+        const std::string shown = Ellipsize(title, room);
         DrawText(draw, ImVec2(x, titleTop), Col(titleInk), shown.c_str());
-        const float titleEnd = x + ImGui::CalcTextSize(shown.c_str()).x;
         PopText();
-        if (options.note != nullptr && noteW > 0) // on the title's baseline
-        {
-            PushText(TextStyle::Caption);
-            DrawText(draw, ImVec2(titleEnd + space::XS, baseline - Baseline(TextStyle::Caption)), Col(color::InkSoft), options.note);
-            PopText();
-        }
         if (options.subtitle != nullptr)
         {
             // The state's icon on the subtitle's line, centred on its capitals, at the title's left edge.
@@ -225,7 +207,14 @@ namespace ui
                 subX += icon::Small + space::XXS;
             }
             PushText(subtitleStyle);
-            DrawText(draw, ImVec2(subX, subTop), Col(color::Dim), Ellipsize(options.subtitle, room - (subX - x)).c_str());
+            float noteW = 0;
+            if (options.note != nullptr) // at the line's right end, so that every row's sits at the same place
+            {
+                const float width = ImGui::CalcTextSize(options.note).x;
+                noteW = width + space::XS;
+                DrawText(draw, ImVec2(right - width, subTop), Col(color::InkSoft), options.note);
+            }
+            DrawText(draw, ImVec2(subX, subTop), Col(color::Dim), Ellipsize(options.subtitle, room - (subX - x) - noteW).c_str());
             PopText();
         }
         if (options.progress >= 0)

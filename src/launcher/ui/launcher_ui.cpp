@@ -2709,6 +2709,12 @@ namespace launcher_ui
             expect(SlotStatus(&g).button == std::string("UPDATE") && SlotStatus(&a).button == std::string("PLAY"), "UPDATE for Giants, PLAY for the other");
             expect(!toolsLine(g) && !toolsLine(a) && !std::filesystem::exists(DownloadedKitsFolder()), "no kit is downloaded in the background");
             expect(m_updates.Snapshot().launcherNewer, "the launcher's own update is still offered");
+            {
+                GameSlot& unbuilt = SlotFor(*FindGame("swapforce"));
+                m_gameUpdates.push_back({ unbuilt.game.id, "0.5.9", "v9.9.9" });
+                expect(GameVersion(unbuilt) == "0.5.9", "a game not built and with no kit shows the release's version");
+                m_gameUpdates.pop_back();
+            }
             SelectGame(giants);
             shoot("giants-update");
             break;

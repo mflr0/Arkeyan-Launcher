@@ -430,7 +430,7 @@ only what each line says was not possible: see "Done" at the end of this part.
   `App::Toast` is gone (2026-10-28).
 
 **Done (part 1).** Sidebar rows are `ui::ListRow`s (`ListRowOptions` gained `image`, `note`, `status`, `progress`, `dim`): the game's
-logo or initial in the image slot, its version as the note (left out when it would cut the name), `ui::DrawStatusIcon` through
+logo or initial in the image slot, its version as the note, at the right end of the state's line (the built game's, else the kit's, else the release's), `ui::DrawStatusIcon` through
 `StatusOf(SlotState)` (Info: needs a disc, ready to install, update, interrupted; Busy: checking and every build step; Success:
 ready; Error: every disc problem and a failed build; Neutral: not opened yet), the install's thin bar on the row's foot; the four
 games not out yet are one "Coming later" row with their number (a click lists them, dim and not pressable); Collection and Settings are
