@@ -1,6 +1,7 @@
 // ArkeyanLauncherTest's checks for the game page's music (launcher/game_music.h): the WAV reader, the mixer's fades and loop
 // (no device), the extraction through the kit's SkyBuild (the fake one), and the player on SDL's dummy audio driver. Called from
 // launcher_test.cpp's main; returns the number of failures. The real themes are checked in the workshop (SkyBuildMusicTest).
+#include "test_env.h"
 #include "launcher/game_music.h"
 #include "launcher/launcher.h"
 #include "launcher/game_settings.h"
@@ -27,14 +28,14 @@ namespace
         {
             if (const char* value = SDL_getenv_unsafe("SKYLANDERS_DATA"))
                 old = value, had = true;
-            SDL_setenv_unsafe("SKYLANDERS_DATA", folder.string().c_str(), 1);
+            TestSetEnv("SKYLANDERS_DATA", folder.string().c_str());
         }
         ~DataFolder()
         {
             if (had)
-                SDL_setenv_unsafe("SKYLANDERS_DATA", old.c_str(), 1);
+                TestSetEnv("SKYLANDERS_DATA", old.c_str());
             else
-                SDL_unsetenv_unsafe("SKYLANDERS_DATA");
+                TestUnsetEnv("SKYLANDERS_DATA");
         }
     };
 
