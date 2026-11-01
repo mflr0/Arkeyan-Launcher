@@ -1475,7 +1475,12 @@ static void InstallCardChecks(const std::filesystem::path& scratch)
     for (const char* size : { "1024x680", "1080x720", "1600x1000" })
     {
         pending.push_back(std::async(std::launch::async, scenario, language, size));
-        if (pending.size() == 2)
+#if defined(_WIN32)
+        const size_t atOnce = 1; // a second window started beside the first reports nothing there
+#else
+        const size_t atOnce = 2;
+#endif
+        if (pending.size() == atOnce)
         {
             for (auto& result : pending) g_failures += result.get();
             pending.clear();
