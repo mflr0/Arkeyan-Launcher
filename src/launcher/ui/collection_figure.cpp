@@ -2,6 +2,7 @@
 // that matter; three main actions (Put on the portal, Edit, Favorite), the rest in a menu (duplicate, back up, restore,
 // show the file, reset and delete, asked first), the technical details behind "Details". Every overlay is one ui::Modal.
 #include "launcher/ui/launcher_app.h"
+#include "shared/collection/datadir.h"
 #include "launcher/ui/launcher_ui.h"
 #include "shared/collection/upgrades.h"
 #include <algorithm>
@@ -157,7 +158,7 @@ namespace launcher_ui
         // A backup's file is named for its time ("2026-10-24T101500Z"): when it was made, in the player's language.
         std::string BackupLabel(const std::string& backup)
         {
-            std::string stem = fs::path(backup).stem().string();
+            std::string stem = datadir::Text(datadir::FromText(backup).stem());
             if (stem.size() >= 16)
                 return When(fmt::format("{}:{}:{}Z", stem.substr(0, 13), stem.substr(13, 2), stem.substr(15, 2)));
             return stem;
@@ -345,7 +346,14 @@ namespace launcher_ui
         }
         Figure f = *found; // actions below reload the collection
         const std::string path = f.path;
-        const collection::Card card = CardOf(f); // f is the swapper's top, or a figure (also a half on its own)
+        collection::Card card = CardOf(f); // actions can reload the model: both displayed halves must outlive them
+        Figure partner;
+        if (card.Swapper())
+        {
+            partner = *(card.first == &f ? card.second : card.first);
+            if (card.first == &f) card.second = &partner;
+            else card.first = &partner;
+        }
         const bool writable = Writable(f);
         ImDrawList* draw = ImGui::GetWindowDrawList();
 
@@ -527,7 +535,7 @@ namespace launcher_ui
         {
             std::string error;
             std::string copy = collection::Duplicate(f.path, &error);
-            Toast(copy.empty() ? Tr("Couldn't duplicate it: ") + error : Tr("Duplicated: ") + fs::path(copy).filename().string(), copy.empty() ? ui::ToastKind::Error : ui::ToastKind::Success);
+            Toast(copy.empty() ? Tr("Couldn't duplicate it: ") + error : Tr("Duplicated: ") + datadir::Text(datadir::FromText(copy).filename()), copy.empty() ? ui::ToastKind::Error : ui::ToastKind::Success);
             Reload();
         }
         if (ui::MenuItem(Tr("Back up now"), { ui::Icon::None, false, false, !writable }))

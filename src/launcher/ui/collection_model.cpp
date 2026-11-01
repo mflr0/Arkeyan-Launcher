@@ -1,7 +1,9 @@
 #include "launcher/ui/collection_model.h"
+#include "launcher/atomic_file.h"
 #include "launcher/game_names.h"
 #include "launcher/env.h"
 #include "launcher/launcher.h"
+#include "launcher/game_settings.h"
 #include "shared/dir_list.h"
 #include "shared/collection/datadir.h"
 #include "shared/collection/json.h"
@@ -170,22 +172,7 @@ namespace launcher_ui
                 text += fmt::format("{} {}\n", slot + 1, collection::PathOf(top.partner));
         }
         // UTF-8 paths (a user name with accents on Windows): FromText, never a narrow std::string, for std::filesystem.
-        const fs::path target = datadir::FromText(file), temporary = datadir::FromText(file + ".tmp");
-        std::error_code error;
-        fs::create_directories(target.parent_path(), error);
-        // Written beside, then renamed over: a crash leaves the old seats or the new ones, never half a file.
-        if (!SDL_SaveFile((file + ".tmp").c_str(), text.data(), text.size()))
-            return false;
-        // An antivirus scanning the new file (Windows) can hold it for a moment: a few tries before giving up.
-        for (int attempt = 0; attempt < 5; attempt++)
-        {
-            fs::rename(temporary, target, error);
-            if (!error)
-                return true;
-            SDL_Delay(20);
-        }
-        fs::remove(temporary, error);
-        return false;
+        return launcher_files::WriteAtomic(datadir::FromText(file), text);
     }
 
     std::string ShortGameName(const std::string& game)
@@ -219,13 +206,13 @@ namespace launcher_ui
             if (!legacy.empty() || full == name)
             {
                 std::string copy = collection::MigratedPath(full);
-                if (copy != full && fs::exists(copy, error))
+                if (copy != full && fs::exists(datadir::FromText(copy), error))
                     return copy;
             }
-            if (full == name && fs::exists(name, error))
+            if (full == name && fs::exists(datadir::FromText(name), error))
                 return name;
             std::string path = collection::PathOf(name);
-            return fs::exists(path, error) ? path : std::string();
+            return fs::exists(datadir::FromText(path), error) ? path : std::string();
         };
         for (const std::string& name : favourites)
             if (std::string path = copyOf(name); !path.empty())
@@ -265,9 +252,17 @@ namespace launcher_ui
         {
             std::string error;
             Json parsed;
-            if (Json::Parse(std::string(data, size), parsed, error) && parsed.IsObject())
-                root = parsed;
+            const bool valid = Json::Parse(std::string(data, size), parsed, error) && parsed.IsObject();
             SDL_free(data);
+            if (!valid)
+                return false;
+            root = std::move(parsed);
+        }
+        else
+        {
+            std::error_code error;
+            if (fs::exists(datadir::FromText(path), error) || error)
+                return false; // an unreadable catalogue must not be replaced with a new one
         }
         Json toys = Json::Array();
         for (const Json& toy : root["toys"].Items())
@@ -283,8 +278,8 @@ namespace launcher_ui
         root.Set("toys", toys);
         std::string text = root.Dump();
         std::error_code error;
-        fs::create_directories(collection::Folder(), error);
-        return SDL_SaveFile(path.c_str(), text.data(), text.size());
+        fs::create_directories(datadir::FromText(collection::Folder()), error);
+        return launcher_files::WriteAtomic(datadir::FromText(path), text);
     }
 
     // ---- CollectionModel ------------------------------------------------------------------------------------------
@@ -308,20 +303,20 @@ namespace launcher_ui
         // whether each lock's process still runs: a game that quits leaves its locks behind (docs/collection.md).
         std::string signature;
         std::error_code error;
-        for (const fs::directory_entry& entry : ListDirectory(collection::Folder(), error))
+        for (const fs::directory_entry& entry : ListDirectory(datadir::FromText(collection::Folder()), error))
         {
             if (!entry.is_regular_file(error))
                 continue;
-            std::string name = entry.path().filename().string();
+            std::string name = datadir::Text(entry.path().filename());
             signature += fmt::format("{}|{}|{};", name, entry.file_size(error), entry.last_write_time(error).time_since_epoch().count());
             if (name.size() > 5 && name.ends_with(".lock"))
-                signature += collection::GetLock(entry.path().string().substr(0, entry.path().string().size() - 5)).Busy() ? "busy;" : "free;";
+                signature += collection::GetLock(datadir::Text(entry.path()).substr(0, datadir::Text(entry.path()).size() - 5)).Busy() ? "busy;" : "free;";
         }
         if (const collection::Game* game = Game())
         {
             std::string session = SessionFile(*game);
-            if (!session.empty() && fs::exists(session, error))
-                signature += fmt::format("session|{};", fs::last_write_time(session, error).time_since_epoch().count());
+            if (!session.empty() && fs::exists(datadir::FromText(session), error))
+                signature += fmt::format("session|{};", fs::last_write_time(datadir::FromText(session), error).time_since_epoch().count());
         }
         return signature;
     }
@@ -351,6 +346,8 @@ namespace launcher_ui
 
     std::string CollectionModel::RunningGame() const
     {
+        if (FindGame(gameId) != nullptr && GameIsRunning(FoldersOf(gameId)))
+            return gameId;
         // This game first: another game's busy figure must not hide it (and the other way round, the first one found is named).
         std::string other;
         for (const collection::Figure& figure : figures)
@@ -380,19 +377,21 @@ namespace launcher_ui
         if (!CanEditSeats() || seat >= seats.size())
             return false;
         const std::string spelled = Canonical(path);
+        std::vector<std::string> next = seats;
         if (const collection::Figure* figure = Find(spelled); figure != nullptr && Incompatible(*figure))
             return false;
         if (!spelled.empty())
         {
             // A figure sits on one seat, and so does a toy: another file of the same serial leaves its seat too.
             const uint32_t serial = SerialOf(spelled);
-            for (std::string& other : seats)
+            for (std::string& other : next)
                 if (other == spelled || (serial != 0 && !other.empty() && SerialOf(other) == serial))
                     other.clear();
         }
-        seats[seat] = spelled;
-        if (!WriteSeats(*Game(), SessionFile(*Game()), seats))
+        next[seat] = spelled;
+        if (!WriteSeats(*Game(), SessionFile(*Game()), next))
             return false;
+        seats = std::move(next);
         m_signature = Signature();
         return true;
     }

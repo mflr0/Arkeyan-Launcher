@@ -862,6 +862,8 @@ The list comes from your disc: it appears once the game's disc image is checked.
 {} of {} unlocked · {} of {} G	{} sur {} débloqués · {} sur {} G
 Play time: {}	Temps de jeu : {}
 Last played: {}	Dernière partie : {}
+Turn the game music off	Couper la musique des jeux
+Turn the game music on	Remettre la musique des jeux
 less than a minute	moins d'une minute
 today	aujourd'hui
 yesterday	hier

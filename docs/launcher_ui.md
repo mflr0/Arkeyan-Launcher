@@ -93,7 +93,7 @@ size. `Small` 16 on a line of Caption or Body text (a state, a pill, a chip, a s
 turns Lucide's loader. The icons come from `resources/fonts/Lucide.ttf`, Lucide's icon font cut down to the icons used and
 built into the executable (`cmake/embed_fonts.cmake`); to add one, put its Lucide name in `tools/lucide_subset.py`'s list, run
 `python3 tools/lucide_subset.py <the lucide-static npm package, untarred>` (it rewrites the font and
-`components/lucide.h`), then map it in `DrawIcon` (`components/core.cpp`). Nothing is drawn by hand but the GitHub mark (Lucide
+`components/lucide.h`), then map it in `DrawIcon` (`components/core.cpp`). The speaker uses `volume-2` and `volume-x`. Nothing is drawn by hand but the GitHub mark (Lucide
 has no brand marks).
 
 **Text lines** (`ui::CapMiddle`, `ui::CapTop`, `ui::Baseline`). What is centred is the capitals: a line of text beside an
@@ -618,6 +618,7 @@ every game shows its real state and art at once ("Update all" on Home's title li
    - Rows are reachable with the keyboard and the pad like the others.
 2. **Play** (the game page, no tabs): see "Game page hero" below. The disc's art fills the page; title,
    state, commands and device pills sit on it, with the collection's portal at the right. There is no bottom bar.
+   - The speaker at the top right switches game music on or off for every game; it is shown only when the disc theme is cached.
 3. Collection - see below.
 4. Settings (the gear) - Graphics, Controls (device, portal), Language, Game data, About. Clicking a game
    goes back to Play; clicking the gear again, or B / Escape, goes back to the page you came from. The game page's settings
@@ -1095,6 +1096,49 @@ pickers and gear, disabled STOP during a delayed clean stop, and the return to R
 `ArkeyanLauncherTest` removes its scratch folder at the end; `SKY_LAUNCHER_TEST_KEEP=1` keeps it with its screenshots.
 `SKY_LAUNCHER_TEST_INSTALL=real` runs the real kit. `private/shoot.sh <out dir> [VAR=value...]` is the wrapper used in this
 repository's working copy (its own HOME, the offscreen driver).
+
+## Game music
+The visible game's main menu theme plays at `gamemusic::Volume` (0.2 of full scale). A 1.5-second fade brings
+it in; selecting another game cross-fades between their themes. Home, Collection, Settings, achievements
+and game settings are silent. Any install or kit download silences the launcher too.
+
+The speaker sits at the top right over the painting, beside the achievement pill when present, using
+`ui::IconButton` with Lucide's volume and mute glyphs. It controls every game through
+`[launcher] game_music` in `launcher.ini`: on by default, `0` off, remembered across restarts. Muting fades
+out; unmuting fades in. Starting muted is silent immediately. A game without a cached theme shows no
+speaker and no error.
+
+PLAY fades the theme out before starting a game. The launcher waits for the audio stream to pause and
+clears its queued data; there is one game session. A normal exit, STOP or crash allows the visible game's
+page to fade back in, provided sound is on. Other pages stay silent. Changing page or game during a queued
+launch cancels that launch.
+
+**No music is shipped.** At disc verification the worker runs the kit's
+`SkyBuild --iso <disc or copied data folder> --menu-music <cache file>`, after reading pictures. The WAV
+lives in `<data>/<Game>/launcher-cache/menu_music.wav`, with a `smpl` loop. The launcher reads PCM only.
+A missing kit is retried on the next disc check; an extraction failure is remembered in `menu_music.none`
+per kit build identity. A later build retries without a version bump. A `menu_music.kit` stamp records the decoder generation and kit build: a later build refreshes the theme atomically, and the player reloads a changed WAV without restarting. A failed refresh retains the previous playable file. Cached music remains usable when
+the disc is absent. If the kit is first acquired during installation, the next disc check extracts music.
+
+| Game | Disc source | Result |
+|---|---|---|
+| Spyro's Adventure | `audio/streaming.pck`, stream `0x0C45FC64` | 44.1 kHz stereo, 62.8 s |
+| Giants | `level/Title.arc`, `mu_title_main_loop.wav` | 48 kHz stereo, 54.9 s |
+| Swap Force | `archives/inter_streamed_launch_bank.pak`, `INTER_Results_Screen` | 48 kHz stereo, 64.5 s |
+| Trap Team | `level/title.arc`, `mu_title_main_loop.wav` | 48 kHz stereo, 52.7 s |
+
+Swap Force's menu scene requests `INTER_Menu_Screen`; its sound-bank object points to the sample named
+`INTER_Results_Screen.wav`. The menu is stereo, despite the adaptive music used elsewhere. Trap Team's
+main title loop is named explicitly in its title archive. These choices follow disc data; listening
+confirmation on a running game remains useful. The workshop's `docs/runtime/host/game_music.md` records
+the evidence and decoder details, including the correction to the old half-silent extraction.
+
+Code: `src/launcher/game_music.{h,cpp}`. `Mixer` owns fades, equal-power cross-fades, resampling and loops.
+`Player` opens one SDL stream lazily, pauses when silent, and follows `Playback` (page, running game,
+install, pending launch, mute). `tests/music_test.cpp` covers these transitions, missing files, extraction,
+the WAV reader and preference persistence. `ArkeyanLauncherTest --no-disc <scratch>` runs them;
+`SKY_LAUNCHER_TEST_MUSIC_ONLY=1` selects them alone. Workshop `SkyBuildMusicTest` checks all four discs.
+All sound tests use `SDL_AUDIO_DRIVER=dummy` and disposable HOME and data paths.
 
 ## Notes
 - Drag & drop ISO is supported through `SDL_EVENT_DROP_FILE`.

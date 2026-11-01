@@ -146,7 +146,7 @@ namespace
     // A zip entry's name safe to put under a folder: relative, no "..".
     bool SafeEntry(const std::string& name)
     {
-        if (name.empty() || name[0] == '/' || name[0] == '\\' || (name.size() > 1 && name[1] == ':'))
+        if (name.empty() || name[0] == '/' || name[0] == '\\' || name.find(':') != std::string::npos || name.find('\0') != std::string::npos)
             return false;
         size_t begin = 0;
         while (begin <= name.size())
@@ -157,6 +157,33 @@ namespace
             if (name.substr(begin, end - begin) == "..")
                 return false;
             begin = end + 1;
+        }
+        return true;
+    }
+
+    bool ZipLink(const fs::path& path)
+    {
+        std::error_code error;
+#if defined(_WIN32)
+        DWORD attributes = GetFileAttributesW(path.c_str());
+        if (attributes != INVALID_FILE_ATTRIBUTES && (attributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0)
+            return true; // includes junctions
+#endif
+        return fs::is_symlink(fs::symlink_status(path, error));
+    }
+
+    bool ZipDestination(const fs::path& path, const fs::path& root)
+    {
+        // Never write through a link, including one made by an earlier entry of this archive.
+        fs::path relative = path.lexically_normal().lexically_relative(root.lexically_normal());
+        if (relative.empty() || *relative.begin() == ".." || ZipLink(root))
+            return false;
+        fs::path current = root;
+        for (const fs::path& part : relative)
+        {
+            current /= part;
+            if (ZipLink(current))
+                return false;
         }
         return true;
     }
@@ -375,6 +402,8 @@ fs::path KitFolderFor(const fs::path& kitRoot, const std::string& tag)
     std::string name;
     for (char c : tag)
         name += std::isalnum(static_cast<unsigned char>(c)) || c == '.' || c == '-' || c == '_' ? c : '_';
+    if (name == "." || name == "..")
+        name = "kit";
     return kitRoot / FromUtf8(name.empty() ? "kit" : name);
 }
 
@@ -580,7 +609,9 @@ bool ExtractZip(const fs::path& zip, const fs::path& folder, std::string& error)
     }
     std::error_code fsError;
     fs::create_directories(folder, fsError);
-    bool ok = true;
+    bool ok = !fsError && !ZipLink(folder);
+    if (!ok)
+        error = Tr("The zip file is damaged");
     for (mz_uint i = 0; ok && i < mz_zip_reader_get_num_files(&archive); i++)
     {
         mz_zip_archive_file_stat stat;
@@ -598,21 +629,52 @@ bool ExtractZip(const fs::path& zip, const fs::path& folder, std::string& error)
             break;
         }
         fs::path out = folder / FromUtf8(name);
+        if (!ZipDestination(out, folder))
+        {
+            error = Tr("The zip file is damaged");
+            ok = false;
+            break;
+        }
         if (mz_zip_reader_is_file_a_directory(&archive, i))
         {
             fs::create_directories(out, fsError);
+            if (fsError)
+            {
+                error = Tf("Couldn't unpack {}", name);
+                ok = false;
+            }
             continue;
         }
         fs::create_directories(out.parent_path(), fsError);
+        if (fsError)
+        {
+            error = Tf("Couldn't unpack {}", name);
+            ok = false;
+            break;
+        }
         unsigned mode = (stat.m_external_attr >> 16) & 07777;
         bool fromUnix = (stat.m_version_made_by >> 8) == 3; // `unix` is a predefined macro on Linux
         if (fromUnix && (stat.m_external_attr >> 16 & 0170000) == 0120000) // a symbolic link: its target is the content
         {
-            std::string target(size_t(stat.m_uncomp_size), '\0');
-            if (mz_zip_reader_extract_to_mem(&archive, i, target.data(), target.size(), 0))
+            if (stat.m_uncomp_size > 32768)
             {
-                fs::remove(out, fsError);
-                fs::create_symlink(FromUtf8(target), out, fsError);
+                error = Tr("The zip file is damaged");
+                ok = false;
+                break;
+            }
+            std::string target(size_t(stat.m_uncomp_size), '\0');
+            if (!mz_zip_reader_extract_to_mem(&archive, i, target.data(), target.size(), 0) || !SafeEntry(target))
+            {
+                error = Tr("The zip file is damaged");
+                ok = false;
+                break;
+            }
+            fs::remove(out, fsError);
+            fs::create_symlink(FromUtf8(target), out, fsError);
+            if (fsError)
+            {
+                error = Tf("Couldn't unpack {}", name);
+                ok = false;
             }
             continue;
         }

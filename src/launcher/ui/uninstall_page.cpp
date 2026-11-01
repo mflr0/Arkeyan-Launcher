@@ -1,6 +1,7 @@
 // "Uninstall everything" in Settings > Launcher: the list of what goes with its sizes, the box for the saves and figures,
 // the hold, and the result. What is removed, and the safety rules, are in launcher/uninstall.h (docs/install.md).
 #include "launcher/ui/launcher_app.h"
+#include "shared/collection/datadir.h"
 #include <algorithm>
 
 namespace launcher_ui
@@ -33,7 +34,7 @@ namespace launcher_ui
         // What a left-over is called: the file's name (no path in the text), else its group's.
         std::string NameOf(const uninstall::Left& left)
         {
-            std::string name = left.path.filename().string();
+            std::string name = datadir::Text(left.path.filename());
             return name.empty() ? GroupName(left.group) : name;
         }
 
@@ -84,6 +85,7 @@ namespace launcher_ui
     void App::RunUninstallEverything()
     {
         m_un.notices = m_un.plan.left;
+        m_un.env = uninstall::ThisMachine(m_config); // a game or a figure may have become busy while the list was open
         m_un.result = uninstall::RunUninstall(m_un.plan, m_un.env, m_un.tick);
         const uninstall::LauncherRemoval removal = uninstall::PlanLauncherRemoval(m_un.env);
         // The launcher itself, once it has quit: only after everything else, and only when nothing refused the rest.

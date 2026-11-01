@@ -384,6 +384,8 @@ namespace ui
             case Icon::External: return lucide::ExternalLink;
             case Icon::Stop:
             case Icon::Monitor: break;
+            case Icon::Sound: return lucide::Volume2;
+            case Icon::Muted: return lucide::VolumeX;
             }
             return 0;
         }

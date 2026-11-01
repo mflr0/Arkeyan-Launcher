@@ -27,8 +27,8 @@ namespace uninstall
     enum class Os { Windows, MacOS, Linux };
     Os CurrentOs();
 
-    // What the player sees in the list, in this order. The last three go only when the box "Also delete my saves and my
-    // figures" is ticked.
+    // What the player sees in the list, in this order. Saves, figures and older folders go only when the box "Also delete
+    // my saves and my figures" is ticked.
     enum class Group
     {
         Games,     // each built game (and what its install left)
@@ -42,7 +42,8 @@ namespace uninstall
         Saves,     // saves, their backups, the seats of the next session
         Figures,   // the figure collection, the games' own figure folders, texture packs
     };
-    constexpr bool NeedsTick(Group group) { return group == Group::Saves || group == Group::Figures; }
+    // Migration can leave saves and figures in the older folders after a conflict or a failed move.
+    constexpr bool NeedsTick(Group group) { return group == Group::Saves || group == Group::Figures || group == Group::OldFolders; }
 
     struct Item
     {
@@ -135,7 +136,7 @@ namespace uninstall
         std::vector<Left> left;
         bool Complete() const { return left.empty(); }
     };
-    // Removes the plan's items; the tick adds the Saves and Figures groups. Every target is checked again here. The
+    // Removes the plan's items; the tick adds Saves, Figures and OldFolders. Every target is checked again here. The
     // launcher itself is not touched (see below). A running game stops everything (Left with Why::InUse).
     Result RunUninstall(const Plan& plan, const Environment& env, bool withUserData);
 

@@ -4,6 +4,7 @@
   "engine": "alchemy",
   "about": "Where Trap Team keeps its pictures on the disc (docs/runtime/host/game_art.md, games/trapteam/docs/art.md). Names only: the pictures are read from the player's own disc.",
   "logo": { "archive": "permanent/global.arc", "entry": "ui_sky4/titlelogo/titlelogo_001.png" },
+  "music": { "archive": "level/title.arc", "entry": "mu_title_main_loop.wav" },
   "background": { "archive": "permanent/global.arc", "entry": "ui_sky4/screens/loadingscreen/textures/levelload_313.png" },
   "scenes": [ { "archive": "permanent/global.arc", "names": [
       "ui_sky4/screens/loadingscreen/textures/levelload_313.png",

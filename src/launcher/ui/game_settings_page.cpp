@@ -439,7 +439,7 @@ namespace launcher_ui
     {
         ui::SectionHeader(Tr("Disc image"), nullptr, false);
         auto filename = [](const std::string& path) {
-            return LauncherMiddleEllipsis(std::filesystem::path(std::u8string(path.begin(), path.end())).filename().string(), 60);
+            return LauncherMiddleEllipsis(datadir::Text(datadir::FromText(path).filename()), 60);
         };
         if (m_s->fromCopy)
         {

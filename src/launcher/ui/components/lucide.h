@@ -38,4 +38,6 @@ namespace ui::lucide
     constexpr unsigned Triangle = 0xE192; // triangle
     constexpr unsigned Trophy = 0xE373; // trophy
     constexpr unsigned ExternalLink = 0xE0B9; // external-link
+    constexpr unsigned Volume2 = 0xE1AB; // volume-2
+    constexpr unsigned VolumeX = 0xE1AC; // volume-x
 }

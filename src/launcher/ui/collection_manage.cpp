@@ -166,6 +166,7 @@ namespace launcher_ui
     {
         ui::Text(ui::TextStyle::Caption, Tr("The latest 10 backups are kept."), ui::color::Dim);
         bool any = false;
+        bool reload = false;
         for (const Figure& figure : m_model.figures)
         {
             const std::vector<BackupRow> backups = Backups(figure.path); // a copy: Restore below reloads them
@@ -201,7 +202,7 @@ namespace launcher_ui
                         std::string error;
                         const bool done = collection::Restore(figure.path, backup.path, &error);
                         Toast(done ? Tr("Backup restored") : Tr("Couldn't restore it: ") + error, !done ? ui::ToastKind::Error : ui::ToastKind::Success);
-                        Reload();
+                        reload = true; // keep the figures and their paths alive until this list has finished drawing
                     }
                     ImGui::PopID();
                 }
@@ -211,6 +212,8 @@ namespace launcher_ui
         }
         if (!any)
             ui::EmptyState(ui::Icon::Info, Tr("No backups yet."));
+        if (reload)
+            Reload();
     }
 
     void CollectionPage::DrawImportExport()

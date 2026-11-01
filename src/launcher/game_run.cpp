@@ -73,14 +73,6 @@ namespace
         char buffer[8192];
         for (;;)
         {
-            size_t read = output != nullptr ? SDL_ReadIO(output, buffer, sizeof(buffer)) : 0;
-            if (read > 0)
-            {
-                sink(buffer, read);
-                continue;
-            }
-            if (output == nullptr || SDL_GetIOStatus(output) == SDL_IO_STATUS_EOF || SDL_GetIOStatus(output) == SDL_IO_STATUS_ERROR)
-                break;
             if (!exited && SDL_WaitProcess(process, false, &exitCode))
             {
                 exited = true;
@@ -95,6 +87,14 @@ namespace
                     *timedOut = true;
                 timeoutMs = 0;
             }
+            size_t read = output != nullptr ? SDL_ReadIO(output, buffer, sizeof(buffer)) : 0;
+            if (read > 0)
+            {
+                sink(buffer, read);
+                continue;
+            }
+            if (exited && (output == nullptr || SDL_GetIOStatus(output) == SDL_IO_STATUS_EOF || SDL_GetIOStatus(output) == SDL_IO_STATUS_ERROR))
+                break;
             SDL_Delay(15);
         }
         if (!exited)
@@ -228,7 +228,12 @@ GameLaunch PrepareGameLaunch(const GameInfo& game, LauncherConfig& config, const
     // The video settings of this game are what the runtime reads from [video] (game_settings.h), and its keys from [input].
     ApplyGameVideo(config, game.id);
     ApplyGameInput(config, game.id);
-    SaveLauncherConfig(configPath, config);
+    if (!SaveLauncherConfig(configPath, config))
+    {
+        launch.runtime.clear();
+        launch.error = Tr("Couldn't save the settings");
+        return launch;
+    }
     // Settings the runtime already takes from its environment (the rest it reads from launcher.ini; docs/settings.md).
     auto setting = [&](const char* section, const char* key) {
         auto entry = config.find(section);

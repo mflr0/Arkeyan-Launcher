@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <signal.h>
 #if defined(_WIN32)
 #include <direct.h>
 #include <windows.h>
@@ -48,8 +49,44 @@ static void step(const char* id, const char* title, int count)
     }
 }
 
+/* --menu-music <file.wav>: a 0.1 s stereo 16-bit WAV of silence at 8 kHz, as the real one writes the game's theme.
+ * FAKE_SSABUILD_NO_MUSIC set: fails, as a kit before 0.6.1 does (it does not know the option). */
+static int menu_music(const char* path)
+{
+    if (getenv("FAKE_SSABUILD_NO_MUSIC") != NULL)
+    {
+        printf("@error unknown option --menu-music\n");
+        return 2;
+    }
+    FILE* file = fopen(path, "wb");
+    if (file == NULL)
+        return 1;
+    const unsigned frames = 800, bytes = frames * 4;
+    unsigned char head[44] = { 'R', 'I', 'F', 'F', 0, 0, 0, 0, 'W', 'A', 'V', 'E', 'f', 'm', 't', ' ', 16, 0, 0, 0, 1, 0, 2, 0,
+        0x40, 0x1F, 0, 0, 0, 0x7D, 0, 0, 4, 0, 16, 0, 'd', 'a', 't', 'a', 0, 0, 0, 0 };
+    unsigned total = 36 + bytes;
+    memcpy(head + 4, &total, 4);
+    memcpy(head + 40, &bytes, 4);
+    fwrite(head, 1, sizeof head, file);
+    for (unsigned i = 0; i < bytes; i++)
+        fputc(0, file);
+    fclose(file);
+    printf("@done %s\n", path);
+    return 0;
+}
+
 int main(int argc, char** argv)
 {
+    if (getenv("FAKE_SSABUILD_CLOSE_OUTPUT") != NULL)
+    {
+#if !defined(_WIN32)
+        signal(SIGTERM, SIG_IGN);
+#endif
+        fclose(stdout);
+        fclose(stderr);
+        for (int i = 0; i < 500; i++) SLEEP_MS(10);
+        return 1;
+    }
     const char *iso = NULL, *out = NULL;
     for (int i = 1; i + 1 < argc; i++)
     {
@@ -57,6 +94,8 @@ int main(int argc, char** argv)
             iso = argv[++i];
         else if (strcmp(argv[i], "--out") == 0)
             out = argv[++i];
+        else if (strcmp(argv[i], "--menu-music") == 0)
+            return menu_music(argv[i + 1]);
     }
     if (getenv("FAKE_SSABUILD_DELAY") != NULL)
         g_delay = (int)(atof(getenv("FAKE_SSABUILD_DELAY")) * 1000);

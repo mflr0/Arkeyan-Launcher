@@ -158,6 +158,11 @@ namespace launcher_ui
         return art::CachedScene(game, name);
     }
 
+    bool App::GameMusicOn() const
+    {
+        return SettingGet(m_config, "launcher", "game_music", "1") != "0";
+    }
+
     const ArtTexture* App::CachedArt(const char* game, LauncherAssets::Role role, int maxWidth)
     {
         std::string key = fmt::format("{} {} {}", game, int(role), maxWidth);

@@ -11,6 +11,7 @@
 #include <imgui.h>
 #include <functional>
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -47,12 +48,22 @@ namespace launcher_ui
         float width = 0, height = 0; // the picture's own size (an artwork is not square)
     };
 
+    // One cache per renderer. Game slots often resolve the same fallback picture.
+    struct FigureIconCache
+    {
+        std::map<std::string, FigureIconTexture> textures;
+        FigureIconCache() = default;
+        FigureIconCache(const FigureIconCache&) = delete;
+        FigureIconCache& operator=(const FigureIconCache&) = delete;
+        ~FigureIconCache();
+        void Clear();
+    };
+
     class CollectionPage
     {
     public:
-        explicit CollectionPage(App& app) : m_app(app) {}
+        explicit CollectionPage(App& app);
         void SelectGame(const std::string& id) { m_model.gameId = id; } // before the page is first opened
-        ~CollectionPage() { ClearIcons(); }
 
         void Draw();
         void DrawHeroPortal(ImVec2 at, ImVec2 size, bool live);
@@ -79,10 +90,12 @@ namespace launcher_ui
         static int TestShotCount();
 
     private:
+        friend struct ReviewChecks;
         bool m_heroLoaded = false;
         bool m_heroFixture = false;
         enum class Overlay { None, Figure, Add, Manage };
 
+        friend struct PerformanceProbe;
         void Open();
         void Reload();
         void Rebuild();
@@ -162,7 +175,7 @@ namespace launcher_ui
         App& m_app;
         CollectionModel m_model;
         bool m_opened = false;
-        std::map<std::string, FigureIconTexture> m_icons;
+        std::shared_ptr<FigureIconCache> m_icons;
 
         // The shelf: filtered and cut into sections when something it depends on changed.
         int m_generation = 0;

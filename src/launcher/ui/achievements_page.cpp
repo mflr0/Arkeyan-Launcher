@@ -1,6 +1,7 @@
 // A game's achievements (the Achievements button on its Play page): the list the disc check cached, what the game recorded as
 // unlocked, and the play time (game_progress.h). docs/launcher_ui.md, "Achievements and play time".
 #include "launcher/ui/launcher_app.h"
+#include "shared/collection/datadir.h"
 #include "launcher/game_progress.h"
 #include <algorithm>
 #include <ctime>
@@ -30,7 +31,7 @@ namespace launcher_ui
     {
         if (image.empty())
             return nullptr;
-        const std::string key = image.string();
+        const std::string key = datadir::Text(image);
         auto found = m_achievementIcons.find(key);
         if (found == m_achievementIcons.end())
             found = m_achievementIcons.emplace(key, LoadArt(m_renderer, key, false)).first;

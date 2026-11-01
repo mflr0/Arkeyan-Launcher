@@ -16,7 +16,7 @@ static void LauncherControlChecks(const std::filesystem::path& scratch)
         { "SDL_VIDEO_DRIVER", "offscreen" }, { "SDL_AUDIO_DRIVER", "dummy" },
         { "SKYLANDERS_DATA", (root / "data").string() }, { "SKY_LAUNCHER_DATA", (root / "launcher").string() },
         { "SKY_COLLECTION", (root / "collection").string() }, { "SKY_SAVE_DIR", (root / "saves").string() },
-        { "SKY_LAUNCHER_INI", (root / "launcher.ini").string() }, { "SKY_SETTINGS", "" },
+        { "SKY_LAUNCHER_INI", (root / "launcher.ini").string() }, { "SKY_SETTINGS", (root / "settings.ini").string() },
         { "SKY_LAUNCHER_LOG_DIR", (root / "logs").string() }, { "SKY_LAUNCHER_NO_UPDATE_CHECK", "1" },
         { "SKY_LAUNCHER_RUNTIME", fake.string() }, { "SKY_LAUNCHER_SHOTS", (root / "shots").string() },
         { "SKY_LAUNCHER_TEST_RUNNING", "controls" }, { "SKY_LAUNCHER_TEST_DROP", "" },

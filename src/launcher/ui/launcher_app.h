@@ -6,6 +6,7 @@
 #include "assets/launcher_assets.h"
 #include "launcher/game_copy.h"
 #include "launcher/game_install.h"
+#include "launcher/game_music.h"
 #include "launcher/game_progress.h"
 #include "launcher/game_keys.h"
 #include "launcher/game_run.h"
@@ -176,7 +177,7 @@ namespace launcher_ui
         void StopScenes() { stopScenes = true; if (scenes.joinable()) scenes.join(); }
         void StartScenes(const std::string& image, const std::string& game);
         std::string Stage() { std::lock_guard lock(mutex); return stage; }
-        void Start(const std::string& image, const GameInfo& game);
+        void Start(const std::string& image, const GameInfo& game, const std::filesystem::path& skyBuild = {}, const std::string& kitVersion = {});
     };
 
     // "Test the portal": the runtime's --portal-probe, on a worker thread.
@@ -319,10 +320,14 @@ namespace launcher_ui
         void DrawPortalStatus(); // "Portal: <model>" or "Portal: not detected", with its tooltip; nothing when HID is unavailable
 
     private:
+        friend struct ReviewChecks;
+        friend struct PerformanceProbe;
         bool Init();
         void Shutdown();
         bool LoadFonts();
         void HandleEvent(const SDL_Event& event);
+        static int VisibilityWait(int requested, SDL_WindowFlags flags);
+        int ContentWait();
         int IdleWait(); // how long the loop may sleep before the next frame, in ms (0: draw now)
         void Frame();
         void DrawBackdrop();
@@ -439,6 +444,7 @@ namespace launcher_ui
         // `last_scene` records); the disc's menu painting while the scenes are not read yet; empty before any read.
         std::string SceneOf(const char* game);
         bool ReduceMotion() const;
+        bool GameMusicOn() const; // [launcher] game_music, on by default
 
         // A page's centred column (the cursor is at its left): it reaches a few points past each side and over the page's
         // bottom padding, so the clip rect neither shaves the borders at its edges nor cuts the scrolling content short of the window.
@@ -548,6 +554,8 @@ namespace launcher_ui
         bool m_startGames = false; // PLAY starts the game and the window stays (LauncherOptions)
         GameSession m_session;     // the game running: one at a time (game_run.h)
         uint64_t m_sessionStart = 0; // SDL_GetTicks when the game started: the time on the game page
+        bool m_launchPending = false; // the page theme must finish fading before the process starts
+        gamemusic::Player m_music; // the shown game's menu theme, softly (game_music.h)
         std::string m_sessionIso;  // the disc image it was started with (the crash report names it)
         ProbeJob m_probe;
         launcher_portal::Watcher m_portal;
@@ -627,6 +635,7 @@ namespace launcher_ui
         std::string m_progressLanguage;
         uint64_t m_progressAt = 0;
         std::map<std::string, ArtTexture> m_achievementIcons; // by file
+        std::shared_ptr<FigureIconCache> m_figureIcons = std::make_shared<FigureIconCache>();
         std::map<std::string, ArtTexture> m_cachedArt; // CachedArt's, by "<game> <role> <width>"
         std::map<std::string, std::string> m_scene; // SceneOf's pick of this run, by game
 

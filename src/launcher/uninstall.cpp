@@ -100,7 +100,7 @@ namespace uninstall
 
             bool IsDisc(const fs::path& path) const
             {
-                std::string extension = Lower(path.extension().string());
+                std::string extension = Lower(datadir::Text(path.extension()));
                 if (extension == ".iso" || extension == ".xiso")
                     return true;
                 std::error_code error;
@@ -152,7 +152,7 @@ namespace uninstall
                 fs::file_status status = fs::symlink_status(entry.path(), error);
                 if (fs::is_symlink(status))
                     continue; // never followed, never removed from here
-                if (IsCollectionName(entry.path().filename().string(), fs::is_directory(status)))
+                if (IsCollectionName(datadir::Text(entry.path().filename()), fs::is_directory(status)))
                     entries.push_back(entry.path());
             }
             return entries;
@@ -162,6 +162,8 @@ namespace uninstall
 
         Group GroupOfGameEntry(const std::string& name, bool regularFile)
         {
+            if (const size_t conflict = name.find(".old-"); conflict != std::string::npos)
+                return GroupOfGameEntry(name.substr(0, conflict), regularFile);
             if (name == "saves" || name == "saves-backup" || name == "portal.txt" || name == "achievements.txt" || name == "playtime.txt")
                 return Group::Saves;
             if (name == "figures" || name == "textures")
@@ -170,7 +172,7 @@ namespace uninstall
                 return Group::GameData;
             if (name == "pipelines.bin" || name == "launcher-cache" || name == "portraits")
                 return Group::Caches;
-            if (regularFile && Lower(fs::path(name).extension().string()) == ".log" && name.rfind("install", 0) != 0)
+            if (regularFile && Lower(datadir::Text(datadir::FromText(name).extension())) == ".log" && name.rfind("install", 0) != 0)
                 return Group::Caches;
             return Group::Games;
         }
@@ -397,8 +399,10 @@ namespace uninstall
             }
             for (const fs::directory_entry& entry : ListDirectory(game.folder, error))
             {
-                std::string name = entry.path().filename().string();
-                add(GroupOfGameEntry(name, fs::is_regular_file(fs::symlink_status(entry.path(), error))), game.id, entry.path());
+                std::string name = datadir::Text(entry.path().filename());
+                const fs::path backup = game.saves.empty() ? fs::path() : fs::path(game.saves.native() + fs::path("-backup").native());
+                const bool saves = !game.saves.empty() && (IsOrHolds(entry.path(), game.saves) || IsOrHolds(entry.path(), backup));
+                add(saves ? Group::Saves : GroupOfGameEntry(name, fs::is_regular_file(fs::symlink_status(entry.path(), error))), game.id, entry.path());
             }
             // Saves kept elsewhere than <folder>/saves (SKY_SAVE_DIR): the folder and its backups, if they are ours.
             if (!game.saves.empty())
@@ -577,7 +581,7 @@ namespace uninstall
         if (Guard(env).IsDisc(self))
             return refuse(Why::DiscImage, "the path is a disc image");
         std::error_code error;
-        const std::string extension = Lower(self.extension().string());
+        const std::string extension = Lower(datadir::Text(self.extension()));
         switch (env.os)
         {
         case Os::MacOS:
@@ -660,8 +664,8 @@ namespace uninstall
     {
         std::string list;
         for (const fs::path& path : removal.paths)
-            list += (list.empty() ? "" : ",") + PowerShellQuote(path.string());
-        std::string main = PowerShellQuote(removal.paths.empty() ? std::string() : removal.paths.front().string());
+            list += (list.empty() ? "" : ",") + PowerShellQuote(datadir::Text(path));
+        std::string main = PowerShellQuote(removal.paths.empty() ? std::string() : datadir::Text(removal.paths.front()));
         return "$ErrorActionPreference = 'SilentlyContinue'\n"
                "Wait-Process -Id " + std::to_string(pid) + " -Timeout 60\n"
                "for ($i = 0; $i -lt 40; $i++) {\n"

@@ -3,6 +3,7 @@
 // library's (src/shared/collection); the model is collection_model.cpp; the figure sheet, Add a figure and Manage are
 // in collection_figure.cpp, collection_add.cpp and collection_manage.cpp.
 #include "launcher/ui/launcher_app.h"
+#include "shared/collection/datadir.h"
 #include "launcher/ui/launcher_ui.h"
 #include "shared/collection/icons.h"
 #include <algorithm>
@@ -113,21 +114,27 @@ namespace launcher_ui
 
     // ---- Icons ----------------------------------------------------------------------------------------------------
 
-    void CollectionPage::ClearIcons()
+    CollectionPage::CollectionPage(App& app) : m_app(app), m_icons(app.m_figureIcons) {}
+
+    FigureIconCache::~FigureIconCache() { Clear(); }
+
+    void FigureIconCache::Clear()
     {
-        for (auto& [name, icon] : m_icons)
+        for (auto& [name, icon] : textures)
             if (icon.texture != nullptr)
                 SDL_DestroyTexture(icon.texture);
-        m_icons.clear();
+        textures.clear();
     }
+
+    void CollectionPage::ClearIcons() { m_icons->Clear(); }
 
     const FigureIconTexture& CollectionPage::Icon(const collection::Toy* toy, collection::VariantKind kind, bool large)
     {
         // The picture of the game being shown, else the other game's, else a generated icon (shared/collection/icons.h).
         std::string path = toy != nullptr ? collection::PortraitPath(m_app.m_s->game.id, *toy, collection::VariantFor(*toy, kind), large) : std::string();
         std::string key = !path.empty() ? path : fmt::format("gen:{}:{}", toy != nullptr ? toy->type : 0xFFFF, int(kind));
-        auto found = m_icons.find(key);
-        if (found != m_icons.end())
+        auto found = m_icons->textures.find(key);
+        if (found != m_icons->textures.end())
             return found->second;
 
         FigureIconTexture icon;
@@ -141,7 +148,7 @@ namespace launcher_ui
             icon.texture = LoadRgba(m_app.m_renderer, figures::GenerateIcon(toy, kind, Size), Size, Size);
             icon.generated = true;
         }
-        return m_icons[key] = icon;
+        return m_icons->textures[key] = icon;
     }
 
     void CollectionPage::DrawIcon(ImDrawList* draw, const collection::Toy* toy, collection::VariantKind kind, ImVec2 at, float size, bool large)
@@ -169,14 +176,14 @@ namespace launcher_ui
             DrawIcon(draw, toy, kind, at, box, true);
             return;
         }
-        auto found = m_icons.find(path);
-        if (found == m_icons.end())
+        auto found = m_icons->textures.find(path);
+        if (found == m_icons->textures.end())
         {
             FigureIconTexture picture;
             picture.texture = LoadPngFile(m_app.m_renderer, path);
             if (picture.texture != nullptr)
                 SDL_GetTextureSize(picture.texture, &picture.width, &picture.height);
-            found = m_icons.emplace(path, picture).first;
+            found = m_icons->textures.emplace(path, picture).first;
         }
         const FigureIconTexture& picture = found->second;
         if (picture.texture == nullptr || picture.width <= 0 || picture.height <= 0)
@@ -194,8 +201,8 @@ namespace launcher_ui
         if (top == nullptr || bottom == nullptr)
             return false;
         std::string key = fmt::format("swapper:{}:{}:{}:{}", top->type, topVariant, bottom->type, bottomVariant);
-        auto found = m_icons.find(key);
-        if (found == m_icons.end())
+        auto found = m_icons->textures.find(key);
+        if (found == m_icons->textures.end())
         {
             FigureIconTexture picture;
             if (collection::Image image = collection::SwapperPicture(*top, topVariant, *bottom, bottomVariant); !image.Empty())
@@ -205,7 +212,7 @@ namespace launcher_ui
                 picture.texture = LoadRgba(m_app.m_renderer, bytes, image.width, image.height);
                 picture.width = float(image.width), picture.height = float(image.height);
             }
-            found = m_icons.emplace(key, picture).first; // no picture is remembered too
+            found = m_icons->textures.emplace(key, picture).first; // no picture is remembered too
         }
         const FigureIconTexture& picture = found->second;
         if (picture.texture == nullptr)
@@ -248,16 +255,22 @@ namespace launcher_ui
         // The launcher's own favorites and portal list, from before the shared collection, move once.
         if (SettingGet(m_app.m_config, "collection", "moved") != "1")
         {
+            bool moved = true;
             if (const collection::Game* game = m_model.Game())
             {
                 std::vector<std::string> seats = MoveLauncherSettings(*game, collection::LegacyFolder(),
                     SplitList(SettingGet(m_app.m_config, "collection", "favourites")), SplitList(SettingGet(m_app.m_config, "portal", "place")));
                 if (!seats.empty())
-                    WriteSeats(*game, SessionFile(*game), seats);
+                    moved = WriteSeats(*game, SessionFile(*game), seats);
             }
-            m_app.Set("collection", "moved", "1");
-            // The seats are the session file now: a [portal] place would override it at the game's start.
-            m_app.Set("portal", "place", "");
+            if (moved)
+            {
+                m_app.Set("collection", "moved", "1");
+                // The seats are the session file now: a [portal] place would override it at the game's start.
+                m_app.Set("portal", "place", "");
+            }
+            else
+                Toast(Tr("Couldn't write the seats for the next start"), ui::ToastKind::Error);
         }
         collection::PurgeTrash(30);
         // Only a game that can start with prepared seats has a portal here (one with a runtime: SSA, Giants).
@@ -478,12 +491,12 @@ namespace launcher_ui
     bool CollectionPage::Drop(const std::string& path)
     {
         std::error_code error;
-        if (fs::is_directory(path, error))
+        if (fs::is_directory(datadir::FromText(path), error))
         {
             Import({ path });
             return true;
         }
-        if (!collection::IsDumpName(fs::path(path).filename().string()))
+        if (!collection::IsDumpName(datadir::Text(datadir::FromText(path).filename())))
             return false;
         Import({ path });
         return true;

@@ -6,6 +6,9 @@
 #include "shared/collection/save_backup.h"
 #include <algorithm>
 #include <array>
+#if defined(_WIN32)
+#include <windows.h>
+#endif
 
 namespace fs = std::filesystem;
 
@@ -27,9 +30,31 @@ namespace
         return std::find(names.begin(), names.end(), name) != names.end();
     }
 
+    bool PlayerDataName(const std::string& name, const auto& names)
+    {
+        return std::any_of(names.begin(), names.end(), [&](const char* kept) {
+            return name == kept || name.starts_with(std::string(kept) + ".old-");
+        });
+    }
+
+    bool Holds(const fs::path& parent, const fs::path& child)
+    {
+        if (child.empty())
+            return false;
+        std::error_code error;
+        fs::path base = fs::weakly_canonical(parent, error);
+        if (error)
+            return true; // an unresolvable path cannot safely be removed
+        fs::path target = fs::weakly_canonical(child, error);
+        if (error)
+            return true;
+        fs::path relative = target.lexically_relative(base);
+        return !relative.empty() && *relative.begin() != "..";
+    }
+
     bool IsGameLog(const fs::path& entry)
     {
-        std::string name = entry.filename().string();
+        std::string name = datadir::Text(entry.filename());
         return entry.extension() == ".log" && name.rfind("install", 0) != 0;
     }
 
@@ -96,8 +121,9 @@ namespace
             return paths;
         for (const fs::directory_entry& entry : ListDirectory(folders.game, error))
         {
-            std::string name = entry.path().filename().string();
-            if (Named(name, CacheNames) || (entry.is_regular_file(error) && IsGameLog(entry.path())))
+            std::string name = datadir::Text(entry.path().filename());
+            if ((Named(name, CacheNames) || (entry.is_regular_file(error) && IsGameLog(entry.path()))) &&
+                !Holds(entry.path(), folders.saves) && (folders.saves.empty() || !Holds(entry.path(), savebackup::BackupRoot(folders.saves))))
                 paths.push_back(entry.path());
         }
         return paths;
@@ -106,10 +132,21 @@ namespace
     DataResult Refused(const GameFolders& folders)
     {
         DataResult result;
+        std::error_code error;
+        bool linked = fs::is_symlink(fs::symlink_status(folders.game, error));
+#if defined(_WIN32)
+        DWORD attributes = GetFileAttributesW(folders.game.c_str());
+        linked = linked || (attributes != INVALID_FILE_ATTRIBUTES && (attributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0);
+#endif
         if (!Deletable(folders.game))
         {
             result.ok = false;
             result.error = Tr("This game has no folder.");
+        }
+        else if (linked)
+        {
+            result.ok = false;
+            result.error = Tr("The data folder isn't safe to remove.");
         }
         else if (GameIsRunning(folders))
         {
@@ -221,7 +258,7 @@ GameDataSizes MeasureGameData(const GameFolders& folders)
     if (fs::is_directory(folders.game, error))
         for (const fs::directory_entry& entry : ListDirectory(folders.game, error))
         {
-            std::string name = entry.path().filename().string();
+            std::string name = datadir::Text(entry.path().filename());
             if (!Named(name, SaveNames) && !Named(name, CacheNames) && !Named(name, KeptNames) && !IsGameLog(entry.path()))
                 sizes.installed += BytesOf(entry.path());
         }
@@ -243,6 +280,13 @@ DataResult DeleteGameData(const GameFolders& folders)
     DataResult result = Refused(folders);
     if (!result.ok)
         return result;
+    // An override may name the game folder or one of its parents. Deleting saves must never remove the game too.
+    if (!folders.saves.empty() && (!Deletable(folders.saves) || Holds(folders.saves, folders.game)))
+    {
+        result.ok = false;
+        result.error = Tr("The data folder isn't safe to remove.");
+        return result;
+    }
     for (const fs::path& path : SavePaths(folders))
         Remove(path, result);
     for (const fs::path& path : CachePaths(folders))
@@ -259,8 +303,9 @@ DataResult UninstallGame(const GameFolders& folders, LauncherConfig& config)
     if (fs::is_directory(folders.game, error))
         for (const fs::directory_entry& entry : ListDirectory(folders.game, error))
         {
-            std::string name = entry.path().filename().string();
-            if (Named(name, SaveNames) || Named(name, KeptNames) || name == "portraits" || name == "launcher-cache")
+            std::string name = datadir::Text(entry.path().filename());
+            if (PlayerDataName(name, SaveNames) || PlayerDataName(name, KeptNames) || name == "portraits" || name == "launcher-cache" ||
+                Holds(entry.path(), folders.saves) || (!folders.saves.empty() && Holds(entry.path(), savebackup::BackupRoot(folders.saves))))
                 continue;
             Remove(entry.path(), result);
         }
@@ -271,7 +316,7 @@ DataResult UninstallGame(const GameFolders& folders, LauncherConfig& config)
         bool build = section->first.rfind("install.", 0) == 0 && runtime != section->second.end();
         if (build)
         {
-            fs::path relative = fs::path(runtime->second).lexically_relative(folders.game);
+            fs::path relative = datadir::FromText(runtime->second).lexically_relative(folders.game);
             build = !relative.empty() && *relative.begin() != "..";
         }
         section = build ? config.erase(section) : std::next(section);

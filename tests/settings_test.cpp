@@ -565,6 +565,11 @@ namespace
         spec.iconPng = png;
         spec.folder = scratch / "desktop";
         spec.iconFolder = scratch / "gamefolder";
+        const fs::path occupied = spec.folder / "Skylanders Giants.app";
+        Write(occupied / "Contents" / "MacOS" / "game", "unrelated application");
+        SETTINGS_EXPECT(!WriteMacApp(spec).ok);
+        SETTINGS_EXPECT(Read(occupied / "Contents" / "MacOS" / "game") == "unrelated application");
+        fs::remove_all(occupied);
         Write(spec.launcher, "#!/bin/sh\necho \"$@\" > \"" + (scratch / "args.txt").string() + "\"\n");
         fs::permissions(spec.launcher, fs::perms::owner_all);
 
@@ -716,6 +721,37 @@ namespace
         SETTINGS_EXPECT(config.count("install.aaaa") == 0 && config.count("install.bbbb") == 1 && config["giants"]["iso"] == "/discs/giants.iso" &&
             config["giants.video"]["fps_limit"] == "30");
 
+        // A custom save folder and migration's conflict copies are still player data when uninstalling a game.
+        folders = Populate(scratch / "cached-saves");
+        folders.saves = folders.game / "launcher-cache" / "custom-saves";
+        Write(folders.saves / "slot.sav", "save");
+        SETTINGS_EXPECT(ClearGameCaches(folders).ok);
+        SETTINGS_EXPECT(Read(folders.saves / "slot.sav") == "save");
+
+        folders = Populate(scratch / "custom-data");
+        folders.saves = folders.game / "custom" / "slots";
+        Write(folders.saves / "slot.sav", "save");
+        Write(savebackup::BackupRoot(folders.saves) / "slot.sav", "backup");
+        Write(folders.game / "saves.old-20260101" / "slot.sav", "old save");
+        Write(folders.game / "figures.old-20260101" / "toy.bin", "old figure");
+        SETTINGS_EXPECT(UninstallGame(folders, config).ok);
+        SETTINGS_EXPECT(fs::exists(folders.saves / "slot.sav") && fs::exists(savebackup::BackupRoot(folders.saves) / "slot.sav"));
+        SETTINGS_EXPECT(fs::exists(folders.game / "saves.old-20260101" / "slot.sav") && fs::exists(folders.game / "figures.old-20260101" / "toy.bin"));
+
+        // A symlink standing for the whole game folder must not delete files in its destination.
+        const GameFolders outside = Populate(scratch / "outside-data");
+        fs::path linked = scratch / "linked-game";
+        std::error_code linkError;
+        fs::create_directory_symlink(outside.game, linked, linkError);
+        if (!linkError)
+        {
+            GameFolders alias{ linked, linked / "saves" };
+            SETTINGS_EXPECT(!ClearGameCaches(alias).ok && !DeleteGameData(alias).ok && !UninstallGame(alias, config).ok);
+            SETTINGS_EXPECT(fs::exists(outside.saves / "a" / "GLOBAL.DAT") && fs::exists(outside.game / "pipelines.bin"));
+        }
+        else
+            printf("SKIP game-folder symlink: %s\n", linkError.message().c_str());
+
         // A game with no folder, or none to name: refused, and nothing outside is touched.
         GameFolders nothing;
         SETTINGS_EXPECT(!DeleteGameData(nothing).ok && !UninstallGame(nothing, config).ok && MeasureGameData(nothing).saves == 0);
@@ -729,6 +765,22 @@ namespace
         SetEnv("SKY_SAVE_DIR", (scratch / "elsewhere-saves").string());
         SETTINGS_EXPECT(FoldersOf("ssa").saves == scratch / "elsewhere-saves");
         SetEnv("SKY_SAVE_DIR", "");
+        {
+            const fs::path file = scratch / "config.ini", protectedFile = scratch / "protected.txt";
+            Write(protectedFile, "keep");
+            std::error_code error;
+            fs::create_symlink(protectedFile, fs::path(file.string() + ".tmp"), error);
+            if (!error)
+            {
+                LauncherConfig saved;
+                saved["launcher"]["language"] = "en";
+                SETTINGS_EXPECT(SaveLauncherConfig(file.string(), saved));
+                SETTINGS_EXPECT(Read(protectedFile) == "keep");
+                SETTINGS_EXPECT(LoadLauncherConfig(file.string()) == saved && !fs::is_symlink(file));
+            }
+            else
+                printf("SKIP settings temporary symlink: %s\n", error.message().c_str());
+        }
         printf("Delete data and uninstall: sizes, caches only, refused while the game runs, what stays, on a scratch folder\n");
     }
 }

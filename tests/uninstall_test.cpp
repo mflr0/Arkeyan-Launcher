@@ -379,12 +379,25 @@ namespace
 
     void OldFolderChecks(const fs::path& base)
     {
+        {
+            Tree current = MakeTree(base / "kept-conflicts", Os::Linux);
+            auto& game = current.env.games.front();
+            game.saves = game.folder / "custom" / "slots";
+            Put(game.saves / "slot.sav", 10);
+            Put(game.folder / "saves.old-20260101" / "slot.sav", 20);
+            Put(game.folder / "figures.old-20260101" / "toy.bin", 30);
+            RunUninstall(MakePlan(current.env), current.env, false);
+            UN_EXPECT(Has(game.saves / "slot.sav"));
+            UN_EXPECT(Has(game.folder / "saves.old-20260101" / "slot.sav") && Has(game.folder / "figures.old-20260101" / "toy.bin"));
+        }
         Tree tree = MakeTree(base / "old-folders", Os::Linux);
         const fs::path old = tree.base / "home" / "SSARecomp";
         const fs::path gone = tree.base / "home" / "Skylauncher";
         Put(old / "a.txt", 10);
         Put(old / "xbox-signing" / "key", 20);
         Put(gone / "b.txt", 30);
+        Put(old / "SSARecomp" / "saves" / "slot.sav", 40);
+        Put(old / "figures" / "toy.bin", 50);
         Environment env = tree.env;
         env.oldFolders = { old, gone };
 
@@ -400,6 +413,8 @@ namespace
         UN_EXPECT(std::none_of(plan.items.begin(), plan.items.end(), [&](const Item& item) { return item.path.filename() == "xbox-signing"; }));
 
         RunUninstall(plan, env, false);
+        UN_EXPECT(Has(old / "SSARecomp" / "saves" / "slot.sav") && Has(old / "figures" / "toy.bin"));
+        RunUninstall(plan, env, true);
         UN_EXPECT(!Has(old / "a.txt") && Has(old / "xbox-signing" / "key") && Has(old));
         UN_EXPECT(!Has(gone)); // its entries went, and it was empty
         printf("Uninstall of the pre-0.3.1 folders: their entries go, xbox-signing stays, an emptied folder goes\n");

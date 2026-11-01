@@ -8,6 +8,7 @@
   "scenes": [ { "stream": "uiimage.str", "names": [ "fullscreen_000" ] },
               { "stream": "uigameimage.str", "names": [ "fullscreen_001", "fullscreen_003", "fullscreen_008", "fullscreen_009",
                                                           "fullscreen_018", "fullscreen_challenge_018" ] } ],
+  "music": { "package": "audio/streaming.pck", "stream": "0x0C45FC64" },
   "portraits": { "stream": "uigameimage.str", "pictures": ["toy_{name}_hud", "{name}_vs"], "images": true },
   "upgrades": { "stream": "global.str", "text": "text/{language}/global.lxb", "languages": { "en": "eng", "fr": "fre" } }
 }

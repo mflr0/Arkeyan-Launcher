@@ -19,6 +19,7 @@
       "ui_levelfullscreen2/fullscreen_210.png",
       "ui_levelfullscreen2/fullscreen_213.png",
       "ui_levelfullscreen2/fullscreen_214.png" ] } ],
+  "music": { "archive": "level/Title.arc", "entry": "mu_title_main_loop.wav" },
   "portraits": { "archive": "misc/UI_Collection_Champions.bld", "entry": "level.bld", "folder": "/collections/sky2/portraits/" },
   "artworks": { "archive": "misc/PvP_MainControl.arc", "folder": "/ui_pvp_sprites/" },
   "upgrades": { "costs": { "archive": "permanent/global.bld", "set": "Minion_UpgradeCosts" },

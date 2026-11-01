@@ -221,13 +221,13 @@ namespace launcher_ui
 
     // ---- Disc verification on a worker thread --------------------------------------------------------------------
 
-    void VerifyJob::Start(const std::string& image, const GameInfo& game)
+    void VerifyJob::Start(const std::string& image, const GameInfo& game, const std::filesystem::path& skyBuild, const std::string& kitVersion)
     {
         Join();
         done = false;
         progress = 0;
         { std::lock_guard lock(mutex); stage = Tr("Opening the disc image"); check = {}; meta = {}; assets = {}; }
-        thread = std::thread([this, image, &game] {
+        thread = std::thread([this, image, &game, skyBuild, kitVersion] {
             auto report = [this](float fraction, std::string_view text) {
                 progress = fraction;
                 std::lock_guard lock(mutex);
@@ -254,6 +254,8 @@ namespace launcher_ui
                     report(0.98f, Tr("Reading the game's pictures"));
                     art.Init(game.id);
                     art.ExtractFromDisc(disc, metadata);
+                    // Its menu theme, decoded by the kit's SkyBuild (the launcher has no XMA decoder): once, next to the pictures.
+                    gamemusic::Extract(game.id, image, skyBuild, kitVersion);
                 }
             }
             { std::lock_guard lock(mutex); check = std::move(result); meta = std::move(metadata); assets = std::move(art); }
@@ -470,6 +472,7 @@ namespace launcher_ui
     // visit and runs in the background; a game seen before is shown as it was left.
     void App::SelectGame(const GameInfo& game)
     {
+        m_launchPending = false;
         if (FindEnabledGame(game.id, m_config) == nullptr)
             return;
         m_s = &SlotFor(game);
@@ -623,10 +626,25 @@ namespace launcher_ui
 
     // ---- Events and actions --------------------------------------------------------------------------------------
 
+    int App::VisibilityWait(int requested, SDL_WindowFlags flags)
+    {
+        // Jobs still get polled, but unseen motion must not keep the render loop awake.
+        if (flags & (SDL_WINDOW_MINIMIZED | SDL_WINDOW_OCCLUDED | SDL_WINDOW_HIDDEN))
+            return std::max(requested, 500);
+        if (!(flags & SDL_WINDOW_INPUT_FOCUS))
+            return std::max(requested, 250);
+        return requested;
+    }
+
     int App::IdleWait()
     {
         if (!m_shots.empty()) // the screenshot test runs flat out
             return 0;
+        return VisibilityWait(ContentWait(), SDL_GetWindowFlags(m_window));
+    }
+
+    int App::ContentWait()
+    {
         if (m_busyFrames > 0)
         {
             m_busyFrames--;
@@ -711,8 +729,8 @@ namespace launcher_ui
         case SDL_EVENT_DROP_FILE:
             m_dragOver = false;
             // Figure dumps (or, on the collection page, folders of them) join the collection.
-            if (event.drop.data != nullptr && (collection::IsDumpName(std::filesystem::path(event.drop.data).filename().string()) ||
-                (m_page == Page::Collection && std::filesystem::is_directory(event.drop.data))) && m_s->collection->Drop(event.drop.data))
+            if (event.drop.data != nullptr && (collection::IsDumpName(datadir::Text(datadir::FromText(event.drop.data).filename())) ||
+                (m_page == Page::Collection && std::filesystem::is_directory(datadir::FromText(event.drop.data)))) && m_s->collection->Drop(event.drop.data))
                 m_page = Page::Collection;
             else if (event.drop.data != nullptr && Installing())
                 Toast(Tr("Wait for the installation to finish"));
@@ -798,7 +816,8 @@ namespace launcher_ui
             SDL_DestroyTexture(m_s->icon);
         m_s->icon = nullptr;
         m_s->logo.Destroy();
-        m_s->verify.Start(path, m_s->game);
+        const std::optional<InstallKit> kit = FindInstallKit(m_config, m_s->game.id);
+        m_s->verify.Start(path, m_s->game, kit ? kit->ssabuild : std::filesystem::path(), kit ? kit->version : std::string());
     }
 
     void App::FinishVerify()
@@ -881,7 +900,17 @@ namespace launcher_ui
     void App::PlayNow()
     {
         if (!DiscStillThere())
+        {
+            m_launchPending = false;
             return;
+        }
+        if (!m_music.FadeComplete())
+        {
+            m_launchPending = true;
+            m_music.Update({}, !GameMusicOn());
+            return;
+        }
+        m_launchPending = false;
         if (m_startGames)
         {
             // The game starts beside the window, which stays: one game at a time (GameSession refuses a second one).
@@ -890,7 +919,7 @@ namespace launcher_ui
             const GameLaunch launch = PrepareGameLaunch(m_s->game, m_config, m_configPath, m_s->installed.runtime);
             std::string error;
             if (launch.runtime.empty())
-                Toast(Tr("Couldn't start the game: the file is missing"), ui::ToastKind::Error);
+                Toast(launch.error.empty() ? Tr("Couldn't start the game: the file is missing") : launch.error, ui::ToastKind::Error);
             else if (!m_session.Start(m_s->game.id, launch, m_s->discPath, error))
                 Toast(error, ui::ToastKind::Error);
             else
@@ -909,6 +938,8 @@ namespace launcher_ui
 
     void App::PollGame()
     {
+        if (m_launchPending && m_music.FadeComplete())
+            PlayNow();
         const uint64_t now = SDL_GetTicks();
         const std::string previous = m_session.Running();
         const std::optional<GameSession::Ended> ended = m_session.Poll(now);
@@ -916,6 +947,10 @@ namespace launcher_ui
             m_sessionStart = now;
         if (!ended)
             return;
+        // A crash dialog can wait for acknowledgement; the visible page's theme resumes while it is open too.
+        m_music.Update(gamemusic::Playback{ .game = m_s->game.id, .gamePage = m_page == Page::Play,
+            .running = !m_session.Running().empty(), .installing = AnyInstalling(),
+            .launching = m_launchPending, .muted = !GameMusicOn() });
         m_progressAt = 0; // its play time and unlocks are read again
         const GameInfo* game = FindGame(ended->game);
         if (!ended->ours || ended->stopped || ended->exitCode == 0 || game == nullptr)
@@ -1908,7 +1943,8 @@ namespace launcher_ui
         }
 
         m_heroNavigation.Column(0);
-        // Achievements keep their entry point over the painting.
+        // Achievements and the speaker keep their entry points over the painting.
+        float musicRight = position.x + available.x - margin;
         if (!m_s->installView && m_progress.hasList)
         {
             const std::string count = fmt::format("{}/{}", m_progress.unlocked, m_progress.rows.size());
@@ -1918,7 +1954,17 @@ namespace launcher_ui
             progress.tooltip = Tr("Achievements");
             const std::string id = count + "##progress";
             ImGui::SetCursorScreenPos(ImVec2(position.x + available.x - margin - ui::PillWidth(id.c_str(), progress), position.y + margin));
+            musicRight -= ui::PillWidth(id.c_str(), progress) + ui::space::XS;
             if (ui::Pill(id.c_str(), progress)) GoTo(Page::Achievements);
+        }
+        if (!m_s->installView && m_music.HasTrack(m_s->game.id))
+        {
+            const bool on = GameMusicOn();
+            ImGui::SetCursorScreenPos(ImVec2(musicRight - ui::height::Small, position.y + margin));
+            if (ui::IconButton("##gamemusic", on ? ui::Icon::Sound : ui::Icon::Muted,
+                on ? Tr("Turn the game music off") : Tr("Turn the game music on"),
+                { .kind = ui::ButtonKind::Secondary, .size = ui::Size::Small, .overArt = true }))
+                Set("launcher", "game_music", on ? "0" : "1");
         }
         if (ui::Ctx().glyphs != ui::Glyphs::Keyboard)
         {
@@ -2246,6 +2292,7 @@ namespace launcher_ui
 
     void App::GoTo(Page page)
     {
+        if (page != Page::Play) m_launchPending = false;
         if (m_uninstalled)
             return; // nothing else to do in a launcher that has removed itself (and nothing to write back)
         if ((page == Page::Settings || page == Page::Collection) && (m_page == Page::Home || m_page == Page::Play))
@@ -2327,6 +2374,9 @@ namespace launcher_ui
 
     void App::Frame()
     {
+        // Poll workers while hidden; render the current state as soon as the window returns.
+        if (m_shots.empty() && (SDL_GetWindowFlags(m_window) & (SDL_WINDOW_MINIMIZED | SDL_WINDOW_OCCLUDED | SDL_WINDOW_HIDDEN)))
+            return;
         UpdateLanguage();
         ImGui_ImplSDLRenderer3_NewFrame();
         ImGui_ImplSDL3_NewFrame();
@@ -2343,6 +2393,10 @@ namespace launcher_ui
         ui::NewFrame(SDL_GetTicks());
         ui::Ctx().accent = m_page == Page::Play || m_page == Page::GameSettings ? StyleOf(m_s->game.id).glow : Accent;
         ui::Ctx().reduceMotion = ReduceMotion();
+        // The shown game's menu theme plays on its page only; it fades out when a game starts.
+        m_music.Update(gamemusic::Playback{ .game = m_s != nullptr ? m_s->game.id : std::string(),
+            .gamePage = m_page == Page::Play, .running = !m_session.Running().empty(), .installing = AnyInstalling(),
+            .launching = m_launchPending, .muted = !GameMusicOn() });
         if (const int view = int(m_page) * 100 + (m_page == Page::GameSettings ? int(m_gameTab) : m_page == Page::Settings ? int(m_tab) : 0);
             m_testPadInput && m_testScreens == 0 && view != m_testFocusView)
         {

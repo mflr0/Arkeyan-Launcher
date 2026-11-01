@@ -4,6 +4,7 @@
   "engine": "alchemy",
   "about": "Where Swap Force keeps its pictures on the disc (docs/runtime/host/game_art.md, games/swapforce/docs/art.md). Names only: the pictures are read from the player's own disc.",
   "logo": { "archive": "archives/defaultloadscreen.pak", "entry": "textures\\juicestandard_title_00.igz" },
+  "music": { "archive": "archives/inter_streamed_launch_bank.pak", "entry": "INTER_Results_Screen" },
   "background": { "archive": "archives/juicedomain_frontend.pak", "entry": "textures\\juicestandard_mainmenu_background_10.igz" },
   "scenes": [
     { "archive": "archives/juicedomain_frontend.pak", "names": [ "textures\\juicestandard_mainmenu_background_10.igz" ] },

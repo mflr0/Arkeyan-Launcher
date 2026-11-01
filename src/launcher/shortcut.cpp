@@ -285,6 +285,15 @@ ShortcutResult WriteMacApp(const ShortcutSpec& spec)
 {
     std::error_code error;
     fs::path app = spec.folder / (ShortcutFileName(spec.gameName) + ".app");
+    if (fs::exists(fs::symlink_status(app, error)))
+    {
+        const fs::path script = app / "Contents" / "MacOS" / "launch";
+        std::ifstream in(script, std::ios::binary);
+        const std::string text(std::istreambuf_iterator<char>(in), {});
+        if (fs::is_symlink(fs::symlink_status(app, error)) || text.find(ShortcutArguments(spec.gameId)) == std::string::npos ||
+            (text.find("Made by Arkeyan Launcher") == std::string::npos && text.find("Made by Skylauncher") == std::string::npos))
+            return Fail(Tr("Couldn't create the shortcut"));
+    }
     fs::remove_all(app, error);
     fs::create_directories(app / "Contents" / "MacOS", error);
     fs::create_directories(app / "Contents" / "Resources", error);

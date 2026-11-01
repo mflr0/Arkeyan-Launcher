@@ -511,17 +511,6 @@ void GameInstaller::Read()
     };
     for (;;)
     {
-        size_t read = output != nullptr ? SDL_ReadIO(output, buffer, sizeof(buffer)) : 0;
-        if (read > 0)
-        {
-            pending.append(buffer, read);
-            for (size_t end; (end = pending.find('\n')) != std::string::npos; pending.erase(0, end + 1))
-                apply(std::string_view(pending).substr(0, end));
-            continue;
-        }
-        if (output == nullptr || SDL_GetIOStatus(output) == SDL_IO_STATUS_EOF || SDL_GetIOStatus(output) == SDL_IO_STATUS_ERROR)
-            break;
-        // The pipe is non-blocking. Once SSABuild has exited, a process it left behind may still hold the pipe open.
         if (!exited && SDL_WaitProcess(m_process, false, &exitCode))
         {
             exited = true;
@@ -531,6 +520,17 @@ void GameInstaller::Read()
             break;
         if (m_cancelled && !exited && SDL_GetTicks() - m_cancelledAt > 3000)
             SDL_KillProcess(m_process, true);
+        size_t read = output != nullptr ? SDL_ReadIO(output, buffer, sizeof(buffer)) : 0;
+        if (read > 0)
+        {
+            pending.append(buffer, read);
+            for (size_t end; (end = pending.find('\n')) != std::string::npos; pending.erase(0, end + 1))
+                apply(std::string_view(pending).substr(0, end));
+            continue;
+        }
+        if (exited && (output == nullptr || SDL_GetIOStatus(output) == SDL_IO_STATUS_EOF || SDL_GetIOStatus(output) == SDL_IO_STATUS_ERROR))
+            break;
+        // The pipe is non-blocking. Once SSABuild has exited, a process it left behind may still hold the pipe open.
         SDL_Delay(20);
     }
     if (!pending.empty())

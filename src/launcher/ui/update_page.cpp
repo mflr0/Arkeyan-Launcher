@@ -1,6 +1,7 @@
 // Updates in the window: the check at start, the banner ("Update available" and its progress), What's new, and the About
 // page (version, "Check now", credits and licenses). The logic is in launcher/updater.cpp (docs/updates.md).
 #include "launcher/ui/launcher_app.h"
+#include "shared/collection/datadir.h"
 #include "launcher/ui/text_fit.h"
 #include <ctime>
 #include <fmt/format.h>
@@ -192,7 +193,7 @@ namespace launcher_ui
         case Restart:
         {
             std::filesystem::path self = LauncherSelf();
-            std::string program = self.string();
+            std::string program = datadir::Text(self);
             std::vector<const char*> arguments;
 #if defined(__APPLE__)
             arguments = { "/usr/bin/open", "-n", program.c_str(), nullptr };
@@ -242,7 +243,8 @@ namespace launcher_ui
                     continue;
                 if (line[0] == '#')
                 {
-                    line = Trimmed(line.substr(line.find_first_not_of('#')));
+                    const size_t text = line.find_first_not_of('#');
+                    line = text == std::string::npos ? std::string() : Trimmed(line.substr(text));
                     if (!first)
                         ImGui::Dummy(ImVec2(0, ui::space::XS));
                     ui::PushText(ui::TextStyle::Body, true);

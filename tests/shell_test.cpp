@@ -121,6 +121,16 @@ namespace
 {
     void GameRunChecks(const std::filesystem::path& scratch)
     {
+        {
+            auto runtime = std::filesystem::path(SDL_GetBasePath()) / "ArkeyanLauncherTest";
+#if defined(_WIN32)
+            runtime += ".exe";
+#endif
+            TestSetEnv("SKY_FAKE_PROBE_CLOSED_OUTPUT", "1");
+            const auto result = RunPortalProbe(runtime.string(), 20);
+            SHELL_EXPECT(!result.ran && result.error.find("too long") != std::string::npos);
+            TestUnsetEnv("SKY_FAKE_PROBE_CLOSED_OUTPUT");
+        }
         PortalProbeResult none = ParsePortalProbe("{\"done\":true,\"count\":0}\n");
         SHELL_EXPECT(none.ran && none.portals.empty() && none.error.empty());
         PortalProbeResult found = ParsePortalProbe("log noise\r\n{\"kind\":\"hid\",\"vid\":\"1430\",\"pid\":\"0150\",\"product\":\"Wii \\\"Portal\\\"\",\"opened\":true,"
@@ -343,6 +353,11 @@ namespace
         SHELL_EXPECT(IsNewer("v1.0.0", "1.0.0-rc.1") && !IsNewer("v1.0.0-rc.1", "1.0.0") && !IsNewer("nonsense", "1.0.0"));
         SHELL_EXPECT(IsNewer("0.7.0", "0.7.0-beta.1") && !IsNewer("0.7.0-beta.1", "0.7.0"));
         SHELL_EXPECT(ParseSemVer(LauncherVersion()).valid);
+        for (const char* tag : { ".", ".." })
+        {
+            auto folder = KitFolderFor(scratch / "kits", tag).lexically_normal();
+            SHELL_EXPECT(folder.parent_path() == (scratch / "kits").lexically_normal() && folder.filename() != "." && folder.filename() != "..");
+        }
 
         // JSON and the release answer.
         JsonValue value;
@@ -404,6 +419,23 @@ namespace
         MakeZip(zip, { { "../evil.txt", "x" } });
         SHELL_EXPECT(!ExtractZip(zip, updates / "unz", error) && error.find("damaged") != std::string::npos && !std::filesystem::exists(updates / "evil.txt"));
         SHELL_EXPECT(!ExtractZip(updates / "r1" / "latest.json", updates / "unz2", error));
+        // A directory creation failure must not report a successfully extracted archive.
+        MakeZip(zip, { { "blocked/child/", "" } });
+        WriteBytes(updates / "blocked-unzip" / "blocked", "keep");
+        SHELL_EXPECT(!ExtractZip(zip, updates / "blocked-unzip", error));
+        SHELL_EXPECT(ReadBytes(updates / "blocked-unzip" / "blocked") == "keep");
+        // Mark the first entry as a Unix symlink in the central directory. A later entry must not follow it.
+        MakeZip(zip, { { "escape", "../outside" }, { "escape/keep.txt", "overwritten" } });
+        std::string linkedZip = ReadBytes(zip);
+        const size_t central = linkedZip.find(std::string("PK\1\2", 4));
+        SHELL_EXPECT(central != std::string::npos);
+        linkedZip[central + 5] = 3;
+        const unsigned attributes = 0120777u << 16;
+        for (int byte = 0; byte < 4; byte++) linkedZip[central + 38 + byte] = char(attributes >> (byte * 8));
+        WriteBytes(zip, linkedZip);
+        WriteBytes(updates / "outside" / "keep.txt", "original");
+        SHELL_EXPECT(!ExtractZip(zip, updates / "linked-unzip", error));
+        SHELL_EXPECT(ReadBytes(updates / "outside" / "keep.txt") == "original");
         MakeZip(zip, { { "SSABuild", "first install" }, { "SSABuild.exe", "first install" } });
         SHELL_EXPECT(InstallKitZip(zip, updates / "fresh" / "ssa-kit", error) && ReadBytes(updates / "fresh" / "ssa-kit" / "SSABuild") == "first install");
 
@@ -791,6 +823,17 @@ void MakeKitRelease(const std::filesystem::path& folder, const std::vector<std::
 
 int ShellChecks(const std::filesystem::path& scratch)
 {
+    {
+        TestSetEnv("FAKE_SSABUILD_CLOSE_OUTPUT", "1");
+        GameInstaller installer;
+        SHELL_EXPECT(installer.Start(InstallKitIn(SKYLAUNCHER_FAKE_KIT), "synthetic.iso", scratch / "closed-output-install"));
+        SDL_Delay(100);
+        const uint64_t started = SDL_GetTicks();
+        installer.Cancel();
+        while (installer.Running()) SDL_Delay(10);
+        SHELL_EXPECT(SDL_GetTicks() - started < 4500 && installer.Snapshot().state == InstallProgress::State::Cancelled);
+        TestUnsetEnv("FAKE_SSABUILD_CLOSE_OUTPUT");
+    }
     ChecklistChecks(scratch);
     GameRunChecks(scratch);
     GameSessionChecks(scratch);

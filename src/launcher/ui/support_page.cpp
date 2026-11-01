@@ -113,7 +113,7 @@ namespace launcher_ui
         {
             std::filesystem::path folder = GameLogFolder();
             std::string name = launcher_report::FileName();
-            std::string start = (folder / name).string();
+            std::string start = datadir::Text(folder / name);
             static const SDL_DialogFileFilter Filters[] = { { "Text file", "txt" } };
             SDL_ShowSaveFileDialog(SaveReport, new std::string(m_reportText), m_window, Filters, 1, start.c_str());
         }
@@ -131,7 +131,7 @@ namespace launcher_ui
             if (saved.file.empty())
                 Toast(Tr("Couldn't save the report"), ui::ToastKind::Error);
             else
-                Toast(Tf("Report saved: {}", saved.file.filename().string()), ui::ToastKind::Success);
+                Toast(Tf("Report saved: {}", datadir::Text(saved.file.filename())), ui::ToastKind::Success);
         }
         ui::EndModal();
     }

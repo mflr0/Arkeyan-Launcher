@@ -117,6 +117,7 @@ add_library(ArkeyanLauncherCore STATIC
     src/launcher/i18n.cpp
     src/launcher/game_install.cpp
     src/launcher/game_progress.cpp
+    src/launcher/game_music.cpp
     src/launcher/ui/launcher_ui.cpp
     src/launcher/ui/collection_page.cpp
     src/launcher/ui/collection_figure.cpp
@@ -253,6 +254,11 @@ add_dependencies(ArkeyanLauncherTest FakeSkyBuild ArkeyanLauncher)
 target_compile_definitions(ArkeyanLauncherTest PRIVATE SKYLAUNCHER_FAKE_KIT="${CMAKE_BINARY_DIR}/fake-kit" SKYLAUNCHER_TEST_EXE="$<TARGET_FILE:ArkeyanLauncher>")
 
 # The launcher shell's checks (tests/shell_test.cpp), run by ArkeyanLauncherTest.
-target_sources(ArkeyanLauncherTest PRIVATE tests/shell_test.cpp tests/settings_test.cpp tests/copy_test.cpp tests/i18n_test.cpp tests/uninstall_test.cpp tests/text_fit_test.cpp tests/accent_test.cpp)
+target_sources(ArkeyanLauncherTest PRIVATE tests/shell_test.cpp tests/settings_test.cpp tests/copy_test.cpp tests/i18n_test.cpp tests/uninstall_test.cpp tests/text_fit_test.cpp tests/accent_test.cpp tests/music_test.cpp)
 target_compile_definitions(ArkeyanLauncherTest PRIVATE SKYLAUNCHER_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
 target_include_directories(ArkeyanLauncherTest PRIVATE lib/miniz)
+
+# Synthetic offscreen timing and frame-pacing regression checks.
+add_executable(ArkeyanLauncherPerf EXCLUDE_FROM_ALL tests/performance_test.cpp)
+target_link_libraries(ArkeyanLauncherPerf PRIVATE ArkeyanLauncherCore)
+target_include_directories(ArkeyanLauncherPerf PRIVATE lib/stb)

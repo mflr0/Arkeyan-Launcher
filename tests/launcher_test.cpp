@@ -369,6 +369,40 @@ namespace
         EXPECT(launcher_ui::ReadSeats(ssa, session) == std::vector<std::string>(4)); // the file names nothing
         EXPECT(model.SetSeat(0, spyro) && model.SetSeat(2, anvil)); // as before, for the checks below
         EXPECT(model.Poll(1000000, 0) == false); // nothing changed since Load (SetSeat's own write is not a change)
+        {
+            fs::path protectedFile = scratch / "protected-session.txt";
+            std::ofstream(protectedFile) << "keep";
+            std::error_code error;
+            fs::create_symlink(protectedFile, session + ".tmp", error);
+            if (!error)
+            {
+                EXPECT(launcher_ui::WriteSeats(ssa, session, model.seats));
+                std::ifstream in(protectedFile);
+                EXPECT(std::string(std::istreambuf_iterator<char>(in), {}) == "keep");
+                fs::remove(session + ".tmp");
+                fs::remove(session);
+                EXPECT(launcher_ui::WriteSeats(ssa, session, model.seats));
+            }
+            else
+                printf("SKIP session temporary symlink: %s\n", error.message().c_str());
+        }
+        {
+            const auto before = model.seats;
+            fs::rename(session, session + ".kept");
+            fs::create_directory(session);
+            std::ofstream(fs::path(session) / "keep") << "keep"; // replacement must fail
+            EXPECT(!model.SetSeat(1, gill));
+            EXPECT(model.seats == before && launcher_ui::ReadSeats(ssa, session + ".kept") == before);
+            EXPECT(fs::exists(fs::path(session) / "keep"));
+            fs::remove_all(session);
+            fs::rename(session + ".kept", session);
+            model.Load();
+            savebackup::SetGameRunning(true, save);
+            EXPECT(!model.CanEditSeats() && !model.SetSeat(1, gill));
+            EXPECT(launcher_ui::ReadSeats(ssa, session) == before);
+            savebackup::SetGameRunning(false, save);
+            model.Load();
+        }
         // Edit stats' gold: digits only, never above the game's limit (issue #9).
         EXPECT(launcher_ui::GoldFromText("1234") == 1234 && launcher_ui::GoldFromText("99999999") == figures::MaxGold &&
             launcher_ui::GoldFromText("") == 0 && launcher_ui::GoldFromText("5+5") == 5 && launcher_ui::GoldFromText("abc") == 0 &&
@@ -884,6 +918,7 @@ int UninstallChecks(const std::filesystem::path& scratch); // tests/uninstall_te
 int TextFitChecks(); // tests/text_fit_test.cpp
 int AccentChecks(const std::filesystem::path& scratch); // tests/accent_test.cpp, in a process of its own
 int AccentChecksInChild(const char* executable, const std::filesystem::path& scratch);
+int MusicChecks(const std::filesystem::path& scratch); // tests/music_test.cpp
 int CopyChecks(const std::filesystem::path& scratch, const std::string& ssaIso, const std::string& giantsIso); // tests/copy_test.cpp
 
 // The launcher window switching games in place (App::TestSwitchScript, in an offscreen window): both discs checked, a
@@ -1209,6 +1244,9 @@ int AchievementChecks()
 static void InstallCardChecks(const std::filesystem::path& scratch)
 {
     namespace fs = std::filesystem;
+    uint64_t timeoutMs = 120000;
+    if (const char* value = skyenv::Get("SKY_LAUNCHER_TEST_TIMEOUT_MS"))
+        timeoutMs = std::clamp<uint64_t>(std::strtoull(value, nullptr, 10), 30000, 300000);
     for (const char* language : { "en", "fr" })
     for (const char* size : { "1024x680", "1080x720", "1600x1000" })
     {
@@ -1217,7 +1255,7 @@ static void InstallCardChecks(const std::filesystem::path& scratch)
         const fs::path shots = root / "shots";
         SDL_Environment* environment = CreateGameEnvironment({
             { "HOME", (root / "home").string() }, { "CFFIXED_USER_HOME", (root / "home").string() },
-            { "SDL_VIDEO_DRIVER", "offscreen" }, { "SDL_AUDIO_DRIVER", "disk" },
+            { "SDL_VIDEO_DRIVER", "offscreen" }, { "SDL_AUDIO_DRIVER", "dummy" },
             { "SKYLANDERS_DATA", (root / "data").string() }, { "SKY_LAUNCHER_DATA", (root / "launcher").string() },
             { "SKY_COLLECTION", (root / "collection").string() }, { "SKY_SAVE_DIR", (root / "save").string() },
             { "SKY_LAUNCHER_INI", (root / "launcher.ini").string() }, { "SKY_SETTINGS", (root / "settings.ini").string() },
@@ -1241,7 +1279,7 @@ static void InstallCardChecks(const std::filesystem::path& scratch)
         bool ended = false;
         if (process != nullptr)
         {
-            for (uint64_t start = SDL_GetTicks(); SDL_GetTicks() - start < 30000 && !ended; SDL_Delay(20))
+            for (uint64_t start = SDL_GetTicks(); SDL_GetTicks() - start < timeoutMs && !ended; SDL_Delay(20))
                 ended = SDL_WaitProcess(process, false, &exitCode);
             if (!ended) { SDL_KillProcess(process, true); SDL_WaitProcess(process, true, &exitCode); }
             SDL_DestroyProcess(process);
@@ -1285,8 +1323,24 @@ static void InstallCardChecks(const std::filesystem::path& scratch)
 
 #include "launcher_control_checks.h"
 
+#include "launcher_review_checks.h"
+
 int main(int argc, char** argv)
 {
+    if (argc == 2 && std::string_view(argv[1]) == "--portal-probe" && std::getenv("SKY_FAKE_PROBE_CLOSED_OUTPUT") != nullptr)
+    {
+        std::fclose(stdout);
+        std::fclose(stderr);
+        SDL_Delay(5000);
+        return 2;
+    }
+    if (argc == 4 && std::string_view(argv[1]) == "--review-ui")
+        return launcher_ui::ReviewChecks::Run(std::filesystem::absolute(argv[2]), argv[3]);
+    if (argc == 3 && std::string_view(argv[1]) == "--review-shell")
+    {
+        std::filesystem::create_directories(argv[2]);
+        return ShellChecks(std::filesystem::absolute(argv[2])) == 0 ? 0 : 1;
+    }
     // Isolated real-page check. Each invocation gets a fresh process and a fresh ImGui context.
     if (argc == 5 && std::string_view(argv[1]) == "--fps-fallback-page")
     {
@@ -1296,7 +1350,7 @@ int main(int argc, char** argv)
         if (game == nullptr) return 2;
         auto set = [&](const char* key, const std::string& value) { TestSetEnv(key, value.c_str()); };
         set("SDL_VIDEO_DRIVER", "offscreen");
-        set("SDL_AUDIO_DRIVER", "disk");
+        set("SDL_AUDIO_DRIVER", "dummy");
         set("SDL_AUDIO_DISK_OUTPUT_FILE", "/dev/null");
         set("SKYLANDERS_DATA", (root / "data").string());
         set("SKY_LAUNCHER_DATA", (root / "launcher").string());
@@ -1357,6 +1411,8 @@ int main(int argc, char** argv)
         int failures = I18nChecks();
         return failures == 0 ? 0 : 1;
     }
+    if (skyenv::Get("SKY_LAUNCHER_TEST_MUSIC_ONLY") != nullptr) // only the game music (quick to rerun)
+        return MusicChecks(scratch) == 0 ? 0 : 1;
     if (skyenv::Get("SKY_LAUNCHER_TEST_UNINSTALL_ONLY") != nullptr) // only "Uninstall everything" (quick to rerun)
     {
         int failures = UninstallChecks(scratch);
@@ -1391,6 +1447,7 @@ int main(int argc, char** argv)
     g_failures += I18nChecks();
     g_failures += TextFitChecks();
     g_failures += AccentChecksInChild(argv[0], scratch);
+    g_failures += MusicChecks(scratch);
     g_failures += AchievementChecks();
     SceneChecks(scratch);
 
@@ -1462,6 +1519,19 @@ int main(int argc, char** argv)
 
     if (noDisc)
     {
+        for (const char* mode : { "backups", "sheet", "notes", "migration", "catalogue", "data", "uninstall", "paths" })
+        {
+            const std::string root = (scratch / "review-ui" / mode).string();
+            const char* arguments[] = { argv[0], "--review-ui", root.c_str(), mode, nullptr };
+            SDL_Process* process = SDL_CreateProcess(arguments, false);
+            int code = -1;
+            EXPECT(process != nullptr);
+            if (process != nullptr)
+            {
+                EXPECT(SDL_WaitProcess(process, true, &code) && code == 0);
+                SDL_DestroyProcess(process);
+            }
+        }
         std::filesystem::remove_all(scratch);
         printf(g_failures == 0 ? "All launcher checks passed (no disc image)\n" : "%d launcher check(s) failed (no disc image)\n", g_failures);
         return g_failures == 0 ? 0 : 1;

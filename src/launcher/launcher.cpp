@@ -1,4 +1,5 @@
 #include "launcher/launcher.h"
+#include "launcher/atomic_file.h"
 #include "launcher/env.h"
 #include "launcher/i18n.h"
 #include "launcher/ui/launcher_ui.h"
@@ -413,21 +414,7 @@ bool SaveLauncherConfig(const std::string& path, const LauncherConfig& config)
     }
     // Beside, then renamed over: launcher.ini also holds the install records, a half-written file would lose them. The
     // paths are UTF-8 (a user name with accents on Windows): FromText, never a narrow std::string, for std::filesystem.
-    const std::filesystem::path target = datadir::FromText(path), temporary = datadir::FromText(path + ".tmp");
-    std::error_code error;
-    std::filesystem::create_directories(target.parent_path(), error); // a first start: the data folder may not exist yet
-    if (!SDL_SaveFile((path + ".tmp").c_str(), text.data(), text.size()))
-        return false;
-    // An antivirus scanning the new file (Windows) can hold it for a moment: a few tries before giving up.
-    for (int attempt = 0; attempt < 5; attempt++)
-    {
-        std::filesystem::rename(temporary, target, error);
-        if (!error)
-            return true;
-        SDL_Delay(20);
-    }
-    std::filesystem::remove(temporary, error);
-    return false;
+    return launcher_files::WriteAtomic(datadir::FromText(path), text);
 }
 
 namespace

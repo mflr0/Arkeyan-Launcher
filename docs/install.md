@@ -216,7 +216,7 @@ After a **successful** install: `ssabuild-work/` (2-3 GB) is deleted and its `lo
 therefore rebuilds everything); the kits in `kit/` older than the one that built the game are deleted; a compiler archive
 (`toolchains/*.zip`) whose extracted copy is ready is deleted. Each log keeps one previous run (`.prev.log`). The art
 cache `<Game>/launcher-cache` holds three pictures (logo, background, title icon; `docs/launcher_ui.md`, "Disc art") and the
-achievements' list with their pictures (`achievements/`, "Achievements and play time") and needs no trimming; the per-title folders of older launchers in it are removed at the next disc check.
+achievements' list with their pictures (`achievements/`, "Achievements and play time"), and the menu theme the kit's `SkyBuild --menu-music` decoded (`menu_music.wav`, "Game music"); it needs no trimming; the per-title folders of older launchers in it are removed at the next disc check.
 
 ## Linux
 
