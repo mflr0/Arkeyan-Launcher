@@ -114,7 +114,11 @@ inline void InstallLifecycleChecks(const std::filesystem::path& scratch)
         EXPECT(installer.Start(kit, "synthetic.iso", root / ending));
         state = wait(installer);
         EXPECT(state.state == InstallProgress::State::Failed && !state.startFailed && state.runtime.empty());
+#if defined(_WIN32) // a background process reports no exit code there (game_install.cpp)
+        if (std::string_view(ending) == "exit") EXPECT(state.error.find("stopped before the game was built") != std::string::npos);
+#else
         if (std::string_view(ending) == "exit") EXPECT(state.error.find("exit code 7") != std::string::npos);
+#endif
         else if (std::string_view(ending) == "error") EXPECT(state.error == "synthetic failure without newline");
         else EXPECT(state.error.find("before the game was built") != std::string::npos);
         EXPECT(!fs::exists(root / ending / "layout.txt"));

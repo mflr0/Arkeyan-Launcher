@@ -1399,11 +1399,6 @@ static void InstallCardChecks(const std::filesystem::path& scratch)
     uint64_t timeoutMs = 120000;
     if (const char* value = skyenv::Get("SKY_LAUNCHER_TEST_TIMEOUT_MS"))
         timeoutMs = std::clamp<uint64_t>(std::strtoull(value, nullptr, 10), 30000, 300000);
-    fs::path executable = fs::path(SDL_GetBasePath()) / "ArkeyanLauncherTest";
-#if defined(_WIN32)
-    executable += ".exe";
-#endif
-    const std::string program = executable.string();
     auto scenario = [&](const char* language, const char* size) {
         int g_failures = 0; // Each child contributes its own result after it has finished.
         const fs::path root = scratch / "install-card" / language / size;
@@ -1420,7 +1415,7 @@ static void InstallCardChecks(const std::filesystem::path& scratch)
             { "SKY_LAUNCHER_TEST_INSTALL", "layout" }, { "SKY_LAUNCHER_TEST_DROP", "" }
         });
         SDL_IOStream* log = SDL_IOFromFile((root / "output.log").string().c_str(), "wb");
-        const char* arguments[] = { program.c_str(), "--install-card", nullptr };
+        const char* arguments[] = { SKYLAUNCHER_TEST_EXE, nullptr };
         SDL_PropertiesID properties = SDL_CreateProperties();
         SDL_SetPointerProperty(properties, SDL_PROP_PROCESS_CREATE_ARGS_POINTER, arguments);
         SDL_SetPointerProperty(properties, SDL_PROP_PROCESS_CREATE_ENVIRONMENT_POINTER, environment);
@@ -1542,20 +1537,6 @@ int main(int argc, char** argv)
     {
         std::filesystem::create_directories(argv[2]);
         return ShellChecks(std::filesystem::absolute(argv[2])) == 0 ? 0 : 1;
-    }
-    if (argc == 2 && std::string_view(argv[1]) == "--install-card")
-    {
-        // The production window and script, with cheaper lossless encoding for disposable screenshots.
-        stbi_write_png_compression_level = 1;
-        stbi_write_force_png_filter = 0;
-        const std::string path = LauncherConfigPath();
-        LauncherConfig config = LoadLauncherConfig(path);
-        MigrateFrameRates(config);
-        const GameInfo& game = *FindGame("ssa");
-        LauncherOptions options;
-        options.startGames = true;
-        RunLauncherWindow(game, path, config, config[game.id]["iso"], nullptr, nullptr, options);
-        return 0;
     }
     // Isolated real-page check. Each invocation gets a fresh process and a fresh ImGui context.
     if (argc == 5 && std::string_view(argv[1]) == "--fps-fallback-page")
