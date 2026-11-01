@@ -3,21 +3,29 @@
 #include "json.h"
 #include <SDL3/SDL.h>
 #include <algorithm>
+#include <atomic>
 #include <cctype>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
+#include <filesystem>
 #include <map>
 #include "../env.h"
 #ifdef _WIN32
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
+#include <cerrno>
+#include <fcntl.h>
+#include <io.h>
+#include <process.h>
+#include <sys/stat.h>
 #include <windows.h>
 #else
 #include <cerrno>
 #include <csignal>
+#include <fcntl.h>
 #include <unistd.h>
 #endif
 
@@ -117,16 +125,56 @@ namespace collection
             return SDL_CloseIO(file) && written;
         }
 
-        // Write to a temporary file and rename it over, so readers never see half a file.
+        // Write to a temporary file and rename it over, so readers never see half a file. The temporary is created by this
+        // writer alone: a stale one, a link left in its place or another process's write is never opened.
         bool SaveAtomically(const std::string& path, const std::string& text)
         {
-            std::string temporary = path + ".tmp";
-            if (!SDL_SaveFile(temporary.c_str(), text.data(), text.size()))
+            static std::atomic<unsigned> serial{ 0 };
+            const std::filesystem::path target = datadir::FromText(path);
+            std::filesystem::path temporary;
+            int fd = -1;
+            for (int attempt = 0; attempt < 100 && fd < 0; attempt++)
+            {
+                temporary = target;
+#ifdef _WIN32
+                temporary += ".tmp." + std::to_string(_getpid()) + "." + std::to_string(serial++);
+                fd = _wopen(temporary.c_str(), _O_WRONLY | _O_CREAT | _O_EXCL | _O_BINARY, _S_IREAD | _S_IWRITE);
+#else
+                temporary += ".tmp." + std::to_string(getpid()) + "." + std::to_string(serial++);
+                fd = open(temporary.c_str(), O_WRONLY | O_CREAT | O_EXCL | O_CLOEXEC, 0600);
+#endif
+                if (fd < 0 && errno != EEXIST)
+                    return false;
+            }
+            if (fd < 0)
                 return false;
-            if (SDL_RenamePath(temporary.c_str(), path.c_str()))
-                return true;
-            SDL_RemovePath(temporary.c_str());
-            return false;
+#ifdef _WIN32
+            FILE* file = _fdopen(fd, "wb");
+#else
+            FILE* file = fdopen(fd, "wb");
+#endif
+            bool written = false;
+            if (file != nullptr)
+            {
+                written = fwrite(text.data(), 1, text.size(), file) == text.size();
+                written = fclose(file) == 0 && written;
+            }
+#ifdef _WIN32
+            else
+                _close(fd);
+#else
+            else
+                close(fd);
+#endif
+            std::error_code error;
+            if (written)
+                std::filesystem::rename(temporary, target, error);
+            if (!written || error)
+            {
+                std::filesystem::remove(temporary, error);
+                return false;
+            }
+            return true;
         }
 
         Json LoadJson(const std::string& path)
