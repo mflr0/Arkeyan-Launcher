@@ -122,7 +122,9 @@ InstallChecklist MakeInstallChecklist(const InstallProgress& progress, uint64_t 
 
     // Time left, once the current step has progress: its own pace for the rest of it, and for the steps still to come
     // the pace of the steps that took real time (an "up to date" step takes none and says nothing about the machine).
-    if (progress.state == State::Running && list.current >= 0)
+    // Reading the disc says nothing either: its time is the disc's speed and the game's size, and its small weight turned
+    // four minutes of it into an estimate of three hours. No estimate until a step that measures the machine runs.
+    if (progress.state == State::Running && list.current >= 0 && list.rows[size_t(list.current)].id != "disc")
     {
         const InstallChecklist::Row& r = list.rows[size_t(list.current)];
         float fraction = r.fraction;
@@ -131,7 +133,7 @@ InstallChecklist MakeInstallChecklist(const InstallProgress& progress, uint64_t 
             float currentLeft = float(r.ms) / fraction * (1 - fraction);
             double measuredMs = double(r.ms), measuredWeight = double(weights[size_t(list.current)]) * fraction;
             for (size_t i = 0; i < size_t(list.current); i++)
-                if (list.rows[i].state == InstallChecklist::RowState::Done && list.rows[i].timed && list.rows[i].ms >= 3000)
+                if (list.rows[i].state == InstallChecklist::RowState::Done && list.rows[i].timed && list.rows[i].ms >= 3000 && list.rows[i].id != "disc")
                 {
                     measuredMs += double(list.rows[i].ms);
                     measuredWeight += weights[i];

@@ -60,7 +60,16 @@ namespace
         SHELL_EXPECT(list.elapsedMs == 120000 && list.action == "ppc_recomp.12.cpp");
         SHELL_EXPECT(list.overall > 0.08f && list.overall < 0.12f); // (8 + 2 + 6/4) of 104
         // The current step: 30 s for a quarter, 90 s left of it; the rest at the measured pace (90 s for 6+2+2.5 weight).
-        SHELL_EXPECT(list.etaMs > 90000 + 500000 && list.etaMs < 90000 + 900000);
+        SHELL_EXPECT(list.etaMs > 90000 + 200000 && list.etaMs < 90000 + 900000);
+        {
+            // Four minutes on the disc, the rest of the install at a normal pace: no estimate of hours, then or after.
+            InstallProgress slow = Feed({ { "@step toolchain Preparing the compiler", 1000 }, { "@step disc Reading the disc", 2000 }, { "@progress 1 40", 60000 } });
+            SHELL_EXPECT(MakeInstallChecklist(slow, 120000).etaMs == -1);
+            InstallProgress after = Feed({ { "@step toolchain Preparing the compiler", 1000 }, { "@step disc Reading the disc", 2000 },
+                { "@step recompile Translating the game code", 240000 }, { "@step shaders Translating the shaders", 245000 }, { "@progress 20 40", 275000 } });
+            int64_t left = MakeInstallChecklist(after, 276000).etaMs;
+            SHELL_EXPECT(left > 0 && left < 3600000);
+        }
         SHELL_EXPECT(InstallTimeLeft(list.etaMs).starts_with("about ") && InstallTimeLeft(30000) == "less than a minute left");
         SHELL_EXPECT(InstallTimeLeft(-1).empty() && InstallTimeLeft(3 * 3600000 + 5 * 60000) == "about 3 h 05 min left");
         SHELL_EXPECT(InstallDuration(187000) == "3:07" && InstallDuration(3723000) == "1:02:03");
