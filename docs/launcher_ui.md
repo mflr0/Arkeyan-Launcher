@@ -1098,7 +1098,7 @@ pickers and gear, disabled STOP during a delayed clean stop, and the return to R
 repository's working copy (its own HOME, the offscreen driver).
 
 ## Game music
-The visible game's main menu theme plays at `gamemusic::Volume` (0.2 of full scale). A 1.5-second fade brings
+The visible game's main menu theme plays at `gamemusic::Volume` (0.12 of full scale). A 1.5-second fade brings
 it in; selecting another game cross-fades between their themes. Home, Collection, Settings, achievements
 and game settings are silent. Any install or kit download silences the launcher too.
 

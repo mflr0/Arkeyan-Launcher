@@ -14,7 +14,7 @@ struct SDL_AudioStream;
 namespace gamemusic
 {
     constexpr float FadeSeconds = 1.5f; // in, out, and between two games
-    constexpr float Volume = 0.2f;      // the theme's level under the page: low, a background
+    constexpr float Volume = 0.12f;     // the theme's level under the page: low, a background
 
     struct Track
     {

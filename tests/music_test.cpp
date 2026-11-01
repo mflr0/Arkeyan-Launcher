@@ -273,41 +273,41 @@ namespace
         MUSIC_EXPECT(player.FadeComplete() && player.GainForTest("ssa") == 0); // starts muted, no transient
         state.muted = false;
         settle();
-        MUSIC_EXPECT(player.GainForTest("ssa") > 0.19f);
+        MUSIC_EXPECT(player.GainForTest("ssa") > gamemusic::Volume * 0.95f);
         state.game = "giants";
         player.Update(state);
         SDL_Delay(500);
         MUSIC_EXPECT(player.GainForTest("ssa") > 0 && player.GainForTest("giants") > 0);
         settle();
-        MUSIC_EXPECT(player.GainForTest("ssa") == 0 && player.GainForTest("giants") > 0.19f);
+        MUSIC_EXPECT(player.GainForTest("ssa") == 0 && player.GainForTest("giants") > gamemusic::Volume * 0.95f);
         // Home, Collection and Settings all carry gamePage=false.
         for (int page = 0; page < 3; page++)
         {
             state.gamePage = false; settle();
             MUSIC_EXPECT(player.FadeComplete() && player.GainForTest("giants") == 0);
             state.gamePage = true; settle();
-            MUSIC_EXPECT(player.GainForTest("giants") > 0.19f);
+            MUSIC_EXPECT(player.GainForTest("giants") > gamemusic::Volume * 0.95f);
         }
         state.launching = true; settle();
         MUSIC_EXPECT(player.FadeComplete()); // only now may the process start
         state.launching = false; state.running = true; settle();
         MUSIC_EXPECT(player.FadeComplete());
         state.running = false; settle(); // normal exit
-        MUSIC_EXPECT(player.GainForTest("giants") > 0.19f);
+        MUSIC_EXPECT(player.GainForTest("giants") > gamemusic::Volume * 0.95f);
         state.running = true; settle();
         state.running = false; state.muted = true; settle(); // crash while muted
         MUSIC_EXPECT(player.FadeComplete());
         state.muted = false; settle();
-        MUSIC_EXPECT(player.GainForTest("giants") > 0.19f);
+        MUSIC_EXPECT(player.GainForTest("giants") > gamemusic::Volume * 0.95f);
         state.running = true; settle();
         state.running = false; settle(); // crash while its page is visible
-        MUSIC_EXPECT(player.GainForTest("giants") > 0.19f);
+        MUSIC_EXPECT(player.GainForTest("giants") > gamemusic::Volume * 0.95f);
         state.installing = true; settle();
         MUSIC_EXPECT(player.FadeComplete());
         state.installing = false; state.game = "swapforce"; settle();
-        MUSIC_EXPECT(player.GainForTest("swapforce") > 0.19f);
+        MUSIC_EXPECT(player.GainForTest("swapforce") > gamemusic::Volume * 0.95f);
         state.game = "trapteam"; settle();
-        MUSIC_EXPECT(player.GainForTest("swapforce") == 0 && player.GainForTest("trapteam") > 0.19f);
+        MUSIC_EXPECT(player.GainForTest("swapforce") == 0 && player.GainForTest("trapteam") > gamemusic::Volume * 0.95f);
         state.game = "unavailable"; settle();
         MUSIC_EXPECT(player.FadeComplete() && player.GainForTest("trapteam") == 0);
         std::filesystem::remove(gamemusic::File("ssa"));
