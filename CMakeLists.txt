@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.20)
 project(ArkeyanLauncher LANGUAGES C CXX)
+if(WIN32)
+    enable_language(RC) # the exe's icon, manifest and version (resources/windows/skylauncher.rc.in)
+endif()
 set(LAUNCHER_VERSION "0.7.3" CACHE STRING "Version shown in the app bundle")
 # SKYLAUNCHER_VERSION is the name before 0.6.0: still accepted.
 if(SKYLAUNCHER_VERSION)
@@ -205,10 +208,8 @@ set(SKYLAUNCHER_FONTS
 
 add_executable(ArkeyanLauncher WIN32 MACOSX_BUNDLE src/main.cpp)
 target_link_libraries(ArkeyanLauncher PRIVATE ArkeyanLauncherCore)
-# Windows: the manifest declares per-monitor v2 DPI awareness. MSVC's linker merges a .manifest source; mingw links it
-# as a resource.
-if(MINGW)
-    # The version information (Explorer's Details tab) and the manifest and icon, as resources.
+# Windows: the manifest (per-monitor v2 DPI awareness), the icon and the version information, as resources.
+if(WIN32)
     string(REGEX MATCHALL "[0-9]+" LAUNCHER_VERSION_PARTS "${LAUNCHER_VERSION}")
     list(LENGTH LAUNCHER_VERSION_PARTS LAUNCHER_VERSION_PART_COUNT)
     foreach(index RANGE 0 3)
@@ -220,8 +221,9 @@ if(MINGW)
     endforeach()
     configure_file(resources/windows/skylauncher.rc.in ${CMAKE_BINARY_DIR}/skylauncher.rc @ONLY)
     target_sources(ArkeyanLauncher PRIVATE ${CMAKE_BINARY_DIR}/skylauncher.rc)
-elseif(WIN32)
-    target_sources(ArkeyanLauncher PRIVATE resources/windows/skylauncher.manifest)
+    if(MSVC) # clang-cl, the release build: the resource holds the manifest, so the linker must not add its own
+        target_link_options(ArkeyanLauncher PRIVATE /MANIFEST:NO)
+    endif()
 endif()
 # The bundle id stays the one of the first releases (a new one would only make macOS ask again for folder permissions).
 set_target_properties(ArkeyanLauncher PROPERTIES

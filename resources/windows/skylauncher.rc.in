@@ -1,4 +1,4 @@
-// Resources of the exe, for llvm-mingw's windres (CMakeLists.txt fills in the version).
+// Resources of the exe (CMakeLists.txt fills in the version).
 // The application manifest (RT_MANIFEST 24, id 1: the process's own).
 1 24 "@CMAKE_SOURCE_DIR@/resources/windows/skylauncher.manifest"
 // The icon of the exe (Explorer, the taskbar before the window opens).
