@@ -896,3 +896,6 @@ Install	Installer
 Logs	Journaux
 Completed steps	Étapes terminées
 Retry to start the installation.	Appuyez sur Réessayer pour lancer l'installation.
+
+Drop to 30 FPS when needed	Passer à 30 FPS si besoin
+Turn off to keep your chosen rate even if the picture stutters.	Désactivez pour garder la fréquence choisie même si l’image saccade.

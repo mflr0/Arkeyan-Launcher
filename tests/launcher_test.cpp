@@ -1287,6 +1287,44 @@ static void InstallCardChecks(const std::filesystem::path& scratch)
 
 int main(int argc, char** argv)
 {
+    // Isolated real-page check. Each invocation gets a fresh process and a fresh ImGui context.
+    if (argc == 5 && std::string_view(argv[1]) == "--fps-fallback-page")
+    {
+        const std::filesystem::path root = std::filesystem::absolute(argv[2]);
+        std::filesystem::create_directories(root);
+        const GameInfo* game = FindGame(argv[3]);
+        if (game == nullptr) return 2;
+        auto set = [&](const char* key, const std::string& value) { TestSetEnv(key, value.c_str()); };
+        set("SDL_VIDEO_DRIVER", "offscreen");
+        set("SDL_AUDIO_DRIVER", "disk");
+        set("SDL_AUDIO_DISK_OUTPUT_FILE", "/dev/null");
+        set("SKYLANDERS_DATA", (root / "data").string());
+        set("SKY_LAUNCHER_DATA", (root / "launcher").string());
+        set("SKY_COLLECTION", (root / "collection").string());
+        set("SKY_SAVE_DIR", (root / "save").string());
+        set("SKY_LOG", (root / "game.log").string());
+        set("SKY_LAUNCHER_NO_UPDATE_CHECK", "1");
+        set("SKY_LAUNCHER_LANGUAGE", argv[4]);
+        set("SKY_LAUNCHER_SHOTS", (root / "shots").string());
+        set("SKY_LAUNCHER_TEST_FPS_FALLBACK", "1");
+        const std::string ini = (root / "launcher.ini").string();
+        set("SKY_LAUNCHER_INI", ini);
+        set("SKY_SETTINGS", ini);
+        LauncherConfig config;
+        config["launcher"]["experimental_trapteam"] = "1";
+        config["launcher"]["frame_rates"] = "1";
+        config[GameVideoSection(game->id)]["fps_limit"] = "60";
+        config[GameVideoSection(game->id)]["fps_auto_fallback"] = "1";
+        EXPECT(SaveLauncherConfig(ini, config));
+        launcher_ui::App app(*game, ini, config);
+        app.Run();
+        const LauncherConfig saved = LoadLauncherConfig(ini);
+        EXPECT(launcher_ui::SettingGet(saved, GameVideoSection(game->id), "fps_auto_fallback") == "0");
+        EXPECT(launcher_ui::SettingGet(saved, GameVideoSection(game->id), "fps_limit") == "60");
+        EXPECT(std::filesystem::exists(root / "shots" / (std::string("fps-fallback-") + game->id + ".png")));
+        printf("Fallback page %s %s: %d failures\n", game->id, argv[4], g_failures);
+        return g_failures == 0 ? 0 : 1;
+    }
     if (argc == 2 && std::string_view(argv[1]) == "--fake-game") return fake_game::Run();
     if (argc >= 3 && std::string_view(argv[1]) == "--accents") // started by the run below: the accented folder checks alone
         return AccentChecks(std::filesystem::path(argv[2])) == 0 ? 0 : 1;
@@ -1305,7 +1343,8 @@ int main(int argc, char** argv)
     std::filesystem::path iso = noDisc ? std::filesystem::path() : std::filesystem::path(argv[1]);
     std::filesystem::path scratch = std::filesystem::path(argv[2]) / "launcher_test";
     std::filesystem::remove_all(scratch);
-    std::filesystem::create_directories(scratch);
+    std::filesystem::create_directories(scratch / "tmp");
+    TestSetEnv("TMPDIR", std::filesystem::absolute(scratch / "tmp").string().c_str());
     const GameInfo& game = *FindGame("ssa");
     using Clock = std::chrono::steady_clock;
     auto milliseconds = [](Clock::time_point start)
@@ -1403,6 +1442,23 @@ int main(int argc, char** argv)
     EXPECT(!ExperimentalTrapTeam(experimental));
     EXPECT(LauncherTheme::StyleOf("trapteam").top == LauncherTheme::TrapTeamStyle.top);
     EXPECT(datadir::GameFolderName("trapteam") == "TrapTeam");
+
+    // The per-game video contract round-trips the fallback without changing another game's choice.
+    {
+        LauncherConfig fallback;
+        for (const char* id : { "ssa", "giants", "swapforce", "trapteam" })
+        {
+            const std::string section = GameVideoSection(id);
+            EXPECT(launcher_ui::ParseBool(launcher_ui::SettingGet(fallback, section.c_str(), "fps_auto_fallback", "1")));
+            fallback[section]["fps_limit"] = "60";
+            fallback[section]["fps_auto_fallback"] = "0";
+        }
+        const auto path = scratch / "fps-fallback.ini";
+        EXPECT(SaveLauncherConfig(path.string(), fallback));
+        EXPECT(LoadLauncherConfig(path.string()) == fallback);
+        fallback[GameVideoSection("ssa")]["fps_auto_fallback"] = "1";
+        EXPECT(fallback[GameVideoSection("giants")]["fps_auto_fallback"] == "0");
+    }
 
     if (noDisc)
     {

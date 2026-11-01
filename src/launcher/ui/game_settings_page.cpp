@@ -2,12 +2,14 @@
 // reinstall, delete data, uninstall). Arkeyan Launcher's own settings and what all games share (the controller) are in
 // the gear's Settings (launcher_ui.cpp). The video keys and the keyboard keys are the game's own copy in [<game>.video] and [<game>.input] (game_settings.h, game_keys.h).
 #include "launcher/ui/launcher_app.h"
+#include "launcher/env.h"
 #include "launcher/shortcut.h"
 #include "shared/collection/datadir.h"
 #include <ctime>
 #include <fmt/format.h>
 #include <fstream>
 #include <iterator>
+#include <imgui_internal.h>
 
 namespace launcher_ui
 {
@@ -117,6 +119,33 @@ namespace launcher_ui
             if (std::string_view(fpsChoices[i].value) == DefaultFrameRate(m_s->game.id))
                 fpsDefault = int(i);
         SettingSelect("##fps", video, "fps_limit", fpsChoices, fpsDefault);
+
+        const std::string fpsLimit = SettingGet(m_config, video, "fps_limit", DefaultFrameRate(m_s->game.id));
+        if (fpsLimit == "60" || fpsLimit == "display")
+        {
+            ui::SettingRow(Tr("Drop to 30 FPS when needed"),
+                Tr("Turn off to keep your chosen rate even if the picture stutters."));
+            const std::string fallbackDefault = SettingGet(m_config, "video", "fps_auto_fallback", "1");
+            toggle("##fpsautofallback", "fps_auto_fallback", fallbackDefault.c_str());
+            // Offscreen page check: feed the switch through ImGui, then capture the rendered page.
+            if (!m_shots.empty() && LauncherEnv("SKY_LAUNCHER_TEST_FPS_FALLBACK") != nullptr)
+            {
+                static int stage = 0;
+                static uint64_t captureAt = 0;
+                m_testAt = SDL_GetTicks() + 60000;
+                if (stage == 0)
+                {
+                    ImGui::ActivateItemByID(ImGui::GetItemID());
+                    captureAt = SDL_GetTicks() + 300;
+                    stage++;
+                }
+                else if (SDL_GetTicks() >= captureAt)
+                {
+                    Screenshot(("fps-fallback-" + std::string(m_s->game.id)).c_str());
+                    m_running = false;
+                }
+            }
+        }
 
         ui::SettingRow(Tr("FPS counter"), Tr("A small frame rate readout in the game (F3 in the game turns it on too)."));
         toggle("##showfps", "show_fps", "0");
