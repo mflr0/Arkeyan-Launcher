@@ -26,17 +26,21 @@
 #endif
 
 static int g_delay = 50;
+static int g_step = 0;
 
 static void step(const char* id, const char* title, int count)
 {
     const char* fail = getenv("FAKE_SSABUILD_FAIL");
+    const char* failStep = getenv("FAKE_SSABUILD_FAIL_STEP");
+    const char* pauseStep = getenv("FAKE_SSABUILD_PAUSE_STEP");
+    ++g_step;
     printf("@step %s %s\n", id, title);
     for (int i = 1; i <= count; i++)
     {
         printf("@progress %d %d\n", i, count);
         if (i % 10 == 0)
             printf("@log %s: file %d of %d\n", id, i, count);
-        if (fail != NULL && strcmp(fail, id) == 0 && i == count / 2)
+        if (((fail != NULL && strcmp(fail, id) == 0) || (failStep != NULL && atoi(failStep) == g_step)) && i == count / 2)
         {
             fflush(stdout);
             fprintf(stderr, "clang: error: something went wrong in item %d\n", i);
@@ -45,6 +49,9 @@ static void step(const char* id, const char* title, int count)
             exit(1);
         }
         fflush(stdout);
+        /* Hold after observable progress, so cancellation tests synchronize on an event, not a delay. */
+        if (i == 1 && pauseStep != NULL && atoi(pauseStep) == g_step)
+            SLEEP_MS(30000);
         SLEEP_MS(g_delay);
     }
 }
@@ -106,6 +113,15 @@ int main(int argc, char** argv)
     }
 
     printf("@log fake SkyBuild, iso %s\n", iso);
+    const char* ending = getenv("FAKE_SSABUILD_ENDING");
+    if (ending != NULL)
+    {
+        if (strcmp(ending, "error") == 0)
+            fputs("@error synthetic failure without newline", stdout);
+        else if (strcmp(ending, "exit") == 0)
+            return 7;
+        return 0;
+    }
     step("toolchain", "Preparing the compiler", 10);
     step("disc", "Reading the disc", 10);
     step("recompile", "Translating the game code", 40);

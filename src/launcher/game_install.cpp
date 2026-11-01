@@ -357,7 +357,7 @@ void CleanAfterInstall(const std::filesystem::path& gameFolder, const std::files
     if (fs::is_directory(work, error))
     {
         fs::path kept = gameFolder / "install-logs";
-        if (fs::is_directory(work / "logs", error))
+        if (fs::exists(work / "logs", error) && fs::is_directory(work / "logs", error))
         {
             fs::remove_all(kept, error);
             fs::rename(work / "logs", kept, error);
@@ -611,6 +611,7 @@ InstallProgress GameInstaller::Snapshot(size_t logTail)
     copy.done = m_progress.done;
     copy.total = m_progress.total;
     copy.error = m_progress.error;
+    copy.startFailed = m_progress.startFailed;
     copy.runtime = m_progress.runtime;
     copy.action = m_progress.action;
     copy.logLines = m_progress.log.size();

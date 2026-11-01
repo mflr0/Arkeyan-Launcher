@@ -230,6 +230,7 @@ namespace launcher_ui
         int m_manageTab = 0;
         std::string m_backupsOf;
         uint16_t m_unknownType = 0xFFFF;
+        int m_unknownCategory = -1;
         char m_unknownName[64] = {};
     };
 }

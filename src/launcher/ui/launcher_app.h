@@ -73,7 +73,7 @@ namespace launcher_ui
         { "8", N_("Anisotropic 8x") }, { "16", N_("Anisotropic 16x") } };
     // The game's FXAA pass (Swap Force, Trap Team): the values are the runtime's edge_smoothing (docs/settings.md).
     inline constexpr Choice EdgeSmoothingChoices[] = { { "game", N_("Game") }, { "light", N_("Gentle") }, { "off", N_("None") } };
-    inline constexpr Choice PortalChoices[] = { { "auto", N_("Auto: a real portal if plugged in, else virtual") }, { "emulated", N_("Virtual (no portal needed)") },
+    inline constexpr Choice PortalChoices[] = { { "auto", N_("Automatic detection") }, { "emulated", N_("Virtual (no portal needed)") },
         { "real", N_("Real portal (Wii, PlayStation, Xbox)"), "hid usb" } };
     inline constexpr Choice LanguageChoices[] = { { "en", "English" }, { "fr", "Français" }, { "de", "Deutsch" }, { "es", "Español" },
         { "it", "Italiano" }, { "nl", "Nederlands" }, { "sv", "Svenska" }, { "no", "Norsk" }, { "da", "Dansk" }, { "fi", "Suomi" } };
@@ -467,6 +467,7 @@ namespace launcher_ui
         bool UpdateAvailable() const;                   // the release has a newer version of this game than the one built (docs/updates.md)
         bool UpdateAvailable(const GameSlot& slot) const;
         bool AnyGameUpdate() const;
+        std::string GameUpdateNote() const;
         const GameUpdate* PendingUpdate(const GameSlot& slot) const; // the game's entry in the release's games line, if any
         std::string WantedKitTag(const GameSlot& slot) const;        // the release whose kit INSTALL / UPDATE must be using
         std::string GameVersion(const GameSlot& slot) const;         // "0.8.2": the built game's, else the kit's, else the release's; "" when unknown
@@ -606,7 +607,7 @@ namespace launcher_ui
         bool m_uninstalled = false;    // done: the window only shows the result and quits
         bool m_testUninstall = false;  // SKY_LAUNCHER_TEST_UNINSTALL: the uninstall screens
         bool m_testKeys = false;       // SKY_LAUNCHER_TEST_KEYS: each game's Keyboard tab, one shot each
-        int m_testScreens = 0;         // SKY_LAUNCHER_TEST_SCREENS: Home, the game page and its Keyboard tab; 1 with the mouse, 2 with a pad
+        int m_testScreens = 0;         // SKY_LAUNCHER_TEST_SCREENS: Home, the game page and its Keyboard tab; 1 with the mouse, 2 with a pad, 3 issue checks
         bool m_testPadInput = false;   // SKY_LAUNCHER_TEST_INPUT=pad (or SCREENS=pad): any script's shots as with a pad (its legends, the ring)
         int m_testFocusView = -1;      // the page and tab the last pad focus was given on
         bool m_testPad = false;        // SKY_LAUNCHER_TEST_PAD: each game's Controller tab, and Swap Force's Game tab

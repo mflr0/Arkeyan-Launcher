@@ -4,6 +4,7 @@
 #include "launcher/env.h"
 #include "launcher/launcher.h"
 #include "launcher/game_settings.h"
+#include "launcher/i18n.h"
 #include "shared/dir_list.h"
 #include "shared/collection/datadir.h"
 #include "shared/collection/json.h"
@@ -53,10 +54,16 @@ namespace launcher_ui
     // seats, the shelf and the sheets all name a figure the same way. Anything else is left as it is.
     static std::string Canonical(const std::string& path)
     {
+        if (path.empty())
+            return {};
         std::string normal = path;
         std::replace(normal.begin(), normal.end(), '\\', '/');
         std::error_code error;
-        const fs::path file = datadir::FromText(normal); // UTF-8, as the folder below (accents in a Windows user name)
+        const fs::path original = datadir::FromText(normal);
+        fs::path file = fs::canonical(original, error); // resolves both directory and individual-file links
+        if (error)
+            file = original;
+        error.clear();
         if (file.has_filename() && fs::equivalent(file.parent_path(), datadir::FromText(collection::Folder()), error) && !error)
             return collection::PathOf(datadir::Text(file.filename()));
         return path;
@@ -65,20 +72,19 @@ namespace launcher_ui
     // The dump's first four bytes (its serial): 0 when unreadable. Two files with one serial are one toy.
     static uint32_t SerialOf(const std::string& path)
     {
-        size_t size = 0;
-        void* data = SDL_LoadFile(path.c_str(), &size);
-        if (data == nullptr)
+        SDL_IOStream* file = SDL_IOFromFile(path.c_str(), "rb");
+        if (file == nullptr)
             return 0;
         uint32_t serial = 0;
-        if (size >= 4)
-            memcpy(&serial, data, 4);
-        SDL_free(data);
+        if (SDL_ReadIO(file, &serial, sizeof serial) != sizeof serial)
+            serial = 0;
+        SDL_CloseIO(file);
         return serial;
     }
 
     bool SeatAccepts(const collection::Seat& seat, const collection::Figure& figure)
     {
-        return figure.toy == nullptr || std::find(seat.accepts.begin(), seat.accepts.end(), figure.toy->category) != seat.accepts.end();
+        return figure.toy != nullptr && std::find(seat.accepts.begin(), seat.accepts.end(), figure.toy->category) != seat.accepts.end();
     }
 
     std::vector<std::string> ReadSeats(const collection::Game& game, const std::string& file)
@@ -106,12 +112,20 @@ namespace launcher_ui
             Placed p{ atoi(line.c_str()), Canonical(collection::MigratedPath(line.substr(space + 1))), {} };
             // One toy sits once: the same file on two lines (a hand edit), or two files of one serial, count for the first.
             bool again = std::any_of(placed.begin(), placed.end(), [&](const Placed& other) { return other.path == p.path; });
-            if (!again && collection::Read(p.path, p.figure))
+            if (again || p.path.empty())
+                continue;
+            if (collection::Read(p.path, p.figure))
             {
                 uint32_t serial = SerialOf(p.path);
                 again = serial != 0 && std::any_of(placed.begin(), placed.end(), [&](const Placed& other) { return SerialOf(other.path) == serial; });
                 if (!again)
                     placed.push_back(std::move(p));
+            }
+            else
+            {
+                // Keep an unreadable entry on its original seat: the player can see it is missing and take it off.
+                p.figure = {};
+                placed.push_back(std::move(p));
             }
         }
         // A swapper is one seat: its bottom (the top's partner, when the top is placed too) is not a seat of its own.
@@ -133,7 +147,7 @@ namespace launcher_ui
         for (size_t i = 0; i < placed.size(); i++)
         {
             int slot = placed[i].slot;
-            if (slot >= 0 && size_t(slot) < seats.size() && seats[slot].empty() && SeatAccepts(game.seats[slot], placed[i].figure))
+            if (slot >= 0 && size_t(slot) < seats.size() && seats[slot].empty() && (placed[i].figure.toy == nullptr || SeatAccepts(game.seats[slot], placed[i].figure)))
             {
                 seats[slot] = placed[i].path;
                 done[i] = true;
@@ -248,29 +262,31 @@ namespace launcher_ui
         std::string path = collection::Folder() + "/catalogue.json";
         Json root = Json::Object();
         size_t size = 0;
-        if (char* data = static_cast<char*>(SDL_LoadFile(path.c_str(), &size)))
+        SDL_PathInfo info;
+        if (SDL_GetPathInfo(path.c_str(), &info))
         {
+            char* data = static_cast<char*>(SDL_LoadFile(path.c_str(), &size));
+            if (data == nullptr)
+                return false;
             std::string error;
             Json parsed;
-            const bool valid = Json::Parse(std::string(data, size), parsed, error) && parsed.IsObject();
+            const bool valid = Json::Parse(std::string(data, size), parsed, error) && parsed.IsObject() &&
+                (!parsed.Has("toys") || parsed["toys"].IsArray());
             SDL_free(data);
             if (!valid)
                 return false;
             root = std::move(parsed);
         }
-        else
-        {
-            std::error_code error;
-            if (fs::exists(datadir::FromText(path), error) || error)
-                return false; // an unreadable catalogue must not be replaced with a new one
-        }
+        const std::string trimmed = Trimmed(name);
+        if (trimmed.empty())
+            return false;
         Json toys = Json::Array();
         for (const Json& toy : root["toys"].Items())
             if (toy["type"].AsInt(-1) != type)
                 toys.Push(toy);
         Json toy = Json::Object();
         toy.Set("type", int(type));
-        toy.Set("name", name);
+        toy.Set("name", trimmed);
         toy.Set("category", collection::CategoryId(category));
         toy.Set("game", game);
         toys.Push(toy);
@@ -294,6 +310,9 @@ namespace launcher_ui
         figures = collection::List();
         const collection::Game* game = Game();
         seats = game != nullptr ? ReadSeats(*game, SessionFile(*game)) : std::vector<std::string>{};
+        for (std::string& seat : seats)
+            if (const collection::Figure* figure = Find(seat))
+                seat = figure->path;
         m_signature = Signature();
     }
 
@@ -334,6 +353,8 @@ namespace launcher_ui
 
     const collection::Figure* CollectionModel::Find(const std::string& path) const
     {
+        if (path.empty())
+            return nullptr;
         for (const collection::Figure& figure : figures)
             if (figure.path == path)
                 return &figure;
@@ -341,6 +362,12 @@ namespace launcher_ui
         for (const collection::Figure& figure : figures)
             if (figure.path == canonical)
                 return &figure;
+        for (const collection::Figure& figure : figures)
+        {
+            std::error_code error;
+            if (!path.empty() && fs::equivalent(datadir::FromText(figure.path), datadir::FromText(path), error) && !error)
+                return &figure;
+        }
         return nullptr;
     }
 
@@ -376,10 +403,18 @@ namespace launcher_ui
     {
         if (!CanEditSeats() || seat >= seats.size())
             return false;
-        const std::string spelled = Canonical(path);
-        std::vector<std::string> next = seats;
-        if (const collection::Figure* figure = Find(spelled); figure != nullptr && Incompatible(*figure))
-            return false;
+        const collection::Figure* found = path.empty() ? nullptr : Find(path);
+        const std::string spelled = found != nullptr ? found->path : Canonical(path);
+        if (!spelled.empty())
+        {
+            collection::Figure figure;
+            if (Find(spelled) == nullptr || !collection::Read(spelled, figure) || Incompatible(figure) ||
+                !SeatAccepts(Game()->seats[seat], figure) || figure.lock.Busy())
+                return false;
+            if (!figure.partner.empty() && collection::GetLock(collection::PathOf(figure.partner)).Busy())
+                return false;
+        }
+        auto next = seats;
         if (!spelled.empty())
         {
             // A figure sits on one seat, and so does a toy: another file of the same serial leaves its seat too.
@@ -398,18 +433,38 @@ namespace launcher_ui
 
     int CollectionModel::SeatOf(const std::string& path) const
     {
+        if (path.empty())
+            return -1;
+        const collection::Figure* figure = Find(path);
+        const std::string spelled = figure != nullptr ? figure->path : Canonical(path);
         for (size_t i = 0; i < seats.size(); i++)
-            if (!path.empty() && (seats[i] == path || seats[i] == Canonical(path)))
+            if (seats[i] == spelled)
                 return int(i);
         return -1;
     }
 
     bool CollectionModel::Delete(const std::string& path, std::string* error)
     {
-        if (!collection::Delete(path, "deleted", error))
+        const auto before = seats;
+        const int seat = SeatOf(path);
+        if (seat >= 0 && !SetSeat(size_t(seat), ""))
+        {
+            if (error != nullptr)
+                *error = Tr("Couldn't write the seats for the next start");
             return false;
-        if (int seat = SeatOf(path); seat >= 0)
-            SetSeat(size_t(seat), "");
+        }
+        if (!collection::Delete(path, "deleted", error))
+        {
+            if (seat >= 0)
+            {
+                if (WriteSeats(*Game(), SessionFile(*Game()), before))
+                    seats = before;
+                else if (error != nullptr)
+                    *error = Tr("The figure was kept, but its seat couldn't be restored.");
+                m_signature = Signature();
+            }
+            return false;
+        }
         Load();
         return true;
     }
@@ -506,6 +561,19 @@ namespace launcher_ui
             gold = std::min<unsigned long>(gold * 10 + unsigned(c - '0'), figures::MaxGold);
         }
         return uint16_t(gold);
+    }
+
+    bool SaveEditedStats(const std::string& path, const figures::FigureStats& base, const figures::FigureStats& edited,
+        const std::string& nickname, std::string* error)
+    {
+        collection::Figure now;
+        if (!collection::Read(path, now) || now.state == figures::AreaState::Damaged)
+        {
+            if (error != nullptr)
+                *error = Tr("The figure can't be read. Reopen it before saving.");
+            return false;
+        }
+        return collection::WriteStats(path, MergeEditedStats(now.stats, base, edited, figures::NicknameUtf8(base), nickname), error);
     }
 
     figures::FigureStats MergeEditedStats(const figures::FigureStats& now, const figures::FigureStats& base, const figures::FigureStats& edited,

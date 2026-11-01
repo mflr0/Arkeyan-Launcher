@@ -72,7 +72,7 @@ namespace
 
     // ---- Frame rates of an older file ----------------------------------------------------------------------------------------
 
-    void FrameRateMigration()
+    void FrameRateMigration(const fs::path& scratch)
     {
         LauncherConfig config;
         config["video"]["fps_limit"] = "0";
@@ -87,7 +87,7 @@ namespace
         // A choice made afterwards stays, through a save and a load.
         config["ssa.video"]["fps_limit"] = "120";
         config["video"]["fps_limit"] = "0";
-        fs::path file = fs::temp_directory_path() / "skylauncher-frame-rates.ini";
+        fs::path file = scratch / "frame-rates.ini";
         SETTINGS_EXPECT(SaveLauncherConfig(datadir::Text(file), config));
         LauncherConfig again = LoadLauncherConfig(datadir::Text(file));
         MigrateFrameRates(again);
@@ -131,7 +131,7 @@ namespace
 
     // ---- Per-game video settings ---------------------------------------------------------------------------------------
 
-    void VideoChecks()
+    void VideoChecks(const fs::path& root)
     {
         LauncherConfig config;
         config["video"]["fps_limit"] = "60";
@@ -216,13 +216,13 @@ namespace
         SETTINGS_EXPECT(config["video"].count("edge_smoothing") == 0 && config["ssa.video"].count("edge_smoothing") == 0);
 
         // Through the settings file, sections with a dot included.
-        fs::path scratch = fs::temp_directory_path() / "skylauncher-video-test.ini";
+        fs::path scratch = root / "video.ini";
         SETTINGS_EXPECT(SaveLauncherConfig(scratch.string(), config));
         LauncherConfig back = LoadLauncherConfig(scratch.string());
         SETTINGS_EXPECT(back["giants.video"]["fps_limit"] == "30" && back["ssa.video"]["resolution_scale"] == "3");
         fs::remove(scratch);
         // A first start: the data folder does not exist yet (a fresh Windows PC), and its path has accents.
-        fs::path fresh = fs::temp_directory_path() / "skylauncher-fresh-test" / u8"Données élève";
+        fs::path fresh = root / "fresh" / u8"Données élève";
         fs::remove_all(fresh.parent_path());
         std::string freshIni = datadir::Text(fresh / "launcher.ini");
         SETTINGS_EXPECT(SaveLauncherConfig(freshIni, config));
@@ -241,7 +241,7 @@ namespace
             SeedGameVideo(page, "ssa"); // the window seeds again on its next start
             SETTINGS_EXPECT(page["ssa.video"]["skip_intro_movies"] == "1" && page["ssa.video"]["fps_limit"] == "60");
             ApplyGameVideo(page, "ssa");
-            fs::path played = fs::temp_directory_path() / "skylauncher-play-test.ini";
+            fs::path played = root / "play.ini";
             SETTINGS_EXPECT(SaveLauncherConfig(played.string(), page));
             LauncherConfig game = LoadLauncherConfig(played.string()); // the runtime parses the same file
             SETTINGS_EXPECT(game["video"]["skip_intro_movies"] == "1" && game["video"]["fps_limit"] == "60");
@@ -269,7 +269,7 @@ namespace
         return false;
     }
 
-    void KeyChecks()
+    void KeyChecks(const fs::path& root)
     {
         // Each game lists the actions it uses, named as it names them; a button it ignores has no row.
         SETTINGS_EXPECT(HasRow("ssa", "a", "1st Power / Accept") && HasRow("ssa", "x", "2nd Power") && HasRow("ssa", "y", "Use / Talk"));
@@ -380,7 +380,7 @@ namespace
         SETTINGS_EXPECT(config["input"]["key_a"] == "Space" && config["input"]["key_y"] == "V" && config["input"].count("key_dpad_up") == 0);
 
         // Through the settings file, sections with a dot included.
-        fs::path scratch = fs::temp_directory_path() / "skylauncher-keys-test.ini";
+        fs::path scratch = root / "keys.ini";
         SETTINGS_EXPECT(SaveLauncherConfig(scratch.string(), config));
         LauncherConfig back = LoadLauncherConfig(scratch.string());
         SETTINGS_EXPECT(back["ssa.input"]["key_a"] == "J" && back["giants.input"]["seeded"] == "1");
@@ -651,6 +651,8 @@ namespace
         Write(folders.saves / "a" / "GLOBAL.DAT", std::string(100, 's'));
         Write(folders.game / "saves-backup" / "20260101-000000" / "a" / "GLOBAL.DAT", std::string(100, 'b'));
         Write(folders.game / "portal.txt", std::string(5, 'p'));
+        Write(folders.game / "achievements.txt", "achievement");
+        Write(folders.game / "playtime.txt", "playtime-data");
         Write(folders.game / "pipelines.bin", std::string(300, 'c'));
         Write(folders.game / "launcher-cache" / "title_icon.png", std::string(50, 'i'));
         Write(folders.game / "portraits" / "p.png", std::string(40, 'q'));
@@ -668,7 +670,7 @@ namespace
         GameFolders folders = Populate(scratch / "data");
 
         GameDataSizes sizes = MeasureGameData(folders);
-        SETTINGS_EXPECT(sizes.saves == 100 + 100 + 5);
+        SETTINGS_EXPECT(sizes.saves == 100 + 100 + 5 + 11 + 13);
         SETTINGS_EXPECT(sizes.caches == 300 + 50 + 40 + 7);
         SETTINGS_EXPECT(sizes.installed == 1000 + 10 + 20); // the build and its logs; the textures and figures are not its
 
@@ -696,7 +698,8 @@ namespace
 
         // Delete data: the saves, the backups, the seats and the caches; the game, the textures and the figures stay.
         DataResult deleted = DeleteGameData(folders);
-        SETTINGS_EXPECT(deleted.ok && deleted.freed == 205 + 397);
+        SETTINGS_EXPECT(deleted.ok && deleted.freed == 229 + 397);
+        SETTINGS_EXPECT(!fs::exists(folders.game / "achievements.txt") && !fs::exists(folders.game / "playtime.txt"));
         SETTINGS_EXPECT(!fs::exists(folders.saves) && !fs::exists(folders.game / "saves-backup") && !fs::exists(folders.game / "portal.txt") &&
             !fs::exists(folders.game / "pipelines.bin") && !fs::exists(folders.game / "portraits"));
         SETTINGS_EXPECT(fs::exists(folders.game / "SGRecomp.app" / "Contents" / "MacOS" / "SGRecomp") && fs::exists(folders.game / "install.log") &&
@@ -718,6 +721,7 @@ namespace
             fs::exists(folders.game / "textures" / "t.dds") && fs::exists(folders.game / "figures" / "f.bin") &&
             fs::exists(folders.game / "launcher-cache" / "title_icon.png") && fs::exists(folders.game / "portraits" / "p.png"));
         SETTINGS_EXPECT(fs::exists(folders.game / "gamedata" / "default.xex")); // the copy stays: it is the disc's files, removed from the Disc tab
+        SETTINGS_EXPECT(Read(folders.game / "achievements.txt") == "achievement" && Read(folders.game / "playtime.txt") == "playtime-data");
         SETTINGS_EXPECT(config.count("install.aaaa") == 0 && config.count("install.bbbb") == 1 && config["giants"]["iso"] == "/discs/giants.iso" &&
             config["giants.video"]["fps_limit"] == "30");
 
@@ -788,7 +792,7 @@ namespace
 namespace
 {
     // A game's language lists follow its disc: stored at the check, filtered, the saved choice off the disc shows the default.
-    void DiscLanguageChecks()
+    void DiscLanguageChecks(const fs::path& scratch)
     {
         using namespace launcher_ui;
         using V = std::vector<std::string>;
@@ -808,7 +812,7 @@ namespace
         art::DiscLanguages back = StoredDiscLanguages(config, "swapforce");
         SETTINGS_EXPECT(back.text == europe.text && back.voice == europe.voice);
         // It survives the settings file.
-        fs::path file = fs::temp_directory_path() / "disc-languages-check.ini";
+        fs::path file = scratch / "disc-languages.ini";
         SETTINGS_EXPECT(SaveLauncherConfig(file.string(), config));
         art::DiscLanguages loaded = StoredDiscLanguages(LoadLauncherConfig(file.string()), "swapforce");
         SETTINGS_EXPECT(loaded.text == europe.text && loaded.voice == europe.voice);
@@ -880,11 +884,11 @@ namespace
     }
 
     // The launcher's own language: never the shown game's; an old "game" is the system's and goes at the next save.
-    void LauncherLanguageChecks()
+    void LauncherLanguageChecks(const fs::path& scratch)
     {
         using namespace launcher_ui;
         const std::vector<std::string> system = { "ja", "fr", "en" };
-        fs::path file = fs::temp_directory_path() / "launcher-language-check.ini";
+        fs::path file = scratch / "launcher-language.ini";
         Write(file, "[launcher]\nlanguage=game\ngame=ssa\n[ssa]\nlanguage=fr\n[giants]\nlanguage=de\n");
         LauncherConfig config = LoadLauncherConfig(file.string());
         // An old "game" is the system's language (the first one the launcher has) and is not kept.
@@ -909,16 +913,16 @@ namespace
 int SettingsChecks(const fs::path& scratch)
 {
     fs::create_directories(scratch);
-    VideoChecks();
-    FrameRateMigration();
+    VideoChecks(scratch);
+    FrameRateMigration(scratch);
     GiantsCap();
-    KeyChecks();
+    KeyChecks(scratch);
     PadChecks();
     ArgumentChecks();
     EnvironmentChecks();
     ShortcutChecks(scratch / "shortcut");
     DataChecks(scratch / "datachecks");
-    DiscLanguageChecks();
-    LauncherLanguageChecks();
+    DiscLanguageChecks(scratch);
+    LauncherLanguageChecks(scratch);
     return g_settingsFailures;
 }

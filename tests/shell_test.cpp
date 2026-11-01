@@ -415,6 +415,20 @@ namespace
         CleanupOldUpdate(app);
         SHELL_EXPECT(!std::filesystem::exists(app.string() + ".old") && ReadBytes(app) == "new");
 
+        // Bundles and kits are directory trees: rollback preserves nested contents, then permits a retry.
+        const auto bundle = updates / "bundle-swap" / "Launcher.app";
+        const auto freshBundle = updates / "bundle-swap" / "fresh.app";
+        WriteBytes(bundle / "Contents" / "runtime", "old executable");
+        WriteBytes(bundle / "Contents" / "Resources" / "keep", "old resource");
+        SHELL_EXPECT(!ReplaceInPlace(bundle, freshBundle, error));
+        SHELL_EXPECT(error.find("Couldn't put the new") != std::string::npos && ReadBytes(bundle / "Contents" / "runtime") == "old executable");
+        SHELL_EXPECT(ReadBytes(bundle / "Contents" / "Resources" / "keep") == "old resource" && !std::filesystem::exists(bundle.string() + ".old"));
+        WriteBytes(freshBundle / "Contents" / "runtime", "new executable");
+        SHELL_EXPECT(ReplaceInPlace(bundle, freshBundle, error));
+        SHELL_EXPECT(ReadBytes(bundle / "Contents" / "runtime") == "new executable" && ReadBytes(std::filesystem::path(bundle.string() + ".old") / "Contents" / "Resources" / "keep") == "old resource");
+        CleanupOldUpdate(bundle);
+        SHELL_EXPECT(!std::filesystem::exists(bundle.string() + ".old") && !std::filesystem::exists(freshBundle));
+
         // Zips: unpacking, a path leaving its folder, and the kit swapped in without losing the old one on failure.
         std::filesystem::path zip = updates / "kit.zip";
         MakeZip(zip, { { "ssa-kit-test/", "" }, { "ssa-kit-test/SSABuild", "binary" }, { "ssa-kit-test/SSABuild.exe", "binary" }, { "ssa-kit-test/res/a.txt", "a" } });

@@ -200,7 +200,7 @@ namespace launcher_ui
         const bool any = std::filesystem::exists(RuntimeLogFolder() / RuntimeLogName, error) || std::filesystem::exists(folder / CaptureLogName, error);
         if (!ui::BeginSettings("##support"))
             return;
-        ui::SettingRow(Tr("Problem report"), Tr("You see the report before saving it; nothing is sent."));
+        ui::SettingRow(Tr("Problem report"), Tr("Preview and send a report of the problem you encountered."));
         ui::ButtonOptions report;
         report.kind = ui::ButtonKind::Primary;
         if (ui::Button(Tr("Report a problem"), report))

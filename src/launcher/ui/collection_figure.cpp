@@ -885,15 +885,12 @@ namespace launcher_ui
             {
                 // The figure as it is now (a game may have played it since the editor opened), with only the fields
                 // changed here.
-                Figure now;
-                figures::FigureStats current = collection::Read(f.path, now) && now.state == figures::AreaState::Valid ? now.stats : m_editBase;
-                figures::FigureStats edited = MergeEditedStats(current, m_editBase, m_edit, figures::NicknameUtf8(m_editBase), m_nickname);
                 // Only the name changed: no write to the figure (and no backup of it).
                 bool changed = m_edit.experience != m_editBase.experience || m_edit.giantsExperience != m_editBase.giantsExperience ||
                     m_edit.swapForceExperience != m_editBase.swapForceExperience || m_edit.gold != m_editBase.gold || m_edit.heroPoints != m_editBase.heroPoints || m_edit.hat != m_editBase.hat ||
                     m_edit.upgrades != m_editBase.upgrades || m_edit.wowPow != m_editBase.wowPow || figures::NicknameUtf8(m_editBase) != Trimmed(m_nickname);
                 if (changed)
-                    saved = collection::WriteStats(f.path, edited, &error);
+                    saved = SaveEditedStats(f.path, m_editBase, m_edit, m_nickname, &error);
             }
             if (saved && trap && m_edit.villain != 0 && (m_edit.villain != m_editBase.villain || m_edit.villainEvolved != m_editBase.villainEvolved))
                 saved = collection::SetTrapVillain(f.path, uint8_t(m_edit.villain), m_edit.villainEvolved, &error);

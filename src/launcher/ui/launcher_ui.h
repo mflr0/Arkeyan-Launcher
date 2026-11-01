@@ -6,6 +6,7 @@
 #include <span>
 #include <string>
 #include <string_view>
+#include <vector>
 
 // A game tile shown in the launcher sidebar. Only entries backed by a runtime in the game table can be played;
 // the rest are placeholders for the other Skylanders games.
@@ -44,3 +45,6 @@ std::string LauncherFormatSize(uint64_t bytes);
 std::string LauncherMiddleEllipsis(std::string_view text, size_t maxCharacters);
 std::string LauncherDisplayName(std::string_view xdbfName, const GameInfo& game);
 
+
+// The result of a manual check when the launcher itself is current. Names are full game titles.
+std::string GameUpdateSummary(const std::vector<std::string>& games);

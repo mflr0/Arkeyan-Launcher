@@ -1,9 +1,12 @@
 // Checks the launcher's disc verification and settings file without showing any UI.
 // usage: SSALauncherTest <game disc .iso> <scratch dir> [<damaged copy of the image>...]
 #include "test_env.h"
+#include "atomic_write_checks.h"
 #include "launcher/portal_status.h"
 #include "launcher/env.h"
 #include "launcher/game_install.h"
+#include "launcher/game_keys.h"
+#include "launcher/install_checklist.h"
 #include "launcher/game_progress.h"
 #include "launcher/launcher.h"
 #include "shared/collection/datadir.h"
@@ -12,6 +15,7 @@
 #include "shared/art/game_art.h"
 #include "shared/collection/icons.h"
 #include "shared/collection/upgrades.h"
+#include "shared/collection/json.h"
 #include "launcher/ui/launcher_app.h"
 #include "launcher/ui/launcher_ui.h"
 #include "launcher/ui/collection_model.h"
@@ -26,10 +30,12 @@
 #include <cstring>
 #include <filesystem>
 #include <fstream>
+#include <future>
 #include <random>
 #include <set>
 #include <fmt/format.h>
 #include <SDL3/SDL.h>
+#include <stb_image_write.h>
 #include "fake_game.h"
 #if defined(_WIN32)
 #include <process.h>
@@ -65,6 +71,7 @@ namespace
     GameSourceStatus Check(const std::filesystem::path& path)
     {
         GameSourceCheck check = CheckGameSource(path.string(), *FindGame("ssa"));
+        EXPECT(check.status == GameSourceStatus::Ok || !check.message.empty());
         printf("  %-14s %s\n", StatusName(check.status), path.filename().string().c_str());
         if (!check.message.empty())
             printf("    -> %s\n", check.message.c_str());
@@ -368,6 +375,21 @@ namespace
         EXPECT(model.SetSeat(0, "") && model.OnPortal().empty() && collection::PortalOverviewLine(collection::PortalOverview(ssa, model.seats, names), "none") == "none");
         EXPECT(launcher_ui::ReadSeats(ssa, session) == std::vector<std::string>(4)); // the file names nothing
         EXPECT(model.SetSeat(0, spyro) && model.SetSeat(2, anvil)); // as before, for the checks below
+        // A failed write leaves both the on-disk seats and the displayed seats intact.
+        {
+            const auto beforeSeats = model.seats;
+            const auto beforeFile = bytesOf(session);
+            fs::create_directories(session + ".tmp");
+            { std::ofstream(fs::path(session + ".tmp") / "keep") << "blocked"; }
+            const auto blocker = bytesOf(fs::path(session + ".tmp") / "keep");
+            bool seated = true;
+            EXPECT(WithBlockedFileWrite(session, [&] { seated = model.SetSeat(1, gill); }));
+            EXPECT(!seated && model.seats == beforeSeats && bytesOf(session) == beforeFile && NoAtomicTemporary(session));
+            EXPECT(model.SetSeat(1, gill) && launcher_ui::ReadSeats(ssa, session)[1] == gill);
+            EXPECT(bytesOf(fs::path(session + ".tmp") / "keep") == blocker);
+            fs::remove_all(session + ".tmp");
+            EXPECT(model.SetSeat(1, ""));
+        }
         EXPECT(model.Poll(1000000, 0) == false); // nothing changed since Load (SetSeat's own write is not a change)
         {
             fs::path protectedFile = scratch / "protected-session.txt";
@@ -426,6 +448,85 @@ namespace
             std::filesystem::remove(twin);
             model.Load();
         }
+        // Refused seating must leave the portal file and the model unchanged.
+        {
+            const auto before = model.seats;
+            EXPECT(!model.SetSeat(0, anvil) && model.seats == before); // an item is not a player
+            EXPECT(!model.SetSeat(0, collection::PathOf("missing.sky")) && model.seats == before);
+            const auto beforeFile = bytesOf(session);
+            bool seated = true;
+            EXPECT(WithBlockedFileWrite(session, [&] { seated = model.SetSeat(1, gill); }));
+            EXPECT(!seated && model.seats == before && bytesOf(session) == beforeFile);
+            model.Load();
+            EXPECT(model.seats == before);
+            // Block only the portal replacement: deleting the dump and updating its index must remain possible.
+            fs::rename(session, session + ".kept");
+            fs::create_directory(session);
+            { std::ofstream(fs::path(session) / "keep") << "keep"; }
+            const auto beforeIndex = bytesOf(folder / "collection.json");
+            const auto beforeTrash = collection::Trash().size();
+            std::string why;
+            EXPECT(!model.Delete(spyro, &why) && why == i18n::Tr("Couldn't write the seats for the next start") &&
+                fs::exists(spyro) && model.seats == before && bytesOf(session + ".kept") == beforeFile);
+            EXPECT(fs::exists(fs::path(session) / "keep") && bytesOf(folder / "collection.json") == beforeIndex &&
+                collection::Trash().size() == beforeTrash);
+            fs::remove_all(session);
+            fs::rename(session + ".kept", session);
+            EXPECT(bytesOf(session) == beforeFile);
+            EXPECT(NoAtomicTemporary(session));
+            model.Load();
+            EXPECT(model.seats == before);
+            collection::Figure unknown;
+            unknown.type = 65500;
+            EXPECT(!launcher_ui::SeatAccepts(ssa.seats[0], unknown));
+            EXPECT(launcher_ui::WriteSeats(ssa, session, before));
+            const std::string vanished = collection::PathOf("902 Gone.sky");
+            fs::copy_file(gill, vanished, fs::copy_options::overwrite_existing);
+            model.Load();
+            fs::remove(vanished); // chosen card disappeared before the next poll
+            EXPECT(!model.SetSeat(1, vanished));
+            model.Load();
+        }
+        // A seated file disappeared: keep its place visible until Remove is persisted.
+        {
+            const auto before = model.seats;
+            const std::string missing = collection::PathOf("missing.sky");
+            { std::ofstream(session) << "0 " << missing << "\n"; }
+            model.Load();
+            EXPECT(model.seats[0] == missing && model.Find(missing) == nullptr);
+            EXPECT(model.SetSeat(0, "") && launcher_ui::ReadSeats(ssa, session)[0].empty());
+            EXPECT(launcher_ui::WriteSeats(ssa, session, before));
+            model.Load();
+        }
+        // An existing unknown toy remains visible and removable, but cannot be newly assigned without a type.
+        {
+            const auto before = model.seats;
+            const std::string unknown = collection::Create(65500);
+            EXPECT(!unknown.empty());
+            { std::ofstream(session) << "0 " << unknown << "\n"; }
+            model.Load();
+            EXPECT(model.seats[0] == unknown && model.Find(unknown) != nullptr);
+            EXPECT(!model.SetSeat(1, unknown));
+            EXPECT(model.SetSeat(0, "") && launcher_ui::ReadSeats(ssa, session)[0].empty());
+            fs::remove(unknown);
+            EXPECT(launcher_ui::WriteSeats(ssa, session, before));
+            model.Load();
+        }
+#ifndef _WIN32
+        // A link to an individual dump outside the collection still identifies its card and seat.
+        {
+            const auto before = model.seats;
+            const fs::path link = scratch / "figure-link.sky";
+            fs::create_symlink(gill, link);
+            { std::ofstream(session) << "0 " << link.string() << "\n"; }
+            model.Load();
+            EXPECT(model.seats[0] == gill && model.Find(link.string()) == model.Find(gill));
+            EXPECT(model.SetSeat(1, link.string()) && model.seats[0].empty() && model.seats[1] == gill);
+            fs::remove(link);
+            EXPECT(launcher_ui::WriteSeats(ssa, session, before));
+            model.Load();
+        }
+#endif
         // While a game holds a figure: the seats are read-only. When its dump changes the model reloads.
         if (otherPid > 0)
         {
@@ -596,11 +697,54 @@ namespace
         fs::remove(session);
         std::vector<std::string> moved = launcher_ui::MoveLauncherSettings(ssa, legacy.string(), { "016 Spyro.sky" }, { "200 Anvil Rain.sky", "014 Gill Grunt.sky", "new:5" });
         EXPECT(moved.size() == 4 && moved[0] == gill && moved[2] == anvil);
+        EXPECT(launcher_ui::WriteSeats(ssa, session, { spyro, "", "", "" }));
+        const auto existingSession = bytesOf(session);
+        EXPECT(launcher_ui::MoveLauncherSettings(ssa, legacy.string(), {}, { "014 Gill Grunt.sky" }).empty());
+        EXPECT(bytesOf(session) == existingSession && bytesOf(legacy / "014 Gill Grunt.sky") == before);
         collection::Read(spyro, again);
         EXPECT(again.favourite);
 
+        // The figure became unreadable after Edit opened: refuse instead of writing the editor's old snapshot.
+        {
+            const std::string path = collection::Create(4);
+            collection::Figure opened;
+            EXPECT(collection::Read(path, opened));
+            const std::string broken = "not a figure";
+            { std::ofstream(path, std::ios::binary) << broken; }
+            auto edited = opened.stats;
+            edited.gold = 5;
+            std::string why;
+            EXPECT(!launcher_ui::SaveEditedStats(path, opened.stats, edited, "", &why) && !why.empty());
+            std::ifstream input(path, std::ios::binary);
+            EXPECT(std::string(std::istreambuf_iterator<char>(input), {}) == broken);
+            input.close();
+            fs::remove(path);
+        }
+        // A bad custom catalogue must survive a refused naming operation byte for byte.
+        {
+            fs::path custom = folder / "catalogue.json";
+            const std::string bad = "{\"toys\":[";
+            { std::ofstream(custom) << bad; }
+            EXPECT(!launcher_ui::NameUnknownToy(3502, "Mystery", collection::Category::Core, "ssa"));
+            std::ifstream input(custom);
+            EXPECT(std::string(std::istreambuf_iterator<char>(input), {}) == bad);
+            input.close();
+            fs::remove(custom);
+        }
         // Unknown toys can be named (collection's catalogue.json), icons exist for every category.
         EXPECT(launcher_ui::NameUnknownToy(3502, "Mystery", collection::Category::Core, "ssa"));
+        EXPECT(launcher_ui::NameUnknownToy(3503, "  Unknown item  ", collection::Category::MagicItem, "ssa"));
+        {
+            std::ifstream input(folder / "catalogue.json");
+            collection::Json custom;
+            std::string why;
+            EXPECT(collection::Json::Parse(std::string(std::istreambuf_iterator<char>(input), {}), custom, why));
+            EXPECT(custom["toys"].Items().size() == 2);
+            EXPECT(custom["toys"].Items().back()["name"].AsString() == "Unknown item");
+            EXPECT(custom["toys"].Items().back()["category"].AsString() == collection::CategoryId(collection::Category::MagicItem));
+            EXPECT(!fs::exists(folder / "catalogue.json.tmp"));
+        }
+        EXPECT(!launcher_ui::NameUnknownToy(3504, "  ", collection::Category::Core, "ssa"));
         EXPECT(fs::exists(folder / "catalogue.json"));
         for (const collection::Toy& toy : catalogue.Toys())
         {
@@ -903,6 +1047,14 @@ void EditChecks()
         edited.upgrades, edited.wowPow);
     saved = MergeEditedStats(now, base, edited, "Splash", "Splash");
     EXPECT(saved.wowPow == 1 && saved.upgrades == now.upgrades);
+
+    EXPECT(GameUpdateSummary({}) == "Arkeyan Launcher is up to date.");
+    EXPECT(GameUpdateSummary({ "Skylanders: Giants" }) == "Arkeyan Launcher is up to date. An update is available for Skylanders: Giants.");
+    EXPECT(GameUpdateSummary({ "Skylanders: Giants", "Skylanders: Swap Force" }) == "Arkeyan Launcher is up to date. 2 game updates available.");
+    i18n::SetLanguage("fr");
+    EXPECT(GameUpdateSummary({ "Skylanders: Giants" }) == "Arkeyan Launcher est à jour. Une mise à jour est disponible pour Skylanders: Giants.");
+    EXPECT(GameUpdateSummary({ "Skylanders: Giants", "Skylanders: Swap Force" }) == "Arkeyan Launcher est à jour. 2 mises à jour de jeux disponibles.");
+    i18n::SetLanguage("en");
 
     using launcher_ui::Trimmed;
     EXPECT(Trimmed("   ").empty() && Trimmed("").empty() && Trimmed("\t Splash's  ") == "Splash's" && Trimmed("A b") == "A b");
@@ -1247,9 +1399,13 @@ static void InstallCardChecks(const std::filesystem::path& scratch)
     uint64_t timeoutMs = 120000;
     if (const char* value = skyenv::Get("SKY_LAUNCHER_TEST_TIMEOUT_MS"))
         timeoutMs = std::clamp<uint64_t>(std::strtoull(value, nullptr, 10), 30000, 300000);
-    for (const char* language : { "en", "fr" })
-    for (const char* size : { "1024x680", "1080x720", "1600x1000" })
-    {
+    fs::path executable = fs::path(SDL_GetBasePath()) / "ArkeyanLauncherTest";
+#if defined(_WIN32)
+    executable += ".exe";
+#endif
+    const std::string program = executable.string();
+    auto scenario = [&](const char* language, const char* size) {
+        int g_failures = 0; // Each child contributes its own result after it has finished.
         const fs::path root = scratch / "install-card" / language / size;
         fs::create_directories(root / "home");
         const fs::path shots = root / "shots";
@@ -1264,7 +1420,7 @@ static void InstallCardChecks(const std::filesystem::path& scratch)
             { "SKY_LAUNCHER_TEST_INSTALL", "layout" }, { "SKY_LAUNCHER_TEST_DROP", "" }
         });
         SDL_IOStream* log = SDL_IOFromFile((root / "output.log").string().c_str(), "wb");
-        const char* arguments[] = { SKYLAUNCHER_TEST_EXE, nullptr };
+        const char* arguments[] = { program.c_str(), "--install-card", nullptr };
         SDL_PropertiesID properties = SDL_CreateProperties();
         SDL_SetPointerProperty(properties, SDL_PROP_PROCESS_CREATE_ARGS_POINTER, arguments);
         SDL_SetPointerProperty(properties, SDL_PROP_PROCESS_CREATE_ENVIRONMENT_POINTER, environment);
@@ -1317,11 +1473,57 @@ static void InstallCardChecks(const std::filesystem::path& scratch)
             EXPECT(fs::exists(shots / (std::string(state) + ".png")));
             EXPECT(output.find(std::string("install actions fit: ") + state) != std::string::npos);
         }
+        return g_failures;
+    };
+    std::vector<std::future<int>> pending;
+    for (const char* language : { "en", "fr" })
+    for (const char* size : { "1024x680", "1080x720", "1600x1000" })
+    {
+        pending.push_back(std::async(std::launch::async, scenario, language, size));
+        if (pending.size() == 2)
+        {
+            for (auto& result : pending) g_failures += result.get();
+            pending.clear();
+        }
     }
+    for (auto& result : pending) g_failures += result.get();
     printf("Install card: actions fit; device pills and portal panel keep their game-page rectangles in both languages at three sizes\n");
 }
 
+static void SourceFailureChecks(const std::filesystem::path& scratch)
+{
+    printf("Wrong inputs:\n");
+    EXPECT(Check(scratch / "missing.iso") == GameSourceStatus::NotFound);
+
+    std::filesystem::create_directories(scratch / "extracted");
+    WriteFile(scratch / "extracted" / "default.xex", FakeXex(0x415608AB, 0x53CE7B97, 2));
+    EXPECT(Check(scratch / "extracted") == GameSourceStatus::Folder);
+
+    WriteFile(scratch / "empty.iso", {});
+    EXPECT(Check(scratch / "empty.iso") == GameSourceStatus::NotXboxDisc);
+    WriteFile(scratch / "random.iso", RandomBytes(1 << 20));
+    EXPECT(Check(scratch / "random.iso") == GameSourceStatus::NotXboxDisc);
+
+    WriteDiscImage(scratch / "original_xbox.iso", "default.xbe", RandomBytes(4096));
+    EXPECT(Check(scratch / "original_xbox.iso") == GameSourceStatus::NotXbox360Game);
+    WriteDiscImage(scratch / "not_a_xex.iso", "default.xex", RandomBytes(4096));
+    EXPECT(Check(scratch / "not_a_xex.iso") == GameSourceStatus::Damaged);
+    WriteDiscImage(scratch / "cut_short.iso", "default.xex", FakeXex(0x415608AB, 0x53CE7B97, 2), 4096);
+    EXPECT(Check(scratch / "cut_short.iso") == GameSourceStatus::Damaged);
+    WriteDiscImage(scratch / "other_game.iso", "default.xex", FakeXex(0x4D5307E6, 0x11111111, 0));
+    EXPECT(Check(scratch / "other_game.iso") == GameSourceStatus::WrongGame);
+    WriteDiscImage(scratch / "other_region.iso", "default.xex", FakeXex(0x415608AB, 0x12345678, 0x00000100));
+    EXPECT(Check(scratch / "other_region.iso") == GameSourceStatus::WrongVersion);
+    WriteDiscImage(scratch / "modified.iso", "default.xex", FakeXex(0x415608AB, 0x53CE7B97, 2));
+    EXPECT(Check(scratch / "modified.iso") == GameSourceStatus::Damaged);
+
+}
+
 #include "launcher_control_checks.h"
+#include "install_checks.h"
+#include "persistence_checks.h"
+#include "migration_checks.h"
+#include "copy_checks.h"
 
 #include "launcher_review_checks.h"
 
@@ -1340,6 +1542,20 @@ int main(int argc, char** argv)
     {
         std::filesystem::create_directories(argv[2]);
         return ShellChecks(std::filesystem::absolute(argv[2])) == 0 ? 0 : 1;
+    }
+    if (argc == 2 && std::string_view(argv[1]) == "--install-card")
+    {
+        // The production window and script, with cheaper lossless encoding for disposable screenshots.
+        stbi_write_png_compression_level = 1;
+        stbi_write_force_png_filter = 0;
+        const std::string path = LauncherConfigPath();
+        LauncherConfig config = LoadLauncherConfig(path);
+        MigrateFrameRates(config);
+        const GameInfo& game = *FindGame("ssa");
+        LauncherOptions options;
+        options.startGames = true;
+        RunLauncherWindow(game, path, config, config[game.id]["iso"], nullptr, nullptr, options);
+        return 0;
     }
     // Isolated real-page check. Each invocation gets a fresh process and a fresh ImGui context.
     if (argc == 5 && std::string_view(argv[1]) == "--fps-fallback-page")
@@ -1413,6 +1629,23 @@ int main(int argc, char** argv)
     }
     if (skyenv::Get("SKY_LAUNCHER_TEST_MUSIC_ONLY") != nullptr) // only the game music (quick to rerun)
         return MusicChecks(scratch) == 0 ? 0 : 1;
+    if (skyenv::Get("SKY_LAUNCHER_TEST_SHELL_ONLY") != nullptr)
+        return ShellChecks(scratch) == 0 ? 0 : 1;
+    if (skyenv::Get("SKY_LAUNCHER_TEST_SETTINGS_ONLY") != nullptr)
+        return SettingsChecks(scratch / "settings") == 0 ? 0 : 1;
+    if (skyenv::Get("SKY_LAUNCHER_TEST_PERSISTENCE_ONLY") != nullptr)
+    {
+        SourceFailureChecks(scratch);
+        ConfigPersistenceChecks(scratch);
+        FolderMigrationChecks(scratch);
+        SyntheticCopyChecks(scratch);
+        return g_failures == 0 ? 0 : 1;
+    }
+    if (skyenv::Get("SKY_LAUNCHER_TEST_COLLECTION_ONLY") != nullptr)
+    {
+        CollectionChecks(scratch);
+        return g_failures == 0 ? 0 : 1;
+    }
     if (skyenv::Get("SKY_LAUNCHER_TEST_UNINSTALL_ONLY") != nullptr) // only "Uninstall everything" (quick to rerun)
     {
         int failures = UninstallChecks(scratch);
@@ -1431,15 +1664,24 @@ int main(int argc, char** argv)
         printf("%d failures\n", g_failures);
         return g_failures == 0 ? 0 : 1;
     }
-    InstallCardChecks(scratch);
+    SourceFailureChecks(scratch);
+    InstallLifecycleChecks(scratch);
+    ConfigPersistenceChecks(scratch);
+    FolderMigrationChecks(scratch);
+    SyntheticCopyChecks(scratch);
+    if (skyenv::Get("SKY_LAUNCHER_TEST_LIFECYCLE_ONLY") != nullptr)
+        return g_failures == 0 ? 0 : 1;
+    if (skyenv::Get("SKY_LAUNCHER_TEST_AUDIT_ONLY") == nullptr)
+        InstallCardChecks(scratch);
     if (skyenv::Get("SKY_LAUNCHER_TEST_INSTALL_CARD_ONLY") != nullptr)
         return g_failures == 0 ? 0 : 1;
     CollectionChecks(scratch);
+    if (skyenv::Get("SKY_LAUNCHER_TEST_AUDIT_ONLY") != nullptr)
+        return g_failures == 0 ? 0 : 1;
     HoldChecks();
     EditChecks();
     PortalChecks();
-    if (!noDisc)
-        InstallChecks(scratch, iso.string());
+    InstallChecks(scratch, noDisc ? "synthetic.iso" : iso.string());
     g_failures += ShellChecks(scratch);
     LauncherControlChecks(scratch);
     g_failures += SettingsChecks(scratch / "settings");
@@ -1675,35 +1917,10 @@ int main(int argc, char** argv)
     else
         TestSetEnv("SKYLANDERS_DATA", dataBefore.c_str());
 
-    printf("Wrong inputs:\n");
-    EXPECT(Check(scratch / "missing.iso") == GameSourceStatus::NotFound);
-
-    std::filesystem::create_directories(scratch / "extracted");
-    WriteFile(scratch / "extracted" / "default.xex", FakeXex(0x415608AB, 0x53CE7B97, 2));
-    EXPECT(Check(scratch / "extracted") == GameSourceStatus::Folder);
-
     WriteFile(scratch / "locked.iso", RandomBytes(4096));
     std::filesystem::permissions(scratch / "locked.iso", std::filesystem::perms::none);
     EXPECT(Check(scratch / "locked.iso") == GameSourceStatus::Unreadable);
     std::filesystem::permissions(scratch / "locked.iso", std::filesystem::perms::owner_all);
-
-    WriteFile(scratch / "empty.iso", {});
-    EXPECT(Check(scratch / "empty.iso") == GameSourceStatus::NotXboxDisc);
-    WriteFile(scratch / "random.iso", RandomBytes(1 << 20));
-    EXPECT(Check(scratch / "random.iso") == GameSourceStatus::NotXboxDisc);
-
-    WriteDiscImage(scratch / "original_xbox.iso", "default.xbe", RandomBytes(4096));
-    EXPECT(Check(scratch / "original_xbox.iso") == GameSourceStatus::NotXbox360Game);
-    WriteDiscImage(scratch / "not_a_xex.iso", "default.xex", RandomBytes(4096));
-    EXPECT(Check(scratch / "not_a_xex.iso") == GameSourceStatus::Damaged);
-    WriteDiscImage(scratch / "cut_short.iso", "default.xex", FakeXex(0x415608AB, 0x53CE7B97, 2), 4096);
-    EXPECT(Check(scratch / "cut_short.iso") == GameSourceStatus::Damaged);
-    WriteDiscImage(scratch / "other_game.iso", "default.xex", FakeXex(0x4D5307E6, 0x11111111, 0));
-    EXPECT(Check(scratch / "other_game.iso") == GameSourceStatus::WrongGame);
-    WriteDiscImage(scratch / "other_region.iso", "default.xex", FakeXex(0x415608AB, 0x12345678, 0x00000100));
-    EXPECT(Check(scratch / "other_region.iso") == GameSourceStatus::WrongVersion);
-    WriteDiscImage(scratch / "modified.iso", "default.xex", FakeXex(0x415608AB, 0x53CE7B97, 2));
-    EXPECT(Check(scratch / "modified.iso") == GameSourceStatus::Damaged);
 
     printf("Damaged copies of the player's image:\n");
     for (int i = 3; i < argc; i++)

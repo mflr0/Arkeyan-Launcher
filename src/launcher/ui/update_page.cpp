@@ -2,9 +2,19 @@
 // page (version, "Check now", credits and licenses). The logic is in launcher/updater.cpp (docs/updates.md).
 #include "launcher/ui/launcher_app.h"
 #include "shared/collection/datadir.h"
+#include "launcher/ui/launcher_ui.h"
 #include "launcher/ui/text_fit.h"
 #include <ctime>
 #include <fmt/format.h>
+
+std::string GameUpdateSummary(const std::vector<std::string>& games)
+{
+    if (games.empty())
+        return Tr("Arkeyan Launcher is up to date.");
+    return games.size() == 1
+        ? Tf("Arkeyan Launcher is up to date. An update is available for {}.", games.front())
+        : Tf("Arkeyan Launcher is up to date. {} game updates available.", games.size());
+}
 
 namespace launcher_ui
 {
@@ -64,10 +74,19 @@ namespace launcher_ui
                 if (m_updateManual)
                     m_updateDoneNote = !state.checked ? Tf("Couldn't check: {}", state.checkError)
                         : state.launcherNewer          ? Tf("Version {} is available.", state.launcher.tag)
-                        : AnyGameUpdate()              ? Tr("Arkeyan Launcher is up to date. A game update is available.")
+                        : AnyGameUpdate()              ? GameUpdateNote()
                                                        : Tr("Arkeyan Launcher is up to date.");
             }
         }
+    }
+
+    std::string App::GameUpdateNote() const
+    {
+        std::vector<std::string> games;
+        for (const auto& slot : m_slots)
+            if (UpdateAvailable(*slot))
+                games.emplace_back(slot->game.name);
+        return GameUpdateSummary(games);
     }
 
     float App::BannerHeight()
@@ -319,7 +338,7 @@ namespace launcher_ui
         check.disabled = m_updates.Busy() && !checking;
         if (ui::Button(checking ? Tr("Checking...") : Tr("Check now"), check) && !m_updates.Busy())
             StartUpdateCheck(true);
-        ui::SettingRow(Tr("Check at startup"), Tr("Only contacts github.com."));
+        ui::SettingRow(Tr("Check at startup"), Tr("Checks GitHub for launcher and game updates when the launcher starts."));
         bool automatic = ParseBool(SettingGet(m_config, "update", "auto_check", "1"));
         if (ui::Toggle("##autocheck", &automatic))
             Set("update", "auto_check", automatic ? "1" : "0");
@@ -336,7 +355,7 @@ namespace launcher_ui
         ui::Text(ui::TextStyle::Body, Tr("Designed by dorydev."), ui::color::InkSoft);
         ui::Text(ui::TextStyle::Body, Tr("Built with SDL 3, Dear ImGui, {fmt}, stb, miniz, XenonRecomp, Outfit and Bungee. MIT licensed."), ui::color::InkSoft);
         ImGui::Dummy(ImVec2(0, ui::space::XXS));
-        if (ui::Button(Tr("Project page")))
+        if (ui::Button(Tr("GitHub")))
             SDL_OpenURL(Project);
         ImGui::SameLine();
         if (ui::Button(Tr("Licenses")))

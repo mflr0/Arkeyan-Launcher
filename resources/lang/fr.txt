@@ -51,7 +51,7 @@ Display refresh rate (up to 60)	Fréquence de l'écran (jusqu'à 60)
 144 (experimental)	144 (expérimental)
 240 (experimental)	240 (expérimental)
 Unlimited (experimental)	Illimité (expérimental)
-Only contacts github.com.	Contacte seulement github.com.
+Checks GitHub for launcher and game updates when the launcher starts.	Recherche sur GitHub les mises à jour du lanceur et des jeux au démarrage.
 Couldn't write to the game folder.	Impossible d'écrire dans le dossier du jeu.
 A launcher for the native PC ports of Skylanders. No game code or art: it all comes from your disc.	Un launcher pour les portages PC natifs de Skylanders. Aucun code ni image du jeu : tout vient de votre disque.
 About	À propos
@@ -66,7 +66,7 @@ Auto	Auto
 Auto (follows the window)	Auto (suit la fenêtre)
 Higher scales need a dedicated graphics card.	Les échelles élevées demandent une carte graphique dédiée.
 Auto shows more when wide; 16:9 adds bars.	Auto montre plus en large ; 16:9 ajoute des bandes.
-Auto: a real portal if plugged in, else virtual	Auto : un vrai portail s'il est branché, sinon virtuel
+Automatic detection	Détection automatique
 Automatic	Automatique
 Back	Retour
 Built for this disc.	Construit pour ce disque.
@@ -180,7 +180,7 @@ INSTALLATION INTERRUPTED	INSTALLATION INTERROMPUE
 INSTALLATION STOPPED	INSTALLATION ARRÊTÉE
 INSTALLING THE GAME	INSTALLATION DU JEU
 The test failed	Le test a échoué
-Toy Box keys	Touches de la Toy Box
+Toy Box keys	Commandes Toy Box
 UPDATING THE GAME	MISE À JOUR DU JEU
 INSTALLING...	INSTALLATION...
 The install stops and can resume later.	L'installation s'arrête ; vous pourrez la reprendre.
@@ -249,7 +249,7 @@ Portal: not detected	Portail : non détecté
 Portal: {}	Portail : {}
 Preparing the compiler	Préparation du compilateur
 Press a key for "{}" (Escape cancels)	Appuyez sur une touche pour « {} » (Échap pour annuler)
-Project page	Page du projet
+GitHub	GitHub
 Quit	Quitter
 Quit the game before restoring a backup	Quittez le jeu avant de restaurer une copie de secours
 Reading default.xex	Lecture de default.xex
@@ -271,7 +271,7 @@ Replaces the game's textures with your pack.	Remplace les textures du jeu par ce
 Report	Signaler
 Report a bug	Signaler un bug
 Report a problem	Signaler un problème
-You see the report before saving it; nothing is sent.	Vous voyez le rapport avant de l'enregistrer ; rien n'est envoyé.
+Preview and send a report of the problem you encountered.	Prévisualisez et envoyez un rapport du problème rencontré.
 Report copied	Rapport copié
 Report saved	Rapport enregistré
 Report saved: {}	Rapport enregistré : {}
@@ -302,7 +302,8 @@ Skip intro movies	Passer les vidéos d'intro
 Skylanders is a trademark of Activision. This project is not affiliated with or endorsed by Activision.	Skylanders est une marque d'Activision. Ce projet n'est ni affilié à Activision ni approuvé par Activision.
 Arkeyan Launcher couldn't find its own file.	Arkeyan Launcher n'a pas trouvé son propre fichier.
 Arkeyan Launcher is up to date.	Arkeyan Launcher est à jour.
-Arkeyan Launcher is up to date. A game update is available.	Arkeyan Launcher est à jour. Une mise à jour du jeu est disponible.
+Arkeyan Launcher is up to date. An update is available for {}.	Arkeyan Launcher est à jour. Une mise à jour est disponible pour {}.
+Arkeyan Launcher is up to date. {} game updates available.	Arkeyan Launcher est à jour. {} mises à jour de jeux disponibles.
 Arkeyan Launcher on GitHub	Arkeyan Launcher sur GitHub
 Arkeyan Launcher closed during the install. Resume to continue from this step.	Arkeyan Launcher a été fermé pendant l'installation. Appuyez sur Reprendre pour continuer à cette étape.
 Arkeyan Launcher {} is installed. Restart to use it.	Arkeyan Launcher {} est installé. Redémarrez pour l'utiliser.
@@ -435,7 +436,7 @@ nothing yet	0 octet
 {} GB	{} Go
 {} rejects this portal: {}.	{} refuse ce portail : {}.
 {} warns about this portal: {}.	{} signale un problème avec ce portail : {}.
-{} Xbox, PlayStation and Switch pads work.	{} Les manettes Xbox, PlayStation et Switch fonctionnent.
+{} Xbox, PlayStation and Switch pads are compatible.	{} Manettes Xbox, PlayStation et Switch compatibles.
 {} already plays from its copied game data	{} fonctionne déjà avec ses données copiées
 {} bytes	{} octets
 {} can't be used: {}	{} inutilisables : {}
@@ -901,3 +902,9 @@ Retry to start the installation.	Appuyez sur Réessayer pour lancer l'installati
 
 Drop to 30 FPS when needed	Passer à 30 FPS si besoin
 Turn off to keep your chosen rate even if the picture stutters.	Désactivez pour garder la fréquence choisie même si l’image saccade.
+
+Opens the Toy Box when the game asks for a figure.	Ouvre la Toy Box quand le jeu demande une figurine.
+Fixed by the game; these shortcuts cannot be changed here.	Fixées par le jeu ; ces commandes ne peuvent pas être modifiées ici.
+Choose a type	Choisir un type
+The figure can't be read. Reopen it before saving.	La figurine est illisible. Rouvrez-la avant d’enregistrer.
+The figure was kept, but its seat couldn't be restored.	La figurine est conservée, mais sa place n’a pas pu être rétablie.

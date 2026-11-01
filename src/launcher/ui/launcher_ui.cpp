@@ -409,7 +409,7 @@ namespace launcher_ui
             m_testLogo = LauncherEnv("SKY_LAUNCHER_TEST_LOGO") != nullptr;
             m_testKeys = LauncherEnv("SKY_LAUNCHER_TEST_KEYS") != nullptr;
             if (const char* screens = LauncherEnv("SKY_LAUNCHER_TEST_SCREENS"))
-                m_testScreens = std::string_view(screens) == "pad" ? 2 : 1;
+                m_testScreens = std::string_view(screens) == "issues" ? 3 : std::string_view(screens) == "pad" ? 2 : 1;
             const char* input = LauncherEnv("SKY_LAUNCHER_TEST_INPUT");
             m_testPadInput = m_testScreens == 2 || (input != nullptr && std::string_view(input) == "pad");
             m_testGallery = LauncherEnv("SKY_LAUNCHER_TEST_GALLERY") != nullptr;
@@ -1997,7 +1997,7 @@ namespace launcher_ui
 
         if (ui::BeginSettings("##controller"))
         {
-            ui::SettingRow(Tr("Controller"), Tf("{} Xbox, PlayStation and Switch pads work.", connected).c_str());
+            ui::SettingRow(Tr("Controller"), Tf("{} Xbox, PlayStation and Switch pads are compatible.", connected).c_str());
             if (ui::BeginSelect("##device", DeviceLabel().c_str()))
             {
                 for (const auto& [value, label] : DeviceOptions())
@@ -2017,6 +2017,12 @@ namespace launcher_ui
             SettingSelect("##portal", "portal", "mode", PortalChoices, 0);
             ui::SettingRow(Tr("Auto-open Toy Box"), nullptr);
             bool autoOpen = ParseBool(SettingGet(m_config, "portal", "toybox_auto_open", "1"));
+            ui::AlignRight(ui::height::Normal + ui::space::XS + std::round(ui::height::Small * 1.75f));
+            ui::IconButton("##toyboxinfo", ui::Icon::Info, Tr("Opens the Toy Box when the game asks for a figure."));
+            if (m_testScreens == 3 && m_testStep == 1)
+                ui::FocusLastItem(true);
+            ImGui::SameLine(0, ui::space::XS);
+            ImGui::SetCursorPosY(ImGui::GetCursorPosY() + (ui::height::Normal - ui::height::Small) / 2);
             if (ui::Toggle("##toyboxautoopen", &autoOpen))
                 Set("portal", "toybox_auto_open", autoOpen ? "1" : "0");
             DrawPortalTest();
@@ -2024,7 +2030,7 @@ namespace launcher_ui
         }
         DrawPortalResult();
 
-        ui::SectionHeader(Tr("Toy Box keys"));
+        ui::SectionHeader(Tr("Toy Box keys"), Tr("Fixed by the game; these shortcuts cannot be changed here."));
         if (ui::BeginSettings("##toyboxkeys"))
         {
             // Each line: the keyboard's keys ("F6 / Tab": either), then the pad's buttons ("View + Y": together) in the pad's own
@@ -2055,6 +2061,7 @@ namespace launcher_ui
             float padColumn = 0;
             for (const Line& line : lines)
                 padColumn = std::max(padColumn, groupWidth(line, true));
+            ImGui::BeginDisabled();
             for (const Line& line : lines)
             {
                 ui::SettingRow(line.label, nullptr);
@@ -2092,6 +2099,7 @@ namespace launcher_ui
                 ImGui::Dummy(ImVec2(right - keysX, capH));
             }
             ui::EndSettings();
+            ImGui::EndDisabled();
         }
     }
 
@@ -3422,6 +3430,65 @@ namespace launcher_ui
     // SKY_LAUNCHER_TEST_SCALE=2 draws them at twice the density (a Retina screen's), the same layout.
     void App::TestScreensScript(uint64_t now)
     {
+        if (m_testScreens == 3) // the changed Settings and Collection screens, without a release request or a game
+        {
+            m_page = Page::Settings;
+            m_tab = SettingsTab::Controls;
+            static const char* const shots[] = { "controls", "toybox-info", "update-one", "update-several", "support", "about", "edit", "unknown-type", "unknown-named", "missing-figure" };
+            switch (m_testStep)
+            {
+            case 0: break;
+            case 1: break; // DrawControls focuses the info icon: its tooltip also works without a pointer
+            case 2:
+            case 3:
+            {
+                m_tab = SettingsTab::Launcher;
+                GameSlot& giants = SlotFor(*FindGame("giants"));
+                giants.disc = DiscState::Ready;
+                giants.installed.runtime = "fixture";
+                giants.installed.gameVersion = "0.0.1";
+                m_gameUpdates = { { "giants", "1.0.0", "v1.0.0" } };
+                if (m_testStep == 3)
+                {
+                    GameSlot& ssa = SlotFor(*FindGame("ssa"));
+                    ssa.disc = DiscState::Ready;
+                    ssa.installed.runtime = "fixture";
+                    ssa.installed.gameVersion = "0.0.1";
+                    m_gameUpdates.push_back({ "ssa", "1.0.0", "v1.0.0" });
+                }
+                m_updateDoneNote = GameUpdateNote();
+                const std::string expected = m_testStep == 2
+                    ? Tf("Arkeyan Launcher is up to date. An update is available for {}.", "Skylanders: Giants")
+                    : Tf("Arkeyan Launcher is up to date. {} game updates available.", 2);
+                if (m_updateDoneNote != expected)
+                {
+                    fprintf(stderr, "FAIL update summary: wrong game or count\n");
+                    m_testFailures++;
+                }
+                break;
+            }
+            case 4: m_tab = SettingsTab::Support; break;
+            case 5: m_tab = SettingsTab::About; break;
+            case 6:
+            case 7:
+            case 8:
+                m_page = Page::Collection;
+                m_s->collection->Seed();
+                m_s->collection->TestScreen(m_testStep == 6 ? 7 : m_testStep == 7 ? 46 : 47);
+                break;
+            case 9:
+                m_page = Page::Collection;
+                m_s->collection->TestScreen(48);
+                break;
+            default:
+                m_s->collection->TestScreen(49);
+                m_running = false;
+                return;
+            }
+            m_testShot = std::string("issues-") + shots[m_testStep];
+            m_testAt = now + 900;
+            return;
+        }
         const bool pad = m_testScreens == 2;
         auto shoot = [&](const char* name, Page page, uint64_t wait) {
             m_page = page;

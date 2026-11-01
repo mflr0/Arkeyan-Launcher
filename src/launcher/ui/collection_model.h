@@ -15,7 +15,7 @@ namespace launcher_ui
     // data folder), "<slot> <path>" lines, rewritten by the game at every change. Empty for a game with no runtime.
     std::string SessionFile(const collection::Game& game);
 
-    // Whether a figure can sit on the seat. Unknown toys fit every seat: the game decides.
+    // Whether a figure can sit on the seat. Unknown toys must be identified before seating.
     bool SeatAccepts(const collection::Seat& seat, const collection::Figure& figure);
 
     // One path per seat of `game` (empty: a free seat), from the session file: a figure goes to the seat of its slot when
@@ -52,6 +52,10 @@ namespace launcher_ui
     // only the fields the player changed (`edited`, and the nickname from `baseNickname` to `nickname`).
     figures::FigureStats MergeEditedStats(const figures::FigureStats& now, const figures::FigureStats& base, const figures::FigureStats& edited,
         const std::string& baseNickname, const std::string& nickname);
+
+    // Re-read immediately before saving; an unreadable or damaged figure is never rebuilt from the editor's old copy.
+    bool SaveEditedStats(const std::string& path, const figures::FigureStats& base, const figures::FigureStats& edited,
+        const std::string& nickname, std::string* error);
 
     // Edit stats' gold from what was typed: the digits at the start (none: 0), never above figures::MaxGold.
     uint16_t GoldFromText(std::string_view text);

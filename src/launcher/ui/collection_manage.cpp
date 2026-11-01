@@ -266,22 +266,36 @@ namespace launcher_ui
                 {
                     ui::TextFieldOptions field;
                     field.hint = Tr("Its name");
-                    field.width = ui::height::SettingControl - ui::height::Main - ui::space::XS;
                     ui::TextField("##unknownname", m_unknownName, sizeof(m_unknownName), field);
+                    ui::SettingRow(Tr("Type"));
+                    ui::SelectOptions type;
+                    type.width = ui::height::SettingControl - ui::ButtonWidth(Tr("Save")) - ui::space::XS;
+                    if (ui::BeginSelect("##unknowntype", m_unknownCategory < 0 ? Tr("Choose a type") : CategoryLabel(collection::Category(m_unknownCategory)).c_str(), type))
+                    {
+                        for (int i = 0; i < int(collection::Category::Count); i++)
+                            if (collection::Category(i) != collection::Category::Villain &&
+                                ui::SelectOption(CategoryLabel(collection::Category(i)).c_str(), m_unknownCategory == i))
+                                m_unknownCategory = i;
+                        ui::EndSelect();
+                    }
                     ImGui::SameLine(0, ui::space::XS);
                     ui::ButtonOptions save;
                     save.kind = ui::ButtonKind::Primary;
-                    save.disabled = m_unknownName[0] == 0;
+                    save.disabled = Trimmed(m_unknownName).empty() || m_unknownCategory < 0;
                     if (ui::Button(Tr("Save"), save))
                     {
-                        const bool named = NameUnknownToy(figure.type, m_unknownName, collection::Category::Core, m_model.gameId);
+                        const bool named = NameUnknownToy(figure.type, m_unknownName, collection::Category(m_unknownCategory), m_model.gameId);
                         Toast(named ? Tr("Named: shown at the next start") : Tr("Couldn't save the name"), !named ? ui::ToastKind::Error : ui::ToastKind::Success);
                         m_unknownType = 0xFFFF;
                         m_unknownName[0] = 0;
                     }
                 }
                 else if (ui::Button(Tr("Name this toy")))
+                {
                     m_unknownType = figure.type;
+                    m_unknownCategory = -1;
+                    m_unknownName[0] = 0;
+                }
                 ImGui::PopID();
             }
             ui::EndSettings();
@@ -320,7 +334,7 @@ namespace launcher_ui
             "44-change-the-bottom", "45-swapforce-choose-player-1", "46-add-versions", "47-search-element", "48-search-level",
             "49-search-typo", "50-filters-panel", "51-filters-tags", "52-sort-name", "53-all-swappers", "54-mixed-swapper-sheet",
             "55-add-swapper-versions", "56-add-no-match", "57-manage-menu", "58-figure-menu", "59-put-on-menu", "60-focus-card", "61-focus-seat",
-            "62-trap-sheet", "63-trap-edit", "collection-bottom", "64-trapteam-greyed" };
+            "62-trap-sheet", "63-trap-edit", "collection-bottom", "64-trapteam-greyed", "65-unknown-type", "66-unknown-named", "67-missing-figure", "68-seat-restored" };
     }
 
     const char* CollectionPage::TestShotName(int step)
@@ -756,6 +770,25 @@ namespace launcher_ui
                     }
             Reload();
             m_filter.sort = collection::Sort::Name;
+            break;
+        case 48:
+            m_model.seats[1] = collection::PathOf("missing.sky");
+            WriteSeats(*m_model.Game(), SessionFile(*m_model.Game()), m_model.seats);
+            Reload();
+            break;
+        case 49:
+            m_model.SetSeat(1, figureOf(16));
+            break;
+        case 46:
+        case 47:
+            if (std::none_of(m_model.figures.begin(), m_model.figures.end(), [](const Figure& f) { return f.type == 65500; }))
+                collection::Create(65500);
+            Reload();
+            m_overlay = Overlay::Manage;
+            m_manageTab = 3;
+            m_unknownType = 65500;
+            m_unknownCategory = step == 46 ? -1 : int(collection::Category::MagicItem);
+            snprintf(m_unknownName, sizeof m_unknownName, "%s", step == 46 ? "" : "Mystery");
             break;
         default: break;
         }

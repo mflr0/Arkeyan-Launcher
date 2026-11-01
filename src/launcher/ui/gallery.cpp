@@ -420,7 +420,7 @@ namespace launcher_ui
                 draw->AddCircleFilled(ImVec2(at.x + size.x / 2, at.y + size.y / 2), size.y / 2, ui::Col(ui::color::AccentFill));
             };
             ui::ListRow(GameName("giants", GameNameForm::Short), picture);
-            ui::SectionHeader(Tr("Language"), Tr("Only contacts github.com."));
+            ui::SectionHeader(Tr("Language"), Tr("Checks GitHub for launcher and game updates when the launcher starts."));
             ui::EndCard();
             ImGui::SetCursorScreenPos(ImVec2(row.x + 2 * (cardW + ui::space::L), row.y));
             ui::CardOptions inset;
