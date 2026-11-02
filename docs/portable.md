@@ -44,7 +44,10 @@ A file name drops the characters Windows can't hold (`Skylanders: Giants` become
 
 Saves and settings are the player's own folder's (the same ones the installed game uses). The figures in the file are added
 to the shared collection when no file of that name exists there (an existing figure is never overwritten), and the keys are
-added to `launcher.ini` when the game has no keys there yet; this happens once per exported copy. The running-game marker
+added to `launcher.ini` when the game has no keys there yet; this happens once per exported copy (again at the next start
+if a figure could not be written). The added figures' labels and swapper links join the machine's `collection.json`. The
+export refuses a folder inside the installed game's own (the copy would replace it), and an old copy is moved aside until
+the new one is in place. The running-game marker
 stops the installed game and the portable copy from running at the same time; PLAY says "<game> is running" while the
 portable copy plays.
 
