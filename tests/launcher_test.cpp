@@ -2131,9 +2131,12 @@ static int RunChecks(int argc, char** argv)
                 TestUnsetEnv("SKY_LAUNCHER_LOG_DIR");
             }
             EXPECT(std::filesystem::exists(link.file / "Contents" / "MacOS" / "launch"));
-            std::ifstream shortcutFile(link.file / "Contents" / "MacOS" / "launch");
-            const std::string shortcutScript{ std::istreambuf_iterator<char>(shortcutFile),
-                std::istreambuf_iterator<char>() };
+            std::string shortcutScript;
+            {
+                // Closed before the folder is removed below: Windows can't remove a folder holding an open file.
+                std::ifstream shortcutFile(link.file / "Contents" / "MacOS" / "launch");
+                shortcutScript.assign(std::istreambuf_iterator<char>(shortcutFile), std::istreambuf_iterator<char>());
+            }
             EXPECT(shortcutScript == MacLaunchScript(shortcut.launcher, identity.id));
             EXPECT(FindInstalledGame(installed, "identity").runtime == text(executable(current)));
             RecordInstalledGame(installed, "identity", text(executable(legacy)), "beta");
