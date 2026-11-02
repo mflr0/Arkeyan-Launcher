@@ -1958,6 +1958,8 @@ static void SourceFailureChecks(const std::filesystem::path& scratch)
 
 int main(int argc, char** argv)
 {
+    // Unbuffered: a check that ends the process early still leaves every line before it in the CI log.
+    setvbuf(stdout, nullptr, _IONBF, 0);
     if (argc == 2 && std::string_view(argv[1]) == "--portal-probe" && std::getenv("SKY_FAKE_PROBE_CLOSED_OUTPUT") != nullptr)
     {
         std::fclose(stdout);
