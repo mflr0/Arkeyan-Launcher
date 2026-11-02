@@ -43,6 +43,7 @@ launcher saves the file (a comment over a key that is removed goes with it).
 | `<game>.video` | `fps_auto_fallback` | `1` (default), `0` | Allow the automatic 60-to-30 FPS drop when frames miss their blank. Off keeps the chosen limit even if the picture stutters, without a drop notice. Read directly from the game's section | yes |
 | `video` | `show_fps` | `0` (default), `1` | The FPS counter: a small frame rate readout in a corner of the game (<game> settings > Video > FPS counter; the game's F3 menu writes it too) | yes |
 | `audio` | `volume` | `0` to `100` (default `100`) | The game's master volume, in `[<game>.audio]` (<game> settings > Video > Volume; the game's F3 menu writes it too). The runtime reads `[audio]`, then the game's own section | no: the game reads `launcher.ini` itself |
+| `audio` | `portal_sound` | `1` (default), `0` | Trap Team only, in `[trapteam.audio]`: the traps' voices from the portal's speaker. A real Traptanium portal plays them itself, any other portal leaves them to the computer, mixed at the game's volume; `0` silences both (Trap Team settings > Video > Portal sound; the game's F3 menu writes it too) | no: the game reads `launcher.ini` itself |
 | `video` | `skip_intro_movies` | `0`, `1` | Skip the start-up logos (legal, ATVI, XPEC, Toys for Bob); the story movies still play | yes |
 | `video` | `vsync` | `0`, `1` | Wait for the display's refresh | yes |
 | `video` | `anisotropy` | `1`, `2`, `4`, `8`, `16` | Texture filtering | yes |

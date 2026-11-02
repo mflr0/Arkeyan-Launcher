@@ -280,6 +280,8 @@ FPS counter	Compteur d'images
 A small frame rate readout in the game (F3 in the game turns it on too).	Un petit compteur d'images par seconde dans le jeu (F3 dans le jeu l'active aussi).
 Volume	Volume
 The game's master volume (F3 in the game changes it too).	Le volume général du jeu (F3 dans le jeu le change aussi).
+Portal sound	Son du portail
+The traps' voices. A Traptanium portal plays them itself, otherwise the computer does (F3 in the game changes it too).	La voix des pièges. Un portail Traptanium la joue lui-même, sinon c'est l'ordinateur (F3 dans le jeu le change aussi).
 Reset to defaults	Valeurs par défaut
 Resolution scale	Échelle de résolution
 Restart now	Redémarrer maintenant

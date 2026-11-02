@@ -153,9 +153,17 @@ namespace launcher_ui
         toggle("##showfps", "show_fps", "0");
 
         ui::SettingRow(Tr("Volume"), Tr("The game's master volume (F3 in the game changes it too)."));
+        const std::string audioSection = std::string(m_s->game.id) + ".audio";
+        SettingSelect("##volume", audioSection.c_str(), "volume", VolumeChoices, 10);
+
+        // Trap Team's portal has a speaker for the traps' voices; the game reads the switch from [trapteam.audio].
+        if (m_s->game.id == std::string_view("trapteam"))
         {
-            const std::string audioSection = std::string(m_s->game.id) + ".audio";
-            SettingSelect("##volume", audioSection.c_str(), "volume", VolumeChoices, 10);
+            ui::SettingRow(Tr("Portal sound"),
+                Tr("The traps' voices. A Traptanium portal plays them itself, otherwise the computer does (F3 in the game changes it too)."));
+            bool portalSound = ParseBool(SettingGet(m_config, audioSection.c_str(), "portal_sound", "1"));
+            if (ui::Toggle("##portalsound", &portalSound))
+                Set(audioSection.c_str(), "portal_sound", portalSound ? "1" : "0");
         }
 
         ui::SettingRow(Tr("Skip intro movies"), nullptr);
