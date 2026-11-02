@@ -1526,7 +1526,7 @@ namespace launcher_ui
 
     void App::DrawHome()
     {
-        constexpr const char* Project = "https://github.com/mflr0/Skylauncher";
+        constexpr const char* Project = "https://github.com/mflr0/Arkeyan-Launcher";
         const ImVec2 size = ImGui::GetIO().DisplaySize;
         ImDrawList* draw = ImGui::GetWindowDrawList();
         const ImVec2 origin = ImGui::GetCursorScreenPos();

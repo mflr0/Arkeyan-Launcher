@@ -23,7 +23,7 @@ on your computer.
 | Trap Team (experimental) | ✅ new | ⚠️ not tested yet | ⚠️ not tested yet | The tutorial and the hub |
 
 Finished a game, or played one on Windows or Linux? Please say so in an
-[issue](https://github.com/mflr0/Skylauncher/issues): it is how this table gets filled.
+[issue](https://github.com/mflr0/Arkeyan-Launcher/issues): it is how this table gets filled.
 
 **Testers wanted.** Above all on a real Windows or Linux PC (and the Steam Deck), and with a real Portal of Power. Play a
 game as far as you like and tell us in an issue what worked and what did not (Settings > Support > Copy game log helps).
@@ -63,7 +63,7 @@ Trap Team is off by default: turn it on in Settings > Launcher.
 
 ## Get started
 
-1. Download Arkeyan Launcher from the [Releases page](https://github.com/mflr0/Skylauncher/releases):
+1. Download Arkeyan Launcher from the [Releases page](https://github.com/mflr0/Arkeyan-Launcher/releases):
    - **Windows:** `ArkeyanLauncher.exe`. If SmartScreen warns you, choose More info, then Run anyway.
    - **Mac:** `ArkeyanLauncher-macOS.dmg`. The app is not notarized: the first time, macOS blocks it; go to System Settings > Privacy & Security and choose Open Anyway (macOS 14 and earlier: right-click the app and choose Open).
    - **Linux:** `ArkeyanLauncher-x86_64.AppImage`, after `chmod +x`.
@@ -149,8 +149,8 @@ Portal of Power. Then click **Test the portal**.
 You need CMake 3.20 or later, Ninja, a C++20 compiler (Clang) and git.
 
 ```sh
-git clone --recursive https://github.com/mflr0/Skylauncher.git
-cd Skylauncher
+git clone --recursive https://github.com/mflr0/Arkeyan-Launcher.git
+cd Arkeyan-Launcher
 cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 ninja -C build ArkeyanLauncher
 ```

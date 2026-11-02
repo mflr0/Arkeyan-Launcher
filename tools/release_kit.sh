@@ -9,11 +9,11 @@
 # release it already fetches; the kit that builds those versions is this release's own. An earlier games line is replaced.
 # All the kits given must agree on the versions.
 # DRY_RUN=1 prints the new notes and the files that would be uploaded, and changes nothing.
-# Needs the GitHub CLI (gh), logged in with write access to the repository (SKY_LAUNCHER_REPO, else SKYLAUNCHER_REPO, default mflr0/Skylauncher).
+# Needs the GitHub CLI (gh), logged in with write access to the repository (SKY_LAUNCHER_REPO, else SKYLAUNCHER_REPO, default mflr0/Arkeyan-Launcher).
 set -euo pipefail
 [[ $# -ge 2 ]] || { echo "usage: $0 <tag> <kit zip>..." >&2; exit 2; }
 tag="$1"; shift
-repo="${SKY_LAUNCHER_REPO:-${SKYLAUNCHER_REPO:-mflr0/Skylauncher}}"
+repo="${SKY_LAUNCHER_REPO:-${SKYLAUNCHER_REPO:-mflr0/Arkeyan-Launcher}}"
 for zip in "$@"; do
     [[ -f "$zip" ]] || { echo "no such file: $zip" >&2; exit 2; }
     [[ "$(basename "$zip")" == skylanders-kit-*.zip ]] || { echo "not a kit zip (skylanders-kit-<os>-<arch>.zip): $zip" >&2; exit 2; }

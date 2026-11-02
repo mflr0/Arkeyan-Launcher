@@ -106,7 +106,7 @@ void ShowGameStopped(const GameInfo& game, int exitCode, const std::string& conf
         std::string title = fmt::format("The game stopped unexpectedly (exit code {})", exitCode);
         std::string body = "What I was doing:\n\n\n" + (saved.file.empty() ? std::string("The report file could not be saved; the log is below.\n")
             : "The report file is " + saved.file.filename().string() + " (on my Desktop or in the logs folder); I attach it here:\n\n");
-        SDL_OpenURL(("https://github.com/mflr0/Skylauncher/issues/new?title=" + UrlEncode(title) + "&body=" + UrlEncode(body)).c_str());
+        SDL_OpenURL(("https://github.com/mflr0/Arkeyan-Launcher/issues/new?title=" + UrlEncode(title) + "&body=" + UrlEncode(body)).c_str());
         return;
     }
 }

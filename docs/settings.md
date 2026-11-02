@@ -18,7 +18,7 @@ Linux; docs/install.md). Lines are `[section]`, `key=value` or `# comment`.
 | `launcher` | `kit` | folder | The player kit that installs the game, if not next to the launcher (`docs/install.md`) | n/a |
 | `update` | `auto_check` | `0`, `1` | Look for a new Arkeyan Launcher and for game updates at every start (default 1; `docs/updates.md`) | n/a |
 | `update` | `last_check` | epoch seconds | When the last check ran | n/a |
-| `update` | `repo` | `owner/name` | Where Arkeyan Launcher's releases are (default `mflr0/Skylauncher`) | n/a |
+| `update` | `repo` | `owner/name` | Where Arkeyan Launcher's releases are (default `mflr0/Arkeyan-Launcher`) | n/a |
 | `update` | `kit_repo` | `owner/name` | Where the player kit's releases, and the games' versions in their notes, are; empty: no game updates | n/a |
 | `update` | `kit_tag` | text | The release of the installed kit, written after a kit download | n/a |
 | `update` | `kit_fetched` | release tag | The release whose kit INSTALL or UPDATE fetched: not asked again for it (docs/updates.md) | n/a |

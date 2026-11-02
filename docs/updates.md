@@ -57,7 +57,7 @@ HTTPS is `curl` (`curl.exe` ships with Windows 10 and 11, as Arkeyan-Builder alr
 ## The game kit
 
 The kit is an asset of the launcher's own release: `skylanders-kit-windows-x64.zip`, `skylanders-kit-macos-arm64.zip` and
-`skylanders-kit-linux-x64.zip`, listed in the release's `SHA256SUMS`. `[update] kit_repo=owner/name` says where (default `mflr0/Skylauncher`).
+`skylanders-kit-linux-x64.zip`, listed in the release's `SHA256SUMS`. `[update] kit_repo=owner/name` says where (default `mflr0/Arkeyan-Launcher`).
 
 - **First install**: with no kit, INSTALL starts with "Downloading the game tools" (docs/install.md): the release tagged
   `v<launcher version>`, else the latest one; the zip is checked against that release's `SHA256SUMS` (a mismatch or a missing line

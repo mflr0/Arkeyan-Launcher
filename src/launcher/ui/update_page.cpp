@@ -21,7 +21,7 @@ namespace launcher_ui
     namespace
     {
         constexpr float BannerH = ui::height::Large;
-        constexpr char Project[] = "https://github.com/mflr0/Skylauncher";
+        constexpr char Project[] = "https://github.com/mflr0/Arkeyan-Launcher";
 
         int64_t Now() { return int64_t(std::time(nullptr)); }
 
@@ -53,8 +53,8 @@ namespace launcher_ui
             m_updateDoneNote.clear();
         }
         UpdateManager::Settings settings;
-        settings.repo = SettingGet(m_config, "update", "repo", "mflr0/Skylauncher");
-        settings.kitRepo = SettingGet(m_config, "update", "kit_repo", "mflr0/Skylauncher");
+        settings.repo = SettingGet(m_config, "update", "repo", "mflr0/Arkeyan-Launcher");
+        settings.kitRepo = SettingGet(m_config, "update", "kit_repo", "mflr0/Arkeyan-Launcher");
         m_updateWasBusy = true;
         m_updates.Check(settings);
     }

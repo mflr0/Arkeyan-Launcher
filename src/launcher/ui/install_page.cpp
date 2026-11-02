@@ -297,7 +297,7 @@ namespace launcher_ui
         m_s->kitUsed = true;
         m_s->kitTag = WantedKitTag(*m_s);
         m_s->kitStep = { "kit", "Downloading the game tools", SDL_GetTicks(), 0 };
-        m_s->kitDownload.Start(SettingGet(m_config, "update", "kit_repo", "mflr0/Skylauncher"), m_s->kitTag, DownloadedKitsFolder());
+        m_s->kitDownload.Start(SettingGet(m_config, "update", "kit_repo", "mflr0/Arkeyan-Launcher"), m_s->kitTag, DownloadedKitsFolder());
     }
 
     void App::StartInstaller()

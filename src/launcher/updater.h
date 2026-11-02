@@ -143,7 +143,7 @@ public:
     enum class Phase { Idle, Checking, Downloading, Verifying, Installing, Done, Failed };
     struct Settings
     {
-        std::string repo = "mflr0/Skylauncher";
+        std::string repo = "mflr0/Arkeyan-Launcher";
         std::string kitRepo;            // empty: no game updates (the default is the launcher's own repository)
     };
     struct State
