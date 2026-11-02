@@ -377,10 +377,10 @@ namespace figures
         stats.villainCount = area[1];
         stats.preloadVillain = area[7];
         stats.sequence = area[9];
-        stats.selectedVillain = area[0x10];
+        stats.selectedVillain = area[TrapVillainOffset];
         for (size_t i = 0; i < stats.villains.size(); i++)
         {
-            const uint8_t* record = area.data() + 0x10 + 48 * i;
+            const uint8_t* record = area.data() + TrapVillainOffset + TrapVillainRecordSize * i;
             TrapVillain& villain = stats.villains[i];
             villain.id = record[0];
             villain.questComplete = (record[1] & 1) != 0;
@@ -451,7 +451,7 @@ namespace figures
         area[7] = stats.preloadVillain;
         for (size_t i = 0; i < stats.villains.size(); i++)
         {
-            uint8_t* record = area.data() + 0x10 + 48 * i;
+            uint8_t* record = area.data() + TrapVillainOffset + TrapVillainRecordSize * i;
             const TrapVillain& villain = stats.villains[i];
             record[0] = villain.id;
             record[1] = uint8_t((record[1] & 0xFE) | uint8_t(villain.questComplete));
