@@ -102,7 +102,8 @@ namespace portable
     // per exported copy.
     std::filesystem::path FirstLaunchMarker(const std::filesystem::path& gameFolder, const Info& info);
     // Adds each collection/<file> of the pack to `collectionFolder` when no file of that name is there (an existing figure is
-    // never overwritten). Returns how many were added; `skipped` gets those already there.
+    // never overwritten). Returns how many were added; `skipped` gets those already there, `failed` those that could not be
+    // written. The added figures' entries of the pack's collection.json join the folder's own collection.json.
     int ImportCollection(const std::filesystem::path& pack, const std::vector<Entry>& entries,
-        const std::filesystem::path& collectionFolder, int* skipped = nullptr);
+        const std::filesystem::path& collectionFolder, int* skipped = nullptr, int* failed = nullptr);
 }

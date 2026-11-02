@@ -1,8 +1,10 @@
 #include "portable_pack.h"
 #include "datadir.h"
+#include "json.h"
 #include <algorithm>
 #include <cstring>
 #include <fstream>
+#include <iterator>
 #include <map>
 #include <system_error>
 
@@ -55,8 +57,8 @@ namespace portable
             value = 0;
             for (char c : text)
             {
-                if (c < '0' || c > '9')
-                    return false;
+                if (c < '0' || c > '9' || value > (UINT64_MAX - uint64_t(c - '0')) / 10)
+                    return false; // not a digit, or past 64 bits: a damaged index
                 value = value * 10 + uint64_t(c - '0');
             }
             return true;
@@ -352,14 +354,16 @@ namespace portable
         return gameFolder / ("portable-" + (stamp.empty() ? std::string("0") : stamp) + ".done");
     }
 
-    int ImportCollection(
-        const fs::path& pack, const std::vector<Entry>& entries, const fs::path& collectionFolder, int* skipped)
+    int ImportCollection(const fs::path& pack, const std::vector<Entry>& entries, const fs::path& collectionFolder,
+        int* skipped, int* failed)
     {
-        int added = 0, there = 0;
+        int added = 0, there = 0, lost = 0;
         std::error_code code;
+        const std::string indexName = std::string(CollectionPrefix) + "collection.json";
+        std::vector<std::string> addedNames;
         for (const Entry& entry : entries)
         {
-            if (!entry.name.starts_with(CollectionPrefix))
+            if (!entry.name.starts_with(CollectionPrefix) || entry.name == indexName)
                 continue;
             const fs::path target =
                 collectionFolder / datadir::FromText(entry.name.substr(std::strlen(CollectionPrefix)));
@@ -370,7 +374,10 @@ namespace portable
             }
             std::vector<uint8_t> data = ReadEntry(pack, entry);
             if (data.size() != entry.size)
+            {
+                lost++;
                 continue;
+            }
             fs::create_directories(target.parent_path(), code);
             fs::path temporary = target;
             temporary += ".part";
@@ -380,6 +387,7 @@ namespace portable
                 if (!out)
                 {
                     fs::remove(temporary, code);
+                    lost++;
                     continue;
                 }
             }
@@ -392,12 +400,57 @@ namespace portable
             }
             fs::rename(temporary, target, code);
             if (code)
+            {
                 fs::remove(temporary, code);
+                lost++;
+            }
             else
+            {
                 added++;
+                addedNames.push_back(entry.name.substr(std::strlen(CollectionPrefix)));
+            }
+        }
+
+        // The added figures' metadata (labels, editions, a swapper's other half) joins this machine's collection.json;
+        // its entries for the figures already here stay as they are. A collection.json that doesn't parse is left alone.
+        const Entry* packIndex = Find(entries, indexName);
+        if (packIndex != nullptr && !addedNames.empty())
+        {
+            const std::vector<uint8_t> bytes = ReadEntry(pack, *packIndex);
+            collection::Json from, local = collection::Json::Object();
+            std::string error;
+            const fs::path localPath = collectionFolder / "collection.json";
+            bool localOk = true;
+            if (fs::exists(localPath, code))
+            {
+                std::ifstream in(localPath, std::ios::binary);
+                const std::string text{ std::istreambuf_iterator<char>(in), std::istreambuf_iterator<char>() };
+                localOk = collection::Json::Parse(text, local, error) && local.IsObject();
+            }
+            if (collection::Json::Parse(std::string(bytes.begin(), bytes.end()), from, error) && localOk)
+            {
+                collection::Json figures = local["figures"].IsObject() ? local["figures"] : collection::Json::Object();
+                for (const std::string& name : addedNames)
+                    if (from["figures"][name].IsObject() && !figures.Has(name))
+                        figures.Set(name, from["figures"][name]);
+                local.Set("figures", std::move(figures));
+                if (!local.Has("format"))
+                    local.Set("format", 1);
+                fs::path temporary = localPath;
+                temporary += ".part";
+                {
+                    std::ofstream out(temporary, std::ios::binary | std::ios::trunc);
+                    out << local.Dump();
+                }
+                fs::rename(temporary, localPath, code);
+                if (code)
+                    fs::remove(temporary, code);
+            }
         }
         if (skipped != nullptr)
             *skipped = there;
+        if (failed != nullptr)
+            *failed = lost;
         return added;
     }
 }
