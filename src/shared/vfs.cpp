@@ -108,7 +108,8 @@ void DiscFileSystem::IndexDirectory(uint32_t sector, uint32_t size, const std::s
     if (size > MaxDirectorySize || depth > MaxDirectoryDepth)
         return;
     std::vector<uint8_t> data(size);
-    PlatformReadFile(m_file, data.data(), size, m_partition + uint64_t(sector) * SectorSize);
+    if (PlatformReadFile(m_file, data.data(), size, m_partition + uint64_t(sector) * SectorSize) != size)
+        return; // past the end of a truncated image
 
     // Entries form a binary tree: left/right subtree offsets in dwords, 0xFFFF marks unused space.
     std::vector<uint32_t> pending{ 0 };

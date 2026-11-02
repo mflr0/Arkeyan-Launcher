@@ -1500,6 +1500,7 @@ int AccentChecksInChild(const char* executable, const std::filesystem::path& scr
 int MusicChecks(const std::filesystem::path& scratch); // tests/music_test.cpp
 int CopyChecks(const std::filesystem::path& scratch, const std::string& ssaIso, const std::string& giantsIso); // tests/copy_test.cpp
 int PortableChecks(const std::filesystem::path& scratch); // tests/portable_test.cpp
+int VfsChecks(const std::filesystem::path& scratch); // tests/vfs_test.cpp
 int SingleInstanceChecks(const std::filesystem::path& scratch); // tests/single_instance_test.cpp
 int ExportPortableTool(int argc, char** argv);         // tests/portable_test.cpp
 
@@ -1990,10 +1991,8 @@ static void SourceFailureChecks(const std::filesystem::path& scratch)
 
 #include "launcher_review_checks.h"
 
-int main(int argc, char** argv)
+static int RunChecks(int argc, char** argv)
 {
-    // Unbuffered: a check that ends the process early still leaves every line before it in the CI log.
-    setvbuf(stdout, nullptr, _IONBF, 0);
     if (argc == 2 && std::string_view(argv[1]) == "--portal-probe" && std::getenv("SKY_FAKE_PROBE_CLOSED_OUTPUT") != nullptr)
     {
         std::fclose(stdout);
@@ -2236,6 +2235,7 @@ int main(int argc, char** argv)
     g_failures += SettingsChecks(scratch / "settings");
     g_failures += UninstallChecks(scratch);
     g_failures += PortableChecks(scratch);
+    g_failures += VfsChecks(scratch);
     g_failures += SingleInstanceChecks(scratch / "instance");
     g_failures += I18nChecks();
     g_failures += TextFitChecks();
@@ -2632,4 +2632,20 @@ int main(int argc, char** argv)
     if (skyenv::Get("SKY_LAUNCHER_TEST_KEEP") == nullptr) std::filesystem::remove_all(scratch);
     printf(g_failures == 0 ? "All launcher checks passed\n" : "%d launcher check(s) failed\n", g_failures);
     return g_failures == 0 ? 0 : 1;
+}
+
+int main(int argc, char** argv)
+{
+    // Unbuffered: a check that ends the process early still leaves every line before it in the CI log.
+    setvbuf(stdout, nullptr, _IONBF, 0);
+    try
+    {
+        return RunChecks(argc, argv);
+    }
+    catch (const std::exception& error)
+    {
+        // A check that throws (a file system call on one system) says what threw instead of ending the process silently.
+        fprintf(stderr, "FAIL: uncaught exception: %s\n", error.what());
+        return 1;
+    }
 }

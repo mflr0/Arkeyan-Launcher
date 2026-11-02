@@ -37,11 +37,16 @@ struct ReleaseAsset
 struct ReleaseInfo
 {
     std::string tag, name, notes, pageUrl;
+    std::string repo; // "owner/name" it was asked of: its assets must be that owner's GitHub release downloads
     bool prerelease = false;
     std::vector<ReleaseAsset> assets;
 };
 bool ParseRelease(const std::string& json, ReleaseInfo& release, std::string* error = nullptr);
 const ReleaseAsset* FindAsset(const ReleaseInfo& release, std::string_view name);
+// An asset address the launcher downloads: https://github.com/<the repo's owner>/<name>/releases/download/... (the
+// owner's, so a renamed repository still matches). Any address when SKY_LAUNCHER_UPDATE_URL is set (the tests' local
+// releases).
+bool TrustedAssetUrl(const std::string& url, const std::string& repo);
 // The expected hash of `name` in a SHA256SUMS file ("<64 hex>  <name>" or "<hex> *<name>" lines); empty when absent.
 std::string FindChecksum(const std::string& sums, std::string_view name);
 

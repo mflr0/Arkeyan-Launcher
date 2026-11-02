@@ -19,14 +19,17 @@ concurrency:
 env:
   VERSION: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || '' }}
 
+permissions:
+  contents: read
+
 jobs:
   windows:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           submodules: recursive
-      - uses: ilammy/msvc-dev-cmd@v1
+      - uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1
       - name: Build
         shell: pwsh
         run: |
@@ -43,7 +46,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           New-Item -ItemType Directory -Force dist | Out-Null
           Copy-Item build/ArkeyanLauncher.exe dist/ArkeyanLauncher.exe
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: windows
           path: dist/*
@@ -52,7 +55,7 @@ jobs:
     # 22.04: the AppImage needs the glibc it was built against (2.35), and the game kit's baseline is 2.34.
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           submodules: recursive
       - name: Dependencies
@@ -77,12 +80,14 @@ jobs:
         run: |
           rsvg-convert -w 256 -h 256 resources/icons/skylauncher.svg -o skylauncher.png
           curl -fsSL -o linuxdeploy https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          # linuxdeploy's continuous build as checked on 2026-11-02: a newer one stops here until it is checked and this hash updated.
+          echo "df908b19f1ed1cdafa79508d415aa12d6c56ce4d56d4149aa8c09286718706e5  linuxdeploy" | sha256sum -c -
           chmod +x linuxdeploy
           ./linuxdeploy --appimage-extract-and-run --appdir AppDir -e AppDir/usr/bin/ArkeyanLauncher \
             -d resources/linux/skylauncher.desktop -i skylauncher.png --output appimage
           mkdir -p dist
           mv Arkeyan*.AppImage dist/ArkeyanLauncher-x86_64.AppImage
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: linux
           path: dist/*
@@ -90,7 +95,7 @@ jobs:
   macos:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           submodules: recursive
       - name: Dependencies
@@ -106,7 +111,7 @@ jobs:
           SDL_VIDEO_DRIVER=offscreen SDL_AUDIO_DRIVER=dummy build/ArkeyanLauncherTest --no-disc "$RUNNER_TEMP/launcher-test"
       - name: Icon, signature, .dmg and .zip
         run: tools/package_macos.sh build/ArkeyanLauncher.app resources/icons/skylauncher.svg dist
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: macos
           path: dist/*
@@ -119,8 +124,8 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           path: dist
           merge-multiple: true

@@ -438,12 +438,17 @@ namespace portable
                     local.Set("format", 1);
                 fs::path temporary = localPath;
                 temporary += ".part";
+                bool written = false;
                 {
                     std::ofstream out(temporary, std::ios::binary | std::ios::trunc);
                     out << local.Dump();
+                    out.flush();
+                    written = bool(out);
                 }
-                fs::rename(temporary, localPath, code);
-                if (code)
+                // A full disk leaves a short file: the machine's own collection.json stays as it was.
+                if (written)
+                    fs::rename(temporary, localPath, code);
+                if (!written || code)
                     fs::remove(temporary, code);
             }
         }

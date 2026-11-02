@@ -1,6 +1,7 @@
 #include "launcher/updater.h"
 #include "launcher/env.h"
 #include "launcher/i18n.h"
+#include "launcher/game_install.h"
 #include "launcher/launcher.h"
 #include "shared/dir_list.h"
 #include "shared/mini_json.h"
@@ -475,11 +476,39 @@ HttpResult HttpDownload(const std::string& url, const fs::path& file, const std:
     return result;
 }
 
+bool TrustedAssetUrl(const std::string& url, const std::string& repo)
+{
+    if (LauncherEnv("SKY_LAUNCHER_UPDATE_URL") != nullptr)
+        return true;
+    const size_t slash = repo.find('/');
+    if (slash == std::string::npos || slash == 0)
+        return false;
+    auto lower = [](std::string text) {
+        for (char& c : text)
+            c = char(std::tolower(static_cast<unsigned char>(c)));
+        return text;
+    };
+    const std::string prefix = "https://github.com/" + lower(repo.substr(0, slash)) + "/";
+    const std::string address = lower(url);
+    if (!address.starts_with(prefix))
+        return false;
+    // <name>/releases/download/<tag>/<file>: one path segment for the repository's name, no "..".
+    const std::string rest = address.substr(prefix.size());
+    const size_t name = rest.find('/');
+    return name != std::string::npos && name > 0 && rest.compare(name, 19, "/releases/download/") == 0 &&
+           rest.find("..") == std::string::npos;
+}
+
 fs::path DownloadVerified(const ReleaseInfo& release, std::string_view assetName, const fs::path& folder,
     const std::function<void(uint64_t)>& progress, const std::atomic<bool>* cancel, std::string& error)
 {
     const ReleaseAsset* asset = FindAsset(release, assetName);
     const ReleaseAsset* sums = FindAsset(release, "SHA256SUMS");
+    if ((asset != nullptr && !TrustedAssetUrl(asset->url, release.repo)) || (sums != nullptr && !TrustedAssetUrl(sums->url, release.repo)))
+    {
+        error = Tf("{} points outside its GitHub release, so it wasn't installed", release.tag);
+        return {};
+    }
     if (asset == nullptr)
     {
         error = Tf("{} has no {} for this computer", release.tag, assetName);
@@ -789,6 +818,7 @@ fs::path DownloadKit(const std::string& repo, const std::string& tag, const fs::
             return {};
         }
     }
+    release.repo = repo;
     const std::string kitAsset = KitAssetName();
     const ReleaseAsset* asset = FindAsset(release, kitAsset);
     if (asset == nullptr)
@@ -904,7 +934,7 @@ void UpdateManager::Check(const Settings& settings)
     m_settings = settings;
     { std::lock_guard lock(m_mutex); m_state.phase = Phase::Checking; m_state.checkError.clear(); m_state.error.clear(); }
     m_thread = std::thread([this] {
-        fs::path temp = fs::temp_directory_path() / "skylauncher-update";
+        fs::path temp = LauncherDataFolder() / "update"; // the player's own folder, not a shared temporary one
         auto fetch = [&](const std::string& repo, ReleaseInfo& release, std::string& error) {
             fs::path file = temp / "latest.json";
             HttpResult result = HttpDownload(LatestReleaseUrl(repo), file, {}, &m_cancel);
@@ -913,7 +943,10 @@ void UpdateManager::Check(const Settings& settings)
                 error = result.error;
                 return false;
             }
-            return ParseRelease(ReadText(file), release, &error);
+            if (!ParseRelease(ReadText(file), release, &error))
+                return false;
+            release.repo = repo;
+            return true;
         };
         ReleaseInfo launcher, kit;
         std::vector<GameUpdate> games;
@@ -970,7 +1003,7 @@ void UpdateManager::UpdateLauncher()
         {
             // The app can't be replaced where it is: the disk image, opened for the player to drag from.
             std::string error;
-            fs::path folder = fs::temp_directory_path() / "skylauncher-update";
+            fs::path folder = LauncherDataFolder() / "update";
             fs::path dmg = DownloadVerified(release, "ArkeyanLauncher-macOS.dmg", folder, progress, &m_cancel, error);
             if (dmg.empty())
                 Fail(error);

@@ -288,6 +288,7 @@ Resume	Reprendre
 Retry	Réessayer
 {} accepts this portal.	{} accepte ce portail.
 {} can't be verified, so it wasn't installed	{} ne peut pas être vérifié : rien n'a été installé
+{} points outside its GitHub release, so it wasn't installed	{} pointe en dehors de sa release GitHub : rien n'a été installé
 Save as...	Enregistrer sous...
 Save backups	Copies de secours des sauvegardes
 Saved gamepad (not connected)	Manette enregistrée (non connectée)

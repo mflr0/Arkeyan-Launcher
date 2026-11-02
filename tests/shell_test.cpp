@@ -1,6 +1,7 @@
 // ArkeyanLauncherTest's checks for the launcher shell: the install checklist, game runs and logs, the updater, settings.
 // Called from launcher_test.cpp's main; returns the number of failures.
 #include "launcher/game_install.h"
+#include "launcher/env.h"
 #include "launcher/game_run.h"
 #include "launcher/install_checklist.h"
 #include "launcher/launcher.h"
@@ -388,6 +389,18 @@ namespace
         SHELL_EXPECT(!ParseJson("[1] 2", value) && !ParseJson(std::string(200, '['), value));
         ReleaseInfo release;
         SHELL_EXPECT(!ParseRelease("<html>rate limited</html>", release, &error) && error.find("JSON") != std::string::npos);
+        // Assets only from the repository owner's GitHub release downloads (a renamed repository still matches).
+        if (LauncherEnv("SKY_LAUNCHER_UPDATE_URL") == nullptr)
+        {
+            SHELL_EXPECT(TrustedAssetUrl("https://github.com/mflr0/Arkeyan-Launcher/releases/download/v0.8.0/SHA256SUMS", "mflr0/Arkeyan-Launcher"));
+            SHELL_EXPECT(TrustedAssetUrl("https://github.com/mflr0/Arkeyan-Launcher/releases/download/v0.8.0/a.zip", "mflr0/Skylauncher"));
+            SHELL_EXPECT(!TrustedAssetUrl("https://github.com/someone/Arkeyan-Launcher/releases/download/v0.8.0/a.zip", "mflr0/Arkeyan-Launcher"));
+            SHELL_EXPECT(!TrustedAssetUrl("https://example.com/mflr0/Arkeyan-Launcher/releases/download/v1/a.zip", "mflr0/Arkeyan-Launcher"));
+            SHELL_EXPECT(!TrustedAssetUrl("http://github.com/mflr0/Arkeyan-Launcher/releases/download/v1/a.zip", "mflr0/Arkeyan-Launcher"));
+            SHELL_EXPECT(!TrustedAssetUrl("https://github.com/mflr0/x/../y/releases/download/v1/a.zip", "mflr0/Arkeyan-Launcher"));
+            SHELL_EXPECT(!TrustedAssetUrl("https://github.com/mflr0/Arkeyan-Launcher/archive/v1.zip", "mflr0/Arkeyan-Launcher"));
+            SHELL_EXPECT(!TrustedAssetUrl("file:///tmp/a.zip", "mflr0/Arkeyan-Launcher"));
+        }
         SHELL_EXPECT(!ParseRelease("{\"message\":\"Not Found\"}", release, &error) && error.find("Not Found") != std::string::npos);
         std::filesystem::path updates = scratch / "updates";
         MakeRelease(updates / "r1", "v99.0.0", { { "ArkeyanLauncher.exe", "exe bytes" }, { "skylanders-kit-test.zip", "zip" } }, {});
@@ -406,7 +419,9 @@ namespace
         SHELL_EXPECT(LauncherAssetName() == "ArkeyanLauncher-x86_64.AppImage" && KitAssetName() == "skylanders-kit-linux-x64.zip");
 #endif
 
-        // Downloads: good, damaged, and a release without SHA256SUMS.
+        // Downloads: good, damaged, and a release without SHA256SUMS. Local releases (file://) are the tests' own: allowed as the
+        // update tests allow them, through SKY_LAUNCHER_UPDATE_URL.
+        TestSetEnv("SKY_LAUNCHER_UPDATE_URL", FileUrl(updates / "r1" / "latest.json").c_str());
         std::string downloadError;
         auto file = DownloadVerified(release, "ArkeyanLauncher.exe", updates / "got", {}, nullptr, downloadError);
         SHELL_EXPECT(!file.empty() && ReadBytes(file) == "exe bytes" && !std::filesystem::exists(updates / "got" / "SHA256SUMS"));
