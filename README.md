@@ -1,32 +1,51 @@
 # Arkeyan Launcher
 
-A launcher for the native PC ports of *Skylanders: Spyro's Adventure*, *Skylanders: Giants*, *Skylanders: Swap Force* and, as an experiment,
-*Skylanders: Trap Team*. You give it your own disc image, it builds the game on your computer, and you play. (Formerly Skylauncher: it updates itself to this version.)
+**Play Skylanders natively on Mac, Windows and Linux.** Arkeyan Launcher builds *Spyro's Adventure*, *Giants*, *Swap Force*
+and, as an experiment, *Trap Team* from your own Xbox 360 disc image into real PC games: no emulator, your own saves, your
+figures in a virtual portal, any controller, keyboard or mouse. Formerly Skylauncher: it updates itself to this version.
+
+<!-- SCREENSHOTS: four gameplay pictures (one per game), hosted outside the repository -->
 
 Arkeyan Launcher contains no game code and no game art. Everything shown from the game is read from your own disc and stays
 on your computer.
 
-| Game | Status |
-|---|---|
-| Spyro's Adventure | ![code recompiled: 100% (31k functions)](https://img.shields.io/badge/code%20recompiled-100%25%20%2831k%20functions%29-blue) ![Mac: playable](https://img.shields.io/badge/Mac-playable-brightgreen) ![Windows: playable](https://img.shields.io/badge/Windows-playable-brightgreen) ![Linux: container only](https://img.shields.io/badge/Linux-container%20only-yellow) |
-| Giants | ![code recompiled: 100% (23k functions)](https://img.shields.io/badge/code%20recompiled-100%25%20%2823k%20functions%29-blue) ![Mac: playable](https://img.shields.io/badge/Mac-playable-brightgreen) ![Windows: Wine only](https://img.shields.io/badge/Windows-Wine%20only-yellow) ![Linux: container only](https://img.shields.io/badge/Linux-container%20only-yellow) |
-| Swap Force | ![code recompiled: 100% (81k functions)](https://img.shields.io/badge/code%20recompiled-100%25%20%2881k%20functions%29-blue) ![Mac: playable](https://img.shields.io/badge/Mac-playable-brightgreen) ![Windows: Wine only](https://img.shields.io/badge/Windows-Wine%20only-yellow) ![Linux: container only](https://img.shields.io/badge/Linux-container%20only-yellow) |
-| Trap Team | ![code recompiled: 100% (30k functions)](https://img.shields.io/badge/code%20recompiled-100%25%20%2830k%20functions%29-blue) ![Mac: experimental](https://img.shields.io/badge/Mac-experimental-yellow) ![Windows: not tested](https://img.shields.io/badge/Windows-not%20tested-lightgrey) ![Linux: not tested](https://img.shields.io/badge/Linux-not%20tested-lightgrey) |
+## What you get
+
+- **Native games**, built once on your computer from your disc (2 to 4 minutes on an Apple Silicon Mac), at a higher resolution
+  than the console's, at 30 or 60 FPS.
+- **No portal needed.** Your figures live in the **Toy Box**: put any of them on the virtual portal from the game (F6), swap
+  in one press, create figures from the catalogue, choose the villain in a trap. A real Portal of Power works too.
+- **Any controller, the keyboard or the mouse**, every key and button remappable, button pictures that match your device.
+- **Your saves are safe**: written in one go, earlier versions kept, restored in two clicks.
+- **Updates in one click**, for the launcher and each game, checked against the release's SHA-256.
+- **A portable copy** of an installed game in one file, to play it anywhere without the launcher.
 
 ## The games
 
 | Game | Mac | Windows | Linux | Played so far |
 |---|---|---|---|---|
-| Spyro's Adventure | ✅ | ✅ | ⚠️ tested in a container only | The story and the Heroic Challenges; a complete playthrough is not confirmed yet |
-| Giants | ✅ | ⚠️ tested in Wine only | ⚠️ tested in a container only | Chapter 1, and 78 of its 91 levels in an automatic tour (the other 13 are challenge levels the tour cannot start) |
-| Swap Force | ✅ | ⚠️ tested in Wine only | ⚠️ tested in a container only | The tutorial, the first area of the story and the two-player arenas |
-| Trap Team (experimental) | ✅ new | ⚠️ not tested yet | ⚠️ not tested yet | The tutorial and the hub |
+| Spyro's Adventure | ✅ | ✅ | ⚠️ tested in a container only | 27 story levels and the Ruins played with a hero; bosses and Heroic Challenges not all confirmed |
+| Giants | ✅ | ⚠️ tested in Wine only | ⚠️ tested in a container only | Chapter 1, and 78 of its 91 levels in an automatic tour |
+| Swap Force | ✅ | ⚠️ tested in Wine only | ⚠️ tested in a container only | The tutorial, the first area of the story and the two-player arenas; 158 of 195 zones in an automatic tour |
+| Trap Team (experimental) | ✅ | ⚠️ not tested yet | ⚠️ not tested yet | The tutorial and the hub, a villain captured and kept in its trap; 53 of 56 levels in an automatic tour |
 
 Finished a game, or played one on Windows or Linux? Please say so in an
 [issue](https://github.com/mflr0/Arkeyan-Launcher/issues): it is how this table gets filled.
 
-**Testers wanted.** Above all on a real Windows or Linux PC (and the Steam Deck), and with a real Portal of Power. Play a
-game as far as you like and tell us in an issue what worked and what did not (Settings > Support > Copy game log helps).
+**Testers wanted**, above all on a real Windows or Linux PC (and the Steam Deck), and with a real Portal of Power.
+
+## Tested
+
+Every release is checked before it ships, on the four games:
+
+- **A clean install of each game** from the release's own kit, then its first level played by a script in a real window
+  (movies on, figures on the virtual portal, frames captured).
+- **The full test suite**: each game built from its disc, started and played for a few minutes (frame rate, sound, the
+  picture compared with a reference, saves, figures), and thousands of unit checks (figures, saves, the portal, the
+  Toy Box, settings, the launcher's install, update and uninstall paths, damaged disc images).
+- **Automatic level tours** that load every level of each game one by one.
+- **The code translator** is proved against its reference on all 4,294,967,296 possible PowerPC instruction words.
+- The Windows and Linux builds of Spyro's Adventure, Giants and Swap Force also run in Wine and in a container.
 
 ## What you need
 
@@ -68,14 +87,18 @@ Trap Team is off by default: turn it on in Settings > Launcher.
    - **Mac:** `ArkeyanLauncher-macOS.dmg`. The app is not notarized: the first time, macOS blocks it; go to System Settings > Privacy & Security and choose Open Anyway (macOS 14 and earlier: right-click the app and choose Open).
    - **Linux:** `ArkeyanLauncher-x86_64.AppImage`, after `chmod +x`.
 2. Drop your `.iso` on the window, or click the button to choose it. The disc is checked.
-3. Click **INSTALL**. The game is built from your disc. It takes 10 to 20 minutes depending on the game, and happens
-   once.
+3. Click **INSTALL**. The game is built from your disc, once: a few minutes (2 to 4 on an Apple Silicon Mac, more on a
+   slower computer).
 4. Click **PLAY**.
 
 ## Controls
 
 Any gamepad works: Xbox, PlayStation, Switch and others. You can also play on the keyboard, and change every key in
-Settings > Controls.
+Settings > Controls or in the game's F3 menu > Commands.
+
+**Mouse:** turn it on per game (the game's keys page, or F3 > Commands). Left click is attack 1, right click attack 2, and
+every mouse button and the wheel can take any action. The game holds the pointer while you play and lets it go in the F3
+menu, the Toy Box, on Alt-Tab and when the window loses focus; a click in the window takes it back.
 
 The launcher shows live whether a real Portal of Power is plugged in ("Portal: <model>" or "Portal: not detected"), next
 to PLAY and on the Collection page.
@@ -164,8 +187,10 @@ The developer docs are in `docs/`: `launcher_ui.md` covers the screens and theme
 - On a real Windows PC only Spyro's Adventure has been played; Giants and Swap Force were run in Wine. On Linux those
   three were run in a container, none on a real PC yet. Trap Team has been played on a Mac only.
 - Swap Force: not every mode has been played through yet.
-- Trap Team is tested as far as the hub: expect bugs and crashes beyond it. Above 30 FPS, its liquids ripple too fast.
-  Capturing a villain in a trap has not been verified, its voices follow the text language, and LB is not offered as a key yet.
+- Trap Team is experimental and tested as far as the hub: expect bugs and crashes beyond it. Spy Rise looks almost black,
+  its voices follow the text language, and LB is not offered as a key yet. A real Traptanium portal's speaker has not been
+  tried yet.
+- The mouse does nothing in the games' own menus yet: use the keyboard or a controller there.
 - The 60 fps option is experimental.
 - The Mac app is not notarized, and Windows SmartScreen may warn about the launcher (see Get started).
 
