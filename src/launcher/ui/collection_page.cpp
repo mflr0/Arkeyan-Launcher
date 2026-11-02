@@ -128,10 +128,12 @@ namespace launcher_ui
 
     void CollectionPage::ClearIcons() { m_icons->Clear(); }
 
-    const FigureIconTexture& CollectionPage::Icon(const collection::Toy* toy, collection::VariantKind kind, bool large)
+    const FigureIconTexture& CollectionPage::Icon(const collection::Toy* toy, collection::VariantKind kind, bool large, uint16_t variant)
     {
-        // The picture of the game being shown, else the other game's, else a generated icon (shared/collection/icons.h).
-        std::string path = toy != nullptr ? collection::PortraitPath(m_app.m_s->game.id, *toy, collection::VariantFor(*toy, kind), large) : std::string();
+        // The newest cached art, independent of the viewed game (shared/collection/icons.h).
+        if (toy != nullptr && variant == 0)
+            variant = collection::VariantFor(*toy, kind);
+        std::string path = toy != nullptr ? collection::PortraitPath(m_app.m_s->game.id, *toy, variant, large) : std::string();
         std::string key = !path.empty() ? path : fmt::format("gen:{}:{}", toy != nullptr ? toy->type : 0xFFFF, int(kind));
         auto found = m_icons->textures.find(key);
         if (found != m_icons->textures.end())
@@ -151,9 +153,9 @@ namespace launcher_ui
         return m_icons->textures[key] = icon;
     }
 
-    void CollectionPage::DrawIcon(ImDrawList* draw, const collection::Toy* toy, collection::VariantKind kind, ImVec2 at, float size, bool large)
+    void CollectionPage::DrawIcon(ImDrawList* draw, const collection::Toy* toy, collection::VariantKind kind, ImVec2 at, float size, bool large, uint16_t variant)
     {
-        const FigureIconTexture& icon = Icon(toy, kind, large);
+        const FigureIconTexture& icon = Icon(toy, kind, large, variant);
         if (icon.texture != nullptr)
             draw->AddImage(Ref(icon.texture), at, ImVec2(at.x + size, at.y + size));
         // A drawn icon gets the toy's initials, unless its family has a mark of its own (an item's potion...).
@@ -173,7 +175,7 @@ namespace launcher_ui
         std::string path = toy != nullptr ? collection::BestPicturePath(m_app.m_s->game.id, *toy, variant) : std::string();
         if (path.empty())
         {
-            DrawIcon(draw, toy, kind, at, box, true);
+            DrawIcon(draw, toy, kind, at, box, true, variant);
             return;
         }
         auto found = m_icons->textures.find(path);
@@ -188,7 +190,7 @@ namespace launcher_ui
         const FigureIconTexture& picture = found->second;
         if (picture.texture == nullptr || picture.width <= 0 || picture.height <= 0)
         {
-            DrawIcon(draw, toy, kind, at, box, true);
+            DrawIcon(draw, toy, kind, at, box, true, variant);
             return;
         }
         float scale = std::min(box / picture.width, box / picture.height), w = picture.width * scale, h = picture.height * scale;
@@ -331,7 +333,7 @@ namespace launcher_ui
     {
         const float edge = ui::stroke::Edge;
         draw->AddRectFilled(ImVec2(at.x - edge, at.y - edge), ImVec2(at.x + size + edge, at.y + size + edge), ui::Col(ui::color::Surface), ui::radius::Control);
-        DrawIcon(draw, bottom.toy, bottom.Kind(), at, size, false);
+        DrawIcon(draw, bottom.toy, bottom.Kind(), at, size, false, bottom.variant);
         draw->AddRect(ImVec2(at.x - edge, at.y - edge), ImVec2(at.x + size + edge, at.y + size + edge), ui::Col(ui::color::Edge), ui::radius::Control);
     }
 
@@ -932,7 +934,7 @@ namespace launcher_ui
             {
                 if (collection::Card card = CardOf(*figure); !DrawSwapper(draw, card, picture, SeatPicture))
                 {
-                    DrawIcon(draw, figure->toy, figure->Kind(), picture, SeatPicture, false);
+                    DrawIcon(draw, figure->toy, figure->Kind(), picture, SeatPicture, false, figure->variant);
                     if (card.Swapper())
                         DrawBottom(draw, *card.second, ImVec2(picture.x + SeatPicture * 0.58f, picture.y + SeatPicture * 0.58f), SeatPicture * 0.42f);
                 }
@@ -1237,7 +1239,7 @@ namespace launcher_ui
             seat >= 0 || selected ? ui::stroke::Edge : ui::stroke::Hairline);
         if (collection::Card card = CardOf(figure); !DrawSwapper(draw, card, picture, art))
         {
-            DrawIcon(draw, figure.toy, figure.Kind(), picture, art, false);
+            DrawIcon(draw, figure.toy, figure.Kind(), picture, art, false, figure.variant);
             { // the busts end flat: fade their foot into the card
                 const ImVec2 top(picture.x, picture.y + art - ui::space::L), foot(picture.x + art, picture.y + art + 1);
                 const ImU32 clear = ui::Col(hovered ? ui::color::Raised : ui::color::Surface, 0), solid = CardFill(hovered);

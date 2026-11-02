@@ -252,6 +252,81 @@ namespace
         EXPECT(!FindInstallKit({ { "launcher", { { "kit", (scratch / "nowhere").string() } } } }));
     }
 
+    // The synced picture rule, without discs or player data: the same art on every page and at every icon size.
+    void PictureChecks(const std::filesystem::path& scratch)
+    {
+        namespace fs = std::filesystem;
+        std::map<std::string, std::string> saved;
+        for (const char* name : { "SKYLANDERS_DATA", "SKY_PORTRAITS", "SSA_PORTRAITS" })
+            if (const char* value = getenv(name)) saved[name] = value;
+        TestSetEnv("SKYLANDERS_DATA", (scratch / "picture-data").string().c_str());
+        TestUnsetEnv("SKY_PORTRAITS");
+        TestUnsetEnv("SSA_PORTRAITS");
+        const auto& catalogue = collection::Catalogue::Get();
+        const auto* eruptor = catalogue.Find(9);
+        const auto* top = catalogue.Find(2004);
+        const auto* bottom = catalogue.Find(1004);
+        EXPECT(eruptor != nullptr && top != nullptr && bottom != nullptr);
+        auto write = [&](const char* game, const std::string& name, uint32_t color) {
+            fs::path file = datadir::Game(game) / "portraits" / (name + ".png");
+            fs::create_directories(file.parent_path());
+            EXPECT(collection::SavePng({ 8, 8, std::vector<uint32_t>(64, color) }, file.string()));
+            return file.string();
+        };
+        if (eruptor != nullptr && top != nullptr && bottom != nullptr)
+        {
+            write("ssa", "toy_eruptor_hud", 0xFF0000FFu);
+            write("giants", "artworks/eruptor", 0xFF00FF00u);
+            std::string newest = write("trapteam", "9_0_eruptor", 0xFFFF0000u);
+            for (const char* game : { "ssa", "giants", "swapforce", "trapteam" })
+            {
+                for (bool large : { false, true })
+                    EXPECT(collection::PortraitPath(game, *eruptor, 0, large) == newest);
+                EXPECT(collection::BestPicturePath(game, *eruptor) == newest);
+            }
+            EXPECT(collection::DiscImagePath(*eruptor) == newest);
+            for (int size : { 32, 128, 256 })
+            {
+                bool fromDisc = false;
+                auto icon = collection::Icon(eruptor, collection::VariantKind::Base, size, &fromDisc);
+                EXPECT(fromDisc && icon.width == size && icon.rgba[size * size / 2] == 0xFFFF0000u);
+            }
+            std::string variant = write("giants", "eruptor_lightcore", 0xFF00FFFFu);
+            EXPECT(collection::PortraitPath("ssa", *eruptor, 0x1206) == variant);
+            EXPECT(collection::BestPicturePath("trapteam", *eruptor, 0x1206) == variant);
+            std::string upper = write("swapforce", "artworks/fireknightbody_wii_material", 0xFF0000FFu);
+            std::string lower = write("swapforce", "artworks/fireknightlegs_wii_material", 0xFF00FF00u);
+            EXPECT(!collection::SwapperPicture(*top, 0, *bottom, 0).Empty());
+            EXPECT(collection::HalfPicturePath(*top) == upper && collection::HalfPicturePath(*bottom) == lower);
+            std::string darkWhole = write("swapforce", "collection_fireknight_dark", 0xFF00FFFFu);
+            EXPECT(collection::HalfPicturePath(*top, 0x2402) == darkWhole);
+            EXPECT(collection::SwapperPicture(*top, 0x2402, *bottom, 0x2402).Empty());
+            fs::remove(darkWhole);
+            std::string whole = write("trapteam", "2004_8192_blastzone", 0xFFFF0000u);
+            fs::remove(lower);
+            EXPECT(collection::HalfPicturePath(*bottom) == whole && collection::PortraitPath("ssa", *bottom) == whole);
+            EXPECT(collection::SwapperPicture(*top, 0, *bottom, 0).Empty());
+            fs::remove(upper);
+            lower = write("swapforce", "artworks/fireknightlegs_wii_material", 0xFF00FF00u);
+            EXPECT(collection::HalfPicturePath(*top) == whole && collection::HalfPicturePath(*bottom) == lower);
+            EXPECT(collection::SwapperPicture(*top, 0, *bottom, 0).Empty());
+            fs::remove(lower);
+            EXPECT(collection::HalfPicturePath(*top) == whole && collection::HalfPicturePath(*bottom) == whole);
+            fs::remove(whole);
+            for (const auto* toy : { top, bottom, catalogue.Find(100) })
+            {
+                bool fromDisc = true;
+                auto icon = collection::Portrait("ssa", toy, collection::VariantKind::Base, 64, 0, &fromDisc);
+                EXPECT(!fromDisc && !icon.Empty() && std::any_of(icon.rgba.begin(), icon.rgba.end(),
+                    [](uint32_t pixel) { return pixel >> 24; }));
+                EXPECT(!figures::GenerateIcon(toy, collection::VariantKind::Base, 64).empty());
+            }
+        }
+        for (const char* name : { "SKYLANDERS_DATA", "SKY_PORTRAITS", "SSA_PORTRAITS" })
+            if (auto it = saved.find(name); it != saved.end()) TestSetEnv(name, it->second.c_str());
+            else TestUnsetEnv(name);
+    }
+
     // The collection: SSARecomp's library (src/shared/collection) and the launcher's model over it, in a scratch folder
     // (SKY_COLLECTION, SKY_SAVE_DIR, SKY_MIGRATE_FROM): never the player's own.
     void CollectionChecks(const std::filesystem::path& scratch)
@@ -1754,6 +1829,7 @@ int main(int argc, char** argv)
     CollectionChecks(scratch);
     if (skyenv::Get("SKY_LAUNCHER_TEST_AUDIT_ONLY") != nullptr)
         return g_failures == 0 ? 0 : 1;
+    PictureChecks(scratch);
     HoldChecks();
     EditChecks();
     PortalChecks();
@@ -1972,13 +2048,13 @@ int main(int argc, char** argv)
     if (const char* giantsIso = skyenv::Get("SKY_LAUNCHER_TEST_GIANTS_ISO"); giantsIso != nullptr)
     {
         artChecks("giants", giantsIso, 123, 45);
-        // The rule for a toy: the shown game's picture, else the other game's (Jet-Vac has none on Spyro's Adventure).
+        // The rule for a toy: the newest cached game's picture, independent of the viewed game.
         const collection::Toy* eruptor = collection::Catalogue::Get().Find(9);
         const collection::Toy* jetVac = collection::Catalogue::Get().Find(100);
         EXPECT(eruptor != nullptr && jetVac != nullptr);
         if (eruptor != nullptr && jetVac != nullptr)
         {
-            EXPECT(collection::PortraitPath("ssa", *eruptor).find("toy_eruptor_hud") != std::string::npos);
+            EXPECT(collection::PortraitPath("ssa", *eruptor).ends_with("eruptor.png"));
             EXPECT(collection::PortraitPath("giants", *eruptor).ends_with("eruptor.png"));
             EXPECT(collection::PortraitPath("giants", *eruptor, 0x1206).ends_with("eruptor_lightcore.png"));
             EXPECT(collection::PortraitPath("ssa", *jetVac).ends_with("eagle.png"));
@@ -1987,7 +2063,7 @@ int main(int argc, char** argv)
     if (const char* swapIso = skyenv::Get("SKY_LAUNCHER_TEST_SWAPFORCE_ISO"); swapIso != nullptr)
     {
         artChecks("swapforce", swapIso, 150, 39);
-        // A toy's portrait comes from the shown game's disc; Swap Force's own toys have one only here.
+        // Swap Force's own toys have cached art here.
         const collection::Toy* doomTop = collection::Catalogue::Get().Find(2003);
         EXPECT(doomTop != nullptr && !collection::PortraitPath("swapforce", *doomTop).empty());
         EXPECT(std::filesystem::exists(scratch / "art-data" / "SwapForce" / "portraits")); // the data folder is SwapForce/

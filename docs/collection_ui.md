@@ -15,13 +15,16 @@ and words, a sheet with three main actions. The look is dorydev's: her colours, 
 - `figures/figure_icons.*` is the launcher's: `IconStyle` (outline, fills, badge colours) draws the generated icons for any
   catalogue toy and variant kind; the library's own `collection/icons.*` is not used for drawing, only for
   `PortraitPath` (which disc picture a toy gets).
-- **Pictures.** A card shows the toy's picture from the disc of **the game being shown** (Giants' page: Giants'
-  portraits, its Series 2, LightCore, Legendary and alternate decos too; Swap Force's, the same), else from the other game's disc (Jet-Vac on
-  Spyro's Adventure's page), else the generated icon: `collection::PortraitPath(game, toy, VariantFor(toy, kind), large)`.
-  The pictures are those `shared/art` cached in `<data>/<Game>/portraits/` when the disc was checked (or the game's Toy
-  Box opened); SSARecomp's `docs/runtime/host/game_art.md` has the rule and the formats. Giants' large artworks (the
-  versus screen's, about 1000x960, not square) are cached in `portraits/artworks/`; for a large view of one figure,
-  `collection::BestPicturePath(game, toy, variant)` gives its best picture (the variant's own first, the largest).
+- **Pictures.** Every page uses the newest cached game in reverse catalogue order, regardless of the game being
+  viewed. A variant's own picture takes priority over a newer plain picture; otherwise the newest plain picture is
+  used, then a family glyph, then the generated icon. `collection::PortraitPath(game, toy, variant, large)` implements
+  this with `BestPicturePath` and `HalfPicturePath` through one shared selector. Icon sizes choose the same game and
+  variant. A large figure view prefers artwork within that game, while an icon prefers its portrait, with artwork as
+  a fallback. Newer plain portraits beat older plain artworks. Known figures pass their exact variant id, including
+  in the seats and half chooser; a kind alone is resolved with `VariantFor` when the id is unavailable.
+  Existing `<data>/<Game>/portraits/` and `portraits/artworks/` files are used as they are: no cache version change or
+  re-extraction. Missing pictures are added by the normal disc check. The shared library's `game_art.md` has the full
+  lookup audit and the formats.
 - **Variants.** The catalogue lists every variant Spyro's Adventure, Giants and Swap Force know (Series 2, LightCore, Legendary and
   the alternate decos, with the ids Giants reads), and the later games' from public lists; SSARecomp's
   `docs/runtime/host/collection.md` ("The games' own toy tables") has the sources. Variants of kind `base` are the
@@ -50,7 +53,10 @@ A Swap Force swapper is two toys, a top and a bottom, each its own dump. The lib
   top is laid over the bottom and the result is cut to its visible pixels (`collection::SwapperPicture`, `JoinHalves`,
   shared with the game, with a unit test on synthetic images); the result is fitted into the card's square. A matched or a mixed swapper, and each version (Dark, Legendary...), has its own halves.
   When a half has no such picture (the pictures are read from the player's disc, so before the first disc check), the card
-  shows the top's picture with the bottom small at its corner, as before.
+  shows the top's picture with the bottom small at its corner. Each individual half first uses its own newest half
+  picture, then whole-figure art, then its generated icon. A bottom can use its matching top's whole-figure picture
+  (Trap Team lists only tops). Whole-figure fallbacks are never joined at the waist; plain halves never replace a dedicated variant picture.
+  Neither half is left empty.
 - **Putting it on the portal**: a click on a seat, a drag, or the sheet's "Put on the portal" places **both halves**. The seat
   holds the top; `portal.txt` gets two lines for it, the top in the first slot of its seat and the bottom in the next.
   Swap Force's slots are **Player 1: 0 and 1, Player 2: 2 and 3, Magic item: 4, Adventure: 5**; a figure that is not a
@@ -190,8 +196,8 @@ At the first visit to the page (`CollectionPage::Open`):
   ListRow per figure with its count, opening its copies: when, level and gold, Restore (Danger, held)), Import and export
   (files, a folder, drop files or a folder on the window; export everything; show in folder), Unknown toys (name one:
   `catalogue.json` of the collection, applied at the next start), Tidy (the starters; Danger, held).
-- **Pictures**: `collection::PortraitPath` (the shown game's disc, else the other's, else the toy's family picture from
-  a disc: SSA's potion, compass and paw icons), else `figures::GenerateIcon` (a shape, the element's colour, the
+- **Pictures**: `collection::PortraitPath` (the newest cached variant picture, then plain art, then the toy's family
+  picture from a disc: SSA's potion, compass and paw icons), else `figures::GenerateIcon` (a shape, the element's colour, the
   variant's badge, initials for characters, and the Toy Box's mark for items, packs and sidekicks:
   `collection::KindGlyph`). Never an empty square.
 - **Gamepad**: d-pad moves (ImGui navigation; down from a seat to the shelf, up from its first row back to the seats), A
@@ -269,3 +275,27 @@ row "In Giants: plays as Series 2 Eruptor" when the chosen game does not tell th
 **On the wheel: <game>** (a checked row) for each game with a runtime that reads the figure (a toggle, `SetOnWheel`): the figure goes on the wheel of
 every player seat of that game (the in-game quick swap wheel, hold Tab or View) and a fact row lists the games. Stored in `collection.json`
 (`views.<game>.wheel`, `wheel_skipped`). The screenshot test's `46-` is now `46-add-versions`.
+
+## Picture lookup audit and verification
+
+| Surface | Shared path |
+|---|---|
+| Collection cards and seats, bottom inset, half chooser, Add a figure | `CollectionPage::Icon` / `DrawIcon` → `PortraitPath`, then `figures::GenerateIcon` |
+| Game-page portal panel, figure sheet and version rows | `DrawPicture` → `BestPicturePath`, then `DrawIcon` |
+| Swappers on cards, seats, sheets and Add a figure | `DrawSwapper` → `SwapperPicture`; incomplete art → individual top and bottom icons |
+| In-game Toy Box, including its wheel | `collection::Portrait` / `Icon` / `PortraitPath`; large views use `BestPicturePath`, pairs use `SwapperPicture` |
+| Library icons at any size and disc-image callers | `PortraitPath`, including `DiscImagePath` |
+| Individual swapper halves | `HalfPicturePath` and the other picture APIs share the half → whole → generated order |
+| Villain vault | `VillainPicturePath` preserves the captured/escaped pictures |
+| Traps and items | The ordinary variant → plain → family → generated rule |
+
+The launcher and Toy Box already agreed when using the same API. Portraits previously preferred the viewed game,
+large pictures had a separate search and halves searched oldest first. All now use the same selector. The workshop's
+`SSACollectionTest` covers separate synthetic game caches, variants, sizes and every incomplete-swapper case;
+`ArkeyanLauncherTest --no-disc` checks the synced behavior with synthetic PNGs. No toy family blocks the rule.
+
+A run with the player's discs must confirm that checking them populates these caches, that an older game's page and
+the Toy Box show the newest cached portrait of the same figure, and that matched/mixed swappers and their individual
+half choosers remain visible when one or both half pictures are absent. It must also check the actual variant art,
+trap shapes and captured/escaped villain pictures. These visual checks do not require deleting or re-extracting an
+existing art cache.

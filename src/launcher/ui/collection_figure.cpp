@@ -687,7 +687,7 @@ namespace launcher_ui
             ui::ListRowOptions options;
             options.subtitle = note.c_str();
             options.imageWidth = Art;
-            options.image = [&](ImDrawList* draw, ImVec2 at, ImVec2) { DrawIcon(draw, half->toy, half->Kind(), at, Art, false); };
+            options.image = [&](ImDrawList* draw, ImVec2 at, ImVec2) { DrawIcon(draw, half->toy, half->Kind(), at, Art, false, half->variant); };
             ImGui::PushID(half->path.c_str());
             if (ui::ListRow(title.c_str(), options))
                 chosen = half;

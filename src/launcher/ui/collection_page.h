@@ -132,7 +132,7 @@ namespace launcher_ui
         void DrawUnknown();
         void DrawTidy();
         void HandleShortcuts();
-        void DrawIcon(ImDrawList* draw, const collection::Toy* toy, collection::VariantKind kind, ImVec2 at, float size, bool large);
+        void DrawIcon(ImDrawList* draw, const collection::Toy* toy, collection::VariantKind kind, ImVec2 at, float size, bool large, uint16_t variant = 0);
         // The best picture of a toy (its variant's artwork when the game has one, else a portrait), fitted into the square
         // `box` at `at` and centred; the drawn icon when there is none.
         void DrawPicture(ImDrawList* draw, const collection::Toy* toy, collection::VariantKind kind, uint16_t variant, ImVec2 at, float box);
@@ -141,7 +141,7 @@ namespace launcher_ui
         // a disc: the caller draws the top's picture with the bottom small in a corner (DrawBottom).
         bool DrawSwapper(ImDrawList* draw, const collection::Toy* top, uint16_t topVariant, const collection::Toy* bottom, uint16_t bottomVariant, ImVec2 at, float box);
         bool DrawSwapper(ImDrawList* draw, const collection::Card& card, ImVec2 at, float box);
-        const FigureIconTexture& Icon(const collection::Toy* toy, collection::VariantKind kind, bool large);
+        const FigureIconTexture& Icon(const collection::Toy* toy, collection::VariantKind kind, bool large, uint16_t variant);
         // A swapper (Swap Force) is one card: the top stands for it, the bottom is drawn small at its corner.
         collection::Card CardOf(const collection::Figure& figure) const;
         bool Busy(const collection::Figure& figure) const { return CardOf(figure).Busy(); }
