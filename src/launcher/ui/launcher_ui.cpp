@@ -986,6 +986,9 @@ namespace launcher_ui
             m_sessionStart = now;
         if (!ended)
             return;
+        // The game writes its own section of launcher.ini (the F3 menu): read it again, or the next save here would put
+        // back the values from before the game.
+        m_config = LoadLauncherConfig(m_configPath);
         // A crash dialog can wait for acknowledgement; the visible page's theme resumes while it is open too.
         m_music.Update(gamemusic::Playback{ .game = m_s->game.id, .gamePage = m_page == Page::Play,
             .running = !m_session.Running().empty(), .installing = AnyInstalling(),
