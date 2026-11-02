@@ -62,7 +62,7 @@ list Swap Force makes the launcher fetch the right one first, as for Giants).
   (workshop `docs/release/launcher/kit_contract.md`, "Several games in one kit"). The built apps use the titles
   `Skylanders Spyro's Adventure`, `Skylanders Giants`, `Skylanders Swap Force` and `Skylanders Trap Team`
   (plus `.app` on macOS or `.exe` on Windows). `GameInfo::runtime` gives the new name and `legacyRuntime` gives
-  `SSARecomp`, `SGRecomp`, `SSFRecomp` or `TTRecomp`. Both names are found beside the launcher; recorded 0.7.3, 0.6.1
+  `SSARecomp`, `SGRecomp`, `SSFRecomp` or `TTRecomp`. Both names are found beside the launcher; recorded 0.8.0, 0.6.1
   and beta install paths keep working. A valid recorded path wins; if it was renamed, the matching sibling with the
   other name is tried. Bundle paths and paths to their executables both work. No reinstall is needed.
   Arkeyan-Builder removes the old executable or bundle only after a successful rebuild and signing. Existing shortcuts

@@ -750,7 +750,7 @@ namespace
         Write(folders.game / "launcher-cache" / "title_icon.png", std::string(50, 'i'));
         Write(folders.game / "portraits" / "p.png", std::string(40, 'q'));
         Write(folders.game / "SSARecomp.log", std::string(7, 'g'));
-        Write(folders.game / "Arkeyan.log", std::string(3, 'a')); // the same game's log from a kit since 0.7.3
+        Write(folders.game / "Arkeyan.log", std::string(3, 'a')); // the same game's log from a kit since 0.8.0
         Write(folders.game / "textures" / "t.dds", std::string(60, 't'));
         Write(folders.game / "figures" / "f.bin", std::string(8, 'f'));
         Write(folders.game / "gamedata" / "default.xex", std::string(4000, 'x')); // the copied game data

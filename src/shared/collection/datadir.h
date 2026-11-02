@@ -9,7 +9,7 @@
 //   <root>/toolchains/      the compilers Arkeyan-Builder downloads (Windows)
 //   <root>/logs/            the launcher's logs, migration.log
 //   <root>/<Game>/          one per game ("SSA"): the built game, its settings, saves, pipelines.bin, portal.txt,
-//                           figures, portraits, launcher-cache and Arkeyan.log (SSARecomp.log from a game built before 0.7.3)
+//                           figures, portraits, launcher-cache and Arkeyan.log (SSARecomp.log from a game built before 0.8.0)
 //
 // <root> is SKYLANDERS_DATA (tests), <program folder>/data when portable.txt is beside the program, else %APPDATA%\Skylanders on Windows, ~/Library/Application
 // Support/Skylanders on macOS and $XDG_DATA_HOME/Skylanders (~/.local/share/Skylanders) elsewhere. Nothing here

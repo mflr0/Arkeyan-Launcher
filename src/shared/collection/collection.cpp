@@ -336,10 +336,12 @@ namespace collection
             if (!name.empty() && name[0] == '.')
                 name[0] = '_';
             size_t dot = name.find_last_of('.');
-            std::string extension = dot == std::string::npos || name.size() - dot > 8 ? std::string() : name.substr(dot);
+            std::string extension =
+                dot == std::string::npos || name.size() - dot > 8 ? std::string() : name.substr(dot);
             std::string stem = name.substr(0, name.size() - extension.size());
             static const char* const reserved[] = { "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5",
-                "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9" };
+                "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8",
+                "LPT9" };
             std::string head = stem.substr(0, stem.find('.'));
             while (!head.empty() && head.back() == ' ')
                 head.pop_back();
@@ -482,7 +484,12 @@ namespace collection
 
     namespace
     {
-        enum class Published { Lost, Won, Unsupported };
+        enum class Published
+        {
+            Lost,
+            Won,
+            Unsupported
+        };
 
         // Gives `target` the content of `temporary` only if `target` does not exist (one process wins), then drops the
         // temporary. The lock is complete when it appears: a reader never meets a half-written one. A file system with no
@@ -493,7 +500,9 @@ namespace collection
             Published result = Published::Won;
 #ifdef _WIN32
             if (MoveFileExW(temporary.c_str(), target.c_str(), 0) == 0)
-                result = GetLastError() == ERROR_ALREADY_EXISTS || GetLastError() == ERROR_FILE_EXISTS ? Published::Lost : Published::Unsupported;
+                result = GetLastError() == ERROR_ALREADY_EXISTS || GetLastError() == ERROR_FILE_EXISTS
+                             ? Published::Lost
+                             : Published::Unsupported;
 #else
             if (link(temporary.c_str(), target.c_str()) != 0)
                 result = errno == EEXIST ? Published::Lost : Published::Unsupported;
@@ -525,7 +534,8 @@ namespace collection
                     BreakLock(path);
             }
             // Exclusive: if another process took the lock since the check above, this attempt loses and looks again.
-            const std::string temporary = lockFile + ".new." + std::to_string(ProcessId()) + "." + std::to_string(serial++);
+            const std::string temporary =
+                lockFile + ".new." + std::to_string(ProcessId()) + "." + std::to_string(serial++);
             if (!SaveAtomically(temporary, lock.Dump()))
                 return false;
             switch (PublishNew(datadir::FromText(temporary), datadir::FromText(lockFile)))
@@ -837,7 +847,9 @@ namespace collection
             if (char** found = SDL_GlobDirectory(from.c_str(), "*", 0, &count))
             {
                 for (int i = 0; i < count; i++)
-                    moved = SDL_RenamePath((from + "/" + found[i]).c_str(), (to + "/" + FreeNameIn(to, found[i])).c_str()) && moved;
+                    moved = SDL_RenamePath(
+                                (from + "/" + found[i]).c_str(), (to + "/" + FreeNameIn(to, found[i])).c_str()) &&
+                            moved;
                 SDL_free(found);
             }
             SDL_RemovePath(from.c_str()); // empty now, else left as it is
@@ -1042,7 +1054,8 @@ namespace collection
     {
         std::string folder = Folder() + "/backups/" + FileName(path);
         std::vector<std::string> names = DumpNames(folder);
-        std::stable_sort(names.begin(), names.end(), [](const std::string& a, const std::string& b) { return BackupKey(a) > BackupKey(b); });
+        std::stable_sort(names.begin(), names.end(),
+            [](const std::string& a, const std::string& b) { return BackupKey(a) > BackupKey(b); });
         FigureData current;
         const bool known = LoadDump(path, current);
         std::vector<std::string> backups;
@@ -1596,7 +1609,8 @@ namespace collection
             if (Catalogue::Get().Find(type) == nullptr)
                 report.unknown.push_back(type);
         }
-        fprintf(stderr, "[collection] import: %d added, %d already there, %d not figure dumps, %d of a toy already there\n",
+        fprintf(stderr,
+            "[collection] import: %d added, %d already there, %d not figure dumps, %d of a toy already there\n",
             report.added, report.duplicates, report.invalid, report.sameToy);
         return report;
     }
@@ -1636,7 +1650,8 @@ namespace collection
             const std::string stem = dot == std::string::npos ? wanted : wanted.substr(0, dot);
             const std::string extension = dot == std::string::npos ? std::string() : wanted.substr(dot);
             std::string name = wanted;
-            for (int n = 2; Exists(folder + "/" + name) && LoadBounded(folder + "/" + name, there) && there != bytes; n++)
+            for (int n = 2; Exists(folder + "/" + name) && LoadBounded(folder + "/" + name, there) && there != bytes;
+                n++)
                 name = stem + " (" + std::to_string(n) + ")" + extension;
             if (Exists(folder + "/" + name) ? there == bytes : CopyBytes(path, folder + "/" + name))
                 copied++;

@@ -40,7 +40,7 @@ Skylauncher 0.4.x or 0.5.x asks for those names, so it finds no update: its play
 release notes say so).
 
 What the launcher keeps for installs and folders that already exist: a kit folder named `skylanders-kit*`, `ssa-kit*` or `kit`
-(a builder named `Arkeyan-Builder`, `SkyBuild` in a kit up to 0.7.2, or `SSABuild` in an old kit; kits from 0.7.3 carry `Arkeyan-Builder`
+(a builder named `Arkeyan-Builder`, `SkyBuild` in a kit up to 0.7.2, or `SSABuild` in an old kit; kits from 0.8.0 carry `Arkeyan-Builder`
 and a `SkyBuild` copy for older launchers), the builder's older files (`ssabuild-work/`, `ssabuild-ready.txt`), a game log named `SSARecomp.log`, an install named `Skylauncher.exe`, `Skylauncher.app` or `Skylauncher-x86_64.AppImage`
 (replaced where it is, under its name), and `RefreshShortcuts`, which renames the shortcuts made by Skylauncher.
 
