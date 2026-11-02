@@ -47,11 +47,11 @@ namespace
         return k == s->second.end() ? std::string() : k->second;
     }
 
-    // The kit's builder: SkyBuild, or SSABuild in a kit made for 0.4.x launchers.
+    // The kit's builder: Arkeyan-Builder, SkyBuild in a kit up to 0.7.2, or SSABuild in a kit made for 0.4.x launchers.
 #if defined(_WIN32)
-    constexpr const char* BuilderNames[] = { "SkyBuild.exe", "SSABuild.exe" };
+    constexpr const char* BuilderNames[] = { "Arkeyan-Builder.exe", "SkyBuild.exe", "SSABuild.exe" };
 #else
-    constexpr const char* BuilderNames[] = { "SkyBuild", "SSABuild" };
+    constexpr const char* BuilderNames[] = { "Arkeyan-Builder", "SkyBuild", "SSABuild" };
 #endif
 
     std::optional<InstallKit> KitIn(const std::filesystem::path& folder)
@@ -390,9 +390,12 @@ void CleanAfterInstall(const std::filesystem::path& gameFolder, const std::files
 {
     namespace fs = std::filesystem;
     std::error_code error;
-    fs::path work = gameFolder / "ssabuild-work";
-    if (fs::is_directory(work, error))
+    // arkeyan-work, or ssabuild-work from a kit up to 0.7.2 (Arkeyan-Builder keeps using an existing one).
+    for (const char* name : { "arkeyan-work", "ssabuild-work" })
     {
+        fs::path work = gameFolder / name;
+        if (!fs::is_directory(work, error))
+            continue;
         fs::path kept = gameFolder / "install-logs";
         if (fs::exists(work / "logs", error) && fs::is_directory(work / "logs", error))
         {

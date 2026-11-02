@@ -7,13 +7,13 @@ In the "Skylanders" data folder (`%APPDATA%\Skylanders\` on Windows, `~/Library/
 
 | File | Written by | What |
 | --- | --- | --- |
-| `SSA/SSARecomp.log` (`.prev.log`: the run before) | the game runtime | its own log: version, OS, CPU, GPU, settings, `[perf]` |
+| `SSA/Arkeyan.log` (`.prev.log`: the run before; `SSARecomp.log` from a game built by a kit up to 0.7.2, read when it is the newer) | the game runtime | its own log: version, OS, CPU, GPU, settings, `[perf]` |
 | `logs/skylauncher-game.log` (`.prev.log`) | the launcher | the runtime's stdout and stderr, from its first byte: early crashes, a missing DLL's message |
-| `SSA/install.log` (`.prev.log`), `SSA/install-logs/` | the launcher, SkyBuild | what SkyBuild printed during the install, and its own step logs kept after the build (docs/install.md) |
+| `SSA/install.log` (`.prev.log`), `SSA/install-logs/` | the launcher, Arkeyan-Builder | what Arkeyan-Builder printed during the install, and its own step logs kept after the build (docs/install.md) |
 | `logs/migration.log` | the first start after an update | what was moved from the older folders |
 
 Settings (the gear) > Support: **Report a problem** (one text file with the last logs, the crash location, the settings and the versions;
-see below), **Copy game log** (the end of `SSARecomp.log`, then of `skylauncher-game.log`, each under a heading) and
+see below), **Copy game log** (the end of `Arkeyan.log`, then of `skylauncher-game.log`, each under a heading) and
 **Open logs folder** (`logs/`). `SKY_LAUNCHER_LOG_DIR` replaces both log folders (tests).
 
 ## Report a problem
@@ -25,13 +25,13 @@ written, and the folder opens in the file manager), **Save as...** (the extensio
 
 The file is the one the game writes from its own F3 menu (Report a problem), with the same sections: the header has the launcher,
 kit and game build versions, the OS, the CPU and the GPU line from the last game log (plus the disc image path); then
-**last crash** (the last `Fault (` block of `SSARecomp.log`, else of `SSARecomp.prev.log`: the guest thread, the guest `lr` and
+**last crash** (the last `Fault (` block of `Arkeyan.log`, else of `Arkeyan.prev.log`: the guest thread, the guest `lr` and
 `ctr`, the guest function `sub_XXXXXXXX` and the host stack; "none in the logs" when there is none); then the files, each under
 a `===== name =====` heading:
 
 - `launcher.ini`;
 - `logs/migration.log`;
-- `SSA/SSARecomp.log` and `SSA/SSARecomp.prev.log`;
+- `SSA/Arkeyan.log` and `SSA/Arkeyan.prev.log` (or `SSARecomp.log`, from an older kit);
 - `logs/skylauncher-game.log`;
 - `SSA/install.log`, `SSA/install.prev.log` and every file in `SSA/install-logs/`.
 

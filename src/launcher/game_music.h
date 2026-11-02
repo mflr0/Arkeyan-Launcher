@@ -1,7 +1,7 @@
 #pragma once
 
 // The game's main menu theme on its page, very softly (docs/launcher_ui.md, "Game music"). The theme is never shipped: the
-// kit's SkyBuild decodes it from the player's own disc into <data>/<Game>/launcher-cache/menu_music.wav at the disc check,
+// kit's Arkeyan-Builder decodes it from the player's own disc into <data>/<Game>/launcher-cache/menu_music.wav at the disc check,
 // next to the game's pictures, and this file plays it with SDL audio (a looping 16-bit WAV: its "smpl" chunk is the loop).
 #include <cstdint>
 #include <filesystem>

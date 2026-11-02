@@ -9,6 +9,7 @@
 #include "shared/collection/save_backup.h"
 #include "shared/dir_list.h"
 #include "shared/mini_json.h"
+#include "shared/runtime_names.h"
 #include "test_env.h"
 #include <miniz.h>
 #include <SDL3/SDL.h>
@@ -183,9 +184,14 @@ namespace
         SHELL_EXPECT(capture.find("exit code 3") != std::string::npos);
         RunGame(script.string(), "disc.iso");
         SHELL_EXPECT(std::filesystem::exists(logs / "skylauncher-game.prev.log"));
-        std::ofstream(logs / RuntimeLogName) << "[settings] scale 1\n";
+        // A game built by an older kit, started outside the launcher, writes SSARecomp.log: it is read in place.
+        std::ofstream(logs / runtime_names::LegacyLog) << "[settings] scale 1\n";
         std::string text = GameLogText();
         SHELL_EXPECT(text.find("===== SSARecomp.log =====") != std::string::npos && text.find("[settings] scale 1") != std::string::npos);
+        std::ofstream(logs / RuntimeLogName) << "[settings] scale 2\n";
+        text = GameLogText();
+        SHELL_EXPECT(text.find("===== Arkeyan.log =====") != std::string::npos && text.find("[settings] scale 2") != std::string::npos);
+        SHELL_EXPECT(text.find("SSARecomp.log") == std::string::npos && std::filesystem::exists(logs / runtime_names::LegacyLog));
         SHELL_EXPECT(text.find("===== skylauncher-game.log =====") != std::string::npos);
         PortalProbeResult probe = RunPortalProbe(script.string());
         SHELL_EXPECT(probe.ran && probe.portals.size() == 1 && probe.portals[0].product == "Fake");
@@ -391,7 +397,14 @@ namespace
                            "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855 *empty.bin\r\nshort  x\n";
         SHELL_EXPECT(FindChecksum(sums, "a b.txt").starts_with("ba7816bf") && FindChecksum(sums, "empty.bin").starts_with("e3b0c442"));
         SHELL_EXPECT(FindChecksum(sums, "x").empty() && FindChecksum(sums, "nothing").empty());
-        SHELL_EXPECT(LauncherAssetName().starts_with("ArkeyanLauncher") && KitAssetName().starts_with("skylanders-kit-"));
+        // The release names the self-update and the kit lookup by tag use: the same as up to 0.7.2.
+#if defined(_WIN32)
+        SHELL_EXPECT(LauncherAssetName() == "ArkeyanLauncher.exe" && KitAssetName() == "skylanders-kit-windows-x64.zip");
+#elif defined(__APPLE__)
+        SHELL_EXPECT(LauncherAssetName() == "ArkeyanLauncher-macOS.zip" && KitAssetName() == "skylanders-kit-macos-arm64.zip");
+#else
+        SHELL_EXPECT(LauncherAssetName() == "ArkeyanLauncher-x86_64.AppImage" && KitAssetName() == "skylanders-kit-linux-x64.zip");
+#endif
 
         // Downloads: good, damaged, and a release without SHA256SUMS.
         std::string downloadError;
@@ -467,23 +480,32 @@ namespace
         MakeZip(zip, { { "SSABuild", "first install" }, { "SSABuild.exe", "first install" } });
         SHELL_EXPECT(InstallKitZip(zip, updates / "fresh" / "ssa-kit", error) && ReadBytes(updates / "fresh" / "ssa-kit" / "SSABuild") == "first install");
 
-        // The kit zip: SkyBuild at the root, or SSABuild (a kit for 0.4.x launchers), wrapped or not.
+        // The kit zip: Arkeyan-Builder at the root, or SSABuild (a kit for 0.4.x launchers), wrapped or not.
         {
-            MakeZip(zip, { { "skylanders-kit-test/SkyBuild", "new builder" }, { "skylanders-kit-test/SkyBuild.exe", "new builder" } });
-            SHELL_EXPECT(InstallKitZip(zip, updates / "fresh" / "skybuild-kit", error) && ReadBytes(updates / "fresh" / "skybuild-kit" / "SkyBuild") == "new builder");
-            MakeZip(zip, { { "SkyBuild", "root" }, { "SkyBuild.exe", "root" }, { "SSABuild", "copy" }, { "SSABuild.exe", "copy" } });
+            MakeZip(zip, { { "skylanders-kit-test/Arkeyan-Builder", "new builder" }, { "skylanders-kit-test/Arkeyan-Builder.exe", "new builder" } });
+            SHELL_EXPECT(InstallKitZip(zip, updates / "fresh" / "builder-kit", error) && ReadBytes(updates / "fresh" / "builder-kit" / "Arkeyan-Builder") == "new builder");
+            MakeZip(zip, { { "Arkeyan-Builder", "root" }, { "Arkeyan-Builder.exe", "root" }, { "SSABuild", "copy" }, { "SSABuild.exe", "copy" } });
             SHELL_EXPECT(InstallKitZip(zip, updates / "fresh" / "both-kit", error) && ReadBytes(updates / "fresh" / "both-kit" / "SSABuild") == "copy");
             // The kit folder is found with either builder and either folder name.
             std::filesystem::path kitSkyBuild = updates / "kits" / "skylanders-kit-test";
 #if defined(_WIN32)
-            WriteBytes(kitSkyBuild / "SkyBuild.exe", "x");
+            WriteBytes(kitSkyBuild / "Arkeyan-Builder.exe", "x");
 #else
-            WriteBytes(kitSkyBuild / "SkyBuild", "x");
+            WriteBytes(kitSkyBuild / "Arkeyan-Builder", "x");
 #endif
             auto kit = InstallKitIn(kitSkyBuild);
-            SHELL_EXPECT(kit && kit->ssabuild.filename().string().starts_with("SkyBuild"));
+            SHELL_EXPECT(kit && kit->ssabuild.filename().string().starts_with("Arkeyan-Builder"));
             auto oldKit = InstallKitIn(updates / "game" / "ssa-kit");
             SHELL_EXPECT(oldKit && oldKit->ssabuild.filename().string().starts_with("SSABuild"));
+            // A kit up to 0.7.2 has SkyBuild: still installed from its zip and found; Arkeyan-Builder wins beside it.
+            MakeZip(zip, { { "skylanders-kit-test/SkyBuild", "older builder" }, { "skylanders-kit-test/SkyBuild.exe", "older builder" } });
+            SHELL_EXPECT(InstallKitZip(zip, updates / "fresh" / "older-kit", error) && ReadBytes(updates / "fresh" / "older-kit" / "SkyBuild") == "older builder");
+            auto olderKit = InstallKitIn(updates / "fresh" / "older-kit");
+            SHELL_EXPECT(olderKit && olderKit->ssabuild.stem() == "SkyBuild");
+            WriteBytes(updates / "fresh" / "older-kit" / "Arkeyan-Builder", "x");
+            WriteBytes(updates / "fresh" / "older-kit" / "Arkeyan-Builder.exe", "x");
+            olderKit = InstallKitIn(updates / "fresh" / "older-kit");
+            SHELL_EXPECT(olderKit && olderKit->ssabuild.stem() == "Arkeyan-Builder");
         }
 
         // The manager: a check against the fake latest.json, then the kit update from it.
@@ -695,6 +717,19 @@ namespace
         SHELL_EXPECT(report.find("===== install.prev.log =====") != std::string::npos);
         SHELL_EXPECT(report.find("===== install-logs/compile.txt =====") != std::string::npos);
         SHELL_EXPECT(report.find("previous run") != std::string::npos && report.find("previous install") != std::string::npos);
+        {
+            // A game from the new kit writes Arkeyan.log; an older SSARecomp.log beside it is not quoted over the newer one.
+            launcher_report::Sources current = sources;
+            current.runtimeFolder = scratch / "reportnew";
+            WriteBytes(current.runtimeFolder / "SSARecomp.log", "[version] SSARecomp 0.7.2, build old\n");
+            WriteBytes(current.runtimeFolder / "Arkeyan.log", "[version] ArkeyanRuntime 0.7.3, build new\n");
+            WriteBytes(current.runtimeFolder / "Arkeyan.prev.log", "previous new run\n");
+            current.versions = launcher_report::ReadVersions("0.7.3", "0.7.3", current.runtimeFolder);
+            std::string fresh = launcher_report::BuildReport(current);
+            SHELL_EXPECT(fresh.find("Game build: ArkeyanRuntime 0.7.3, build new\n") != std::string::npos);
+            SHELL_EXPECT(fresh.find("===== Arkeyan.log =====") != std::string::npos && fresh.find("===== Arkeyan.prev.log =====") != std::string::npos);
+            SHELL_EXPECT(fresh.find("===== SSARecomp.log =====") == std::string::npos && fresh.find("previous new run") != std::string::npos);
+        }
         // Where the game stopped: the last fault block of the log, from this run's log or else the previous run's, quoted once under
         // its own heading and named in the header; the CPU line comes from the log.
         SHELL_EXPECT(report.find("CPU: Test CPU 3000\n") != std::string::npos);
@@ -753,6 +788,35 @@ namespace
         fs::remove_all(root, error);
     }
 
+    // A player upgrading from 0.7.2: launcher.ini as it wrote it, a game its kit built (log SSARecomp.log, work folder
+    // ssabuild-work). The new launcher finds that game with the same keys and writes every key back unchanged.
+    void UpgradeChecks(const std::filesystem::path& scratch)
+    {
+        const std::filesystem::path root = scratch / "upgrade", game = root / "SSA";
+#if defined(_WIN32)
+        const std::filesystem::path runtime = game / "Skylanders Spyro's Adventure.exe";
+        WriteBytes(runtime, "old game");
+#else
+        const std::filesystem::path runtime = game / "Skylanders Spyro's Adventure.app";
+        WriteBytes(runtime / "Contents" / "MacOS" / "Skylanders Spyro's Adventure", "old game");
+#endif
+        WriteBytes(game / "SSARecomp.log", "[version] SSARecomp 0.7.2, build old\n");
+        WriteBytes(game / "ssabuild-work" / "ppc" / "ppc_config.h", "kept");
+        const std::string ini = "[launcher]\nkit=" + root.string() + "/kit/v0.7.2\nlanguage=fr\n"
+                                "[ssa]\niso=/discs/ssa.iso\nvsync=0\n"
+                                "[install.abcdef]\nruntime=" + runtime.string() + "\nkit=0.7.2\nversion=1.0\n";
+        WriteBytes(root / "launcher.ini", ini);
+        LauncherConfig config = LoadLauncherConfig((root / "launcher.ini").string());
+        InstalledGame installed = FindInstalledGame(config, "abcdef");
+        SHELL_EXPECT(installed.kitVersion == "0.7.2" && installed.gameVersion == "1.0" && !installed.runtime.empty());
+        SHELL_EXPECT(config["ssa"]["iso"] == "/discs/ssa.iso" && config["launcher"]["language"] == "fr");
+        SHELL_EXPECT(SaveLauncherConfig((root / "launcher.ini").string(), config));
+        LauncherConfig again = LoadLauncherConfig((root / "launcher.ini").string());
+        SHELL_EXPECT(again == config && again["install.abcdef"]["runtime"] == runtime.string());
+        SHELL_EXPECT(runtime_names::ReadLog(game).filename() == "SSARecomp.log");
+        SHELL_EXPECT(ReadBytes(game / "ssabuild-work" / "ppc" / "ppc_config.h") == "kept");
+    }
+
     void KitFollowChecks(const std::filesystem::path& scratch)
     {
         std::filesystem::path root = scratch / "kitfollow";
@@ -776,10 +840,10 @@ namespace
         SHELL_EXPECT(three && three->Builds("ssa") && three->Builds("giants") && three->Builds("swapforce") && !three->Builds("trapteam"));
 
         kit(root / "four", "version=0.6.0\nbuild=e\ngames=ssa,giants,swapforce,trapteam\n");
-        WriteBytes(root / "four" / "SkyBuild", "x");
-        WriteBytes(root / "four" / "SkyBuild.exe", "x");
+        WriteBytes(root / "four" / "Arkeyan-Builder", "x");
+        WriteBytes(root / "four" / "Arkeyan-Builder.exe", "x");
         std::optional<InstallKit> four = InstallKitIn(root / "four");
-        SHELL_EXPECT(four && four->Builds("trapteam") && four->ssabuild.stem() == "SkyBuild");
+        SHELL_EXPECT(four && four->Builds("trapteam") && four->ssabuild.stem() == "Arkeyan-Builder");
 
         // From an older release than the launcher: the kit.txt version, or the folder's release tag; the player's own never.
         SHELL_EXPECT(KitOlderThanLauncher(*old, "0.4.0") && !KitOlderThanLauncher(*old, "0.3.1") && !KitOlderThanLauncher(*multi, "0.4.0"));
@@ -869,6 +933,7 @@ int ShellChecks(const std::filesystem::path& scratch)
     UpdaterChecks(scratch);
     DirectoryListChecks(scratch);
     KitFollowChecks(scratch);
+    UpgradeChecks(scratch);
     SaveBackupChecks(scratch);
     ReportChecks(scratch);
     return g_shellFailures;

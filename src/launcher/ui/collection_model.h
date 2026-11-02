@@ -1,6 +1,6 @@
 #pragma once
 
-// The Collection page's data, with no UI: the shared collection (SSARecomp's library, src/shared/collection), the seats
+// The Collection page's data, with no UI: the shared collection (ArkeyanRuntime's library, src/shared/collection), the seats
 // of the game's next session, and what changes on disk while a game runs (docs/collection_ui.md).
 #include "shared/collection/collection.h"
 #include "shared/collection/search.h"

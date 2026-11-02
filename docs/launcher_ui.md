@@ -20,7 +20,7 @@ component has becomes a component (or an option of one) first, with its states d
 - `src/launcher/ui/gallery.cpp` - the component gallery (`SKY_LAUNCHER_TEST_GALLERY`).
 - `src/main.cpp` - picks the game and disc, shows the launcher, starts the runtime.
 - `src/launcher/` - the launcher: `launcher.{h,cpp}` (disc checks, settings file), `launcher_games.cpp` (the game table),
-  `game_install.{h,cpp}` (installing the game with the kit's SkyBuild, `docs/install.md`), `ui/`.
+  `game_install.{h,cpp}` (installing the game with the kit's Arkeyan-Builder, `docs/install.md`), `ui/`.
 - `src/launcher/game_settings.{h,cpp}`, `shortcut.{h,cpp}`, `ui/game_settings_page.cpp` - a game's own settings: its per-game video copy,
   delete data and uninstall (no UI), the desktop shortcut files (no UI, one builder per system), and the page (below).
 - `src/assets/` - the game's art for the window (`launcher_assets`): a thin layer over `src/shared/art/` (see "Disc art").
@@ -37,11 +37,11 @@ component has becomes a component (or an option of one) first, with its states d
 - `src/launcher/ui/collection_*.{h,cpp}` - the collection page on the shared library: the portal at the next start, the bar, the shelf, the figure sheet, Add a figure, Manage (`docs/collection_ui.md`).
 - `src/launcher/ui/game_look.cpp` - the game page in each game's own look: the main action's options (`DrawMainAction`), the logo's
   arrival (`LogoDrop`, `DrawHeroLogo`), the disc's pictures as textures (`LoadArt`, `CachedArt`), `SystemReducesMotion`.
-- `src/shared/art/` - SSARecomp's disc picture readers and per-game provider (`game_art`), copied by its
+- `src/shared/art/` - ArkeyanRuntime's disc picture readers and per-game provider (`game_art`), copied by its
   `tools/sync_skylauncher.sh`: Xenos textures, SSA's `strm`/APKF, Giants' IGA/IGZ.
 - `src/shared/` - what isn't the launcher's alone: the disc reader (`vfs`), the platform layer, `stb_impl.cpp`, the embedded fonts
   and the figure engine.
-- `src/shared/collection/` and `src/shared/figures/` - SSARecomp's collection library (copied by `tools/sync_collection.sh`:
+- `src/shared/collection/` and `src/shared/figures/` - ArkeyanRuntime's collection library (copied by `tools/sync_collection.sh`:
   tag, crypto, catalogue, folder, locks, backups) and the launcher's `figure_icons` (generated icons and their `IconStyle`).
 - `lib/` - third-party code (SDL, Dear ImGui, XenonRecomp as submodules; stb and miniz vendored).
 - `resources/fonts/` - licensed fonts (Bungee, Outfit) with their OFL licenses; they are also built into the executable.
@@ -696,7 +696,7 @@ whatever its own state would offer (a busy one, checking or installing, keeps it
 
 **UPDATE** (`docs/updates.md`): the main button reads UPDATE and, under it, one muted line says the version on offer, the
 download and the time ("0.8.2 · 41 MB · ~15 min"; no size when the kit at hand is the right one); one click fetches the kit if
-it is needed, rebuilds the game (SkyBuild is incremental) and PLAY is back. Under that line a small link,
+it is needed, rebuilds the game (Arkeyan-Builder is incremental) and PLAY is back. Under that line a small link,
 **Play without updating**, plays what is built (offline, in a hurry): it sets the offer aside until the launcher is closed. The game's version is small, in the
 secondary text colour, after its name in the sidebar ("Giants · 0.8.2"); nothing on the page moves for it. While UPDATE runs the progress card is titled
 "UPDATING THE GAME" ("INSTALLING THE GAME" for a first install). No tools are ever downloaded without a click on INSTALL or UPDATE.
@@ -745,7 +745,7 @@ read from the player's own disc.
   `list.tsv` (each achievement's id, gamerscore, picture id and hidden flag, and its name, unlocked text and locked text in en, fr, de, es, it,
   pt) and one `<picture id>.png` each. The cache holds the `default.xex`'s SHA-256: it is rewritten only when the disc's `default.xex`
   changes (older launchers' caches have no list: the next disc check makes it). Code: `src/shared/collection/achievements.{h,cpp}` (also
-  the runtime's reader: `tools/sync_skylauncher.sh`); counts per disc are in SSARecomp's `docs/runtime/xbox360/xam.md` (SSA 38, Giants 45,
+  the runtime's reader: `tools/sync_skylauncher.sh`); counts per disc are in ArkeyanRuntime's `docs/runtime/xbox360/xam.md` (SSA 38, Giants 45,
   Swap Force 39, 1000 G each). "Clear caches" removes it; the next disc check makes it again.
 - **What was unlocked and the play time** are written by the game runtime, not the launcher (`achievements.txt`, `playtime.txt`:
   `docs/settings.md`, "Progress files"). `src/launcher/game_progress.{h,cpp}` joins them with the cached list in the launcher's language (English
@@ -771,7 +771,7 @@ read from the player's own disc.
 ## Game data (copy the disc's files, no disc image afterwards)
 Game settings > Disc has two sections: **Disc image** (choose, change, remove, show in folder) and **Game data**, which copies the
 disc's files (about the image's size, 8 GB) into `<data>/<Game>/gamedata/` so the disc image is no longer needed. The default is
-unchanged: nothing is copied and the game reads the disc image. The files, the manifest and the checks are SSARecomp's
+unchanged: nothing is copied and the game reads the disc image. The files, the manifest and the checks are ArkeyanRuntime's
 `game_data.{h,cpp}` (`docs/runtime/host/game_data.md` there); the job and the choice of source are `src/launcher/game_copy.{h,cpp}`;
 the window is `ui/game_data_page.cpp` (+ `game_settings_page.cpp` for the tab). What the player sees, by the copy's state:
 
@@ -790,7 +790,7 @@ the window is `ui/game_data_page.cpp` (+ `game_settings_page.cpp` for the tab). 
   known release) and used; else the remembered image. The remembered image (`[<game>] iso=`) is never forgotten for a copy: removing the copy
   brings it back. A copy whose `default.xex` is refused counts as damaged. PLAY and INSTALL look at the copy again first (sizes only) and
   fall back to the disc image if it changed. PLAY passes the copy's folder to the game, which reads it too if it is given an image
-  (`host/launcher.cpp`, `CopiedGameData`). INSTALL gives it to SkyBuild as `--iso`.
+  (`host/launcher.cpp`, `CopiedGameData`). INSTALL gives it to Arkeyan-Builder as `--iso`.
 - **Uninstall keeps the copy** (like the disc image); only "Remove the copy" deletes it. Delete saves and data and Clear caches never touch it.
 - `SKY_LAUNCHER_TEST_COPY=1` (with `SKY_LAUNCHER_SHOTS`, the fake kit, `[giants] iso=` set to a stand-in SSA disc) drives all of it in an offscreen window
   (`App::TestCopyScript`, run by `ArkeyanLauncherTest`): the wrong disc, not enough space, interrupted and carried on, played with no disc
@@ -877,7 +877,7 @@ Game settings > Game > Desktop shortcut > **Create** (enabled once the disc is v
 that game on the Desktop. It starts Arkeyan Launcher as `ArkeyanLauncher --game <id> --play`: the window opens on that game's page, checks the
 disc, and starts the game as soon as it is ready. If it can't (no disc, a failed check, the game not built yet) the window stays
 open and says why, so the shortcut never leaves the player with nothing. Made again, it replaces the old one.
-The icon is the built game's own, `game_icon.png` in its folder (the disc's title logo fitted in a transparent 512 px square, made by the kit's SkyBuild); a game built before that has none, and the shortcut falls back to the title icon decoded from the player's disc (`GameSlot::meta.iconPng`, memory only until the player asks). On Windows a 512 px PNG is halved to 256 px for the `.ico` (an entry is at most 256, `FitIcoPng`).
+The icon is the built game's own, `game_icon.png` in its folder (the disc's title logo fitted in a transparent 512 px square, made by the kit's Arkeyan-Builder); a game built before that has none, and the shortcut falls back to the title icon decoded from the player's disc (`GameSlot::meta.iconPng`, memory only until the player asks). On Windows a 512 px PNG is halved to 256 px for the `.ico` (an entry is at most 256, `FitIcoPng`).
 
 | System | File on the Desktop | Icon |
 | --- | --- | --- |
@@ -896,7 +896,7 @@ the one standard COM call (`#ifdef _WIN32`, checked to compile with MinGW) and n
 `--play` starts it once its disc is checked and it is built. Anything else is ignored with a line on stderr.
 
 ## Collection
-See `docs/collection_ui.md`: the page shows SSARecomp's shared collection (the game's folder, locks, favorites, backups
+See `docs/collection_ui.md`: the page shows ArkeyanRuntime's shared collection (the game's folder, locks, favorites, backups
 and six-game catalogue) with the Toy Box's model: the portal at the next start (the game's seats on top), the bar
 (the search field and Filters: Element, Game, Type, Sort by; the tags), the shelf (every figure once, favorites first), the figure sheet (Put on the portal, Edit,
 Favorite, `...`, Details), Add a figure and Manage. The icons are the shown game's portraits from its disc, else the
@@ -904,7 +904,7 @@ other game's, else the toy's family picture, else the generated ones (`figures::
 
 ## Disc art
 The launcher never ships Skylanders artwork. After a disc is verified, the check's worker thread calls the shared
-provider (`src/shared/art/game_art.h`, the same code as the game's Toy Box; SSARecomp's `docs/runtime/host/game_art.md`):
+provider (`src/shared/art/game_art.h`, the same code as the game's Toy Box; ArkeyanRuntime's `docs/runtime/host/game_art.md`):
 `LauncherAssets::Provider::ExtractFromDisc` = `art::Extract(game, disc, titleIcon)`. One flow for every game; what
 differs per game is the provider's table.
 
@@ -1041,7 +1041,7 @@ With `SKY_LAUNCHER_TEST_INSTALL=1` and `SKY_LAUNCHER_KIT=$PWD/build/fake-kit` it
 (`docs/install.md`). With `SKY_LAUNCHER_TEST_GALLERY=1` it shoots the component gallery ("Gallery").
 
 ### Hero screenshots
-Build with `ninja -j4 -C build ArkeyanLauncher ArkeyanLauncherTest FakeSkyBuild`, then run:
+Build with `ninja -j4 -C build ArkeyanLauncher ArkeyanLauncherTest FakeArkeyanBuilder`, then run:
 ```sh
 python3 tests/hero_shots.py --disc /absolute/path/to/supported-game.iso
 ```
@@ -1114,7 +1114,7 @@ page to fade back in, provided sound is on. Other pages stay silent. Changing pa
 launch cancels that launch.
 
 **No music is shipped.** At disc verification the worker runs the kit's
-`SkyBuild --iso <disc or copied data folder> --menu-music <cache file>`, after reading pictures. The WAV
+`Arkeyan-Builder --iso <disc or copied data folder> --menu-music <cache file>`, after reading pictures. The WAV
 lives in `<data>/<Game>/launcher-cache/menu_music.wav`, with a `smpl` loop. The launcher reads PCM only.
 A missing kit is retried on the next disc check; an extraction failure is remembered in `menu_music.none`
 per kit build identity. A later build retries without a version bump. A `menu_music.kit` stamp records the decoder generation and kit build: a later build refreshes the theme atomically, and the player reloads a changed WAV without restarting. A failed refresh retains the previous playable file. Cached music remains usable when
@@ -1137,7 +1137,7 @@ Code: `src/launcher/game_music.{h,cpp}`. `Mixer` owns fades, equal-power cross-f
 `Player` opens one SDL stream lazily, pauses when silent, and follows `Playback` (page, running game,
 install, pending launch, mute). `tests/music_test.cpp` covers these transitions, missing files, extraction,
 the WAV reader and preference persistence. `ArkeyanLauncherTest --no-disc <scratch>` runs them;
-`SKY_LAUNCHER_TEST_MUSIC_ONLY=1` selects them alone. Workshop `SkyBuildMusicTest` checks all four discs.
+`SKY_LAUNCHER_TEST_MUSIC_ONLY=1` selects them alone. Workshop `ArkeyanBuilderMusicTest` checks all four discs.
 All sound tests use `SDL_AUDIO_DRIVER=dummy` and disposable HOME and data paths.
 
 ## Notes
@@ -1155,7 +1155,7 @@ All sound tests use `SDL_AUDIO_DRIVER=dummy` and disposable HOME and data paths.
   pages (language, game data, reinstall) follow the shown game. Since 0.4 the game page arrives with its logo's fall and
   its own look ("Each game's look").
 - `SKY_LAUNCHER_TEST_SWITCH=1` (with `SKY_LAUNCHER_SHOTS`, a `[launcher] kit=` that is the fake kit, and both games' `iso=` in
-  the config) runs the switch script: SSA and Giants checked, an install of each with the fake SkyBuild (SSA shown while
+  the config) runs the switch script: SSA and Giants checked, an install of each with the fake Arkeyan-Builder (SSA shown while
   Giants builds), a switch back and forth with each state kept, and PLAY on each returning its game and build. It is run by
   `ArkeyanLauncherTest` when `SKY_LAUNCHER_TEST_GIANTS_ISO` is set.
 - `SKY_LAUNCHER_TEST_SEATX=1` (with `SKY_LAUNCHER_SHOTS`, `SKY_COLLECTION`, `SKY_SAVE_DIR` on scratch paths) runs the seat X script
@@ -1163,7 +1163,7 @@ All sound tests use `SDL_AUDIO_DRIVER=dummy` and disposable HOME and data paths.
   by Delete and by the pad's X, checking after every try that only that seat is empty. It is run by `ArkeyanLauncherTest`.
 - `ArkeyanLauncherTest` checks verification, settings (`tests/settings_test.cpp`: per-game video, the command line, the shortcut files,
   delete data and uninstall on scratch folders), font/text helpers, the disc texture decoder, the seat X and the in-place game switch
-  (build it with `--target ArkeyanLauncherTest FakeSkyBuild`; set `SKY_LAUNCHER_TEST_GIANTS_ISO` for the switch, and
+  (build it with `--target ArkeyanLauncherTest FakeArkeyanBuilder`; set `SKY_LAUNCHER_TEST_GIANTS_ISO` for the switch, and
   `SKY_LAUNCHER_TEST_SWAPFORCE_ISO` for the Swap Force disc and its pictures). A swapper in the Collection is one card
   (`docs/collection_ui.md`, "Swappers").
 - `launcher: ui scale` is logged once, then only when the scale changes (a display change, Ctrl +/-/0), not at every window event.

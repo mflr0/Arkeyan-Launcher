@@ -254,7 +254,7 @@ namespace launcher_ui
                     report(0.98f, Tr("Reading the game's pictures"));
                     art.Init(game.id);
                     art.ExtractFromDisc(disc, metadata);
-                    // Its menu theme, decoded by the kit's SkyBuild (the launcher has no XMA decoder): once, next to the pictures.
+                    // Its menu theme, decoded by the kit's Arkeyan-Builder (the launcher has no XMA decoder): once, next to the pictures.
                     gamemusic::Extract(game.id, image, skyBuild, kitVersion);
                 }
             }

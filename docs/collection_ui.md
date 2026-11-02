@@ -1,15 +1,15 @@
 # The Collection page on the shared collection
 
-The launcher shows the same figures as the game and the Toy Box: SSARecomp's collection library (option A of
-`figures_overlap.md`, now done). **One model for both apps** (SSARecomp's `docs/runtime/host/toybox_ux.md`, the
+The launcher shows the same figures as the game and the Toy Box: ArkeyanRuntime's collection library (option A of
+`figures_overlap.md`, now done). **One model for both apps** (ArkeyanRuntime's `docs/runtime/host/toybox_ux.md`, the
 2026-10-26 redesign): the portal's seats on top, the shelf below (every figure once, favorites first), the same cards
 and words, a sheet with three main actions. The look is dorydev's: her colours, fonts and widgets are untouched
 (`launcher_theme.h`).
 
 ## One engine
 
-- `src/shared/collection/` and `src/shared/figures/` (all but `figure_icons.*`) are SSARecomp's files, copied by
-  `tools/sync_collection.sh [--check] <ssa-recomp>` (same file list as SSARecomp's `tools/sync_skylauncher.sh`, into
+- `src/shared/collection/` and `src/shared/figures/` (all but `figure_icons.*`) are ArkeyanRuntime's files, copied by
+  `tools/sync_collection.sh [--check] <ssa-recomp>` (same file list as ArkeyanRuntime's `tools/sync_skylauncher.sh`, into
   Skylanders' layout). Change them in SSARecomp, where the tests are, and copy them over. The catalogue
   (`resources/collection/catalogue.json`) is built into the executable (`cmake/embed_file.cmake`).
 - `figures/figure_icons.*` is the launcher's: `IconStyle` (outline, fills, badge colours) draws the generated icons for any
@@ -26,13 +26,13 @@ and words, a sheet with three main actions. The look is dorydev's: her colours, 
   re-extraction. Missing pictures are added by the normal disc check. The shared library's `game_art.md` has the full
   lookup audit and the formats.
 - **Variants.** The catalogue lists every variant Spyro's Adventure, Giants and Swap Force know (Series 2, LightCore, Legendary and
-  the alternate decos, with the ids Giants reads), and the later games' from public lists; SSARecomp's
+  the alternate decos, with the ids Giants reads), and the later games' from public lists; ArkeyanRuntime's
   `docs/runtime/host/collection.md` ("The games' own toy tables") has the sources. Variants of kind `base` are the
   plain figure as sold with a non-zero id (named after the toy).
 - **Upgrades.** `collection::Upgrades(toy, game, language)` (`shared/collection/upgrades.h`) gives what each bit of a
   figure's upgrade field means, with the game's own names, descriptions and prices in English or French; the texts
   are read from the player's disc when it is checked (`<data>/<Game>/upgrades.json`, part `art::Upgrades`), else a
-  plain list ("Upgrade 1"...). SSARecomp's `docs/runtime/host/figures.md` ("Upgrades") has the bit layout.
+  plain list ("Upgrade 1"...). ArkeyanRuntime's `docs/runtime/host/figures.md` ("Upgrades") has the bit layout.
 - Removed: `figure_file.*` and `figure_collection.*` (the old engine), replaced by `figure_tag`/`figure_crypto`/
   `figure_data` and `collection`.
 - Folder: `collection::Folder()` (`%APPDATA%\Skylanders\Collection`, `~/Library/Application Support/Skylanders/Collection`).

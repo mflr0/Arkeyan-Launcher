@@ -145,7 +145,7 @@ namespace
         std::error_code error;
         fs::create_directories(plain.parent_path(), error);
         fs::remove(plain, error);
-        const std::string files[][2] = { { "kit/SkyBuild", "kit bytes" }, { "kit/SkyBuild.exe", "kit bytes" }, { "kit/kit.txt", "build=b1\n" } };
+        const std::string files[][2] = { { "kit/Arkeyan-Builder", "kit bytes" }, { "kit/Arkeyan-Builder.exe", "kit bytes" }, { "kit/kit.txt", "build=b1\n" } };
         for (const auto& file : files)
             ACCENT_EXPECT(mz_zip_add_mem_to_archive_file_in_place(plain.string().c_str(), file[0].c_str(), file[1].data(), file[1].size(), nullptr, 0, 6));
         const fs::path kits = DownloadedKitsFolder();

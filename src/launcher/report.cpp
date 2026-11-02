@@ -1,3 +1,4 @@
+#include "shared/runtime_names.h"
 #include "launcher/report.h"
 #include "shared/collection/datadir.h"
 #include <SDL3/SDL.h>
@@ -301,7 +302,7 @@ launcher_report::Versions launcher_report::ReadVersions(const std::string& launc
     versions.launcher = launcherVersion;
     versions.kit = kitVersion;
     versions.os = SDL_GetPlatform();
-    std::string log = ReadFile(runtimeFolder / "SSARecomp.log", 256 * 1024);
+    std::string log = ReadFile(runtime_names::ReadLog(runtimeFolder), 256 * 1024);
     versions.gameBuild = FindLogLine(log, "[version] ");
     if (versions.gameBuild.empty())
         versions.gameBuild = "(no game log yet)";
@@ -329,11 +330,11 @@ std::string launcher_report::BuildReport(const Sources& sources)
         report += "Disc image: " + sources.iso + "\n";
 
     // The last crash: the fault block of this run's log, else of the run before (the next start moves a crashed log aside).
-    std::string crash = launcher_report::CrashDetails(ReadFile(sources.runtimeFolder / "SSARecomp.log"));
+    std::string crash = launcher_report::CrashDetails(ReadFile(runtime_names::ReadLog(sources.runtimeFolder)));
     std::string crashFrom = "this run";
     if (crash.empty())
     {
-        crash = launcher_report::CrashDetails(ReadFile(sources.runtimeFolder / "SSARecomp.prev.log"));
+        crash = launcher_report::CrashDetails(ReadFile(runtime_names::ReadLog(sources.runtimeFolder, true)));
         crashFrom = "the previous run";
     }
     report += crash.empty() ? "Last crash: none in the logs\n\n" : "Last crash: yes (" + crashFrom + "), see below\n\n";
@@ -341,8 +342,8 @@ std::string launcher_report::BuildReport(const Sources& sources)
 
     Section(report, "launcher.ini", sources.settingsFile);
     Section(report, "migration.log", sources.logFolder / "migration.log");
-    Section(report, "SSARecomp.log", sources.runtimeFolder / "SSARecomp.log");
-    Section(report, "SSARecomp.prev.log", sources.runtimeFolder / "SSARecomp.prev.log");
+    Section(report, runtime_names::ReadLog(sources.runtimeFolder).filename().string(), runtime_names::ReadLog(sources.runtimeFolder));
+    Section(report, runtime_names::ReadLog(sources.runtimeFolder, true).filename().string(), runtime_names::ReadLog(sources.runtimeFolder, true));
     Section(report, "skylauncher-game.log", sources.logFolder / "skylauncher-game.log");
     Section(report, "install.log", sources.runtimeFolder / "install.log");
     Section(report, "install.prev.log", sources.runtimeFolder / "install.prev.log");

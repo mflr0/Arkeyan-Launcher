@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# Copies SSARecomp's figure and collection library, its disc picture readers and the games' art manifests
+# Copies ArkeyanRuntime's figure and collection library, its disc picture readers and the games' art manifests
 # (src/shared/art, resources/games/<id>/art.json, docs/launcher_ui.md "Disc art") into this checkout
 # (docs/collection_ui.md), or with --check only
 # lists the files that differ. The SSARecomp copies are the reference (they have the tests): change them there.
-# Same files as SSARecomp's tools/sync_skylauncher.sh, into Arkeyan Launcher's layout (src/shared/). The library is in
-# runtime/host/ (SSARecomp's tree since the multi-game reorganisation) or SSARecomp/host/ (older checkouts).
+# Same files as ArkeyanRuntime's tools/sync_skylauncher.sh, into Arkeyan Launcher's layout (src/shared/). The library is in
+# runtime/host/ (ArkeyanRuntime's tree since the multi-game reorganisation) or SSARecomp/host/ (older checkouts).
 #   tools/sync_collection.sh [--check] <ssa-recomp dir>
 set -euo pipefail
 check=0
@@ -30,6 +30,9 @@ fi
 # The environment-variable helper (SKY_* names, the older SSA_* ones still read), from the 0.6.0 library on.
 if [[ -f "$from/$lib/host/env.h" ]]; then
     pairs+=("$lib/host/env.h:src/shared/env.h")
+fi
+if [[ -f "$from/$lib/host/runtime_names.h" ]]; then
+    pairs+=("$lib/host/runtime_names.h:src/shared/runtime_names.h")
 fi
 pairs+=("resources/collection/catalogue.json:resources/collection/catalogue.json" "cmake/embed_file.cmake:cmake/embed_file.cmake")
 # Each game's art manifest (where its pictures are on the disc), joined and built in by cmake/join_json.cmake.

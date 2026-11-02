@@ -1,6 +1,6 @@
 // ArkeyanLauncherTest's checks for the game page's music (launcher/game_music.h): the WAV reader, the mixer's fades and loop
-// (no device), the extraction through the kit's SkyBuild (the fake one), and the player on SDL's dummy audio driver. Called from
-// launcher_test.cpp's main; returns the number of failures. The real themes are checked in the workshop (SkyBuildMusicTest).
+// (no device), the extraction through the kit's Arkeyan-Builder (the fake one), and the player on SDL's dummy audio driver. Called from
+// launcher_test.cpp's main; returns the number of failures. The real themes are checked in the workshop (ArkeyanBuilderMusicTest).
 #include "test_env.h"
 #include "launcher/game_music.h"
 #include "launcher/launcher.h"
@@ -200,7 +200,7 @@ namespace
         std::filesystem::remove_all(data);
         std::filesystem::create_directories(data);
         DataFolder dataFolder(data);
-        const std::filesystem::path fake = std::filesystem::path(SKYLAUNCHER_FAKE_KIT) / "SkyBuild"
+        const std::filesystem::path fake = std::filesystem::path(SKYLAUNCHER_FAKE_KIT) / "Arkeyan-Builder"
 #if defined(_WIN32)
             ".exe"
 #endif

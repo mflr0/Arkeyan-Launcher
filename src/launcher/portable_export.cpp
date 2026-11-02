@@ -96,7 +96,7 @@ namespace
         return files;
     }
 
-    // The bundle signed again (ad hoc, as SkyBuild signs it): its seal now covers the pack.
+    // The bundle signed again (ad hoc, as Arkeyan-Builder signs it): its seal now covers the pack.
     bool Sign(const fs::path& app)
     {
         const std::string path = datadir::Text(app);

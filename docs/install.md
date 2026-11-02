@@ -1,7 +1,7 @@
 # Installing the game
 
 Arkeyan Launcher contains no game code. The game is recompiled and built on the player's own machine, from their own disc,
-by `SkyBuild`, the build driver of the SSARecomp **player kit** (its contract is `docs/skybuild.md` in SSARecomp).
+by `Arkeyan-Builder`, the build driver of the **player kit** (its contract is `docs/release/launcher/kit_contract.md` in the workshop).
 The launcher finds the kit, runs it, shows its progress and then starts the game it built.
 
 ## The flow
@@ -13,36 +13,36 @@ The launcher finds the kit, runs it, shows its progress and then starts the game
 3. With no kit (below), a kit from an older release than the launcher's, or a kit that does not build this disc's game
    (`games=` in its `kit.txt`; a kit without it builds Spyro's Adventure only), INSTALL first downloads the kit of the
    launcher's own release: the checklist starts with **Downloading the game tools** (a bar in MB,
-   retry with **Retry**; a failure says "The game tools couldn't be downloaded"). SkyBuild never runs on a disc its kit
+   retry with **Retry**; a failure says "The game tools couldn't be downloaded"). Arkeyan-Builder never runs on a disc its kit
    cannot build. A kit the player chose (`SKY_LAUNCHER_KIT`, `[launcher] kit=`) is never replaced: if it lacks the game, INSTALL
    says "These game tools can't build <game>" and stops. Linux (from 0.3.1) gets
-   `skylanders-kit-linux-x64.zip` the same way: its SkyBuild downloads zig as the compiler, no root needed. See `docs/updates.md`
+   `skylanders-kit-linux-x64.zip` the same way: its Arkeyan-Builder downloads zig as the compiler, no root needed. See `docs/updates.md`
    for the release it comes from.
-   Then INSTALL runs `SkyBuild --iso <iso> --out <game folder> --kit <kit>`. The progress card replaces the logo
+   Then INSTALL runs `Arkeyan-Builder --iso <iso> --out <game folder> --kit <kit>`. The progress card replaces the logo
    (`ui/install_page.cpp`, its model is `install_checklist.{h,cpp}`):
    - a fixed **checklist** of eight steps: Preparing the compiler, Reading the disc, Translating the game code, Translating
      the shaders, Compiling the game, Linking the game, Adding the movie shaders, Finishing (the second shaders / compile /
-     link pass SkyBuild runs after the movie shaders). Each is waiting, running (a spinner, its own bar from `@progress`
+     link pass Arkeyan-Builder runs after the movie shaders). Each is waiting, running (a spinner, its own bar from `@progress`
      and its time), done (a tick and how long it took) or failed. An unknown `@step` gets a row of its own;
    - one **overall bar** with a percentage (each step weighted by its usual share: compiling is half), the elapsed time and
      a **time left** that appears once the current step has some progress (its own pace for the rest of it, the pace of the
      steps that really ran for the next ones; "up to date" steps say nothing about the machine);
-   - **one line** under the steps with SkyBuild's last `@log` of the step: it replaces itself, it is never a log;
+   - **one line** under the steps with Arkeyan-Builder's last `@log` of the step: it replaces itself, it is never a log;
    - **Show details**: the log in a scrollable monospace panel, the current step above it;
-   - on **failure**: a human headline ("Couldn't download the compiler. Check your connection."), SkyBuild's
+   - on **failure**: a human headline ("Couldn't download the compiler. Check your connection."), Arkeyan-Builder's
      `@error`, "Retry to continue from this step.", and **Copy log**, **Logs** (opens the logs folder), **Retry**;
    - **across a restart**: `[install.<sha256>] state=running|failed` and `pid=` are kept in `launcher.ini` while an install
      runs or after it failed. Next start, with the disc verified, the card comes back with the steps read from
-     `install.log` ("Installation interrupted", **Resume**; Resume waits for an SkyBuild that is still running).
+     `install.log` ("Installation interrupted", **Resume**; Resume waits for an Arkeyan-Builder that is still running).
 4. `@done <path>` and exit code 0: the path is saved for that disc and PLAY appears. On Windows SDL cannot report the
    exit code of a process started without a console window, so there `@done` alone means success.
 5. When the release publishes a newer version of the game than the one built (the games line of its notes, `docs/updates.md`), the Play page's button is **UPDATE**, with the update's line and a small link **Play without updating** under it; the game's settings
    (Settings button on its Play page) > Game has **Reinstall** (held a second), **Remove game** and
-   **Game files**. SkyBuild is incremental, so a reinstall is quick when little changed.
+   **Game files**. Arkeyan-Builder is incremental, so a reinstall is quick when little changed.
 
 Cancel stops only the process the launcher started: SIGTERM then SIGKILL after 3 s on macOS and Linux; on Windows
-SkyBuild runs in a job object, so the compilers it started stop with it (also when the launcher is closed).
-SkyBuild's output is also written to `install.log` in the game folder. `SKY_LAUNCHER_BUILD_JOBS=N` passes `--jobs N`.
+Arkeyan-Builder runs in a job object, so the compilers it started stop with it (also when the launcher is closed).
+Arkeyan-Builder's output is also written to `install.log` in the game folder. `SKY_LAUNCHER_BUILD_JOBS=N` passes `--jobs N`.
 
 ## Three games: Spyro's Adventure, Giants and Swap Force (kit 0.5.0; Swap Force since the kit that lists it)
 
@@ -58,22 +58,23 @@ list Swap Force makes the launcher fetch the right one first, as for Giants).
 - The disc check is per game: the table in `src/launcher/launcher_games.cpp` (title ID, SHA-256 of `default.xex`). A Giants
   disc dropped on Spyro's Adventure says it is another game, and the other way round. The name and icon on the game page come
   from the disc's own XDBF, as for SSA.
-- INSTALL runs the same SkyBuild with the disc; **SkyBuild finds the game itself** from `default.xex`'s SHA-256
+- INSTALL runs the same Arkeyan-Builder with the disc; **Arkeyan-Builder finds the game itself** from `default.xex`'s SHA-256
   (workshop `docs/release/launcher/kit_contract.md`, "Several games in one kit"). The built apps use the titles
   `Skylanders Spyro's Adventure`, `Skylanders Giants`, `Skylanders Swap Force` and `Skylanders Trap Team`
   (plus `.app` on macOS or `.exe` on Windows). `GameInfo::runtime` gives the new name and `legacyRuntime` gives
   `SSARecomp`, `SGRecomp`, `SSFRecomp` or `TTRecomp`. Both names are found beside the launcher; recorded 0.7.3, 0.6.1
   and beta install paths keep working. A valid recorded path wins; if it was renamed, the matching sibling with the
   other name is tried. Bundle paths and paths to their executables both work. No reinstall is needed.
-  SkyBuild removes the old executable or bundle only after a successful rebuild and signing. Existing shortcuts
+  Arkeyan-Builder removes the old executable or bundle only after a successful rebuild and signing. Existing shortcuts
   still open the launcher with the game id, so their destination stays valid after the rename.
-  Each game still logs to `SSARecomp.log` in its own folder.
-- One disc-derived icon family is generated by SkyBuild for every game: a transparent square, centred cropped logo,
+  Each game logs to `Arkeyan.log` in its own folder (`SSARecomp.log` for a game built by a kit up to 0.7.2; the launcher reads
+  either).
+- One disc-derived icon family is generated by Arkeyan-Builder for every game: a transparent square, centred cropped logo,
   margin 1/24, with the title icon fitted by the same rule if the logo cannot be read. `game_icon.png` is 512 px;
   `game_icon.ico` contains 16, 24, 32, 48, 64, 128 and 256 px, and `game_icon.icns` contains 16 through 1024 px
   including Retina entries. Desktop shortcuts reuse the installed ICO/ICNS bytes and PNG, so they match the app,
   window, taskbar and Dock. Existing installs with only a PNG keep their old fallback until rebuilt.
-  No art comes with the launcher or kit. If the disc has no readable logo or icon, SkyBuild logs why defaults apply.
+  No art comes with the launcher or kit. If the disc has no readable logo or icon, Arkeyan-Builder logs why defaults apply.
   Linux builds also include `game.desktop`, with the title and safely quoted executable path.
   All formats are generated on every host; actual desktop rendering still needs a check on each OS.
 
@@ -89,8 +90,8 @@ list Swap Force makes the launcher fetch the right one first, as for Giants).
 
 | What | Where |
 | --- | --- |
-| The kit | `SKY_LAUNCHER_KIT`, else `[launcher] kit=` in `launcher.ini`, else next to the launcher (next to the `.app` on macOS): `skylanders-kit/`, `ssa-kit/`, `kit/`, or a folder whose name starts with `skylanders-kit` or `ssa-kit` (an unzipped `skylanders-kit-windows-x64`), else the newest `kit/<release tag>/` Arkeyan Launcher downloaded into its data folder. A downloaded kit from a newer release than the one next to the launcher (by its `kit.txt` `version=`), or the only one that builds the game, wins over it. It must hold `SkyBuild` (`SkyBuild.exe`), or `SSABuild` (`SSABuild.exe`) in a kit made for 0.4.x launchers. |
-| The kit's version | `build=` (else `version=`) in the kit's `kit.txt`, else SkyBuild's size and date |
+| The kit | `SKY_LAUNCHER_KIT`, else `[launcher] kit=` in `launcher.ini`, else next to the launcher (next to the `.app` on macOS): `skylanders-kit/`, `ssa-kit/`, `kit/`, or a folder whose name starts with `skylanders-kit` or `ssa-kit` (an unzipped `skylanders-kit-windows-x64`), else the newest `kit/<release tag>/` Arkeyan Launcher downloaded into its data folder. A downloaded kit from a newer release than the one next to the launcher (by its `kit.txt` `version=`), or the only one that builds the game, wins over it. It must hold `Arkeyan-Builder` (`Arkeyan-Builder.exe`), or `SSABuild` (`SSABuild.exe`) in a kit made for 0.4.x launchers. |
+| The kit's version | `build=` (else `version=`) in the kit's `kit.txt`, else Arkeyan-Builder's size and date |
 | What the kit builds, its release | `games=` in `kit.txt` (none: `ssa`); its release is the `kit/<tag>/` folder it was downloaded to, else `version=` |
 | The built game | `<data>/SSA` (see below). Never next to the ISO. |
 | What was built | `[install.<sha256>]` in `launcher.ini`: `runtime=` (the `@done` path), `kit=` (the kit version it was built with) |
@@ -100,7 +101,7 @@ the current or legacy runtime name for that game next to the launcher. A runtime
 
 ### One data folder, "Skylanders"
 
-The launcher, the game and SkyBuild keep everything under one root per OS, chosen by the shared `datadir` helper
+The launcher, the game and Arkeyan-Builder keep everything under one root per OS, chosen by the shared `datadir` helper
 (`src/shared/collection/datadir.{h,cpp}`, copied from SSARecomp by `tools/sync_collection.sh`):
 
 | OS | Root |
@@ -114,12 +115,12 @@ The launcher, the game and SkyBuild keep everything under one root per OS, chose
 | `Collection/` | the figures, shared by every game |
 | `launcher.ini` | the settings shared by the launcher and the games |
 | `kit/<release tag>/` | the kits the launcher downloaded |
-| `toolchains/` | the compiler SkyBuild downloads (Windows) |
+| `toolchains/` | the compiler Arkeyan-Builder downloads (Windows) |
 | `logs/` | `skylauncher-game.log` (+ `.prev.log`) and `migration.log` |
 | `SSA/` | the built game (`Skylanders Spyro's Adventure.app` / `Skylanders Spyro's Adventure.exe`, `install.log` + `install.prev.log`, `install-logs/`), and its data: `saves/`, `saves-backup/`, `pipelines.bin`, `portal.txt`, `achievements.txt`, `playtime.txt`, `figures/`, `portraits/`, `launcher-cache/`, `SSARecomp.log` (+ `.prev.log`). Giants has its own folder, `Giants/`, with the same layout (`Skylanders Giants.app` / `Skylanders Giants.exe`). |
 
 **Environment variables.** The launcher reads `SKY_LAUNCHER_<X>` (its own: `SKY_LAUNCHER_DATA`, `SKY_LAUNCHER_INI`, `SKY_LAUNCHER_KIT`...)
-and `SKY_<X>` (shared with the games and SkyBuild: `SKY_COLLECTION`, `SKY_SAVE_DIR`, `SKY_SETTINGS`...), then the names of earlier
+and `SKY_<X>` (shared with the games and Arkeyan-Builder: `SKY_COLLECTION`, `SKY_SAVE_DIR`, `SKY_SETTINGS`...), then the names of earlier
 versions (`SKYLAUNCHER_<X>`, `SSA_LAUNCHER_<X>`, `SSA_<X>`), so every old script keeps working; a variable that is set wins over the
 older names (`src/shared/env.h`). A game the launcher starts gets both names of each variable that is set (`CreateGameEnvironment`: the launcher's own environment is not changed):
 a game built by an older kit reads only the `SSA_` names. `SKYLANDERS_DATA` never changed.
@@ -128,7 +129,7 @@ a game built by an older kit reads only the `SSA_` names. `SKYLANDERS_DATA` neve
 (the game folder, the kits, the logs). The launcher settings (the gear) > Launcher > **Show in folder** opens the root, and each game's settings > Game > Folders > **Game files** opens its own folder.
 
 **Save backups.** The game's settings > Saves lists the backups the game keeps of its saves (`SSA/saves-backup/<time>/`, see
-SSARecomp's `docs/settings.md`): date, time and size, newest first. **Restore** (held a second) first keeps the saves the player has now
+ArkeyanRuntime's `docs/settings.md`): date, time and size, newest first. **Restore** (held a second) first keeps the saves the player has now
 as a backup of its own, then copies the chosen one back byte for byte. It is refused while the game runs: the game holds
 `SSA/saves-backup/game.lock` with its process id while it plays, and a marker a crash left behind is dropped once that
 process is gone. The code is the shared library's `save_backup.{h,cpp}` (`src/shared/collection/`, synced from
@@ -141,7 +142,7 @@ in `Skylauncher/` (`games/<sha256>/`, `kit/`; `%LOCALAPPDATA%\Skylauncher` on Wi
 entries are renamed one by one; nothing is overwritten or deleted (a taken name keeps the moved entry as
 `<name>.old-<time>`); a failed rename is copied, checked, then deleted, else left for the next start; an old folder is
 removed only once empty; `launcher.ini` paths into a moved folder are rewritten (the ISO's stays); everything is logged
-in `logs/migration.log`. The full table and rules: SSARecomp's `docs/settings.md`. A run with `SKYLANDERS_DATA`,
+in `logs/migration.log`. The full table and rules: ArkeyanRuntime's `docs/settings.md`. A run with `SKYLANDERS_DATA`,
 `SKY_LAUNCHER_DATA`, `SKY_LAUNCHER_INI`, `SKY_SETTINGS`, `SKY_SAVE_DIR` or `SKY_COLLECTION` set never migrates.
 
 **Older builds.** A game built by a kit up to 0.3.0 still uses the older folders, which the migration emptied. Installs
@@ -163,7 +164,7 @@ Restore uses) and **disabled while the game installs**. The sizes shown next to 
 | **Clear caches** (plain button) | `pipelines.bin` (shader cache), `launcher-cache/` (the disc's art), `portraits/`, the game's `*.log` | everything else: the saves too |
 | **Delete saves and data** (held a second) | the saves (`saves/`, or `SKY_SAVE_DIR`), `saves-backup/`, `portal.txt` (the seats of the next session), `achievements.txt` and `playtime.txt` (the unlocked achievements and the play time: they go with the saves), and the caches above | the built game, the disc image, the settings in `launcher.ini`, `textures/`, `figures/`, the shared figure collection |
 | **Remove game** (held a second) | the built game (the game’s `.app` or `.exe`, its libraries and shaders), `install.log` and `install-logs/`, `pipelines.bin`, the game's logs; and `[install.<sha256>]` in `launcher.ini`, so the Play page offers INSTALL again | the saves and their backups, `portal.txt`, `achievements.txt`, `playtime.txt`, `textures/`, `figures/`, `launcher-cache/`, `portraits/`, the disc image, the settings |
-| **Reinstall** (held a second) | nothing is deleted: SkyBuild builds again (incremental) | all of it |
+| **Reinstall** (held a second) | nothing is deleted: Arkeyan-Builder builds again (incremental) | all of it |
 
 After an uninstall the disc is still known, so INSTALL builds the game again and the saves are where they were. To remove
 everything the launcher keeps for a game, uninstall, then delete saves and data, then delete the game's folder by hand; to remove everything of every game
@@ -227,17 +228,17 @@ macOS together with `SKY_LAUNCHER_UNINSTALL_TRASH`).
 
 ### Housekeeping
 
-After a **successful** install: `ssabuild-work/` (2-3 GB) is deleted and its `logs/` kept as `install-logs/` (an update
+After a **successful** install: `arkeyan-work/` (or `ssabuild-work/` from an older kit; 2-3 GB) is deleted and its `logs/` kept as `install-logs/` (an update
 therefore rebuilds everything); the kits in `kit/` older than the one that built the game are deleted; a compiler archive
 (`toolchains/*.zip`) whose extracted copy is ready is deleted. Each log keeps one previous run (`.prev.log`). The art
 cache `<Game>/launcher-cache` holds three pictures (logo, background, title icon; `docs/launcher_ui.md`, "Disc art") and the
-achievements' list with their pictures (`achievements/`, "Achievements and play time"), and the menu theme the kit's `SkyBuild --menu-music` decoded (`menu_music.wav`, "Game music"); it needs no trimming; the per-title folders of older launchers in it are removed at the next disc check.
+achievements' list with their pictures (`achievements/`, "Achievements and play time"), and the menu theme the kit's `Arkeyan-Builder --menu-music` decoded (`menu_music.wav`, "Game music"); it needs no trimming; the per-title folders of older launchers in it are removed at the next disc check.
 
 ## Linux
 
-The kit's zip keeps the Unix modes of `SkyBuild` and its `bin/` programs, and `InstallKitZip` restores them, so the
-AppImage runs the downloaded SkyBuild directly. The game is built in the data folder's `SSA/` (`~/.local/share/Skylanders/SSA/Skylanders Spyro's Adventure`); PLAY starts it and
-keeps its output in `skylauncher-game.log`, as on the other systems. SkyBuild caches its compiler (zig) in the data folder's
+The kit's zip keeps the Unix modes of `Arkeyan-Builder` and its `bin/` programs, and `InstallKitZip` restores them, so the
+AppImage runs the downloaded Arkeyan-Builder directly. The game is built in the data folder's `SSA/` (`~/.local/share/Skylanders/SSA/Skylanders Spyro's Adventure`); PLAY starts it and
+keeps its output in `skylauncher-game.log`, as on the other systems. Arkeyan-Builder caches its compiler (zig) in the data folder's
 `toolchains/` (`~/.local/share/Skylanders/toolchains`).
 
 The real portal needs read and write access to its `/dev/hidraw*` node, which a udev rule gives the logged-in user:
@@ -263,13 +264,13 @@ Tested in containers only (amd64 under Rosetta, Mesa's lavapipe, offscreen): a f
 
 ## Testing without the kit
 
-`tests/fake_skybuild.c` prints the same events with delays (target `FakeSkyBuild`, built as `<build>/fake-kit/SkyBuild`
+`tests/fake_arkeyan_builder.c` prints the same events with delays (target `FakeArkeyanBuilder`, built as `<build>/fake-kit/Arkeyan-Builder`
 with a `kit.txt`). `FAKE_SSABUILD_FAIL=<step id>` makes it fail half way through that step, `FAKE_SSABUILD_DELAY` sets
 the pause between events (0.05 s).
 
 - `ArkeyanLauncherTest` parses events, then runs the fake kit through `GameInstaller` (a failure, a success, a cancel), and
   checks the checklist model on event streams (`tests/shell_test.cpp`).
-- The fake kit prints SkyBuild's real step ids, titles and order, including the movie pass and the second pass.
+- The fake kit prints Arkeyan-Builder's real step ids, titles and order, including the movie pass and the second pass.
 - The screenshot test with `SKY_LAUNCHER_TEST_INSTALL=1` and `SKY_LAUNCHER_KIT=<build>/fake-kit` writes
   `10-install.png` (INSTALL), `11-installing.png`, `12-installing-compile.png`, `13-install-details.png`,
   `14-install-failed.png`, `15-installed.png` (PLAY after a retry), `16-game-data.png` and `17-install-interrupted.png`.
@@ -290,7 +291,7 @@ the pause between events (0.05 s).
   English and French at `1024x680`, `1080x720` and `1600x1000`, including failed and interrupted cards with details open.
   The `control-game` and `control-update` fixtures cover the ordinary page and an offered update.
   Use `SKY_LAUNCHER_LANGUAGE` and `SKY_LAUNCHER_TEST_SIZE` for captures.
-- Try it by hand: `ninja -C build FakeSkyBuild`, then start the launcher with `SKY_LAUNCHER_KIT=$PWD/build/fake-kit`.
+- Try it by hand: `ninja -C build FakeArkeyanBuilder`, then start the launcher with `SKY_LAUNCHER_KIT=$PWD/build/fake-kit`.
 
 ## Windows build from a Mac
 

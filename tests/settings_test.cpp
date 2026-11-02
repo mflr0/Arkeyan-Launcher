@@ -727,6 +727,7 @@ namespace
         Write(folders.game / "launcher-cache" / "title_icon.png", std::string(50, 'i'));
         Write(folders.game / "portraits" / "p.png", std::string(40, 'q'));
         Write(folders.game / "SSARecomp.log", std::string(7, 'g'));
+        Write(folders.game / "Arkeyan.log", std::string(3, 'a')); // the same game's log from a kit since 0.7.3
         Write(folders.game / "textures" / "t.dds", std::string(60, 't'));
         Write(folders.game / "figures" / "f.bin", std::string(8, 'f'));
         Write(folders.game / "gamedata" / "default.xex", std::string(4000, 'x')); // the copied game data
@@ -741,14 +742,15 @@ namespace
 
         GameDataSizes sizes = MeasureGameData(folders);
         SETTINGS_EXPECT(sizes.saves == 100 + 100 + 5 + 11 + 13);
-        SETTINGS_EXPECT(sizes.caches == 300 + 50 + 40 + 7);
+        SETTINGS_EXPECT(sizes.caches == 300 + 50 + 40 + 7 + 3);
         SETTINGS_EXPECT(sizes.installed == 1000 + 10 + 20); // the build and its logs; the textures and figures are not its
 
         // Caches: only the caches go.
         DataResult cleared = ClearGameCaches(folders);
-        SETTINGS_EXPECT(cleared.ok && cleared.freed == 300 + 50 + 40 + 7);
+        SETTINGS_EXPECT(cleared.ok && cleared.freed == 300 + 50 + 40 + 7 + 3);
         SETTINGS_EXPECT(!fs::exists(folders.game / "pipelines.bin") && !fs::exists(folders.game / "launcher-cache") &&
-            !fs::exists(folders.game / "portraits") && !fs::exists(folders.game / "SSARecomp.log"));
+            !fs::exists(folders.game / "portraits") && !fs::exists(folders.game / "SSARecomp.log") &&
+            !fs::exists(folders.game / "Arkeyan.log"));
         SETTINGS_EXPECT(fs::exists(folders.saves / "a" / "GLOBAL.DAT") && fs::exists(folders.game / "SGRecomp.app") &&
             fs::exists(folders.game / "install.log") && fs::exists(folders.game / "textures" / "t.dds"));
         SETTINGS_EXPECT(MeasureGameData(folders).caches == 0 && ClearGameCaches(folders).ok); // twice: nothing left, no error
@@ -768,7 +770,7 @@ namespace
 
         // Delete data: the saves, the backups, the seats and the caches; the game, the textures and the figures stay.
         DataResult deleted = DeleteGameData(folders);
-        SETTINGS_EXPECT(deleted.ok && deleted.freed == 229 + 397);
+        SETTINGS_EXPECT(deleted.ok && deleted.freed == 229 + 400);
         SETTINGS_EXPECT(!fs::exists(folders.game / "achievements.txt") && !fs::exists(folders.game / "playtime.txt"));
         SETTINGS_EXPECT(!fs::exists(folders.saves) && !fs::exists(folders.game / "saves-backup") && !fs::exists(folders.game / "portal.txt") &&
             !fs::exists(folders.game / "pipelines.bin") && !fs::exists(folders.game / "portraits"));

@@ -20,7 +20,7 @@ struct SDL_Process;
 struct InstallKit
 {
     std::filesystem::path folder;
-    std::filesystem::path ssabuild; // the kit's SSABuild executable
+    std::filesystem::path ssabuild; // the kit's builder: Arkeyan-Builder (SkyBuild, SSABuild in older kits)
     std::string release;            // "version=" in kit.txt: the release it came from, "" when it has none
     std::string version;            // "build=" (else "version=") in the kit's kit.txt, else a fingerprint of SSABuild
     std::vector<std::string> games; // "games=" in kit.txt: what the kit builds ("ssa", "giants", "swapforce", "trapteam"); a kit before 0.5.0 has none: SSA only
@@ -42,13 +42,13 @@ bool KitOlderThanLauncher(const InstallKit& kit, std::string_view launcherVersio
 std::filesystem::path LauncherDataFolder();
 std::filesystem::path DownloadedKitsFolder(); // kit/<release tag>/ folders, each holding SSABuild
 
-// The kit in `folder`: empty when it holds no SkyBuild (or SSABuild, in a kit for older launchers).
+// The kit in `folder`: empty when it holds no Arkeyan-Builder (nor SkyBuild or SSABuild, from older kits).
 std::optional<InstallKit> InstallKitIn(const std::filesystem::path& folder);
 
 // The kit: SKY_LAUNCHER_KIT, else "[launcher] kit=", else a folder next to the launcher (or its macOS app bundle) named
 // skylanders-kit, ssa-kit, kit, or starting with skylanders-kit or ssa-kit (an unzipped "skylanders-kit-windows-x64") unless a downloaded kit comes from a newer
 // release (or when it cannot build `gameId`, if one is given and the downloaded kit can), else the newest downloaded kit.
-// Empty when none holds SkyBuild or SSABuild.
+// Empty when none holds Arkeyan-Builder, SkyBuild or SSABuild.
 std::optional<InstallKit> FindInstallKit(const LauncherConfig& config, std::string_view gameId = {});
 
 // A runtime the player set up themselves: SKY_LAUNCHER_RUNTIME, else "[launcher] runtime=" in the settings file, else

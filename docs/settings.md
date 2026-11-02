@@ -4,7 +4,7 @@ The launcher and the game runtime share one settings file, `launcher.ini`, at th
 (`~/Library/Application Support/Skylanders/` on macOS, `%APPDATA%\Skylanders\` on Windows, `~/.local/share/Skylanders/` on
 Linux; docs/install.md). Lines are `[section]`, `key=value` or `# comment`.
 
-"Runtime" says whether the game runtime applies the key (checked against SSARecomp's `docs/settings.md`; the game's own log is in `docs/support.md`). Keys it does not know are kept and ignored.
+"Runtime" says whether the game runtime applies the key (checked against ArkeyanRuntime's `docs/settings.md`; the game's own log is in `docs/support.md`). Keys it does not know are kept and ignored.
 
 | Section | Key | Values | Meaning | Runtime |
 | --- | --- | --- | --- | --- |
@@ -143,7 +143,7 @@ every other action keeps its keys. A button is on one action at a time: putting 
 | `<game>.input` | `mouse_<action>` | `Mouse Left`, `Mouse Right`, `Mouse Middle`, `Mouse 4`, `Mouse 5`, `Wheel Up`, `Wheel Down`, or `none`. Absent: the game's default (attacks only). |
 | `input` | `key_toybox`, `key_toybox_add`, `key_toybox_clear` | Open the Toy Box, add the next figure, clear the portal: F6, F7, F8 by default (Tab also opens the Toy Box while `key_toybox` is not set). Shared by the games. |
 
-- The mouse names share the runtime's key list (SSARecomp's `host/mouse.h`); the mouse lines are read from the game's section by the
+- The mouse names share the runtime's key list (ArkeyanRuntime's `host/mouse.h`); the mouse lines are read from the game's section by the
   runtime itself, so PLAY copies nothing (`ApplyGameInput` keeps `[input]`'s Toy Box keys as they are).
 - **Reset to defaults** also clears the game's `mouse_` lines; the switch stays as it is.
 - The game's F3 menu has the same rows (its Commands page) and writes the same lines.
@@ -214,7 +214,7 @@ On the French pad names, the Back button reads "Retour" (the Xbox 360 French nam
 The launcher and the game share one collection folder (`collection::Folder()`: `Skylanders/Collection` in the user's data
 folder, or `SKY_COLLECTION`), with `collection.json` (labels, favorites, views, trash), `<dump>.lock` (JSON written by
 the game while a figure is on its portal), `backups/` and `trash/`. `docs/collection_ui.md` describes the page; the
-format is SSARecomp's `docs/collection.md`. The old `figures` folder next to `launcher.ini` is copied in once, never
+format is ArkeyanRuntime's `docs/collection.md`. The old `figures` folder next to `launcher.ini` is copied in once, never
 changed.
 
 - The seats of the next session are `portal.txt` in the game's save folder (`SKY_SAVE_DIR`, else its preference

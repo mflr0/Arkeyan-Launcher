@@ -78,7 +78,7 @@ add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/embedded_fonts.cpp
         ${CMAKE_SOURCE_DIR}/resources/icons/skylauncher-128.png
     COMMENT "Embedding the launcher fonts")
 
-# SSARecomp's collection library (src/shared/collection, tools/sync_collection.sh) builds its toy catalogue in.
+# ArkeyanRuntime's collection library (src/shared/collection, tools/sync_collection.sh) builds its toy catalogue in.
 add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/embedded_catalogue.cpp
     COMMAND ${CMAKE_COMMAND} -DNAME=g_embeddedCatalogue -DINPUT=${CMAKE_SOURCE_DIR}/resources/collection/catalogue.json
         -DOUTPUT=${CMAKE_BINARY_DIR}/embedded_catalogue.cpp -P ${CMAKE_SOURCE_DIR}/cmake/embed_file.cmake
@@ -250,11 +250,11 @@ endif()
 add_executable(ArkeyanLauncherTest EXCLUDE_FROM_ALL tests/launcher_test.cpp)
 target_link_libraries(ArkeyanLauncherTest PRIVATE ArkeyanLauncherCore)
 target_include_directories(ArkeyanLauncherTest PRIVATE lib/stb)
-# A stand-in for the kit's SkyBuild, in <build>/fake-kit: the install screens and ArkeyanLauncherTest run against it.
-add_executable(FakeSkyBuild EXCLUDE_FROM_ALL tests/fake_skybuild.c)
-set_target_properties(FakeSkyBuild PROPERTIES OUTPUT_NAME SkyBuild RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/fake-kit)
+# A stand-in for the kit's Arkeyan-Builder, in <build>/fake-kit: the install screens and ArkeyanLauncherTest run against it.
+add_executable(FakeArkeyanBuilder EXCLUDE_FROM_ALL tests/fake_arkeyan_builder.c)
+set_target_properties(FakeArkeyanBuilder PROPERTIES OUTPUT_NAME Arkeyan-Builder RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/fake-kit)
 file(WRITE ${CMAKE_BINARY_DIR}/fake-kit/kit.txt "version=0.0\nbuild=fake-1\ngames=ssa,giants\n")
-add_dependencies(ArkeyanLauncherTest FakeSkyBuild ArkeyanLauncher)
+add_dependencies(ArkeyanLauncherTest FakeArkeyanBuilder ArkeyanLauncher)
 target_compile_definitions(ArkeyanLauncherTest PRIVATE SKYLAUNCHER_FAKE_KIT="${CMAKE_BINARY_DIR}/fake-kit" SKYLAUNCHER_TEST_EXE="$<TARGET_FILE:ArkeyanLauncher>")
 
 # The launcher shell's checks (tests/shell_test.cpp), run by ArkeyanLauncherTest.

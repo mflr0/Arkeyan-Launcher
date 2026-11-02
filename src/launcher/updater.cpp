@@ -188,14 +188,14 @@ namespace
         return true;
     }
 
-    // The kit's builder at the root of `folder`: SkyBuild, or SSABuild in a kit made for 0.4.x launchers.
+    // The kit's builder at the root of `folder`: Arkeyan-Builder, SkyBuild (kits up to 0.7.2), or SSABuild (0.4.x launchers).
     bool HoldsBuilder(const fs::path& folder)
     {
         std::error_code error;
 #if defined(_WIN32)
-        return fs::exists(folder / "SkyBuild.exe", error) || fs::exists(folder / "SSABuild.exe", error);
+        return fs::exists(folder / "Arkeyan-Builder.exe", error) || fs::exists(folder / "SkyBuild.exe", error) || fs::exists(folder / "SSABuild.exe", error);
 #else
-        return fs::exists(folder / "SkyBuild", error) || fs::exists(folder / "SSABuild", error);
+        return fs::exists(folder / "Arkeyan-Builder", error) || fs::exists(folder / "SkyBuild", error) || fs::exists(folder / "SSABuild", error);
 #endif
     }
 }

@@ -140,7 +140,7 @@ namespace
         return ResolveGameSource(int(argv.size()), argv.data(), *FindGame("ssa"), false);
     }
 
-    // SSABuild's events, then the fake kit (tests/fake_ssabuild.c) run through the launcher's installer: a failure, then a success.
+    // The builder's events, then the fake kit (tests/fake_arkeyan_builder.c) run through the launcher's installer: a failure, then a success.
     void InstallChecks(const std::filesystem::path& scratch, const std::string& iso)
     {
         printf("Install:\n");
@@ -189,13 +189,15 @@ namespace
         InstallProgress failed = run("shaders");
         EXPECT(failed.state == InstallProgress::State::Failed && failed.error.find("didn't compile") != std::string::npos);
         EXPECT(failed.steps.size() == 4 && failed.runtime.empty());
-        // The housekeeping after a successful build: the work folder goes, its logs stay, the log before is kept.
+        // The housekeeping after a successful build: the work folder goes (arkeyan-work, or ssabuild-work left by a kit up to
+        // 0.7.2), its logs stay, the log before is kept.
         std::filesystem::create_directories(scratch / "game" / "ssabuild-work" / "obj");
         { std::ofstream(scratch / "game" / "ssabuild-work" / "obj" / "big.o") << "object"; }
-        std::filesystem::create_directories(scratch / "game" / "ssabuild-work" / "logs");
-        { std::ofstream(scratch / "game" / "ssabuild-work" / "logs" / "link.log") << "link ok"; }
+        std::filesystem::create_directories(scratch / "game" / "arkeyan-work" / "logs");
+        { std::ofstream(scratch / "game" / "arkeyan-work" / "logs" / "link.log") << "link ok"; }
         InstallProgress done = run(nullptr);
-        EXPECT(!std::filesystem::exists(scratch / "game" / "ssabuild-work") && std::filesystem::exists(scratch / "game" / "install.prev.log"));
+        EXPECT(!std::filesystem::exists(scratch / "game" / "ssabuild-work") && !std::filesystem::exists(scratch / "game" / "arkeyan-work"));
+        EXPECT(std::filesystem::exists(scratch / "game" / "install.prev.log"));
         EXPECT(std::filesystem::exists(scratch / "game" / "install-logs" / "link.log"));
         EXPECT(done.state == InstallProgress::State::Done && done.steps.size() == 10);
         EXPECT(std::filesystem::path(done.runtime).filename().string().starts_with("SSARecomp"));
@@ -327,7 +329,7 @@ namespace
             else TestUnsetEnv(name);
     }
 
-    // The collection: SSARecomp's library (src/shared/collection) and the launcher's model over it, in a scratch folder
+    // The collection: ArkeyanRuntime's library (src/shared/collection) and the launcher's model over it, in a scratch folder
     // (SKY_COLLECTION, SKY_SAVE_DIR, SKY_MIGRATE_FROM): never the player's own.
     void CollectionChecks(const std::filesystem::path& scratch)
     {

@@ -40,8 +40,8 @@ Skylauncher 0.4.x or 0.5.x asks for those names, so it finds no update: its play
 release notes say so).
 
 What the launcher keeps for installs and folders that already exist: a kit folder named `skylanders-kit*`, `ssa-kit*` or `kit`
-(a builder named `SkyBuild`, or `SSABuild` in an old kit; kits from 0.6.1 carry `SkyBuild` only), the builder's older files
-(`ssabuild-work/`, `ssabuild-ready.txt`), an install named `Skylauncher.exe`, `Skylauncher.app` or `Skylauncher-x86_64.AppImage`
+(a builder named `Arkeyan-Builder`, `SkyBuild` in a kit up to 0.7.2, or `SSABuild` in an old kit; kits from 0.7.3 carry `Arkeyan-Builder`
+and a `SkyBuild` copy for older launchers), the builder's older files (`ssabuild-work/`, `ssabuild-ready.txt`), a game log named `SSARecomp.log`, an install named `Skylauncher.exe`, `Skylauncher.app` or `Skylauncher-x86_64.AppImage`
 (replaced where it is, under its name), and `RefreshShortcuts`, which renames the shortcuts made by Skylauncher.
 
 ### Desktop shortcuts
@@ -51,7 +51,7 @@ its games that still name the old program (macOS `.app` script, Linux `.desktop`
 start this executable and carry the new name (`RefreshShortcuts`). A Windows `.lnk` points at the exe file, whose name an update
 keeps, so it needs nothing.
 
-HTTPS is `curl` (`curl.exe` ships with Windows 10 and 11, as SkyBuild already relies on it; macOS and most Linux have it):
+HTTPS is `curl` (`curl.exe` ships with Windows 10 and 11, as Arkeyan-Builder already relies on it; macOS and most Linux have it):
 `--proto =https --tlsv1.2`, a 15 s connect timeout, no redirect to plain http. No new library.
 
 ## The game kit
@@ -87,7 +87,7 @@ game update. Wherever the notes are shown (What's new) HTML comments are removed
   reads **UPDATE** and the sidebar says "Update available". Under the button one muted line says the version on offer, the
   download (the kit's size; none when the kit in use is already the right one) and the time ("0.8.2 · 41 MB · ~15 min"), then
   the link **Play without updating** (below). One click fetches the kit of the release
-  `kit` names if the kit in use is older, then rebuilds the game (SkyBuild is incremental); PLAY is back at the end.
+  `kit` names if the kit in use is older, then rebuilds the game (Arkeyan-Builder is incremental); PLAY is back at the end.
 - **Play without updating**, a small link under that line, under the UPDATE button, plays what is built (offline,
   in a hurry) and sets the offer aside until the launcher is closed.
 - **Update all** (Home): when **two or more** games have an update, a button at the right of the "Library" title updates them
@@ -105,8 +105,8 @@ game update. Wherever the notes are shown (What's new) HTML comments are removed
 
 ## The kit follows the launcher
 
-A launcher never builds with a kit older than its own release, and never starts SkyBuild on a disc its kit cannot build.
-(Without this a launcher that updated itself kept the kit next to it, and an old SkyBuild refused the Giants disc.)
+A launcher never builds with a kit older than its own release, and never starts Arkeyan-Builder on a disc its kit cannot build.
+(Without this a launcher that updated itself kept the kit next to it, and an old Arkeyan-Builder refused the Giants disc.)
 
 - **Before INSTALL or UPDATE** (never in the background), a missing kit, one from an older release than the launcher's (or than
   the one the games line names for the game), or one whose `games=` lacks the disc's game makes the checklist start with "Downloading
@@ -141,7 +141,7 @@ then tag the commit. Branch builds publish nothing.
 
 `ArkeyanLauncherTest` builds fake releases in a scratch folder (`latest.json`, assets, `SHA256SUMS`, served as `file://` through
 `SKY_LAUNCHER_UPDATE_URL`): version compare, the JSON, a good download, a damaged one, no `SHA256SUMS`, the swap and its
-rollback, zip path escapes, the kit install (`SkyBuild` or `SSABuild`), the kit download (a fake release with a kit zip: good, bad hash, missing line, fallback to the latest), the games line (read, skipped entries, absent, comments stripped) and the manager. "The kit follows the launcher" has its own checks (`ArkeyanLauncherTest`; `SKY_LAUNCHER_TEST_KIT_ONLY=1` runs only them; `SKY_LAUNCHER_TEST_LANGUAGE=fr` takes the screenshots in French, the text checks then fail):
+rollback, zip path escapes, the kit install (`Arkeyan-Builder` or `SSABuild`), the kit download (a fake release with a kit zip: good, bad hash, missing line, fallback to the latest), the games line (read, skipped entries, absent, comments stripped) and the manager. "The kit follows the launcher" has its own checks (`ArkeyanLauncherTest`; `SKY_LAUNCHER_TEST_KIT_ONLY=1` runs only them; `SKY_LAUNCHER_TEST_LANGUAGE=fr` takes the screenshots in French, the text checks then fail):
 `kit.txt` `games=`, the release a kit comes from, a kit next to the launcher against a downloaded one
 (`SKY_LAUNCHER_BASE_PATH` stands in for the folder the launcher is in), then the window against a fake release (a kit next to the
 launcher from an older release, replaced before INSTALL builds; a kit without `giants` and a Giants disc, the right kit first; at

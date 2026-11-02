@@ -6,7 +6,7 @@ runs on: **Export for macOS**, **Export for Windows** or **Export for Linux**.
 
 Code: `src/launcher/portable_export.{h,cpp}` (the export, no UI), `src/launcher/ui/game_settings_page.cpp`
 (`DrawPortableExport`: the section, the message, the folder dialog, the progress), the pack format
-`src/shared/collection/portable_pack.{h,cpp}` (shared with the game, which reads it; SSARecomp's
+`src/shared/collection/portable_pack.{h,cpp}` (shared with the game, which reads it; ArkeyanRuntime's
 `docs/getting-started/portable.md` describes the game's side). Test: `PortableChecks` in `ArkeyanLauncherTest --no-disc`.
 
 ## What the player sees

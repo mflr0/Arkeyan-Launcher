@@ -2,7 +2,7 @@
 
 // Running the game and what it leaves behind for support (docs/support.md): the launcher starts the runtime with its output
 // in skylauncher-game.log, watches it while the window stays open (GameSession: one game at a time), and reports an unexpected
-// exit. SSARecomp.log, written by the runtime itself, sits in the same folder. "Test the portal" runs the runtime's --portal-probe.
+// exit. Arkeyan.log, written by the runtime itself, sits in the same folder. "Test the portal" runs the runtime's --portal-probe.
 #include "launcher/launcher.h"
 #include <cstdint>
 #include <filesystem>
@@ -17,10 +17,10 @@ struct SDL_Process;
 
 // The launcher's logs folder: skylauncher-game.log, migration.log (<data root>/logs).
 std::filesystem::path GameLogFolder();
-// Where the runtime writes SSARecomp.log: the game's folder (<data root>/SSA).
+// Where the runtime writes Arkeyan.log: the game's folder (<data root>/SSA).
 std::filesystem::path RuntimeLogFolder();
-inline constexpr char RuntimeLogName[] = "SSARecomp.log";
-inline constexpr char RuntimePreviousLogName[] = "SSARecomp.prev.log";
+inline constexpr char RuntimeLogName[] = "Arkeyan.log";
+inline constexpr char RuntimePreviousLogName[] = "Arkeyan.prev.log";
 inline constexpr char CaptureLogName[] = "skylauncher-game.log";
 
 struct GameRunResult

@@ -1,5 +1,5 @@
-/* A stand-in for the player kit's SkyBuild (docs/install.md): prints its events with delays, so the launcher's install
- * screens can be tried without the real kit. Built as fake-kit/SkyBuild in the build folder (target FakeSkyBuild);
+/* A stand-in for the player kit's Arkeyan-Builder (docs/install.md): prints its events with delays, so the launcher's install
+ * screens can be tried without the real kit. Built as fake-kit/Arkeyan-Builder in the build folder (target FakeArkeyanBuilder);
  * point the launcher at that folder with SKY_LAUNCHER_KIT.
  * Same steps, titles and order as the real one: toolchain, disc, recompile, shaders, compile, link, movies, then the
  * second shaders/compile/link pass that follows the movie shaders.
@@ -108,11 +108,11 @@ int main(int argc, char** argv)
         g_delay = (int)(atof(getenv("FAKE_SSABUILD_DELAY")) * 1000);
     if (iso == NULL || out == NULL)
     {
-        printf("@error usage: SkyBuild --iso <iso> --out <game dir>\n");
+        printf("@error usage: Arkeyan-Builder --iso <iso> --out <game dir>\n");
         return 2;
     }
 
-    printf("@log fake SkyBuild, iso %s\n", iso);
+    printf("@log fake Arkeyan-Builder, iso %s\n", iso);
     const char* ending = getenv("FAKE_SSABUILD_ENDING");
     if (ending != NULL)
     {

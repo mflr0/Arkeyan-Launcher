@@ -1,3 +1,4 @@
+#include "shared/runtime_names.h"
 // Support in Settings: the game's logs (Copy game log, Open logs folder), "Report a problem" (one text file with the
 // logs and the player's versions, shown before anything is saved or copied; nothing is uploaded) and "Test the portal"
 // (docs/support.md).
@@ -197,7 +198,7 @@ namespace launcher_ui
     {
         const std::filesystem::path folder = GameLogFolder();
         std::error_code error;
-        const bool any = std::filesystem::exists(RuntimeLogFolder() / RuntimeLogName, error) || std::filesystem::exists(folder / CaptureLogName, error);
+        const bool any = std::filesystem::exists(runtime_names::ReadLog(RuntimeLogFolder()), error) || std::filesystem::exists(folder / CaptureLogName, error);
         if (!ui::BeginSettings("##support"))
             return;
         ui::SettingRow(Tr("Problem report"), Tr("Preview and send a report of the problem you encountered."));

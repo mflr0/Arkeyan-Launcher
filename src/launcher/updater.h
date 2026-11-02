@@ -93,7 +93,7 @@ bool ExtractZip(const std::filesystem::path& zip, const std::filesystem::path& f
 // (Linux, $APPIMAGE). Empty when none applies (a build run from a build folder): updates then open the release page.
 std::filesystem::path LauncherSelf();
 
-// Installs the kit zip over `kitFolder` (the folder holding SkyBuild or SSABuild; created when there is none): extracted next to it,
+// Installs the kit zip over `kitFolder` (the folder holding Arkeyan-Builder or SSABuild; created when there is none): extracted next to it,
 // then swapped in with ReplaceInPlace, so a failure leaves the old kit.
 bool InstallKitZip(const std::filesystem::path& zip, const std::filesystem::path& kitFolder, std::string& error);
 

@@ -404,7 +404,13 @@ namespace collection
 
     namespace
     {
-        enum class PictureKind { Portrait, Best, Half, JoinedHalf };
+        enum class PictureKind
+        {
+            Portrait,
+            Best,
+            Half,
+            JoinedHalf
+        };
 
         // Every UI uses this order: a variant's own art before plain art, newest cached game first.
         // Half images take precedence for swappers; whole-figure art is never used in a waist composite.
@@ -419,14 +425,15 @@ namespace collection
             bool half = toy.category == Category::SwapTop || toy.category == Category::SwapBottom;
             if (!half && (kind == PictureKind::Half || kind == PictureKind::JoinedHalf))
                 return {};
-            const Toy* whole = toy.category == Category::SwapBottom
-                ? Catalogue::Get().Find(MatchingHalf(toy.type)) : nullptr;
+            const Toy* whole =
+                toy.category == Category::SwapBottom ? Catalogue::Get().Find(MatchingHalf(toy.type)) : nullptr;
             for (int pass = 0; pass < (variant != 0 ? 2 : 1); ++pass)
             {
                 uint16_t version = pass == 0 ? variant : 0;
                 if (half)
                     for (auto game = games.rbegin(); game != games.rend(); ++game)
-                        if (std::string path = mapped(*game, game->halves, toy.type, version, "artworks/"); !path.empty())
+                        if (std::string path = mapped(*game, game->halves, toy.type, version, "artworks/");
+                            !path.empty())
                             return path;
                 if (kind == PictureKind::JoinedHalf)
                     continue;

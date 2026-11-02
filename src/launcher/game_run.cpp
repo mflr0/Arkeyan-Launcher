@@ -1,4 +1,5 @@
 #include "launcher/game_run.h"
+#include "shared/runtime_names.h"
 #include "launcher/env.h"
 #include "launcher/i18n.h"
 #include "launcher/game_install.h"
@@ -272,7 +273,7 @@ GameLaunch PrepareGameLaunch(const GameInfo& game, LauncherConfig& config, const
     {
         launch.variables.emplace_back("SKY_LAUNCHER_INI", configPath);
         launch.variables.emplace_back("SKY_SAVE_DIR", Utf8(gameFolder / "saves"));
-        launch.variables.emplace_back("SKY_LOG", Utf8(gameFolder / "SSARecomp.log"));
+        launch.variables.emplace_back("SKY_LOG", Utf8(gameFolder / RuntimeLogName));
         launch.variables.emplace_back("SKY_PORTRAITS", Utf8(gameFolder / "portraits"));
     }
     return launch;
@@ -476,9 +477,9 @@ std::string ReadLogTail(const std::filesystem::path& file, size_t maxBytes)
 std::string GameLogText(size_t maxBytesEach)
 {
     std::string text;
-    for (const auto& [folder, name] : { std::pair{ RuntimeLogFolder(), RuntimeLogName }, std::pair{ GameLogFolder(), CaptureLogName } })
-        if (std::string part = ReadLogTail(folder / name, maxBytesEach); !part.empty())
-            text += fmt::format("===== {} =====\n{}\n", name, part);
+    for (const auto& path : { runtime_names::ReadLog(RuntimeLogFolder()), GameLogFolder() / CaptureLogName })
+        if (std::string part = ReadLogTail(path, maxBytesEach); !part.empty())
+            text += fmt::format("===== {} =====\n{}\n", path.filename().string(), part);
     return text;
 }
 
