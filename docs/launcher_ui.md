@@ -986,7 +986,7 @@ what it removes and the safety rules are in `docs/install.md`, "Uninstall everyt
   each with its size, and the **Total**. "Your disc images are never touched." sits under the title.
 - **Also delete my saves and my figures** (a toggle, off by default) adds Saves and Figures to the list and to the Total; **Export first**
   beside it is the collection's export of every figure (a folder to choose). Under it: "Saves X, figures Y."
-- What the launcher already knows will stay is said under the Total ("SGRecomp.app is not in its folder: it stays.").
+- What the launcher already knows will stay is said under the Total ("Skylanders Giants.app is not in its folder: it stays.").
 - **Uninstall everything** is a hold button (a second; the existing pattern, `HoldConfirm`); **Cancel** goes back. Both are disabled while a game
   runs, installs or is being checked, and the reason is said in red above them.
 - After it ran, the tab shows the result: "Everything is removed", or "Removed, except" with one line for each thing that stayed
@@ -1151,7 +1151,7 @@ All sound tests use `SDL_AUDIO_DRIVER=dummy` and disposable HOME and data paths.
   game seen before is shown as it was left, instantly. Every slot's checks and installs are polled each frame (with that game's
   folders in place), so an install goes on while the other game is shown; closing the window asks first if any game is
   installing. The last game shown is written to `[launcher] game=` and opens at the next start. PLAY starts the shown game's
-  own build (SSARecomp, SGRecomp...) with its settings (`PrepareGameLaunch`) beside the window ("A game running"). The settings
+  own build (Skylanders Spyro's Adventure, Skylanders Giants...) with its settings (`PrepareGameLaunch`) beside the window ("A game running"). The settings
   pages (language, game data, reinstall) follow the shown game. Since 0.4 the game page arrives with its logo's fall and
   its own look ("Each game's look").
 - `SKY_LAUNCHER_TEST_SWITCH=1` (with `SKY_LAUNCHER_SHOTS`, a `[launcher] kit=` that is the fake kit, and both games' `iso=` in

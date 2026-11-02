@@ -206,36 +206,77 @@ std::optional<InstallKit> FindInstallKit(const LauncherConfig& config, std::stri
     return downloadedWins ? best : beside;
 }
 
+namespace
+{
+    std::filesystem::path BundleExecutable(const std::filesystem::path& path)
+    {
+        return path.extension() == ".app" ? path / "Contents" / "MacOS" / path.stem() : path;
+    }
+
+    // Keep a valid recorded or chosen path; if renamed, try only this same game's other identity beside it.
+    std::string ResolveRuntime(const std::filesystem::path& path)
+    {
+        std::error_code error;
+        auto executable = BundleExecutable(path);
+        if (std::filesystem::is_regular_file(executable, error))
+            return Utf8(executable);
+        auto file = path;
+        bool inBundle =
+            path.parent_path().filename() == "MacOS" && path.parent_path().parent_path().filename() == "Contents";
+        if (inBundle)
+            file = path.parent_path().parent_path().parent_path();
+        auto extension = file.extension();
+        if (extension != ".exe" && extension != ".app" && !extension.empty())
+            return {};
+        std::string stem = Utf8(file.stem());
+        for (const auto& game : g_games)
+        {
+            if (game.legacyRuntime == nullptr)
+                continue;
+            for (const char* name : { game.runtime, game.legacyRuntime })
+            {
+                if (stem != name)
+                    continue;
+                const char* other = stem == game.runtime ? game.legacyRuntime : game.runtime;
+                auto candidate = BundleExecutable(file.parent_path() / (std::string(other) + Utf8(extension)));
+                if (std::filesystem::is_regular_file(candidate, error))
+                    return Utf8(candidate);
+            }
+        }
+        return {};
+    }
+}
+
+std::string FindRuntimeInFolder(const GameInfo& game, const std::filesystem::path& directory)
+{
+    for (const char* name : { game.runtime, game.legacyRuntime })
+    {
+        if (name == nullptr)
+            continue;
+        // All layouts are checked so portable installs and bundle paths work on every host.
+        for (const std::string& suffix : { std::string(".exe"), std::string(), std::string(".app") })
+        {
+            auto executable = BundleExecutable(directory / (std::string(name) + suffix));
+            std::error_code error;
+            if (std::filesystem::is_regular_file(executable, error))
+                return Utf8(executable);
+        }
+    }
+    return {};
+}
+
 std::string FindRuntime(const GameInfo& game, const LauncherConfig& config, bool overrideOnly)
 {
-    std::vector<std::filesystem::path> candidates;
     if (const char* path = LauncherEnv("SKY_LAUNCHER_RUNTIME"))
-        candidates.push_back(Path(path));
+        if (auto found = ResolveRuntime(Path(path)); !found.empty())
+            return found;
     if (!overrideOnly)
     {
         if (std::string runtime = Setting(config, "launcher", "runtime"); !runtime.empty())
-            candidates.push_back(Path(runtime));
+            if (auto found = ResolveRuntime(Path(runtime)); !found.empty())
+                return found;
         if (const char* base = SDL_GetBasePath())
-        {
-            std::filesystem::path directory = Path(base);
-            std::string name = game.runtime;
-#if defined(_WIN32)
-            candidates.push_back(directory / (name + ".exe"));
-#else
-            candidates.push_back(directory / name);
-            candidates.push_back(directory / (name + ".app") / "Contents" / "MacOS" / name);
-#endif
-        }
-    }
-
-    for (std::filesystem::path path : candidates)
-    {
-        // An app bundle names its executable after itself.
-        if (path.extension() == ".app")
-            path = path / "Contents" / "MacOS" / path.stem();
-        std::error_code error;
-        if (std::filesystem::is_regular_file(path, error))
-            return Utf8(path);
+            return FindRuntimeInFolder(game, Path(base));
     }
     return {};
 }
@@ -260,12 +301,8 @@ InstalledGame FindInstalledGame(const LauncherConfig& config, const std::string&
         return {};
     InstalledGame game{ Setting(config, InstallSection(xexSha256), "runtime"), Setting(config, InstallSection(xexSha256), "kit"),
         Setting(config, InstallSection(xexSha256), "version") };
-    std::filesystem::path runtime = Path(game.runtime);
-    if (runtime.extension() == ".app") // a macOS app: its executable is named after it
-        game.runtime = Utf8(runtime / "Contents" / "MacOS" / runtime.stem());
-    std::error_code error;
-    if (!game.runtime.empty() && !std::filesystem::is_regular_file(Path(game.runtime), error))
-        game.runtime.clear();
+    if (!game.runtime.empty())
+        game.runtime = ResolveRuntime(Path(game.runtime));
     return game;
 }
 

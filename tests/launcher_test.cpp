@@ -7,6 +7,8 @@
 #include "launcher/game_install.h"
 #include "launcher/game_keys.h"
 #include "launcher/install_checklist.h"
+#include "launcher/game_run.h"
+#include "launcher/shortcut.h"
 #include "launcher/game_progress.h"
 #include "launcher/launcher.h"
 #include "shared/collection/datadir.h"
@@ -1545,6 +1547,8 @@ int main(int argc, char** argv)
         std::filesystem::create_directories(argv[2]);
         return ShellChecks(std::filesystem::absolute(argv[2])) == 0 ? 0 : 1;
     }
+    if (argc == 2 && std::string_view(argv[1]) == "--identity-runtime")
+        return 23; // synthetic executable, no game code
     // Isolated real-page check. Each invocation gets a fresh process and a fresh ImGui context.
     if (argc == 5 && std::string_view(argv[1]) == "--fps-fallback-page")
     {
@@ -1605,6 +1609,86 @@ int main(int argc, char** argv)
     std::filesystem::remove_all(scratch);
     std::filesystem::create_directories(scratch / "tmp");
     TestSetEnv("TMPDIR", std::filesystem::absolute(scratch / "tmp").string().c_str());
+    // Recorded 0.7.3/0.6.1/beta paths and renamed bundles, with a synthetic
+    // runtime.
+    for (const auto& identity : g_games)
+    {
+        for (const std::string suffix : { "", ".exe", ".app" })
+        {
+            auto folder = scratch / std::filesystem::path(u8"identité's folder") / identity.id /
+                          (suffix.empty() ? "unix" : suffix.substr(1));
+            auto current = folder / (std::string(identity.runtime) + suffix);
+            auto legacy = folder / (std::string(identity.legacyRuntime) + suffix);
+            auto executable = [&](const auto& file) {
+                return suffix == ".app" ? file / "Contents" / "MacOS" / file.stem() : file;
+            };
+#if defined(_WIN32)
+            const bool native = suffix == ".exe";
+#elif defined(__APPLE__)
+            const bool native = suffix == ".app";
+#else
+            const bool native = suffix.empty();
+#endif
+            auto make = [&](const auto& file) {
+                std::filesystem::create_directories(file.parent_path());
+                if (native)
+                    std::filesystem::create_hard_link(std::filesystem::absolute(argv[0]), file);
+                else
+                    std::ofstream(file).put('x');
+            };
+            auto text = [](const auto& file) {
+                auto utf8 = file.u8string();
+                return std::string(utf8.begin(), utf8.end());
+            };
+            make(executable(legacy));
+            EXPECT(FindRuntimeInFolder(identity, folder) == text(executable(legacy)));
+            LauncherConfig installed;
+            RecordInstalledGame(installed, "identity", text(legacy), "0.7.3");
+            if (native)
+            {
+                TestSetEnv("SKY_LAUNCHER_LOG_DIR", text(folder / "logs").c_str());
+                const auto run = RunGame(FindInstalledGame(installed, "identity").runtime, "--identity-runtime");
+                EXPECT(run.started && run.exitCode == 23);
+            }
+            ShortcutSpec shortcut;
+            shortcut.gameId = identity.id;
+            shortcut.gameName = identity.name;
+            shortcut.launcher = std::filesystem::absolute(argv[0]);
+            shortcut.folder = folder / "desktop";
+            const auto link = WriteMacApp(shortcut);
+            EXPECT(link.ok);
+            EXPECT(FindInstalledGame(installed, "identity").runtime == text(executable(legacy)));
+            make(executable(current));
+            EXPECT(FindRuntimeInFolder(identity, folder) == text(executable(current)));
+            // An existing recorded path still wins even if the new executable is
+            // present.
+            EXPECT(FindInstalledGame(installed, "identity").runtime == text(executable(legacy)));
+            std::filesystem::remove_all(legacy);
+            if (native)
+            {
+                const auto run = RunGame(FindInstalledGame(installed, "identity").runtime, "--identity-runtime");
+                EXPECT(run.started && run.exitCode == 23);
+                TestUnsetEnv("SKY_LAUNCHER_LOG_DIR");
+            }
+            EXPECT(std::filesystem::exists(link.file / "Contents" / "MacOS" / "launch"));
+            std::ifstream shortcutFile(link.file / "Contents" / "MacOS" / "launch");
+            const std::string shortcutScript{ std::istreambuf_iterator<char>(shortcutFile),
+                std::istreambuf_iterator<char>() };
+            EXPECT(shortcutScript == MacLaunchScript(shortcut.launcher, identity.id));
+            EXPECT(FindInstalledGame(installed, "identity").runtime == text(executable(current)));
+            RecordInstalledGame(installed, "identity", text(executable(legacy)), "beta");
+            EXPECT(FindInstalledGame(installed, "identity").runtime == text(executable(current)));
+            TestSetEnv("SKY_LAUNCHER_RUNTIME", text(current).c_str());
+            EXPECT(FindRuntime(identity, {}, true) == text(executable(current)));
+            TestUnsetEnv("SKY_LAUNCHER_RUNTIME");
+            RecordInstalledGame(installed, "identity", text(current), "beta");
+            std::filesystem::remove_all(current);
+            make(executable(legacy));
+            EXPECT(FindInstalledGame(installed, "identity").runtime == text(executable(legacy)));
+            std::filesystem::remove_all(folder);
+            EXPECT(FindRuntimeInFolder(identity, folder).empty());
+        }
+    }
     const GameInfo& game = *FindGame("ssa");
     using Clock = std::chrono::steady_clock;
     auto milliseconds = [](Clock::time_point start)
@@ -1696,16 +1780,19 @@ int main(int argc, char** argv)
     printf("Game table: %zu game(s); \"ssa\" = %s, %zu release(s)\n", g_games.size(), game.name, game.releases.size());
     EXPECT(FindGame("unknown") == nullptr);
     const GameInfo* giants = FindGame("giants");
-    EXPECT(g_games.size() == 4 && giants != nullptr && std::string(giants->runtime) == "SGRecomp" && giants->releases.size() == 1);
+    EXPECT(g_games.size() == 4 && giants != nullptr && std::string(giants->runtime) == "Skylanders Giants" &&
+           giants->releases.size() == 1);
     const GameInfo* swapForce = FindGame("swapforce");
-    EXPECT(swapForce != nullptr && std::string(swapForce->runtime) == "SSFRecomp" && swapForce->releases.size() == 2 &&
-        swapForce->releases[0].titleId == 0x415608E9 && std::string(swapForce->releases[0].defaultXexSha256).size() == 64);
+    EXPECT(swapForce != nullptr && std::string(swapForce->runtime) == "Skylanders Swap Force" &&
+           swapForce->releases.size() == 2 && swapForce->releases[0].titleId == 0x415608E9 &&
+           std::string(swapForce->releases[0].defaultXexSha256).size() == 64);
     EXPECT(std::string(LauncherTheme::StyleOf("swapforce").top == LauncherTheme::SwapForceStyle.top ? "own" : "launcher") == "own" &&
         LauncherTheme::StyleOf("swapforce").top != LauncherTheme::StyleOf("giants").top);
     EXPECT(giants != nullptr && giants->releases[0].titleId == 0x415608DA && std::string(giants->releases[0].defaultXexSha256).size() == 64);
 
     const GameInfo* trapTeam = FindGame("trapteam");
-    EXPECT(trapTeam != nullptr && std::string(trapTeam->runtime) == "TTRecomp" && trapTeam->releases.size() == 2);
+    EXPECT(trapTeam != nullptr && std::string(trapTeam->runtime) == "Skylanders Trap Team" &&
+           trapTeam->releases.size() == 2);
     EXPECT(std::string(trapTeam->name) == "Skylanders: Trap Team" &&
         std::string(trapTeam->releases[0].defaultXexSha256) == "f1d2373e4507e21cc371e6f22d02e909602a1b5bc4704896c3c099cc64002a35" &&
         trapTeam->releases[1].mediaId == 0x3AF0B6AF);

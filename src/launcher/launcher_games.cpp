@@ -35,12 +35,11 @@ namespace
     };
 
     // `runtime` is the executable the player kit builds for the game (its config/<id>/game.txt).
-    const GameInfo Games[] =
-    {
-        { "ssa", GameName("ssa"), SpyrosAdventureReleases, "SSARecomp" },
-        { "giants", GameName("giants"), GiantsReleases, "SGRecomp" },
-        { "swapforce", GameName("swapforce"), SwapForceReleases, "SSFRecomp" },
-        { "trapteam", GameName("trapteam"), TrapTeamReleases, "TTRecomp" },
+    const GameInfo Games[] = {
+        { "ssa", GameName("ssa"), SpyrosAdventureReleases, "Skylanders Spyro's Adventure", "SSARecomp" },
+        { "giants", GameName("giants"), GiantsReleases, "Skylanders Giants", "SGRecomp" },
+        { "swapforce", GameName("swapforce"), SwapForceReleases, "Skylanders Swap Force", "SSFRecomp" },
+        { "trapteam", GameName("trapteam"), TrapTeamReleases, "Skylanders Trap Team", "TTRecomp" },
     };
 }
 

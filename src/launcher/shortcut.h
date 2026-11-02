@@ -1,6 +1,7 @@
 #pragma once
 
 // The desktop shortcut of a game (Game settings > Create a desktop shortcut): a launcher for Arkeyan Launcher itself, started
+// Installed ICO/ICNS families are reused byte for byte; PNG-only installs retain their fallback.
 // as "Arkeyan Launcher --game <id> --play" with the game's icon (the built game's game_icon.png, else the title icon decoded from the player's disc).
 //   macOS    a small "<Game>.app" on the Desktop: a shell script that starts Arkeyan Launcher, and the icon as .icns
 //   Windows  a "<Game>.lnk" with the icon as a .ico kept in the game's folder
@@ -64,6 +65,8 @@ std::string LinuxDesktopEntry(std::string_view gameName, const std::filesystem::
     const std::filesystem::path& icon);
 // A .ico holding the PNG as it is (Vista and later); empty when the bytes are not a PNG.
 std::vector<uint8_t> WindowsIco(const std::vector<uint8_t>& png);
+// Prefer the installed complete ICO family; old installs fall back to their PNG.
+std::vector<uint8_t> ShortcutIco(const ShortcutSpec& spec);
 
 // The two writers that need nothing but files, so they run (and are tested) on every system.
 ShortcutResult WriteMacApp(const ShortcutSpec& spec);

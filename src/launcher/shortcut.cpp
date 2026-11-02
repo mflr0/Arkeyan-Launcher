@@ -74,6 +74,12 @@ namespace
         out.push_back(uint8_t(value >> 8));
     }
 
+    std::vector<uint8_t> FamilyIcon(const fs::path& folder, const char* name)
+    {
+        std::ifstream file(folder / name, std::ios::binary);
+        return { std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>() };
+    }
+
     ShortcutResult Fail(std::string error)
     {
         ShortcutResult result;
@@ -144,7 +150,7 @@ std::string MacLaunchScript(const fs::path& launcher, std::string_view gameId)
 
 std::string MacInfoPlist(std::string_view gameName, std::string_view gameId, bool icon)
 {
-    std::string name = XmlEscape(gameName);
+    std::string name = XmlEscape(ShortcutFileName(gameName));
     return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
            "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n"
            "<plist version=\"1.0\">\n<dict>\n"
@@ -178,8 +184,9 @@ std::vector<uint8_t> MacIcns(const std::vector<uint8_t>& png)
 
 std::string LinuxDesktopEntry(std::string_view gameName, const fs::path& launcher, std::string_view gameId, const fs::path& icon)
 {
-    std::string text = "[Desktop Entry]\nType=Application\nVersion=1.0\nName=" + std::string(gameName) + "\nComment=" +
-        Tf("Play {} with Arkeyan Launcher", gameName) + "\nExec=" + DesktopExecQuote(datadir::Text(launcher)) + " " + ShortcutArguments(gameId) + "\n";
+    std::string text = "[Desktop Entry]\nType=Application\nVersion=1.0\nName=" + ShortcutFileName(gameName) +
+                       "\nComment=" + Tf("Play {} with Arkeyan Launcher", gameName) +
+                       "\nExec=" + DesktopExecQuote(datadir::Text(launcher)) + " " + ShortcutArguments(gameId) + "\n";
     if (!icon.empty())
         text += "Icon=" + datadir::Text(icon) + "\n";
     return text + "Terminal=false\nCategories=Game;\n";
@@ -248,6 +255,12 @@ std::vector<uint8_t> WindowsIco(const std::vector<uint8_t>& smallOrBigPng)
     return out;
 }
 
+std::vector<uint8_t> ShortcutIco(const ShortcutSpec& spec)
+{
+    auto family = FamilyIcon(spec.iconFolder, "game_icon.ico");
+    return family.empty() ? WindowsIco(spec.iconPng) : family;
+}
+
 fs::path DesktopFolder()
 {
     if (const char* folder = LauncherEnv("SKY_LAUNCHER_DESKTOP"); folder != nullptr && *folder != 0)
@@ -299,7 +312,9 @@ ShortcutResult WriteMacApp(const ShortcutSpec& spec)
     fs::create_directories(app / "Contents" / "Resources", error);
     if (error)
         return Fail(Tf("Couldn't create the shortcut: {}", error.message()));
-    std::vector<uint8_t> icns = MacIcns(spec.iconPng);
+    std::vector<uint8_t> icns = FamilyIcon(spec.iconFolder, "game_icon.icns");
+    if (icns.empty())
+        icns = MacIcns(spec.iconPng);
     bool ok = WriteText(app / "Contents" / "Info.plist", MacInfoPlist(spec.gameName, spec.gameId, !icns.empty())) &&
         WriteText(app / "Contents" / "MacOS" / "launch", MacLaunchScript(spec.launcher, spec.gameId)) &&
         (icns.empty() || WriteBytes(app / "Contents" / "Resources" / "icon.icns", icns.data(), icns.size()));
@@ -341,7 +356,7 @@ namespace
     ShortcutResult WriteWindowsLnk(const ShortcutSpec& spec)
     {
         fs::path icon = spec.iconFolder / "shortcut.ico";
-        if (!WriteIcon(icon, WindowsIco(spec.iconPng)))
+        if (!WriteIcon(icon, ShortcutIco(spec)))
             icon.clear();
         std::error_code error;
         fs::create_directories(spec.folder, error);

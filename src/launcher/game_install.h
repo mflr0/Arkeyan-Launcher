@@ -54,6 +54,8 @@ std::optional<InstallKit> FindInstallKit(const LauncherConfig& config, std::stri
 // A runtime the player set up themselves: SKY_LAUNCHER_RUNTIME, else "[launcher] runtime=" in the settings file, else
 // the game's runtime executable next to the launcher (or inside its macOS app bundle). Empty when none exists.
 // `overrideOnly` keeps only SKY_LAUNCHER_RUNTIME, which wins over an installed game.
+// Searches current and legacy filenames, including executable and bundle layouts.
+std::string FindRuntimeInFolder(const GameInfo& game, const std::filesystem::path& directory);
 std::string FindRuntime(const GameInfo& game, const LauncherConfig& config, bool overrideOnly = false);
 
 // The game the launcher is showing ("ssa", "giants", "swapforce": GameInfo::id). Set by main() before a game's window opens; the

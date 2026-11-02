@@ -581,14 +581,19 @@ namespace
         SETTINGS_EXPECT(script.starts_with("#!/bin/sh\n") &&
             script.find("exec '/Applications/Skylauncher.app/Contents/MacOS/Skylauncher' --game giants --play\n") != std::string::npos);
         std::string plist = MacInfoPlist("Skylanders: Giants & co", "giants", true);
-        SETTINGS_EXPECT(plist.find("<string>Skylanders: Giants &amp; co</string>") != std::string::npos &&
-            plist.find("<key>CFBundleIconFile</key>") != std::string::npos && plist.find("<string>launch</string>") != std::string::npos);
+        SETTINGS_EXPECT(plist.find("<string>Skylanders Giants &amp; co</string>") != std::string::npos &&
+                        plist.find("<key>CFBundleIconFile</key>") != std::string::npos &&
+                        plist.find("<string>launch</string>") != std::string::npos);
         SETTINGS_EXPECT(MacInfoPlist("X", "ssa", false).find("CFBundleIconFile") == std::string::npos);
-        std::string entry = LinuxDesktopEntry("Skylanders: Giants", "/home/p/Skylauncher.AppImage", "giants", "/home/p/.local/share/Skylanders/Giants/shortcut-icon.png");
-        SETTINGS_EXPECT(entry.starts_with("[Desktop Entry]\nType=Application\n") && entry.find("\nName=Skylanders: Giants\n") != std::string::npos &&
-            entry.find("\nExec=\"/home/p/Skylauncher.AppImage\" --game giants --play\n") != std::string::npos &&
-            entry.find("\nIcon=/home/p/.local/share/Skylanders/Giants/shortcut-icon.png\n") != std::string::npos &&
-            entry.find("\nTerminal=false\n") != std::string::npos && entry.find("Categories=Game;") != std::string::npos);
+        std::string entry = LinuxDesktopEntry("Skylanders: Giants", "/games/Skylauncher.AppImage", "giants",
+            "/games/.local/share/Skylanders/Giants/shortcut-icon.png");
+        SETTINGS_EXPECT(
+            entry.starts_with("[Desktop Entry]\nType=Application\n") &&
+            entry.find("\nName=Skylanders Giants\n") != std::string::npos &&
+            entry.find("\nExec=\"/games/Skylauncher.AppImage\" --game giants --play\n") != std::string::npos &&
+            entry.find("\nIcon=/games/.local/share/Skylanders/Giants/shortcut-icon.png\n") != std::string::npos &&
+            entry.find("\nTerminal=false\n") != std::string::npos &&
+            entry.find("Categories=Game;") != std::string::npos);
         SETTINGS_EXPECT(LinuxDesktopEntry("X", "/x", "ssa", {}).find("Icon=") == std::string::npos);
 
         // The files on disk: a Desktop of the test's own, replaced when made again, the script really starting the launcher.
@@ -601,7 +606,7 @@ namespace
         ShortcutSpec spec;
         spec.gameId = "giants";
         spec.gameName = "Skylanders: Giants";
-        spec.launcher = scratch / "fake launcher" / "Skylauncher"; // a folder name with a space
+        spec.launcher = scratch / fs::path(u8"été's launcher") / "Skylauncher"; // accents, an apostrophe and a space
         spec.iconPng = png;
         spec.folder = scratch / "desktop";
         spec.iconFolder = scratch / "gamefolder";
@@ -618,12 +623,33 @@ namespace
         SETTINGS_EXPECT(Read(app.file / "Contents" / "Info.plist") == MacInfoPlist("Skylanders: Giants", "giants", true));
         SETTINGS_EXPECT(Read(app.file / "Contents" / "MacOS" / "launch") == MacLaunchScript(spec.launcher, "giants"));
         SETTINGS_EXPECT(Read(app.file / "Contents" / "Resources" / "icon.icns") == std::string(icns.begin(), icns.end()));
+        // Installed families take precedence over the fallback PNG, byte for byte.
+        const auto installedIco = WindowsIco(PngOf(256));
+        fs::create_directories(spec.iconFolder);
+        Write(spec.iconFolder / "game_icon.icns", std::string(big.begin(), big.end()));
+        Write(spec.iconFolder / "game_icon.ico", std::string(installedIco.begin(), installedIco.end()));
+        SETTINGS_EXPECT(ShortcutIco(spec) == installedIco);
+        app = WriteMacApp(spec);
+        SETTINGS_EXPECT(
+            app.ok && Read(app.file / "Contents" / "Resources" / "icon.icns") == std::string(big.begin(), big.end()));
+        fs::remove(spec.iconFolder / "game_icon.icns");
+        fs::remove(spec.iconFolder / "game_icon.ico");
+        SETTINGS_EXPECT(ShortcutIco(spec) == WindowsIco(spec.iconPng));
+
 #ifndef _WIN32
         auto perms = fs::status(app.file / "Contents" / "MacOS" / "launch").permissions();
         SETTINGS_EXPECT((perms & fs::perms::owner_exec) != fs::perms::none);
         std::string command = "'" + (app.file / "Contents" / "MacOS" / "launch").string() + "'";
         SETTINGS_EXPECT(std::system(command.c_str()) == 0);
         SETTINGS_EXPECT(Read(scratch / "args.txt") == "--game giants --play\n"); // the shortcut started the launcher with its options
+        ShortcutSpec spyro = spec;
+        spyro.gameId = "ssa";
+        spyro.gameName = "Skylanders Spyro's Adventure";
+        auto spyroApp = WriteMacApp(spyro);
+        SETTINGS_EXPECT(spyroApp.ok);
+        command = ShellQuote((spyroApp.file / "Contents" / "MacOS" / "launch").string());
+        SETTINGS_EXPECT(std::system(command.c_str()) == 0);
+        SETTINGS_EXPECT(Read(scratch / "args.txt") == "--game ssa --play\n");
 #endif
         Write(app.file / "stale", "from an older shortcut");
         SETTINGS_EXPECT(WriteMacApp(spec).ok && !fs::exists(app.file / "stale")); // made again: replaced, not merged
@@ -654,8 +680,10 @@ namespace
             const std::string oldScript = "#!/bin/sh\n# Opens Skylauncher on this game and starts it. Made by Skylauncher (Game settings).\nexec '" + oldExec + "' --game giants --play\n";
             Write(desktop / "Skylanders Giants.app" / "Contents" / "MacOS" / "launch", oldScript);
             Write(desktop / "Skylanders Giants.app" / "Contents" / "Resources" / "icon.icns", "icon");
-            const std::string oldEntry = "[Desktop Entry]\nType=Application\nVersion=1.0\nName=Skylanders: Spyro's Adventure\nComment=Play Skylanders: Spyro's Adventure with Skylauncher\n"
-                                         "Exec=\"/home/p/Skylauncher-x86_64.AppImage\" --game ssa --play\nIcon=/home/p/shortcut-icon.png\nTerminal=false\nCategories=Game;\n";
+            const std::string oldEntry = "[Desktop Entry]\nType=Application\nVersion=1.0\nName=Skylanders: Spyro's "
+                                         "Adventure\nComment=Play Skylanders: Spyro's Adventure with Skylauncher\n"
+                                         "Exec=\"/games/Skylauncher-x86_64.AppImage\" --game ssa "
+                                         "--play\nIcon=/games/shortcut-icon.png\nTerminal=false\nCategories=Game;\n";
             Write(desktop / "skylanders-spyro's-adventure.desktop", oldEntry);
             // Not ours (no --game), already current, and another game's name: untouched.
             Write(desktop / "skylanders-swap-force.desktop", "[Desktop Entry]\nName=Skylanders: Swap Force\nComment=with Skylauncher\nExec=/bin/true\n");
@@ -667,7 +695,9 @@ namespace
             SETTINGS_EXPECT(Read(desktop / "Skylanders Giants.app" / "Contents" / "MacOS" / "launch").find("Skylauncher") == std::string::npos);
             SETTINGS_EXPECT(Read(desktop / "Skylanders Giants.app" / "Contents" / "Resources" / "icon.icns") == "icon");
             const std::string rewritten = Read(desktop / "skylanders-spyro's-adventure.desktop");
-            SETTINGS_EXPECT(rewritten == LinuxDesktopEntry("Skylanders: Spyro's Adventure", newer, "ssa", "/home/p/shortcut-icon.png") && rewritten.find("Skylauncher") == std::string::npos);
+            SETTINGS_EXPECT(rewritten == LinuxDesktopEntry("Skylanders: Spyro's Adventure", newer, "ssa",
+                                             "/games/shortcut-icon.png") &&
+                            rewritten.find("Skylauncher") == std::string::npos);
             SETTINGS_EXPECT(Read(desktop / "skylanders-swap-force.desktop").find("Exec=/bin/true") != std::string::npos);
             SETTINGS_EXPECT(RefreshShortcuts(desktop, games, newer) == 0); // once is enough
             SETTINGS_EXPECT(RefreshShortcuts(desktop / "nowhere", games, newer) == 0 && RefreshShortcuts(desktop, games, {}) == 0);

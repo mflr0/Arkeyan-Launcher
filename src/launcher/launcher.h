@@ -25,7 +25,8 @@ struct GameInfo
     const char* id;             // settings file section
     const char* name;           // display name
     std::span<const GameRelease> releases;
-    const char* runtime;        // executable that runs this game
+    const char* runtime;        // current executable filename
+    const char* legacyRuntime = nullptr; // accepted for existing installs
 };
 
 // Runtime registry (launcher_games.cpp), including games behind an experimental setting.
