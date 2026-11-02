@@ -49,10 +49,10 @@ namespace
         SHELL_EXPECT(empty.rows.front().title == "Preparing the compiler" && empty.rows.back().id == "finish");
         SHELL_EXPECT(empty.action == "Starting the installer");
 
-        // Each game's own shares: most of Trap Team is its disc, a sliver of Giants.
+        // Each game's own shares: the compiler (skipped, so done) and the disc are most of Trap Team, a sliver of Giants (9 of 108).
         InstallProgress read = Feed({ { "@step disc Reading the disc", 1000 }, { "@step recompile Translating the game code", 61000 } });
         SHELL_EXPECT(MakeInstallChecklist(read, 62000, "trapteam").overall > 0.4f);
-        SHELL_EXPECT(MakeInstallChecklist(read, 62000, "giants").overall < 0.05f);
+        SHELL_EXPECT(MakeInstallChecklist(read, 62000, "giants").overall < 0.1f);
 
         // Two steps done, the third running at a quarter: ticks with times, a spinner, a bar, a time left.
         InstallProgress progress = Feed({ { "@step toolchain Preparing the compiler", 1000 }, { "@log downloading llvm-mingw", 1500 },
