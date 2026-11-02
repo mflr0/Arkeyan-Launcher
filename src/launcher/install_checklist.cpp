@@ -13,24 +13,25 @@ namespace
     {
         const char* id;
         const char* title;
-        float weight;
+        float weight[5]; // Spyro's Adventure, Giants, Swap Force, Trap Team (measured shares of an install), other
     };
     constexpr KnownStep KnownSteps[] = {
-        { "kit", N_("Downloading the game tools"), 6 }, // only when the launcher fetched the kit itself
-        { "toolchain", N_("Preparing the compiler"), 8 },
-        { "disc", N_("Reading the disc"), 2 },
-        { "recompile", N_("Translating the game code"), 6 },
-        { "shaders", N_("Translating the shaders"), 14 },
-        { "compile", N_("Compiling the game"), 42 },
-        { "link", N_("Linking the game"), 4 },
-        { "movies", N_("Adding the movie shaders"), 12 },
-        { "finish", N_("Finishing"), 12 },
+        { "kit", N_("Downloading the game tools"), { 6, 6, 6, 6, 6 } }, // only when the launcher fetched the kit itself
+        { "toolchain", N_("Preparing the compiler"), { 8, 8, 8, 8, 8 } },
+        { "disc", N_("Reading the disc"), { 1, 1, 1, 52, 2 } },
+        { "recompile", N_("Translating the game code"), { 4, 1, 3, 1, 6 } },
+        { "shaders", N_("Translating the shaders"), { 25, 62, 10, 12, 14 } },
+        { "compile", N_("Compiling the game"), { 68, 24, 62, 28, 42 } },
+        { "link", N_("Linking the game"), { 1, 1, 1, 1, 4 } },
+        { "movies", N_("Adding the movie shaders"), { 1, 5, 23, 5, 12 } },
+        { "finish", N_("Finishing"), { 1, 6, 1, 1, 12 } },
     };
     constexpr float UnknownWeight = 4;
 }
 
-InstallChecklist MakeInstallChecklist(const InstallProgress& progress, uint64_t now)
+InstallChecklist MakeInstallChecklist(const InstallProgress& progress, uint64_t now, std::string_view game)
 {
+    const size_t column = game == "ssa" ? 0 : game == "giants" ? 1 : game == "swapforce" ? 2 : game == "trapteam" ? 3 : 4;
     InstallChecklist list;
     std::vector<float> weights;
     bool downloadedKit = std::any_of(progress.steps.begin(), progress.steps.end(), [](const InstallProgress::Step& step) { return step.id == "kit"; });
@@ -39,7 +40,7 @@ InstallChecklist MakeInstallChecklist(const InstallProgress& progress, uint64_t 
         if (!downloadedKit && std::string_view(step.id) == "kit")
             continue;
         list.rows.push_back({ step.id, Tr(step.title) });
-        weights.push_back(step.weight);
+        weights.push_back(step.weight[column]);
     }
     auto rowOf = [&](const std::string& id) -> int {
         for (size_t i = 0; i < list.rows.size(); i++)

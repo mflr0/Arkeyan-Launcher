@@ -411,7 +411,7 @@ namespace launcher_ui
     {
         InstallProgress progress = InstallSnapshot(m_s->installLog ? 600 : 0);
         uint64_t now = SDL_GetTicks();
-        InstallChecklist list = MakeInstallChecklist(progress, now);
+        InstallChecklist list = MakeInstallChecklist(progress, now, m_s->game.id);
         using State = InstallProgress::State;
         bool running = progress.state == State::Running;
         bool failed = progress.state == State::Failed;

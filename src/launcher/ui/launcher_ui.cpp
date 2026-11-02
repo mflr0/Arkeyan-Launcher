@@ -1224,7 +1224,7 @@ namespace launcher_ui
         if (slot->installer.Running() || slot->kitDownload.Running())
         {
             InstallProgress snapshot = InstallSnapshot(*slot);
-            InstallChecklist list = MakeInstallChecklist(snapshot, SDL_GetTicks());
+            InstallChecklist list = MakeInstallChecklist(snapshot, SDL_GetTicks(), slot->game.id);
             bool kit = slot->kitDownload.Running();
             bool finishing = list.current >= 0 && list.rows[size_t(list.current)].id == "finish";
             S state = kit ? S::DownloadingTools : finishing ? S::Finishing : built ? S::Updating : S::Installing;
@@ -1752,7 +1752,7 @@ namespace launcher_ui
             if (stopping) status = Tr("Stopping...");
             if (installing)
             {
-                const InstallChecklist list = MakeInstallChecklist(m_testHero ? m_testHeroProgress : InstallSnapshot(), SDL_GetTicks());
+                const InstallChecklist list = MakeInstallChecklist(m_testHero ? m_testHeroProgress : InstallSnapshot(), SDL_GetTicks(), m_s->game.id);
                 const std::string eta = InstallTimeLeft(list.etaMs);
                 if (!eta.empty()) status = Tf("Installing · {}", eta);
             }

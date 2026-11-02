@@ -5,6 +5,7 @@
 #include "launcher/game_install.h"
 #include <cstdint>
 #include <string>
+#include <string_view>
 #include <vector>
 
 struct InstallChecklist
@@ -31,7 +32,7 @@ struct InstallChecklist
 // The known steps, in SSABuild's order (tools/ssabuild/main.cpp in SSARecomp): "toolchain", "disc", "recompile",
 // "shaders", "compile", "link", "movies", then "finish", which collects the second shaders/compile/link pass that
 // follows the movie shaders. Other step ids get a row of their own before "finish".
-InstallChecklist MakeInstallChecklist(const InstallProgress& progress, uint64_t now);
+InstallChecklist MakeInstallChecklist(const InstallProgress& progress, uint64_t now, std::string_view game = {});
 
 // What went wrong, for the player, in one sentence ("The compiler couldn't be downloaded..."); SSABuild's own message
 // is shown under it.

@@ -252,7 +252,7 @@ namespace launcher_ui
     void App::DrawHeroInstall(ImVec2 at, float width)
     {
         const InstallProgress progress = m_testHero ? m_testHeroProgress : InstallSnapshot();
-        const InstallChecklist list = MakeInstallChecklist(progress, SDL_GetTicks());
+        const InstallChecklist list = MakeInstallChecklist(progress, SDL_GetTicks(), m_s->game.id);
         const std::string action = list.current >= 0 ? list.rows[size_t(list.current)].title : Tr("Installing");
         const std::string percent = ui::FormatPercent(list.overall);
         const float percentW = ui::TextSize(ui::TextStyle::Title, percent.c_str()).x;
