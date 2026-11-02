@@ -140,8 +140,15 @@ PortableResult ExportPortable(const PortableSpec& spec, const std::atomic<bool>*
     if (bundle.empty())
         return fail(Tr("the installed game is missing: install it again"));
 #endif
+    // Never into the installed game's folder: the copy, named like the game, would replace the game it is made from.
+    const fs::path installed = bundle.empty() ? spec.runtime.parent_path() : bundle.parent_path();
+    {
+        const fs::path relative = fs::weakly_canonical(spec.folder, error).lexically_relative(fs::weakly_canonical(installed, error));
+        if (error || (!relative.empty() && *relative.begin() != ".."))
+            return fail(Tr("choose a folder outside the installed game"));
+    }
     const std::vector<fs::path> figures = CollectionFiles(spec.collection);
-    const fs::path icon = (bundle.empty() ? spec.runtime.parent_path() : bundle.parent_path()) / "game_icon.png";
+    const fs::path icon = installed / "game_icon.png";
     const fs::path notices = spec.runtime.parent_path() / "THIRD_PARTY_NOTICES.md"; // the .app holds its own
 
     // The room first: nothing is written when it is short.
@@ -251,8 +258,28 @@ PortableResult ExportPortable(const PortableSpec& spec, const std::atomic<bool>*
         return fail(Tr("couldn't sign the app (codesign)"));
     }
 #endif
-    fs::remove_all(target, error);
-    fs::rename(made, target, error);
+    // The old copy goes aside first and comes back if the new one can't take its place (a scanner holding the new file).
+    const fs::path previous = work / "previous";
+    const bool replacing = fs::exists(fs::symlink_status(target, error));
+    error.clear();
+    if (replacing)
+        fs::rename(target, previous, error);
+    for (int attempt = 0; !error && attempt < 5; ++attempt)
+    {
+        fs::rename(made, target, error);
+        if (!error)
+            break;
+        if (attempt < 4)
+        {
+            error.clear();
+            SDL_Delay(200);
+        }
+    }
+    if (error && replacing)
+    {
+        std::error_code ignored;
+        fs::rename(previous, target, ignored);
+    }
     cleanup();
     if (error)
         return fail(Tf("couldn't put the copy in place: {}", error.message()));

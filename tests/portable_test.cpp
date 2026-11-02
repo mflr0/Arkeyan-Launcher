@@ -116,6 +116,12 @@ int PortableChecks(const fs::path& scratch)
     const uint64_t firstSize = result.bytes;
     EXPECT(firstSize > (5u << 20));
 
+    // Into the installed game's own folder: refused, the game is untouched.
+    PortableSpec inside = spec;
+    inside.folder = root / "game";
+    result = ExportPortable(inside);
+    EXPECT(result.outcome == PortableResult::Outcome::Failed && Read(runtime) == program);
+
     // No room: nothing is written.
     PortableSpec small = spec;
     small.freeBytes = 1000;

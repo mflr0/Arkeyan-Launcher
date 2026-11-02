@@ -299,6 +299,13 @@ DataResult UninstallGame(const GameFolders& folders, LauncherConfig& config)
     DataResult result = Refused(folders);
     if (!result.ok)
         return result;
+    // Saves overridden to the game folder (or a parent): its entries are the saves, none of them is the game's to remove.
+    if (!folders.saves.empty() && Holds(folders.saves, folders.game))
+    {
+        result.ok = false;
+        result.error = Tr("The data folder isn't safe to remove.");
+        return result;
+    }
     std::error_code error;
     if (fs::is_directory(folders.game, error))
         for (const fs::directory_entry& entry : ListDirectory(folders.game, error))

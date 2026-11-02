@@ -390,6 +390,15 @@ namespace
             UN_EXPECT(Has(game.saves / "slot.sav"));
             UN_EXPECT(Has(game.folder / "saves.old-20260101" / "slot.sav") && Has(game.folder / "figures.old-20260101" / "toy.bin"));
         }
+        {
+            // Saves kept in the game folder itself: nothing of it goes, even with the player's data ticked.
+            Tree current = MakeTree(base / "saves-in-game", Os::Linux);
+            auto& game = current.env.games.front();
+            game.saves = game.folder;
+            Put(game.folder / "slot.sav", 10);
+            RunUninstall(MakePlan(current.env), current.env, true);
+            UN_EXPECT(Has(game.folder / "slot.sav"));
+        }
         Tree tree = MakeTree(base / "old-folders", Os::Linux);
         const fs::path old = tree.base / "home" / "SSARecomp";
         const fs::path gone = tree.base / "home" / "Skylauncher";

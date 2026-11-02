@@ -397,6 +397,12 @@ namespace uninstall
                 plan.left.push_back({ *why, Group::Games, game.folder, {} });
                 continue;
             }
+            // Saves kept in the game folder itself (or a parent): its entries can't be told from the saves, so none goes.
+            if (IsOrHolds(game.saves, game.folder))
+            {
+                plan.left.push_back({ Why::Unsafe, Group::Games, game.folder, {} });
+                continue;
+            }
             for (const fs::directory_entry& entry : ListDirectory(game.folder, error))
             {
                 std::string name = datadir::Text(entry.path().filename());

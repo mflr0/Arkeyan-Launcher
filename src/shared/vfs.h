@@ -49,7 +49,10 @@ private:
     bool m_folder = false;
 
     bool OpenFolder(const char* path);
-    void IndexDirectory(uint32_t sector, uint32_t size, const std::string& prefix);
+    // A real disc's directories are a few sectors and a few levels deep.
+    static constexpr uint32_t MaxDirectorySize = 16u << 20;
+    static constexpr int MaxDirectoryDepth = 64;
+    void IndexDirectory(uint32_t sector, uint32_t size, const std::string& prefix, int depth = 0);
 };
 
 extern DiscFileSystem g_disc;

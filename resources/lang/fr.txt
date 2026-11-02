@@ -925,6 +925,7 @@ the installed game is missing: install it again	le jeu installé est introuvable
 couldn't copy the game: {}	impossible de copier le jeu : {}
 the copy can't be read back: {}	la copie ne peut pas être relue : {}
 couldn't sign the app (codesign)	impossible de signer l'app (codesign)
+choose a folder outside the installed game	choisissez un dossier en dehors du jeu installé
 couldn't put the copy in place: {}	impossible de mettre la copie en place : {}
 
 # The mouse (game settings > Keyboard, launcher/game_keys.cpp).

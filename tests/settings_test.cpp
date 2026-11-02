@@ -768,6 +768,14 @@ namespace
         savebackup::SetGameRunning(false, folders.saves);
         SETTINGS_EXPECT(!GameIsRunning(folders));
 
+        // Saves overridden to the game folder itself: uninstalling would take them for the game's files.
+        {
+            GameFolders inGame = Populate(scratch / "saves-in-game");
+            inGame.saves = inGame.game;
+            std::ofstream(inGame.game / "slot.sav") << "save";
+            SETTINGS_EXPECT(!UninstallGame(inGame, config).ok && fs::exists(inGame.game / "slot.sav") && fs::exists(inGame.game / "SGRecomp.app"));
+        }
+
         // Delete data: the saves, the backups, the seats and the caches; the game, the textures and the figures stay.
         DataResult deleted = DeleteGameData(folders);
         SETTINGS_EXPECT(deleted.ok && deleted.freed == 229 + 400);

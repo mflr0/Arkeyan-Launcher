@@ -102,8 +102,11 @@ bool DiscFileSystem::Open(const char* isoPath)
     return false;
 }
 
-void DiscFileSystem::IndexDirectory(uint32_t sector, uint32_t size, const std::string& prefix)
+void DiscFileSystem::IndexDirectory(uint32_t sector, uint32_t size, const std::string& prefix, int depth)
 {
+    // A damaged or crafted image: a directory far larger than any disc's, or one that leads back into itself.
+    if (size > MaxDirectorySize || depth > MaxDirectoryDepth)
+        return;
     std::vector<uint8_t> data(size);
     PlatformReadFile(m_file, data.data(), size, m_partition + uint64_t(sector) * SectorSize);
 
@@ -128,13 +131,15 @@ void DiscFileSystem::IndexDirectory(uint32_t sector, uint32_t size, const std::s
         memcpy(&entrySize, &data[offset + 8], 4);
         uint8_t attributes = data[offset + 12];
         uint8_t nameLength = data[offset + 13];
+        if (offset + 14 + nameLength > size)
+            continue;
 
         std::string name(reinterpret_cast<char*>(&data[offset + 14]), nameLength);
         std::string path = Normalize(prefix + name);
         bool directory = attributes & DirectoryAttribute;
         m_entries[path] = { m_partition + uint64_t(entrySector) * SectorSize, entrySize, directory, name, "" };
         if (directory && entrySize != 0)
-            IndexDirectory(entrySector, entrySize, path + "/");
+            IndexDirectory(entrySector, entrySize, path + "/", depth + 1);
 
         if (left != 0)
             pending.push_back(left * 4u);
