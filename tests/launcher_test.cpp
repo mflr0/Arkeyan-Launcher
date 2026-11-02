@@ -1073,7 +1073,7 @@ static void SweepChecks(const std::filesystem::path& scratch)
         for (const auto& entry : fs::directory_iterator(folder))
             if (entry.path().filename().string().rfind("nnnn", 0) == 0)
                 longName = entry.path().filename().string();
-        EXPECT(longName.size() == 200 && longName.substr(196) == ".sky");
+        EXPECT(longName.size() == 80 && longName.substr(76) == ".sky");
         EXPECT(collection::Delete(collection::PathOf(longName)));
         for (const collection::TrashEntry& entry : collection::Trash())
             collection::DeleteForGood(entry.id);

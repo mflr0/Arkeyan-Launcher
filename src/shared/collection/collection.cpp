@@ -318,8 +318,9 @@ namespace collection
 
         std::string FreeName(const std::string& wanted) { return FreeNameIn(Folder(), wanted); }
 
-        // Longest file name kept, in bytes: file systems stop at 255, and " (2)" or a backup suffix still has to fit.
-        constexpr size_t MaxNameBytes = 200;
+        // Longest file name kept, in bytes: short enough that the trash and the backups (the name twice in a path) stay
+        // under Windows' 260-character paths, with " (2)" or a backup suffix.
+        constexpr size_t MaxNameBytes = 80;
 
         // Characters file systems refuse, a leading dot, a trailing dot or space, a name Windows reserves, and a length
         // no file system takes, replaced or cut (the extension and whole UTF-8 characters stay).

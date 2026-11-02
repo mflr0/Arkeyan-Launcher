@@ -263,7 +263,8 @@ namespace
         gamemusic::Playback state{ .game = "ssa", .muted = true };
         auto settle = [&] {
             player.Update(state);
-            const uint64_t until = SDL_GetTicks() + 1900;
+            // Long enough for every fade on a busy CI machine (a fade is about 1 s; 1.9 s missed one on macOS CI).
+            const uint64_t until = SDL_GetTicks() + 4000;
             while (SDL_GetTicks() < until)
             {
                 SDL_Delay(20);
