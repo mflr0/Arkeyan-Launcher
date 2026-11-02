@@ -86,6 +86,11 @@ namespace launcher_ui
         const collection::Figure* Find(const std::string& path) const;
         // The game holding a figure right now ("ssa"), empty when none: its portal is live, the seats are read-only.
         std::string RunningGame() const;
+        // A figure's lock is a game using it only if that game says it runs (its marker, GameIsRunning): a process that
+        // took over the number of a game that crashed is not the game.
+        bool HeldByGame(const collection::LockInfo& lock) const;
+        // The paths whose lock is held by a live process that is not the game it names (to clear in Manage).
+        std::vector<std::string> LeftoverLocks() const;
         bool CanEditSeats() const;
         bool Incompatible(const collection::Figure& figure) const;
         // Puts the figure on the seat (taking it off any other seat), or clears the seat with an empty path, and writes
@@ -97,6 +102,8 @@ namespace launcher_ui
         bool Delete(const std::string& path, std::string* error);
         // A swapper's card: both halves go to the trash.
         bool DeleteCard(const std::string& path, std::string* error);
+        // collection::Tidy that leaves the figures on a seat alone, then reloads. Returns how many moved.
+        int Tidy();
         std::vector<std::string> OnPortal() const; // the seated paths
         // The figures the page shows, into `shown`, cut by collection::Group's shelf for Game(): every figure once,
         // favorites first, then what the game took (newest first), then by element (Sort::Recent; the other sorts ignore

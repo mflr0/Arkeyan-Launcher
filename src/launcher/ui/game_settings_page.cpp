@@ -109,8 +109,8 @@ namespace launcher_ui
         toggle("##fullscreen", "fullscreen", "0");
 
         std::string scaleHint = Tr("Higher scales need a dedicated graphics card.");
-        if (int scale = SettingInt(m_config, video, "resolution_scale", 0); scale >= 1)
-            scaleHint += "\n" + Tf("{} x {} for the 3D scene", 1120 * std::min(scale, 10), 704 * std::min(scale, 10));
+        if (int scale = ResolutionScaleOf(SettingGet(m_config, video, "resolution_scale")); scale >= 1)
+            scaleHint += "\n" + Tf("{} x {} for the 3D scene", 1120 * scale, 704 * scale);
         ui::SettingRow(Tr("Resolution scale"), scaleHint.c_str());
         SettingSelect("##scale", video, "resolution_scale", ScaleChoices, 0);
 
@@ -178,7 +178,7 @@ namespace launcher_ui
         if (m_s->game.id == std::string_view("swapforce") || m_s->game.id == std::string_view("trapteam"))
         {
             ui::SettingRow(Tr("Edge smoothing"), Tr("FXAA also softens texture detail; Gentle keeps more of it."));
-            SettingSelect("##edgesmoothing", video, "edge_smoothing", EdgeSmoothingChoices, SettingInt(m_config, video, "resolution_scale", 0) == 1 ? 0 : 1);
+            SettingSelect("##edgesmoothing", video, "edge_smoothing", EdgeSmoothingChoices, ResolutionScaleOf(SettingGet(m_config, video, "resolution_scale")) == 1 ? 0 : 1);
         }
 
         ui::SettingRow(Tr("Widescreen"), Tr("Auto shows more when wide; 16:9 adds bars."));

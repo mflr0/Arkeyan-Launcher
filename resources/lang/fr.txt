@@ -408,6 +408,8 @@ Video	Vidéo
 Virtual (no portal needed)	Virtuel (aucun portail nécessaire)
 Virtual portal chosen.	Portail virtuel choisi.
 Wait for the installation to finish	Attendez la fin de l'installation
+Wait for the copy to finish	Attendez la fin de la copie
+Wait for the export to finish	Attendez la fin de l'export
 No tearing, a little more latency.	Pas de déchirure, un peu plus de latence.
 Retry to continue from this step.	Appuyez sur Réessayer pour continuer à cette étape.
 What's new	Nouveautés
@@ -492,6 +494,8 @@ Unknown toys · {}	Jouets inconnus · {}
  · {} favorite	 · {} favori
  · {} favorites	 · {} favoris
  · {} not a figure	 · {} qui n'est pas une figurine
+ · {} is a toy you already have	 · {} est un jouet que vous avez déjà
+ · {} are toys you already have	 · {} sont des jouets que vous avez déjà
  · {} unknown toy (Manage)	 · {} jouet inconnu (Gérer)
  · {} unknown toys (Manage)	 · {} jouets inconnus (Gérer)
 Add to favorites	Ajouter aux favoris
@@ -592,6 +596,9 @@ Magic Items	Objets magiques
 Magic item	Objet
 Manage	Gérer
 Mark as not in use	Marquer comme non utilisée
+Mark as not in use · {}	Marquer comme non utilisée · {}
+Hold to mark them as not in use.	Maintenez pour les marquer comme non utilisées.
+Some figures are marked as in use, but their game is not running.	Des figures sont marquées comme utilisées, mais leur jeu n'est pas lancé.
 Metallic	Métallisé
 Minis and sidekicks	Minis et acolytes
 Missing figure	Figurine absente

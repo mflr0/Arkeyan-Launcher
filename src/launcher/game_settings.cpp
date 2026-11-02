@@ -199,9 +199,19 @@ const char* DefaultFrameRate(std::string_view gameId)
     return gameId == "giants" || gameId == "swapforce" ? "60" : "30";
 }
 
+int ResolutionScaleOf(std::string_view value)
+{
+    if (value.empty() || value.size() > 2 || !std::all_of(value.begin(), value.end(), [](char c) { return c >= '0' && c <= '9'; }))
+        return 0;
+    const int scale = std::stoi(std::string(value));
+    return scale >= 1 && scale <= 10 ? scale : 0;
+}
+
 void ApplyGameVideo(LauncherConfig& config, std::string_view gameId)
 {
     CopyVideo(config, GameVideoSection(gameId), "video");
+    if (auto scale = config["video"].find("resolution_scale"); scale != config["video"].end() && scale->second != "auto" && ResolutionScaleOf(scale->second) == 0)
+        config["video"].erase(scale);
     // A game with no saved frame rate gets the one its page shows, never a saved one changed.
     config["video"].emplace("fps_limit", DefaultFrameRate(gameId));
 }

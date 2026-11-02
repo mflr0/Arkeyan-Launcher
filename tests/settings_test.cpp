@@ -195,6 +195,25 @@ namespace
         SETTINGS_EXPECT(config["ssa.video"]["resolution_scale"] == "3" && config["giants.video"].count("resolution_scale") == 0);
         SETTINGS_EXPECT(GameVideoSection("giants") == "giants.video" && GameVideoKeys().size() == 12);
 
+        // A resolution scale the page does not offer (hand-edited) is shown as Auto and the game gets Auto too (issue #9, S-26).
+        SETTINGS_EXPECT(ResolutionScaleOf("3") == 3 && ResolutionScaleOf("10") == 10 && ResolutionScaleOf("auto") == 0 && ResolutionScaleOf("") == 0);
+        SETTINGS_EXPECT(ResolutionScaleOf("999") == 0 && ResolutionScaleOf("11") == 0 && ResolutionScaleOf("0") == 0 && ResolutionScaleOf("-2") == 0 &&
+            ResolutionScaleOf("3.5") == 0 && ResolutionScaleOf("x3") == 0 && ResolutionScaleOf("007") == 0 && ResolutionScaleOf("1e9") == 0);
+        for (const char* odd : { "999", "0", "-1", "2x", "" })
+        {
+            LauncherConfig wild;
+            wild["ssa.video"]["resolution_scale"] = odd;
+            ApplyGameVideo(wild, "ssa");
+            SETTINGS_EXPECT(wild["video"].count("resolution_scale") == 0 || wild["video"]["resolution_scale"] == "auto");
+        }
+        for (const char* fine : { "auto", "1", "10" })
+        {
+            LauncherConfig kept;
+            kept["ssa.video"]["resolution_scale"] = fine;
+            ApplyGameVideo(kept, "ssa");
+            SETTINGS_EXPECT(kept["video"]["resolution_scale"] == fine);
+        }
+
         // Original resolution (Swap Force): kept in [swapforce.video], put in [video] when it plays, absent for the other games.
         config["swapforce.video"]["original_resolution"] = "1";
         ApplyGameVideo(config, "swapforce");
@@ -477,12 +496,16 @@ namespace
         const char* shortcut[] = { "Skylauncher", "--game", "giants", "--play" };
         LauncherArguments play = ParseLauncherArguments(4, shortcut);
         SETTINGS_EXPECT(play.game == "giants" && play.play && !play.help);
+        SETTINGS_EXPECT(!play.afterUpdate);
+        const char* restart[] = { "Skylauncher", "--after-update" };
+        LauncherArguments updated = ParseLauncherArguments(2, restart);
+        SETTINGS_EXPECT(updated.afterUpdate && updated.unknown.empty() && updated.game.empty());
         const char* equals[] = { "Skylauncher", "--game=ssa", "--bogus", "-h", "--game" };
         LauncherArguments mixed = ParseLauncherArguments(5, equals);
         SETTINGS_EXPECT(mixed.game == "ssa" && mixed.help && !mixed.play);
         SETTINGS_EXPECT(mixed.unknown.size() == 2 && mixed.unknown[0] == "--bogus" && mixed.unknown[1] == "--game"); // no value: unknown
         SETTINGS_EXPECT(std::string(LauncherUsage()).find("--play") != std::string::npos);
-        printf("Command line: --game, --game=, --play, --help; the rest listed\n");
+        printf("Command line: --game, --game=, --play, --help, --after-update; the rest listed\n");
     }
 
     // ---- The names of the environment variables ---------------------------------------------------------------------------

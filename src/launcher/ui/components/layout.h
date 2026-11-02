@@ -81,6 +81,8 @@ namespace ui
     bool BeginModal(const char* id, const char* title, bool* open, ModalSize size = ModalSize::Medium);
     // The footer: Cancel (secondary) then the confirm button (primary, or danger), right-aligned. `confirm` null: only Cancel
     // (then labelled as given, "Close"). Pressing either closes the dialog.
+    // The room EndModal's pad legend takes under the actions (0 while the keyboard is in use): a dialog sized to the window keeps it free.
+    float ModalLegendHeight();
     ModalResult ModalActions(bool* open, const char* confirm, const char* cancel, ModalKind kind = ModalKind::Normal);
     void EndModal();
     // A whole confirmation: title, one sentence, the two buttons.

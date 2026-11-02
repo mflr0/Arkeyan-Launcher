@@ -98,12 +98,14 @@ void SetGameVariable(const char* currentName, const char* value);
 void UnsetGameVariable(const char* currentName);
 
 // The command line: `--game <id>` opens that game, `--play` starts it once its disc is checked (the desktop shortcut runs
-// `Arkeyan Launcher --game <id> --play`), `--help` shows the options. Anything else is listed in `unknown` and ignored.
+// `Arkeyan Launcher --game <id> --play`), `--help` shows the options. `--after-update` is what the self-update's restart
+// adds: the new launcher waits for the old one to close (single_instance.h). Anything else is listed in `unknown` and ignored.
 struct LauncherArguments
 {
     std::string game;
     bool play = false;
     bool help = false;
+    bool afterUpdate = false;
     std::vector<std::string> unknown;
 };
 LauncherArguments ParseLauncherArguments(int argc, const char* const* argv);

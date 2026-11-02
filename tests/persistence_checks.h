@@ -46,6 +46,30 @@ inline void ConfigPersistenceChecks(const std::filesystem::path& scratch)
     EXPECT(!fs::exists(root / "launcher.ini.tmp"));
     EXPECT(NoAtomicTemporary(ini));
 
+    // The player's comments in the file survive a save (issue #9, S-27): above the section or the key they were written over, the
+    // file's first ones at the top, the last ones at the end; the comment over a key that goes goes with it.
+    {
+        const fs::path commented = root / "commented.ini";
+        { std::ofstream(commented, std::ios::binary) << "\xEF\xBB\xBF# my notes on this file\n[launcher]\n# keep my language\nlanguage=fr\n; old idea\nfoo=bar\n"
+            "\n# the video of Spyro\n[ssa.video]\n# quiet\nvsync=0\n# end of file\n"; }
+        LauncherConfig noted = LoadLauncherConfig(commented.string());
+        EXPECT(noted["launcher"]["language"] == "fr" && noted["ssa.video"]["vsync"] == "0");
+        noted["launcher"]["language"] = "en";
+        noted["launcher"].erase("foo");
+        EXPECT(SaveLauncherConfig(commented.string(), noted));
+        const std::string text = read(commented);
+        const auto at = [&](const char* needle) { return text.find(needle); };
+        EXPECT(at("# my notes on this file") != std::string::npos && at("# my notes on this file") < at("[launcher]"));
+        EXPECT(at("# keep my language") != std::string::npos && at("# keep my language") < at("language=en") && at("[launcher]") < at("# keep my language"));
+        EXPECT(at("old idea") == std::string::npos && at("foo=") == std::string::npos);
+        EXPECT(at("# the video of Spyro") < at("[ssa.video]") && at("# quiet") < at("vsync=0") && at("[ssa.video]") < at("# quiet"));
+        EXPECT(at("# end of file") != std::string::npos && at("vsync=0") < at("# end of file"));
+        EXPECT(LoadLauncherConfig(commented.string()) == noted);
+        const std::string once = text;
+        EXPECT(SaveLauncherConfig(commented.string(), noted) && read(commented) == once); // saving again changes nothing
+        EXPECT(text.find("# Launcher settings: one [section] per game.") == text.rfind("# Launcher settings: one [section] per game."));
+    }
+
     // A failed final rename must also leave its target intact and remove the staging file.
     fs::create_directories(root / "target.ini");
     { std::ofstream(root / "target.ini" / "keep") << "target sentinel"; }

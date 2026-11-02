@@ -43,6 +43,9 @@
 #include <process.h>
 #define getpid _getpid
 #else
+#include <csignal>
+#include <sys/resource.h>
+#include <sys/wait.h>
 #include <unistd.h>
 #endif
 
@@ -611,10 +614,17 @@ namespace
         {
             std::ofstream(spyro + ".lock") << fmt::format("{{ \"game\": \"ssa\", \"pid\": {} }}", otherPid);
             SDL_Delay(30);
-            EXPECT(model.Poll(2000000, 0) && model.RunningGame() == "ssa" && !model.CanEditSeats());
+            // A live process that is not the game (a number taken over after a crash) holds nothing: the seats stay editable, and
+            // Manage can clear the lock (issue #9, S-05). When the game's own marker says it runs, the seats are read-only.
+            EXPECT(model.Poll(2000000, 0) && model.RunningGame().empty() && model.CanEditSeats());
+            EXPECT(model.LeftoverLocks() == std::vector<std::string>{ spyro } && model.SetSeat(1, gill) && model.SetSeat(1, ""));
+            savebackup::SetGameRunning(true, save);
+            EXPECT(model.RunningGame() == "ssa" && !model.CanEditSeats() && model.LeftoverLocks().empty());
+            savebackup::SetGameRunning(false, save);
+            EXPECT(model.CanEditSeats());
             collection::BreakLock(spyro);
             SDL_Delay(30);
-            EXPECT(model.Poll(3000000, 0) && model.CanEditSeats());
+            EXPECT(model.Poll(3000000, 0) && model.CanEditSeats() && model.LeftoverLocks().empty());
         }
         collection::Figure again;
         collection::Read(gill, again);
@@ -978,6 +988,343 @@ namespace
     }
 }
 
+// The Collection bug sweep (issue #9) on the shared library: backups that follow the figure, atomic writes, names, imports,
+// exports, labels, nicknames, locks and the seats of Tidy. Runs after CollectionChecks, in its collection folder.
+static void SweepChecks(const std::filesystem::path& scratch)
+{
+    namespace fs = std::filesystem;
+    const fs::path folder = collection::Folder();
+    auto bytesOf = [](const fs::path& path) {
+        std::ifstream in(path, std::ios::binary);
+        return std::string(std::istreambuf_iterator<char>(in), {});
+    };
+    auto put = [](const fs::path& path, const std::string& bytes) { std::ofstream(path, std::ios::binary) << bytes; };
+    std::string error;
+    auto trashOf = [](const std::string& file) {
+        for (const collection::TrashEntry& entry : collection::Trash())
+            if (entry.file == file)
+                return entry.id;
+        return std::string();
+    };
+
+    // S-09: the backups follow the figure, not its file name.
+    {
+        const std::string first = collection::Create(14, 0, "950 Sweep A.sky");
+        collection::Figure figure;
+        EXPECT(!first.empty() && collection::Read(first, figure));
+        figure.stats.gold = 77;
+        EXPECT(collection::WriteStats(first, figure.stats) && collection::Backups(first).size() == 1);
+        const std::string oldBackup = collection::Backups(first).empty() ? std::string("none") : collection::Backups(first).front();
+        EXPECT(collection::Delete(first) && !fs::exists(folder / "backups" / "950 Sweep A.sky"));
+        const std::string second = collection::Create(14, 0, "950 Sweep A.sky"); // the freed name, another figure
+        EXPECT(second == first && collection::Backups(second).empty());
+        // Restore refuses a backup of another figure (its serial), and of another toy type.
+        const std::string id = trashOf("950 Sweep A.sky");
+        const fs::path trashed = folder / "trash" / (id + ".backups") / fs::path(oldBackup).filename();
+        EXPECT(fs::exists(trashed));
+        EXPECT(!collection::Restore(second, trashed.string(), &error) && !error.empty());
+        const std::string other = collection::Create(16, 0, "950 Sweep B.sky");
+        EXPECT(!collection::Restore(other, trashed.string(), &error));
+        fs::create_directories(folder / "backups" / "950 Sweep B.sky");
+        std::error_code copied;
+        fs::copy_file(trashed, folder / "backups" / "950 Sweep B.sky" / "2026-01-01T000000Z.sky", copied);
+        EXPECT(collection::Backups(other).empty() && !collection::Restore(other, (folder / "backups" / "950 Sweep B.sky" / "2026-01-01T000000Z.sky").string(), &error));
+        // Undelete brings the backups back, and Restore from them works; Delete for good takes them away.
+        const std::string renamed = collection::Undelete(id); // its name is taken by `second`: it comes back as "(2)"
+        EXPECT(!renamed.empty() && renamed != first && collection::Backups(renamed).size() == 1);
+        const std::vector<std::string> kept = collection::Backups(renamed);
+        EXPECT(!kept.empty() && collection::Restore(renamed, kept.front()));
+        EXPECT(collection::Delete(renamed));
+        const std::string latest = trashOf(fs::path(renamed).filename().string());
+        if (latest.empty())
+            return;
+        EXPECT(fs::exists(folder / "trash" / (latest + ".backups")));
+        EXPECT(collection::DeleteForGood(latest) && !fs::exists(folder / "trash" / (latest + ".backups")));
+        EXPECT(collection::Delete(second) && collection::Delete(other));
+        for (const collection::TrashEntry& entry : collection::Trash())
+            collection::DeleteForGood(entry.id);
+        fs::remove_all(folder / "backups" / "950 Sweep B.sky");
+    }
+
+    // S-09 / S-20: Rename moves the backups (also onto a name that already has a folder), refuses what cannot move.
+    {
+        const std::string a = collection::Create(14, 0, "951 Rename.sky");
+        collection::Figure figure;
+        collection::Read(a, figure);
+        figure.stats.gold = 5;
+        EXPECT(collection::WriteStats(a, figure.stats) && collection::Backups(a).size() == 1);
+        fs::create_directories(folder / "backups" / "951 Moved.sky");
+        put(folder / "backups" / "951 Moved.sky" / "orphan.sky", "x"); // a stray file in the target's folder
+        EXPECT(collection::Rename(a, "951 Moved", &error));
+        const std::string moved = collection::PathOf("951 Moved.sky");
+        EXPECT(fs::exists(moved) && !fs::exists(a) && collection::Backups(moved).size() == 1 && !fs::exists(folder / "backups" / "951 Rename.sky"));
+        // A name differing in case only (the same file on a case-insensitive disk).
+        EXPECT(collection::Rename(moved, "951 MOVED.sky", &error));
+        bool listed = false;
+        for (const auto& entry : fs::directory_iterator(folder))
+            listed = listed || entry.path().filename() == "951 MOVED.sky";
+        EXPECT(listed && collection::Backups(collection::PathOf("951 MOVED.sky")).size() == 1);
+        // Names no file system or Windows accepts: reserved, trailing dot, over-long.
+        const std::string current = collection::PathOf("951 MOVED.sky");
+        EXPECT(collection::Rename(current, "CON", &error) && fs::exists(collection::PathOf("_CON.sky")));
+        EXPECT(collection::Rename(collection::PathOf("_CON.sky"), "dotted. ", &error) && fs::exists(collection::PathOf("dotted.sky")));
+        EXPECT(collection::Rename(collection::PathOf("dotted.sky"), std::string(300, 'n'), &error));
+        std::string longName;
+        for (const auto& entry : fs::directory_iterator(folder))
+            if (entry.path().filename().string().rfind("nnnn", 0) == 0)
+                longName = entry.path().filename().string();
+        EXPECT(longName.size() == 200 && longName.substr(196) == ".sky");
+        EXPECT(collection::Delete(collection::PathOf(longName)));
+        for (const collection::TrashEntry& entry : collection::Trash())
+            collection::DeleteForGood(entry.id);
+        fs::remove_all(folder / "backups");
+    }
+
+    // S-22: the backups of one second sort by their number, newest first, and Prune removes the oldest.
+    {
+        const std::string a = collection::Create(14, 0, "952 Order.sky");
+        const std::string dump = bytesOf(a);
+        fs::create_directories(folder / "backups" / "952 Order.sky");
+        for (const char* name : { "2026-10-24T101500Z.sky", "2026-10-24T101500Z-2.sky", "2026-10-24T101500Z-10.sky", "2026-10-24T101459Z-3.sky" })
+            put(folder / "backups" / "952 Order.sky" / name, dump);
+        std::vector<std::string> names;
+        for (const std::string& backup : collection::Backups(a))
+            names.push_back(fs::path(backup).filename().string());
+        EXPECT((names == std::vector<std::string>{ "2026-10-24T101500Z-10.sky", "2026-10-24T101500Z-2.sky", "2026-10-24T101500Z.sky", "2026-10-24T101459Z-3.sky" }));
+        EXPECT(collection::PruneBackups(a, 2) == 2 && fs::exists(folder / "backups" / "952 Order.sky" / "2026-10-24T101500Z-10.sky") &&
+            !fs::exists(folder / "backups" / "952 Order.sky" / "2026-10-24T101500Z.sky"));
+        fs::remove_all(folder / "backups");
+        EXPECT(collection::Delete(a));
+        for (const collection::TrashEntry& entry : collection::Trash())
+            collection::DeleteForGood(entry.id);
+    }
+
+    // S-10: Restore, stats and Import write a new file and rename it over: a second name for the old one keeps the old bytes.
+    {
+        const std::string a = collection::Create(14, 0, "953 Atomic.sky");
+        const std::string before = bytesOf(a);
+        const fs::path link = folder / "953 Atomic.link";
+        std::error_code linked;
+        fs::create_hard_link(a, link, linked);
+        if (linked)
+            printf("SKIP atomic writes: no hard links (%s)\n", linked.message().c_str());
+        else
+        {
+            collection::Figure figure;
+            collection::Read(a, figure);
+            figure.stats.gold = 321;
+            const std::string backup = collection::Backup(a);
+            EXPECT(collection::WriteStats(a, figure.stats) && bytesOf(a) != before && bytesOf(link) == before);
+            fs::remove(link);
+            fs::create_hard_link(a, link);
+            const std::string played = bytesOf(a);
+            EXPECT(collection::Restore(a, backup) && bytesOf(a) == before && bytesOf(link) == played);
+            fs::remove(link);
+            fs::create_hard_link(a, link);
+            EXPECT(collection::ResetToNew(a) && bytesOf(link) == before);
+            fs::remove(link);
+        }
+        EXPECT(collection::Delete(a));
+        fs::remove_all(folder / "backups");
+        for (const collection::TrashEntry& entry : collection::Trash())
+            collection::DeleteForGood(entry.id);
+    }
+
+    // S-21: Import takes a plain file of a dump's size, and a copy that fails leaves nothing in the collection.
+    {
+        FigureData tag = figures::CreateFigure(14, 0);
+        const std::string bytes(reinterpret_cast<const char*>(tag.data()), tag.size());
+        const fs::path big = scratch / "big.sky", ok = scratch / "ok.sky";
+        put(big, bytes + std::string(2 << 20, 'x'));
+        put(ok, bytes + "tool data");
+        EXPECT(collection::Import({ big.string() }).invalid == 1 && collection::Import({ big.string() }).added == 0);
+        collection::ImportReport report = collection::Import({ ok.string() });
+        EXPECT(report.added == 1 && !report.paths.empty() && bytesOf(report.paths.front()) == bytes + "tool data" && NoAtomicTemporary(report.paths.front()));
+        if (report.paths.empty())
+            report.paths.push_back(collection::PathOf("missing.sky"));
+#ifndef _WIN32
+        // A write that dies half-way (the file size limit) leaves no half-written dump behind.
+        FigureData other = figures::CreateFigure(16, 0);
+        const fs::path second = scratch / "second.sky";
+        put(second, std::string(reinterpret_cast<const char*>(other.data()), other.size()));
+        size_t listed = collection::List().size();
+        rlimit previous{}, limited{};
+        getrlimit(RLIMIT_FSIZE, &previous);
+        limited = previous;
+        limited.rlim_cur = 512;
+        auto oldHandler = std::signal(SIGXFSZ, SIG_IGN);
+        setrlimit(RLIMIT_FSIZE, &limited);
+        collection::ImportReport failed = collection::Import({ second.string() });
+        setrlimit(RLIMIT_FSIZE, &previous);
+        std::signal(SIGXFSZ, oldHandler);
+        EXPECT(failed.added == 0 && failed.invalid == 1 && collection::List().size() == listed && NoAtomicTemporary(collection::PathOf("second.sky")));
+        EXPECT(!fs::exists(collection::PathOf("second.sky")));
+#endif
+        EXPECT(collection::Delete(report.paths.front()));
+        for (const collection::TrashEntry& entry : collection::Trash())
+            collection::DeleteForGood(entry.id);
+    }
+
+    // S-08: a played copy and its older copy are one toy: both are kept, and the second is said.
+    {
+        const std::string a = collection::Create(14, 0, "954 Twin.sky");
+        const std::string original = bytesOf(a);
+        const fs::path outside = scratch / "twin-original.sky";
+        put(outside, original);
+        collection::Figure figure;
+        collection::Read(a, figure);
+        figure.stats.experience = 4000;
+        EXPECT(collection::WriteStats(a, figure.stats));
+        collection::ImportReport report = collection::Import({ outside.string() });
+        EXPECT(report.added == 1 && report.sameToy == 1 && report.duplicates == 0);
+        EXPECT(collection::Import({ outside.string() }).duplicates == 1); // the same bytes are still skipped
+        EXPECT(collection::Delete(a));
+        if (!report.paths.empty())
+            EXPECT(collection::Delete(report.paths.front()));
+        for (const collection::TrashEntry& entry : collection::Trash())
+            collection::DeleteForGood(entry.id);
+        fs::remove_all(folder / "backups");
+    }
+
+    // S-12: Export keeps what is in the destination.
+    {
+        const std::string a = collection::Create(14, 0, "955 Export.sky");
+        const fs::path out = scratch / "export-out";
+        fs::create_directories(out);
+        put(out / "955 Export.sky", "someone else's file");
+        EXPECT(collection::Export({ a }, out.string()) == 1);
+        EXPECT(bytesOf(out / "955 Export.sky") == "someone else's file" && bytesOf(out / "955 Export (2).sky") == bytesOf(a));
+        EXPECT(collection::Export({ a }, out.string()) == 1 && !fs::exists(out / "955 Export (3).sky")); // the same bytes are not copied again
+        EXPECT(collection::Delete(a));
+        for (const collection::TrashEntry& entry : collection::Trash())
+            collection::DeleteForGood(entry.id);
+    }
+
+    // S-16 / S-17: nicknames are well-formed text, labels are trimmed and bounded.
+    {
+        figures::FigureStats stats;
+        figures::SetNicknameUtf8(stats, "\xC0\xAF" "ab");              // an overlong form
+        EXPECT(figures::NicknameUtf8(stats) == "ab");
+        figures::SetNicknameUtf8(stats, "\xED\xA0\x80x");              // a lone surrogate
+        EXPECT(figures::NicknameUtf8(stats) == "x");
+        figures::SetNicknameUtf8(stats, "a\x01\x1F\x7F" "b\xC2\x85" "c");  // controls, C1 included
+        EXPECT(figures::NicknameUtf8(stats) == "abc");
+        figures::SetNicknameUtf8(stats, "\xF0\x9F\x98\x80z\xFF" "q");  // a character outside the plane the fonts have, a stray byte
+        EXPECT(figures::NicknameUtf8(stats) == "?zq");
+        figures::SetNicknameUtf8(stats, "\xC3\xA9\xE2\x82\xAC");     // e acute, euro sign
+        EXPECT(figures::NicknameUtf8(stats) == "\xC3\xA9\xE2\x82\xAC");
+        stats.nickname = { u'o', char16_t(0xD83D), u'k', 0, u'z' };    // half a pair is not text; a zero ends it
+        EXPECT(figures::NicknameUtf8(stats) == "o?k");
+        std::string sixteen;
+        for (int i = 0; i < 20; i++)
+            sixteen += "\xE2\x82\xAC";
+        figures::SetNicknameUtf8(stats, sixteen);
+        EXPECT(stats.nickname.size() == 16);
+
+        EXPECT(collection::CleanLabel("   ").empty() && collection::CleanLabel("  Hi\tthere \n") == "Hi there");
+        EXPECT(collection::CleanLabel("a\x01" "b\x7F") == "ab");
+        std::string wide;
+        for (int i = 0; i < 40; i++)
+            wide += "\xC3\xA9"; // 80 bytes
+        const std::string cut = collection::CleanLabel(wide);
+        EXPECT(cut.size() == collection::MaxLabelBytes && cut.size() % 2 == 0 && cut.substr(0, 2) == "\xC3\xA9");
+        const std::string odd = collection::CleanLabel(std::string(63, 'a') + "\xC3\xA9"); // the last character would cross the limit
+        EXPECT(odd.size() == 63);
+        const std::string a = collection::Create(14, 0, "956 Label.sky");
+        EXPECT(collection::SetLabel(a, "  Splashy  "));
+        collection::Figure figure;
+        collection::Read(a, figure);
+        EXPECT(figure.label == "Splashy");
+        EXPECT(collection::SetLabel(a, "   \t ") && collection::Read(a, figure) && figure.label.empty());
+        EXPECT(collection::Delete(a));
+        for (const collection::TrashEntry& entry : collection::Trash())
+            collection::DeleteForGood(entry.id);
+    }
+
+    // S-07: Tidy leaves a starter that sits on a seat.
+    {
+        const collection::Game& ssa = *collection::Catalogue::Get().FindGame("ssa");
+        const std::string session = launcher_ui::SessionFile(ssa);
+        launcher_ui::CollectionModel model;
+        model.Load();
+        const auto seatsBefore = model.seats;
+        EXPECT(collection::CreateMissing({ 11, 12 }) >= 1);
+        std::vector<std::string> starters = collection::UntouchedStarters();
+        EXPECT(starters.size() >= 2);
+        const std::string seated = starters.front();
+        model.Load();
+        EXPECT(model.SetSeat(1, seated) && model.SeatOf(seated) == 1);
+        EXPECT(collection::UntouchedStarters(model.OnPortal()).size() + 1 == collection::UntouchedStarters().size());
+        const int moved = model.Tidy();
+        EXPECT(moved >= 1 && fs::exists(seated) && model.Find(seated) != nullptr && model.SeatOf(seated) == 1);
+        EXPECT(launcher_ui::ReadSeats(ssa, session)[1] == seated);
+        EXPECT(model.SetSeat(1, ""));
+        EXPECT(collection::Tidy() == 1 && !fs::exists(seated)); // unseated, it goes
+        for (const collection::TrashEntry& entry : collection::Trash())
+            collection::DeleteForGood(entry.id);
+        EXPECT(model.SetSeat(1, seatsBefore[1]));
+        model.Load();
+    }
+
+    // S-23: the lock is taken by one process only; a stale lock is taken over; no temporary file is left.
+    {
+        const std::string a = collection::Create(14, 0, "957 Lock.sky");
+        EXPECT(collection::Lock(a, "ssa") && collection::GetLock(a).mine && collection::Lock(a, "ssa"));
+        collection::Unlock(a);
+        EXPECT(!fs::exists(a + ".lock"));
+        std::ofstream(a + ".lock") << fmt::format("{{ \"game\": \"ssa\", \"pid\": {} }}", 99999999);
+        EXPECT(collection::GetLock(a).stale && collection::Lock(a, "launcher") && collection::GetLock(a).mine);
+        collection::Unlock(a);
+        std::error_code leftovers;
+        for (const auto& entry : fs::directory_iterator(folder, leftovers))
+            EXPECT(entry.path().filename().string().find(".new.") == std::string::npos);
+#ifndef _WIN32
+        // Sixteen processes ask at the same instant: exactly one gets it.
+        for (int round = 0; round < 3; round++)
+        {
+            const fs::path go = scratch / fmt::format("lock-go-{}", round);
+            int pipes[2];
+            EXPECT(pipe(pipes) == 0);
+            std::vector<pid_t> children;
+            for (int i = 0; i < 16; i++)
+            {
+                pid_t child = fork();
+                if (child == 0)
+                {
+                    while (!fs::exists(go)) {}
+                    char won = collection::Lock(a, "race") ? '1' : '0';
+                    (void)!write(pipes[1], &won, 1);
+                    sleep(3);
+                    _exit(0);
+                }
+                children.push_back(child);
+            }
+            { std::ofstream(go) << "go"; }
+            int winners = 0;
+            for (int i = 0; i < 16; i++)
+            {
+                char won = 0;
+                if (read(pipes[0], &won, 1) == 1)
+                    winners += won == '1';
+            }
+            EXPECT(winners == 1);
+            for (pid_t child : children)
+            {
+                kill(child, SIGKILL);
+                waitpid(child, nullptr, 0);
+            }
+            close(pipes[0]);
+            close(pipes[1]);
+            collection::BreakLock(a);
+        }
+#endif
+        EXPECT(collection::Delete(a));
+        for (const collection::TrashEntry& entry : collection::Trash())
+            collection::DeleteForGood(entry.id);
+    }
+    printf("Collection sweep: backups, atomic writes, names, import, export, labels, nicknames, tidy and locks checked\n");
+}
+
 // The portal status: the VID:PID table and the status logic with fake enumerators.
 static void PortalChecks()
 {
@@ -1152,6 +1499,7 @@ int AccentChecksInChild(const char* executable, const std::filesystem::path& scr
 int MusicChecks(const std::filesystem::path& scratch); // tests/music_test.cpp
 int CopyChecks(const std::filesystem::path& scratch, const std::string& ssaIso, const std::string& giantsIso); // tests/copy_test.cpp
 int PortableChecks(const std::filesystem::path& scratch); // tests/portable_test.cpp
+int SingleInstanceChecks(const std::filesystem::path& scratch); // tests/single_instance_test.cpp
 int ExportPortableTool(int argc, char** argv);         // tests/portable_test.cpp
 
 // The launcher window switching games in place (App::TestSwitchScript, in an offscreen window): both discs checked, a
@@ -1795,8 +2143,11 @@ int main(int argc, char** argv)
     if (skyenv::Get("SKY_LAUNCHER_TEST_COLLECTION_ONLY") != nullptr)
     {
         CollectionChecks(scratch);
+        SweepChecks(scratch);
         return g_failures == 0 ? 0 : 1;
     }
+    if (skyenv::Get("SKY_LAUNCHER_TEST_INSTANCE_ONLY") != nullptr) // only one launcher per data folder (quick to rerun)
+        return SingleInstanceChecks(scratch / "instance") == 0 ? 0 : 1;
     if (skyenv::Get("SKY_LAUNCHER_TEST_PORTABLE_ONLY") != nullptr) // only "Export a portable copy" (quick to rerun)
         return PortableChecks(scratch) == 0 ? 0 : 1;
     if (skyenv::Get("SKY_LAUNCHER_TEST_UNINSTALL_ONLY") != nullptr) // only "Uninstall everything" (quick to rerun)
@@ -1829,6 +2180,7 @@ int main(int argc, char** argv)
     if (skyenv::Get("SKY_LAUNCHER_TEST_INSTALL_CARD_ONLY") != nullptr)
         return g_failures == 0 ? 0 : 1;
     CollectionChecks(scratch);
+    SweepChecks(scratch);
     if (skyenv::Get("SKY_LAUNCHER_TEST_AUDIT_ONLY") != nullptr)
         return g_failures == 0 ? 0 : 1;
     PictureChecks(scratch);
@@ -1841,6 +2193,7 @@ int main(int argc, char** argv)
     g_failures += SettingsChecks(scratch / "settings");
     g_failures += UninstallChecks(scratch);
     g_failures += PortableChecks(scratch);
+    g_failures += SingleInstanceChecks(scratch / "instance");
     g_failures += I18nChecks();
     g_failures += TextFitChecks();
     g_failures += AccentChecksInChild(argv[0], scratch);

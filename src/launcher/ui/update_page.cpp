@@ -214,10 +214,11 @@ namespace launcher_ui
             std::filesystem::path self = LauncherSelf();
             std::string program = datadir::Text(self);
             std::vector<const char*> arguments;
+            // The new launcher waits for this one to close and hand it the lock (single_instance.h).
 #if defined(__APPLE__)
-            arguments = { "/usr/bin/open", "-n", program.c_str(), nullptr };
+            arguments = { "/usr/bin/open", "-n", program.c_str(), "--args", "--after-update", nullptr };
 #else
-            arguments = { program.c_str(), nullptr };
+            arguments = { program.c_str(), "--after-update", nullptr };
 #endif
             if (SDL_Process* process = SDL_CreateProcess(arguments.data(), false))
             {
@@ -242,8 +243,8 @@ namespace launcher_ui
         {
             // The notes in an inset card as tall as the window allows (the title and the actions take the rest): the release's
             // Markdown read simply, its headings as bold lines, its "- " items as bullets, the rest as written.
-            const float room = ImGui::GetIO().DisplaySize.y - 2 * ui::space::XL - 3 * ui::height::Large;
-            ui::BeginCard("##notes", ImVec2(0, std::clamp(room, 3.0f * ui::height::Large, 8.0f * ui::height::Large)), { .inset = true, .padding = ui::space::M });
+            const float room = ImGui::GetIO().DisplaySize.y - 2 * ui::space::XL - 3 * ui::height::Large - ui::ModalLegendHeight();
+            ui::BeginCard("##notes", ImVec2(0, std::clamp(room, 3.0f * ui::height::Large, 8.0f * ui::height::Large - ui::ModalLegendHeight())), { .inset = true, .padding = ui::space::M });
             ImGui::SetScrollX(0.0f);
             std::string notes = Trimmed(StripHtmlComments(state.launcher.notes));
             if (notes.empty())

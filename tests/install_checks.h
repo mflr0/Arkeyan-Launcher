@@ -108,6 +108,26 @@ inline void InstallLifecycleChecks(const std::filesystem::path& scratch)
         EXPECT(installer.Snapshot().log.empty() && !installer.FullLog().empty());
     }
 
+    // A second Start while a build runs changes nothing and does not wait for it (it is called on the window's thread; issue #9, S-28).
+    {
+        const fs::path out = root / "twice";
+        TestSetEnv("FAKE_SSABUILD_PAUSE_STEP", "2");
+        EXPECT(installer.Start(kit, "synthetic.iso", out));
+        const uint64_t deadline = SDL_GetTicks() + 5000;
+        do { state = installer.Snapshot(2); SDL_Delay(5); } while (!(state.steps.size() == 2 && state.done == 1) && installer.Running() && SDL_GetTicks() < deadline);
+        const uint32_t pid = installer.ProcessId();
+        EXPECT(installer.Running() && pid != 0 && state.state == InstallProgress::State::Running);
+        const uint64_t before = SDL_GetTicks();
+        EXPECT(!installer.Start(kit, "synthetic.iso", out));
+        EXPECT(SDL_GetTicks() - before < 500 && installer.Running() && installer.ProcessId() == pid);
+        state = installer.Snapshot(2);
+        EXPECT(state.state == InstallProgress::State::Running && !state.startFailed && state.steps.size() == 2);
+        installer.Cancel();
+        state = wait(installer);
+        EXPECT(state.state == InstallProgress::State::Cancelled);
+        TestUnsetEnv("FAKE_SSABUILD_PAUSE_STEP");
+    }
+
     for (const char* ending : { "empty", "exit", "error" })
     {
         TestSetEnv("FAKE_SSABUILD_ENDING", ending);

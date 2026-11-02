@@ -316,9 +316,27 @@ namespace launcher_ui
         tidy.tooltip = Tr("Hold to move them to the trash.");
         if (ui::Button(Tf("Move {} to the trash", m_starters).c_str(), tidy))
         {
-            int moved = collection::Tidy();
+            int moved = m_model.Tidy();
             Toast(moved == 1 ? Tf("{} figure moved to the trash", moved) : Tf("{} figures moved to the trash", moved), ui::ToastKind::Success);
             Reload();
+        }
+        // A lock a live process holds, but not the game it names (its number reused after a crash): every seat would stay read-only.
+        const std::vector<std::string> leftover = m_model.LeftoverLocks();
+        if (!leftover.empty())
+        {
+            ImGui::Dummy(ImVec2(0, ui::space::M));
+            ui::Text(ui::TextStyle::Body, Tr("Some figures are marked as in use, but their game is not running."), ui::color::InkSoft);
+            ImGui::Dummy(ImVec2(0, ui::space::XS));
+            ui::ButtonOptions release;
+            release.kind = ui::ButtonKind::Danger;
+            release.hold = true;
+            release.tooltip = Tr("Hold to mark them as not in use.");
+            if (ui::Button(Tf("Mark as not in use · {}", leftover.size()).c_str(), release))
+            {
+                for (const std::string& path : leftover)
+                    collection::BreakLock(path);
+                Reload();
+            }
         }
     }
 

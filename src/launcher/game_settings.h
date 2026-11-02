@@ -21,7 +21,10 @@ void SeedGameVideo(LauncherConfig& config, std::string_view gameId);
 // The frame rate a game gets when the player has saved none ("30" or "60"): the page shows it and PLAY writes it. The one place a
 // game's default is decided.
 const char* DefaultFrameRate(std::string_view gameId);
-// PLAY: the game's copy replaces [video].
+// A saved resolution_scale as the game takes it: 1 to 10, else 0 (Auto: missing, "auto", or any value outside the list the page
+// offers). The page shows it and PLAY passes it on, so they agree.
+int ResolutionScaleOf(std::string_view value);
+// PLAY: the game's copy replaces [video]; a resolution_scale the page does not offer is dropped (the game picks Auto).
 void ApplyGameVideo(LauncherConfig& config, std::string_view gameId);
 // The game ended: [video] (what the runtime may have changed) is the game's copy again.
 void StoreGameVideo(LauncherConfig& config, std::string_view gameId);

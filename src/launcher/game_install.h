@@ -129,7 +129,8 @@ class GameInstaller
 {
 public:
     ~GameInstaller();
-    // Starts SSABuild; false (and Failed with the reason) when there is no kit or it can't start.
+    // Starts SSABuild; false (and Failed with the reason) when there is no kit or it can't start. False too, and nothing
+    // touched, while a build runs: it is stopped with Cancel, never waited for here (this is called on the window's thread).
     bool Start(const std::optional<InstallKit>& kit, const std::string& iso, const std::filesystem::path& out);
     // Stops SSABuild, the process this installer started, and on Windows the processes it started in turn. Returns at
     // once; the state becomes Cancelled when SSABuild has exited.

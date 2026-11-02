@@ -96,8 +96,8 @@ namespace launcher_ui
             return;
         ui::Text(ui::TextStyle::Caption, Tr("Your names are removed and nothing is sent."), ui::color::Dim);
         // The room under the text is the title, the line above and the actions (Normal high); the rest is the report.
-        const float room = ImGui::GetIO().DisplaySize.y - 2 * ui::space::XL - 3 * ui::height::Large;
-        ui::BeginCard("##reporttext", ImVec2(0, std::clamp(room, 3.0f * ui::height::Large, 8.0f * ui::height::Large)), { .inset = true, .padding = ui::space::M });
+        const float room = ImGui::GetIO().DisplaySize.y - 2 * ui::space::XL - 3 * ui::height::Large - ui::ModalLegendHeight();
+        ui::BeginCard("##reporttext", ImVec2(0, std::clamp(room, 3.0f * ui::height::Large, 8.0f * ui::height::Large - ui::ModalLegendHeight())), { .inset = true, .padding = ui::space::M });
         ImGui::SetScrollX(0.0f);
         ImGui::PushFont(m_monoFont, ui::type::Caption); // logs keep the monospaced font (null: the text font)
         ImGui::PushTextWrapPos(0);

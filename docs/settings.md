@@ -2,7 +2,8 @@
 
 The launcher and the game runtime share one settings file, `launcher.ini`, at the root of the "Skylanders" data folder
 (`~/Library/Application Support/Skylanders/` on macOS, `%APPDATA%\Skylanders\` on Windows, `~/.local/share/Skylanders/` on
-Linux; docs/install.md). Lines are `[section]`, `key=value` or `# comment`.
+Linux; docs/install.md). Lines are `[section]`, `key=value` or `# comment`. A comment stays with the section or the key it is written over when the
+launcher saves the file (a comment over a key that is removed goes with it).
 
 "Runtime" says whether the game runtime applies the key (checked against ArkeyanRuntime's `docs/settings.md`; the game's own log is in `docs/support.md`). Keys it does not know are kept and ignored.
 
@@ -36,7 +37,7 @@ Linux; docs/install.md). Lines are `[section]`, `key=value` or `# comment`.
 | each game | `last_scene` | name of a scene | The background scene of the last start (`docs/launcher_ui.md` "Disc art"): the next start picks another when the game has two or more | n/a |
 | each game | `disc_text_languages`, `disc_voice_languages` | codes joined by commas | Written by the launcher at each disc check: the languages the disc holds, which the Language tab lists (absent: the full list; Swap Force English and French, Trap Team English). Not for editing | no |
 | `video` | `fullscreen` | `0`, `1` | Play in fullscreen | yes (the key is per game: see "Per-game video" below) |
-| `video` | `resolution_scale` | `auto` (default), `1` to `10` | 3D rendered at this multiple of 1120x704; `auto` picks x1 on integrated GPUs | yes |
+| `video` | `resolution_scale` | `auto` (default), `1` to `10` | 3D rendered at this multiple of 1120x704; `auto` picks x1 on integrated GPUs. Any other value is shown as Auto by the page and not passed on by PLAY (`ResolutionScaleOf`) | yes |
 | `video` | `fps_limit` | `display`, `30`, `60`, `120`, `144`, `240`, `0` (unlimited) | Frame rate cap (the game is made for 30; above 60 is experimental; with automatic fallback enabled, a computer that cannot hold 60 gets a steady 30). `display` is the display's refresh rate up to 60 and is 60 for now; it is a choice, no game's default. A game with no saved frame rate gets 60 (Giants, Swap Force) or 30 (SSA, until its 60 at scale 2 is merged), the value its page shows (`DefaultFrameRate`); PLAY writes it, and a saved value is never changed. Another number goes down to the rate below it. **Giants stops at 60**: its page lists `display`, 30 and 60, and a higher value saved for it (`[giants.video]`) becomes 60 once (`[launcher] giants_cap=1`) | yes |
 | `launcher` | `frame_rates` | `1` | Written once by `MigrateFrameRates`: older versions ran `fps_limit` 0, 120, 144 and 240 as 60, so a file without this key has them changed to 60 in `[video]` and `[<game>.video]` at the first load; a choice made afterwards stays | no |
 | `<game>.video` | `fps_auto_fallback` | `1` (default), `0` | Allow the automatic 60-to-30 FPS drop when frames miss their blank. Off keeps the chosen limit even if the picture stutters, without a drop notice. Read directly from the game's section | yes |

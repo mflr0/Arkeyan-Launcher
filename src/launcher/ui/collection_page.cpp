@@ -515,6 +515,9 @@ namespace launcher_ui
             text += Tf(" · {} already there", report.duplicates);
         if (report.invalid > 0)
             text += Tf(" · {} not a figure", report.invalid);
+        if (report.sameToy > 0)
+            text += report.sameToy == 1 ? Tf(" · {} is a toy you already have", report.sameToy)
+                                        : Tf(" · {} are toys you already have", report.sameToy);
         if (!report.unknown.empty())
             text += report.unknown.size() == 1 ? Tf(" · {} unknown toy (Manage)", report.unknown.size())
                                                : Tf(" · {} unknown toys (Manage)", report.unknown.size());

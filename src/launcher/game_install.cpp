@@ -448,8 +448,9 @@ GameInstaller::~GameInstaller()
 
 bool GameInstaller::Start(const std::optional<InstallKit>& kit, const std::string& iso, const std::filesystem::path& out)
 {
-    Cancel();
-    Join();
+    if (m_running)
+        return false;
+    Join(); // the one that ended
     m_cancelled = false;
     {
         std::lock_guard lock(m_mutex);

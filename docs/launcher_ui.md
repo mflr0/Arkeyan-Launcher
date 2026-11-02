@@ -360,7 +360,7 @@ portal names prominent and empty seats as tall as occupied ones, without changin
 | | |
 |---|---|
 | When | KeyCap: a key or a pad button named in the window. PadLegend: the bottom hint bar of a page (A Open, B Back...), shown while a pad is in use. |
-| API | `ui::KeyCap(PadButton::{South, East, West, North, LeftBumper, RightBumper, Start, Back}, glyphs)`, `ui::KeyCap("F6")`, `ui::DrawKeyCap`, `ui::PadButtonLabel`; `ui::PadLegend(hints, glyphs, width)` with `PadHint{button, key, label}` (`key` nullptr: not shown on the keyboard). |
+| API | `ui::KeyCap(PadButton::{South, East, West, North, LeftBumper, RightBumper, Start, Back}, glyphs)`, `ui::KeyCap("F6")`, `ui::DrawKeyCap`, `ui::PadButtonLabel`; `ui::PadLegend(hints, glyphs, width)` with `PadHint{button, key, label}` (`key` nullptr: not shown on the keyboard). Where: Home and the game page, the Collection, the foot of every settings page (`BeginPageColumn(..., legend)`: A Select, B Back, under the scrolling column), and the foot of every dialog (`EndModal`: A Select, B Close). |
 | States | The pad's family: Xbox letters (LB, RB, Menu, View), PlayStation shapes (L1, R1, Options, Share), Nintendo letters by place (B at the bottom, A at the right); the keyboard's keys translated ("Entrée", "Échap"). |
 
 ## Consistency
@@ -893,7 +893,27 @@ the one standard COM call (`#ifdef _WIN32`, checked to compile with MinGW) and n
 
 ## Command line
 `Arkeyan Launcher [--game <id>] [--play] [--help]`: `--game ssa|giants|swapforce` opens that game's page (else the game shown last),
-`--play` starts it once its disc is checked and it is built. Anything else is ignored with a line on stderr.
+`--play` starts it once its disc is checked and it is built. `--after-update` is added by the self-update's restart (below).
+Anything else is ignored with a line on stderr.
+
+## One launcher at a time
+One launcher runs per data folder (`src/launcher/single_instance.h`; a portable launcher's own `data` folder is another one,
+so it runs beside the installed launcher). `main` decides first, before any window, update check or file write:
+- The launcher that runs holds an exclusive lock of the system on `<data>/launcher.lock` (`flock`; `LockFileEx` on Windows),
+  with its process id written in it. The system releases the lock when the process ends, crash included: the file left
+  behind never blocks the next start, and the games the launcher starts do not inherit it.
+- A second start writes its request in `<data>/launcher-request.txt` (written whole, then renamed into place), waits up to
+  1.5 s for it to be taken and exits. The running launcher looks for it every 200 ms in its loop, removes it and reads
+  `focus` (the window restored if minimized, raised and focused) or `play <id>` (that, then the game's page and PLAY as
+  `--play` does: once its disc is checked, else why not in a toast: a game running, its install, copy or export, no disc,
+  INSTALL first). Anything else is ignored. On Windows the second start first allows the running one to take the
+  foreground (`AllowSetForegroundWindow` with the id from the lock file); on macOS raising the window activates the app.
+- If the running launcher ends before taking the request, the second start takes the lock and runs itself.
+- The self-update's "Restart now" starts the new launcher with `--after-update`: it waits up to 10 s for the old one to
+  close and release the lock, instead of handing it a request.
+
+`ArkeyanLauncherTest` checks the lock, the request and the wait (`tests/single_instance_test.cpp`;
+`SKY_LAUNCHER_TEST_INSTANCE_ONLY=1` runs them alone).
 
 ## Collection
 See `docs/collection_ui.md`: the page shows ArkeyanRuntime's shared collection (the game's folder, locks, favorites, backups

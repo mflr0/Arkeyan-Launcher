@@ -173,6 +173,8 @@ namespace launcher_ui
 
     void App::StartInstall()
     {
+        if (m_s->installer.Running()) // the card shows it; a second start would only fight it
+            return;
         if (!DiscStillThere())
             return;
         if (m_session.Running() == m_s->game.id) // its build can't be replaced while it runs

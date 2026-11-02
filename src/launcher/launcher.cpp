@@ -330,6 +330,8 @@ LauncherArguments ParseLauncherArguments(int argc, const char* const* argv)
             arguments.play = true;
         else if (argument == "--help" || argument == "-h")
             arguments.help = true;
+        else if (argument == "--after-update")
+            arguments.afterUpdate = true;
         else if (argument == "--game" && i + 1 < argc)
             arguments.game = argv[++i];
         else if (argument.rfind("--game=", 0) == 0)
@@ -398,20 +400,85 @@ namespace { bool g_configFrozen = false; }
 
 void FreezeLauncherConfig() { g_configFrozen = true; }
 
+namespace
+{
+    constexpr const char* ConfigHeader = "# Launcher settings: one [section] per game.";
+
+    // The comment lines of a settings file, by what they stand above: the file's start (""), a "[section]" or a "section\nkey"; those
+    // left at the very end are under "\n". A comment is the player's: saving the settings keeps it.
+    std::map<std::string, std::vector<std::string>> CommentsOf(const std::string& path)
+    {
+        std::map<std::string, std::vector<std::string>> comments;
+        size_t size = 0;
+        char* data = static_cast<char*>(SDL_LoadFile(path.c_str(), &size));
+        if (data == nullptr)
+            return comments;
+        std::string_view text(data, size);
+        if (text.substr(0, 3) == "\xEF\xBB\xBF")
+            text.remove_prefix(3);
+        std::string section, pending;
+        std::vector<std::string> lines;
+        bool started = false;
+        while (!text.empty())
+        {
+            size_t end = text.find('\n');
+            std::string_view line = Trim(text.substr(0, end));
+            text = end == std::string_view::npos ? std::string_view() : text.substr(end + 1);
+            if (line.empty())
+                continue;
+            if (line.front() == '#' || line.front() == ';')
+            {
+                if (line != ConfigHeader)
+                    lines.emplace_back(line);
+                continue;
+            }
+            std::string target;
+            if (line.front() == '[' && line.back() == ']')
+            {
+                section = Trim(line.substr(1, line.size() - 2));
+                target = "[" + section + "]";
+            }
+            else if (size_t equals = line.find('='); equals != std::string_view::npos)
+                target = section + "\n" + std::string(Trim(line.substr(0, equals)));
+            if (!target.empty() && !lines.empty())
+            {
+                // The file's first comments stand above whatever comes first; keep them at the start.
+                std::vector<std::string>& kept = comments[started ? target : std::string()];
+                kept.insert(kept.end(), lines.begin(), lines.end());
+            }
+            lines.clear();
+            started = true;
+        }
+        SDL_free(data);
+        if (!lines.empty())
+            comments["\n"] = lines;
+        return comments;
+    }
+}
+
 bool SaveLauncherConfig(const std::string& path, const LauncherConfig& config)
 {
     if (g_configFrozen)
         return true; // the settings were uninstalled: nothing writes them back
-    std::string text = "# Launcher settings: one [section] per game.\n";
+    const auto comments = CommentsOf(path);
+    auto note = [&](const std::string& key) {
+        std::string lines;
+        if (auto found = comments.find(key); found != comments.end())
+            for (const std::string& line : found->second)
+                lines += line + "\n";
+        return lines;
+    };
+    std::string text = std::string(ConfigHeader) + "\n" + note("");
     for (const auto& [section, values] : config)
     {
         if (values.empty())
             continue;
         if (!section.empty())
-            text += "\n[" + section + "]\n";
+            text += "\n" + note("[" + section + "]") + "[" + section + "]\n";
         for (const auto& [key, value] : values)
-            text += key + "=" + value + "\n";
+            text += note(section + "\n" + key) + key + "=" + value + "\n";
     }
+    text += note("\n");
     // Beside, then renamed over: launcher.ini also holds the install records, a half-written file would lose them. The
     // paths are UTF-8 (a user name with accents on Windows): FromText, never a narrow std::string, for std::filesystem.
     return launcher_files::WriteAtomic(datadir::FromText(path), text);

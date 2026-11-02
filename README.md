@@ -142,6 +142,7 @@ Portal of Power. Then click **Test the portal**.
 - Everything is in one "Skylanders" folder: `%APPDATA%\Skylanders\` on Windows, `~/Library/Application Support/Skylanders/`
   on Mac, `~/.local/share/Skylanders/` on Linux. The logs are in its `logs/` folder and in each game's folder.
 - If the game stops with an error, a window offers Copy log and Report.
+- Starting Arkeyan Launcher while it is already open brings its window to the front; a game's shortcut plays that game in it.
 - Updates (Arkeyan Launcher's and each game's) are looked for at every start; an offline start says nothing. Every download is checked against the release's SHA-256.
 
 ## Build from source

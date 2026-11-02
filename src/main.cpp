@@ -5,6 +5,7 @@
 #include "launcher/launcher.h"
 #include "launcher/problem_report.h"
 #include "launcher/shortcut.h"
+#include "launcher/single_instance.h"
 #include "launcher/ui/launcher_ui.h"
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
@@ -25,6 +26,21 @@ int main(int argc, char** argv)
     for (const std::string& unknown : arguments.unknown)
         fprintf(stderr, "launcher: ignoring the option %s (--help lists them)\n", unknown.c_str());
     datadir::ApplyPortable(); // portable.txt beside the launcher: its data folder, the games' too
+    // One launcher per data folder, decided before any window, update check or file write: a second start hands its
+    // request (come to the front; a shortcut's game to play) to the one running and exits (single_instance.h).
+    single_instance::Lock instance;
+    if (!instance.Acquire(datadir::Root(), arguments.afterUpdate ? 10000 : 0))
+    {
+        single_instance::Request request;
+        request.kind = single_instance::Request::Kind::Focus;
+        if (arguments.play && FindGame(arguments.game) != nullptr)
+            request = { single_instance::Request::Kind::Play, arguments.game };
+        if (single_instance::HandOver(instance, datadir::Root(), request))
+        {
+            fprintf(stderr, "launcher: already running for %s: handed it the request\n", datadir::Text(datadir::Root()).c_str());
+            return 0;
+        }
+    }
     datadir::MigrateOnce(); // the older folders into <data root> (docs/install.md), before any path is used
     std::string configPath = LauncherConfigPath();
     LauncherConfig config = LoadLauncherConfig(configPath);
@@ -55,6 +71,7 @@ int main(int argc, char** argv)
     options.openGame = !arguments.game.empty() && FindEnabledGame(arguments.game, config) != nullptr;
     options.play = arguments.play && (arguments.game.empty() || FindEnabledGame(arguments.game, config) != nullptr);
     options.startGames = true;
+    options.requests = true;
     std::string chosen = RunLauncherWindow(*game, configPath, config, config[game->id]["iso"], &installed, &game, options);
     if (chosen.empty())
         return 0;

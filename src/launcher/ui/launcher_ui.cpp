@@ -7,6 +7,7 @@
 #include "launcher/install_checklist.h"
 #include "shared/art/game_art.h"
 #include "launcher/problem_report.h"
+#include "launcher/single_instance.h"
 #include "launcher/ui/launcher_app.h"
 #include "shared/collection/datadir.h"
 #include "shared/embedded_fonts.h"
@@ -442,6 +443,7 @@ namespace launcher_ui
         SetActiveGame(m_s->game.id);
         m_autoPlay = options.play;
         m_startGames = options.startGames;
+        m_requests = options.requests;
         if (options.openGame)
             m_page = Page::Play; // a shortcut opens on the game, not on the launcher's menu
         for (const GameInfo& each : g_games)
@@ -619,6 +621,7 @@ namespace launcher_ui
             CheckQueuedDiscs();
             PollUpdateAll();
             PollUpdates();
+            PollRequests();
             AutoPlay();
             Frame();
             TestScript();
@@ -1004,10 +1007,76 @@ namespace launcher_ui
         if (!m_autoPlay || m_s->disc == DiscState::Verifying)
             return;
         m_autoPlay = false;
-        if (m_s->disc == DiscState::Ready && !NeedsInstall() && !Installing())
+        // A shortcut started while the launcher runs (PollRequests) comes here too: one game at a time, and not while
+        // the game's folder is being built, copied or exported.
+        std::string why;
+        if (const std::string& running = m_session.Running(); !running.empty())
+            why = Tf("{} is running", GameName(running, GameNameForm::Short));
+        else if (Installing())
+            why = Tr("Wait for the installation to finish");
+        else if (m_s->copyJob.Running())
+            why = Tr("Wait for the copy to finish");
+        else if (m_s->portableJob.Running())
+            why = Tr("Wait for the export to finish");
+        else if (m_s->disc != DiscState::Ready)
+            why = Tr("Choose the disc image first");
+        else if (NeedsInstall())
+            why = Tr("Press INSTALL first");
+        if (why.empty())
+        {
             PlayNow();
-        else
-            Toast(m_s->disc == DiscState::Ready ? Tr("Press INSTALL first") : Tr("Choose the disc image first"));
+            fprintf(stderr, "launcher: --play: %s\n", !m_session.Running().empty() || m_launchPending ? "the game starts" : "the game did not start");
+            return;
+        }
+        fprintf(stderr, "launcher: --play: %s\n", why.c_str());
+        Toast(why);
+    }
+
+    void App::PollRequests()
+    {
+        const uint64_t now = SDL_GetTicks();
+        if (m_raiseUntil != 0 && !(SDL_GetWindowFlags(m_window) & SDL_WINDOW_MINIMIZED))
+        {
+            SDL_RaiseWindow(m_window);
+            m_raiseUntil = 0;
+        }
+        else if (m_raiseUntil != 0 && now > m_raiseUntil)
+            m_raiseUntil = 0;
+        if (!m_requests || m_uninstalled || now < m_requestAt + 200)
+            return;
+        m_requestAt = now;
+        const single_instance::Request request = single_instance::TakeRequest(datadir::Root());
+        if (request.kind == single_instance::Request::Kind::None)
+            return;
+        BringToFront();
+        if (request.kind == single_instance::Request::Kind::Focus)
+        {
+            fprintf(stderr, "launcher: a second start brought the window to the front\n");
+            return;
+        }
+        fprintf(stderr, "launcher: a second start asks to play %s\n", request.game.c_str());
+        const GameInfo* game = FindEnabledGame(request.game, m_config);
+        if (game == nullptr)
+            return;
+        if (&m_s->game != game)
+            SelectGame(*game);
+        GoTo(Page::Play);
+        m_autoPlay = true; // as --play: PLAY once its disc is checked, or why it can't
+    }
+
+    // Restored if minimized, raised and focused. SDL_RaiseWindow also activates the app on macOS; on Windows the second
+    // start allowed this process to take the foreground (single_instance::HandOver).
+    void App::BringToFront()
+    {
+        const SDL_WindowFlags flags = SDL_GetWindowFlags(m_window);
+        if (flags & SDL_WINDOW_HIDDEN)
+            SDL_ShowWindow(m_window);
+        if (flags & SDL_WINDOW_MINIMIZED)
+        {
+            SDL_RestoreWindow(m_window);
+            m_raiseUntil = SDL_GetTicks() + 2000;
+        }
+        SDL_RaiseWindow(m_window);
     }
 
     void App::Browse()
@@ -1091,13 +1160,17 @@ namespace launcher_ui
 
     // ---- Widgets -------------------------------------------------------------------------------------------------
 
-    void App::BeginPageColumn(const char* id, float width, bool alwaysScrollbar)
+    void App::BeginPageColumn(const char* id, float width, bool alwaysScrollbar, bool legend)
     {
         // The column has room round its content (ui::BeginRoomyChild): a ring, or a button raised onto a title's capitals, at
         // its edge is not cut. Its foot reaches over the page's bottom padding (to the window's edge).
         constexpr float Bleed = ui::space::M;
         const float below = ImGui::GetStyle().WindowPadding.y;
-        ui::BeginRoomyChild(id, ImVec2(width, ImGui::GetContentRegionAvail().y + below - Bleed), ImGuiChildFlags_NavFlattened,
+        m_columnLegend = legend && ui::Ctx().glyphs != ui::Glyphs::Keyboard;
+        m_columnAt = ImGui::GetCursorScreenPos();
+        m_columnWidth = width;
+        const float legendH = m_columnLegend ? ui::height::Normal + ImGui::GetStyle().ItemSpacing.y : 0;
+        ui::BeginRoomyChild(id, ImVec2(width, ImGui::GetContentRegionAvail().y + below - Bleed - legendH), ImGuiChildFlags_NavFlattened,
             ImGuiWindowFlags_NoBackground | (alwaysScrollbar ? ImGuiWindowFlags_AlwaysVerticalScrollbar : 0), Bleed);
         ImGui::SetScrollX(0.0f);
         m_columnBelow = below;
@@ -1107,6 +1180,12 @@ namespace launcher_ui
     {
         ImGui::Dummy(ImVec2(0, m_columnBelow));
         ui::EndRoomyChild();
+        if (m_columnLegend)
+        {
+            const ui::PadHint hints[] = { { ui::PadButton::South, "Enter", Tr("Select") }, { ui::PadButton::East, "Esc", Tr("Back") } };
+            ImGui::SetCursorScreenPos(ImVec2(m_columnAt.x, ImGui::GetCursorScreenPos().y));
+            ui::PadLegend(hints, ui::Ctx().glyphs, m_columnWidth);
+        }
     }
 
     void App::BeginCard(const char* id, ImVec2 size, ImGuiChildFlags flags)
@@ -2173,7 +2252,7 @@ namespace launcher_ui
         const float available = ImGui::GetContentRegionAvail().x;
         const float width = std::min(available, ui::width::Page);
         ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (available - width) / 2);
-        BeginPageColumn(id, width, true); // the scrollbar is always there: the card is as wide on every tab
+        BeginPageColumn(id, width, true, true); // the scrollbar is always there: the card is as wide on every tab
         const float top = ImGui::GetCursorPosY();
         ui::Text(ui::TextStyle::Display, title, ui::color::Ink, -1);
         const float bottom = ImGui::GetCursorPosY();

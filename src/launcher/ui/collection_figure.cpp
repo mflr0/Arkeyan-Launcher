@@ -34,7 +34,7 @@ namespace launcher_ui
 
     float OverlayBody(float chrome, float least, float most)
     {
-        return std::clamp(ImGui::GetIO().DisplaySize.y - 2 * ui::space::XL - chrome, least, most);
+        return std::clamp(ImGui::GetIO().DisplaySize.y - 2 * ui::space::XL - chrome - ui::ModalLegendHeight(), least, most - ui::ModalLegendHeight());
     }
 
     ui::ModalResult OverlayActions(const char* cancel, const char* confirm, bool confirmDisabled)
@@ -210,7 +210,7 @@ namespace launcher_ui
             Figure trashed;
             m_trashNames.push_back(collection::Read(entry.path, trashed) && trashed.toy != nullptr ? trashed.DisplayName() : entry.file);
         }
-        m_starters = size_t(std::count_if(m_model.figures.begin(), m_model.figures.end(), [](const Figure& f) { return collection::UntouchedStarter(f); }));
+        m_starters = size_t(std::count_if(m_model.figures.begin(), m_model.figures.end(), [&](const Figure& f) { return collection::UntouchedStarter(f) && m_model.SeatOf(f.path) < 0; }));
         m_backups.clear();
     }
 
@@ -879,8 +879,8 @@ namespace launcher_ui
         {
             std::string error;
             bool saved = true;
-            if (Trimmed(m_label) != f.label)
-                saved = collection::SetLabel(f.path, Trimmed(m_label));
+            if (collection::CleanLabel(m_label) != f.label)
+                saved = collection::SetLabel(f.path, m_label);
             if (saved && stats)
             {
                 // The figure as it is now (a game may have played it since the editor opened), with only the fields

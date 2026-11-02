@@ -378,7 +378,7 @@ namespace launcher_ui
         // This game first: another game's busy figure must not hide it (and the other way round, the first one found is named).
         std::string other;
         for (const collection::Figure& figure : figures)
-            if (figure.lock.Busy() && figure.lock.game != "launcher")
+            if (HeldByGame(figure.lock))
             {
                 if (figure.lock.game == gameId)
                     return gameId;
@@ -386,6 +386,22 @@ namespace launcher_ui
                     other = figure.lock.game;
             }
         return other;
+    }
+
+    bool CollectionModel::HeldByGame(const collection::LockInfo& lock) const
+    {
+        if (!lock.Busy() || lock.game == "launcher")
+            return false;
+        return FindGame(lock.game) == nullptr || GameIsRunning(FoldersOf(lock.game)); // not ours: the lock is all there is
+    }
+
+    std::vector<std::string> CollectionModel::LeftoverLocks() const
+    {
+        std::vector<std::string> paths;
+        for (const collection::Figure& figure : figures)
+            if (figure.lock.Busy() && figure.lock.game != "launcher" && !HeldByGame(figure.lock))
+                paths.push_back(figure.path);
+        return paths;
     }
 
     bool CollectionModel::CanEditSeats() const
@@ -477,6 +493,13 @@ namespace launcher_ui
             return false;
         // Deleting the first half cut the link; the other half goes too, and its seat.
         return other.empty() || Find(other) == nullptr || Delete(other, error);
+    }
+
+    int CollectionModel::Tidy()
+    {
+        const int moved = collection::Tidy(OnPortal());
+        Load();
+        return moved;
     }
 
     std::vector<collection::Section> CollectionModel::Shelf(const ShelfFilter& filter, std::vector<collection::Figure>& shown, int* hidden) const

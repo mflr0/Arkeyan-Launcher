@@ -457,7 +457,11 @@ namespace launcher_ui
         // A page's centred column (the cursor is at its left): it reaches a few points past each side and over the page's
         // bottom padding, so the clip rect neither shaves the borders at its edges nor cuts the scrolling content short of the window.
         float m_columnBelow = 0;
-        void BeginPageColumn(const char* id, float width, bool alwaysScrollbar = false);
+        bool m_columnLegend = false;
+        ImVec2 m_columnAt;      // where the column starts (the legend under it)
+        float m_columnWidth = 0;
+        // `legend`: while a pad is in use the column leaves the foot of the page to a PadLegend (A Select, B Back), drawn by EndPageColumn.
+        void BeginPageColumn(const char* id, float width, bool alwaysScrollbar = false, bool legend = false);
         void EndPageColumn();
         // A settings row's select: the choices' labels, the value in [section] key; the control column's width.
         bool SettingSelect(const char* id, const char* section, const char* key, std::span<const Choice> choices, int fallback);
@@ -534,6 +538,8 @@ namespace launcher_ui
         void TestRunningScript(uint64_t now);
         void PlayNow(); // PLAY on the shown game: starts it beside the window (m_startGames), else returns its disc and build
         void AutoPlay(); // --play: PLAY as soon as the shown game's disc is checked, if it can
+        void PollRequests(); // what a second start asked (single_instance.h): the window to the front, a game to play
+        void BringToFront();
         void PollGame(); // the game running: its end (a crash is told), or one found running
 
         std::string m_configPath;
@@ -561,6 +567,9 @@ namespace launcher_ui
         GameTab m_gameTab = GameTab::Video;
         bool m_autoPlay = false; // --play: start the game as soon as it is ready (a desktop shortcut)
         bool m_startGames = false; // PLAY starts the game and the window stays (LauncherOptions)
+        bool m_requests = false;   // LauncherOptions::requests
+        uint64_t m_requestAt = 0;  // when the request file was last looked for
+        uint64_t m_raiseUntil = 0; // a minimized window is raised once restored (macOS restores it with an animation)
         GameSession m_session;     // the game running: one at a time (game_run.h)
         uint64_t m_sessionStart = 0; // SDL_GetTicks when the game started: the time on the game page
         bool m_launchPending = false; // the page theme must finish fading before the process starts

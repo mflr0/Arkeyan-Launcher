@@ -2,6 +2,7 @@
 #include "launcher/ui/components/layout.h"
 #include "launcher/i18n.h"
 #include "launcher/ui/components/buttons.h"
+#include "launcher/ui/components/feedback.h"
 #include <algorithm>
 #include <cmath>
 #include <imgui_internal.h> // the parent's layout after a roomy child
@@ -484,8 +485,17 @@ namespace ui
         return result;
     }
 
+    float ModalLegendHeight() { return Ctx().glyphs == Glyphs::Keyboard ? 0.0f : height::Normal + space::XS + 2 * space::S; } // the legend, its gap, and the two item spacings round it
+
     void EndModal()
     {
+        // While a pad is in use the dialog says what its buttons are (A presses the focused one, B closes it).
+        if (Ctx().glyphs != Glyphs::Keyboard)
+        {
+            const PadHint hints[] = { { PadButton::South, "Enter", Tr("Select") }, { PadButton::East, "Esc", Tr("Close") } };
+            ImGui::Dummy(ImVec2(0, space::XS));
+            PadLegend(hints, Ctx().glyphs, -1);
+        }
         ImGui::PopStyleVar();
         ImGui::EndPopup();
     }

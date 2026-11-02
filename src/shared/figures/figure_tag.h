@@ -159,5 +159,5 @@ namespace figures
     constexpr uint16_t MaxGold = 65000;
 
     std::string NicknameUtf8(const FigureStats& stats);
-    void SetNicknameUtf8(FigureStats& stats, const std::string& text); // cut to 16 UTF-16 units
+    void SetNicknameUtf8(FigureStats& stats, const std::string& text); // 16 UTF-16 units at most; malformed bytes and controls dropped
 }

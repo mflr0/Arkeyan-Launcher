@@ -648,6 +648,10 @@ namespace figures
         for (char16_t unit : stats.nickname)
         {
             uint32_t c = unit;
+            if (c == 0)
+                break;
+            if (c >= 0xD800 && c <= 0xDFFF) // half of a pair: no valid UTF-8 for it alone
+                c = '?';
             if (c < 0x80)
                 text += char(c);
             else if (c < 0x800)
@@ -667,39 +671,60 @@ namespace figures
 
     void SetNicknameUtf8(FigureStats& stats, const std::string& text)
     {
-        // Characters of the Basic Multilingual Plane only (the title's fonts have no others).
+        // Characters of the Basic Multilingual Plane only (the title's fonts have no others): a character past it is
+        // kept as '?'. Bytes that are not well-formed UTF-8 (a stray byte, an overlong form, a lone surrogate) and
+        // control characters are dropped.
         stats.nickname.clear();
         for (size_t i = 0; i < text.size() && stats.nickname.size() < 16;)
         {
             uint8_t lead = uint8_t(text[i]);
             uint32_t c;
             size_t length;
+            uint32_t least;
             if (lead < 0x80)
             {
                 c = lead;
                 length = 1;
+                least = 0;
             }
-            else if ((lead & 0xE0) == 0xC0)
+            else if (lead >= 0xC2 && lead <= 0xDF)
             {
                 c = lead & 0x1F;
                 length = 2;
+                least = 0x80;
             }
             else if ((lead & 0xF0) == 0xE0)
             {
                 c = lead & 0x0F;
                 length = 3;
+                least = 0x800;
+            }
+            else if (lead >= 0xF0 && lead <= 0xF4)
+            {
+                c = lead & 0x07;
+                length = 4;
+                least = 0x10000;
             }
             else
             {
-                c = '?';
-                length = (lead & 0xF8) == 0xF0 ? 4 : 1;
+                i++; // a continuation byte alone, or a lead that never starts a character
+                continue;
             }
-            if (i + length > text.size())
-                break;
-            for (size_t k = 1; k < length && length < 4; k++)
+            bool good = i + length <= text.size();
+            for (size_t k = 1; good && k < length; k++)
+            {
+                good = (uint8_t(text[i + k]) & 0xC0) == 0x80;
                 c = (c << 6) | (uint8_t(text[i + k]) & 0x3F);
-            stats.nickname += char16_t(c);
+            }
+            if (!good || c < least || c > 0x10FFFF || (c >= 0xD800 && c <= 0xDFFF))
+            {
+                i++;
+                continue;
+            }
             i += length;
+            if (c < 0x20 || (c >= 0x7F && c <= 0x9F))
+                continue;
+            stats.nickname += c > 0xFFFF ? u'?' : char16_t(c);
         }
     }
 }

@@ -113,7 +113,9 @@ At the first visit to the page (`CollectionPage::Open`):
 - **Live**: figures a game holds (JSON lock of a live process) read "Playing now"; while the shown game runs a status pill
   "Spyro's Adventure is running: use its Toy Box" follows the game's Select above the seats, the seats are
   read-only and Edit, Reset, Delete are disabled for those figures (favorites and names stay editable). "Mark as not in
-  use" (held) breaks a stale lock.
+  use" (held) breaks a stale lock. A lock only counts as the game running when the game says it runs (its marker,
+  `GameIsRunning`): a live process that merely took over the number of a game that crashed holds nothing, the seats stay
+  editable, and Manage > Tidy offers "Mark as not in use · N" (held) for those locks.
 - Refresh: every 1.5 s the model compares a signature of the folder (names, sizes, times of dumps, locks,
   `collection.json`, the session file) and whether each lock's process still runs; any change reloads the shelf. The
   launcher window closes when the game starts (`main.cpp`), so this is seen when the launcher is opened beside a running
@@ -195,7 +197,15 @@ At the first visit to the page (`CollectionPage::Open`):
   from the dump, not the file name), when and why, Put back and Delete for good (Danger, held); 30 days), Backups (a
   ListRow per figure with its count, opening its copies: when, level and gold, Restore (Danger, held)), Import and export
   (files, a folder, drop files or a folder on the window; export everything; show in folder), Unknown toys (name one:
-  `catalogue.json` of the collection, applied at the next start), Tidy (the starters; Danger, held).
+  `catalogue.json` of the collection, applied at the next start), Tidy (the starters, but those on a seat; Danger, held).
+  Import adds a dump whose serial a dump already there has (a played copy and an older copy are one toy: only one can sit
+  on a portal) and says so in the toast; byte-identical dumps are skipped, files over 1 MB and non-files are refused, and
+  a copy is written whole or not at all. Export never overwrites: a file of the same bytes counts as done, another takes
+  " (2)". Backups belong to the figure: Rename moves them, Delete takes them to the trash with it (`trash/<id>.backups`),
+  Put back and Delete for good follow, a backup of another serial or type is not listed and Restore refuses it; backups
+  within one second sort by their number. Restore, Reset, Edit and Import write a new file and rename it over the old.
+  Names are kept to 200 bytes without reserved Windows names or a trailing dot; a label is trimmed, without control
+  characters, 64 bytes at most; a nickname takes well-formed UTF-8 only, without control characters.
 - **Pictures**: `collection::PortraitPath` (the newest cached variant picture, then plain art, then the toy's family
   picture from a disc: SSA's potion, compass and paw icons), else `figures::GenerateIcon` (a shape, the element's colour, the
   variant's badge, initials for characters, and the Toy Box's mark for items, packs and sidekicks:
@@ -206,6 +216,8 @@ At the first visit to the page (`CollectionPage::Open`):
   figure off), Y the search (the bar's search, Filters and tags are on the way up from the shelf), LB/RB choose for the previous/next seat. Cards scrolled out of view aren't drawn; Manage and
   the sheet read the trash and the backups once per change of the collection. While a pad is in use a **PadLegend** closes the
   page (A Select, X Figure sheet, Y Search, B Back), and a card's tooltip shows under the pointer only.
+  Settings pages (the launcher's and each game's) end with a PadLegend (A Select, B Back) under their scrolling column, and
+  every dialog (`ui::EndModal`) with one (A Select, B Close).
 
 ## Files
 
@@ -216,6 +228,11 @@ At the first visit to the page (`CollectionPage::Open`):
 
 ## Checks
 
+- `ArkeyanLauncherTest` (`SweepChecks`, issue #9): backups that follow Rename, Delete, Put back and Delete for good, Restore of
+  another figure's backup refused, backup order within a second, Restore, Reset and stats replacing the file (a second name
+  for the old one keeps the old bytes), Import size limit and a write that dies half-way, same-serial Import, Export that
+  never overwrites, nickname and label rules, names (reserved, long, case-only), Tidy keeping the seated starter, and sixteen
+  processes taking one lock (exactly one wins). `CollectionChecks` adds the lock of a live process that is not the game.
 - `ArkeyanLauncherTest` (`CollectionChecks`): library, migration (originals intact, second pass copies none), stats,
   backups, restore, reset, duplicate, trash, import dedupe, JSON locks (live, stale), seats and `portal.txt`, live
   refresh, settings move, unknown toy naming, icons for every catalogue toy (and the family's mark on items and packs),
