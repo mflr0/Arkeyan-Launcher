@@ -144,7 +144,7 @@ namespace launcher_ui
         else if (state.phase == Phase::Done && !state.note.empty())
         {
             text = state.note;
-            buttons = { { Tr("OK"), false, Dismiss } };
+            buttons = { { Tr("Close"), false, Dismiss } }; // as the failed one: one word to dismiss a banner
         }
         else if (state.launcherNewer && !m_updateLater)
         {
@@ -187,6 +187,7 @@ namespace launcher_ui
 
         float x = ui::space::L + contentW - buttonsW + ui::space::S;
         int pressed = None;
+        ui::NavJoin("##page"); // the band's buttons are the page's top row for the D-pad
         for (const Button& button : buttons)
         {
             ui::ButtonOptions options = optionsOf(button);
@@ -197,6 +198,7 @@ namespace launcher_ui
             ImGui::PopID();
             x += ui::ButtonWidth(button.label, options) + ui::space::S;
         }
+        ui::NavJoin(nullptr);
         ImGui::End();
         ImGui::PopStyleVar();
         ImGui::PopStyleColor();
@@ -356,13 +358,15 @@ namespace launcher_ui
         ui::Text(ui::TextStyle::Body, Tr("Designed by dorydev."), ui::color::InkSoft);
         ui::Text(ui::TextStyle::Body, Tr("Built with SDL 3, Dear ImGui, {fmt}, stb, miniz, XenonRecomp, Outfit and Bungee. MIT licensed."), ui::color::InkSoft);
         ImGui::Dummy(ImVec2(0, ui::space::XXS));
-        if (ui::Button(Tr("GitHub")))
+        // Each opens a web page: the External icon, as Release page's; the row's gap is the buttons' (S).
+        const ui::ButtonOptions web{ .icon = ui::Icon::External };
+        if (ui::Button(Tr("GitHub"), web))
             SDL_OpenURL(Project);
-        ImGui::SameLine();
-        if (ui::Button(Tr("Licenses")))
+        ImGui::SameLine(0, ui::space::S);
+        if (ui::Button(Tr("Licenses"), web))
             SDL_OpenURL((std::string(Project) + "/blob/main/THIRD_PARTY_NOTICES.md").c_str());
-        ImGui::SameLine();
-        if (ui::Button(Tr("Report a bug")))
+        ImGui::SameLine(0, ui::space::S);
+        if (ui::Button(Tr("Report a bug"), web))
             SDL_OpenURL((std::string(Project) + "/issues/new").c_str());
         ImGui::Dummy(ImVec2(0, ui::space::XS));
         ui::Text(ui::TextStyle::Caption, Tr("Skylanders is a trademark of Activision. This project is not affiliated with or endorsed by Activision."), ui::color::Dim);

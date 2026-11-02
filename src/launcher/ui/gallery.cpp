@@ -191,7 +191,7 @@ namespace launcher_ui
             ui::ButtonOptions large;
             large.size = ui::Size::Large;
             large.kind = ui::ButtonKind::Primary;
-            large.icon = ui::Icon::Download;
+            large.icon = ui::Icon::Update;
             ui::Button(Tr("UPDATE"), large);
             grid.End(r + 1);
             break;
@@ -233,7 +233,7 @@ namespace launcher_ui
                     options.indeterminate = c.indeterminate;
                     options.style = &StyleOf(Games[g]);
                     options.separated = true;
-                    options.icon = ui::Icon::Play;
+                    options.icon = std::string_view(c.label) == "INSTALL" ? ui::Icon::Download : std::string_view(c.label) == "UPDATE" ? ui::Icon::Update : ui::Icon::Play; // the game page's
                     const unsigned accent = ui::Ctx().accent;
                     ui::Ctx().accent = StyleOf(Games[g]).glow; // the focus ring in the game's colour, as on its page
                     ui::PreviewState(c.state);
@@ -253,7 +253,7 @@ namespace launcher_ui
             ui::TabsOptions noBumpers;
             ui::PreviewState({ .focused = true });
             ui::Tabs("##tabs1", tabs, &tab, noBumpers);
-            Caption("Tabs with a pad: LB / RB at the ends");
+            Caption("Tabs with a pad: LT / RT at the ends");
             const ui::Glyphs glyphs = ui::Ctx().glyphs;
             ui::Ctx().glyphs = ui::Glyphs::Xbox;
             ui::Tabs("##tabs2", tabs, &tabPad);
@@ -524,7 +524,7 @@ namespace launcher_ui
                 ImVec2 row = ImGui::GetCursorScreenPos();
                 Caption(name);
                 ImGui::SetCursorScreenPos(ImVec2(row.x + 110, row.y));
-                for (int b = 0; b < 8; b++)
+                for (int b = 0; b <= int(ui::PadButton::RightTrigger); b++)
                 {
                     ui::KeyCap(ui::PadButton(b), family);
                     ImGui::SameLine(0, ui::space::XS);
@@ -544,9 +544,8 @@ namespace launcher_ui
             }
             ImGui::Dummy(ImVec2(0, ui::space::XS));
             Caption("PadLegend: the bottom hint bar, in each family and on the keyboard (a hint the keyboard lacks is left out)");
-            const ui::PadHint hints[] = { { ui::PadButton::South, Tr("Return"), Tr("Open") }, { ui::PadButton::East, Tr("Escape"), Tr("Back") },
-                { ui::PadButton::West, nullptr, Tr("Edit") }, { ui::PadButton::North, "Tab", Tr("Filters") },
-                { ui::PadButton::Start, nullptr, Tr("Settings") } };
+            const ui::PadHint hints[] = { { ui::PadButton::LeftBumper, nullptr, Tr("Pages"), true }, { ui::PadButton::South, Tr("Return"), Tr("Open") },
+                { ui::PadButton::East, Tr("Escape"), Tr("Back") }, { ui::PadButton::West, nullptr, Tr("Edit") }, { ui::PadButton::North, "Tab", Tr("Filters") } };
             const float legendW = ImGui::GetContentRegionAvail().x * 0.62f;
             for (ui::Glyphs family : { ui::Glyphs::Xbox, ui::Glyphs::PlayStation, ui::Glyphs::Nintendo, ui::Glyphs::Keyboard })
             {

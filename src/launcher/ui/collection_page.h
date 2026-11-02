@@ -85,6 +85,7 @@ namespace launcher_ui
         // Screenshot test (SKY_LAUNCHER_TEST_COLLECTION): every screen, in a scratch collection.
         void Seed();
         void TestScreen(int step);
+        void TestManageTab(int tab) { m_manageTab = tab; }
         static const char* TestShotName(int step);
         static bool TestPad(); // SKY_LAUNCHER_TEST_COLLECTION=pad: the shots show the page as a pad player sees it (the legend)
         static int TestShotCount();
@@ -188,16 +189,14 @@ namespace launcher_ui
         bool m_openFilters = false;     // the screenshot test opens the Filters panel, and closes it at the next screen
         bool m_closeFilters = false;
         bool m_focusSearch = false;     // Y, F3: the search box takes the keyboard next frame
-        int m_choosing = -1;            // the seat the next card goes on (a seat clicked, A, LB/RB); -1: browsing
+        int m_choosing = -1;            // the seat the next card goes on (a seat clicked, A, LT / RT); -1: browsing
         std::vector<ImVec2> m_crossAt;  // where each seat's X was drawn this frame (-1: none), for the test
         int m_navSeat = -1;             // the seat with the keyboard or pad focus this frame, -1: none
         int m_testMenu = 0;             // the screenshot test opens a menu on its own: 1 Manage's, 2 the figure sheet's, 3 its Put on the portal
         bool m_testScrollBottom = false; // the screenshot test shows the shelf's last row and its bottom spacing
         int m_hoverSeat = -1;           // the seat under the mouse this frame
-        int m_focusSeat = -1;           // the D-pad crosses between the seats and the shelf: focus this seat next frame,
+        int m_focusSeat = -1;           // focus this seat next frame (the screenshot test),
         bool m_focusCard = false;       // or the shelf's first card
-        bool m_navTopCard = false;      // the focused card is in the shelf's first row (Up goes to the seats)
-        bool m_navBar = false;          // the search or a filter of the bar has the focus (Up goes to the seats)
         int m_seatMenu = -1;            // the seat whose right-click menu is open
         std::string m_selected;         // the card with the focus
         std::string m_hovered;          // the card under the mouse or the focus (X: its sheet)

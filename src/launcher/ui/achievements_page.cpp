@@ -46,7 +46,7 @@ namespace launcher_ui
         RefreshProgress();
         const GameProgress& progress = m_progress;
         const char* title = GameName(m_s->game.id, GameNameForm::Full);
-        BeginSettingsPage("##achievementscolumn", title != nullptr ? title : m_s->game.name, true);
+        BeginSettingsPage("##achievementscolumn", title != nullptr ? title : m_s->game.name, true, true); // the D-pad scrolls the list
         if (!ImGui::IsAnyItemActive())
         {
             const float step = ui::height::Large;

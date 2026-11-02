@@ -3,6 +3,7 @@
 #include "launcher/i18n.h"
 #include "launcher/ui/components/buttons.h"
 #include "launcher/ui/components/feedback.h"
+#include "launcher/ui/components/navigation.h"
 #include <algorithm>
 #include <cmath>
 #include <imgui_internal.h> // the parent's layout after a roomy child
@@ -489,12 +490,18 @@ namespace ui
 
     void EndModal()
     {
-        // While a pad is in use the dialog says what its buttons are (A presses the focused one, B closes it).
+        // While a pad is in use the dialog says what its buttons are (A presses the focused one, B closes it); one under a
+        // question it asks (the sheet under "Move to the trash?") leaves the legend to that one.
+        ImGuiContext& g = *ImGui::GetCurrentContext();
+        const bool top = g.OpenPopupStack.Size == 0 || g.OpenPopupStack.back().Window == nullptr ||
+            g.OpenPopupStack.back().Window->RootWindow == ImGui::GetCurrentWindow()->RootWindow;
         if (Ctx().glyphs != Glyphs::Keyboard)
         {
-            const PadHint hints[] = { { PadButton::South, "Enter", Tr("Select") }, { PadButton::East, "Esc", Tr("Close") } };
             ImGui::Dummy(ImVec2(0, space::XS));
-            PadLegend(hints, Ctx().glyphs, -1);
+            if (top)
+                PageLegend(Tr("Close")); // with the dialog's own pad actions
+            else
+                ImGui::Dummy(ImVec2(0, height::Normal)); // its room kept: the dialog doesn't change size under the question
         }
         ImGui::PopStyleVar();
         ImGui::EndPopup();

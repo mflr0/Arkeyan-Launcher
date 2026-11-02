@@ -61,8 +61,9 @@ namespace launcher_ui
     {
         return MaxFrameRate(gameId) == 60 ? std::span<const Choice>(FpsChoices, 3) : std::span<const Choice>(FpsChoices);
     }
-    inline constexpr Choice VolumeChoices[] = { { "0", "0 %" }, { "10", "10 %" }, { "20", "20 %" }, { "30", "30 %" }, { "40", "40 %" },
-        { "50", "50 %" }, { "60", "60 %" }, { "70", "70 %" }, { "80", "80 %" }, { "90", "90 %" }, { "100", "100 %" } };
+    inline constexpr Choice VolumeChoices[] = { { "0", N_("0%") }, { "10", N_("10%") }, { "20", N_("20%") }, { "30", N_("30%") },
+        { "40", N_("40%") }, { "50", N_("50%") }, { "60", N_("60%") }, { "70", N_("70%") }, { "80", N_("80%") }, { "90", N_("90%") },
+        { "100", N_("100%") } }; // as FormatPercent writes them: "50%", French "50 %"
     inline constexpr Choice RumbleChoices[] = { { "off", N_("Off") }, { "low", N_("Low") }, { "normal", N_("Normal") }, { "strong", N_("Strong") } };
 
     inline constexpr Choice AspectChoices[] = { { "auto", N_("Auto (follows the window)") }, { "16:9", N_("16:9 (with bars)") } };
@@ -391,7 +392,7 @@ namespace launcher_ui
         bool DrawTabBar(const char* const* labels, int count, int* current);
         // A settings page's head: the centred column, the title (Display) and, when `back`, the Back button at its right.
         // EndSettingsPage closes the column.
-        void BeginSettingsPage(const char* id, const char* title, bool back);
+        void BeginSettingsPage(const char* id, const char* title, bool back, bool focusBack = false); // focusBack: Back is the page's first stop (no tabs)
         void EndSettingsPage() { EndPageColumn(); }
         void DrawAbout();        // update_page.cpp: About
         void DrawUpdates();      // update_page.cpp: check for updates, and the automatic check; in Settings > Launcher
@@ -411,10 +412,12 @@ namespace launcher_ui
         void DrawGallery();
         void TestGalleryScript(uint64_t now);
 
-        // Pages and focus. The sidebar and the page are separate windows, which the D-pad doesn't cross: B / Escape
-        // moves the focus to the sidebar (or leaves Settings and Collection), A on a row moves it into the page.
+        // Pages and focus (docs/launcher_ui.md, "Navigation model"). The sidebar and the page are separate windows, which the
+        // D-pad doesn't cross: LB / RB change the main page, B goes back one step (to Home, then on Home to the sidebar), A on
+        // a sidebar row moves the focus into its page.
         void GoTo(Page page);
         void Back();
+        void StepMainPage(int step); // LB -1, RB +1
         void TakeFocus(FocusTo where); // after the item that takes the focus when `where` is asked for
         void RequestFocus(FocusTo where) { m_focusTo = where; m_focusShow = ImGui::GetIO().NavVisible; }
 
@@ -536,6 +539,7 @@ namespace launcher_ui
         void TestSeatXScript(uint64_t now);
         void TestButtonsScript(uint64_t now);
         void TestRunningScript(uint64_t now);
+        void TestPadWalkScript(uint64_t now); // pad_walk.cpp
         void PlayNow(); // PLAY on the shown game: starts it beside the window (m_startGames), else returns its disc and build
         void AutoPlay(); // --play: PLAY as soon as the shown game's disc is checked, if it can
         void PollRequests(); // what a second start asked (single_instance.h): the window to the front, a game to play
@@ -563,6 +567,7 @@ namespace launcher_ui
         FocusTo m_focusTo = FocusTo::Sidebar;
         bool m_focusShow = false;    // the focus request came from the keyboard or the pad: show the ring
         bool m_backTaken = false;    // last frame, something else answered B / Escape (a menu, a dialog, a field)
+        bool m_pagesTaken = false;   // last frame, LB / RB were not the pages' (a menu, a dialog, a field)
         SettingsTab m_tab = SettingsTab::Controls;
         GameTab m_gameTab = GameTab::Video;
         bool m_autoPlay = false; // --play: start the game as soon as it is ready (a desktop shortcut)
@@ -598,7 +603,6 @@ namespace launcher_ui
         float m_bannerH = 0;             // the height the banner takes at the top of the page, this frame
         SDL_Texture* m_github = nullptr;
         bool m_dragOver = false;
-        ui::NavigationColumns m_heroNavigation;
 
         std::vector<SDL_JoystickID> m_gamepads;
         SDL_GamepadType m_lastPadType = SDL_GAMEPAD_TYPE_UNKNOWN; // the last pad connected
@@ -634,6 +638,21 @@ namespace launcher_ui
         bool m_testPad = false;        // SKY_LAUNCHER_TEST_PAD: each game's Controller tab, and Swap Force's Game tab
         bool m_testRunning = false;      // SKY_LAUNCHER_TEST_RUNNING: one game at a time (TestRunningScript)
         bool m_testHero = false;         // SKY_LAUNCHER_TEST_HERO: four display fixtures, no game or install started
+        bool m_testPadWalk = false;      // SKY_LAUNCHER_TEST_PADWALK: every page and dialog walked with the pad (pad_walk.cpp)
+        struct PadWalk
+        {
+            int view = -1, phase = 0, wait = 0, moves = 0, direction = 0, indexAt = -1, pagesStep = 0, stepDir = 0;
+            uint32_t from = 0, root = 0;
+            ImGuiKey release = ImGuiKey_None;
+            Page pageAt = Page::Home;
+            std::vector<uint32_t> expected, seen, items;
+            std::map<std::pair<uint32_t, int>, uint32_t> edges;
+            std::vector<ui::Context::TestStop> frameStops; // the last frame's stops, their top windows and rectangles
+            std::vector<ui::Context::TestStop> stopsAt;    // the stops when the last move was made
+            int disorder = 0;                  // moves out of reading order in this view
+            std::vector<uint32_t> frameLegends; // the last frame's legends, by top window
+            std::vector<std::string> disorderNotes;
+        } m_walk;
         int m_testHeroState = -1;        // ready, needs-disc, installing, running
         bool m_testHeroNoArt = false;
         std::vector<uint8_t> m_testHeroArtPixels;

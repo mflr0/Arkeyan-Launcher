@@ -15,7 +15,8 @@ component has becomes a component (or an option of one) first, with its states d
   each game's `GameStyle`, and the ImGui style (`LauncherTheme::Apply`); its old size constants stay until the screens no
   longer use them (phase B removes each one as it goes unused).
 - `src/launcher/ui/components/` - the components: `core` (context, states, text styles, colour helpers, focus ring, icons),
-  `buttons`, `inputs`, `layout`, `feedback`, `format` (values in the player's language); `components.h` includes them all.
+  `buttons`, `inputs`, `layout`, `feedback`, `format` (values in the player's language), `navigation` (the pad's model: the
+  moves, the pad actions and their legend); `components.h` includes them all. `ui/pad_walk.cpp` - the pad walk test.
 - `src/launcher/game_names.h` - every game's full and short name (`GameName`).
 - `src/launcher/ui/gallery.cpp` - the component gallery (`SKY_LAUNCHER_TEST_GALLERY`).
 - `src/main.cpp` - picks the game and disc, shows the launcher, starts the runtime.
@@ -153,8 +154,8 @@ the accent is 8.3:1, `Ink` on `DangerFill` 7.6:1. A badge's ink is chosen for co
 ## Components
 Every component: one function (or a Begin/End pair, or a small class), sized from the tokens only, every state drawn
 (normal, hover, focus, pressed, disabled, loading where it applies, in that order of precedence, the focus ring over
-them), reachable with the keyboard and the pad (ImGui's navigation; `ui::Hit` is the pressable area, ImGui's own square
-cursor hidden). A label is translated by the caller (`Tr`); "Label##id" gives an id without changing the text. The state
+them), reachable with the keyboard and the pad ("Navigation model"; `ui::Hit` is the pressable area and a stop, ImGui's own
+square cursor hidden). A label is translated by the caller (`Tr`); "Label##id" gives an id without changing the text. The state
 model is `ui::State` read by `ui::ItemState`; the gallery forces one with `ui::PreviewState`. `ui::Ctx()` is set by the
 window each frame (`App::Frame`): the fonts, the focus colour, the pad family (`Glyphs`), reduced motion, the time.
 
@@ -199,7 +200,7 @@ portal names prominent and empty seats as tall as occupied ones, without changin
 | | |
 |---|---|
 | When | The pages of a settings screen (two to six words). |
-| API | `TabChange ui::Tabs(id, labels, &current, TabsOptions{bumpers, focusSelected, showFocus})`: `None`, `Click` or `Bumper`. LB / RB change tab; with a pad in use their key caps show at the row's ends. Height `Normal`, `space::XL` between tabs. |
+| API | `TabChange ui::Tabs(id, labels, &current, TabsOptions{bumpers, focusSelected, showFocus})`: `None`, `Click` or `Bumper`. LT / RT change tab (LB / RB change the main page), in a dialog's tabs too; with a pad in use their key caps show at the row's ends. Height `Normal`, `space::XL` between tabs. |
 | States | The selected tab bold `Ink` with the accent line (`stroke::Selection`); others `Dim`, `Ink` under the pointer with a hairline; focus ring. |
 
 ### Segmented
@@ -360,8 +361,8 @@ portal names prominent and empty seats as tall as occupied ones, without changin
 | | |
 |---|---|
 | When | KeyCap: a key or a pad button named in the window. PadLegend: the bottom hint bar of a page (A Open, B Back...), shown while a pad is in use. |
-| API | `ui::KeyCap(PadButton::{South, East, West, North, LeftBumper, RightBumper, Start, Back}, glyphs)`, `ui::KeyCap("F6")`, `ui::DrawKeyCap`, `ui::PadButtonLabel`; `ui::PadLegend(hints, glyphs, width)` with `PadHint{button, key, label}` (`key` nullptr: not shown on the keyboard). Where: Home and the game page, the Collection, the foot of every settings page (`BeginPageColumn(..., legend)`: A Select, B Back, under the scrolling column), and the foot of every dialog (`EndModal`: A Select, B Close). |
-| States | The pad's family: Xbox letters (LB, RB, Menu, View), PlayStation shapes (L1, R1, Options, Share), Nintendo letters by place (B at the bottom, A at the right); the keyboard's keys translated ("Entrée", "Échap"). |
+| API | `ui::KeyCap(PadButton::{South, East, West, North, LeftBumper, RightBumper, Start, Back, LeftTrigger, RightTrigger}, glyphs)`, `ui::KeyCap("F6")`, `ui::DrawKeyCap`, `ui::PadButtonLabel`; `ui::PadLegend(hints, glyphs, width)` with `PadHint{button, key, label, withNext}` (`key` nullptr: not shown on the keyboard; `withNext`: the next button's cap too, LB RB). A page's legend is `ui::PageLegend` ("Navigation model"): Home and the game page, the Collection, the foot of every settings page (`BeginPageColumn(..., legend)`, under the scrolling column), and the foot of every dialog (`EndModal`). |
+| States | The pad's family: Xbox letters (LB, RB, LT, RT, Menu, View), PlayStation shapes (L1, R1, L2, R2, Options, Share), Nintendo letters by place (B at the bottom, A at the right; L, R, ZL, ZR); the keyboard's keys translated ("Entrée", "Échap"). |
 
 ## Consistency
 Phase B applies these on every screen it touches.
@@ -393,7 +394,7 @@ Phase B applies these on every screen it touches.
 twelve pages, first at 1x then at 2x, and quits:
 `gallery-<lang>-<1x|2x>-<NN>-<page>.png`: 01 buttons (each kind by state, the hold's hint, pills, icon buttons, sizes), 02 the
 main action (every state, Spyro's Adventure), 03 the main action in Giants' and Swap Force's colours (focus ring included),
-04 tabs (keyboard, then with a pad's LB / RB), segmented, select, slider, 05 toggle, checkbox, radio, settings rows,
+04 tabs (keyboard, then with a pad's LT / RT), segmented, select, slider, 05 toggle, checkbox, radio, settings rows,
 06 fields, cards, list rows, a section header, an empty state, 07 badges, chips, status pills and shapes, progress, 08 toasts
 (the error with the focus), key caps of each pad family and the keyboard, the pad legend, 09 the modal, 10 a danger dialog,
 11 a menu and a tooltip, 12 an open select. Run it with `SKY_LAUNCHER_LANGUAGE=en` and `=fr`. It is the components'
@@ -473,7 +474,7 @@ the column (`App::SettingSelect` for a choice kept in the settings file); what i
 game data, folders, saves, the game tab's buttons, the data folder, "Remove Arkeyan Launcher") is a `SectionHeader` with its
 subtitle, then Buttons at their label's width. States are `StatusPill`s (verified, checking, wrong disc, copied, interrupted,
 damaged, the portal test), never a coloured line. The Keyboard tab (2026-10-28, the owner's review): what to do in one
-line ("Click a key to change it.", or which key is awaited), then the **movement** as a cross of four `KeyButton`s (up over
+line ("Choose a key to change it.", or which key is awaited), then the **movement** as a cross of four `KeyButton`s (up over
 down, left and right beside it: the player's letters, Z Q S D on AZERTY, W A S D on QWERTY) titled "Movement" with the
 stick after it, the **right stick's** as another cross when the game uses it (titled with its action, "Shake / Insert /
 Swing"), a hairline, then a settings row per other action (its name, its pad button as the row's note, the key cap at the
@@ -841,15 +842,57 @@ already shown doesn't move. `App::IdleWait` draws every frame only while it fall
 Visual effects > Animation effects off), or `[launcher] reduce_motion=1`, the logo is simply there. `reduce_motion=0`
 always animates (`docs/settings.md`).
 
+## Navigation model
+The pad and the arrow keys have one model, in the components (`components/navigation.{h,cpp}`), so every page, tab, dialog
+and menu behaves the same way, the in-game Toy Box's:
+- **LB / RB: the main page** before or after, in the sidebar's order: Home, each game, Collection, Settings (`App::StepMainPage`;
+  a game's settings and achievements count as its page; no wrap at the ends). Not while a dialog, a menu or a field has the input.
+- **LT / RT: the page's own pages**: a settings screen's tabs and Manage's (`ui::Tabs`, their key caps at the row's ends), the
+  seat the collection chooses for. The tabs are stops too: the D-pad reaches them and A selects one.
+- **The D-pad and the left stick move spatially** (`ui::NavPick`, on the stops drawn the frame before). Up and down keep the
+  column: they go to the nearest row that way with a stop straight over or under the source (else the nearest row), then to the
+  stop under the source when only one is (a grid keeps its column), else the one that row last had the focus on (rows
+  remember their position), else its first. Left and right stay in the row, else go to the
+  nearest stop that way (the portal beside the game page's actions, a side panel). A page with columns says so
+  (`ui::NavColumn`: the game page's actions are 0, its portal and the pills over the painting 1): up and down stay in their
+  column. A scrolling list scrolls on before the focus leaves it, and a move from outside a list never lands in its hidden part.
+  Nothing that way: the focus stays (no diagonal guess). A move never leaves its top window (the page, a dialog, a menu); the
+  update banner, a window of its own over the page, joins the page's (`ui::NavJoin`: it is the page's top row). Tab keeps the
+  reading order (the order the page draws).
+- **Stops**: every enabled control a component draws (`ui::Hit`; the fields and the selects call `ui::NavItem`). A pointer-only
+  twin of a pad action is `ImGuiItemFlags_NoNav` (a dialog's close cross, a seat's X: B and X do them). A disabled control is
+  not a stop: its reason is written beside it, never in a tooltip only. Two controls never share an ImGui ID (the focus
+  could not tell them apart): the same words twice on a page take a `##` suffix.
+- **A selects. B goes back one step**: it closes a menu or a dialog (one step inside one: Edit back to the sheet), stops
+  choosing for a seat, clears the collection's search, closes the uninstall list; then it goes out of a game's settings or
+  achievements to its page, out of any other page to Home, and on Home to the sidebar (`App::Back`). Whatever is open answers
+  it first (`m_backTaken`).
+- **X and Y are the page's own actions**, declared where they are done: `if (ui::PadAction(ui::PadButton::North, Tr("Game
+  settings"))) GoTo(Page::GameSettings);`. The call puts its hint in the legend and is true when the button is pressed while
+  its window has the input (no dialog or menu over it, no field being typed in): a hint never shows without its action, nor an
+  action without its hint. The game page: Y Game settings (not while the game runs). The collection: X Take it off (a seat with
+  a figure) or Figure sheet (a card), Y Search, LT / RT Other seat.
+- **The legend** (`ui::PageLegend(back, width, pages)`): LB RB Pages on a main page, the window's pad actions, A Select, then B
+  Back (Close in a dialog). At the foot of Home and the game page (edge to edge), of the settings pages and the collection
+  (under their column) and of every dialog (`ui::EndModal`; a dialog under a question it asks leaves the legend to it), while
+  a pad is in use. A menu shows its rows only. A legend too long for its band (French, a narrow window) tightens its gaps.
+- **Proof**: `tests/navigation_test.cpp` (the model on plain boxes), and the pad walk (`SKY_LAUNCHER_TEST_PADWALK=1`,
+  `pad_walk.cpp`; "Screenshot test"): every page, tab and dialog shot as a pad player sees it, then walked with the D-pad alone,
+  every stop's four moves tried (a list of over 100 stops, Add a figure's catalogue, until every stop is reached). It fails on a
+  stop never reached, a move out of reading order (its own check, on the page as it was when the move was made: up and down
+  must reach the nearest shown stop of the source's column, left and right the nearest of its row), two stops sharing an ID, a
+  view without a legend; then on B not going back one step, and on the main pages on LB and RB not opening the page before and
+  after. `ArkeyanLauncherTest` runs it quick (`PadWalkChecks`: each view until every stop is reached, the catalogue for 300
+  moves), with no disc in `--no-disc`.
+
 ## Interaction rules
 - **Focus.** Every control takes the keyboard and pad focus and shows it: the components draw the one ring (`ui::FocusRing`,
   "Tokens", Focus) in the shown game's colour on its pages; their pressable area is `ui::Hit` (an `InvisibleButton` with
   `ImGuiButtonFlags_EnableNav`, which ImGui 1.91+ needs, and ImGui's own square cursor hidden). The widgets still drawn by
   hand call `App::FocusRing`, which draws the same ring. The page's columns are `ImGuiChildFlags_NavFlattened`.
-- **Pad and keyboard.** The sidebar and the page are separate windows: B / Escape on Play or Home moves the focus to the
-  sidebar's current row; A on a row opens its page with the focus on its first control (`App::GoTo`, `TakeFocus`).
-  B / Escape leave Settings, Game settings and Collection, close dialogs and menus, clear the collection's search; whatever is open
-  answers it before the page does (`m_backTaken`). LB / RB change Settings and Game settings tab (`App::DrawTabBar`) and the seat the collection chooses for. The
+- **Pad and keyboard** ("Navigation model"). The sidebar and the page are separate windows: B / Escape on Home moves the focus
+  to the sidebar's current row; A on a row opens its page with the focus on its first control (`App::GoTo`, `TakeFocus`).
+  LB / RB change the main page, LT / RT the tab (`App::DrawTabBar`) and the seat the collection chooses for. The
   launcher starts with the focus in the sidebar. The ARKEYAN LAUNCHER title is not a stop (it is Home's link for the pointer):
   Home is the start page, and its games are the sidebar's rows.
 - **Hold to confirm.** What deletes or overwrites is a red button held for a second (`App::HoldButton`, the state in
@@ -1053,10 +1096,14 @@ game's Video tab, `04-` the launcher's Controls) (it creates a few figures in `S
 
 `07-figure-sheet.png`, `08-new-figure.png`, `09-play-with.png` (the controller menu), `10-language.png`, `11-disc-gone.png`
 (INSTALL on an image that moved) and `12-logo-drop.png` (the logo early in its fall) (it creates a few figures in `SKY_COLLECTION` first: set it to a scratch folder). With `SKY_LAUNCHER_TEST_COLLECTION=1` it shows the collection's screens instead (`docs/collection_ui.md`).
-With `SKY_LAUNCHER_TEST_NAV=1` it sends keys as a player would (`40-` to `53-`): B to the sidebar, down past the three games and
-Coming later, A into Collection, Y for the search, the D-pad to a seat, A to choose for it, down and A to put the first card there,
-X for a card's sheet, B back, then down to Settings, A, RB to its Launcher tab, Escape. Each step's page is checked ("FAIL nav step";
+With `SKY_LAUNCHER_TEST_NAV=1` it sends keys as a player would (`40-` to `53-`): B to Home, B to the sidebar, down past the three
+games and Coming later, A into Collection, Y for the search, the D-pad to a seat, A to choose for it, down three times (Cancel, the search's
+row, the shelf) and A to put a card there, X for a card's sheet, B back, then down to Settings, A, RT to its Launcher tab, Escape. Each step's page is checked ("FAIL nav step";
 a timeout stops a run that went astray); `ArkeyanLauncherTest` runs it (`NavChecks`).
+With `SKY_LAUNCHER_TEST_PADWALK=1` it walks every page, tab and dialog with the pad ("Navigation model"; `pad_walk.cpp`):
+`00-first-start` to `35-install-ready`, each shot as a pad player arrives there, then walked, every result a `padwalk` line
+(`FAIL padwalk` for a stop never reached, a move out of reading order, B or LB / RB not doing their job). The Spyro's Adventure
+views want `SKY_LAUNCHER_TEST_DROP`; without a disc they show its no-disc state. `SKY_SAVE_DIR` and `SKY_COLLECTION` scratch.
 With `SKY_LAUNCHER_TEST_INSTALL=1` and `SKY_LAUNCHER_KIT=$PWD/build/fake-kit` it shows the install screens instead
 (`docs/install.md`). With `SKY_LAUNCHER_TEST_GALLERY=1` it shoots the component gallery ("Gallery").
 

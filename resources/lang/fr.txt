@@ -93,7 +93,7 @@ Choose your {} disc image	Choisissez l'image disque de {}
 Clear caches	Vider les caches
 Clearing caches frees {}.	Vider les caches libère {}.
 Clearing caches frees {}; deleting saves and data frees {} more.	Vider les caches libère {} ; supprimer sauvegardes et données en libère {} de plus.
-Click a key to change it.	Cliquez sur une touche pour la modifier.
+Choose a key to change it.	Choisissez une touche pour la modifier.
 Close	Fermer
 Coming later	Bientôt
 Comparing with the supported releases	Comparaison avec les versions prises en charge
@@ -827,7 +827,6 @@ The wheel is full: take a figure off it first	La roue est pleine : retirez d’
 
 # Game page (phase B)
 Play	Jouer
-Sidebar	Barre latérale
 
 # Controller tab of a game: what each pad button does, and the rumble (docs/settings.md, "Per-game pad")
 Choose what each button does.	Choisissez ce que fait chaque bouton.
@@ -948,3 +947,18 @@ Back side button	Bouton latéral arrière
 Forward side button	Bouton latéral avant
 Wheel up	Molette vers le haut
 Wheel down	Molette vers le bas
+
+# The navigation model (docs/launcher_ui.md): the pad legend's hints.
+Pages	Pages
+Other seat	Autre place
+0%	0 %
+10%	10 %
+20%	20 %
+30%	30 %
+40%	40 %
+50%	50 %
+60%	60 %
+70%	70 %
+80%	80 %
+90%	90 %
+100%	100 %

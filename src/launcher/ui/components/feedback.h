@@ -38,7 +38,7 @@ namespace ui
     // The icon and the text in a tinted pill, PillHeight high (`icon`: the state's own, else the status's).
     inline constexpr float PillHeight = 24;
     void StatusPill(Status status, const char* text, Icon icon = Icon::None);
-    void StatusLine(Status status, const char* text, float width = -1);
+    void StatusLine(Status status, const char* text, float width = -1, Icon icon = Icon::None); // `icon`: as StatusPill's
 
     // ---- Progress. ----
     // A determinate bar (`fraction` 0..1) with its percentage after it when `showPercent`.
@@ -81,7 +81,7 @@ namespace ui
 
     // ---- Key caps and the pad legend. ----
     // A pad button by its place (South is A on Xbox, Cross on PlayStation, B on Nintendo).
-    enum class PadButton { South, East, West, North, LeftBumper, RightBumper, Start, Back };
+    enum class PadButton { South, East, West, North, LeftBumper, RightBumper, Start, Back, LeftTrigger, RightTrigger };
     const char* PadButtonLabel(PadButton button, Glyphs glyphs);
     // A pad button's cap (`glyphs` != Keyboard) or a keyboard key's (`key`: "Enter", "Esc", "F6"), drawn at `at` (its left
     // edge, its vertical centre); returns its size.
@@ -98,6 +98,7 @@ namespace ui
         PadButton button;
         const char* key;   // the keyboard's key for it ("Enter"); nullptr: not shown on the keyboard
         const char* label; // what it does ("Select", "Back"), translated
+        bool withNext = false; // the next button's cap too: LB RB, LT RT
     };
     // The bottom hint bar (height::Normal, the available width): each hint's cap and its word, in the glyphs in use.
     void PadLegend(std::span<const PadHint> hints, Glyphs glyphs, float width = -1);

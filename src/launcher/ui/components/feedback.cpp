@@ -5,6 +5,7 @@
 #include "launcher/ui/components/format.h"
 #include <SDL3/SDL_timer.h>
 #include <algorithm>
+#include <imgui_internal.h> // the legend's window, for the pad walk
 #include <cmath>
 #include <fmt/format.h>
 
@@ -163,10 +164,11 @@ namespace ui
         PopText();
     }
 
-    void StatusLine(Status status, const char* text, float width)
+    void StatusLine(Status status, const char* text, float width, Icon stateIcon)
     {
         const ImVec2 at = ImGui::GetCursorScreenPos();
-        DrawStatusIcon(ImGui::GetWindowDrawList(), status, ImVec2(at.x + icon::Small / 2, at.y + CapMiddle(TextStyle::Body)), icon::Small);
+        DrawStatusIcon(ImGui::GetWindowDrawList(), status, stateIcon != Icon::None ? stateIcon : IconOf(status),
+            ImVec2(at.x + icon::Small / 2, at.y + CapMiddle(TextStyle::Body)), icon::Small);
         ImGui::SetCursorScreenPos(ImVec2(at.x + icon::Small + space::XS, at.y));
         PushText(TextStyle::Body);
         const std::string shown = width > 0 ? Ellipsize(text, width - icon::Small - space::XS) : text;
@@ -368,9 +370,9 @@ namespace ui
 
     const char* PadButtonLabel(PadButton button, Glyphs glyphs)
     {
-        static const char* const Xbox[] = { "A", "B", "X", "Y", "LB", "RB", "Menu", "View" };
-        static const char* const PlayStation[] = { "Cross", "Circle", "Square", "Triangle", "L1", "R1", "Options", "Share" };
-        static const char* const Nintendo[] = { "B", "A", "Y", "X", "L", "R", "+", "-" };
+        static const char* const Xbox[] = { "A", "B", "X", "Y", "LB", "RB", "Menu", "View", "LT", "RT" };
+        static const char* const PlayStation[] = { "Cross", "Circle", "Square", "Triangle", "L1", "R1", "Options", "Share", "L2", "R2" };
+        static const char* const Nintendo[] = { "B", "A", "Y", "X", "L", "R", "+", "-", "ZL", "ZR" };
         const int i = int(button);
         switch (glyphs)
         {
@@ -444,6 +446,8 @@ namespace ui
     void PadLegend(std::span<const PadHint> hints, Glyphs glyphs, float width)
     {
         const float h = height::Normal, w = width < 0 ? ImGui::GetContentRegionAvail().x : width;
+        if (Ctx().testLegends != nullptr)
+            Ctx().testLegends->push_back(ImGui::GetCurrentWindow()->RootWindow->ID);
         const ImVec2 min = ImGui::GetCursorScreenPos(), max(min.x + w, min.y + h);
         ImGui::Dummy(ImVec2(w, h));
         ImDrawList* draw = ImGui::GetWindowDrawList();
@@ -453,23 +457,34 @@ namespace ui
         PushText(TextStyle::Body);
         const bool keyboard = glyphs == Glyphs::Keyboard;
         float total = 0;
+        int shown = 0;
         for (const PadHint& hint : hints)
         {
             if (keyboard && hint.key == nullptr)
                 continue;
             float cap = keyboard ? KeyCapWidth(hint.key) : KeyCapWidth(hint.button, glyphs);
-            total += cap + space::XS + ImGui::CalcTextSize(hint.label).x + space::L;
+            if (hint.withNext && !keyboard)
+                cap += space::XXS + KeyCapWidth(PadButton(int(hint.button) + 1), glyphs);
+            total += cap + space::XS + ImGui::CalcTextSize(hint.label).x;
+            shown++;
         }
-        float x = max.x - space::M - std::max(0.0f, total - space::L);
+        // L between hints; M, then S when a long legend (French, a narrow window) would run past the band's left edge.
+        float gap = space::L;
+        for (float tighter : { space::M, space::S })
+            if (total + gap * float(std::max(0, shown - 1)) > w - 2 * space::M)
+                gap = tighter;
+        float x = max.x - space::M - (total + gap * float(std::max(0, shown - 1)));
         const float mid = std::round((min.y + max.y) / 2);
         for (const PadHint& hint : hints)
         {
             if (keyboard && hint.key == nullptr)
                 continue;
             float cap = keyboard ? DrawKeyCap(draw, ImVec2(x, mid), hint.key).x : DrawKeyCap(draw, ImVec2(x, mid), hint.button, glyphs).x;
+            if (hint.withNext && !keyboard)
+                cap += space::XXS + DrawKeyCap(draw, ImVec2(x + cap + space::XXS, mid), PadButton(int(hint.button) + 1), glyphs).x;
             x += cap + space::XS;
             DrawText(draw, ImVec2(x, mid - ImGui::GetFontSize() / 2), Col(color::InkSoft), hint.label);
-            x += ImGui::CalcTextSize(hint.label).x + space::L;
+            x += ImGui::CalcTextSize(hint.label).x + gap;
         }
         PopText();
     }

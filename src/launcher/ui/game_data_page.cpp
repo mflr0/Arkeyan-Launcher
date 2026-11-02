@@ -132,7 +132,8 @@ namespace launcher_ui
         auto showFolder = [&](const std::filesystem::path& folder) {
             ui::ButtonOptions options;
             options.icon = ui::Icon::Folder;
-            if (ui::Button(Tr("Show in folder"), options))
+            const std::string label = std::string(Tr("Show in folder")) + "##gamedata"; // the disc image's has the same words, on the same tab
+            if (ui::Button(label.c_str(), options))
                 if (!OpenFolder(folder))
                     Toast(Tr("Couldn't open the folder"), ui::ToastKind::Error);
         };

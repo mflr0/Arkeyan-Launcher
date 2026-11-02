@@ -99,7 +99,7 @@ At the first visit to the page (`CollectionPage::Open`):
   those the launcher has a runtime for (`SessionFile` not empty): Spyro's Adventure, Giants (Player 1, Player 2, Item or
   adventure) and Swap Force (Player 1, Player 2, Magic item, Adventure). The page opens on the game chosen in the sidebar
   when it is one of them.
-- **Placing, two steps**: click a seat (A on it, or LB/RB), it lights up and the bar says "Choose a figure for Player 1 ·
+- **Placing, two steps**: click a seat (A on it, or LT / RT), it lights up and the bar says "Choose a figure for Player 1 ·
   only what Spyro's Adventure reads"; the shelf then shows only what goes there and the game reads; click a figure: it
   goes on the seat ("Player 1: Splash's"), and the choosing ends. Click the seat again, Cancel, B or Escape stops
   choosing. Dragging a card onto a seat also works; a figure already on the other seat moves (it is on one seat only).
@@ -210,12 +210,12 @@ At the first visit to the page (`CollectionPage::Open`):
   picture from a disc: SSA's potion, compass and paw icons), else `figures::GenerateIcon` (a shape, the element's colour, the
   variant's badge, initials for characters, and the Toy Box's mark for items, packs and sidekicks:
   `collection::KindGlyph`). Never an empty square.
-- **Gamepad**: d-pad moves (ImGui navigation; down from a seat to the shelf, up from its first row back to the seats), A
-  chooses (a seat: choose for it; a card: put it on the seat being chosen for, else its sheet), B goes back (closes the
-  overlay one step, stops choosing, clears the search; then out of the page), X opens the sheet (on a seat: takes its
-  figure off), Y the search (the bar's search, Filters and tags are on the way up from the shelf), LB/RB choose for the previous/next seat. Cards scrolled out of view aren't drawn; Manage and
+- **Gamepad** (`docs/launcher_ui.md`, "Navigation model"): the d-pad moves in reading order (the seats, the bar, the
+  tags, the shelf), A chooses (a seat: choose for it; a card: put it on the seat being chosen for, else its sheet), B goes back
+  (closes the overlay one step, stops choosing, clears the search; then to Home), X opens the sheet (on a seat with a figure:
+  takes it off), Y the search, LT / RT choose for the previous/next seat, LB / RB the main page before and after. Cards scrolled out of view aren't drawn; Manage and
   the sheet read the trash and the backups once per change of the collection. While a pad is in use a **PadLegend** closes the
-  page (A Select, X Figure sheet, Y Search, B Back), and a card's tooltip shows under the pointer only.
+  page (LB RB Pages, X Take it off or Figure sheet, Y Search, LT RT Other seat, A Select, B Back), and a card's tooltip shows under the pointer only.
   Settings pages (the launcher's and each game's) end with a PadLegend (A Select, B Back) under their scrolling column, and
   every dialog (`ui::EndModal`) with one (A Select, B Close).
 

@@ -1494,6 +1494,7 @@ int SettingsChecks(const std::filesystem::path& scratch); // tests/settings_test
 int I18nChecks(); // tests/i18n_test.cpp
 int UninstallChecks(const std::filesystem::path& scratch); // tests/uninstall_test.cpp
 int TextFitChecks(); // tests/text_fit_test.cpp
+int NavigationChecks(); // tests/navigation_test.cpp
 int AccentChecks(const std::filesystem::path& scratch); // tests/accent_test.cpp, in a process of its own
 int AccentChecksInChild(const char* executable, const std::filesystem::path& scratch);
 int MusicChecks(const std::filesystem::path& scratch); // tests/music_test.cpp
@@ -1669,8 +1670,8 @@ static void SeatXChecks(const std::filesystem::path& scratch)
     printf("Seat X: %d of 12 tries emptied their seat\n", emptied);
 }
 
-// The pad's way through the launcher (App::TestNavScript): B to the sidebar, down its rows (three games, Coming later) to
-// Collection, A, the search, a seat, a card on it, its sheet, back, then Settings and its next tab with RB, and Escape. Each
+// The pad's way through the launcher (App::TestNavScript): B to Home, B to the sidebar, down its rows (three games, Coming
+// later) to Collection, A, the search, a seat, a card on it, its sheet, back, then Settings and its next tab with RT, and Escape. Each
 // step's page is checked by the script ("FAIL nav step"); every step's shot must be taken (a wrong row would open a file
 // chooser and the run would stop). A child process, as SeatXChecks; scratch folders only.
 static void NavChecks(const std::filesystem::path& scratch, const std::string& iso)
@@ -1699,6 +1700,39 @@ static void NavChecks(const std::filesystem::path& scratch, const std::string& i
     }
     EXPECT(shots == 14);
     printf("Pad navigation: %d of 14 steps\n", shots);
+}
+
+// Every page, tab and dialog walked with the pad (App::TestPadWalkScript, quick: until every control is reached): no control
+// the D-pad can't reach, no move out of reading order, a legend on each, B one step back, LB / RB the main page before and after.
+// Without a disc the game pages show their no-disc state. A child process, as NavChecks; scratch folders only.
+static void PadWalkChecks(const std::filesystem::path& scratch, const std::string& iso)
+{
+    std::filesystem::path root = scratch / "padwalk";
+    std::filesystem::create_directories(root / "shots");
+    std::filesystem::create_directories(root / "home");
+    std::string quoted;
+    for (char c : iso)
+        quoted += c == '\'' ? std::string("'\\''") : std::string(1, c);
+    std::string command = "env -u SKY_MIGRATE_FROM -u SKY_FIGURES -u SKY_SETTINGS -u SSA_MIGRATE_FROM -u SSA_FIGURES -u SSA_SETTINGS SDL_VIDEO_DRIVER=offscreen SDL_AUDIO_DRIVER=dummy HOME='" + (root / "home").string() +
+        "' SKYLANDERS_DATA='" + (root / "data").string() + "' SKY_LAUNCHER_DATA='" + (root / "launcher").string() +
+        "' SKY_COLLECTION='" + (root / "collection").string() + "' SKY_SAVE_DIR='" + (root / "saves").string() +
+        "' SKY_LAUNCHER_INI='" + (root / "x.ini").string() + "' SKY_LAUNCHER_NO_UPDATE_CHECK=1 SKY_LAUNCHER_SHOTS='" + (root / "shots").string() +
+        (iso.empty() ? std::string("'") : "' SKY_LAUNCHER_TEST_DROP='" + quoted + "'") + " SKY_LAUNCHER_TEST_PADWALK=quick '" + SKYLAUNCHER_TEST_EXE +
+        "' > '" + (root / "out.txt").string() + "' 2>&1";
+    EXPECT(std::system(command.c_str()) == 0);
+    std::ifstream in(root / "out.txt");
+    std::string line;
+    int views = 0;
+    while (std::getline(in, line))
+    {
+        if (line.find("FAIL") != std::string::npos)
+            fprintf(stderr, "%s\n", line.c_str());
+        EXPECT(line.find("FAIL") == std::string::npos);
+        if (line.starts_with("padwalk: ") && line.find(" views") != std::string::npos)
+            views = std::atoi(line.c_str() + 9);
+    }
+    EXPECT(views == 36);
+    printf("Pad walk: %d views, every control reached, B and LB / RB checked\n", views);
 }
 
 // One game at a time in the window (App::TestRunningScript): PLAY starts a stand-in game (a script that runs two seconds and exits
@@ -2128,6 +2162,12 @@ int main(int argc, char** argv)
         int failures = I18nChecks();
         return failures == 0 ? 0 : 1;
     }
+    if (skyenv::Get("SKY_LAUNCHER_TEST_NAVIGATION_ONLY") != nullptr) // only the navigation model and the pad walk (quick to rerun)
+    {
+        int failures = NavigationChecks();
+        PadWalkChecks(scratch, noDisc ? std::string() : iso.string());
+        return failures + g_failures == 0 ? 0 : 1;
+    }
     if (skyenv::Get("SKY_LAUNCHER_TEST_MUSIC_ONLY") != nullptr) // only the game music (quick to rerun)
         return MusicChecks(scratch) == 0 ? 0 : 1;
     if (skyenv::Get("SKY_LAUNCHER_TEST_SHELL_ONLY") != nullptr)
@@ -2192,12 +2232,14 @@ int main(int argc, char** argv)
     InstallChecks(scratch, noDisc ? "synthetic.iso" : iso.string());
     g_failures += ShellChecks(scratch);
     LauncherControlChecks(scratch);
+    PadWalkChecks(scratch, noDisc ? std::string() : iso.string());
     g_failures += SettingsChecks(scratch / "settings");
     g_failures += UninstallChecks(scratch);
     g_failures += PortableChecks(scratch);
     g_failures += SingleInstanceChecks(scratch / "instance");
     g_failures += I18nChecks();
     g_failures += TextFitChecks();
+    g_failures += NavigationChecks();
     g_failures += AccentChecksInChild(argv[0], scratch);
     g_failures += MusicChecks(scratch);
     g_failures += AchievementChecks();

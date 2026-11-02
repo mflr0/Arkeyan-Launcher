@@ -2,6 +2,7 @@
 #include "launcher/ui/components/inputs.h"
 #include "launcher/ui/components/buttons.h"
 #include "launcher/ui/components/feedback.h"
+#include "launcher/ui/components/navigation.h"
 #include <algorithm>
 #include <cmath>
 #include <fmt/format.h>
@@ -80,9 +81,9 @@ namespace ui
     {
         TabChange change = TabChange::None;
         const int count = int(labels.size());
-        if (options.bumpers && !ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopupId | ImGuiPopupFlags_AnyPopupLevel) && !ImGui::IsAnyItemActive())
+        if (options.bumpers && HasInput()) // a dialog's own tabs too (Manage), not a page's under a dialog
         {
-            int step = ImGui::IsKeyPressed(ImGuiKey_GamepadL1, false) ? -1 : ImGui::IsKeyPressed(ImGuiKey_GamepadR1, false) ? 1 : 0;
+            int step = ImGui::IsKeyPressed(ImGuiKey_GamepadL2, false) ? -1 : ImGui::IsKeyPressed(ImGuiKey_GamepadR2, false) ? 1 : 0;
             if (step != 0 && std::clamp(*current + step, 0, count - 1) != *current)
             {
                 *current = std::clamp(*current + step, 0, count - 1);
@@ -96,7 +97,7 @@ namespace ui
         ImVec2 start = ImGui::GetCursorScreenPos();
         if (caps)
         {
-            ImVec2 cap = DrawKeyCap(draw, ImVec2(start.x, start.y + (rowH - stroke::Selection) / 2), PadButton::LeftBumper, Ctx().glyphs);
+            ImVec2 cap = DrawKeyCap(draw, ImVec2(start.x, start.y + (rowH - stroke::Selection) / 2), PadButton::LeftTrigger, Ctx().glyphs);
             ImGui::SetCursorScreenPos(ImVec2(start.x + cap.x + space::M, start.y));
         }
         PushText(TextStyle::Label);
@@ -131,7 +132,7 @@ namespace ui
         if (caps)
         {
             ImVec2 at = ImGui::GetCursorScreenPos();
-            DrawKeyCap(draw, ImVec2(at.x - space::XL + space::M, at.y + (rowH - stroke::Selection) / 2), PadButton::RightBumper, Ctx().glyphs);
+            DrawKeyCap(draw, ImVec2(at.x - space::XL + space::M, at.y + (rowH - stroke::Selection) / 2), PadButton::RightTrigger, Ctx().glyphs);
         }
         ImGui::NewLine();
         ImGui::PopID();
@@ -216,6 +217,7 @@ namespace ui
             ImGui::EndDisabled();
         if (!open)
         {
+            NavItem(); // open, its list is the stops (ImGui's own moves)
             State state = ItemState(options.disabled);
             if (options.disabled)
                 ImGui::BeginDisabled();
@@ -423,6 +425,7 @@ namespace ui
             bool changed = options.hint != nullptr
                 ? ImGui::InputTextWithHint(id, options.hint, buffer, size, options.flags, options.callback)
                 : ImGui::InputText(id, buffer, size, options.flags, options.callback);
+            NavItem();
             State state = ItemState(options.disabled);
             if (ImGui::IsItemActive() || state.pressed) // being edited (the gallery shows it as pressed)
                 ImGui::GetWindowDrawList()->AddRect(ImVec2(min.x + 0.5f, min.y + 0.5f), ImVec2(max.x - 0.5f, max.y - 0.5f), Col(Ctx().accent),

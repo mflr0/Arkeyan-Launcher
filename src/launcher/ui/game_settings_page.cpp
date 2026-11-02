@@ -247,7 +247,7 @@ namespace launcher_ui
 
         // What to do, or what is awaited.
         ui::Text(ui::TextStyle::Body, m_capturing != nullptr ? Tf("Press a key for \"{}\" (Escape cancels)", purpose(*m_capturing)).c_str()
-                                                              : Tr("Click a key to change it."), m_capturing != nullptr ? ui::color::Ink : ui::color::Dim);
+                                                              : Tr("Choose a key to change it."), m_capturing != nullptr ? ui::color::Ink : ui::color::Dim);
         ImGui::Dummy(ImVec2(0, ui::space::XS));
 
         // The crosses, side by side: a title (the action, the stick after it), then up over down, left and right beside it.

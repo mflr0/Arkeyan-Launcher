@@ -621,11 +621,7 @@ namespace launcher_ui
             ImGui::EndDragDropTarget();
         }
         if (pad)
-        {
-            const ui::PadHint hints[] = { { ui::PadButton::South, "Enter", Tr("Select") }, { ui::PadButton::West, "F2", Tr("Figure sheet") },
-                { ui::PadButton::North, "F3", Tr("Search") }, { ui::PadButton::East, "Esc", Tr("Back") } };
-            ui::PadLegend(hints, ui::Ctx().glyphs, width);
-        }
+            ui::PageLegend(Tr("Back"), width, true); // with the page's pad actions (HandleShortcuts)
         ImGui::EndChild();
 
         HandleShortcuts();
@@ -961,7 +957,9 @@ namespace launcher_ui
             {
                 ImGui::SetCursorScreenPos(ImVec2(end.x - ui::height::Small, at.y));
                 ImGui::PushID(int(i) + 100);
-                const bool off = ui::IconButton("##off", ui::Icon::Cross, Tr("Take it off"), { ui::ButtonKind::Ghost, ui::Size::Small }); // the pad takes it off with X on the seat
+                ImGui::PushItemFlag(ImGuiItemFlags_NoNav, true); // the pointer's: the pad and the keyboard take it off with X and Delete on the seat
+                const bool off = ui::IconButton("##off", ui::Icon::Cross, Tr("Take it off"), { ui::ButtonKind::Ghost, ui::Size::Small });
+                ImGui::PopItemFlag();
                 const ImVec2 a = ImGui::GetItemRectMin(), b = ImGui::GetItemRectMax();
                 m_crossAt[i] = ImVec2((a.x + b.x) / 2, (a.y + b.y) / 2);
                 ImGui::PopID();
@@ -1015,20 +1013,17 @@ namespace launcher_ui
         ui::PopText();
         sortWidth += ui::space::XXL;
         const float searchWidth = std::max(ui::height::SettingControl / 2, ImGui::GetContentRegionAvail().x - filtersWidth - sortWidth - 2 * ui::space::S);
-        const ImGuiID searchId = ImGui::GetID("##search");
         if (m_focusSearch)
         {
             ImGui::SetKeyboardFocusHere();
             m_focusSearch = false;
         }
         ui::SearchField("##search", m_search, sizeof(m_search), Tr("Name, element, game, level..."), searchWidth);
-        m_navBar = ImGui::GetCurrentContext()->NavId == searchId;
         ImGui::SameLine(0, ui::space::S);
 
         ui::SelectOptions sortOptions;
         sortOptions.width = sortWidth;
         const bool sorting = ui::BeginSelect("##sort", Tf("Sort: {}", collection::SortLabel(m_filter.sort, French())).c_str(), sortOptions);
-        m_navBar = m_navBar || ImGui::IsItemFocused();
         if (sorting)
         {
             for (int sort = 0; sort < int(collection::Sort::Count); sort++)
@@ -1039,7 +1034,6 @@ namespace launcher_ui
         ImGui::SameLine(0, ui::space::S);
 
         const bool pressed = ui::Button(filtersLabel.c_str(), filters);
-        m_navBar = m_navBar || ImGui::IsItemFocused();
         if (pressed || m_openFilters)
             ui::OpenMenu("##filtersmenu", {.alignRight = true});
         m_openFilters = false;
@@ -1145,7 +1139,6 @@ namespace launcher_ui
             options.color = tag.color;
             if (ui::Chip(tag.label.c_str(), options))
                 remove = tag.filter;
-            m_navBar = m_navBar || ImGui::IsItemFocused();
             ImGui::SameLine(0, ui::space::XS);
         }
         ui::ButtonOptions clear;
@@ -1153,7 +1146,6 @@ namespace launcher_ui
         clear.size = ui::Size::Small;
         if (ui::Button(Tr("Clear all"), clear))
             ClearFilters();
-        m_navBar = m_navBar || ImGui::IsItemFocused();
         const std::string count = collection::FigureCount(FoundCount(), French());
         ui::PushText(ui::TextStyle::Caption);
         const float countWidth = ImGui::CalcTextSize(count.c_str()).x;
@@ -1280,7 +1272,6 @@ namespace launcher_ui
     void CollectionPage::DrawList()
     {
         m_hovered.clear();
-        m_navTopCard = false;
         bool filtered = m_search[0] != 0 || m_filter.element >= 0 || m_filter.category >= 0 || !m_filter.game.empty();
         if (m_list.empty())
         {
@@ -1351,8 +1342,6 @@ namespace launcher_ui
                     ImGui::SameLine(0, ShelfGap);
                 const Figure& figure = m_list[section.items[i]];
                 DrawCard(figure, cell, m_model.Incompatible(figure));
-                if (s == 0 && i < size_t(columns) && ImGui::IsItemFocused())
-                    m_navTopCard = true;
             }
             ImGui::PopID();
             ImGui::Dummy(ImVec2(0, ui::space::XS));
@@ -1362,13 +1351,26 @@ namespace launcher_ui
 
     void CollectionPage::HandleShortcuts()
     {
+        // The pad's actions, declared every frame: their hints are the legend's (false under a dialog, a menu or a field).
+        // X takes the focused seat's figure off (Delete), else opens the focused card's sheet (F2); Y the search (F3); LT / RT
+        // choose for the seat before or after (Page Up / Page Down).
+        const collection::Game* seatsOf = m_model.Game();
+        const bool onSeat = m_navSeat >= 0 && size_t(m_navSeat) < m_model.seats.size() && !m_model.seats[size_t(m_navSeat)].empty();
+        const bool takeOff = onSeat && ui::PadAction(ui::PadButton::West, Tr("Take it off"), nullptr, ImGuiKey_Delete);
+        const bool sheet = !onSeat && m_navSeat < 0 && ui::PadAction(ui::PadButton::West, Tr("Figure sheet"), "F2", ImGuiKey_F2);
+        const bool search = ui::PadAction(ui::PadButton::North, Tr("Search"), "F3", ImGuiKey_F3);
+        bool before = false, after = false;
+        if (seatsOf != nullptr && !seatsOf->seats.empty())
+        {
+            before = ui::PadAction(ui::PadButton::LeftTrigger, Tr("Other seat"), "PgUp", ImGuiKey_PageUp);
+            after = ui::PadAction(ui::PadButton::RightTrigger, Tr("Other seat"), nullptr, ImGuiKey_PageDown);
+        }
         if (m_overlay != Overlay::None || ImGui::IsAnyItemActive())
             return;
         auto pressed = [](ImGuiKey a, ImGuiKey b) { return ImGui::IsKeyPressed(a, false) || ImGui::IsKeyPressed(b, false); };
         if (ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopupId))
             return;
-        // A seat with the focus (or under the mouse): Delete, and the pad's X, take its figure off.
-        if (m_navSeat >= 0 && pressed(ImGuiKey_GamepadFaceLeft, ImGuiKey_Delete))
+        if (takeOff)
         {
             TakeOff(size_t(m_navSeat));
             return;
@@ -1378,26 +1380,17 @@ namespace launcher_ui
             TakeOff(size_t(m_hoverSeat));
             return;
         }
-        // Down from the seats goes to the shelf, up from its first row or from the bar back to the seats (ImGui's nav, by
-        // distance, misses the bar in between or lands on a card).
-        if (m_navSeat >= 0 && pressed(ImGuiKey_GamepadDpadDown, ImGuiKey_DownArrow) && !m_list.empty())
-            m_focusCard = true;
-        if ((m_navTopCard || m_navBar) && pressed(ImGuiKey_GamepadDpadUp, ImGuiKey_UpArrow))
-            m_focusSeat = std::max(m_choosing, 0);
-        // LB / RB: choose for the seat before or after.
-        if (const collection::Game* game = m_model.Game(); game != nullptr && !game->seats.empty())
+        if (seatsOf != nullptr && !seatsOf->seats.empty())
         {
-            int last = int(game->seats.size()) - 1;
-            if (pressed(ImGuiKey_GamepadL1, ImGuiKey_PageUp))
+            int last = int(seatsOf->seats.size()) - 1;
+            if (before)
                 Choose(std::max(0, (m_choosing < 0 ? 1 : m_choosing) - 1));
-            if (pressed(ImGuiKey_GamepadR1, ImGuiKey_PageDown))
+            if (after)
                 Choose(std::min(last, m_choosing + 1));
         }
-        // Y: the search.
-        if (pressed(ImGuiKey_GamepadFaceUp, ImGuiKey_F3))
+        if (search)
             m_focusSearch = true;
-        // X, F2: the focused card's sheet.
-        if (pressed(ImGuiKey_GamepadFaceLeft, ImGuiKey_F2))
+        if (sheet)
         {
             const std::string& path = !m_hovered.empty() ? m_hovered : m_selected;
             if (!path.empty() && m_model.Find(path) != nullptr)

@@ -418,6 +418,12 @@ namespace launcher_ui
             m_testAchievements = LauncherEnv("SKY_LAUNCHER_TEST_ACHIEVEMENTS") != nullptr;
             m_testRunning = LauncherEnv("SKY_LAUNCHER_TEST_RUNNING") != nullptr;
             m_testHero = LauncherEnv("SKY_LAUNCHER_TEST_HERO") != nullptr;
+            m_testPadWalk = LauncherEnv("SKY_LAUNCHER_TEST_PADWALK") != nullptr;
+            if (m_testPadWalk)
+            {
+                m_testPadInput = true;
+                m_testFocusView = 0; // the first view is the launcher as it opens: the focus in the sidebar
+            }
         }
         RefreshGamepads();
         m_github = CreateGitHubMarkTexture(m_renderer, 128);
@@ -1185,9 +1191,8 @@ namespace launcher_ui
         ui::EndRoomyChild();
         if (m_columnLegend)
         {
-            const ui::PadHint hints[] = { { ui::PadButton::South, "Enter", Tr("Select") }, { ui::PadButton::East, "Esc", Tr("Back") } };
             ImGui::SetCursorScreenPos(ImVec2(m_columnAt.x, ImGui::GetCursorScreenPos().y));
-            ui::PadLegend(hints, ui::Ctx().glyphs, m_columnWidth);
+            ui::PageLegend(Tr("Back"), m_columnWidth, true);
         }
     }
 
@@ -1636,7 +1641,8 @@ namespace launcher_ui
         constexpr size_t Columns = 2;
         const size_t rows = std::max<size_t>((playable.size() + Columns - 1) / Columns, 1);
         const float cardW = (width - gap * float(Columns - 1)) / float(Columns);
-        const float below = ui::space::XL + ui::SizeOf(ui::TextStyle::Caption) + 3 * ui::height::Normal; // the coming-later row and the links
+        const float legendH = PlayBandH(); // the pad legend's band at the foot, as on the game page
+        const float below = ui::space::XL + ui::SizeOf(ui::TextStyle::Caption) + 3 * ui::height::Normal + legendH; // the coming-later row and the links
         const float cardH = std::min(cardW * 0.5f, (size.y - origin.y - below - ui::height::Large - gap * float(rows - 1)) / float(rows));
         const ImVec2 row = ImGui::GetCursorScreenPos();
         // Every card says the game's full name, all at one size: the largest at which the longest fits (never cut, never
@@ -1743,9 +1749,10 @@ namespace launcher_ui
         const float mark = ui::HeightOf(ui::Size::Normal);
         ui::ButtonOptions report;
         report.overArt = true;
+        report.icon = ui::Icon::External; // a web page, as About's links
         report.tooltip = Tr("Opens a new issue on GitHub");
         const float reportW = ui::ButtonWidth(Tr("Report a bug"), report);
-        const ImVec2 iconAt(size.x - ui::space::XL - mark, size.y - ui::space::XL - mark);
+        const ImVec2 iconAt(size.x - ui::space::XL - mark, size.y - legendH - ui::space::XL - mark);
         ImGui::SetCursorScreenPos(ImVec2(iconAt.x - ui::space::S - reportW, iconAt.y));
         if (ui::Button(Tr("Report a bug"), report))
             SDL_OpenURL((std::string(Project) + "/issues/new").c_str());
@@ -1755,6 +1762,15 @@ namespace launcher_ui
         github.image = m_github != nullptr ? Ref(m_github) : ImTextureRef();
         if (ui::IconButton("##github", ui::Icon::Info, Tr("Arkeyan Launcher on GitHub"), github))
             SDL_OpenURL(Project);
+        if (legendH > 0)
+        {
+            // Over the page's padding, edge to edge.
+            const ImVec2 window = ImGui::GetWindowPos();
+            ImGui::PushClipRect(window, ImVec2(window.x + ImGui::GetWindowWidth(), size.y), false);
+            ImGui::SetCursorScreenPos(ImVec2(window.x, size.y - legendH));
+            ui::PageLegend(Tr("Back"), ImGui::GetWindowWidth(), true);
+            ImGui::PopClipRect();
+        }
     }
 
     float App::PlayBandH() const
@@ -1773,7 +1789,7 @@ namespace launcher_ui
         const ImVec2 position = ImGui::GetCursorScreenPos();
         const ImVec2 available = ImGui::GetContentRegionAvail();
         ImDrawList* draw = ImGui::GetWindowDrawList();
-        m_heroNavigation.Begin(m_focusTo == FocusTo::None);
+        ui::NavColumn(0); // the actions; the portal is column 1
         const float margin = ui::space::XL;
         const float left = position.x + margin;
         const float innerW = available.x - 2 * margin;
@@ -1853,14 +1869,14 @@ namespace launcher_ui
                 ui::Text(ui::TextStyle::Body, status.c_str(), ui::color::InkSoft, -1);
             }
             else
-                ui::StatusLine(noDisc ? ui::Status::Warning : StatusOf(state.state), status.c_str(), leftW);
+                ui::StatusLine(noDisc ? ui::Status::Warning : StatusOf(state.state), status.c_str(), leftW, IconOf(state.state)); // the sidebar's and Home's icon
 
             if (installing)
                 DrawHeroInstall(ImVec2(left, buttonY), leftW);
             else
             {
                 MainAction action{running ? Tr("Stop") : state.button.c_str(), state.buttonEnabled && !m_testButtonsOff};
-                action.icon = running ? ui::Icon::Stop : noDisc ? ui::Icon::Disc : ui::Icon::Play;
+                action.icon = running ? ui::Icon::Stop : noDisc ? ui::Icon::Disc : install ? ui::Icon::Download : update ? ui::Icon::Update : ui::Icon::Play;
                 action.danger = running;
                 action.width = std::min(ui::height::MainWidth, leftW - ui::height::MainGear - ui::space::S);
                 ui::ButtonOptions showOptions;
@@ -2049,7 +2065,7 @@ namespace launcher_ui
             ui::StatusPill(ui::Status::Error, Tr("Game data damaged: using the disc image."));
         }
 
-        m_heroNavigation.Column(1);
+        ui::NavColumn(1);
         if (noDisc)
             DrawHeroSteps(ImVec2(left + leftW + ui::space::L, foot - panelH), ImVec2(panelW, panelH));
         else
@@ -2060,8 +2076,8 @@ namespace launcher_ui
             m_drawn["install-panel-rect"] = fmt::format("{},{},{},{}", min.x, min.y, max.x, max.y);
         }
 
-        m_heroNavigation.Column(0);
-        // Achievements and the speaker keep their entry points over the painting.
+        // Achievements and the speaker keep their entry points over the painting, at its top right: the portal's column (down
+        // from them goes to the portal).
         float musicRight = position.x + available.x - margin;
         if (!m_s->installView && m_progress.hasList)
         {
@@ -2084,17 +2100,15 @@ namespace launcher_ui
                 { .kind = ui::ButtonKind::Secondary, .size = ui::Size::Small, .overArt = true }))
                 Set("launcher", "game_music", on ? "0" : "1");
         }
+        // Y: the game's settings, as the gear beside the main action (none while the game runs).
+        if (!running && ui::PadAction(ui::PadButton::North, Tr("Game settings")))
+            GoTo(Page::GameSettings);
         if (ui::Ctx().glyphs != ui::Glyphs::Keyboard)
         {
-            const ui::PadHint hints[] = {
-                { ui::PadButton::South, "Enter", Tr("Select") },
-                { ui::PadButton::North, nullptr, Tr("Game settings") },
-                { ui::PadButton::East, "Esc", Tr("Sidebar") },
-            };
             ImGui::SetCursorScreenPos(ImVec2(position.x, position.y + available.y - ui::height::Normal));
-            ui::PadLegend(hints, ui::Ctx().glyphs, available.x);
+            ui::PageLegend(Tr("Back"), available.x, true);
         }
-        m_heroNavigation.End();
+        ui::NavColumn(-1);
         ui::Ctx().testNavigationItems = nullptr;
     }
 
@@ -2133,14 +2147,8 @@ namespace launcher_ui
         {
             ui::SettingRow(Tr("Portal"), nullptr);
             SettingSelect("##portal", "portal", "mode", PortalChoices, 0);
-            ui::SettingRow(Tr("Auto-open Toy Box"), nullptr);
+            ui::SettingRow(Tr("Auto-open Toy Box"), Tr("Opens the Toy Box when the game asks for a figure."));
             bool autoOpen = ParseBool(SettingGet(m_config, "portal", "toybox_auto_open", "1"));
-            ui::AlignRight(ui::height::Normal + ui::space::XS + std::round(ui::height::Small * 1.75f));
-            ui::IconButton("##toyboxinfo", ui::Icon::Info, Tr("Opens the Toy Box when the game asks for a figure."));
-            if (m_testScreens == 3 && m_testStep == 1)
-                ui::FocusLastItem(true);
-            ImGui::SameLine(0, ui::space::XS);
-            ImGui::SetCursorPosY(ImGui::GetCursorPosY() + (ui::height::Normal - ui::height::Small) / 2);
             if (ui::Toggle("##toyboxautoopen", &autoOpen))
                 Set("portal", "toybox_auto_open", autoOpen ? "1" : "0");
             DrawPortalTest();
@@ -2225,7 +2233,7 @@ namespace launcher_ui
     }
 
     // The tabs of a settings page: words on one line, an accent line under the selected one (like the sidebar's bar).
-    // LB / RB change tab, as in the console launchers.
+    // LT / RT change tab (LB / RB change the main page), as in the console launchers.
     bool App::DrawTabBar(const char* const* labels, int count, int* current)
     {
         std::vector<const char*> shown;
@@ -2250,7 +2258,7 @@ namespace launcher_ui
 
     // The launcher's settings, apart from any game's: the controller (all games read the same), the launcher
     // itself, support and About. Each game has its own settings page (game_settings_page.cpp).
-    void App::BeginSettingsPage(const char* id, const char* title, bool back)
+    void App::BeginSettingsPage(const char* id, const char* title, bool back, bool focusBack)
     {
         const float available = ImGui::GetContentRegionAvail().x;
         const float width = std::min(available, ui::width::Page);
@@ -2268,6 +2276,8 @@ namespace launcher_ui
                 std::round(top + ui::CapMiddle(ui::TextStyle::Display) - ui::height::Normal / 2))); // on the title's capitals
             if (ui::Button(Tr("Back"), options))
                 GoTo(Page::Play);
+            if (focusBack)
+                TakeFocus(FocusTo::Page);
             ImGui::SetCursorPosY(std::max(bottom, ImGui::GetCursorPosY()));
         }
         ImGui::Dummy(ImVec2(0, ui::space::XS));
@@ -2428,13 +2438,44 @@ namespace launcher_ui
         RequestFocus(FocusTo::Page);
     }
 
-    // B / Escape when nothing else took it: out of Settings and Collection, else to the sidebar.
+    // B / Escape when nothing else took it, one step back: out of the uninstall list (the Launcher tab stays), out of a game's
+    // settings or achievements to its page, out of any other page to Home, and on Home to the sidebar.
     void App::Back()
     {
-        if (m_page == Page::Settings || m_page == Page::Collection || m_page == Page::GameSettings || m_page == Page::Achievements)
-            GoTo(m_backPage);
+        if (m_page == Page::Settings && m_un.stage == UninstallStage::List)
+            m_un = {};
+        else if (m_page == Page::Settings && m_un.stage == UninstallStage::Result && !m_uninstalled)
+            m_un.stage = UninstallStage::Closed;
+        else if (m_page == Page::GameSettings || m_page == Page::Achievements)
+            GoTo(Page::Play);
+        else if (m_page != Page::Home)
+            GoTo(Page::Home);
         else
             RequestFocus(FocusTo::Sidebar);
+        m_focusShow = true;
+    }
+
+    // LB / RB: the main page before or after, in the sidebar's order (Home, the games, Collection, Settings); a game's settings
+    // and achievements count as its page. No wrap at the ends.
+    void App::StepMainPage(int step)
+    {
+        std::vector<std::pair<Page, const GameInfo*>> pages{ { Page::Home, nullptr } };
+        for (const LauncherGameEntry& entry : LauncherGameCatalog(m_config))
+            if (entry.enabled && FindGame(entry.id) != nullptr)
+                pages.push_back({ Page::Play, FindGame(entry.id) });
+        pages.push_back({ Page::Collection, nullptr });
+        pages.push_back({ Page::Settings, nullptr });
+        const Page shown = m_page == Page::GameSettings || m_page == Page::Achievements ? Page::Play : m_page;
+        int at = 0;
+        for (size_t i = 0; i < pages.size(); i++)
+            if (pages[i].first == shown && (pages[i].second == nullptr || std::string_view(pages[i].second->id) == m_s->game.id))
+                at = int(i);
+        const int to = std::clamp(at + step, 0, int(pages.size()) - 1);
+        if (to == at || m_uninstalled)
+            return;
+        if (pages[size_t(to)].second != nullptr && std::string_view(pages[size_t(to)].second->id) != m_s->game.id)
+            SelectGame(*pages[size_t(to)].second);
+        GoTo(pages[size_t(to)].first);
         m_focusShow = true;
     }
 
@@ -2550,6 +2591,17 @@ namespace launcher_ui
         }
         if (!m_backTaken && (ImGui::IsKeyPressed(ImGuiKey_Escape, false) || ImGui::IsKeyPressed(ImGuiKey_GamepadFaceRight, false)))
             Back();
+        if (!m_pagesTaken && (ImGui::IsKeyPressed(ImGuiKey_GamepadL1, false) || ImGui::IsKeyPressed(ImGuiKey_GamepadR1, false)))
+            StepMainPage(ImGui::IsKeyPressed(ImGuiKey_GamepadL1, false) ? -1 : 1);
+        if (m_testPadWalk)
+        {
+            m_walk.frameStops.clear();
+            m_walk.items.clear();
+            m_walk.frameLegends.clear();
+            ui::Ctx().testLegends = &m_walk.frameLegends;
+            ui::Ctx().testStops = &m_walk.frameStops;
+            ui::Ctx().testNavigationItems = &m_walk.items; // and their labels
+        }
         DrawBackdrop();
         DrawSidebar();
 
@@ -2580,8 +2632,10 @@ namespace launcher_ui
         DrawQuitPrompt();
         DrawToast();
         // Who answers B / Escape next frame: an open menu or dialog, a field being edited, the collection's search or View.
-        m_backTaken = ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopupId | ImGuiPopupFlags_AnyPopupLevel) || ImGui::IsAnyItemActive() ||
-            m_toasts.HasFocus() || m_reportOpen || m_whatsNewOpen || m_quitPrompt || (m_page == Page::Collection && m_s->collection->TakesBack());
+        // LB / RB belong to the pages unless a dialog, a menu or a field has the input.
+        m_pagesTaken = ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopupId | ImGuiPopupFlags_AnyPopupLevel) || ImGui::IsAnyItemActive() ||
+            m_toasts.HasFocus() || m_reportOpen || m_whatsNewOpen || m_quitPrompt;
+        m_backTaken = m_pagesTaken || (m_page == Page::Collection && m_s->collection->TakesBack());
         m_focusTo = FocusTo::None; // a request no page answered (its item wasn't drawn) is dropped
 
         ImGui::Render();
@@ -2604,7 +2658,7 @@ namespace launcher_ui
                 "45-nav-search-left", "46-nav-seat", "47-nav-choosing", "48-nav-card", "49-nav-placed", "50-nav-sheet",
                 "51-nav-back-to-play", "52-nav-settings-controls", "53-nav-settings-back" };
             static const char* const UninstallNames[] = { "01-settings", "02-list", "03-ticked", "04-confirm", "05-result" };
-            if (m_testExperimental || m_testHero || m_testButtons || m_testSidebar || m_testCopy || m_testLogo || m_testKeys || m_testPad || m_testAchievements || m_testRunning ||
+            if (m_testPadWalk || m_testExperimental || m_testHero || m_testButtons || m_testSidebar || m_testCopy || m_testLogo || m_testKeys || m_testPad || m_testAchievements || m_testRunning ||
                 m_testScreens != 0 || !m_testKit.empty())
                 Screenshot(m_testShot.c_str());
             else if (m_testUninstall)
@@ -3367,21 +3421,21 @@ namespace launcher_ui
         // A key is pressed and released, unless Hold (down only) or Release (up only) wraps it.
         constexpr int Hold = 0x10000, Release = 0x20000;
         static const std::vector<int> Steps[] = {
-            {},                                                        // 40: the launcher opens, the focus in the sidebar
-            { ImGuiKey_Escape },                                       // 41: B: the ring on the game's row
+            {},                                                        // 40: the game page
+            { ImGuiKey_Escape, ImGuiKey_Escape },                      // 41: B: Home; B again: the ring on the game's row in the sidebar
             { ImGuiKey_DownArrow, ImGuiKey_DownArrow, ImGuiKey_DownArrow, ImGuiKey_DownArrow }, // 42: down: past Giants, Swap Force and Coming later
             { ImGuiKey_Space },                                        // 43: A: Collection, the ring on Add a figure
             { ImGuiKey_GamepadFaceUp },                                // 44: Y: the search box takes the keyboard
             { ImGuiKey_Escape },                                       // 45: B: out of the search
             { ImGuiKey_UpArrow },                                      // 46: up: to the seats, above the bar
             { ImGuiKey_Space },                                        // 47: A: choosing for that seat (lit, the bar says so)
-            { ImGuiKey_DownArrow },                                    // 48: down: the shelf's first card
+            { ImGuiKey_DownArrow, ImGuiKey_DownArrow, ImGuiKey_DownArrow }, // 48: down: Cancel (choosing), the search's row, the shelf's first row
             { ImGuiKey_Space },                                        // 49: A: it goes on the seat, the choosing ends
             { ImGuiKey_GamepadFaceLeft },                              // 50: X: the focused card's sheet
-            { ImGuiKey_GamepadFaceRight, ImGuiKey_GamepadFaceRight },  // 51: B, B: closed, back to Play
+            { ImGuiKey_GamepadFaceRight, ImGuiKey_GamepadFaceRight },  // 51: B, B: closed, back to Home
             { ImGuiKey_Escape, ImGuiKey_DownArrow, ImGuiKey_DownArrow, ImGuiKey_DownArrow, ImGuiKey_DownArrow, ImGuiKey_DownArrow, ImGuiKey_Space,
-              ImGuiKey_GamepadR1 },                                    // 52: B to the sidebar, down to Settings, A, RB: Settings > Launcher
-            { ImGuiKey_Escape },                                       // 53: Escape: back to Play
+              ImGuiKey_GamepadR2 },                                    // 52: B to the sidebar, down to Settings, A, RT: Settings > Launcher
+            { ImGuiKey_Escape },                                       // 53: Escape: back to Home
         };
         // Where each step's keys must have led (checked when the next step begins): the sidebar's rows, the collection, the
         // settings; a step that went elsewhere would open what the next keys press (a file chooser: the run would wait).
@@ -3402,10 +3456,11 @@ namespace launcher_ui
         }
         switch (m_testStep)
         {
+        case 2: expect(m_page == Page::Home, "B on the game page goes to Home"); break;
         case 4: expect(m_page == Page::Collection, "A on the sidebar's Collection row opens the collection"); break;
-        case 12: expect(m_page == Page::Play, "B, B close the sheet and the collection"); break;
-        case 13: expect(m_page == Page::Settings && m_tab == SettingsTab::Launcher, "Settings, then RB: its Launcher tab"); break;
-        case 14: expect(m_page == Page::Play, "Escape leaves Settings"); break;
+        case 12: expect(m_page == Page::Home, "B, B close the sheet and the collection"); break;
+        case 13: expect(m_page == Page::Settings && m_tab == SettingsTab::Launcher, "Settings, then RT: its Launcher tab"); break;
+        case 14: expect(m_page == Page::Home, "Escape leaves Settings for Home"); break;
         default: break;
         }
         if (m_testStep >= int(std::size(Steps)))
@@ -3550,7 +3605,7 @@ namespace launcher_ui
             switch (m_testStep)
             {
             case 0: break;
-            case 1: break; // DrawControls focuses the info icon: its tooltip also works without a pointer
+            case 1: break; // the Toy Box row: its hint is a line under its label (no info icon)
             case 2:
             case 3:
             {
@@ -3778,6 +3833,11 @@ namespace launcher_ui
         if (m_shots.empty() || m_testAt != 0)
             return;
         uint64_t now = SDL_GetTicks();
+        if (m_testPadWalk)
+        {
+            TestPadWalkScript(now);
+            return;
+        }
         if (m_testExperimental)
         {
             switch (m_testStep)
