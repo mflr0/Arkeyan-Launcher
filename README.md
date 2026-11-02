@@ -156,7 +156,7 @@ ninja -C build ArkeyanLauncher
 ```
 
 The developer docs are in `docs/`: `launcher_ui.md` covers the screens and theme, `install.md` the install,
-`collection_ui.md` the figures, `updates.md` the updater and releases, and `support.md` the logs.
+`collection_ui.md` the figures, `updates.md` the updater and releases, `portable.md` the portable copy, and `support.md` the logs.
 
 ## Known issues
 

@@ -36,6 +36,8 @@ namespace datadir
     std::filesystem::path PortableRoot(const std::filesystem::path& folder);
     // The folder that holds the running program (on macOS, the one that holds its .app). Empty when it cannot be found.
     std::filesystem::path ProgramFolder();
+    // The running program's own file (on macOS, <app>/Contents/MacOS/<name>). Empty when it cannot be found.
+    std::filesystem::path ProgramPath();
     // When portable.txt is beside the program and SKYLANDERS_DATA is not set, sets SKYLANDERS_DATA to the portable root, so
     // Root() and the games the launcher starts follow it (and the older folders are not migrated). True when it did.
     // Call first thing in main, before MigrateOnce.

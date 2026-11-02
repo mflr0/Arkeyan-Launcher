@@ -379,6 +379,46 @@ namespace
         ApplyGameInput(config, "giants");
         SETTINGS_EXPECT(config["input"]["key_a"] == "Space" && config["input"]["key_y"] == "V" && config["input"].count("key_dpad_up") == 0);
 
+        // The mouse: off by default (no button anywhere), on: attack 1 and 2 on the clicks, one button per action, Reset clears
+        // the lines but not the switch; PLAY never copies the mouse to [input]. The Toy Box keys: [input], F6 F7 F8 by default.
+        {
+            LauncherConfig mice;
+            auto find = [](std::string_view game, std::string_view action) -> const GameKey& {
+                for (const GameKey& key : GameKeys(game))
+                    if (action == key.action)
+                        return key;
+                return GameKeys(game)[0];
+            };
+            for (const char* game : { "ssa", "giants", "swapforce", "trapteam" })
+            {
+                SETTINGS_EXPECT(!GameMouseOn(mice, game));
+                for (const GameKey& key : GameKeys(game))
+                    SETTINGS_EXPECT(GameMouseName(mice, game, key).empty());
+            }
+            SetGameMouseOn(mice, "swapforce", true);
+            SETTINGS_EXPECT(GameMouseOn(mice, "swapforce") && !GameMouseOn(mice, "giants"));
+            SETTINGS_EXPECT(GameMouseName(mice, "swapforce", find("swapforce", "x")) == "Mouse Left" &&
+                GameMouseName(mice, "swapforce", find("swapforce", "b")) == "Mouse Right" && GameMouseName(mice, "swapforce", find("swapforce", "a")).empty());
+            SETTINGS_EXPECT(GameMouseName(mice, "ssa", find("ssa", "a")).empty()); // another game's switch is its own
+            SetGameMouseButton(mice, "swapforce", find("swapforce", "a"), "Mouse Left"); // Jump takes the left button
+            SETTINGS_EXPECT(GameMouseName(mice, "swapforce", find("swapforce", "a")) == "Mouse Left" &&
+                GameMouseName(mice, "swapforce", find("swapforce", "x")).empty() && mice["swapforce.input"]["mouse_x"] == "none");
+            SetGameMouseButton(mice, "swapforce", find("swapforce", "left_up"), "Wheel Up");
+            SETTINGS_EXPECT(mice["swapforce.input"]["mouse_left_up"] == "Wheel Up" && MouseDisplayName("Wheel Up") == "Wheel up");
+            SETTINGS_EXPECT(CapturedMouseName(SDL_BUTTON_X1) == "Mouse 4" && CapturedMouseName(9).empty() && CapturedWheelName(-1) == "Wheel Down");
+            ApplyGameInput(mice, "swapforce");
+            for (const auto& [key, value] : mice["input"])
+                SETTINGS_EXPECT(!key.starts_with("mouse"));
+            ResetGameKeys(mice, "swapforce");
+            SETTINGS_EXPECT(GameMouseOn(mice, "swapforce") && mice["swapforce.input"].count("mouse_x") == 0 &&
+                GameMouseName(mice, "swapforce", find("swapforce", "x")) == "Mouse Left");
+            SETTINGS_EXPECT(ToyboxKeys().size() == 3 && ToyboxKeyName(mice, ToyboxKeys()[0]) == "F6" && ToyboxKeyName(mice, ToyboxKeys()[2]) == "F8");
+            mice["input"]["key_toybox_add"] = "G";
+            SETTINGS_EXPECT(ToyboxKeyName(mice, ToyboxKeys()[1]) == "G");
+            ApplyGameInput(mice, "ssa");
+            SETTINGS_EXPECT(mice["input"]["key_toybox_add"] == "G"); // PLAY keeps the Toy Box keys
+        }
+
         // Through the settings file, sections with a dot included.
         fs::path scratch = root / "keys.ini";
         SETTINGS_EXPECT(SaveLauncherConfig(scratch.string(), config));

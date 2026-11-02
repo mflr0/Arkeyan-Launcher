@@ -904,7 +904,39 @@ Drop to 30 FPS when needed	Passer à 30 FPS si besoin
 Turn off to keep your chosen rate even if the picture stutters.	Désactivez pour garder la fréquence choisie même si l’image saccade.
 
 Opens the Toy Box when the game asks for a figure.	Ouvre la Toy Box quand le jeu demande une figurine.
-Fixed by the game; these shortcuts cannot be changed here.	Fixées par le jeu ; ces commandes ne peuvent pas être modifiées ici.
 Choose a type	Choisir un type
 The figure can't be read. Reopen it before saving.	La figurine est illisible. Rouvrez-la avant d’enregistrer.
 The figure was kept, but its seat couldn't be restored.	La figurine est conservée, mais sa place n’a pas pu être rétablie.
+
+# Portable copy (game settings > Game, launcher/portable_export.cpp).
+Portable copy	Copie portable
+The game in one file: it plays without the launcher or the disc image.	Le jeu en un seul fichier : il se lance sans le launcher ni l'image disque.
+Exporting...	Export en cours...
+Exporting: {} of {}	Export : {} sur {}
+Export for {}	Exporter pour {}
+Export a portable copy	Exporter une copie portable
+This copy holds your game. It is for your personal use only: do not share it.	Cette copie contient votre jeu. Elle est réservée à votre usage personnel : ne la partagez pas.
+It plays on {} without the launcher or the disc image, with the same saves and settings as the installed game. It never updates: to update it, export it again. Up to {}.	Elle se lance sur {} sans le launcher ni l'image disque, avec les mêmes sauvegardes et réglages que le jeu installé. Elle ne se met jamais à jour : pour la mettre à jour, exportez-la de nouveau. Jusqu'à {}.
+Choose a folder...	Choisir un dossier...
+Portable copy saved: {}	Copie portable enregistrée : {}
+Export stopped	Export arrêté
+Couldn't export the game: {}	Impossible d'exporter le jeu : {}
+the installed game is missing: install it again	le jeu installé est introuvable : installez-le de nouveau
+couldn't copy the game: {}	impossible de copier le jeu : {}
+the copy can't be read back: {}	la copie ne peut pas être relue : {}
+couldn't sign the app (codesign)	impossible de signer l'app (codesign)
+couldn't put the copy in place: {}	impossible de mettre la copie en place : {}
+
+# The mouse (game settings > Keyboard, launcher/game_keys.cpp).
+Mouse	Souris
+Left click is attack 1 and right click attack 2; the game holds the pointer while you play.	Clic gauche pour l’attaque 1 et clic droit pour l’attaque 2 ; le jeu retient le pointeur pendant que vous jouez.
+Use the mouse	Utiliser la souris
+Click or turn the wheel	Cliquez ou tournez la molette
+Click, then press a mouse button or turn the wheel (Escape cancels).	Cliquez, puis appuyez sur un bouton de la souris ou tournez la molette (Échap pour annuler).
+Left click	Clic gauche
+Right click	Clic droit
+Middle click	Clic du milieu
+Back side button	Bouton latéral arrière
+Forward side button	Bouton latéral avant
+Wheel up	Molette vers le haut
+Wheel down	Molette vers le bas

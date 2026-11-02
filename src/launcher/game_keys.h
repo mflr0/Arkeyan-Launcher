@@ -17,6 +17,7 @@ struct GameKey
     const char* label;  // English, as the game words it (translated where it is shown)
     const char* pad;    // the Xbox 360 pad's button the key stands for (shown in brackets for the pad in use: PadButtonName)
     SDL_Scancode fallback; // the game's default key (a physical place: W is Z on an AZERTY keyboard)
+    const char* mouse = nullptr; // its mouse button once the game's mouse is on ("Mouse Left": attack 1, "Mouse Right": attack 2)
 };
 
 // The rows of a game's Keyboard tab, in display order (empty for a game this launcher does not know).
@@ -73,3 +74,29 @@ void ResetPadMap(LauncherConfig& config, std::string_view gameId);
 // The rumble choices, in order, and the player's now (player 0 or 1).
 std::span<const char* const> RumbleLevels();
 std::string RumbleLevel(const LauncherConfig& config, std::string_view gameId, int player);
+
+// ---- The mouse (docs/settings.md, "Mouse") ------------------------------------------------------------------------------
+// [<game>.input] mouse=0|1 (off by default) and mouse_<action>=<mouse name>|none, the runtime's names (its host/mouse.h):
+// "Mouse Left", "Mouse Right", "Mouse Middle", "Mouse 4", "Mouse 5", "Wheel Up", "Wheel Down". One button per action.
+bool GameMouseOn(const LauncherConfig& config, std::string_view gameId);
+void SetGameMouseOn(LauncherConfig& config, std::string_view gameId, bool on);
+// The button an action is on now, as the runtime reads it: the stored line, else the game's default (GameKey::mouse) unless
+// another action took that button. Empty for none.
+std::string GameMouseName(const LauncherConfig& config, std::string_view gameId, const GameKey& key);
+// Puts `name` (empty: none) on the action; the action that had it gets none.
+void SetGameMouseButton(LauncherConfig& config, std::string_view gameId, const GameKey& key, const std::string& name);
+// A stored mouse name as the player reads it ("Left click", "Wheel up"), translated.
+std::string MouseDisplayName(const std::string& name);
+// What a click (SDL's button number) or a wheel tick stores; empty for a button the runtime does not know.
+std::string CapturedMouseName(int sdlButton);
+std::string CapturedWheelName(float y);
+
+// ---- The Toy Box keys: [input] key_toybox, key_toybox_add, key_toybox_clear, shared by the games ----------------------------
+struct ToyboxKey
+{
+    const char* line;     // "key_toybox"
+    const char* label;    // English (translated where it is shown)
+    const char* fallback; // SDL's key name: F6, F7, F8 (Tab also opens the Toy Box while key_toybox is not set)
+};
+std::span<const ToyboxKey> ToyboxKeys();
+std::string ToyboxKeyName(const LauncherConfig& config, const ToyboxKey& key);

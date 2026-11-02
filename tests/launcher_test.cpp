@@ -1072,6 +1072,8 @@ int AccentChecks(const std::filesystem::path& scratch); // tests/accent_test.cpp
 int AccentChecksInChild(const char* executable, const std::filesystem::path& scratch);
 int MusicChecks(const std::filesystem::path& scratch); // tests/music_test.cpp
 int CopyChecks(const std::filesystem::path& scratch, const std::string& ssaIso, const std::string& giantsIso); // tests/copy_test.cpp
+int PortableChecks(const std::filesystem::path& scratch); // tests/portable_test.cpp
+int ExportPortableTool(int argc, char** argv);         // tests/portable_test.cpp
 
 // The launcher window switching games in place (App::TestSwitchScript, in an offscreen window): both discs checked, a
 // build of each made by the fake kit, the state of each kept across switches, PLAY returning the shown game's runtime.
@@ -1582,6 +1584,8 @@ int main(int argc, char** argv)
         return g_failures == 0 ? 0 : 1;
     }
     if (argc == 2 && std::string_view(argv[1]) == "--fake-game") return fake_game::Run();
+    if (argc >= 2 && std::string_view(argv[1]) == "--export-portable") // the owner's proof: a real installed game exported
+        return ExportPortableTool(argc, argv);
     if (argc >= 3 && std::string_view(argv[1]) == "--accents") // started by the run below: the accented folder checks alone
         return AccentChecks(std::filesystem::path(argv[2])) == 0 ? 0 : 1;
     // --no-disc <scratch dir>: only the checks that need no disc image (what CI runs).
@@ -1632,6 +1636,8 @@ int main(int argc, char** argv)
         CollectionChecks(scratch);
         return g_failures == 0 ? 0 : 1;
     }
+    if (skyenv::Get("SKY_LAUNCHER_TEST_PORTABLE_ONLY") != nullptr) // only "Export a portable copy" (quick to rerun)
+        return PortableChecks(scratch) == 0 ? 0 : 1;
     if (skyenv::Get("SKY_LAUNCHER_TEST_UNINSTALL_ONLY") != nullptr) // only "Uninstall everything" (quick to rerun)
     {
         int failures = UninstallChecks(scratch);
@@ -1672,6 +1678,7 @@ int main(int argc, char** argv)
     LauncherControlChecks(scratch);
     g_failures += SettingsChecks(scratch / "settings");
     g_failures += UninstallChecks(scratch);
+    g_failures += PortableChecks(scratch);
     g_failures += I18nChecks();
     g_failures += TextFitChecks();
     g_failures += AccentChecksInChild(argv[0], scratch);

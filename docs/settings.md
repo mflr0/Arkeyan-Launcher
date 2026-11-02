@@ -130,6 +130,27 @@ The runtime reads one `[input]` section (`key_<action>=<SDL key name>`), but the
   `game_keys.cpp` are scancodes. Tests: the place/name round trip and the defaults (`tests/settings_test.cpp`; SDL lets a
   test set no AZERTY layout, so the layout's letter is checked on the default US one).
 
+## Mouse and the Toy Box keys
+
+The **Keyboard** tab ends with a **Mouse** section: a switch, **Use the mouse** (off by default), and once it is on a row per action
+(movement included) with its mouse button. Click a row, then press a mouse button or turn the wheel (Escape cancels; the click
+that starts the wait is not the binding). Once on, left click is the game's attack 1 and right click attack 2 (`GameKey::mouse`);
+every other action keeps its keys. A button is on one action at a time: putting it on another takes it from the first.
+
+| Section | Key | Meaning |
+| --- | --- | --- |
+| `<game>.input` | `mouse` | `1`: the game uses the mouse. Absent or `0`: off, and the game never hides or holds the pointer. |
+| `<game>.input` | `mouse_<action>` | `Mouse Left`, `Mouse Right`, `Mouse Middle`, `Mouse 4`, `Mouse 5`, `Wheel Up`, `Wheel Down`, or `none`. Absent: the game's default (attacks only). |
+| `input` | `key_toybox`, `key_toybox_add`, `key_toybox_clear` | Open the Toy Box, add the next figure, clear the portal: F6, F7, F8 by default (Tab also opens the Toy Box while `key_toybox` is not set). Shared by the games. |
+
+- The mouse names share the runtime's key list (SSARecomp's `host/mouse.h`); the mouse lines are read from the game's section by the
+  runtime itself, so PLAY copies nothing (`ApplyGameInput` keeps `[input]`'s Toy Box keys as they are).
+- **Reset to defaults** also clears the game's `mouse_` lines; the switch stays as it is.
+- The game's F3 menu has the same rows (its Commands page) and writes the same lines.
+- **Settings > Portal > Toy Box keys**: each key is a key cap to click and press, as on the Keyboard tab; the pad's buttons
+  beside it (View + Y) are fixed.
+- Tests: `tests/settings_test.cpp` (off by default, the defaults, one button per action, Reset, PLAY, the Toy Box keys).
+
 ## Per-game controller
 
 The game's settings page has a **Controller** tab beside Keyboard (`src/launcher/game_keys.{h,cpp}`, `ui/game_settings_page.cpp`): each of

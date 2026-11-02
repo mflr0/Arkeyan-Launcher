@@ -9,6 +9,8 @@
 #include <fmt/format.h>
 #include <fstream>
 #include <iterator>
+#include <mutex>
+#include <utility>
 #include <imgui_internal.h>
 
 namespace launcher_ui
@@ -312,6 +314,43 @@ namespace launcher_ui
             }
             ui::EndSettings();
         }
+        // The mouse: a switch (off by default); once on, a button or the wheel for any action, attacks on the clicks by default
+        // ([<game>.input] mouse, mouse_<action>; game_keys.h). Moving the mouse does nothing in the game.
+        ui::SectionHeader(Tr("Mouse"), Tr("Left click is attack 1 and right click attack 2; the game holds the pointer while you play."));
+        if (ui::BeginSettings("##mouse"))
+        {
+            ui::SettingRow(Tr("Use the mouse"), nullptr);
+            bool on = GameMouseOn(m_config, game);
+            if (ui::Toggle("##mouseon", &on))
+            {
+                SetGameMouseOn(m_config, game, on);
+                if (!SaveLauncherConfig(m_configPath, m_config))
+                    Toast(Tr("Couldn't save the settings"), ui::ToastKind::Error);
+                m_mouseCapturing = nullptr;
+            }
+            if (on)
+                for (const GameKey& action : keys)
+                {
+                    ui::SettingRow(purpose(action).c_str(), nullptr, ("(" + PadButtonName(action, family) + ")").c_str());
+                    const std::string stored = GameMouseName(m_config, game, action);
+                    const std::string shown = m_mouseCapturing == &action ? std::string(Tr("Click or turn the wheel"))
+                                              : stored.empty()              ? std::string("\xE2\x80\x94")
+                                                                            : MouseDisplayName(stored);
+                    ui::KeyButtonOptions options;
+                    options.capturing = m_mouseCapturing == &action;
+                    options.tooltip = Tr("Click, then press a mouse button or turn the wheel (Escape cancels).");
+                    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - ui::KeyButtonWidth(shown.c_str(), options));
+                    ImGui::PushID(action.action);
+                    if (ui::KeyButton("##mousekey", shown.c_str(), options))
+                    {
+                        m_mouseCapturing = &action;
+                        m_mouseArmed = false;
+                    }
+                    ImGui::PopID();
+                }
+            ui::EndSettings();
+        }
+
         ImGui::Dummy(ImVec2(0, ui::space::XS));
         ui::ButtonOptions reset;
         reset.kind = ui::ButtonKind::Danger;
@@ -322,6 +361,7 @@ namespace launcher_ui
             ResetGameKeys(m_config, game);
             Set(section.c_str(), "seeded", "1");
             m_capturing = nullptr;
+            m_mouseCapturing = nullptr;
             Toast(Tr("Keyboard bindings reset"), ui::ToastKind::Success);
         }
     }
@@ -604,6 +644,129 @@ namespace launcher_ui
         RunDataAction(result, N_("Game uninstalled"));
     }
 
+    namespace
+    {
+        // The folder dialog answers on a thread of its own: the folder waits here for the window's next frame.
+        std::mutex g_portableMutex;
+        std::string g_portableFolder;
+
+        void SDLCALL PortableFolderChosen(void*, const char* const* folders, int)
+        {
+            std::lock_guard lock(g_portableMutex);
+            if (folders != nullptr && folders[0] != nullptr)
+                g_portableFolder = folders[0];
+        }
+
+        constexpr const char* SystemName()
+        {
+#if defined(_WIN32)
+            return "Windows";
+#elif defined(__APPLE__)
+            return "macOS";
+#else
+            return "Linux";
+#endif
+        }
+    }
+
+    // The game in one file for this system (portable_export.h): the player reads what it is and chooses a folder, then it is
+    // written in the background.
+    void App::DrawPortableExport()
+    {
+        {
+            std::lock_guard lock(g_portableMutex);
+            if (!g_portableFolder.empty())
+                StartPortableExport(datadir::FromText(std::exchange(g_portableFolder, std::string())));
+        }
+        const bool built = !m_s->installed.runtime.empty(), ready = built && m_s->disc == DiscState::Ready;
+        ui::SectionHeader(Tr("Portable copy"), !built ? Tr("Install the game first.") : !ready ? Tr("Choose the disc image first.")
+                                                      : Tr("The game in one file: it plays without the launcher or the disc image."));
+        auto note = [](const std::string& text) { ui::Text(ui::TextStyle::Caption, text.c_str(), ui::color::Dim); };
+        if (m_s->portableJob.Running())
+        {
+            const uint64_t total = m_s->portableJob.Total();
+            note(total == 0 ? Tr("Exporting...") : Tf("Exporting: {} of {}", ui::FormatSize(m_s->portableJob.Bytes()), ui::FormatSize(total)));
+            ui::ProgressBar(m_s->portableJob.Fraction(), -1, true);
+            ImGui::Dummy(ImVec2(0, ui::space::XXS));
+            if (ui::Button(Tr("Stop")))
+                m_s->portableJob.Cancel();
+            return;
+        }
+        ui::ButtonOptions exportOptions;
+        exportOptions.disabled = !ready || Installing();
+        if (ui::Button(Tf("Export for {}", SystemName()).c_str(), exportOptions))
+            m_portableAsk = true;
+        if (!m_s->portablePath.empty())
+        {
+            ImGui::SameLine(0, ui::space::S);
+            ui::ButtonOptions folder;
+            folder.icon = ui::Icon::Folder;
+            if (ui::Button(Tr("Show in folder"), folder) && !OpenFolder(m_s->portablePath.parent_path()))
+                Toast(Tr("Couldn't open the folder"), ui::ToastKind::Error);
+        }
+        if (!m_s->portableMessage.empty())
+            note(m_s->portableMessage);
+
+        // What the copy is, before anything is written.
+        if (m_portableAsk && ui::BeginModal("##portable", Tr("Export a portable copy"), &m_portableAsk, ui::ModalSize::Medium))
+        {
+            ui::Text(ui::TextStyle::Body, Tr("This copy holds your game. It is for your personal use only: do not share it."), ui::color::Ink);
+            ImGui::Dummy(ImVec2(0, ui::space::XS));
+            const uint64_t size = m_s->fromCopy ? m_s->copy.total : m_s->discSize;
+            ui::Text(ui::TextStyle::Caption, Tf("It plays on {} without the launcher or the disc image, with the same saves and settings as the installed game. "
+                "It never updates: to update it, export it again. Up to {}.", SystemName(), ui::FormatSize(size)).c_str(), ui::color::Dim);
+            if (ui::ModalActions(&m_portableAsk, Tr("Choose a folder..."), Tr("Cancel")) == ui::ModalResult::Confirm)
+            {
+                m_portableAsk = false;
+                if (const char* folder = LauncherEnv("SKY_LAUNCHER_TEST_PORTABLE_DIR")) // tests: no dialog
+                    StartPortableExport(datadir::FromText(folder));
+                else
+                {
+                    const std::string desktop = datadir::Text(DesktopFolder());
+                    SDL_ShowOpenFolderDialog(PortableFolderChosen, nullptr, m_window, desktop.c_str(), false);
+                }
+            }
+            ui::EndModal();
+        }
+    }
+
+    void App::StartPortableExport(const std::filesystem::path& folder)
+    {
+        if (m_s->installed.runtime.empty() || m_s->disc != DiscState::Ready || Installing() || m_s->portableJob.Running())
+            return;
+        PortableSpec spec;
+        spec.gameId = m_s->game.id;
+        spec.runtime = datadir::FromText(m_s->installed.runtime);
+        spec.source = m_s->discPath;
+        spec.collection = datadir::FromText(m_s->collection->Folder());
+        spec.keys = PortableKeys(m_config, m_s->game.id);
+        spec.info = { m_s->game.id, m_s->installed.gameVersion, m_s->installed.kitVersion, m_s->check.xexSha256, PortableStamp() };
+        spec.folder = folder;
+        spec.name = PortableName(m_s->game.id);
+        if (const char* free = LauncherEnv("SKY_LAUNCHER_COPY_FREE_BYTES")) // tests: the room to assume, as for the copy
+            spec.freeBytes = std::strtoll(free, nullptr, 10);
+        m_s->portablePath.clear();
+        m_s->portableMessage.clear();
+        m_s->portableJob.Start(spec);
+    }
+
+    void App::FinishPortableExport()
+    {
+        PortableResult result = m_s->portableJob.Collect();
+        if (result.outcome == PortableResult::Outcome::Done)
+        {
+            m_s->portablePath = result.path;
+            Toast(Tf("Portable copy saved: {}", datadir::Text(result.path.filename())), ui::ToastKind::Success);
+        }
+        else if (result.outcome == PortableResult::Outcome::Cancelled)
+            Toast(Tr("Export stopped"));
+        else
+        {
+            m_s->portableMessage = PortableFailureText(result);
+            Toast(m_s->portableMessage, ui::ToastKind::Error);
+        }
+    }
+
     // A shortcut on the Desktop that opens Arkeyan Launcher on this game and starts it, with the game's icon from its disc.
     void App::CreateShortcut()
     {
@@ -627,7 +790,7 @@ namespace launcher_ui
         if (!m_s->dataSizesLoaded)
             RefreshDataSizes();
         const GameFolders folders = FoldersOf(m_s->game.id);
-        const bool busy = Installing(), running = GameIsRunning(folders) || m_session.Running() == m_s->game.id;
+        const bool busy = Installing() || m_s->portableJob.Running(), running = GameIsRunning(folders) || m_session.Running() == m_s->game.id;
         auto hold = [](const char* tooltip, bool disabled = false) {
             ui::ButtonOptions options;
             options.kind = ui::ButtonKind::Danger;
@@ -657,6 +820,8 @@ namespace launcher_ui
         shortcut.disabled = m_s->disc != DiscState::Ready;
         if (ui::Button(Tr("Create"), shortcut))
             CreateShortcut();
+
+        DrawPortableExport();
 
         ui::SectionHeader(Tr("Folders"));
         ui::ButtonOptions folder;

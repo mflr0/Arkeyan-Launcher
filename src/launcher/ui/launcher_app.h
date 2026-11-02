@@ -5,6 +5,7 @@
 // public entry point.
 #include "assets/launcher_assets.h"
 #include "launcher/game_copy.h"
+#include "launcher/portable_export.h"
 #include "launcher/game_install.h"
 #include "launcher/game_music.h"
 #include "launcher/game_progress.h"
@@ -259,6 +260,10 @@ namespace launcher_ui
         bool fromCopy = false;
         GameCopyJob copyJob;
         std::string copyMessage; // why the last copy didn't finish
+        // Game settings > Game > Portable copy (portable_export.h): the export running, the last one made, why the last one failed.
+        PortableExportJob portableJob;
+        std::filesystem::path portablePath;
+        std::string portableMessage;
         GameSourceCheck check;
         TitleMetadata meta;
         LauncherAssets::Provider assets;
@@ -367,6 +372,9 @@ namespace launcher_ui
         void DrawUpdateAll(ImVec2 right);
         void DrawDataActions();
         void CreateShortcut();
+        void DrawPortableExport();    // the Game tab's "Portable copy": the button, the message, the progress
+        void StartPortableExport(const std::filesystem::path& folder);
+        void FinishPortableExport();
         void ForgetDisc();       // "Remove the disc": the game forgets its image; the built game and the files stay
         void RefreshDataSizes();
         void RunDataAction(const DataResult& result, const char* done); // the toast, and the lists read again
@@ -586,6 +594,9 @@ namespace launcher_ui
         std::vector<SDL_JoystickID> m_gamepads;
         SDL_GamepadType m_lastPadType = SDL_GAMEPAD_TYPE_UNKNOWN; // the last pad connected
         const GameKey* m_capturing = nullptr; // the key row of the shown game waiting for a key press
+        const GameKey* m_mouseCapturing = nullptr; // the mouse row waiting for a click or a wheel tick
+        bool m_mouseArmed = false;                 // the click that started the wait has been released
+        const ToyboxKey* m_toyboxCapturing = nullptr; // the Toy Box key row waiting for a key press
 
         // The games opened this session (one slot each), and the one shown. Every slot's jobs are polled; the shown
         // one's state is what the pages draw (m_s).
@@ -604,6 +615,7 @@ namespace launcher_ui
             bool launcherScheduled = false;
             uint32_t holdId = 0; // the hold button's ImGui ID, for the screenshot test
         } m_un;
+        bool m_portableAsk = false;     // the portable copy's message is open
         bool m_uninstalled = false;    // done: the window only shows the result and quits
         bool m_testUninstall = false;  // SKY_LAUNCHER_TEST_UNINSTALL: the uninstall screens
         bool m_testKeys = false;       // SKY_LAUNCHER_TEST_KEYS: each game's Keyboard tab, one shot each

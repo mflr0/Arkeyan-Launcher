@@ -2,6 +2,8 @@
 #include "launcher/i18n.h"
 #include <array>
 #include <SDL3/SDL_keyboard.h>
+#include <SDL3/SDL_mouse.h>
+#include <optional>
 #include <utility>
 
 namespace
@@ -17,7 +19,7 @@ namespace
 
     constexpr GameKey Ssa[] = {
         MOVE_ROWS,
-        { "a", N_("1st Power / Accept"), "A", SDL_SCANCODE_SPACE }, { "x", N_("2nd Power"), "X", SDL_SCANCODE_C },
+        { "a", N_("1st Power / Accept"), "A", SDL_SCANCODE_SPACE, "Mouse Left" }, { "x", N_("2nd Power"), "X", SDL_SCANCODE_C, "Mouse Right" },
         { "y", N_("Use / Talk"), "Y", SDL_SCANCODE_V }, { "b", N_("Special Power / Back"), "B", SDL_SCANCODE_X },
         { "back", N_("Skylander Info"), "Back", SDL_SCANCODE_BACKSPACE }, { "start", N_("Pause"), "Start", SDL_SCANCODE_RETURN },
         { "right_up", N_("Shake / Insert / Swing"), N_("R stick up"), SDL_SCANCODE_I }, { "right_down", N_("Same"), N_("R stick down"), SDL_SCANCODE_K },
@@ -25,14 +27,14 @@ namespace
     };
     constexpr GameKey Giants[] = {
         MOVE_ROWS,
-        { "a", N_("Attack 1 / Accept"), "A", SDL_SCANCODE_SPACE }, { "x", N_("Attack 2"), "X", SDL_SCANCODE_C },
+        { "a", N_("Attack 1 / Accept"), "A", SDL_SCANCODE_SPACE, "Mouse Left" }, { "x", N_("Attack 2"), "X", SDL_SCANCODE_C, "Mouse Right" },
         { "y", N_("Action"), "Y", SDL_SCANCODE_V }, { "b", N_("Attack 3 / Back"), "B", SDL_SCANCODE_X },
         { "back", N_("Skylander Info"), "Back", SDL_SCANCODE_BACKSPACE }, { "start", N_("Pause"), "Start", SDL_SCANCODE_RETURN },
     };
     constexpr GameKey SwapForce[] = {
         MOVE_ROWS,
-        { "a", N_("Jump"), "A", SDL_SCANCODE_SPACE }, { "x", N_("Attack 1"), "X", SDL_SCANCODE_C },
-        { "b", N_("Attack 2"), "B", SDL_SCANCODE_X }, { "y", N_("Attack 3"), "Y", SDL_SCANCODE_V },
+        { "a", N_("Jump"), "A", SDL_SCANCODE_SPACE }, { "x", N_("Attack 1"), "X", SDL_SCANCODE_C, "Mouse Left" },
+        { "b", N_("Attack 2"), "B", SDL_SCANCODE_X, "Mouse Right" }, { "y", N_("Attack 3"), "Y", SDL_SCANCODE_V },
         { "rb", N_("Attack 2"), "RB", SDL_SCANCODE_E }, { "lb", N_("Attack 3"), "LB", SDL_SCANCODE_Q },
         { "lt", N_("Interact"), "LT", SDL_SCANCODE_1 }, { "rt", N_("Interact"), "RT", SDL_SCANCODE_3 },
         { "back", N_("Skylanders Stats"), "Back", SDL_SCANCODE_BACKSPACE }, { "start", N_("Pause"), "Start", SDL_SCANCODE_RETURN },
@@ -40,8 +42,8 @@ namespace
     // LT is the game's tag team. RB fires an attack like B in the tutorial; LB fires nothing there (nor does Y), so it has no row.
     constexpr GameKey TrapTeam[] = {
         MOVE_ROWS,
-        { "a", N_("Jump"), "A", SDL_SCANCODE_SPACE }, { "x", N_("Attack 1"), "X", SDL_SCANCODE_C },
-        { "b", N_("Attack 2"), "B", SDL_SCANCODE_X }, { "y", N_("Attack 3"), "Y", SDL_SCANCODE_V },
+        { "a", N_("Jump"), "A", SDL_SCANCODE_SPACE }, { "x", N_("Attack 1"), "X", SDL_SCANCODE_C, "Mouse Left" },
+        { "b", N_("Attack 2"), "B", SDL_SCANCODE_X, "Mouse Right" }, { "y", N_("Attack 3"), "Y", SDL_SCANCODE_V },
         { "rb", N_("Attack 2"), "RB", SDL_SCANCODE_E },
         { "lt", N_("Switch Skylander / Villain"), "LT", SDL_SCANCODE_1 }, { "rt", N_("Interact"), "RT", SDL_SCANCODE_3 },
         { "back", N_("Skylander/Villain Stats"), "Back", SDL_SCANCODE_BACKSPACE }, { "start", N_("Pause"), "Start", SDL_SCANCODE_RETURN },
@@ -53,6 +55,7 @@ namespace
         N_("Caps Lock"), N_("Delete") };
 
     std::string KeyLine(const char* action) { return std::string("key_") + action; }
+    std::string MouseLine(const char* action) { return std::string("mouse_") + action; }
 
     const std::string* Find(const LauncherConfig& config, const std::string& section, const std::string& key)
     {
@@ -176,7 +179,10 @@ void ResetGameKeys(LauncherConfig& config, std::string_view gameId)
     if (section == config.end())
         return;
     for (const char* action : Actions)
+    {
         section->second.erase(KeyLine(action));
+        section->second.erase(MouseLine(action));
+    }
 }
 
 void SeedGameInput(LauncherConfig& config, std::string_view gameId)
@@ -280,4 +286,101 @@ std::string RumbleLevel(const LauncherConfig& config, std::string_view gameId, i
         if (value != nullptr && *value == level)
             return level;
     return "normal";
+}
+
+namespace
+{
+    // The runtime's mouse names (host/mouse.h), and how the player reads them.
+    constexpr std::array<std::pair<const char*, const char*>, 7> MouseNames = { {
+        { "Mouse Left", N_("Left click") }, { "Mouse Right", N_("Right click") }, { "Mouse Middle", N_("Middle click") },
+        { "Mouse 4", N_("Back side button") }, { "Mouse 5", N_("Forward side button") }, { "Wheel Up", N_("Wheel up") },
+        { "Wheel Down", N_("Wheel down") } } };
+
+    bool IsMouseName(std::string_view name)
+    {
+        for (const auto& [stored, shown] : MouseNames)
+            if (name == stored)
+                return true;
+        return false;
+    }
+
+    // What mouse_<action> says: the button, "" for none; nullopt when there is no line.
+    std::optional<std::string> StoredMouse(const LauncherConfig& config, std::string_view gameId, const char* action)
+    {
+        auto section = config.find(GameInputSection(gameId));
+        if (section == config.end())
+            return std::nullopt;
+        auto value = section->second.find(MouseLine(action));
+        if (value == section->second.end())
+            return std::nullopt;
+        return IsMouseName(value->second) ? value->second : std::string();
+    }
+
+    constexpr ToyboxKey Toybox[] = { { "key_toybox", N_("Open the Toy Box"), "F6" }, { "key_toybox_add", N_("Add a figure"), "F7" },
+        { "key_toybox_clear", N_("Clear the figures"), "F8" } };
+}
+
+bool GameMouseOn(const LauncherConfig& config, std::string_view gameId)
+{
+    const std::string* value = Find(config, GameInputSection(gameId), "mouse");
+    return value != nullptr && (*value == "1" || *value == "true" || *value == "on" || *value == "yes");
+}
+
+void SetGameMouseOn(LauncherConfig& config, std::string_view gameId, bool on) { config[GameInputSection(gameId)]["mouse"] = on ? "1" : "0"; }
+
+std::string GameMouseName(const LauncherConfig& config, std::string_view gameId, const GameKey& key)
+{
+    if (!GameMouseOn(config, gameId))
+        return {};
+    if (std::optional<std::string> stored = StoredMouse(config, gameId, key.action))
+        return *stored;
+    if (key.mouse == nullptr)
+        return {};
+    // The default goes when an action with a line of its own took the button (the runtime's mouse::Effective).
+    for (const GameKey& other : GameKeys(gameId))
+        if (&other != &key)
+            if (std::optional<std::string> stored = StoredMouse(config, gameId, other.action); stored && *stored == key.mouse)
+                return {};
+    return key.mouse;
+}
+
+void SetGameMouseButton(LauncherConfig& config, std::string_view gameId, const GameKey& key, const std::string& name)
+{
+    const std::string section = GameInputSection(gameId);
+    if (!name.empty())
+        for (const GameKey& other : GameKeys(gameId))
+            if (&other != &key && GameMouseName(config, gameId, other) == name)
+                config[section][MouseLine(other.action)] = "none";
+    config[section][MouseLine(key.action)] = name.empty() ? "none" : name;
+}
+
+std::string MouseDisplayName(const std::string& name)
+{
+    for (const auto& [stored, shown] : MouseNames)
+        if (name == stored)
+            return i18n::Tr(shown);
+    return name;
+}
+
+std::string CapturedMouseName(int sdlButton)
+{
+    switch (sdlButton)
+    {
+    case SDL_BUTTON_LEFT: return "Mouse Left";
+    case SDL_BUTTON_RIGHT: return "Mouse Right";
+    case SDL_BUTTON_MIDDLE: return "Mouse Middle";
+    case SDL_BUTTON_X1: return "Mouse 4";
+    case SDL_BUTTON_X2: return "Mouse 5";
+    default: return {};
+    }
+}
+
+std::string CapturedWheelName(float y) { return y > 0 ? "Wheel Up" : y < 0 ? "Wheel Down" : std::string(); }
+
+std::span<const ToyboxKey> ToyboxKeys() { return Toybox; }
+
+std::string ToyboxKeyName(const LauncherConfig& config, const ToyboxKey& key)
+{
+    const std::string* value = Find(config, "input", key.line);
+    return value != nullptr ? *value : key.fallback;
 }

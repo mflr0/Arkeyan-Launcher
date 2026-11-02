@@ -539,6 +539,8 @@ namespace launcher_ui
                 FinishVerify();
             if (m_s->copyJob.Done())
                 FinishCopy();
+            if (m_s->portableJob.Done())
+                FinishPortableExport();
             PollInstall();
         }
         m_s = shown;
@@ -671,6 +673,40 @@ namespace launcher_ui
     void App::HandleEvent(const SDL_Event& event)
     {
         m_busyFrames = 3;
+        // A Toy Box key, then a mouse binding, being captured: the next key press, or the next click or wheel tick (after the
+        // click that started the wait is released; Escape cancels).
+        if (m_toyboxCapturing != nullptr && event.type == SDL_EVENT_KEY_DOWN)
+        {
+            if (event.key.key != SDLK_ESCAPE)
+                Set("input", m_toyboxCapturing->line, CapturedKeyName(event.key.scancode));
+            m_toyboxCapturing = nullptr;
+            return;
+        }
+        if (m_mouseCapturing != nullptr)
+        {
+            std::string name;
+            if (event.type == SDL_EVENT_KEY_DOWN && event.key.key == SDLK_ESCAPE)
+            {
+                m_mouseCapturing = nullptr;
+                return;
+            }
+            if (event.type == SDL_EVENT_MOUSE_BUTTON_UP && !m_mouseArmed)
+                m_mouseArmed = true;
+            else if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN && m_mouseArmed)
+                name = CapturedMouseName(event.button.button);
+            else if (event.type == SDL_EVENT_MOUSE_WHEEL && m_mouseArmed)
+                name = CapturedWheelName(event.wheel.y);
+            if (!name.empty())
+            {
+                SetGameMouseButton(m_config, m_s->game.id, *m_mouseCapturing, name);
+                if (!SaveLauncherConfig(m_configPath, m_config))
+                    Toast(Tr("Couldn't save the settings"), ui::ToastKind::Error);
+                m_mouseCapturing = nullptr;
+                return;
+            }
+            if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN || event.type == SDL_EVENT_MOUSE_BUTTON_UP || event.type == SDL_EVENT_MOUSE_WHEEL)
+                return; // the waiting row keeps the mouse for itself
+        }
         // A key binding being captured takes the next key press for itself.
         if (m_capturing != nullptr && event.type == SDL_EVENT_KEY_DOWN)
         {
@@ -2030,63 +2066,56 @@ namespace launcher_ui
         }
         DrawPortalResult();
 
-        ui::SectionHeader(Tr("Toy Box keys"), Tr("Fixed by the game; these shortcuts cannot be changed here."));
+        ui::SectionHeader(Tr("Toy Box keys"));
         if (ui::BeginSettings("##toyboxkeys"))
         {
-            // Each line: the keyboard's keys ("F6 / Tab": either), then the pad's buttons ("View + Y": together) in the pad's own
-            // pictures (the pad in use or chosen, else Xbox's), a dash where the pad has none (F7 and F8 are the keyboard's
-            // only). The pad's column ends on the control column's edge, the keys' column before it: two columns.
-            struct Line
-            {
-                const char* label;
-                std::vector<const char*> keys;
-                std::vector<ui::PadButton> buttons;
-            };
-            const Line lines[] = {
-                { Tr("Open the Toy Box"), { "F6", "Tab" }, { ui::PadButton::Back, ui::PadButton::North } },
-                { Tr("Add a figure"), { "F7" }, {} },
-                { Tr("Clear the figures"), { "F8" }, {} },
-            };
+            // Each line: the keyboard's key, changed like the game's keys ([input] key_toybox..., shared by the games; Tab also
+            // opens the Toy Box while its key is F6's default), then the pad's buttons ("View + Y": together) in the pad's own
+            // pictures (the pad in use or chosen, else Xbox's), a dash where the pad has none (adding and clearing figures are
+            // the keyboard's only). The pad's column ends on the control column's edge, the key before it.
+            const std::span<const ToyboxKey> keys = ToyboxKeys();
+            const std::vector<ui::PadButton> buttons[] = { { ui::PadButton::Back, ui::PadButton::North }, {}, {} };
             const ui::Glyphs glyphs = PadGlyphs();
-            const float joint = ui::space::XS; // on each side of the "/" or the "+"
-            auto separator = [](bool both) { return both ? "+" : "/"; };
-            auto groupWidth = [&](const Line& line, bool pad) {
-                const size_t count = pad ? line.buttons.size() : line.keys.size();
+            const float joint = ui::space::XS; // on each side of the "+"
+            auto padWidth = [&](const std::vector<ui::PadButton>& pad) {
                 float w = 0;
-                for (size_t i = 0; i < count; i++)
-                    w += (pad ? ui::KeyCapWidth(line.buttons[i], glyphs) : ui::KeyCapWidth(line.keys[i])) +
-                        (i > 0 ? 2 * joint + ui::TextSize(ui::TextStyle::Caption, separator(pad)).x : 0);
+                for (size_t i = 0; i < pad.size(); i++)
+                    w += ui::KeyCapWidth(pad[i], glyphs) + (i > 0 ? 2 * joint + ui::TextSize(ui::TextStyle::Caption, "+").x : 0);
                 return w;
             };
             float padColumn = 0;
-            for (const Line& line : lines)
-                padColumn = std::max(padColumn, groupWidth(line, true));
-            ImGui::BeginDisabled();
-            for (const Line& line : lines)
+            for (const auto& pad : buttons)
+                padColumn = std::max(padColumn, padWidth(pad));
+            for (size_t row = 0; row < keys.size(); row++)
             {
-                ui::SettingRow(line.label, nullptr);
+                const ToyboxKey& key = keys[row];
+                ui::SettingRow(Tr(key.label), nullptr);
                 ImDrawList* draw = ImGui::GetWindowDrawList();
                 const ImVec2 start = ImGui::GetCursorScreenPos();
                 const float right = start.x + ImGui::GetContentRegionAvail().x, padX = right - padColumn;
-                const float capH = ui::KeyCapHeight(), middle = start.y + std::round(capH / 2);
-                auto group = [&](float x, bool pad) {
-                    const size_t count = pad ? line.buttons.size() : line.keys.size();
-                    for (size_t i = 0; i < count; i++)
+                const float capH = ui::height::Normal, middle = start.y + std::round(capH / 2); // the key button's middle
+                const std::string name = KeyDisplayName(ToyboxKeyName(m_config, key));
+                ui::KeyButtonOptions options;
+                options.capturing = m_toyboxCapturing == &key;
+                const float keyX = padX - (padColumn > 0 ? ui::space::L : 0) - ui::KeyButtonWidth(name.c_str(), options);
+                ImGui::SetCursorScreenPos(ImVec2(keyX, start.y));
+                ImGui::PushID(key.line);
+                if (ui::KeyButton("##toyboxkey", name.c_str(), options))
+                    m_toyboxCapturing = &key;
+                ImGui::PopID();
+                float x = padX;
+                if (!buttons[row].empty())
+                    for (size_t i = 0; i < buttons[row].size(); i++)
                     {
                         if (i > 0)
                         {
                             ui::PushText(ui::TextStyle::Caption);
-                            ui::DrawText(draw, ImVec2(x + joint, std::round(middle - ui::CapMiddle(ui::TextStyle::Caption))), ui::Col(ui::color::Dim), separator(pad));
-                            x += 2 * joint + ImGui::CalcTextSize(separator(pad)).x;
+                            ui::DrawText(draw, ImVec2(x + joint, std::round(middle - ui::CapMiddle(ui::TextStyle::Caption))), ui::Col(ui::color::Dim), "+");
+                            x += 2 * joint + ImGui::CalcTextSize("+").x;
                             ui::PopText();
                         }
-                        x += (pad ? ui::DrawKeyCap(draw, ImVec2(x, middle), line.buttons[i], glyphs) : ui::DrawKeyCap(draw, ImVec2(x, middle), line.keys[i])).x;
+                        x += ui::DrawKeyCap(draw, ImVec2(x, middle), buttons[row][i], glyphs).x;
                     }
-                };
-                const float keysX = padX - (padColumn > 0 ? ui::space::L : 0) - groupWidth(line, false);
-                group(keysX, false);
-                if (!line.buttons.empty())
-                    group(padX, true);
                 else // no pad button for it: a quiet dash in the pad's column
                 {
                     ui::PushText(ui::TextStyle::Body);
@@ -2095,12 +2124,13 @@ namespace launcher_ui
                         ui::Col(ui::color::Dim), none);
                     ui::PopText();
                 }
-                ImGui::SetCursorScreenPos(ImVec2(keysX, start.y));
-                ImGui::Dummy(ImVec2(right - keysX, capH));
+                ImGui::SetCursorScreenPos(ImVec2(keyX, start.y));
+                ImGui::Dummy(ImVec2(right - keyX, capH));
             }
             ui::EndSettings();
-            ImGui::EndDisabled();
         }
+        if (m_toyboxCapturing != nullptr)
+            ui::Text(ui::TextStyle::Caption, Tf("Press a key for \"{}\" (Escape cancels)", Tr(m_toyboxCapturing->label)).c_str(), ui::color::Ink);
     }
 
     // The pictures of the pad's buttons where the window names them whatever the input in use (the Toy Box keys): the pad in
@@ -3764,9 +3794,25 @@ namespace launcher_ui
         }
         if (m_testKeys)
         {
-            // Each game's Keyboard tab (set SKY_LAUNCHER_LANGUAGE for the language of the shots).
+            // Each game's Keyboard tab (set SKY_LAUNCHER_LANGUAGE for the language of the shots; SKY_LAUNCHER_TEST_SIZE=<w>x<h> a
+            // taller window to see the Mouse section), then Settings > Portal and its Toy Box keys.
             static const char* const Games[] = { "ssa", "giants", "swapforce" };
-            if (m_testStep >= int(std::size(Games)))
+            if (m_testStep == 0)
+                if (const char* size = LauncherEnv("SKY_LAUNCHER_TEST_SIZE"))
+                {
+                    int w = 0, h = 0;
+                    if (std::sscanf(size, "%dx%d", &w, &h) == 2)
+                        SDL_SetWindowSize(m_window, w, h);
+                }
+            if (m_testStep == int(std::size(Games)))
+            {
+                m_page = Page::Settings;
+                m_tab = SettingsTab::Controls;
+                m_testShot = "keys-toybox";
+                m_testAt = now + 600;
+                return;
+            }
+            if (m_testStep > int(std::size(Games)))
             {
                 m_running = false;
                 return;
