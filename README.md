@@ -205,7 +205,8 @@ script (frame rate, sound, the picture compared with a reference, saves, figures
 levels one by one. The Windows and Linux builds of Spyro's Adventure, Giants and Swap Force are also run in Wine and in a
 container.
 
-The reverse engineering is the author's own work; AI tools assist with the reimplementation and run these tests.
+Everything here is made for this project: the launcher, the kits and the ports. The reverse engineering, the architecture
+and every design decision are the author's own; AI tools write the code from that design and run the tests.
 
 ## Credits and license
 
