@@ -369,7 +369,7 @@ namespace launcher_ui
         if (ui::Button(Tr("Report a bug"), web))
             SDL_OpenURL((std::string(Project) + "/issues/new").c_str());
         ImGui::Dummy(ImVec2(0, ui::space::XS));
-        ui::Text(ui::TextStyle::Caption, Tr("Skylanders is a trademark of Activision. This project is not affiliated with or endorsed by Activision."), ui::color::Dim);
+        ui::Text(ui::TextStyle::Caption, Tr("Skylanders, Spyro and Activision are trademarks of Activision Publishing, Inc. This project is not affiliated with or endorsed by Activision."), ui::color::Dim);
     }
 
     // The update screens (SKY_LAUNCHER_TEST_UPDATE, SKY_LAUNCHER_UPDATE_URL on a fake release): the banner, What's new, About

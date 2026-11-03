@@ -271,7 +271,7 @@ Replaces the game's textures with your pack.	Remplace les textures du jeu par ce
 Report	Signaler
 Report a bug	Signaler un bug
 Report a problem	Signaler un problème
-Preview and send a report of the problem you encountered.	Prévisualisez et envoyez un rapport du problème rencontré.
+Makes an anonymous report: the logs and settings, without your names. Add it to an issue on GitHub.	Crée un rapport anonyme : les journaux et les réglages, sans vos noms. Ajoutez-le à un ticket sur GitHub.
 Report copied	Rapport copié
 Report saved	Rapport enregistré
 Report saved: {}	Rapport enregistré : {}
@@ -302,7 +302,7 @@ Shortcut added to the Desktop	Raccourci ajouté au bureau
 Show details	Détails
 Show in folder	Afficher dans le dossier
 Skip intro movies	Passer les vidéos d'intro
-Skylanders is a trademark of Activision. This project is not affiliated with or endorsed by Activision.	Skylanders est une marque d'Activision. Ce projet n'est ni affilié à Activision ni approuvé par Activision.
+Skylanders, Spyro and Activision are trademarks of Activision Publishing, Inc. This project is not affiliated with or endorsed by Activision.	Skylanders, Spyro et Activision sont des marques d'Activision Publishing, Inc. Ce projet n'est ni affilié à Activision ni approuvé par Activision.
 Arkeyan Launcher couldn't find its own file.	Arkeyan Launcher n'a pas trouvé son propre fichier.
 Arkeyan Launcher is up to date.	Arkeyan Launcher est à jour.
 Arkeyan Launcher is up to date. An update is available for {}.	Arkeyan Launcher est à jour. Une mise à jour est disponible pour {}.
@@ -382,7 +382,7 @@ The disc image is damaged. Copy the disc again.	L'image disque est endommagée. 
 The disc image is incomplete. Copy the disc again.	L'image disque est incomplète. Copiez à nouveau le disque.
 This disc image is {}, not {}.	Cette image disque est celle de {}, pas de {}.
 This game has no folder.	Ce jeu n'a pas de dossier.
-Your names are removed and nothing is sent.	Vos noms sont retirés et rien n'est envoyé.
+This report is anonymous: your names are removed. Save it, then add it to an issue on GitHub.	Ce rapport est anonyme : vos noms sont retirés. Enregistrez-le, puis ajoutez-le à un ticket sur GitHub.
 This is {}, but this disc version isn't supported yet (media ID {:08X}, version {}).\n\nSupported:{}	C'est {}, mais cette version du disque n'est pas encore prise en charge (ID du média {:08X}, version {}).\n\nPrises en charge :{}
 This key is used by another action	Cette touche est déjà utilisée par une autre action
 This looks like the {} disc of {}, but it's damaged or modified. Copy the disc again.	On dirait le disque {} de {}, mais il est endommagé ou modifié. Copiez à nouveau le disque.
@@ -880,7 +880,9 @@ yesterday	hier
 {} days ago	il y a {} jours
 
 Trap Team (experimental)	Trap Team (expérimental)
-Show Trap Team in your games.	Afficher Trap Team dans vos jeux.
+Adds Trap Team to your games. An early version.	Ajoute Trap Team à vos jeux. Version en test.
+Trap Team is now in your games.	Trap Team est maintenant dans vos jeux.
+Trap Team is hidden from your games.	Trap Team est masqué de vos jeux.
 # Game page
 On the portal	Sur le portail
 Live	En direct

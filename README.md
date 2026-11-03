@@ -209,7 +209,7 @@ The reverse engineering is the author's own work; AI tools assist with the reimp
 
 ## Credits and license
 
-Made by mflr0, designed by dorydev.
+Designed by dorydev, made by mflr0.
 
 The ports are built with [XenonRecomp](https://github.com/hedge-dev/XenonRecomp) and
 [XenosRecomp](https://github.com/hedge-dev/XenosRecomp) (hedge-dev), [plume](https://github.com/renderbag/plume)
@@ -217,5 +217,6 @@ The ports are built with [XenonRecomp](https://github.com/hedge-dev/XenonRecomp)
 
 MIT license, see `LICENSE`. The third-party components are listed in `THIRD_PARTY_NOTICES.md`.
 
-Skylanders is a trademark of Activision. This project is not affiliated with or endorsed by Activision. You need your
-own copy of the game.
+Skylanders, Spyro and Activision are trademarks or registered trademarks of Activision Publishing, Inc. This project is
+independent: it is not affiliated with, endorsed or sponsored by Activision Publishing, Inc. You need your own copy of the
+game.

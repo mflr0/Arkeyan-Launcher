@@ -67,6 +67,7 @@ namespace launcher_ui
         const bool busy = AnyInstalling() || AnyVerifying();
         ui::SectionHeader(Tr("Remove Arkeyan Launcher"), busy ? Tr("Wait for the game to finish.") : Tr("Your disc images are never touched."));
         ui::ButtonOptions options;
+        options.kind = ui::ButtonKind::Danger; // red, as the dialog's own button: it removes everything
         options.icon = ui::Icon::Trash;
         options.disabled = busy;
         if (ui::Button(Tr("Uninstall everything..."), options))

@@ -241,9 +241,9 @@ namespace ui
 
     void Toasts::Push(std::string text, ToastKind kind)
     {
-        // Long enough to read: 2.5 s, more for a long message, up to 6 s. An error stays until it is closed.
+        // Long enough to read: 5 s, more for a long message, up to 8 s. An error stays until it is closed.
         const uint64_t now = SDL_GetTicks();
-        const uint64_t readMs = std::clamp<uint64_t>(2500 + 45 * (text.size() > 40 ? text.size() - 40 : 0), 2500, 6000);
+        const uint64_t readMs = std::clamp<uint64_t>(5000 + 45 * (text.size() > 40 ? text.size() - 40 : 0), 5000, 8000);
         const uint64_t until = kind == ToastKind::Error ? 0 : now + readMs;
         for (Item& item : m_items)
             if (item.text == text) // the same words again: the one already shown, kept longer

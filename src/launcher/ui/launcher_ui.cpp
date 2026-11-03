@@ -2319,9 +2319,13 @@ namespace launcher_ui
         if (ui::BeginSettings("##experimental"))
         {
             bool enabled = ExperimentalTrapTeam(m_config);
-            ui::SettingRow(Tr("Trap Team (experimental)"), Tr("Show Trap Team in your games."));
+            ui::SettingRow(Tr("Trap Team (experimental)"), Tr("Adds Trap Team to your games. An early version."));
             if (ui::Toggle("##trapteam", &enabled))
+            {
                 SetExperimentalTrapTeam(enabled);
+                Toast(enabled ? Tr("Trap Team is now in your games.") : Tr("Trap Team is hidden from your games."),
+                    ui::ToastKind::Success);
+            }
             ui::EndSettings();
         }
         ui::SectionHeader(Tr("Updates"));
