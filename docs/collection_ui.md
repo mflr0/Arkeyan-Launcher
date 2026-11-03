@@ -3,7 +3,7 @@
 The launcher shows the same figures as the game and the Toy Box: ArkeyanRuntime's collection library (option A of
 `figures_overlap.md`, now done). **One model for both apps** (ArkeyanRuntime's `docs/runtime/host/toybox_ux.md`, the
 2026-10-26 redesign): the portal's seats on top, the shelf below (every figure once, favorites first), the same cards
-and words, a sheet with three main actions. The look is dorydev's: her colours, fonts and widgets are untouched
+and words, a sheet with three main actions. The look is dorydev's: the colours, fonts and widgets are untouched
 (`launcher_theme.h`).
 
 ## One engine

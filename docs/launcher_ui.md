@@ -473,7 +473,7 @@ button with `ChevronLeft` on a game's). Every setting is a settings row (`ui::Be
 the column (`App::SettingSelect` for a choice kept in the settings file); what is an action rather than a setting (the disc,
 game data, folders, saves, the game tab's buttons, the data folder, "Remove Arkeyan Launcher") is a `SectionHeader` with its
 subtitle, then Buttons at their label's width. States are `StatusPill`s (verified, checking, wrong disc, copied, interrupted,
-damaged, the portal test), never a coloured line. The Keyboard tab (2026-10-28, the owner's review): what to do in one
+damaged, the portal test), never a coloured line. The Keyboard tab (2026-10-28 review): what to do in one
 line ("Choose a key to change it.", or which key is awaited), then the **movement** as a cross of four `KeyButton`s (up over
 down, left and right beside it: the player's letters, Z Q S D on AZERTY, W A S D on QWERTY) titled "Movement" with the
 stick after it, the **right stick's** as another cross when the game uses it (titled with its action, "Shake / Insert /
@@ -491,7 +491,7 @@ through `ui::Text`; the portal test's verdicts name the game with `GameName`. Th
 
 **3. The Collection, its sheets and dialogs** (`collection_page.cpp`, `collection_figure.cpp`, `collection_add.cpp`,
 `collection_manage.cpp`) - **done (phase B, 2026-10-28)**. What was decided: the portal's game is a Select after "On the portal
-for" (tooltip says what it is) over the seats, the count under the title (the owner's review, 2026-10-29); Sort is a Select beside Filters (it is not a filter: no chip, Clear all keeps
+for" (tooltip says what it is) over the seats, the count under the title (review, 2026-10-29); Sort is a Select beside Filters (it is not a filter: no chip, Clear all keeps
 it) and Filters a Button opening a Menu with three Selects; the figure sheet, Add a figure and Manage are one `ui::Modal`
 (Large) whose title is the view's, Edit and "Change the bottom" being views of the sheet (B steps back); Reset and Delete ask
 in a danger `ConfirmDialog` (the hold is for the buttons in a list: Delete for good, Restore, Tidy, Mark as not in use); the

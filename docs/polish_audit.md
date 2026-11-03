@@ -70,8 +70,8 @@ Nothing in the launcher. The kit's own English log and error lines are shown as 
 
 ## Model screens (2026-10-28): Home, the game page, the Keyboard tab
 
-The owner's design review asked for "as clean as possible, at a professional level": dorydev's style on a strict grid. Three
-screens were brought there first, for the owner to review before the rest: Home, the game page (with the sidebar and the
+The design review asked for "as clean as possible, at a professional level": dorydev's style on a strict grid. Three
+screens were brought there first, for review before the rest: Home, the game page (with the sidebar and the
 band) and a game's Keyboard tab. Shots: `SKY_LAUNCHER_TEST_SCREENS=mouse|pad` ("Screenshot test" in `launcher_ui.md`), in
 English and French, 1024x720 and 1600x1000, with the mouse and with a pad, and at 2x (`SKY_LAUNCHER_TEST_SCALE=2`) for the
 zoomed checks; edges and centres measured on the 2x shots (pixel rows and the ink's bounding boxes).
@@ -93,11 +93,11 @@ zoomed checks; edges and centres measured on the 2x shots (pixel rows and the in
 | 11 | Fewer elements | Pass: the CONTROLLER caption is a pad icon in the picker; the Keyboard tab's repeated KEYBOARD title is gone (the tab says it); the four movement and four right-stick rows are two crosses |
 | 12 | Text and states read the same in English and French | Pass |
 
-**Left for the owner** (decisions, not defects), both settled in the next pass: a game not opened yet this session showed
+**Left open** (decisions, not defects), both settled in the next pass: a game not opened yet this session showed
 "Open" (every disc is now checked at start-up); the pad navigation script counted two games in the sidebar (fixed, and run by
 `ArkeyanLauncherTest`).
 
-## Every other screen (2026-10-28, the owner's "apply everywhere")
+## Every other screen (2026-10-28)
 
 The same finish on the rest: the Collection (shelf, sheet, Add, Edit, Manage, filters, menus, dialogs), every settings page and
 tab (the new Controller tab too), Achievements, the install and update pages, the update banner, What's new, the problem report,
@@ -130,9 +130,9 @@ then zoomed where something looked off. The checklist is the model screens' (abo
 pad), after the fixes above. `ArkeyanLauncherTest` with the three discs: all pass but the known `uninstall_test.cpp` line 213;
 the pad navigation (14 of 14 steps) and the seat X (12 of 12) runs included.
 
-## The owner's review (2026-10-29): eleven items
+## Review of 2026-10-29: eleven items
 
-The owner used the launcher and asked for eleven changes. Shots: the `default`, `COLLECTION`, `PAD`, `ACHIEVEMENTS`, `RUNNING` and
+A review of the launcher in use asked for eleven changes. Shots: the `default`, `COLLECTION`, `PAD`, `ACHIEVEMENTS`, `RUNNING` and
 `SCREENS` scripts, each in English and French, 1024x720, with the mouse and as a pad player sees it (`SKY_LAUNCHER_TEST_INPUT=pad`),
 looked at on contact sheets, then zoomed; the update offer from `ArkeyanLauncherTest`'s kit flow (`SKY_LAUNCHER_TEST_KEEP=1`); the
 spinner measured.

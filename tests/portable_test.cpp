@@ -1,7 +1,7 @@
 // "Export a portable copy" (docs/portable.md) on stand-ins: a fake installed game (a bundle on macOS, an executable elsewhere),
 // a folder of disc files, a collection with a lock and a backups folder. The portable's pack holds every disc file, the keys, the
 // figures but not the lock; the executable's own bytes stay; no room, a cancel and a second export (which replaces the first).
-// Scratch folders only; no game data. Also --export-portable: the same export of a real installed game, for the owner's proof.
+// Scratch folders only; no game data. Also --export-portable: the same export of a real installed game, for a manual proof.
 #include "test_env.h"
 #include "launcher/game_install.h"
 #include "launcher/game_keys.h"
