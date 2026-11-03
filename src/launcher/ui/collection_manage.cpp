@@ -135,6 +135,7 @@ namespace launcher_ui
         ui::ButtonOptions forGood;
         forGood.kind = ui::ButtonKind::Danger;
         forGood.hold = true;
+        forGood.icon = ui::Icon::Trash;
         forGood.tooltip = Tr(strings::DeleteForGoodHint);
         const float buttons = ui::ButtonWidth(Tr("Put back")) + ui::space::XS + ui::ButtonWidth(Tr(strings::DeleteForGood), forGood);
         if (!ui::BeginSettings("##trash", buttons)) // the two buttons on one line, in every language

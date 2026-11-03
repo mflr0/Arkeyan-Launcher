@@ -167,7 +167,8 @@ namespace ui
             unsigned sweep = options.kind == ButtonKind::Danger ? color::Danger : options.kind == ButtonKind::Primary ? color::AccentFillPressed : context.accent;
             draw->AddRectFilled(min, ImVec2(min.x + std::max(w * std::min(fill, 1.0f), 2 * rounding), max.y), Col(sweep, 0.55f), rounding);
         }
-        Icon icon = options.hold ? Icon::Hold : options.icon;
+        // A hold button shows what it does (a bin for a removal) when it says so; the timer only when it has no icon of its own.
+        Icon icon = options.hold && options.icon == Icon::None ? Icon::Hold : options.icon;
         DrawContent(draw, min, max, label, LabelStyle(options.size), icon, options.loading, options.trailing, paint.ink, state.pressed);
         ImGui::EndDisabled();
         FocusRingIf(state, rounding);
