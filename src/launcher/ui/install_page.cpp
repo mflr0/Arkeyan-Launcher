@@ -4,6 +4,7 @@
 #include "launcher/env.h"
 #include "launcher/ui/launcher_app.h"
 #include "launcher/ui/text_fit.h"
+#include "shared/collection/datadir.h"
 #include "shared/platform/platform.h"
 #include <algorithm>
 #include <array>
@@ -304,6 +305,12 @@ namespace launcher_ui
 
     void App::StartInstaller()
     {
+        // A kit that lost a file (an antivirus, often) would fail the build in an unclear way: the file is named instead.
+        if (!KitIntact())
+        {
+            m_s->installView = m_s->kitUsed = false;
+            return;
+        }
         if (m_s->installer.Start(m_s->kit, m_s->discPath, GameInstallFolder(m_s->installSha)))
         {
             auto& section = m_config["install." + m_s->installSha];
@@ -393,6 +400,9 @@ namespace launcher_ui
                 version = pending->version;
             RecordInstalledGame(m_config, m_s->installSha, progress.runtime, m_s->installKitVersion, version);
             SetInstallState(m_s->installSha, nullptr);
+            // What the install wrote, for the file check at the next starts.
+            m_integrity.WriteGameList(GameInstallFolder(m_s->installSha), datadir::FromText(progress.runtime));
+            std::erase_if(m_findings, [&](const IntegrityFinding& finding) { return finding.id == m_s->game.id; });
             Toast(Tr("Game installed: press PLAY"), ui::ToastKind::Success);
             m_s->installView = false;
             RefreshInstall();

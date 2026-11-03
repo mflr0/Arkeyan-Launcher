@@ -234,6 +234,43 @@ therefore rebuilds everything); the kits in `kit/` older than the one that built
 cache `<Game>/launcher-cache` holds three pictures (logo, background, title icon; `docs/launcher_ui.md`, "Disc art") and the
 achievements' list with their pictures (`achievements/`, "Achievements and play time"), and the menu theme the kit's `Arkeyan-Builder --menu-music` decoded (`menu_music.wav`, "Game music"); it needs no trimming; the per-title folders of older launchers in it are removed at the next disc check.
 
+### File check
+
+An antivirus can quarantine or "clean" a file of the kit (an ML false positive on `Arkeyan-Builder.exe` was seen on Windows) or
+of an installed game. The kit zip is verified against `SHA256SUMS` when it is downloaded, but nothing looked at the files once
+extracted, and the next build then failed in an unclear way. Since 0.8.1 the launcher checks them:
+
+- **The lists.** A kit carries `files.sha256` (every other file of the kit with its SHA-256, as `shasum -a 256` prints it,
+  relative paths with `/`, written by the kit's build). When an install ends the launcher writes the game folder's own
+  `files.sha256`: the runtime (on macOS its whole `.app`), and next to it `fonts/`, `THIRD_PARTY_NOTICES.md`, `game_icon.*` and
+  `game.desktop` (`InstalledGameFiles`). Saves, settings, caches and logs are in no list. A kit or a game from before 0.8.1 has
+  no list and is not checked.
+- **At every start**, on a thread (the window opens at once): the kit each enabled game would use and every game's folder
+  (`IntegrityCheck`, `src/launcher/integrity.h`). Hashing everything takes about 2 s on an M1 (a macOS kit and four games,
+  919 files, 379 MB), so each check also writes `files.sha256.verified` next to the list: a file whose size and modification
+  time are still the ones recorded for the same listed hash is not read again (7 ms for the same 919 files). A file an
+  antivirus removed is missing; one it rewrote has a new time and is read again. A file changed with its size and time put
+  back is not seen. The launcher's log has one line: `file check: <files>, <read> (<MB>) in <s>, <n> with a problem`.
+- **What the player sees**: a dialog, "Files missing or changed", naming the first file (and how many others), saying that an
+  antivirus often does this (restore it from the quarantine, or add an exclusion for the folder, whose path is shown, with
+  **Open the folder**), and **Repair**. Close leaves it until the next start.
+- **Repair** of a kit downloads its release's kit again (the release of its `kit/<tag>/` folder, else of its `kit.txt`'s
+  `version=`, else the launcher's own) and unpacks it over the damaged kit, in its place (`DownloadKit`'s `into`), then checks
+  again. A kit the player chose (`SKY_LAUNCHER_KIT`, `[launcher] kit=`) has no Repair: the dialog says to restore the file.
+  Repair of a game removes its changed files and runs the game's INSTALL, as UPDATE does; it needs the game's disc (else a
+  notification says so).
+- **Before an install** the kit is checked again (quick, with the record): a damaged kit blocks INSTALL and shows the same
+  dialog instead of a build that fails.
+- **The builder itself taken**: a folder with a `files.sha256` is a kit even without `Arkeyan-Builder` (`KitIn`), and a
+  downloaded zip with one is unpacked even if the antivirus removed the builder as it was extracted (`HoldsBuilder`): the
+  check then names `Arkeyan-Builder.exe` instead of "no kit" or "The download isn't a game kit". When a Repair's new copy is
+  taken again, the dialog comes back (no "repaired" notification): the folder needs the exclusion.
+- **Test**: `SKY_LAUNCHER_TEST_KIT_ONLY=1 ArkeyanLauncherTest <spyro iso> <scratch>` runs `InstalledFilesChecks` and the
+  `integrity` case of the kit flow (`App::TestIntegrityScript`): a kit next to the launcher that lost its `Arkeyan-Builder` is named at
+  start, INSTALL is blocked, Repair unpacks the fake release's kit over it, the install writes the game's list, a changed game
+  file is named at the next check and Repair builds the game again. The list format and the checker have their own tests in the
+  workshop (`SSAFileListTest`; `src/shared/collection/file_list.*` is a copy).
+
 ## Linux
 
 The kit's zip keeps the Unix modes of `Arkeyan-Builder` and its `bin/` programs, and `InstallKitZip` restores them, so the

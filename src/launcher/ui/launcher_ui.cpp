@@ -613,6 +613,7 @@ namespace launcher_ui
             if (ParseBool(SettingGet(m_config, "update", "auto_check", "1")))
                 StartUpdateCheck(false);
         }
+        StartIntegrityCheck(); // the kit and the installed games, on a thread: the window is not kept waiting
         while (m_running)
         {
             SDL_Event event;
@@ -627,6 +628,7 @@ namespace launcher_ui
             CheckQueuedDiscs();
             PollUpdateAll();
             PollUpdates();
+            PollIntegrity();
             PollRequests();
             AutoPlay();
             Frame();
@@ -2632,13 +2634,14 @@ namespace launcher_ui
         ImGui::PopStyleVar();
         m_lastPage = m_page; // LogoDrop: a new arrival on the game page starts the logo's fall
         DrawWhatsNew();
+        DrawIntegrity();
         DrawProblemReport();
         DrawQuitPrompt();
         DrawToast();
         // Who answers B / Escape next frame: an open menu or dialog, a field being edited, the collection's search or View.
         // LB / RB belong to the pages unless a dialog, a menu or a field has the input.
         m_pagesTaken = ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopupId | ImGuiPopupFlags_AnyPopupLevel) || ImGui::IsAnyItemActive() ||
-            m_toasts.HasFocus() || m_reportOpen || m_whatsNewOpen || m_quitPrompt;
+            m_toasts.HasFocus() || m_reportOpen || m_whatsNewOpen || m_integrityOpen || m_quitPrompt;
         m_backTaken = m_pagesTaken || (m_page == Page::Collection && m_s->collection->TakesBack());
         m_focusTo = FocusTo::None; // a request no page answered (its item wasn't drawn) is dropped
 
@@ -2785,7 +2788,8 @@ namespace launcher_ui
     //            first, and it is the one that builds the game;
     //  giants    INSTALL of Giants with a kit that does not build it (no giants in games=): the right kit first;
     //  updates   the game updates (TestUpdatesScript): a release that bumps Giants only;
-    //  offline   the same with no release to reach.
+    //  offline   the same with no release to reach;
+    //  integrity the file check (TestIntegrityScript).
     void App::TestKitScript(uint64_t now)
     {
         const GameInfo& ssa = *FindGame("ssa");
@@ -2793,6 +2797,11 @@ namespace launcher_ui
         if (m_testKit == "updates" || m_testKit == "offline")
         {
             TestUpdatesScript(now);
+            return;
+        }
+        if (m_testKit == "integrity")
+        {
+            TestIntegrityScript(now);
             return;
         }
         GameSlot& slot = SlotFor(m_testKit == "giants" ? giants : ssa);

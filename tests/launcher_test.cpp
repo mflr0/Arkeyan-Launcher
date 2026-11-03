@@ -1575,8 +1575,38 @@ static void SidebarChecks(const std::filesystem::path& scratch, const std::strin
 // of the launcher's own release before INSTALL builds anything; a kit that does not build Giants is replaced before Giants' INSTALL;
 // and at start, or right after a self-update, the old kit is fetched on its own. The release is a fake one (a file:// URL), its kit
 // the fake kit under another build; the kit "next to the launcher" is a copy of it with an older kit.txt.
+// What an install wrote, for the file check: the runtime (or its whole .app) and the files next to it, nothing of the
+// player's (saves, settings, logs); a runtime outside the game's folder gives no list.
+static void InstalledFilesChecks(const std::filesystem::path& scratch)
+{
+    namespace fs = std::filesystem;
+    const fs::path game = scratch / "installed-files";
+    fs::remove_all(game);
+    auto put = [&](const char* path) {
+        fs::create_directories((game / path).parent_path());
+        std::ofstream(game / path) << path;
+    };
+    for (const char* path : { "Game.app/Contents/MacOS/Game", "Game.app/Contents/Info.plist", "Game.app/Contents/Resources/fonts/a.ttf",
+             "game_icon.png", "fonts/b.ttf", "THIRD_PARTY_NOTICES.md", "settings.ini", "saves/slot1.sav", "Arkeyan.log", "Other" })
+        put(path);
+    std::vector<std::string> files = InstalledGameFiles(game, game / "Game.app" / "Contents" / "MacOS" / "Game");
+    EXPECT((files == std::vector<std::string>{ "Game.app/Contents/Info.plist", "Game.app/Contents/MacOS/Game", "Game.app/Contents/Resources/fonts/a.ttf",
+                         "THIRD_PARTY_NOTICES.md", "fonts/b.ttf", "game_icon.png" }));
+    files = InstalledGameFiles(game, game / "Other");
+    EXPECT(files.size() == 4 && files[0] == "Other");
+    EXPECT(InstalledGameFiles(game, scratch / "elsewhere" / "Game").empty());
+    std::string error;
+    EXPECT(WriteInstalledGameList(game, game / "Other", error) && CheckFolder({ "ssa", game }).problems.empty());
+    fs::remove(game / "fonts" / "b.ttf");
+    std::ofstream(game / "settings.ini") << "changed by the player";
+    std::vector<filelist::Problem> problems = CheckFolder({ "ssa", game }).problems;
+    EXPECT(problems.size() == 1 && problems[0].path == "fonts/b.ttf" && problems[0].kind == filelist::Problem::Kind::Missing);
+    fs::remove_all(game);
+}
+
 static void KitFlowChecks(const std::filesystem::path& scratch, const std::string& ssaIso, const std::string& giantsIso)
 {
+    InstalledFilesChecks(scratch);
     auto set = [](const char* name, const std::string& value) { SDL_SetEnvironmentVariable(SDL_GetEnvironment(), name, value.c_str(), true); };
     namespace fs = std::filesystem;
     fs::path newKit = scratch / "kitflow" / "kit-new";
@@ -1594,6 +1624,23 @@ static void KitFlowChecks(const std::filesystem::path& scratch, const std::strin
     std::ofstream(newerKit / "kit.txt") << "version=" << nextVersion << "\nbuild=kit-new\ngames=ssa,giants\ngame_version.ssa=0.9.0\ngame_version.giants=0.8.1\n";
     MakeKitRelease(scratch / "kitflow" / "release-updates", { nextTag }, newerKit,
         "ssa=0.9.0 giants=0.8.1");
+    // The file check: the launcher's own release carries a whole kit with its list; the one at hand lost a listed file.
+    auto listKit = [](const fs::path& kit, const std::string& kitText) {
+        std::ofstream(kit / "kit.txt") << kitText;
+        std::ofstream(kit / "README.txt") << "The game tools.\n";
+        std::vector<std::string> files;
+        for (const auto& entry : fs::directory_iterator(kit))
+            if (entry.is_regular_file() && entry.path().filename() != filelist::ListName)
+                files.push_back(entry.path().filename().string());
+        std::string error;
+        EXPECT(filelist::Write(kit, files, error));
+        fs::remove(kit / filelist::VerifiedName); // a record of this machine's file times is no part of a kit
+    };
+    fs::path repairedKit = scratch / "kitflow" / "kit-repaired";
+    fs::copy(SKYLAUNCHER_FAKE_KIT, repairedKit, fs::copy_options::recursive);
+    const std::string ownKitText = "version=" + LauncherVersion() + "\nbuild=kit-repaired\ngames=ssa,giants\ngame_version.ssa=0.9.0\n";
+    listKit(repairedKit, ownKitText);
+    MakeKitRelease(scratch / "kitflow" / "release-integrity", { "v" + LauncherVersion() }, repairedKit);
 
     struct Case { const char* mode; const char* kitText; };
     const Case cases[] = {
@@ -1602,6 +1649,7 @@ static void KitFlowChecks(const std::filesystem::path& scratch, const std::strin
         // The kit at hand is the launcher's own release, with Spyro's Adventure 0.9.0 and Giants 0.8.0: both games are built from it.
         { "updates", nullptr },
         { "offline", nullptr },
+        { "integrity", nullptr },
     };
     for (const Case& test : cases)
     {
@@ -1613,6 +1661,14 @@ static void KitFlowChecks(const std::filesystem::path& scratch, const std::strin
         fs::copy(SKYLAUNCHER_FAKE_KIT, root / "base" / "ssa-kit-test", fs::copy_options::recursive);
         std::ofstream(root / "base" / "ssa-kit-test" / "kit.txt") << (test.kitText != nullptr ? std::string(test.kitText)
             : "version=" + LauncherVersion() + "\nbuild=at-hand\ngames=ssa,giants\ngame_version.ssa=0.9.0\ngame_version.giants=0.8.0\n");
+        const bool integrity = std::string_view(test.mode) == "integrity";
+        if (integrity) // a kit of the launcher's release, with its list, that an antivirus took the builder from
+        {
+            listKit(root / "base" / "ssa-kit-test", "version=" + LauncherVersion() + "\nbuild=at-hand\ngames=ssa,giants\ngame_version.ssa=0.9.0\n");
+            for (const auto& entry : fs::directory_iterator(root / "base" / "ssa-kit-test"))
+                if (entry.path().filename().string().starts_with("Arkeyan-Builder"))
+                    fs::remove(entry.path());
+        }
         set("SDL_VIDEO_DRIVER", "offscreen");
         set("SDL_AUDIO_DRIVER", "dummy");
         set("SKYLANDERS_DATA", (root / "data").string());
@@ -1621,7 +1677,7 @@ static void KitFlowChecks(const std::filesystem::path& scratch, const std::strin
         set("SKY_LAUNCHER_NO_UPDATE_CHECK", "1");
         set("SKY_LAUNCHER_BASE_PATH", (root / "base").string());
         bool updates = std::string_view(test.mode) == "updates", offline = std::string_view(test.mode) == "offline";
-        set("SKY_LAUNCHER_UPDATE_URL", TestFileUrl(scratch / "kitflow" / (updates ? "release-updates" : offline ? "no-release" : "release") / "latest.json"));
+        set("SKY_LAUNCHER_UPDATE_URL", TestFileUrl(scratch / "kitflow" / (updates ? "release-updates" : offline ? "no-release" : integrity ? "release-integrity" : "release") / "latest.json"));
         set("FAKE_SSABUILD_DELAY", "0.01");
         SDL_UnsetEnvironmentVariable(SDL_GetEnvironment(), "FAKE_SSABUILD_FAIL");
         SDL_UnsetEnvironmentVariable(SDL_GetEnvironment(), "SKY_LAUNCHER_KIT");

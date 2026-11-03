@@ -119,6 +119,7 @@ add_library(ArkeyanLauncherCore STATIC
     src/launcher/launcher_games.cpp
     src/launcher/i18n.cpp
     src/launcher/game_install.cpp
+    src/launcher/integrity.cpp
     src/launcher/game_progress.cpp
     src/launcher/game_music.cpp
     src/launcher/ui/launcher_ui.cpp
@@ -148,6 +149,7 @@ add_library(ArkeyanLauncherCore STATIC
     src/shared/collection/catalogue.cpp
     src/shared/collection/collection.cpp
     src/shared/collection/datadir.cpp
+    src/shared/collection/file_list.cpp
     src/shared/collection/game_data.cpp
     src/shared/collection/icons.cpp
     src/shared/collection/json.cpp
@@ -191,6 +193,7 @@ target_sources(ArkeyanLauncherCore PRIVATE
     src/launcher/updater.cpp
     src/shared/mini_json.cpp
     src/launcher/ui/install_page.cpp
+    src/launcher/ui/integrity_page.cpp
     src/launcher/ui/support_page.cpp
     src/launcher/ui/update_page.cpp)
 target_include_directories(ArkeyanLauncherCore PUBLIC src PRIVATE lib/stb lib/miniz)

@@ -13,6 +13,7 @@
 #include "launcher/game_run.h"
 #include "launcher/game_settings.h"
 #include "launcher/i18n.h"
+#include "launcher/integrity.h"
 #include "launcher/updater.h"
 #include "launcher/launcher.h"
 #include "launcher/ui/launcher_ui.h"
@@ -401,6 +402,13 @@ namespace launcher_ui
         float BannerHeight();
         void DrawUpdateBanner(float height);
         void DrawWhatsNew();
+        // integrity_page.cpp: the file check at start (integrity.h), its dialog and Repair.
+        void StartIntegrityCheck();
+        void PollIntegrity();
+        void DrawIntegrity();
+        void RepairFinding(const IntegrityFinding& finding);
+        void ShowFinding(IntegrityFinding finding); // in front of the others, the dialog opened on it
+        bool KitIntact();                           // before an install: false, and the dialog, when the kit lost a file
         void DrawPortalTest();   // support_page.cpp: the "Test the portal" row, inside an open settings table
         void DrawPortalResult(); // and what the test found, under the table
         void DrawLogs();
@@ -535,6 +543,7 @@ namespace launcher_ui
         void TestCopyScript(uint64_t now);
         void TestSidebarScript(uint64_t now);
         void TestKitScript(uint64_t now);
+        void TestIntegrityScript(uint64_t now);
         void TestUpdatesScript(uint64_t now);
         void TestSeatXScript(uint64_t now);
         void TestButtonsScript(uint64_t now);
@@ -598,6 +607,14 @@ namespace launcher_ui
             int total = 0, started = 0, failed = 0;
         } m_updateAll;
         bool m_whatsNewOpen = false;
+        IntegrityCheck m_integrity;
+        bool m_integrityPolled = true;                 // the last check's report has been taken
+        std::vector<IntegrityFinding> m_findings;      // what is wrong, the first one in the dialog
+        std::vector<InstallKit> m_checkedKits;         // the kits the check looked at (Repair needs their release)
+        bool m_integrityOpen = false;
+        KitDownloader m_kitRepair;                     // Repair of a kit: its release's kit unpacked over it
+        bool m_kitRepairPolled = true;
+        std::filesystem::path m_kitRepaired;           // the kit just repaired: said so once the check finds it whole
         bool m_updateWasBusy = false;
         std::string m_updateDoneNote;    // the last answer of a manual check, shown in About
         float m_bannerH = 0;             // the height the banner takes at the top of the page, this frame

@@ -4,6 +4,7 @@
 #include "launcher/updater.h"
 #include "shared/dir_list.h"
 #include "shared/collection/datadir.h"
+#include "shared/collection/file_list.h"
 #include <SDL3/SDL.h>
 #include <algorithm>
 #include <fmt/format.h>
@@ -64,6 +65,10 @@ namespace
                 ssabuild = folder / name;
                 break;
             }
+        // A kit with its file list whose builder an antivirus took is still this kit: the file check names the file and
+        // its Repair puts it back (integrity.h); an install is blocked until then.
+        if (ssabuild.empty() && std::filesystem::is_regular_file(folder / filelist::ListName, error))
+            ssabuild = folder / BuilderNames[0];
         if (ssabuild.empty())
             return {};
         InstallKit kit{ folder, ssabuild, {}, {} };

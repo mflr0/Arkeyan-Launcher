@@ -110,9 +110,11 @@ std::string TaggedReleaseUrl(const std::string& repo, const std::string& tag);
 
 // Downloads the kit for this OS into `kitRoot`/<release tag>/: from the release tagged `tag` (v<launcher version>), else
 // the latest one; verified against its SHA256SUMS, then unpacked. Returns the folder ("" and `error` otherwise).
-// `progress` gets the bytes so far and the asset's size (0 when unknown).
+// `progress` gets the bytes so far and the asset's size (0 when unknown). `into`, when set, is the folder unpacked over
+// instead (the Repair of a damaged kit that is not in kitRoot, docs/install.md "File check").
 std::filesystem::path DownloadKit(const std::string& repo, const std::string& tag, const std::filesystem::path& kitRoot,
-    const std::function<void(uint64_t, uint64_t)>& progress, const std::atomic<bool>* cancel, std::string& error, std::string* releaseTag = nullptr);
+    const std::function<void(uint64_t, uint64_t)>& progress, const std::atomic<bool>* cancel, std::string& error, std::string* releaseTag = nullptr,
+    const std::filesystem::path& into = {});
 
 // DownloadKit on a thread, for the INSTALL card to poll.
 class KitDownloader
@@ -127,7 +129,7 @@ public:
         std::filesystem::path folder;
     };
     ~KitDownloader() { Cancel(); Join(); }
-    void Start(const std::string& repo, const std::string& tag, const std::filesystem::path& kitRoot);
+    void Start(const std::string& repo, const std::string& tag, const std::filesystem::path& kitRoot, const std::filesystem::path& into = {});
     void Cancel() { m_cancel = true; }
     Snapshot_ Snapshot();
     bool Running() const { return m_running; }

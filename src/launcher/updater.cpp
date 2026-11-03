@@ -4,6 +4,7 @@
 #include "launcher/game_install.h"
 #include "launcher/launcher.h"
 #include "shared/dir_list.h"
+#include "shared/collection/file_list.h"
 #include "shared/mini_json.h"
 #include <SDL3/SDL.h>
 #include <algorithm>
@@ -190,9 +191,13 @@ namespace
     }
 
     // The kit's builder at the root of `folder`: Arkeyan-Builder, SkyBuild (kits up to 0.7.2), or SSABuild (0.4.x launchers).
+    // A kit's file list counts too: an antivirus may take the builder as soon as it is extracted, and the file check then
+    // names it (integrity.h) rather than "not a game kit".
     bool HoldsBuilder(const fs::path& folder)
     {
         std::error_code error;
+        if (fs::is_regular_file(folder / filelist::ListName, error))
+            return true;
 #if defined(_WIN32)
         return fs::exists(folder / "Arkeyan-Builder.exe", error) || fs::exists(folder / "SkyBuild.exe", error) || fs::exists(folder / "SSABuild.exe", error);
 #else
@@ -796,7 +801,8 @@ bool InstallKitZip(const fs::path& zip, const fs::path& kitFolder, std::string& 
 }
 
 fs::path DownloadKit(const std::string& repo, const std::string& tag, const fs::path& kitRoot,
-    const std::function<void(uint64_t, uint64_t)>& progress, const std::atomic<bool>* cancel, std::string& error, std::string* releaseTag)
+    const std::function<void(uint64_t, uint64_t)>& progress, const std::atomic<bool>* cancel, std::string& error, std::string* releaseTag,
+    const fs::path& into)
 {
     std::error_code fsError;
     fs::path work = kitRoot / ".download";
@@ -832,7 +838,7 @@ fs::path DownloadKit(const std::string& repo, const std::string& tag, const fs::
     fs::path folder;
     if (!zip.empty())
     {
-        folder = KitFolderFor(kitRoot, release.tag);
+        folder = into.empty() ? KitFolderFor(kitRoot, release.tag) : into;
         if (InstallKitZip(zip, folder, error))
         {
             if (releaseTag != nullptr)
@@ -857,7 +863,7 @@ KitDownloader::Snapshot_ KitDownloader::Snapshot()
     return m_state;
 }
 
-void KitDownloader::Start(const std::string& repo, const std::string& tag, const fs::path& kitRoot)
+void KitDownloader::Start(const std::string& repo, const std::string& tag, const fs::path& kitRoot, const fs::path& into)
 {
     if (m_running)
         return;
@@ -865,14 +871,14 @@ void KitDownloader::Start(const std::string& repo, const std::string& tag, const
     m_running = true;
     m_cancel = false;
     { std::lock_guard lock(m_mutex); m_state = {}; m_state.state = State::Running; }
-    m_thread = std::thread([this, repo, tag, kitRoot] {
+    m_thread = std::thread([this, repo, tag, kitRoot, into] {
         std::string error, releaseTag;
         auto progress = [&](uint64_t bytes, uint64_t size) {
             std::lock_guard lock(m_mutex);
             m_state.done = bytes;
             m_state.total = size;
         };
-        fs::path folder = DownloadKit(repo, tag, kitRoot, progress, &m_cancel, error, &releaseTag);
+        fs::path folder = DownloadKit(repo, tag, kitRoot, progress, &m_cancel, error, &releaseTag, into);
         std::lock_guard lock(m_mutex);
         m_state.state = !folder.empty() ? State::Done : m_cancel ? State::Cancelled : State::Failed;
         m_state.error = error;
