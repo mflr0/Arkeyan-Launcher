@@ -67,14 +67,14 @@ Every release is checked before it ships, on the four games:
 
 ## Supported discs
 
-The launcher checks your disc's `default.xex`, so only these editions work (names as in the Redump database):
+Xbox 360 discs only.
 
-| Game | Disc |
-|---|---|
-| Spyro's Adventure | Skylanders - Spyro's Adventure (USA, Europe) (En,Fr,De,Es,It,Nl,Sv,No,Da,Fi) |
-| Giants | Skylanders - Giants (USA, Europe) (En,Fr,De,Es,It,Nl,Pt,Sv,No,Da,Fi) |
-| Swap Force | Skylanders - Swap Force (USA, Australia) (En,Fr), or Skylanders - Swap Force (Europe) (Es,It) |
-| Trap Team | Skylanders - Trap Team (Europe) (En,De), or Skylanders - Trap Team (Europe) (Fr,Nl) |
+| Game | Regions | Languages |
+|---|---|---|
+| Spyro's Adventure | USA, Europe | English, French, German, Spanish, Italian, Dutch, Swedish, Norwegian, Danish, Finnish |
+| Giants | USA, Europe | English, French, German, Spanish, Italian, Dutch, Portuguese, Swedish, Norwegian, Danish, Finnish |
+| Swap Force | USA, Australia, Europe | English, French, Spanish, Italian |
+| Trap Team | Europe | English, German, French, Dutch |
 
 Another edition is refused with a message. If you have one, tell us in an issue.
 
