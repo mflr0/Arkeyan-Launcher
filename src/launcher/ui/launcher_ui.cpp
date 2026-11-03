@@ -1600,7 +1600,7 @@ namespace launcher_ui
         {
             ui::ButtonOptions options;
             options.kind = ui::ButtonKind::Primary;
-            options.icon = ui::Icon::Download;
+            options.icon = ui::Icon::Update; // as the main action of a game with an update
             const std::string tooltip = Tf("Updates {} games, one after the other", GamesToUpdate());
             options.tooltip = tooltip.c_str();
             options.disabled = !m_session.Running().empty(); // a game is running: its build can't be replaced
@@ -3844,6 +3844,7 @@ namespace launcher_ui
         }
         if (m_testExperimental)
         {
+            uint64_t settle = 400;
             switch (m_testStep)
             {
             case 0:
@@ -3863,9 +3864,21 @@ namespace launcher_ui
             case 3:
                 SelectGame(*FindGame("trapteam"));
                 m_page = Page::Play;
+                if (!m_testDrop.empty()) // its disc (SKY_LAUNCHER_TEST_DROP) verified first: the page in the game's own look
+                {
+                    if (m_s->disc == DiscState::None)
+                        StartVerify(m_testDrop);
+                    if (m_s->disc != DiscState::Ready && m_s->disc != DiscState::Failed)
+                        return; // asked again next frame
+                    settle = 1500; // the art loads after the check
+                }
                 m_testShot = "trapteam-04-sidebar-on";
                 break;
             case 4:
+                m_page = Page::Home;
+                m_testShot = "trapteam-04b-home";
+                break;
+            case 5:
                 SetExperimentalTrapTeam(false);
                 m_page = Page::Home;
                 m_testShot = "trapteam-05-sidebar-off-again";
@@ -3874,7 +3887,7 @@ namespace launcher_ui
                 m_running = false;
                 return;
             }
-            m_testAt = now + 400;
+            m_testAt = now + settle;
             return;
         }
         if (m_testHero)
