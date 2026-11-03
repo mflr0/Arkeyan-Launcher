@@ -199,6 +199,7 @@ namespace launcher_ui
         bool m_focusCard = false;       // or the shelf's first card
         int m_seatMenu = -1;            // the seat whose right-click menu is open
         std::string m_selected;         // the card with the focus
+        std::string m_toggleFavourite; // the card whose star was clicked this frame (HandleShortcuts applies it)
         std::string m_hovered;          // the card under the mouse or the focus (X: its sheet)
 
         // The overlays.

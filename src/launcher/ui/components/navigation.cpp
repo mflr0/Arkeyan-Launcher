@@ -264,7 +264,13 @@ namespace ui
         if (Ctx().testNavigationItems != nullptr)
             Ctx().testNavigationItems->push_back(id);
         if (Ctx().testStops != nullptr)
-            Ctx().testStops->push_back({ id, box.root, rect.Min, rect.Max, (g.LastItemData.StatusFlags & ImGuiItemStatusFlags_Visible) != 0 });
+        {
+            // Where it shows: a row half scrolled out of its list is judged by its visible part.
+            ImRect shown = rect;
+            shown.ClipWithFull(clip);
+            const bool visible = (g.LastItemData.StatusFlags & ImGuiItemStatusFlags_Visible) != 0;
+            Ctx().testStops->push_back({ id, box.root, visible ? shown.Min : rect.Min, visible ? shown.Max : rect.Max, visible });
+        }
     }
 
     void NavColumn(int column) { g_column = column; }

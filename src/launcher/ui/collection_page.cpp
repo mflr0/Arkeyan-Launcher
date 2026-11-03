@@ -1177,6 +1177,7 @@ namespace launcher_ui
         const float height = ui::space::S + art + ui::space::XS + 2 * ui::type::Caption + ui::space::XXS + ui::space::S;
         const bool busy = Busy(figure);
         ImGui::PushID(figure.path.c_str());
+        ImGui::SetNextItemAllowOverlap(); // the star over its corner takes its own clicks
         const bool pressed = ui::Hit("##figure", ImVec2(width, height));
         if (m_focusCard)
         {
@@ -1257,8 +1258,40 @@ namespace launcher_ui
         collection::VariantKind kind = figure.Kind();
         if (kind != collection::VariantKind::Base)
             ui::DrawBadge(draw, ImVec2(at.x + ui::space::XS, at.y + ui::space::XS), KindLabel(kind).c_str(), collection::VariantKindRgb(kind));
+        // The favorite star, in the top right corner: empty, filled once the figure is a favorite; a click toggles it (the pad
+        // has it on the figure's sheet).
+        const ImVec2 starAt(end.x - ui::space::M, at.y + ui::space::M);
+        const float starSize = ui::icon::Small;
+        // Its button exists only under the pointer: the pad's walk and the grid's layout never see it.
+        bool starred = false, starHovered = false;
+        if (ImGui::IsMouseHoveringRect(at, end))
+        {
+            const ImVec2 cursor = ImGui::GetCursorScreenPos();
+            ImGui::SetCursorScreenPos(ImVec2(starAt.x - starSize, starAt.y - starSize));
+            ImGui::PushID(figure.path.c_str());
+            ImGui::PushItemFlag(ImGuiItemFlags_NoNav, true);
+            starred = ImGui::InvisibleButton("##favourite", ImVec2(2 * starSize, 2 * starSize));
+            starHovered = ImGui::IsItemHovered();
+            ImGui::PopItemFlag();
+            ImGui::PopID();
+            if (starHovered)
+                ui::Bubble(figure.favourite ? Tr("Remove from favorites") : Tr("Add to favorites"), ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
+            ImGui::SetCursorScreenPos(cursor);
+        }
+        if (starred && !busy)
+            m_toggleFavourite = figure.path; // after the shelf is drawn: reloading now would pull the figures from under it
         if (figure.favourite)
-            ui::DrawIcon(draw, ui::Icon::Star, ImVec2(end.x - ui::space::M, at.y + ui::space::M), ui::icon::Small, ui::Col(ui::color::Warning));
+        {
+            // Lucide's star is an outline: its inside filled under it (the star's points on a 24-unit grid).
+            ImVec2 points[10];
+            for (int p = 0; p < 10; p++)
+            {
+                const float angle = -IM_PI / 2 + p * IM_PI / 5, radius = (p % 2 == 0 ? 10.0f : 4.2f) * starSize / 24;
+                points[p] = ImVec2(starAt.x + radius * std::cos(angle), starAt.y + 0.6f * starSize / 24 + radius * std::sin(angle));
+            }
+            draw->AddConcavePolyFilled(points, 10, ui::Col(ui::color::Warning));
+        }
+        ui::DrawIcon(draw, ui::Icon::Star, starAt, starSize, ui::Col(figure.favourite || starHovered ? ui::color::Warning : ui::color::Dim));
         if (seat >= 0)
             ui::DrawBadge(draw, ImVec2(at.x + ui::space::XS, picture.y + art - ui::space::L), SeatTag(size_t(seat)).c_str(), ui::color::AccentFill, ui::color::OnAccent);
         if (dim)
@@ -1351,6 +1384,13 @@ namespace launcher_ui
 
     void CollectionPage::HandleShortcuts()
     {
+        if (!m_toggleFavourite.empty()) // a card's star clicked while the shelf was drawn
+        {
+            if (const collection::Figure* figure = m_model.Find(m_toggleFavourite))
+                collection::SetFavourite(m_toggleFavourite, !figure->favourite);
+            m_toggleFavourite.clear();
+            Reload();
+        }
         // The pad's actions, declared every frame: their hints are the legend's (false under a dialog, a menu or a field).
         // X takes the focused seat's figure off (Delete), else opens the focused card's sheet (F2); Y the search (F3); LT / RT
         // choose for the seat before or after (Page Up / Page Down).

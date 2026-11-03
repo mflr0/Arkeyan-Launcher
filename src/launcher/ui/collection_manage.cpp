@@ -20,7 +20,7 @@ namespace launcher_ui
     {
         namespace strings
         {
-            constexpr const char* DeleteForGood = N_("Delete for good");
+            constexpr const char* DeleteForGood = N_("Erase"); // "Delete" is the key's name
             constexpr const char* DeleteForGoodHint = N_("Hold to delete it for good.");
         }
 

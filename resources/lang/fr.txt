@@ -502,6 +502,7 @@ Unknown toys · {}	Jouets inconnus · {}
  · {} unknown toy (Manage)	 · {} jouet inconnu (Gérer)
  · {} unknown toys (Manage)	 · {} jouets inconnus (Gérer)
 Add to favorites	Ajouter aux favoris
+Remove from favorites	Retirer des favoris
 Adventure	Aventure
 Adventure Packs	Packs d'aventure
 Air	Air
@@ -517,6 +518,7 @@ Backups	Copies de secours
 Choose	Choisir
 Choose a figure for {}	Choisir une figurine pour {}
 Pick a figure.	Choisissez une figurine.
+plays as {0} in {1}	joue comme {0} dans {1}
 Choose another	En choisir une autre
 Chrome	Chrome
 Clear search and filters	Effacer recherche et filtres
@@ -538,7 +540,7 @@ Creation Crystals	Cristaux de création
 Crystal Clear	Cristal
 Dark	Sombre
 Delete	Suppr
-Delete for good	Supprimer pour de bon
+Erase	Supprimer
 Delete...	Supprimer...
 Deleted figures are kept 30 days.	Les figurines supprimées sont gardées 30 jours.
 Details	Détails

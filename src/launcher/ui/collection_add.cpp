@@ -32,13 +32,19 @@ namespace launcher_ui
             return collection::Catalogue::Get().Accepts(chosen, toy.type) ? chosen : toy.game;
         }
 
-        // A row of its own only for the plain toy (made under the id it is sold with: its "base" entry is never a second row)
-        // and the versions the game tells apart; the others play as the plain toy in it.
-        bool PlainDuplicate(const std::string& game, const Toy& toy, const collection::Variant& variant)
+        // Every version has a row but the "base" entry (the plain toy, made under the id it is sold with). A version the game
+        // does not tell apart (an Eon's Elite Spyro in Spyro's Adventure) is offered too: it plays as the plain toy there and
+        // as itself in the games that know it, as the real figure does.
+        bool PlainDuplicate(const std::string&, const Toy&, const collection::Variant& variant)
         {
-            if (variant.kind == collection::VariantKind::Base)
-                return true;
-            return !variant.sameTag && !collection::Catalogue::Get().Read(game, &toy, variant.id).exact;
+            return variant.kind == collection::VariantKind::Base;
+        }
+
+        // A version the chosen game reads as the plain toy (not a same-tag edition, which no game sees).
+        bool PlaysAsPlain(const std::string& game, const Toy& toy, const collection::Variant& variant)
+        {
+            const collection::Catalogue& catalogue = collection::Catalogue::Get();
+            return !variant.sameTag && catalogue.Accepts(game, toy.type) && !catalogue.Read(game, &toy, variant.id).exact;
         }
 
         size_t CountVersions(const std::string& game, const Toy& toy)
@@ -222,7 +228,9 @@ namespace launcher_ui
                     : chosen->variants[i - 1].sameTag ? owned(chosen->type, -1, chosen->variants[i - 1].name) : owned(chosen->type, chosen->variants[i - 1].id, {});
                 // A row: the version's picture (the toy's own when it has none), its name, its kind and how many are owned.
                 const std::string title = IsSwapper(*chosen) ? WithoutHalf(versions[i].first) : versions[i].first;
-                const std::string kind = versions[i].second == collection::VariantKind::Base ? std::string(Tr("Standard")) : KindLabel(versions[i].second);
+                std::string kind = versions[i].second == collection::VariantKind::Base ? std::string(Tr("Standard")) : KindLabel(versions[i].second);
+                if (i > 0 && PlaysAsPlain(m_addGame, *chosen, chosen->variants[i - 1]))
+                    kind += " · " + Tf("plays as {0} in {1}", IsSwapper(*chosen) ? WithoutHalf(chosen->name) : chosen->name, ShortGameName(m_addGame));
                 const std::string owns = count > 0 ? Tf("owned x{}", count) : std::string();
                 ui::ListRowOptions options;
                 options.subtitle = kind.c_str();
