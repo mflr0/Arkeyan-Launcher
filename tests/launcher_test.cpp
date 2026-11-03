@@ -2238,7 +2238,11 @@ static int RunChecks(int argc, char** argv)
     InstallChecks(scratch, noDisc ? "synthetic.iso" : iso.string());
     g_failures += ShellChecks(scratch);
     LauncherControlChecks(scratch);
+#if !defined(_WIN32)
     PadWalkChecks(scratch, noDisc ? std::string() : iso.string());
+#else
+    printf("Pad walk: not run on Windows (its child launcher is started through a POSIX shell); macOS and Linux run it\n");
+#endif
     g_failures += SettingsChecks(scratch / "settings");
     g_failures += UninstallChecks(scratch);
     g_failures += PortableChecks(scratch);
