@@ -357,29 +357,13 @@ namespace ui
 
     void DrawSpinner(ImDrawList* draw, ImVec2 centre, float size, ImU32 color)
     {
-        // Lucide's loader turning about its own centre (its vertices rotated); still when motion is reduced. The pivot is the
-        // middle of the glyph's quad as drawn, not the point asked for: the icon font's glyphs sit up to a point and a half off
-        // their em square's middle (its ascent, ImGui's whole points), which made the ring wobble. The loader's arc spans its
-        // whole circle, so its quad is centred on the ring; the ring stays where the still icon would be.
-        const int first = draw->VtxBuffer.Size;
-        DrawIcon(draw, Icon::Loader, centre, size, color);
-        if (draw->VtxBuffer.Size == first)
-            return;
-        ImVec2 low = draw->VtxBuffer[first].pos, high = low;
-        for (int i = first + 1; i < draw->VtxBuffer.Size; i++)
-        {
-            const ImVec2& pos = draw->VtxBuffer[i].pos;
-            low = ImVec2(std::min(low.x, pos.x), std::min(low.y, pos.y));
-            high = ImVec2(std::max(high.x, pos.x), std::max(high.y, pos.y));
-        }
-        const float angle = Phase(motion::Spin) * Tau, cosA = std::cos(angle), sinA = std::sin(angle);
-        const ImVec2 pivot((low.x + high.x) / 2, (low.y + high.y) / 2);
-        for (int i = first; i < draw->VtxBuffer.Size; i++)
-        {
-            ImVec2& pos = draw->VtxBuffer[i].pos;
-            const float x = pos.x - pivot.x, y = pos.y - pivot.y;
-            pos = ImVec2(pivot.x + x * cosA - y * sinA, pivot.y + x * sinA + y * cosA);
-        }
+        // Lucide's loader (a ring, three quarters drawn) as a path, not the icon font's glyph: a glyph's ink sits off its
+        // quad's middle, so a rotated glyph wobbled about a point that is not the ring's centre. Its proportions on the
+        // 24-unit grid: radius 9 (its stroke drawn a little heavier, as the font's). Still when motion is reduced.
+        const float radius = size * 9.0f / 24.0f, thickness = std::max(1.5f, size * 2.5f / 24.0f); // as thick as the icon font's strokes
+        const float start = Phase(motion::Spin) * Tau;
+        draw->PathArcTo(centre, radius, start, start + Tau * 0.75f, 0);
+        draw->PathStroke(color, ImDrawFlags_None, thickness);
     }
 }
 
