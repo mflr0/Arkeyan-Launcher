@@ -272,6 +272,10 @@ namespace
         const auto* top = catalogue.Find(2004);
         const auto* bottom = catalogue.Find(1004);
         EXPECT(eruptor != nullptr && top != nullptr && bottom != nullptr);
+        // Compared as paths: Windows joins with '\\' where a test name holds '/' ("artworks/eruptor").
+        auto same = [](const std::string& a, const std::string& b) {
+            return fs::path(a).lexically_normal() == fs::path(b).lexically_normal();
+        };
         auto write = [&](const char* game, const std::string& name, uint32_t color) {
             fs::path file = datadir::Game(game) / "portraits" / (name + ".png");
             fs::create_directories(file.parent_path());
@@ -286,10 +290,10 @@ namespace
             for (const char* game : { "ssa", "giants", "swapforce", "trapteam" })
             {
                 for (bool large : { false, true })
-                    EXPECT(collection::PortraitPath(game, *eruptor, 0, large) == newest);
-                EXPECT(collection::BestPicturePath(game, *eruptor) == newest);
+                    EXPECT(same(collection::PortraitPath(game, *eruptor, 0, large), newest));
+                EXPECT(same(collection::BestPicturePath(game, *eruptor), newest));
             }
-            EXPECT(collection::DiscImagePath(*eruptor) == newest);
+            EXPECT(same(collection::DiscImagePath(*eruptor), newest));
             for (int size : { 32, 128, 256 })
             {
                 bool fromDisc = false;
@@ -297,26 +301,26 @@ namespace
                 EXPECT(fromDisc && icon.width == size && icon.rgba[size * size / 2] == 0xFFFF0000u);
             }
             std::string variant = write("giants", "eruptor_lightcore", 0xFF00FFFFu);
-            EXPECT(collection::PortraitPath("ssa", *eruptor, 0x1206) == variant);
-            EXPECT(collection::BestPicturePath("trapteam", *eruptor, 0x1206) == variant);
+            EXPECT(same(collection::PortraitPath("ssa", *eruptor, 0x1206), variant));
+            EXPECT(same(collection::BestPicturePath("trapteam", *eruptor, 0x1206), variant));
             std::string upper = write("swapforce", "artworks/fireknightbody_wii_material", 0xFF0000FFu);
             std::string lower = write("swapforce", "artworks/fireknightlegs_wii_material", 0xFF00FF00u);
             EXPECT(!collection::SwapperPicture(*top, 0, *bottom, 0).Empty());
-            EXPECT(collection::HalfPicturePath(*top) == upper && collection::HalfPicturePath(*bottom) == lower);
+            EXPECT(same(collection::HalfPicturePath(*top), upper) && same(collection::HalfPicturePath(*bottom), lower));
             std::string darkWhole = write("swapforce", "collection_fireknight_dark", 0xFF00FFFFu);
-            EXPECT(collection::HalfPicturePath(*top, 0x2402) == darkWhole);
+            EXPECT(same(collection::HalfPicturePath(*top, 0x2402), darkWhole));
             EXPECT(collection::SwapperPicture(*top, 0x2402, *bottom, 0x2402).Empty());
             fs::remove(darkWhole);
             std::string whole = write("trapteam", "2004_8192_blastzone", 0xFFFF0000u);
             fs::remove(lower);
-            EXPECT(collection::HalfPicturePath(*bottom) == whole && collection::PortraitPath("ssa", *bottom) == whole);
+            EXPECT(same(collection::HalfPicturePath(*bottom), whole) && same(collection::PortraitPath("ssa", *bottom), whole));
             EXPECT(collection::SwapperPicture(*top, 0, *bottom, 0).Empty());
             fs::remove(upper);
             lower = write("swapforce", "artworks/fireknightlegs_wii_material", 0xFF00FF00u);
-            EXPECT(collection::HalfPicturePath(*top) == whole && collection::HalfPicturePath(*bottom) == lower);
+            EXPECT(same(collection::HalfPicturePath(*top), whole) && same(collection::HalfPicturePath(*bottom), lower));
             EXPECT(collection::SwapperPicture(*top, 0, *bottom, 0).Empty());
             fs::remove(lower);
-            EXPECT(collection::HalfPicturePath(*top) == whole && collection::HalfPicturePath(*bottom) == whole);
+            EXPECT(same(collection::HalfPicturePath(*top), whole) && same(collection::HalfPicturePath(*bottom), whole));
             fs::remove(whole);
             for (const auto* toy : { top, bottom, catalogue.Find(100) })
             {
