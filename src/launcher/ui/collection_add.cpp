@@ -184,7 +184,11 @@ namespace launcher_ui
                 if (pass == 1)
                 {
                     ui::PushText(ui::TextStyle::Caption);
-                    const std::string note = Tf("needs {}", ShortGameName(toy.game));
+                    // "needs SuperChargers" when it fits the card, else the game's name alone (the section says "Later games").
+                    const float room = Cell - 2 * ui::space::XS;
+                    std::string note = Tf("needs {}", ShortGameName(toy.game));
+                    if (ImGui::CalcTextSize(note.c_str()).x > room)
+                        note = ui::Ellipsize(ShortGameName(toy.game).c_str(), room);
                     ui::DrawText(draw, ImVec2(at.x + (Cell - ImGui::CalcTextSize(note.c_str()).x) / 2, noteY), ui::Col(ui::color::Dim), note.c_str());
                     ui::PopText();
                 }
