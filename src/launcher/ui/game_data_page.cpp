@@ -144,7 +144,7 @@ namespace launcher_ui
             note(total == 0 ? Tr("Copying...") : Tf("Copying: {} of {}", ui::FormatSize(m_s->copyJob.Bytes()), ui::FormatSize(total)));
             ui::ProgressBar(m_s->copyJob.Fraction(), -1, true);
             ImGui::Dummy(ImVec2(0, ui::space::XXS));
-            if (ui::Button(Tr("Stop")))
+            if (ui::Button(Tr("Stop"), { .icon = ui::Icon::Stop }))
                 m_s->copyJob.Cancel();
             note(Tr("Stopping keeps the files already copied."));
             return;

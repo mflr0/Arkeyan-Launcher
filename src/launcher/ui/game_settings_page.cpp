@@ -696,11 +696,12 @@ namespace launcher_ui
             note(total == 0 ? Tr("Exporting...") : Tf("Exporting: {} of {}", ui::FormatSize(m_s->portableJob.Bytes()), ui::FormatSize(total)));
             ui::ProgressBar(m_s->portableJob.Fraction(), -1, true);
             ImGui::Dummy(ImVec2(0, ui::space::XXS));
-            if (ui::Button(Tr("Stop")))
+            if (ui::Button(Tr("Stop"), { .icon = ui::Icon::Stop }))
                 m_s->portableJob.Cancel();
             return;
         }
         ui::ButtonOptions exportOptions;
+        exportOptions.icon = ui::Icon::ArrowUp; // out of the launcher, as every export
         exportOptions.disabled = !ready || Installing();
         if (ui::Button(Tf("Export for {}", SystemName()).c_str(), exportOptions))
             m_portableAsk = true;
