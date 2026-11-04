@@ -75,7 +75,7 @@ namespace LauncherTheme
 
     // Each game's own colours, for what belongs to the game on its page: the action button (docs/launcher_ui.md, "Each
     // game's look"), and the Home cards' glow. Taken from the game's logo: Spyro's Adventure's sky blue to deep blue,
-    // Giants' gold to orange, Swap Force's lime to green.
+    // Giants' gold to orange, Swap Force's lime to green, Trap Team's title red.
     struct GameStyle
     {
         unsigned top, bottom;  // the logo's colours, top to bottom (the button's gradient is drawn between them)
@@ -85,7 +85,7 @@ namespace LauncherTheme
     inline constexpr GameStyle SpyrosAdventureStyle = { 0x7CC8FF, 0x2C7FD8, 0x0C2A5C, 0x6BBAFF };
     inline constexpr GameStyle GiantsStyle = { 0xFFD23C, 0xF06A10, 0x3A1404, 0xFFB43A };
     inline constexpr GameStyle SwapForceStyle = { 0xD9EC45, 0x6FB42E, 0x0F2E22, 0xBFE04A };
-    inline constexpr GameStyle TrapTeamStyle = { 0x6DF0B4, 0x31B47D, 0x0F2E22, 0x6DF0B4 };
+    inline constexpr GameStyle TrapTeamStyle = { 0xE1001B, 0x941018, 0x5A0808, 0xDE0018 }; // the title's red: its letters, shade and darkest tone
     // The game's style by catalogue id; the launcher's own blue for a game without one.
     const GameStyle& StyleOf(const char* game);
 

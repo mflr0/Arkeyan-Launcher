@@ -233,7 +233,9 @@ namespace launcher_ui
             if (std::string chosen = ChooseFolder(m_app.m_window, Tr("Import the figures of a folder")); !chosen.empty())
                 Import({ chosen });
         ImGui::Dummy(ImVec2(0, ui::space::S));
-        if (ui::Button(Tr("Export everything..."), folder))
+        ui::ButtonOptions exportAll;
+        exportAll.icon = ui::Icon::ArrowUp;
+        if (ui::Button(Tr("Export everything..."), exportAll))
         {
             std::vector<std::string> paths;
             for (const Figure& figure : m_model.figures)

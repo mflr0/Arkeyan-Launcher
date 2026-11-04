@@ -197,7 +197,7 @@ namespace launcher_ui
         if (plan.Has(Group::Figures))
         {
             ImGui::SameLine(0, ui::space::M);
-            if (ui::Button(Tr("Export first")))
+            if (ui::Button(Tr("Export first"), { .icon = ui::Icon::ArrowUp }))
                 ExportFiguresFirst();
         }
         note(mine == 0 ? Tr("No saves or figures yet.")

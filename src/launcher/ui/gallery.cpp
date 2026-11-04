@@ -569,6 +569,7 @@ namespace launcher_ui
             static bool modal = true, danger = true;
             Caption("Behind: the page, under the scrim");
             ui::ButtonOptions behind;
+            behind.icon = ui::Icon::Folder;
             ui::Button(Tr("Show in folder"), behind);
             if (page == 8)
             {

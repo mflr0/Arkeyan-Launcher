@@ -386,6 +386,27 @@ Phase B applies these on every screen it touches.
   durations in minutes; a count with its noun has two strings, singular and plural.
 - **Hold buttons**: the label is the plain verb ("Delete", "Reset"); the hint ("Hold to confirm", or a sentence saying what
   goes) is the button's own. French hints say "Maintenez pour ...".
+- **Button icons**: one meaning, one icon, everywhere; a button has an icon only when it adds something. Checked against every
+  `ui::Button` of every page, tab and dialog (wave 49).
+
+  | Meaning | Icon | Kind |
+  |---|---|---|
+  | Opens a folder of the system ("Show in folder", "Open logs folder", "Game files", "Logs") | `Folder` | Secondary |
+  | Opens a web page ("Report a bug", "GitHub", "Licenses", "Release page") | `External` | Secondary / Ghost |
+  | Takes something out of the launcher ("Export for ...", "Export everything...", "Export first") | `ArrowUp` | Secondary |
+  | Brings something in ("Import files...") | `Download` | Primary / Secondary |
+  | Installs a game | `Download`; updates (the page's action, "Update all") `Update` | Primary |
+  | Stops a running job or game | `Stop` | Secondary / the danger outline |
+  | Back | `ChevronLeft` | Ghost |
+  | Opens a menu or a list (a filter, "Put on the portal", "Details") | `ChevronDown` after the label (`ChevronUp` while open) | as the page |
+  | Deletes or resets, hold button | the hold's timer (set by `hold`, an icon of its own is ignored) | Danger |
+  | Deletes, no hold (a confirmation follows: "Uninstall everything...", the dialog's button) | `Trash` | Danger |
+  | Cancel, Close, Later, Save, Copy, Retry, Resume, Quit, Edit, Put back, Restore, Remove (a disc) | none | as the page |
+
+  Menu rows follow the same icons ("Show in folder" `Folder`, "Delete..." `Trash`). Changed in wave 49: "Update all"
+  (`Download` to `Update`), "Export everything...", "Export for ..." and "Export first" (`ArrowUp`; `Folder` or none),
+  both "Stop" buttons (`Stop`), the gallery's "Show in folder" (`Folder`). The tester checks: the gallery
+  (`SKY_LAUNCHER_TEST_GALLERY=1`), Settings > Launcher > Uninstall everything (`SKY_LAUNCHER_TEST_UNINSTALL=1`).
 - **Writing** (below) still holds: short help lines, no path in running text, errors say what happened then what to do.
 
 ## Gallery
@@ -813,6 +834,7 @@ What belongs to the game on its page is drawn in **the game's own colours**, tak
 | Spyro's Adventure | the logo's sky blue to deep blue, navy ink | `SpyrosAdventureStyle` |
 | Giants | the logo's gold to orange, dark brown ink | `GiantsStyle` |
 | Swap Force | the logo's lime to green, dark green ink | `SwapForceStyle` |
+| Trap Team | the title's red (its letters, their shade and darkest tone, sampled from the logo as the launcher decodes it from the disc), dark red ink | `TrapTeamStyle` |
 | any other | the launcher's own blue | |
 
 **The hero action** uses `ui::MainAction` with `separated=true`: an accent-filled primary button, then S of space,
@@ -1146,6 +1168,7 @@ page and sidebar returning to Ready, other games becoming available again, and t
 Swap Force not opened); with `pad` each page's first stop has its ring and the pad legend shows. `SKY_LAUNCHER_LANGUAGE`,
 `SKY_LAUNCHER_TEST_SIZE` and `SKY_LAUNCHER_TEST_SCALE=2` (a Retina screen's density, the same layout) set the rest
 (`docs/polish_audit.md`, "Model screens").
+`SKY_LAUNCHER_TEST_TRAPTEAM=1` with `SKY_LAUNCHER_TEST_DROP=<Trap Team's disc>` also verifies the disc and shoots its page and Home card (`trapteam-04-sidebar-on`, `trapteam-04b-home`), in its colours.
 `SKY_LAUNCHER_TEST_INPUT=pad` shoots any script as a pad player sees it: the pad's glyphs and legends, the focus on each page's (or tab's)
 first stop with its ring.
 `SKY_LAUNCHER_TEST_RUNNING=1` (with `SKY_LAUNCHER_RUNTIME` a stand-in game and `SKY_LAUNCHER_TEST_DROP` Spyro's Adventure's disc)
