@@ -1,7 +1,7 @@
 # Arkeyan Launcher
 
-**Play Skylanders natively on Mac, Windows and Linux.** Arkeyan Launcher builds *Spyro's Adventure*, *Giants*, *Swap Force*,
-*Trap Team* and, as an experiment, *SuperChargers* from your own Xbox 360 disc image into real PC games: no emulator, your own saves, your
+**Play Skylanders natively on Mac, Windows and Linux.** Arkeyan Launcher builds *Spyro's Adventure*, *Giants*, *Swap Force*
+and *Trap Team* from your own Xbox 360 disc image into real PC games: no emulator, your own saves, your
 figures in a virtual portal, any controller, keyboard or mouse. Formerly Skylauncher: it updates itself to this version.
 
 <!-- SCREENSHOTS: four gameplay pictures (one per game), hosted outside the repository -->
@@ -28,7 +28,6 @@ on your computer.
 | Giants | ✅ | ⚠️ tested in Wine only | ⚠️ tested in a container only | Chapter 1, and 78 of its 91 levels in an automatic tour |
 | Swap Force | ✅ | ⚠️ tested in Wine only | ⚠️ tested in a container only | The tutorial, the first area of the story and the two-player arenas; 158 of 195 zones in an automatic tour |
 | Trap Team | ✅ | ⚠️ not tested yet | ⚠️ not tested yet | The tutorial, the first chapters and the Academy, a villain captured and kept in its trap; 53 of 56 levels in an automatic tour |
-| SuperChargers (experimental) | ✅ | ⚠️ not tested yet | ⚠️ not tested yet | The intro, the rift tunnel with a vehicle and the first area on foot |
 
 Finished a game, or played one on Windows or Linux? Please say so in an
 [issue](https://github.com/mflr0/Arkeyan-Launcher/issues): it is how this table gets filled.
@@ -76,11 +75,9 @@ Xbox 360 discs only.
 | Giants | USA, Europe | English, French, German, Spanish, Italian, Dutch, Portuguese, Swedish, Norwegian, Danish, Finnish |
 | Swap Force | USA, Australia, Europe | English, French, Spanish, Italian |
 | Trap Team | Europe | English, German, French, Dutch |
-| SuperChargers (experimental) | Europe | English, German |
 
 Another edition is refused with a message. If you have one, tell us in an issue.
 
-SuperChargers is off by default: turn it on in Settings > Launcher.
 
 ## Get started
 
@@ -191,8 +188,6 @@ The developer docs are in `docs/`: `launcher_ui.md` covers the screens and theme
 - Swap Force: not every mode has been played through yet.
 - Trap Team: Spy Rise looks almost black, its voices follow the text language, and LB is not offered as a key yet. A real
   Traptanium portal's speaker has not been tried yet.
-- SuperChargers is experimental and tested as far as the first area on foot: 30 FPS, Xbox button prompts, generic figure
-  and vehicle data; expect bugs beyond it.
 - The mouse does nothing in the games' own menus yet: use the keyboard or a controller there.
 - The 60 fps option is experimental.
 - The Mac app is not notarized, and Windows SmartScreen may warn about the launcher (see Get started).

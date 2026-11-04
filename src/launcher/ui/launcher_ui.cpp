@@ -2318,7 +2318,7 @@ namespace launcher_ui
             return;
         }
         DrawLauncherLanguage();
-        if (ui::BeginSettings("##experimental"))
+        if (FindGame("superchargers") != nullptr && ui::BeginSettings("##experimental")) // the switch shows once the game is in the table
         {
             bool enabled = ExperimentalSuperChargers(m_config);
             ui::SettingRow(Tr("SuperChargers (experimental)"), Tr("Adds SuperChargers to your games. An early version."));
@@ -4288,7 +4288,7 @@ std::span<const LauncherGameEntry> LauncherGameCatalog(const LauncherConfig& con
         entries[4].enabled = true; // SuperChargers
         return entries;
     }();
-    return ExperimentalSuperChargers(config) ? std::span<const LauncherGameEntry>(experimental) : std::span<const LauncherGameEntry>(catalog);
+    return ExperimentalSuperChargers(config) && FindGame("superchargers") != nullptr ? std::span<const LauncherGameEntry>(experimental) : std::span<const LauncherGameEntry>(catalog);
 }
 
 std::string LauncherLanguageLabel(const LauncherConfig& config, const GameInfo& game)

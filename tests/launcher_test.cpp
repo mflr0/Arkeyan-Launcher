@@ -2322,7 +2322,7 @@ static int RunChecks(int argc, char** argv)
     printf("Game table: %zu game(s); \"ssa\" = %s, %zu release(s)\n", g_games.size(), game.name, game.releases.size());
     EXPECT(FindGame("unknown") == nullptr);
     const GameInfo* giants = FindGame("giants");
-    EXPECT(g_games.size() == 5 && giants != nullptr && std::string(giants->runtime) == "Skylanders Giants" &&
+    EXPECT(g_games.size() == 4 && giants != nullptr && std::string(giants->runtime) == "Skylanders Giants" &&
            giants->releases.size() == 1);
     const GameInfo* swapForce = FindGame("swapforce");
     EXPECT(swapForce != nullptr && std::string(swapForce->runtime) == "Skylanders Swap Force" &&
@@ -2352,8 +2352,9 @@ static int RunChecks(int argc, char** argv)
            FindEnabledGame("trapteam", experimental) == trapTeam); // Trap Team is stable: always there
     EXPECT(countEnabled(experimental) == 4 && LauncherGameCatalog(experimental)[3].enabled && !LauncherGameCatalog(experimental)[4].enabled);
     experimental["launcher"]["experimental_superchargers"] = "1";
-    EXPECT(ExperimentalSuperChargers(experimental) && FindEnabledGame("superchargers", experimental) == FindGame("superchargers"));
-    EXPECT(countEnabled(experimental) == 5 && LauncherGameCatalog(experimental)[4].enabled);
+    EXPECT(ExperimentalSuperChargers(experimental) && FindEnabledGame("superchargers", experimental) == FindGame("superchargers")); // null until 0.9.0
+    EXPECT(countEnabled(experimental) == (FindGame("superchargers") != nullptr ? 5 : 4) &&
+           LauncherGameCatalog(experimental)[4].enabled == (FindGame("superchargers") != nullptr));
     const std::string experimentalIni = (scratch / "experimental.ini").string();
     EXPECT(SaveLauncherConfig(experimentalIni, experimental));
     EXPECT(ExperimentalSuperChargers(LoadLauncherConfig(experimentalIni)));
