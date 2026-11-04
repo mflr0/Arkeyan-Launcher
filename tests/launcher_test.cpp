@@ -2093,7 +2093,7 @@ static int RunChecks(int argc, char** argv)
         set("SKY_LAUNCHER_INI", ini);
         set("SKY_SETTINGS", ini);
         LauncherConfig config;
-        config["launcher"]["experimental_trapteam"] = "1";
+        config["launcher"]["experimental_superchargers"] = "1";
         config["launcher"]["frame_rates"] = "1";
         config[GameVideoSection(game->id)]["fps_limit"] = "60";
         config[GameVideoSection(game->id)]["fps_auto_fallback"] = "1";
@@ -2322,7 +2322,7 @@ static int RunChecks(int argc, char** argv)
     printf("Game table: %zu game(s); \"ssa\" = %s, %zu release(s)\n", g_games.size(), game.name, game.releases.size());
     EXPECT(FindGame("unknown") == nullptr);
     const GameInfo* giants = FindGame("giants");
-    EXPECT(g_games.size() == 4 && giants != nullptr && std::string(giants->runtime) == "Skylanders Giants" &&
+    EXPECT(g_games.size() == 5 && giants != nullptr && std::string(giants->runtime) == "Skylanders Giants" &&
            giants->releases.size() == 1);
     const GameInfo* swapForce = FindGame("swapforce");
     EXPECT(swapForce != nullptr && std::string(swapForce->runtime) == "Skylanders Swap Force" &&
@@ -2348,19 +2348,20 @@ static int RunChecks(int argc, char** argv)
         }
         return count;
     };
-    EXPECT(!ExperimentalTrapTeam(experimental) && FindEnabledGame("trapteam", experimental) == nullptr);
-    EXPECT(countEnabled(experimental) == 3 && !LauncherGameCatalog(experimental)[3].enabled);
-    experimental["launcher"]["experimental_trapteam"] = "1";
-    EXPECT(ExperimentalTrapTeam(experimental) && FindEnabledGame("trapteam", experimental) == trapTeam);
-    EXPECT(countEnabled(experimental) == 4 && LauncherGameCatalog(experimental)[3].enabled);
+    EXPECT(!ExperimentalSuperChargers(experimental) && FindEnabledGame("superchargers", experimental) == nullptr &&
+           FindEnabledGame("trapteam", experimental) == trapTeam); // Trap Team is stable: always there
+    EXPECT(countEnabled(experimental) == 4 && LauncherGameCatalog(experimental)[3].enabled && !LauncherGameCatalog(experimental)[4].enabled);
+    experimental["launcher"]["experimental_superchargers"] = "1";
+    EXPECT(ExperimentalSuperChargers(experimental) && FindEnabledGame("superchargers", experimental) == FindGame("superchargers"));
+    EXPECT(countEnabled(experimental) == 5 && LauncherGameCatalog(experimental)[4].enabled);
     const std::string experimentalIni = (scratch / "experimental.ini").string();
     EXPECT(SaveLauncherConfig(experimentalIni, experimental));
-    EXPECT(ExperimentalTrapTeam(LoadLauncherConfig(experimentalIni)));
-    experimental["launcher"]["experimental_trapteam"] = "0";
+    EXPECT(ExperimentalSuperChargers(LoadLauncherConfig(experimentalIni)));
+    experimental["launcher"]["experimental_superchargers"] = "0";
     EXPECT(SaveLauncherConfig(experimentalIni, experimental));
-    EXPECT(!ExperimentalTrapTeam(LoadLauncherConfig(experimentalIni)) && countEnabled(experimental) == 3);
-    experimental["launcher"]["experimental_trapteam"] = "invalid";
-    EXPECT(!ExperimentalTrapTeam(experimental));
+    EXPECT(!ExperimentalSuperChargers(LoadLauncherConfig(experimentalIni)) && countEnabled(experimental) == 4);
+    experimental["launcher"]["experimental_superchargers"] = "invalid";
+    EXPECT(!ExperimentalSuperChargers(experimental));
     EXPECT(LauncherTheme::StyleOf("trapteam").top == LauncherTheme::TrapTeamStyle.top);
     EXPECT(datadir::GameFolderName("trapteam") == "TrapTeam");
 

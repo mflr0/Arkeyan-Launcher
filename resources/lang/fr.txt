@@ -881,10 +881,10 @@ today	aujourd'hui
 yesterday	hier
 {} days ago	il y a {} jours
 
-Trap Team (experimental)	Trap Team (expérimental)
-Adds Trap Team to your games. An early version.	Ajoute Trap Team à vos jeux. Version en test.
-Trap Team is now in your games.	Trap Team est maintenant dans vos jeux.
-Trap Team is hidden from your games.	Trap Team est masqué de vos jeux.
+SuperChargers (experimental)	SuperChargers (expérimental)
+Adds SuperChargers to your games. An early version.	Ajoute SuperChargers à vos jeux. Version en test.
+SuperChargers is now in your games.	SuperChargers est maintenant dans vos jeux.
+SuperChargers is hidden from your games.	SuperChargers est masqué de vos jeux.
 # Game page
 On the portal	Sur le portail
 Live	En direct

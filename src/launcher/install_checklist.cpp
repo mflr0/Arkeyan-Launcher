@@ -31,7 +31,7 @@ namespace
 
 InstallChecklist MakeInstallChecklist(const InstallProgress& progress, uint64_t now, std::string_view game)
 {
-    const size_t column = game == "ssa" ? 0 : game == "giants" ? 1 : game == "swapforce" ? 2 : game == "trapteam" ? 3 : 4;
+    const size_t column = game == "ssa" ? 0 : game == "giants" ? 1 : game == "swapforce" ? 2 : game == "trapteam" ? 3 : 4; // SuperChargers: "other" until measured
     InstallChecklist list;
     std::vector<float> weights;
     bool downloadedKit = std::any_of(progress.steps.begin(), progress.steps.end(), [](const InstallProgress::Step& step) { return step.id == "kit"; });

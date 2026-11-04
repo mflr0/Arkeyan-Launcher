@@ -128,10 +128,10 @@ namespace launcher_ui
         std::vector<std::string> fewer;
         if (game == "swapforce")
             fewer = { "en", "fr" };
-        else if (game == "trapteam")
+        else if (game == "trapteam" || game == "superchargers")
             fewer = { "en" };
         std::span<const Choice> all = LanguageChoices;
-        if (game == "swapforce" || game == "trapteam")
+        if (game == "swapforce" || game == "trapteam" || game == "superchargers")
             all = AllLanguageChoices;
         else if (game == "giants")
             all = voice ? std::span<const Choice>(GiantsVoiceChoices) : std::span<const Choice>(GiantsLanguageChoices);
@@ -341,7 +341,7 @@ namespace launcher_ui
         void DrawSidebar();
         void DrawHome();
         void DrawPlay();
-        void SetExperimentalTrapTeam(bool enabled);
+        void SetExperimentalSuperChargers(bool enabled);
         void DrawHeroInstall(ImVec2 at, float width);
         void DrawHeroSteps(ImVec2 at, ImVec2 size);
         void TestHeroScript(uint64_t now);
@@ -710,7 +710,7 @@ namespace launcher_ui
         std::vector<std::string> m_testSeats; // the seats the SEATX script restores before each try
         std::string m_testBuilt;                    // the sidebar test's built game, put back between the states it sets by hand
         std::map<std::string, std::string> m_drawn; // while testing: what the sidebar, Home and the main button drew ("sidebar:ssa", "home:ssa", "button")
-        bool m_testExperimental = false; // SKY_LAUNCHER_TEST_TRAPTEAM: visibility and settings, without a disc
+        bool m_testExperimental = false; // SKY_LAUNCHER_TEST_EXPERIMENTAL (or the older _TRAPTEAM): SuperChargers' switch, without a disc
         bool m_testSidebar = false;    // SKY_LAUNCHER_TEST_SIDEBAR: the sidebar's line through an install and an update (fake kit)
         bool m_testCopy = false;       // SKY_LAUNCHER_TEST_COPY: copying the game data, playing from it, the wrong-disc button
         std::string m_testKit;         // SKY_LAUNCHER_TEST_KIT: "old", "giants", "updates" or "offline": the kit that follows the launcher, the game updates (fake release)

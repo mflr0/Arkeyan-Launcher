@@ -77,8 +77,8 @@ TitleMetadata ReadTitleMetadata(const std::vector<uint8_t>& xex);
 // Settings file: "[section]" lines, "key=value" lines, '#' comment lines. Keys before any section go to "".
 using LauncherConfig = std::map<std::string, std::map<std::string, std::string>>;
 std::string LauncherConfigPath();
-// Trap Team is available only with [launcher] experimental_trapteam=1.
-bool ExperimentalTrapTeam(const LauncherConfig& config);
+// SuperChargers is available only with [launcher] experimental_superchargers=1.
+bool ExperimentalSuperChargers(const LauncherConfig& config);
 const GameInfo* FindEnabledGame(std::string_view id, const LauncherConfig& config);
 LauncherConfig LoadLauncherConfig(const std::string& path);
 bool SaveLauncherConfig(const std::string& path, const LauncherConfig& config);

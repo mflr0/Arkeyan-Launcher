@@ -160,7 +160,7 @@ namespace launcher_ui
         {
             auto start = Clock::now();
             LauncherConfig config = LoadLauncherConfig(skyenv::Get("SKY_LAUNCHER_INI"));
-            config["launcher"]["experimental_trapteam"] = "1";
+            config["launcher"]["experimental_superchargers"] = "1";
             config["collection"]["moved"] = "1";
             App app(*FindGame("ssa"), skyenv::Get("SKY_LAUNCHER_INI"), config);
             if (!app.Init()) throw std::runtime_error(SDL_GetError());

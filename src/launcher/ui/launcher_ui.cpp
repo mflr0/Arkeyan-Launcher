@@ -399,7 +399,7 @@ namespace launcher_ui
             m_testCollection = LauncherEnv("SKY_LAUNCHER_TEST_COLLECTION") != nullptr;
             m_testNav = LauncherEnv("SKY_LAUNCHER_TEST_NAV") != nullptr;
             m_testSwitch = LauncherEnv("SKY_LAUNCHER_TEST_SWITCH") != nullptr;
-            m_testExperimental = LauncherEnv("SKY_LAUNCHER_TEST_TRAPTEAM") != nullptr;
+            m_testExperimental = LauncherEnv("SKY_LAUNCHER_TEST_EXPERIMENTAL") != nullptr || LauncherEnv("SKY_LAUNCHER_TEST_TRAPTEAM") != nullptr;
             m_testSidebar = LauncherEnv("SKY_LAUNCHER_TEST_SIDEBAR") != nullptr;
             if (const char* kit = LauncherEnv("SKY_LAUNCHER_TEST_KIT"))
                 m_testKit = kit;
@@ -2320,12 +2320,12 @@ namespace launcher_ui
         DrawLauncherLanguage();
         if (ui::BeginSettings("##experimental"))
         {
-            bool enabled = ExperimentalTrapTeam(m_config);
-            ui::SettingRow(Tr("Trap Team (experimental)"), Tr("Adds Trap Team to your games. An early version."));
-            if (ui::Toggle("##trapteam", &enabled))
+            bool enabled = ExperimentalSuperChargers(m_config);
+            ui::SettingRow(Tr("SuperChargers (experimental)"), Tr("Adds SuperChargers to your games. An early version."));
+            if (ui::Toggle("##superchargers", &enabled))
             {
-                SetExperimentalTrapTeam(enabled);
-                Toast(enabled ? Tr("Trap Team is now in your games.") : Tr("Trap Team is hidden from your games."),
+                SetExperimentalSuperChargers(enabled);
+                Toast(enabled ? Tr("SuperChargers is now in your games.") : Tr("SuperChargers is hidden from your games."),
                     ui::ToastKind::Success);
             }
             ui::EndSettings();
@@ -2346,20 +2346,20 @@ namespace launcher_ui
         DrawUninstallSection();
     }
 
-    void App::SetExperimentalTrapTeam(bool enabled)
+    void App::SetExperimentalSuperChargers(bool enabled)
     {
-        Set("launcher", "experimental_trapteam", enabled ? "1" : "0");
+        Set("launcher", "experimental_superchargers", enabled ? "1" : "0");
         if (enabled)
         {
-            SeedGameVideo(m_config, "trapteam");
-            SeedGameInput(m_config, "trapteam");
+            SeedGameVideo(m_config, "superchargers");
+            SeedGameInput(m_config, "superchargers");
             if (m_shots.empty())
-                m_discQueue.emplace_back("trapteam");
+                m_discQueue.emplace_back("superchargers");
         }
         else
         {
-            std::erase(m_discQueue, "trapteam");
-            if (std::string_view(m_s->game.id) == "trapteam")
+            std::erase(m_discQueue, "superchargers");
+            if (std::string_view(m_s->game.id) == "superchargers")
             {
                 SelectGame(*FindGame("ssa"));
                 m_backPage = Page::Home;
@@ -3857,21 +3857,21 @@ namespace launcher_ui
             switch (m_testStep)
             {
             case 0:
-                SetExperimentalTrapTeam(false);
+                SetExperimentalSuperChargers(false);
                 m_page = Page::Home;
-                m_testShot = "trapteam-01-sidebar-off";
+                m_testShot = "experimental-01-sidebar-off";
                 break;
             case 1:
                 m_page = Page::Settings;
                 m_tab = SettingsTab::Launcher;
-                m_testShot = "trapteam-02-settings-off";
+                m_testShot = "experimental-02-settings-off";
                 break;
             case 2:
-                SetExperimentalTrapTeam(true);
-                m_testShot = "trapteam-03-settings-on";
+                SetExperimentalSuperChargers(true);
+                m_testShot = "experimental-03-settings-on";
                 break;
             case 3:
-                SelectGame(*FindGame("trapteam"));
+                SelectGame(*FindGame("superchargers"));
                 m_page = Page::Play;
                 if (!m_testDrop.empty()) // its disc (SKY_LAUNCHER_TEST_DROP) verified first: the page in the game's own look
                 {
@@ -3881,16 +3881,16 @@ namespace launcher_ui
                         return; // asked again next frame
                     settle = 1500; // the art loads after the check
                 }
-                m_testShot = "trapteam-04-sidebar-on";
+                m_testShot = "experimental-04-sidebar-on";
                 break;
             case 4:
                 m_page = Page::Home;
-                m_testShot = "trapteam-04b-home";
+                m_testShot = "experimental-04b-home";
                 break;
             case 5:
-                SetExperimentalTrapTeam(false);
+                SetExperimentalSuperChargers(false);
                 m_page = Page::Home;
-                m_testShot = "trapteam-05-sidebar-off-again";
+                m_testShot = "experimental-05-sidebar-off-again";
                 break;
             default:
                 m_running = false;
@@ -4277,7 +4277,7 @@ std::span<const LauncherGameEntry> LauncherGameCatalog(const LauncherConfig& con
         { "ssa", GameName("ssa", GameNameForm::Short), 0x6BBAFF, true },
         { "giants", GameName("giants", GameNameForm::Short), 0xFFC65C, true },
         { "swapforce", GameName("swapforce", GameNameForm::Short), 0xFF55A8, true },
-        { "trapteam", GameName("trapteam", GameNameForm::Short), 0x6DF0B4, false },
+        { "trapteam", GameName("trapteam", GameNameForm::Short), 0x6DF0B4, true },
         { "superchargers", GameName("superchargers", GameNameForm::Short), 0xFF8A5C, false },
         { "racing", GameName("racing", GameNameForm::Short), 0xE85D75, false },
         { "imaginators", GameName("imaginators", GameNameForm::Short), 0xB49BFF, false },
@@ -4285,10 +4285,10 @@ std::span<const LauncherGameEntry> LauncherGameCatalog(const LauncherConfig& con
     static const auto experimental = [] {
         std::array<LauncherGameEntry, std::size(catalog)> entries;
         std::copy(std::begin(catalog), std::end(catalog), entries.begin());
-        entries[3].enabled = true;
+        entries[4].enabled = true; // SuperChargers
         return entries;
     }();
-    return ExperimentalTrapTeam(config) ? std::span<const LauncherGameEntry>(experimental) : std::span<const LauncherGameEntry>(catalog);
+    return ExperimentalSuperChargers(config) ? std::span<const LauncherGameEntry>(experimental) : std::span<const LauncherGameEntry>(catalog);
 }
 
 std::string LauncherLanguageLabel(const LauncherConfig& config, const GameInfo& game)
