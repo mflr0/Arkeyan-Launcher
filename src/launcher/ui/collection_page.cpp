@@ -134,13 +134,26 @@ namespace launcher_ui
         if (toy != nullptr && variant == 0)
             variant = collection::VariantFor(*toy, kind);
         std::string path = toy != nullptr ? collection::PortraitPath(m_app.m_s->game.id, *toy, variant, large) : std::string();
-        std::string key = !path.empty() ? path : fmt::format("gen:{}:{}", toy != nullptr ? toy->type : 0xFFFF, int(kind));
+        // A creation crystal: the disc's one magenta picture, tinted per element (CrystalPicture).
+        const bool crystal = toy != nullptr && toy->category == collection::Category::CreationCrystal && !path.empty();
+        std::string key = crystal ? fmt::format("crystal:{}:{}", toy->type, path)
+            : !path.empty()       ? path
+                                  : fmt::format("gen:{}:{}", toy != nullptr ? toy->type : 0xFFFF, int(kind));
         auto found = m_icons->textures.find(key);
         if (found != m_icons->textures.end())
             return found->second;
 
         FigureIconTexture icon;
-        if (!path.empty())
+        if (crystal)
+        {
+            if (collection::Image image = collection::CrystalPicture(*toy, path); !image.Empty())
+            {
+                std::vector<uint8_t> bytes(image.rgba.size() * 4);
+                std::memcpy(bytes.data(), image.rgba.data(), bytes.size()); // R, G, B, A in memory on the little-endian systems we run on
+                icon.texture = LoadRgba(m_app.m_renderer, bytes, image.width, image.height);
+            }
+        }
+        else if (!path.empty())
             icon.texture = LoadPngFile(m_app.m_renderer, path);
         if (icon.texture != nullptr)
             SDL_GetTextureSize(icon.texture, &icon.width, &icon.height);
@@ -178,14 +191,26 @@ namespace launcher_ui
             DrawIcon(draw, toy, kind, at, box, true, variant);
             return;
         }
-        auto found = m_icons->textures.find(path);
+        const bool crystal = toy->category == collection::Category::CreationCrystal; // one magenta picture, tinted per element
+        const std::string key = crystal ? fmt::format("crystal:{}:{}", toy->type, path) : path;
+        auto found = m_icons->textures.find(key);
         if (found == m_icons->textures.end())
         {
             FigureIconTexture picture;
-            picture.texture = LoadPngFile(m_app.m_renderer, path);
+            if (crystal)
+            {
+                if (collection::Image image = collection::CrystalPicture(*toy, path); !image.Empty())
+                {
+                    std::vector<uint8_t> bytes(image.rgba.size() * 4);
+                    std::memcpy(bytes.data(), image.rgba.data(), bytes.size()); // R, G, B, A in memory on the little-endian systems we run on
+                    picture.texture = LoadRgba(m_app.m_renderer, bytes, image.width, image.height);
+                }
+            }
+            else
+                picture.texture = LoadPngFile(m_app.m_renderer, path);
             if (picture.texture != nullptr)
                 SDL_GetTextureSize(picture.texture, &picture.width, &picture.height);
-            found = m_icons->textures.emplace(path, picture).first;
+            found = m_icons->textures.emplace(key, picture).first;
         }
         const FigureIconTexture& picture = found->second;
         if (picture.texture == nullptr || picture.width <= 0 || picture.height <= 0)
