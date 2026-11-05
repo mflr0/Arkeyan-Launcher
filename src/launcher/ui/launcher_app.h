@@ -207,7 +207,7 @@ namespace launcher_ui
     // figures (its sidebar row), the gear opens the launcher's Settings, and the game's Settings button (on its Play
     // page) opens that game's own settings.
     enum class Page { Home, Play, Collection, Settings, GameSettings, Achievements };
-    enum class SettingsTab { Controls, Launcher, Support, About };
+    enum class SettingsTab { Controls, Launcher, Support, About, Profiles };
     enum class GameTab { Video, Keyboard, Controller, Language, Disc, Saves, Game };
     enum class DiscState { None, Verifying, Ready, Failed };
     // Everything a game can be in, read from its slot by App::SlotStatus: the one place that decides (docs/launcher_ui.md).
@@ -373,6 +373,8 @@ namespace launcher_ui
         void DrawProfileButton();
         void OpenProfileEditor(const std::string& id); // empty: a new profile
         void DrawProfileEditor();
+        void DrawProfilesTab(); // Launcher settings > Profiles
+        std::string m_profileToRemove; // the profile whose removal waits for its confirmation
         const ArtTexture* AchievementIcon(const std::filesystem::path& image);
         void DrawGameVideo();
         void DrawGameKeyboard();

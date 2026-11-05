@@ -2306,7 +2306,7 @@ namespace launcher_ui
         // A centred column: settings read badly when they stretch across a wide window.
         BeginSettingsPage("##settingscolumn", Tr("Launcher settings"), false);
 
-        static const char* const Tabs[] = { N_("Controls"), N_("Launcher"), N_("Support"), N_("About") };
+        static const char* const Tabs[] = { N_("Controls"), N_("Launcher"), N_("Support"), N_("About"), N_("Profiles") };
         int tab = int(m_tab);
         DrawTabBar(Tabs, int(std::size(Tabs)), &tab);
         m_tab = m_uninstalled ? SettingsTab::Launcher : SettingsTab(tab); // once uninstalled the window shows the result only
@@ -2317,6 +2317,7 @@ namespace launcher_ui
         case SettingsTab::Launcher: DrawLauncherTab(); break;
         case SettingsTab::Support: DrawSupport(); break;
         case SettingsTab::About: DrawAbout(); break;
+        case SettingsTab::Profiles: DrawProfilesTab(); break;
         }
         EndCard();
         if (m_testUninstall && m_testScrollEnd)

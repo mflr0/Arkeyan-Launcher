@@ -1000,3 +1000,11 @@ Colour	Couleur
 Create the profile	Créer le profil
 Couldn't read this image	Impossible de lire cette image
 Welcome, {}	Bienvenue, {}
+Profiles	Profils
+Manage the profiles	Gérer les profils
+Each has its own Toy Box, saves, keys and achievements.	Chacun a sa Toy Box, ses sauvegardes, ses touches et ses succès.
+{} (active)	{} (actif)
+Not played yet	Pas encore joué
+{}'s Toy Box, saves and keys go to the profiles' trash.	La Toy Box, les sauvegardes et les touches de {} partent dans la corbeille des profils.
+Remove {}?	Supprimer {} ?
+Couldn't remove the profile	Impossible de supprimer le profil

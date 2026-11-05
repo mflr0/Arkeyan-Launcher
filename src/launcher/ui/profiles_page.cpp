@@ -200,6 +200,11 @@ namespace launcher_ui
                 OpenProfileEditor({});
             if (ui::MenuItem(Tr("Edit my profile"), { ui::Icon::None }))
                 OpenProfileEditor(m_profiles.active);
+            if (ui::MenuItem(Tr("Manage the profiles"), { ui::Icon::Gear }))
+            {
+                GoTo(Page::Settings);
+                m_tab = SettingsTab::Profiles;
+            }
             ui::EndMenu();
         }
     }
@@ -379,5 +384,65 @@ namespace launcher_ui
                 UseProfileEnvironment(); // its name or picture for the next game
         }
         editor.open = open && result == ui::ModalResult::None;
+    }
+
+    void App::DrawProfilesTab()
+    {
+        // Every profile: its picture, its pseudo, its last game; Edit, and Remove (never the last one, never while a game runs).
+        const bool running = !m_session.Running().empty();
+        ui::SectionHeader(Tr("Profiles"), Tr("Each has its own Toy Box, saves, keys and achievements."));
+        if (ui::BeginSettings("##profiles"))
+        {
+            for (const profiles::Profile& profile : m_profiles.profiles)
+            {
+                ImGui::PushID(profile.id.c_str());
+                const ImVec2 at = ImGui::GetCursorScreenPos();
+                const float avatar = 40;
+                ImGui::Dummy(ImVec2(avatar, avatar));
+                DrawAvatar(ImGui::GetWindowDrawList(), ImVec2(at.x + avatar / 2, at.y + avatar / 2), avatar / 2, profile);
+                ImGui::SameLine(0, ui::space::M);
+                ImGui::BeginGroup();
+                const bool active = profile.id == m_profiles.active;
+                ui::Text(ui::TextStyle::Body, (active ? Tf("{} (active)", profile.name) : profile.name).c_str(), ui::color::Ink, 0, true);
+                const GameInfo* last = profile.lastGame.empty() ? nullptr : FindGame(profile.lastGame);
+                ui::Text(ui::TextStyle::Caption, last != nullptr ? Tf("Last played: {}", GameName(last->id, GameNameForm::Short)).c_str() : Tr("Not played yet"),
+                    ui::color::InkSoft);
+                ImGui::EndGroup();
+                ImGui::SameLine();
+                const float buttons = ui::ButtonWidth(Tr("Edit")) + ui::space::S + ui::ButtonWidth(Tr("Remove"));
+                ImGui::SetCursorPosX(ImGui::GetContentRegionMax().x - buttons);
+                if (ui::Button(Tr("Edit")))
+                    OpenProfileEditor(profile.id);
+                ImGui::SameLine(0, ui::space::S);
+                // The first profile is the data from before profiles, where it always was: it stays.
+                ImGui::BeginDisabled(profile.First() || running);
+                if (ui::Button(Tr("Remove"), { .kind = ui::ButtonKind::Ghost }))
+                    m_profileToRemove = profile.id;
+                ImGui::EndDisabled();
+                ImGui::PopID();
+                ImGui::Dummy(ImVec2(0, ui::space::XS));
+            }
+            if (ui::Button(Tr("Add a profile"), { .icon = ui::Icon::Plus }))
+                OpenProfileEditor({});
+            ui::EndSettings();
+        }
+        if (const profiles::Profile* gone = m_profiles.Find(m_profileToRemove))
+        {
+            bool open = true;
+            const std::string body = Tf("{}'s Toy Box, saves and keys go to the profiles' trash.", gone->name);
+            const ui::ModalResult result = ui::ConfirmDialog("##removeprofile", Tf("Remove {}?", gone->name).c_str(), body.c_str(),
+                Tr("Remove"), Tr("Cancel"), &open, ui::ModalKind::Danger);
+            if (result == ui::ModalResult::Confirm)
+            {
+                const std::string id = m_profileToRemove;
+                const bool wasActive = id == m_profiles.active;
+                if (wasActive)
+                    SwitchProfile(m_profiles.profiles.front().id == id ? m_profiles.profiles[1].id : m_profiles.profiles.front().id);
+                if (!profiles::Remove(m_profiles, id, profiles::Folder() / ".trash") || !profiles::Save(m_profiles))
+                    Toast(Tr("Couldn't remove the profile"), ui::ToastKind::Error);
+            }
+            if (!open || result != ui::ModalResult::None)
+                m_profileToRemove.clear();
+        }
     }
 }
