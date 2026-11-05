@@ -27,8 +27,8 @@ namespace launcher_ui
             return {};
         if (const char* saves = skyenv::Get("SKY_SAVE_DIR"))
             return std::string(saves) + "/portal.txt";
-        // The game's folder in the data root, as host/portal.cpp asks for it.
-        std::filesystem::path folder = datadir::Game(game.id);
+        // The player's folder for the game (the profile's, else the game's own), as host/portal.cpp asks for it.
+        std::filesystem::path folder = datadir::PlayerGame(game.id);
         return folder.empty() ? std::string() : datadir::Text(folder / "portal.txt");
     }
 

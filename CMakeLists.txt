@@ -179,6 +179,7 @@ target_sources(ArkeyanLauncherCore PRIVATE
     src/launcher/install_checklist.cpp
     src/launcher/game_run.cpp
     src/launcher/portal_status.cpp
+    src/launcher/profiles.cpp
     src/launcher/game_keys.cpp
     src/launcher/game_settings.cpp
     src/launcher/game_copy.cpp
@@ -265,7 +266,7 @@ add_dependencies(ArkeyanLauncherTest FakeArkeyanBuilder ArkeyanLauncher)
 target_compile_definitions(ArkeyanLauncherTest PRIVATE SKYLAUNCHER_FAKE_KIT="${CMAKE_BINARY_DIR}/fake-kit" SKYLAUNCHER_TEST_EXE="$<TARGET_FILE:ArkeyanLauncher>")
 
 # The launcher shell's checks (tests/shell_test.cpp), run by ArkeyanLauncherTest.
-target_sources(ArkeyanLauncherTest PRIVATE tests/shell_test.cpp tests/settings_test.cpp tests/copy_test.cpp tests/portable_test.cpp tests/i18n_test.cpp tests/uninstall_test.cpp tests/text_fit_test.cpp tests/navigation_test.cpp tests/accent_test.cpp tests/music_test.cpp tests/single_instance_test.cpp tests/vfs_test.cpp)
+target_sources(ArkeyanLauncherTest PRIVATE tests/shell_test.cpp tests/settings_test.cpp tests/copy_test.cpp tests/portable_test.cpp tests/i18n_test.cpp tests/uninstall_test.cpp tests/text_fit_test.cpp tests/navigation_test.cpp tests/accent_test.cpp tests/music_test.cpp tests/profiles_test.cpp tests/single_instance_test.cpp tests/vfs_test.cpp)
 target_compile_definitions(ArkeyanLauncherTest PRIVATE SKYLAUNCHER_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
 target_include_directories(ArkeyanLauncherTest PRIVATE lib/miniz)
 

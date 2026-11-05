@@ -1505,6 +1505,7 @@ int NavigationChecks(); // tests/navigation_test.cpp
 int AccentChecks(const std::filesystem::path& scratch); // tests/accent_test.cpp, in a process of its own
 int AccentChecksInChild(const char* executable, const std::filesystem::path& scratch);
 int MusicChecks(const std::filesystem::path& scratch); // tests/music_test.cpp
+int ProfilesChecks(const std::filesystem::path& scratch); // tests/profiles_test.cpp
 int CopyChecks(const std::filesystem::path& scratch, const std::string& ssaIso, const std::string& giantsIso); // tests/copy_test.cpp
 int PortableChecks(const std::filesystem::path& scratch); // tests/portable_test.cpp
 int VfsChecks(const std::filesystem::path& scratch); // tests/vfs_test.cpp
@@ -2277,6 +2278,8 @@ static int RunChecks(int argc, char** argv)
     }
     if (skyenv::Get("SKY_LAUNCHER_TEST_MUSIC_ONLY") != nullptr) // only the game music (quick to rerun)
         return MusicChecks(scratch) == 0 ? 0 : 1;
+    if (skyenv::Get("SKY_LAUNCHER_TEST_PROFILES_ONLY") != nullptr) // only the player profiles (quick to rerun)
+        return ProfilesChecks(scratch) == 0 ? 0 : 1;
     if (skyenv::Get("SKY_LAUNCHER_TEST_SHELL_ONLY") != nullptr)
         return ShellChecks(scratch) == 0 ? 0 : 1;
     if (skyenv::Get("SKY_LAUNCHER_TEST_SETTINGS_ONLY") != nullptr)
@@ -2354,6 +2357,7 @@ static int RunChecks(int argc, char** argv)
     g_failures += NavigationChecks();
     g_failures += AccentChecksInChild(argv[0], scratch);
     g_failures += MusicChecks(scratch);
+    g_failures += ProfilesChecks(scratch);
     g_failures += AchievementChecks();
     SceneChecks(scratch);
 
