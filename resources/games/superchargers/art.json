@@ -1,0 +1,14 @@
+{
+  "format": 1,
+  "game": "superchargers",
+  "engine": "alchemy",
+  "about": "Where SuperChargers keeps its pictures and menu theme on the disc (docs/runtime/host/game_art.md, games/superchargers/docs/art.md). Names only: they are read from the player's own disc.",
+  "logo": { "archive": "archives/legal.pak", "entry": "textures@!ui!do_not_compress!skylanders!toyfair_title_notfinal`tga" },
+  "music": { "archive": "archives/inter_streamed_bank.pak", "entry": "INTER_Main_Theme.wav,0,48000,kDefaultFormat,40,1,0,1" },
+  "background": { "archive": "archives/levelload.pak", "entry": "textures@!ui!loading!bg_full`tga" },
+  "scenes": [
+    { "archive": "archives/levelload.pak", "names": [ "textures@!ui!loading!bg_full`tga" ] },
+    { "package": "nxeart", "names": [ "nxebg.jpg" ] } ],
+  "portraits": { "materials": [
+    { "archive": "archives/toycollectionmaterials.pak", "folder": "temporary/buildserver/xenon/output/materialinstances/toycollection/" } ] }
+}
