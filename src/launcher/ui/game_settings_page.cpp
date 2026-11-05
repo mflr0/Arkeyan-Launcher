@@ -126,7 +126,7 @@ namespace launcher_ui
         if (fpsLimit == "60" || fpsLimit == "display")
         {
             ui::SettingRow(Tr("Drop to 30 FPS when needed"),
-                Tr("Turn off to keep your chosen rate even if the picture stutters."));
+                Tr("Off: your rate stays, even if the picture stutters."));
             const std::string fallbackDefault = SettingGet(m_config, "video", "fps_auto_fallback", "1");
             toggle("##fpsautofallback", "fps_auto_fallback", fallbackDefault.c_str());
             // Offscreen page check: feed the switch through ImGui, then capture the rendered page.
@@ -149,10 +149,10 @@ namespace launcher_ui
             }
         }
 
-        ui::SettingRow(Tr("FPS counter"), Tr("A small frame rate readout in the game (F3 in the game turns it on too)."));
+        ui::SettingRow(Tr("FPS counter"), Tr("The frame rate in a corner of the game (F3 in game)."));
         toggle("##showfps", "show_fps", "0");
 
-        ui::SettingRow(Tr("Volume"), Tr("The game's master volume (F3 in the game changes it too)."));
+        ui::SettingRow(Tr("Volume"), Tr("The game's volume (F3 in game)."));
         const std::string audioSection = std::string(m_s->game.id) + ".audio";
         SettingSelect("##volume", audioSection.c_str(), "volume", VolumeChoices, 10);
 
@@ -160,7 +160,7 @@ namespace launcher_ui
         if (m_s->game.id == std::string_view("trapteam"))
         {
             ui::SettingRow(Tr("Portal sound"),
-                Tr("The traps' voices. A Traptanium portal plays them itself, otherwise the computer does (F3 in the game changes it too)."));
+                Tr("The traps' voices: a Traptanium portal plays them, else the computer (F3 in game)."));
             bool portalSound = ParseBool(SettingGet(m_config, audioSection.c_str(), "portal_sound", "1"));
             if (ui::Toggle("##portalsound", &portalSound))
                 Set(audioSection.c_str(), "portal_sound", portalSound ? "1" : "0");
@@ -324,7 +324,7 @@ namespace launcher_ui
         }
         // The mouse: a switch (off by default); once on, a button or the wheel for any action, attacks on the clicks by default
         // ([<game>.input] mouse, mouse_<action>; game_keys.h). Moving the mouse does nothing in the game.
-        ui::SectionHeader(Tr("Mouse"), Tr("Left click is attack 1 and right click attack 2; the game holds the pointer while you play."));
+        ui::SectionHeader(Tr("Mouse"), Tr("Left click: attack 1. Right click: attack 2. The game keeps the pointer."));
         if (ui::BeginSettings("##mouse"))
         {
             ui::SettingRow(Tr("Use the mouse"), nullptr);
@@ -816,7 +816,7 @@ namespace launcher_ui
             ui::SectionHeader(Tr("Difficulty"), nullptr, false);
             if (ui::BeginSettings("##nightmare"))
             {
-                ui::SettingRow(Tr("Nightmare from the start"), Tr("Offered before you beat the game. Your save is not changed."));
+                ui::SettingRow(Tr("Nightmare from the start"), Tr("Before you beat the game. Your save is untouched."));
                 bool value = ParseBool(SettingGet(m_config, m_s->game.id, "nightmare_from_start", "0"));
                 if (ui::Toggle("##nightmarefromstart", &value))
                     Set(m_s->game.id, "nightmare_from_start", value ? "1" : "0");

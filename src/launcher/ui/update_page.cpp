@@ -341,7 +341,7 @@ namespace launcher_ui
         check.disabled = m_updates.Busy() && !checking;
         if (ui::Button(checking ? Tr("Checking...") : Tr("Check now"), check) && !m_updates.Busy())
             StartUpdateCheck(true);
-        ui::SettingRow(Tr("Check at startup"), Tr("Checks GitHub for launcher and game updates when the launcher starts."));
+        ui::SettingRow(Tr("Check at startup"), Tr("Looks for updates at each start."));
         bool automatic = ParseBool(SettingGet(m_config, "update", "auto_check", "1"));
         if (ui::Toggle("##autocheck", &automatic))
             Set("update", "auto_check", automatic ? "1" : "0");
@@ -352,12 +352,12 @@ namespace launcher_ui
     {
         ui::Text(ui::TextStyle::Display, "Arkeyan Launcher", ui::color::AccentFill, -1);
         ui::Text(ui::TextStyle::Body, Tf("Version {}, {}", LauncherVersion(), PlatformName()).c_str(), ui::color::InkSoft);
-        ui::Text(ui::TextStyle::Body, Tr("A launcher for the native PC ports of Skylanders. No game code or art: it all comes from your disc."));
+        ui::Text(ui::TextStyle::Body, Tr("Native PC ports of Skylanders. No game code or art: it comes from your disc."));
 
         ui::SectionHeader(Tr("Credits"));
         ui::Text(ui::TextStyle::Body, Tr("Designed by dorydev, made by mflr0."), ui::color::InkSoft);
         ui::Text(ui::TextStyle::Body, Tr("Built with SDL 3, Dear ImGui, {fmt}, stb, miniz, XenonRecomp, Outfit and Bungee. MIT licensed."), ui::color::InkSoft);
-        ui::Text(ui::TextStyle::Body, Tr("The games: XenonRecomp, XenosRecomp, plume and SDL 3, with parts adapted from Xenia. The figure format was learned from Dolphin and RPCS3."), ui::color::InkSoft);
+        ui::Text(ui::TextStyle::Body, Tr("Games: XenonRecomp, XenosRecomp, plume, SDL 3, parts of Xenia. Figure format learned from Dolphin and RPCS3."), ui::color::InkSoft);
         ui::Text(ui::TextStyle::Body, Tr("Imaginators' logo: Dycamax, Wikimedia Commons, CC BY-SA 4.0."), ui::color::InkSoft);
         ImGui::Dummy(ImVec2(0, ui::space::XXS));
         // Each opens a web page: the External icon, as Release page's; the row's gap is the buttons' (S).

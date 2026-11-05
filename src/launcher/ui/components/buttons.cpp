@@ -370,10 +370,28 @@ namespace ui
                 state.focused = options.showFocus;
             }
             const bool busy = options.progress >= 0 || options.indeterminate;
+            // In the shown game's colours (its logo's, StyleOf) when it has them: the same gradient and ink as the joined
+            // button, so that each game's page has its own action.
+            const bool styled = options.style != nullptr && !options.danger && !busy;
             const unsigned fill = busy ? color::OverArt : options.danger ? color::OverArt : state.pressed ? color::AccentFillPressed
                 : state.hovered || state.focused ? color::AccentFillHover : color::AccentFill;
-            const unsigned ink = busy ? color::Ink : options.danger ? color::Danger : color::OnAccent;
-            draw->AddRectFilled(at, end, Col(fill, options.enabled || busy ? 1 : DisabledAlpha), radius::Card);
+            unsigned ink = busy ? color::Ink : options.danger ? color::Danger : color::OnAccent;
+            if (styled)
+            {
+                const LauncherTheme::GameStyle& style = *options.style;
+                const unsigned top = Mix(style.top, style.bottom, 0.2f), bottom = Mix(style.top, style.bottom, 0.58f);
+                Look look;
+                look.enabled = options.enabled;
+                look.hovered = options.enabled && (state.hovered || state.focused);
+                look.held = options.enabled && state.pressed;
+                GradientRect(draw, at, end, Col(Shade(top, look), options.enabled ? 1 : DisabledAlpha),
+                    Col(Shade(bottom, look), options.enabled ? 1 : DisabledAlpha), radius::Card, ImDrawFlags_RoundCornersAll);
+                draw->AddLine(ImVec2(at.x + radius::Card, at.y + 0.5f), ImVec2(end.x - radius::Card, at.y + 0.5f),
+                    Col(0xFFFFFF, options.enabled ? 0.27f : 0.1f));
+                ink = InkOn(Mix(top, bottom, 0.5f), style.outline);
+            }
+            else
+                draw->AddRectFilled(at, end, Col(fill, options.enabled || busy ? 1 : DisabledAlpha), radius::Card);
             if (options.danger)
                 draw->AddRect(at, end, Col(color::Danger), radius::Card, 0, stroke::Edge);
             std::string label = options.label;

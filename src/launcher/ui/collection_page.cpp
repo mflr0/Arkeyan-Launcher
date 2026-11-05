@@ -382,7 +382,7 @@ namespace launcher_ui
     std::string CollectionPage::Detail(const Figure& figure) const
     {
         if (m_model.Incompatible(figure))
-            return Tf("Not for {}", ShortGameName(m_model.gameId));
+            return Tr("Not for this game"); // the page names the game; a card is too narrow for "Not for Spyro's Adventure"
         collection::Card card = CardOf(figure);
         if (card.Busy())
             return Tr("Playing now");
@@ -1031,12 +1031,10 @@ namespace launcher_ui
         filters.trailing = ui::Icon::ChevronDown;
         const std::string filtersLabel = std::string(Tr("Filters")) + (active > 0 ? fmt::format(" · {}", active) : std::string());
         const float filtersWidth = ui::ButtonWidth(filtersLabel.c_str(), filters);
-        ui::PushText(ui::TextStyle::Body);
+        // As wide as its longest choice shows uncut (the select's own padding and chevron: SelectWidth).
         float sortWidth = 0;
         for (int sort = 0; sort < int(collection::Sort::Count); sort++)
-            sortWidth = std::max(sortWidth, ImGui::CalcTextSize(Tf("Sort: {}", collection::SortLabel(collection::Sort(sort), French())).c_str()).x);
-        ui::PopText();
-        sortWidth += ui::space::XXL;
+            sortWidth = std::max(sortWidth, ui::SelectWidth(Tf("Sort: {}", collection::SortLabel(collection::Sort(sort), French())).c_str()));
         const float searchWidth = std::max(ui::height::SettingControl / 2, ImGui::GetContentRegionAvail().x - filtersWidth - sortWidth - 2 * ui::space::S);
         if (m_focusSearch)
         {

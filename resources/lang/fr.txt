@@ -51,9 +51,9 @@ Display refresh rate (up to 60)	Fréquence de l'écran (jusqu'à 60)
 144 (experimental)	144 (expérimental)
 240 (experimental)	240 (expérimental)
 Unlimited (experimental)	Illimité (expérimental)
-Checks GitHub for launcher and game updates when the launcher starts.	Recherche sur GitHub les mises à jour du lanceur et des jeux au démarrage.
+Looks for updates at each start.	Cherche les mises à jour à chaque démarrage.
 Couldn't write to the game folder.	Impossible d'écrire dans le dossier du jeu.
-A launcher for the native PC ports of Skylanders. No game code or art: it all comes from your disc.	Un launcher pour les portages PC natifs de Skylanders. Aucun code ni image du jeu : tout vient de votre disque.
+Native PC ports of Skylanders. No game code or art: it comes from your disc.	Les portages PC natifs de Skylanders. Aucun code ni image du jeu : tout vient de votre disque.
 About	À propos
 Adding the movie shaders	Ajout des shaders des vidéos
 Advanced	Avancé
@@ -271,17 +271,17 @@ Replaces the game's textures with your pack.	Remplace les textures du jeu par ce
 Report	Signaler
 Report a bug	Signaler un bug
 Report a problem	Signaler un problème
-Makes an anonymous report: the logs and settings, without your names. Add it to an issue on GitHub.	Crée un rapport anonyme : les journaux et les réglages, sans vos noms. Ajoutez-le à un ticket sur GitHub.
+Logs and settings, without your names, for a GitHub issue.	Journaux et réglages, sans vos noms, pour une issue GitHub.
 Report copied	Rapport copié
 Report saved	Rapport enregistré
 Report saved: {}	Rapport enregistré : {}
 Save to Desktop	Enregistrer sur le Bureau
 FPS counter	Compteur d'images
-A small frame rate readout in the game (F3 in the game turns it on too).	Un petit compteur d'images par seconde dans le jeu (F3 dans le jeu l'active aussi).
+The frame rate in a corner of the game (F3 in game).	Les images par seconde dans un coin du jeu (F3 en jeu).
 Volume	Volume
-The game's master volume (F3 in the game changes it too).	Le volume général du jeu (F3 dans le jeu le change aussi).
+The game's volume (F3 in game).	Le volume du jeu (F3 en jeu).
 Portal sound	Son du portail
-The traps' voices. A Traptanium portal plays them itself, otherwise the computer does (F3 in the game changes it too).	La voix des pièges. Un portail Traptanium la joue lui-même, sinon c'est l'ordinateur (F3 dans le jeu le change aussi).
+The traps' voices: a Traptanium portal plays them, else the computer (F3 in game).	Les voix des pièges : un portail Traptanium les joue, sinon l'ordinateur (F3 en jeu).
 Reset to defaults	Valeurs par défaut
 Resolution scale	Échelle de résolution
 Restart now	Redémarrer maintenant
@@ -366,7 +366,7 @@ The installer stopped with exit code {}.	L'installateur s'est arrêté avec le c
 Drag Arkeyan Launcher to Applications, replacing the old one.	Glissez Arkeyan Launcher dans Applications, en remplaçant l'ancien.
 "System default" follows your system.	« Langue du système » suit votre système.
 Designed by dorydev, made by mflr0.	Conçu par dorydev, réalisé par mflr0.
-The games: XenonRecomp, XenosRecomp, plume and SDL 3, with parts adapted from Xenia. The figure format was learned from Dolphin and RPCS3.	Les jeux : XenonRecomp, XenosRecomp, plume et SDL 3, avec des parties adaptées de Xenia. Le format des figurines a été appris de Dolphin et RPCS3.
+Games: XenonRecomp, XenosRecomp, plume, SDL 3, parts of Xenia. Figure format learned from Dolphin and RPCS3.	Jeux : XenonRecomp, XenosRecomp, plume, SDL 3, des parties de Xenia. Format des figurines appris de Dolphin et RPCS3.
 Imaginators' logo: Dycamax, Wikimedia Commons, CC BY-SA 4.0.	Logo d'Imaginators : Dycamax, Wikimedia Commons, CC BY-SA 4.0.
 The game's last log, for a bug report.	Le dernier journal du jeu, pour un rapport de bug.
 The portal can't be opened: using the virtual portal.	Le portail ne s'ouvre pas : le portail virtuel est utilisé.
@@ -384,7 +384,7 @@ The disc image is damaged. Copy the disc again.	L'image disque est endommagée. 
 The disc image is incomplete. Copy the disc again.	L'image disque est incomplète. Copiez à nouveau le disque.
 This disc image is {}, not {}.	Cette image disque est celle de {}, pas de {}.
 This game has no folder.	Ce jeu n'a pas de dossier.
-This report is anonymous: your names are removed. Save it, then add it to an issue on GitHub.	Ce rapport est anonyme : vos noms sont retirés. Enregistrez-le, puis ajoutez-le à un ticket sur GitHub.
+Anonymous: your names are removed. Save it, then add it to a GitHub issue.	Anonyme : vos noms sont retirés. Enregistrez-le, puis joignez-le à une issue GitHub.
 This is {}, but this disc version isn't supported yet (media ID {:08X}, version {}).\n\nSupported:{}	C'est {}, mais cette version du disque n'est pas encore prise en charge (ID du média {:08X}, version {}).\n\nPrises en charge :{}
 This key is used by another action	Cette touche est déjà utilisée par une autre action
 This looks like the {} disc of {}, but it's damaged or modified. Copy the disc again.	On dirait le disque {} de {}, mais il est endommagé ou modifié. Copiez à nouveau le disque.
@@ -624,6 +624,7 @@ No hat	Sans chapeau
 None	Aucun
 None yet	Aucune pour l'instant
 Not for {}	Pas pour {}
+Not for this game	Pas pour ce jeu
 Nothing for this seat yet	Rien pour cette place pour l'instant
 Blank figures from old versions. Tidy trashes them.	Figurines vierges d'anciennes versions. Ranger les met à la corbeille.
 On	Sur
@@ -863,7 +864,7 @@ Games updated: {} of {}	Jeux mis à jour : {} sur {}
 # Difficulty (Swap Force's Game tab)
 Difficulty	Difficulté
 Nightmare from the start	Cauchemar dès le début
-Offered before you beat the game. Your save is not changed.	Proposé avant d'avoir fini le jeu. Votre sauvegarde n'est pas modifiée.
+Before you beat the game. Your save is untouched.	Avant d'avoir fini le jeu. Votre sauvegarde n'est pas modifiée.
 
 # One game at a time (the game page, the sidebar)
 Running	En cours
@@ -872,7 +873,7 @@ Running	En cours
 # Achievements and play time (the game page, Achievements)
 Achievements	Succès
 Hidden achievement	Succès caché
-The list comes from your disc: it appears once the game's disc image is checked.	La liste vient de votre disque : elle apparaît une fois l'image disque du jeu vérifiée.
+Appears once the game's disc is checked.	Apparaît une fois le disque du jeu vérifié.
 {} of {} unlocked · {} of {} G	{} sur {} débloqués · {} sur {} G
 Play time: {}	Temps de jeu : {}
 Last played: {}	Dernière partie : {}
@@ -894,7 +895,7 @@ Show the game	Afficher le jeu
 Stopping...	Arrêt en cours...
 Couldn't show the game window.	Impossible d’afficher la fenêtre du jeu.
 Virtual portal	Portail virtuel
-Or drop your .iso anywhere on this window. Your disc is read on this computer only.	Ou déposez votre .iso dans cette fenêtre. Votre disque est lu uniquement sur cet ordinateur.
+Or drop your .iso on this window. It stays on this computer.	Ou déposez votre .iso sur cette fenêtre. Il reste sur cet ordinateur.
 You can set up your portal while you wait.	Vous pouvez préparer votre portail en attendant.
 Toy Box in the game: F6, or View + Y on a controller.	Toy Box en jeu : F6, ou View + Y sur la manette.
 Three steps	Trois étapes
@@ -912,7 +913,7 @@ Completed steps	Étapes terminées
 Retry to start the installation.	Appuyez sur Réessayer pour lancer l'installation.
 
 Drop to 30 FPS when needed	Passer à 30 FPS si besoin
-Turn off to keep your chosen rate even if the picture stutters.	Désactivez pour garder la fréquence choisie même si l’image saccade.
+Off: your rate stays, even if the picture stutters.	Désactivé : votre fréquence reste, même si l'image saccade.
 
 Opens the Toy Box when the game asks for a figure.	Ouvre la Toy Box quand le jeu demande une figurine.
 Choose a type	Choisir un type
@@ -941,7 +942,7 @@ couldn't put the copy in place: {}	impossible de mettre la copie en place : {}
 
 # The mouse (game settings > Keyboard, launcher/game_keys.cpp).
 Mouse	Souris
-Left click is attack 1 and right click attack 2; the game holds the pointer while you play.	Clic gauche pour l’attaque 1 et clic droit pour l’attaque 2 ; le jeu retient le pointeur pendant que vous jouez.
+Left click: attack 1. Right click: attack 2. The game keeps the pointer.	Clic gauche : attaque 1. Clic droit : attaque 2. Le jeu garde le pointeur.
 Use the mouse	Utiliser la souris
 Click or turn the wheel	Cliquez ou tournez la molette
 Click, then press a mouse button or turn the wheel (Escape cancels).	Cliquez, puis appuyez sur un bouton de la souris ou tournez la molette (Échap pour annuler).

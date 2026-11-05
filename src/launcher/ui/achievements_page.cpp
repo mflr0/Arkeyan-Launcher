@@ -58,7 +58,7 @@ namespace launcher_ui
         BeginCard("##achievements", ImVec2(0, 0), ImGuiChildFlags_AutoResizeY);
         if (!progress.hasList)
         {
-            ui::SectionHeader(Tr("Achievements"), Tr("The list comes from your disc: it appears once the game's disc image is checked."), false);
+            ui::SectionHeader(Tr("Achievements"), Tr("Appears once the game's disc is checked."), false);
             EndCard();
             EndSettingsPage();
             return;

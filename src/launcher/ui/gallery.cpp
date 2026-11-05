@@ -420,7 +420,7 @@ namespace launcher_ui
                 draw->AddCircleFilled(ImVec2(at.x + size.x / 2, at.y + size.y / 2), size.y / 2, ui::Col(ui::color::AccentFill));
             };
             ui::ListRow(GameName("giants", GameNameForm::Short), picture);
-            ui::SectionHeader(Tr("Language"), Tr("Checks GitHub for launcher and game updates when the launcher starts."));
+            ui::SectionHeader(Tr("Language"), Tr("Looks for updates at each start."));
             ui::EndCard();
             ImGui::SetCursorScreenPos(ImVec2(row.x + 2 * (cardW + ui::space::L), row.y));
             ui::CardOptions inset;
@@ -576,7 +576,7 @@ namespace launcher_ui
                 modal = true;
                 if (ui::BeginModal("##gallerymodal", Tr("Report a bug"), &modal, ui::ModalSize::Medium))
                 {
-                    ui::Text(ui::TextStyle::Body, Tr("A launcher for the native PC ports of Skylanders. No game code or art: it all comes from your disc."),
+                    ui::Text(ui::TextStyle::Body, Tr("Native PC ports of Skylanders. No game code or art: it comes from your disc."),
                         ui::color::InkSoft);
                     static bool tick = true;
                     ui::Checkbox(Tr("Fullscreen"), &tick);

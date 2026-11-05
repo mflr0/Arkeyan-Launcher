@@ -2006,7 +2006,7 @@ namespace launcher_ui
 
         ImGui::SetCursorScreenPos(ImVec2(left, running ? buttonY + ui::height::Large + ui::space::L : pillY + ui::height::Small + ui::space::M));
         if (noDisc)
-            ui::Text(ui::TextStyle::Body, Tr("Or drop your .iso anywhere on this window. Your disc is read on this computer only."), ui::color::InkSoft, leftW);
+            ui::Text(ui::TextStyle::Body, Tr("Or drop your .iso on this window. It stays on this computer."), ui::color::InkSoft, leftW);
         else if (installing)
             ui::Text(ui::TextStyle::Body, Tr("You can set up your portal while you wait."), ui::color::InkSoft, leftW);
         else if (running)
@@ -2529,7 +2529,12 @@ namespace launcher_ui
         ImGui::NewFrame();
         // The components' context: the time, the focus ring in the shown game's colour on its pages, the pad family in use.
         ui::NewFrame(SDL_GetTicks());
-        ui::Ctx().accent = m_page == Page::Play || m_page == Page::GameSettings ? StyleOf(m_s->game.id).glow : Accent;
+        // On the dark panels the game's glow reads as a ring, a tab bar or a switch only when bright enough: a dark one (Trap
+        // Team's red) is lightened toward white until it reaches 4.5:1 on the panels.
+        unsigned accent = m_page == Page::Play || m_page == Page::GameSettings ? StyleOf(m_s->game.id).glow : Accent;
+        for (float t = 0.1f; ui::Contrast(accent, Panel) < 4.5f && t <= 1.0f; t += 0.1f)
+            accent = ui::Mix(StyleOf(m_s->game.id).glow, 0xFFFFFF, t);
+        ui::Ctx().accent = accent;
         ui::Ctx().reduceMotion = ReduceMotion();
         // The shown game's menu theme plays on its page only; it fades out when a game starts.
         m_music.Update(gamemusic::Playback{ .game = m_s != nullptr ? m_s->game.id : std::string(),

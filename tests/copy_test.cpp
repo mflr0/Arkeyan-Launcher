@@ -249,6 +249,7 @@ namespace
         LauncherConfig config;
         config["launcher"]["kit"] = SKYLAUNCHER_FAKE_KIT;
         config["giants"]["iso"] = standIn.string(); // the wrong disc for Giants
+        config["launcher"]["game_music"] = "0"; // a menu theme fading out holds PLAY for a moment: the script checks it at once
         {
             launcher_ui::App app(*FindGame("ssa"), ini, config);
             app.Run();

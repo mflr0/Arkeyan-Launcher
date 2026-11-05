@@ -94,7 +94,7 @@ namespace launcher_ui
 
         if (!ui::BeginModal("##problemreport", Tr("Report a problem"), &m_reportOpen, ui::ModalSize::Large))
             return;
-        ui::Text(ui::TextStyle::Caption, Tr("This report is anonymous: your names are removed. Save it, then add it to an issue on GitHub."), ui::color::Dim);
+        ui::Text(ui::TextStyle::Caption, Tr("Anonymous: your names are removed. Save it, then add it to a GitHub issue."), ui::color::Dim);
         // The room under the text is the title, the line above and the actions (Normal high); the rest is the report.
         const float room = ImGui::GetIO().DisplaySize.y - 2 * ui::space::XL - 3 * ui::height::Large - ui::ModalLegendHeight();
         ui::BeginCard("##reporttext", ImVec2(0, std::clamp(room, 3.0f * ui::height::Large, 8.0f * ui::height::Large - ui::ModalLegendHeight())), { .inset = true, .padding = ui::space::M });
@@ -201,7 +201,7 @@ namespace launcher_ui
         const bool any = std::filesystem::exists(runtime_names::ReadLog(RuntimeLogFolder()), error) || std::filesystem::exists(folder / CaptureLogName, error);
         if (!ui::BeginSettings("##support"))
             return;
-        ui::SettingRow(Tr("Problem report"), Tr("Makes an anonymous report: the logs and settings, without your names. Add it to an issue on GitHub."));
+        ui::SettingRow(Tr("Problem report"), Tr("Logs and settings, without your names, for a GitHub issue."));
         ui::ButtonOptions report;
         report.kind = ui::ButtonKind::Primary;
         if (ui::Button(Tr("Report a problem"), report))
