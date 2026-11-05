@@ -18,7 +18,7 @@ struct LauncherGameEntry
     bool enabled;
 };
 
-// The console games in release order; experimental entries follow the saved setting.
+// The console games in release order; the ones not ported yet are not enabled.
 std::span<const LauncherGameEntry> LauncherGameCatalog(const LauncherConfig& config = {});
 
 // Shows the launcher window until the player quits, or the screenshot test script finishes (with `options.startGames`, PLAY

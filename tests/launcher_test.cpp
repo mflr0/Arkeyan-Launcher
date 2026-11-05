@@ -11,6 +11,7 @@
 #include "launcher/shortcut.h"
 #include "launcher/game_progress.h"
 #include "launcher/launcher.h"
+#include "shared/art/stfs.h"
 #include "shared/collection/datadir.h"
 #include "launcher/updater.h"
 #include "assets/launcher_assets.h"
@@ -34,6 +35,7 @@
 #include <fstream>
 #include <future>
 #include <random>
+#include <tuple>
 #include <set>
 #include <fmt/format.h>
 #include <SDL3/SDL.h>
@@ -703,9 +705,10 @@ namespace
             model.Shelf(later, shown);
             EXPECT(everything > 0 && shown.size() == everything);
             EXPECT(collection::LevelText(*model.Find(gill), "ssa") == "Level 10" && collection::LevelText(*model.Find(anvil), "ssa").empty());
-            // Giants starts with prepared seats too; the games with no runtime yet have none.
+            // Giants starts with prepared seats too, and every game of the table has its portal file.
             EXPECT(!launcher_ui::SessionFile(*catalogue.FindGame("giants")).empty() && fs::path(launcher_ui::SessionFile(*catalogue.FindGame("swapforce"))) == save / "portal.txt" &&
-                launcher_ui::SessionFile(*catalogue.FindGame("superchargers")).empty());
+                fs::path(launcher_ui::SessionFile(*catalogue.FindGame("superchargers"))) == save / "portal.txt" &&
+                fs::path(launcher_ui::SessionFile(*catalogue.FindGame("imaginators"))) == save / "portal.txt");
             // Trap Team is the launcher's id for the game, and it reads the toys of the games before it (Gill Grunt).
             EXPECT(catalogue.FindGame("trapteam") != nullptr && catalogue.Accepts("trapteam", 14));
         }
@@ -1731,7 +1734,7 @@ static void SeatXChecks(const std::filesystem::path& scratch)
     printf("Seat X: %d of 12 tries emptied their seat\n", emptied);
 }
 
-// The pad's way through the launcher (App::TestNavScript): B to Home, B to the sidebar, down its rows (three games, Coming
+// The pad's way through the launcher (App::TestNavScript): B to Home, B to the sidebar, down its rows (the other games, Coming
 // later) to Collection, A, the search, a seat, a card on it, its sheet, back, then Settings and its next tab with RT, and Escape. Each
 // step's page is checked by the script ("FAIL nav step"); every step's shot must be taken (a wrong row would open a file
 // chooser and the run would stop). A child process, as SeatXChecks; scratch folders only.
@@ -1853,6 +1856,46 @@ static void SceneChecks(const std::filesystem::path& scratch)
         EXPECT(names.size() >= 4 && unique.size() == names.size()); // enough to change at every start, none twice
     }
     EXPECT(art::SceneNames("nothing").empty() && art::PickScene({}, "", 7).empty());
+    {
+        // Imaginators' logo on black: black is nothing, light keeps its colour at the alpha of its brightest channel,
+        // less the haze (48), and the picture is cut to what shows.
+        art::Image onBlack;
+        onBlack.width = 4, onBlack.height = 3;
+        onBlack.rgba.assign(12, 0xFF000000);
+        onBlack.rgba[1 * 4 + 1] = 0xFF004080; // R 0x80, G 0x40, B 0: alpha 0x80 less the haze (0x62), straight R 0xFF, G 0x80
+        onBlack.rgba[1 * 4 + 2] = 0xFFFFFFFF;
+        onBlack.rgba[2 * 4 + 3] = 0xFF000008; // too faint to keep the frame wider
+        art::Image light = art::LightOnBlack(onBlack);
+        EXPECT(light.width == 2 && light.height == 1 && light.rgba[0] == 0x620080FF && light.rgba[1] == 0xFFFFFFFF);
+        EXPECT(art::LightOnBlack(art::Image{ 2, 1, { 0xFF000000, 0xFF000000 } }).rgba.empty());
+    }
+    {
+        // An STFS package as the discs' dashboard art (art/stfs.h): one table, a file in consecutive blocks and one whose
+        // blocks the hash table chains out of order.
+        constexpr size_t First = 0xB000, Block = 0x1000;
+        std::vector<uint8_t> package(First + 5 * Block);
+        memcpy(package.data(), "PIRS", 4);
+        package[0x342] = 0xAD, package[0x343] = 0x0E; // the header's size, 0xAD0E: the data at 0xB000
+        package[0x37B] = 1, package[0x37C] = 1;     // one table per level; the file table: 1 block, at block 0
+        auto block = [&](uint32_t b) { return package.data() + First + (b + 1) * Block; };
+        auto entry = [&](int i, const char* name, uint8_t flags, uint32_t start, uint32_t blocks, uint32_t size) {
+            uint8_t* e = block(0) + i * 0x40;
+            memcpy(e, name, strlen(name));
+            e[0x28] = uint8_t(flags | strlen(name)), e[0x29] = uint8_t(blocks), e[0x2F] = uint8_t(start);
+            e[0x34] = uint8_t(size >> 24), e[0x35] = uint8_t(size >> 16), e[0x36] = uint8_t(size >> 8), e[0x37] = uint8_t(size);
+        };
+        entry(0, "a.txt", 0x40, 1, 1, 5);
+        entry(1, "b.bin", 0, 3, 2, uint32_t(Block + 3));
+        memcpy(block(1), "hello", 5);
+        memset(block(3), 'x', Block), memcpy(block(2), "end", 3);
+        uint8_t* hash = package.data() + First;
+        hash[3 * 0x18 + 0x17] = 2;                                                    // block 3, then block 2
+        hash[2 * 0x18 + 0x15] = hash[2 * 0x18 + 0x16] = hash[2 * 0x18 + 0x17] = 0xFF; // the end
+        const std::vector<uint8_t> a = art::StfsFile(package, "A.TXT"), b = art::StfsFile(package, "b.bin");
+        EXPECT(std::string(a.begin(), a.end()) == "hello");
+        EXPECT(b.size() == Block + 3 && b[0] == 'x' && b[Block - 1] == 'x' && std::string(b.end() - 3, b.end()) == "end");
+        EXPECT(art::StfsFile(package, "c.bin").empty() && art::StfsFile(std::vector<uint8_t>(0x400), "a.txt").empty());
+    }
     EXPECT(art::PickScene({ "a" }, "a", 3) == "a"); // the only one is kept
     std::vector<std::string> three = { "a", "b", "c" };
     std::set<std::string> seen, seenWithLast;
@@ -2133,6 +2176,8 @@ static int RunChecks(int argc, char** argv)
     // runtime.
     for (const auto& identity : g_games)
     {
+        if (identity.legacyRuntime == nullptr)
+            continue; // a game that never had another executable name
         for (const std::string suffix : { "", ".exe", ".app" })
         {
             auto folder = scratch / std::filesystem::path(u8"identité's folder") / identity.id /
@@ -2322,7 +2367,7 @@ static int RunChecks(int argc, char** argv)
     printf("Game table: %zu game(s); \"ssa\" = %s, %zu release(s)\n", g_games.size(), game.name, game.releases.size());
     EXPECT(FindGame("unknown") == nullptr);
     const GameInfo* giants = FindGame("giants");
-    EXPECT(g_games.size() == 4 && giants != nullptr && std::string(giants->runtime) == "Skylanders Giants" &&
+    EXPECT(g_games.size() == 6 && giants != nullptr && std::string(giants->runtime) == "Skylanders Giants" &&
            giants->releases.size() == 1);
     const GameInfo* swapForce = FindGame("swapforce");
     EXPECT(swapForce != nullptr && std::string(swapForce->runtime) == "Skylanders Swap Force" &&
@@ -2338,7 +2383,18 @@ static int RunChecks(int argc, char** argv)
     EXPECT(std::string(trapTeam->name) == "Skylanders: Trap Team" &&
         std::string(trapTeam->releases[0].defaultXexSha256) == "f1d2373e4507e21cc371e6f22d02e909602a1b5bc4704896c3c099cc64002a35" &&
         trapTeam->releases[1].mediaId == 0x3AF0B6AF);
-    LauncherConfig experimental;
+    const GameInfo* superChargers = FindGame("superchargers");
+    EXPECT(superChargers != nullptr && std::string(superChargers->runtime) == "Skylanders SuperChargers" &&
+           std::string(superChargers->name) == "Skylanders: SuperChargers" && superChargers->releases.size() == 1 &&
+           superChargers->releases[0].titleId == 0x4156091F &&
+           std::string(superChargers->releases[0].defaultXexSha256) == "02ff6672d460c9aaa54e69d584af67a7138c6c93cde5e04b0da4284207be7c61");
+    const GameInfo* imaginators = FindGame("imaginators");
+    EXPECT(imaginators != nullptr && std::string(imaginators->runtime) == "Skylanders Imaginators" &&
+           std::string(imaginators->name) == "Skylanders: Imaginators" && imaginators->releases.size() == 1 &&
+           imaginators->releases[0].titleId == 0x41560930 && imaginators->releases[0].mediaId == 0x0133F901 &&
+           std::string(imaginators->releases[0].defaultXexSha256) == "1c6d7e05ef6d30ba0b86ff3a810ba115bef3050998254471230cd8c07641d0ac");
+    // Every game of the table is shown, and only those; the old SuperChargers switch, on or off, changes nothing.
+    LauncherConfig shown;
     auto countEnabled = [](const LauncherConfig& config) {
         size_t count = 0;
         for (const LauncherGameEntry& entry : LauncherGameCatalog(config))
@@ -2348,21 +2404,20 @@ static int RunChecks(int argc, char** argv)
         }
         return count;
     };
-    EXPECT(!ExperimentalSuperChargers(experimental) && FindEnabledGame("superchargers", experimental) == nullptr &&
-           FindEnabledGame("trapteam", experimental) == trapTeam); // Trap Team is stable: always there
-    EXPECT(countEnabled(experimental) == 4 && LauncherGameCatalog(experimental)[3].enabled && !LauncherGameCatalog(experimental)[4].enabled);
-    experimental["launcher"]["experimental_superchargers"] = "1";
-    EXPECT(ExperimentalSuperChargers(experimental) && FindEnabledGame("superchargers", experimental) == FindGame("superchargers")); // null until 0.9.0
-    EXPECT(countEnabled(experimental) == (FindGame("superchargers") != nullptr ? 5 : 4) &&
-           LauncherGameCatalog(experimental)[4].enabled == (FindGame("superchargers") != nullptr));
-    const std::string experimentalIni = (scratch / "experimental.ini").string();
-    EXPECT(SaveLauncherConfig(experimentalIni, experimental));
-    EXPECT(ExperimentalSuperChargers(LoadLauncherConfig(experimentalIni)));
-    experimental["launcher"]["experimental_superchargers"] = "0";
-    EXPECT(SaveLauncherConfig(experimentalIni, experimental));
-    EXPECT(!ExperimentalSuperChargers(LoadLauncherConfig(experimentalIni)) && countEnabled(experimental) == 4);
-    experimental["launcher"]["experimental_superchargers"] = "invalid";
-    EXPECT(!ExperimentalSuperChargers(experimental));
+    EXPECT(countEnabled(shown) == 6 && FindEnabledGame("superchargers", shown) == superChargers &&
+           FindEnabledGame("imaginators", shown) == imaginators && FindEnabledGame("racing", shown) == nullptr);
+    for (const char* old : { "0", "1" })
+    {
+        shown["launcher"]["experimental_superchargers"] = old;
+        const std::string oldIni = (scratch / "experimental.ini").string();
+        EXPECT(SaveLauncherConfig(oldIni, shown));
+        const LauncherConfig loaded = LoadLauncherConfig(oldIni);
+        EXPECT(countEnabled(loaded) == 6 && FindEnabledGame("superchargers", loaded) == superChargers);
+    }
+    EXPECT(datadir::GameFolderName("superchargers") == "SuperChargers" && datadir::GameFolderName("imaginators") == "Imaginators");
+    EXPECT(LauncherTheme::StyleOf("superchargers").top == LauncherTheme::SuperChargersStyle.top &&
+           LauncherTheme::StyleOf("imaginators").top == LauncherTheme::ImaginatorsStyle.top);
+    EXPECT(GameKeys("imaginators").size() == GameKeys("superchargers").size() && !GameKeys("imaginators").empty());
     EXPECT(LauncherTheme::StyleOf("trapteam").top == LauncherTheme::TrapTeamStyle.top);
     EXPECT(datadir::GameFolderName("trapteam") == "TrapTeam");
 
@@ -2427,6 +2482,18 @@ static int RunChecks(int argc, char** argv)
         EXPECT(trap.status == GameSourceStatus::Ok && expected != nullptr && art::JoinLanguages(trap.languages.text) == expected &&
                art::JoinLanguages(trap.languages.voice) == expected);
     }
+    // SuperChargers' European disc (SKY_LAUNCHER_TEST_SUPERCHARGERS_ISO) holds English and German, Imaginators' French and Dutch
+    // one (SKY_LAUNCHER_TEST_IMAGINATORS_ISO) French and Dutch: archives/<name>_<code>.pak, text and voices.
+    for (const auto& [variable, id, expected] : { std::tuple{ "SKY_LAUNCHER_TEST_SUPERCHARGERS_ISO", "superchargers", "en,de" },
+             std::tuple{ "SKY_LAUNCHER_TEST_IMAGINATORS_ISO", "imaginators", "fr,nl" } })
+        if (const char* later = skyenv::Get(variable))
+        {
+            GameSourceCheck check = CheckGameSource(later, *FindGame(id));
+            printf("%s: %s, text %s, voices %s\n", id, check.message.empty() ? "verified" : check.message.c_str(),
+                art::JoinLanguages(check.languages.text).c_str(), art::JoinLanguages(check.languages.voice).c_str());
+            EXPECT(check.status == GameSourceStatus::Ok && check.xexSha256 == FindGame(id)->releases[0].defaultXexSha256 &&
+                   art::JoinLanguages(check.languages.text) == expected && art::JoinLanguages(check.languages.voice) == expected);
+        }
     printf("  verified in %lld ms\n", milliseconds(start));
 
     DiscFileSystem disc;
@@ -2611,7 +2678,7 @@ static int RunChecks(int argc, char** argv)
         EXPECT(entry.accent != 0);
         enabledEntries += entry.enabled ? 1 : 0;
     }
-    EXPECT(enabledEntries == 3);
+    EXPECT(enabledEntries == 6);
 
     LauncherConfig helperConfig;
     // The game reads "[ssa] language" / "voice_language" (codes); the labels name them, unknown codes stay as they are.

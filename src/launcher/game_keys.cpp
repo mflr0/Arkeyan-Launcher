@@ -83,7 +83,7 @@ std::span<const GameKey> GameKeys(std::string_view gameId)
         return Giants;
     if (gameId == "swapforce")
         return SwapForce;
-    if (gameId == "trapteam" || gameId == "superchargers") // SuperChargers: Trap Team's pad, its driving on the triggers
+    if (gameId == "trapteam" || gameId == "superchargers" || gameId == "imaginators") // SuperChargers: Trap Team's pad, its driving on the triggers; Imaginators: SuperChargers' engine
         return TrapTeam;
     return {};
 }

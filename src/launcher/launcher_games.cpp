@@ -34,11 +34,17 @@ namespace
         { "Europe (Fr, Nl)", 0x41560911, 0x3AF0B6AF, 0x00000012, "95e273f479ad71198d7daaa6234e6ee6364861ce29b002ba782154a1fcf08d3c" },
     };
 
-    // SuperChargers joins the table (and the kit) in 0.9.0; its disc is known already.
-    [[maybe_unused]] const GameRelease SuperChargersReleases[] =
+    const GameRelease SuperChargersReleases[] =
     {
         // Redump "Skylanders - SuperChargers (Europe)", 8738846720 bytes.
         { "Europe", 0x4156091F, 0x74144F53, 0x00000007, "02ff6672d460c9aaa54e69d584af67a7138c6c93cde5e04b0da4284207be7c61" },
+    };
+
+    const GameRelease ImaginatorsReleases[] =
+    {
+        // Redump "Skylanders - Imaginators (Europe) (Fr,Nl)", 8738846720 bytes.
+        // SHA-256 of its default.xex (25739264 bytes), computed from the player's image.
+        { "Europe", 0x41560930, 0x0133F901, 0x00000004, "1c6d7e05ef6d30ba0b86ff3a810ba115bef3050998254471230cd8c07641d0ac" },
     };
 
     // `runtime` is the executable the player kit builds for the game (its config/<id>/game.txt).
@@ -47,6 +53,8 @@ namespace
         { "giants", GameName("giants"), GiantsReleases, "Skylanders Giants", "SGRecomp" },
         { "swapforce", GameName("swapforce"), SwapForceReleases, "Skylanders Swap Force", "SSFRecomp" },
         { "trapteam", GameName("trapteam"), TrapTeamReleases, "Skylanders Trap Team", "TTRecomp" },
+        { "superchargers", GameName("superchargers"), SuperChargersReleases, "Skylanders SuperChargers" },
+        { "imaginators", GameName("imaginators"), ImaginatorsReleases, "Skylanders Imaginators" },
     };
 }
 
@@ -63,16 +71,8 @@ const GameInfo* FindGame(std::string_view id)
     return nullptr;
 }
 
-bool ExperimentalSuperChargers(const LauncherConfig& config)
-{
-    auto section = config.find("launcher");
-    if (section == config.end())
-        return false;
-    auto value = section->second.find("experimental_superchargers");
-    return value != section->second.end() && value->second == "1";
-}
-
 const GameInfo* FindEnabledGame(std::string_view id, const LauncherConfig& config)
 {
-    return id == "superchargers" && !ExperimentalSuperChargers(config) ? nullptr : FindGame(id);
+    (void)config; // every game in the table is shown; an old [launcher] experimental_superchargers line is ignored
+    return FindGame(id);
 }

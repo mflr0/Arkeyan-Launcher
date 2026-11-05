@@ -86,6 +86,8 @@ namespace LauncherTheme
     inline constexpr GameStyle GiantsStyle = { 0xFFD23C, 0xF06A10, 0x3A1404, 0xFFB43A };
     inline constexpr GameStyle SwapForceStyle = { 0xD9EC45, 0x6FB42E, 0x0F2E22, 0xBFE04A };
     inline constexpr GameStyle TrapTeamStyle = { 0xE1001B, 0x941018, 0x5A0808, 0xDE0018 }; // the title's red: its letters, shade and darkest tone
+    inline constexpr GameStyle SuperChargersStyle = { 0xF09800, 0xE01010, 0x081020, 0xF07008 }; // the title's letters, orange to red; its navy outline
+    inline constexpr GameStyle ImaginatorsStyle = { 0x60A8D8, 0x0070A0, 0x0A1A3A, 0x58A8D8 }; // the title's blue letters, light to deep; dark navy ink
     // The game's style by catalogue id; the launcher's own blue for a game without one.
     const GameStyle& StyleOf(const char* game);
 

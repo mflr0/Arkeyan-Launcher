@@ -365,7 +365,9 @@ The installer stopped before the game was built.	L'installateur s'est arrêté a
 The installer stopped with exit code {}.	L'installateur s'est arrêté avec le code de sortie {}.
 Drag Arkeyan Launcher to Applications, replacing the old one.	Glissez Arkeyan Launcher dans Applications, en remplaçant l'ancien.
 "System default" follows your system.	« Langue du système » suit votre système.
-Designed by dorydev.	Conçu par dorydev.
+Designed by dorydev, made by mflr0.	Conçu par dorydev, réalisé par mflr0.
+The games: XenonRecomp, XenosRecomp, plume and SDL 3, with parts adapted from Xenia. The figure format was learned from Dolphin and RPCS3.	Les jeux : XenonRecomp, XenosRecomp, plume et SDL 3, avec des parties adaptées de Xenia. Le format des figurines a été appris de Dolphin et RPCS3.
+Imaginators' logo: Dycamax, Wikimedia Commons, CC BY-SA 4.0.	Logo d'Imaginators : Dycamax, Wikimedia Commons, CC BY-SA 4.0.
 The game's last log, for a bug report.	Le dernier journal du jeu, pour un rapport de bug.
 The portal can't be opened: using the virtual portal.	Le portail ne s'ouvre pas : le portail virtuel est utilisé.
 The portal can't be opened: the game will wait.	Le portail ne s'ouvre pas : le jeu attendra.
@@ -881,10 +883,6 @@ today	aujourd'hui
 yesterday	hier
 {} days ago	il y a {} jours
 
-SuperChargers (experimental)	SuperChargers (expérimental)
-Adds SuperChargers to your games. An early version.	Ajoute SuperChargers à vos jeux. Version en test.
-SuperChargers is now in your games.	SuperChargers est maintenant dans vos jeux.
-SuperChargers is hidden from your games.	SuperChargers est masqué de vos jeux.
 # Game page
 On the portal	Sur le portail
 Live	En direct

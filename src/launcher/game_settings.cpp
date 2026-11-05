@@ -171,7 +171,7 @@ void SeedGameVideo(LauncherConfig& config, std::string_view gameId)
         for (const char* key : VideoKeys)
             if (auto value = shared->second.find(key); value != shared->second.end())
                 config[section][key] = value->second;
-    if (gameId == "trapteam" || gameId == "superchargers")
+    if (gameId == "trapteam" || gameId == "superchargers" || gameId == "imaginators")
         config[section]["fps_limit"] = "30";
 }
 

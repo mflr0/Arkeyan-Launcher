@@ -29,7 +29,7 @@ struct GameInfo
     const char* legacyRuntime = nullptr; // accepted for existing installs
 };
 
-// Runtime registry (launcher_games.cpp), including games behind an experimental setting.
+// Runtime registry (launcher_games.cpp).
 extern const std::span<const GameInfo> g_games;
 extern const char* const g_launcherName; // folder of the settings file in the user's data directory
 
@@ -77,8 +77,7 @@ TitleMetadata ReadTitleMetadata(const std::vector<uint8_t>& xex);
 // Settings file: "[section]" lines, "key=value" lines, '#' comment lines. Keys before any section go to "".
 using LauncherConfig = std::map<std::string, std::map<std::string, std::string>>;
 std::string LauncherConfigPath();
-// SuperChargers is available only with [launcher] experimental_superchargers=1.
-bool ExperimentalSuperChargers(const LauncherConfig& config);
+// The game of that id when it is shown to the player (today every game of the table is).
 const GameInfo* FindEnabledGame(std::string_view id, const LauncherConfig& config);
 LauncherConfig LoadLauncherConfig(const std::string& path);
 bool SaveLauncherConfig(const std::string& path, const LauncherConfig& config);

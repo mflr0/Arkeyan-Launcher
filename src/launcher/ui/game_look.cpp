@@ -31,6 +31,10 @@ namespace LauncherTheme
             return SwapForceStyle;
         if (game != nullptr && strcmp(game, "trapteam") == 0)
             return TrapTeamStyle;
+        if (game != nullptr && strcmp(game, "superchargers") == 0)
+            return SuperChargersStyle;
+        if (game != nullptr && strcmp(game, "imaginators") == 0)
+            return ImaginatorsStyle;
         return Launcher;
     }
 }

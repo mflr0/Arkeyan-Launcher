@@ -399,7 +399,11 @@ namespace launcher_ui
             m_testCollection = LauncherEnv("SKY_LAUNCHER_TEST_COLLECTION") != nullptr;
             m_testNav = LauncherEnv("SKY_LAUNCHER_TEST_NAV") != nullptr;
             m_testSwitch = LauncherEnv("SKY_LAUNCHER_TEST_SWITCH") != nullptr;
-            m_testExperimental = LauncherEnv("SKY_LAUNCHER_TEST_EXPERIMENTAL") != nullptr || LauncherEnv("SKY_LAUNCHER_TEST_TRAPTEAM") != nullptr;
+            if (const char* game = LauncherEnv("SKY_LAUNCHER_TEST_EXPERIMENTAL"))
+                m_testExperimentalGame = std::string_view(game) == "1" ? "superchargers" : game;
+            else if (LauncherEnv("SKY_LAUNCHER_TEST_TRAPTEAM") != nullptr)
+                m_testExperimentalGame = "trapteam";
+            m_testExperimental = !m_testExperimentalGame.empty();
             m_testSidebar = LauncherEnv("SKY_LAUNCHER_TEST_SIDEBAR") != nullptr;
             if (const char* kit = LauncherEnv("SKY_LAUNCHER_TEST_KIT"))
                 m_testKit = kit;
@@ -2318,18 +2322,6 @@ namespace launcher_ui
             return;
         }
         DrawLauncherLanguage();
-        if (FindGame("superchargers") != nullptr && ui::BeginSettings("##experimental")) // the switch shows once the game is in the table
-        {
-            bool enabled = ExperimentalSuperChargers(m_config);
-            ui::SettingRow(Tr("SuperChargers (experimental)"), Tr("Adds SuperChargers to your games. An early version."));
-            if (ui::Toggle("##superchargers", &enabled))
-            {
-                SetExperimentalSuperChargers(enabled);
-                Toast(enabled ? Tr("SuperChargers is now in your games.") : Tr("SuperChargers is hidden from your games."),
-                    ui::ToastKind::Success);
-            }
-            ui::EndSettings();
-        }
         ui::SectionHeader(Tr("Updates"));
         DrawUpdates();
         ui::SectionHeader(Tr("Data folder"), Tr(strings::DataFolderHint));
@@ -2344,27 +2336,6 @@ namespace launcher_ui
             OpenFolder(LauncherDataFolder());
         }
         DrawUninstallSection();
-    }
-
-    void App::SetExperimentalSuperChargers(bool enabled)
-    {
-        Set("launcher", "experimental_superchargers", enabled ? "1" : "0");
-        if (enabled)
-        {
-            SeedGameVideo(m_config, "superchargers");
-            SeedGameInput(m_config, "superchargers");
-            if (m_shots.empty())
-                m_discQueue.emplace_back("superchargers");
-        }
-        else
-        {
-            std::erase(m_discQueue, "superchargers");
-            if (std::string_view(m_s->game.id) == "superchargers")
-            {
-                SelectGame(*FindGame("ssa"));
-                m_backPage = Page::Home;
-            }
-        }
     }
 
     namespace
@@ -3436,7 +3407,7 @@ namespace launcher_ui
         static const std::vector<int> Steps[] = {
             {},                                                        // 40: the game page
             { ImGuiKey_Escape, ImGuiKey_Escape },                      // 41: B: Home; B again: the ring on the game's row in the sidebar
-            { ImGuiKey_DownArrow, ImGuiKey_DownArrow, ImGuiKey_DownArrow, ImGuiKey_DownArrow }, // 42: down: past Giants, Swap Force and Coming later
+            { ImGuiKey_DownArrow, ImGuiKey_DownArrow, ImGuiKey_DownArrow, ImGuiKey_DownArrow, ImGuiKey_DownArrow, ImGuiKey_DownArrow }, // 42: down: past the five other games and Coming later
             { ImGuiKey_Space },                                        // 43: A: Collection, the ring on Add a figure
             { ImGuiKey_GamepadFaceUp },                                // 44: Y: the search box takes the keyboard
             { ImGuiKey_Escape },                                       // 45: B: out of the search
@@ -3446,8 +3417,8 @@ namespace launcher_ui
             { ImGuiKey_Space },                                        // 49: A: it goes on the seat, the choosing ends
             { ImGuiKey_GamepadFaceLeft },                              // 50: X: the focused card's sheet
             { ImGuiKey_GamepadFaceRight, ImGuiKey_GamepadFaceRight },  // 51: B, B: closed, back to Home
-            { ImGuiKey_Escape, ImGuiKey_DownArrow, ImGuiKey_DownArrow, ImGuiKey_DownArrow, ImGuiKey_DownArrow, ImGuiKey_DownArrow, ImGuiKey_Space,
-              ImGuiKey_GamepadR2 },                                    // 52: B to the sidebar, down to Settings, A, RT: Settings > Launcher
+            { ImGuiKey_Escape, ImGuiKey_DownArrow, ImGuiKey_DownArrow, ImGuiKey_DownArrow, ImGuiKey_DownArrow, ImGuiKey_DownArrow, ImGuiKey_DownArrow,
+              ImGuiKey_DownArrow, ImGuiKey_Space, ImGuiKey_GamepadR2 },                                    // 52: B to the sidebar, down to Settings, A, RT: Settings > Launcher
             { ImGuiKey_Escape },                                       // 53: Escape: back to Home
         };
         // Where each step's keys must have led (checked when the next step begins): the sidebar's rows, the collection, the
@@ -3853,27 +3824,20 @@ namespace launcher_ui
         }
         if (m_testExperimental)
         {
+            // A later game (SKY_LAUNCHER_TEST_EXPERIMENTAL=<id>, "1": SuperChargers): Home, its page with its disc
+            // (SKY_LAUNCHER_TEST_DROP) verified first, in the game's own look, then Home again with its card.
+            const GameInfo* game = FindGame(m_testExperimentalGame);
             uint64_t settle = 400;
-            switch (m_testStep)
+            switch (game != nullptr ? m_testStep : 99)
             {
             case 0:
-                SetExperimentalSuperChargers(false);
                 m_page = Page::Home;
-                m_testShot = "experimental-01-sidebar-off";
+                m_testShot = m_testExperimentalGame + "-01-home";
                 break;
             case 1:
-                m_page = Page::Settings;
-                m_tab = SettingsTab::Launcher;
-                m_testShot = "experimental-02-settings-off";
-                break;
-            case 2:
-                SetExperimentalSuperChargers(true);
-                m_testShot = "experimental-03-settings-on";
-                break;
-            case 3:
-                SelectGame(*FindGame("superchargers"));
+                SelectGame(*game);
                 m_page = Page::Play;
-                if (!m_testDrop.empty()) // its disc (SKY_LAUNCHER_TEST_DROP) verified first: the page in the game's own look
+                if (!m_testDrop.empty())
                 {
                     if (m_s->disc == DiscState::None)
                         StartVerify(m_testDrop);
@@ -3881,16 +3845,11 @@ namespace launcher_ui
                         return; // asked again next frame
                     settle = 1500; // the art loads after the check
                 }
-                m_testShot = "experimental-04-sidebar-on";
+                m_testShot = m_testExperimentalGame + "-02-page";
                 break;
-            case 4:
+            case 2:
                 m_page = Page::Home;
-                m_testShot = "experimental-04b-home";
-                break;
-            case 5:
-                SetExperimentalSuperChargers(false);
-                m_page = Page::Home;
-                m_testShot = "experimental-05-sidebar-off-again";
+                m_testShot = m_testExperimentalGame + "-03-home";
                 break;
             default:
                 m_running = false;
@@ -4278,17 +4237,12 @@ std::span<const LauncherGameEntry> LauncherGameCatalog(const LauncherConfig& con
         { "giants", GameName("giants", GameNameForm::Short), 0xFFC65C, true },
         { "swapforce", GameName("swapforce", GameNameForm::Short), 0xFF55A8, true },
         { "trapteam", GameName("trapteam", GameNameForm::Short), 0x6DF0B4, true },
-        { "superchargers", GameName("superchargers", GameNameForm::Short), 0xFF8A5C, false },
+        { "superchargers", GameName("superchargers", GameNameForm::Short), 0xFF8A5C, true },
         { "racing", GameName("racing", GameNameForm::Short), 0xE85D75, false },
-        { "imaginators", GameName("imaginators", GameNameForm::Short), 0xB49BFF, false },
+        { "imaginators", GameName("imaginators", GameNameForm::Short), 0xB49BFF, true },
     };
-    static const auto experimental = [] {
-        std::array<LauncherGameEntry, std::size(catalog)> entries;
-        std::copy(std::begin(catalog), std::end(catalog), entries.begin());
-        entries[4].enabled = true; // SuperChargers
-        return entries;
-    }();
-    return ExperimentalSuperChargers(config) && FindGame("superchargers") != nullptr ? std::span<const LauncherGameEntry>(experimental) : std::span<const LauncherGameEntry>(catalog);
+    (void)config; // every console game but SuperChargers Racing is shown; an old experimental_superchargers line is ignored
+    return catalog;
 }
 
 std::string LauncherLanguageLabel(const LauncherConfig& config, const GameInfo& game)
