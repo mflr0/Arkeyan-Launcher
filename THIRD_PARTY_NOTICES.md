@@ -343,3 +343,20 @@ The icons derived from Feather: MIT, Copyright (c) 2013-present Cole Bemis (full
 ## Bungee and Outfit fonts
 
 License: SIL Open Font License 1.1. Source: `resources/fonts/`; the full licenses are `OFL-Bungee.txt` and `OFL-Outfit.txt` next to the fonts.
+
+## GitHub mark
+
+The GitHub link's icon is the "mark-github" glyph of Primer Octicons, redrawn as an outline (`src/launcher/ui/launcher_ui.cpp`).
+License: MIT, Copyright (c) GitHub Inc.
+
+## Not shipped: Imaginators' logo
+
+The launcher downloads Imaginators' logo for its game page once the player's disc is checked; it is not part of the
+download. Source: [Skylanders-imaginators-logo.png](https://commons.wikimedia.org/wiki/File:Skylanders-imaginators-logo.png),
+by Dycamax, Wikimedia Commons, [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
+
+## Facts from other projects (no code)
+
+The figures' tag format (the blocks and their checksums) was learned by reading the Skylanders portal code of Dolphin and
+RPCS3 (GPL-2.0-or-later); no code of theirs is in this project, and every detail was checked against figures the games wrote.
+

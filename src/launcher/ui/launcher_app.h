@@ -368,6 +368,7 @@ namespace launcher_ui
         void TakeBackGameSettings();
         void SwitchProfile(const std::string& id);
         void RememberProfileGame(const std::string& game);
+        unsigned ReadableAccent(const char* game, float contrast = 4.5f) const;
         std::string ProfileName(const profiles::Profile& profile) const; // "Player 1" for the first until it is named
         unsigned ProfileColor(const profiles::Profile& profile) const;
         void DrawAvatar(ImDrawList* draw, ImVec2 center, float radius, const profiles::Profile& profile);

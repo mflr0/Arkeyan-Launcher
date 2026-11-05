@@ -1503,6 +1503,7 @@ namespace launcher_ui
             options.leadWidth = GameLogoW;
             options.note = version.empty() ? nullptr : version.c_str();
             options.selected = selected;
+            options.selectedColor = ReadableAccent(entry.id, 3.0f); // the game's colour, bright enough on the sidebar
             options.progress = line.progress;
             options.progressColor = StyleOf(entry.id).top;
             options.imageWidth = GameLogoW;
@@ -2543,10 +2544,7 @@ namespace launcher_ui
         ui::NewFrame(SDL_GetTicks());
         // On the dark panels the game's glow reads as a ring, a tab bar or a switch only when bright enough: a dark one (Trap
         // Team's red) is lightened toward white until it reaches 4.5:1 on the panels.
-        unsigned accent = m_page == Page::Play || m_page == Page::GameSettings ? StyleOf(m_s->game.id).glow : Accent;
-        for (float t = 0.1f; ui::Contrast(accent, Panel) < 4.5f && t <= 1.0f; t += 0.1f)
-            accent = ui::Mix(StyleOf(m_s->game.id).glow, 0xFFFFFF, t);
-        ui::Ctx().accent = accent;
+        ui::Ctx().accent = m_page == Page::Play || m_page == Page::GameSettings ? ReadableAccent(m_s->game.id) : Accent;
         ui::Ctx().reduceMotion = ReduceMotion();
         // The shown game's menu theme plays on its page only; it fades out when a game starts.
         m_music.Update(gamemusic::Playback{ .game = m_s != nullptr ? m_s->game.id : std::string(),

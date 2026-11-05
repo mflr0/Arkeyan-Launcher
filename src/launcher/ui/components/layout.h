@@ -55,6 +55,7 @@ namespace ui
         bool dim = false;               // the title in the dim ink (a game not out yet)
         TextStyle titleStyle = TextStyle::Body, subtitleStyle = TextStyle::Caption;
         float minHeight = 0;
+        unsigned selectedColor = 0;     // the selected row's bar; 0: the sidebar's orange (a game's row: the game's colour)
     };
     bool ListRow(const char* title, const ListRowOptions& options = {});
 

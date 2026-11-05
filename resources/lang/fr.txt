@@ -366,7 +366,7 @@ The installer stopped with exit code {}.	L'installateur s'est arrêté avec le c
 Drag Arkeyan Launcher to Applications, replacing the old one.	Glissez Arkeyan Launcher dans Applications, en remplaçant l'ancien.
 "System default" follows your system.	« Langue du système » suit votre système.
 Designed by dorydev, made by mflr0.	Conçu par dorydev, réalisé par mflr0.
-Games: XenonRecomp, XenosRecomp, plume, SDL 3, parts of Xenia. Figure format learned from Dolphin and RPCS3.	Jeux : XenonRecomp, XenosRecomp, plume, SDL 3, des parties de Xenia. Format des figurines appris de Dolphin et RPCS3.
+Games: XenonRecomp, XenosRecomp, plume, SDL 3, Dear ImGui, FFmpeg, parts of Xenia; facts from tsapZ's projects. Figure format learned from Dolphin and RPCS3.	Jeux : XenonRecomp, XenosRecomp, plume, SDL 3, Dear ImGui, FFmpeg, des parties de Xenia ; des faits des projets de tsapZ. Format des figurines appris de Dolphin et RPCS3.
 Imaginators' logo: Dycamax, Wikimedia Commons, CC BY-SA 4.0.	Logo d'Imaginators : Dycamax, Wikimedia Commons, CC BY-SA 4.0.
 The game's last log, for a bug report.	Le dernier journal du jeu, pour un rapport de bug.
 The portal can't be opened: using the virtual portal.	Le portail ne s'ouvre pas : le portail virtuel est utilisé.

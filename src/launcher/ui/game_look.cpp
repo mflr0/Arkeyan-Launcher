@@ -162,6 +162,17 @@ namespace launcher_ui
         return art::CachedScene(game, name);
     }
 
+    // A game's glow, lightened toward white until it reads at `contrast` on the dark panels (Trap Team's red): 4.5:1 for its
+    // focus ring, tab bar and switches; 3:1 for its sidebar row's bar (a shape, not text: it keeps more of the game's colour).
+    unsigned App::ReadableAccent(const char* game, float contrast) const
+    {
+        const unsigned glow = StyleOf(game).glow;
+        unsigned accent = glow;
+        for (float t = 0.1f; ui::Contrast(accent, Panel) < contrast && t <= 1.0f; t += 0.1f)
+            accent = ui::Mix(glow, 0xFFFFFF, t);
+        return accent;
+    }
+
     bool App::GameMusicOn() const
     {
         return SettingGet(m_config, "launcher", "game_music", "1") != "0";

@@ -146,7 +146,8 @@ namespace ui
         if (options.selected || state.hovered || state.pressed)
             draw->AddRectFilled(min, max, Col(state.pressed ? color::RaisedPressed : state.hovered ? color::RaisedHover : color::Raised), radius::Control);
         if (options.selected)
-            draw->AddRectFilled(min, ImVec2(min.x + stroke::Selection + 2, max.y), Col(color::Selected), radius::Control, ImDrawFlags_RoundCornersLeft);
+            draw->AddRectFilled(min, ImVec2(min.x + stroke::Selection + 2, max.y), Col(options.selectedColor != 0 ? options.selectedColor : color::Selected),
+                radius::Control, ImDrawFlags_RoundCornersLeft);
 
         // The leading column (an icon, or the caller's image), centred in `leadWidth` when the list gives one: the titles of a
         // list's rows then start on one edge.
