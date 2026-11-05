@@ -603,7 +603,7 @@ namespace collection
                 variant = VariantFor(*toy, kind);
             std::string path = PortraitPath(gameId, *toy, variant, size > 128);
             if (!path.empty())
-                image = LoadPng(path);
+                image = toy->category == Category::CreationCrystal ? CrystalPicture(*toy, path) : LoadPng(path);
         }
         if (fromDisc != nullptr)
             *fromDisc = !image.Empty();
