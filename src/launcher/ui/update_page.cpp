@@ -355,9 +355,9 @@ namespace launcher_ui
         ui::Text(ui::TextStyle::Body, Tr("Native PC ports of Skylanders. No game code or art: it comes from your disc."));
 
         ui::SectionHeader(Tr("Credits"));
-        ui::Text(ui::TextStyle::Body, Tr("Designed by dorydev, made by mflr0, UI and UX review by Gumelia."), ui::color::InkSoft);
+        ui::Text(ui::TextStyle::Body, Tr("Designed by dorydev, made by mflr0, UI/UX by Gumelia."), ui::color::InkSoft);
         ui::Text(ui::TextStyle::Body, Tr("Built with SDL 3, Dear ImGui, {fmt}, stb, miniz, XenonRecomp, Outfit and Bungee. MIT licensed."), ui::color::InkSoft);
-        ui::Text(ui::TextStyle::Body, Tr("Games: XenonRecomp, XenosRecomp, plume, SDL 3, Dear ImGui, FFmpeg, parts of Xenia; facts from tsapZ's projects. Figure format learned from Dolphin and RPCS3."), ui::color::InkSoft);
+        ui::Text(ui::TextStyle::Body, Tr("Games: XenonRecomp, XenosRecomp, plume, SDL 3, Dear ImGui, FFmpeg, parts of Xenia. Figure format learned from Dolphin and RPCS3."), ui::color::InkSoft);
         ui::Text(ui::TextStyle::Body, Tr("Imaginators' logo: Dycamax, Wikimedia Commons, CC BY-SA 4.0."), ui::color::InkSoft);
         ImGui::Dummy(ImVec2(0, ui::space::XXS));
         // Each opens a web page: the External icon, as Release page's; the row's gap is the buttons' (S).

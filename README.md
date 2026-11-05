@@ -212,14 +212,12 @@ and every design decision are the author's own; AI tools write the code from tha
 
 ## Credits and license
 
-Designed by dorydev, made by mflr0, UI and UX review by Gumelia.
+Designed by dorydev, made by mflr0, UI/UX by Gumelia.
 
 The ports are built with [XenonRecomp](https://github.com/hedge-dev/XenonRecomp) and
 [XenosRecomp](https://github.com/hedge-dev/XenosRecomp) (hedge-dev; [squidbus's fork](https://github.com/squidbus/XenosRecomp)),
 [plume](https://github.com/renderbag/plume) (renderbag), SDL 3, Dear ImGui and FFmpeg, and adapt parts of
-[Xenia](https://github.com/xenia-project/xenia). Facts found by tsapZ's recompilation projects (SSARecomp, GiantsRecomp,
-SwapForceRecomp, skylanders-portal) helped place the portal prompts, the wide screen and the Giants figures; every one was
-checked again in the games, and none of their code is used. The figures' format (the
+[Xenia](https://github.com/xenia-project/xenia). The figures' format (the
 blocks of a tag and their checksums) was learned by reading the Skylanders portal code of
 [Dolphin](https://github.com/dolphin-emu/dolphin) and [RPCS3](https://github.com/RPCS3/rpcs3); none of their code is
 used. Imaginators' logo on its game page is [Dycamax's](https://commons.wikimedia.org/wiki/File:Skylanders-imaginators-logo.png)
