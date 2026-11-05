@@ -28,7 +28,7 @@ namespace launcher_ui
             const char* value = skyenv::Get(name);
             m_profileEnv.emplace_back(name, value != nullptr ? std::optional<std::string>(value) : std::nullopt);
         }
-        m_profiles = profiles::Load(Tr("Player 1"));
+        m_profiles = profiles::Load({}); // the first profile unnamed until its player names it: "Player 1" in the shown language
         UseProfileEnvironment();
         if (!m_profiles.Active().First())
             m_config = ProfileConfig();
@@ -41,7 +41,9 @@ namespace launcher_ui
                 SetGameVariable(name.c_str(), value->c_str());
             else
                 UnsetGameVariable(name.c_str());
-        for (const auto& [name, value] : profiles::Environment(m_profiles.Active()))
+        profiles::Profile active = m_profiles.Active();
+        active.name = ProfileName(active);
+        for (const auto& [name, value] : profiles::Environment(active))
             if (value.empty())
                 UnsetGameVariable(name.c_str());
             else
@@ -125,7 +127,7 @@ namespace launcher_ui
         const profiles::Profile& active = m_profiles.Active();
         if (const GameInfo* last = !active.lastGame.empty() ? FindEnabledGame(active.lastGame, m_config) : nullptr)
             SelectGame(*last);
-        Toast(Tf("Welcome, {}", active.name), ui::ToastKind::Success);
+        Toast(Tf("Welcome, {}", ProfileName(active)), ui::ToastKind::Success);
     }
 
     void App::RememberProfileGame(const std::string& game)
@@ -136,6 +138,11 @@ namespace launcher_ui
         active->lastGame = game;
         active->lastPlayed = int64_t(std::time(nullptr));
         profiles::Save(m_profiles);
+    }
+
+    std::string App::ProfileName(const profiles::Profile& profile) const
+    {
+        return profile.name.empty() ? std::string(Tr("Player 1")) : profile.name;
     }
 
     unsigned App::ProfileColor(const profiles::Profile& profile) const
@@ -161,7 +168,7 @@ namespace launcher_ui
         }
         const unsigned color = ProfileColor(profile);
         draw->AddCircleFilled(center, radius, ui::Col(color));
-        const std::string initials = profiles::Initials(profile.name);
+        const std::string initials = profiles::Initials(ProfileName(profile));
         const float size = radius * 0.8f;
         ImGui::PushFont(ui::Ctx().fonts.title, size);
         const ImVec2 extent = ImGui::CalcTextSize(initials.c_str());
@@ -185,13 +192,14 @@ namespace launcher_ui
             draw->AddCircle(center, avatar / 2 + 2.5f, ui::Col(ProfileColor(active)), 0, 2.0f);
             DrawAvatar(draw, center, avatar / 2, active);
         };
-        if (ui::ListRow((active.name + "##profile").c_str(), row))
+        if (ui::ListRow((ProfileName(active) + "##profile").c_str(), row) || m_testOpenProfileMenu)
             ui::OpenMenu("##profiles");
+        m_testOpenProfileMenu = false;
         if (ui::BeginMenu("##profiles"))
         {
             const bool running = !m_session.Running().empty();
             for (const profiles::Profile& profile : m_profiles.profiles)
-                if (ui::MenuItem((profile.name + "##" + profile.id).c_str(), { ui::Icon::None, profile.id == m_profiles.active, false, running }))
+                if (ui::MenuItem((ProfileName(profile) + "##" + profile.id).c_str(), { ui::Icon::None, profile.id == m_profiles.active, false, running }))
                     SwitchProfile(profile.id);
             if (running)
                 ui::MenuItem(Tr("Quit the game to change profile"), { ui::Icon::None, false, false, true });
@@ -390,8 +398,7 @@ namespace launcher_ui
     {
         // Every profile: its picture, its pseudo, its last game; Edit, and Remove (never the last one, never while a game runs).
         const bool running = !m_session.Running().empty();
-        ui::SectionHeader(Tr("Profiles"), Tr("Each has its own Toy Box, saves, keys and achievements."));
-        if (ui::BeginSettings("##profiles"))
+        ui::SectionHeader(Tr("Profiles"), Tr("Each has its own Toy Box, saves, keys and achievements."), false);
         {
             for (const profiles::Profile& profile : m_profiles.profiles)
             {
@@ -403,7 +410,7 @@ namespace launcher_ui
                 ImGui::SameLine(0, ui::space::M);
                 ImGui::BeginGroup();
                 const bool active = profile.id == m_profiles.active;
-                ui::Text(ui::TextStyle::Body, (active ? Tf("{} (active)", profile.name) : profile.name).c_str(), ui::color::Ink, 0, true);
+                ui::Text(ui::TextStyle::Body, (active ? Tf("{} (active)", ProfileName(profile)) : ProfileName(profile)).c_str(), ui::color::Ink, 0, true);
                 const GameInfo* last = profile.lastGame.empty() ? nullptr : FindGame(profile.lastGame);
                 ui::Text(ui::TextStyle::Caption, last != nullptr ? Tf("Last played: {}", GameName(last->id, GameNameForm::Short)).c_str() : Tr("Not played yet"),
                     ui::color::InkSoft);
@@ -424,13 +431,12 @@ namespace launcher_ui
             }
             if (ui::Button(Tr("Add a profile"), { .icon = ui::Icon::Plus }))
                 OpenProfileEditor({});
-            ui::EndSettings();
         }
         if (const profiles::Profile* gone = m_profiles.Find(m_profileToRemove))
         {
             bool open = true;
-            const std::string body = Tf("{}'s Toy Box, saves and keys go to the profiles' trash.", gone->name);
-            const ui::ModalResult result = ui::ConfirmDialog("##removeprofile", Tf("Remove {}?", gone->name).c_str(), body.c_str(),
+            const std::string body = Tf("{}'s Toy Box, saves and keys go to the profiles' trash.", ProfileName(*gone));
+            const ui::ModalResult result = ui::ConfirmDialog("##removeprofile", Tf("Remove {}?", ProfileName(*gone)).c_str(), body.c_str(),
                 Tr("Remove"), Tr("Cancel"), &open, ui::ModalKind::Danger);
             if (result == ui::ModalResult::Confirm)
             {
@@ -444,5 +450,46 @@ namespace launcher_ui
             if (!open || result != ui::ModalResult::None)
                 m_profileToRemove.clear();
         }
+    }
+
+    // SKY_LAUNCHER_TEST_PROFILES (with SKY_LAUNCHER_SHOTS, scratch data): a second profile made, the sidebar, the profile menu,
+    // the new profile editor, the switch to the second profile, and Settings > Profiles.
+    void App::TestProfilesScript(uint64_t now)
+    {
+        switch (m_testStep)
+        {
+        case 0:
+            if (m_profiles.profiles.size() < 2)
+            {
+                profiles::Add(m_profiles, "Kaos", 7);
+                profiles::Save(m_profiles);
+            }
+            m_page = Page::Home;
+            m_testShot = "profiles-01-sidebar";
+            break;
+        case 1:
+            m_testOpenProfileMenu = true;
+            m_testShot = "profiles-02-menu";
+            break;
+        case 2:
+            OpenProfileEditor({});
+            snprintf(m_profileEditor.name, sizeof(m_profileEditor.name), "%s", "Tessa");
+            m_testShot = "profiles-03-new";
+            break;
+        case 3:
+            m_profileEditor.open = false;
+            SwitchProfile(m_profiles.profiles.back().id);
+            m_testShot = "profiles-04-switched";
+            break;
+        case 4:
+            m_page = Page::Settings;
+            m_tab = SettingsTab::Profiles;
+            m_testShot = "profiles-05-settings";
+            break;
+        default:
+            m_running = false;
+            return;
+        }
+        m_testAt = now + 500;
     }
 }

@@ -368,6 +368,7 @@ namespace launcher_ui
         void TakeBackGameSettings();
         void SwitchProfile(const std::string& id);
         void RememberProfileGame(const std::string& game);
+        std::string ProfileName(const profiles::Profile& profile) const; // "Player 1" for the first until it is named
         unsigned ProfileColor(const profiles::Profile& profile) const;
         void DrawAvatar(ImDrawList* draw, ImVec2 center, float radius, const profiles::Profile& profile);
         void DrawProfileButton();
@@ -742,6 +743,9 @@ namespace launcher_ui
         std::map<std::string, std::string> m_drawn; // while testing: what the sidebar, Home and the main button drew ("sidebar:ssa", "home:ssa", "button")
         bool m_testExperimental = false; // SKY_LAUNCHER_TEST_EXPERIMENTAL=<id> (or the older _TRAPTEAM): a later game's page and Home card
         std::string m_testExperimentalGame;
+        bool m_testProfiles = false;     // SKY_LAUNCHER_TEST_PROFILES: the profile button, its menu, the editor, a switch, Settings > Profiles
+        bool m_testOpenProfileMenu = false;
+        void TestProfilesScript(uint64_t now);
         bool m_testSidebar = false;    // SKY_LAUNCHER_TEST_SIDEBAR: the sidebar's line through an install and an update (fake kit)
         bool m_testCopy = false;       // SKY_LAUNCHER_TEST_COPY: copying the game data, playing from it, the wrong-disc button
         std::string m_testKit;         // SKY_LAUNCHER_TEST_KIT: "old", "giants", "updates" or "offline": the kit that follows the launcher, the game updates (fake release)

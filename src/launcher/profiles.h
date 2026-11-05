@@ -46,7 +46,8 @@ namespace profiles
     std::filesystem::path FolderOf(const Profile& profile);
     std::filesystem::path PictureOf(const Profile& profile); // picture.png in its folder (exists only when hasPicture)
 
-    // The list as saved; on the first run, the first profile ("Player 1", or `firstName`) made from what is there.
+    // The list as saved; on the first run, the first profile (named `firstName`, the launcher passes "" for "unnamed")
+    // made from what is there.
     List Load(const std::string& firstName);
     bool Save(const List& list);
 

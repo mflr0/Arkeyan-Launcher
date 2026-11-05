@@ -404,6 +404,7 @@ namespace launcher_ui
             else if (LauncherEnv("SKY_LAUNCHER_TEST_TRAPTEAM") != nullptr)
                 m_testExperimentalGame = "trapteam";
             m_testExperimental = !m_testExperimentalGame.empty();
+            m_testProfiles = LauncherEnv("SKY_LAUNCHER_TEST_PROFILES") != nullptr;
             m_testSidebar = LauncherEnv("SKY_LAUNCHER_TEST_SIDEBAR") != nullptr;
             if (const char* kit = LauncherEnv("SKY_LAUNCHER_TEST_KIT"))
                 m_testKit = kit;
@@ -2653,7 +2654,7 @@ namespace launcher_ui
                 "45-nav-search-left", "46-nav-seat", "47-nav-choosing", "48-nav-card", "49-nav-placed", "50-nav-sheet",
                 "51-nav-back-to-play", "52-nav-settings-controls", "53-nav-settings-back" };
             static const char* const UninstallNames[] = { "01-settings", "02-list", "03-ticked", "04-confirm", "05-result" };
-            if (m_testPadWalk || m_testExperimental || m_testHero || m_testButtons || m_testSidebar || m_testCopy || m_testLogo || m_testKeys || m_testPad || m_testAchievements || m_testRunning ||
+            if (m_testPadWalk || m_testExperimental || m_testProfiles || m_testHero || m_testButtons || m_testSidebar || m_testCopy || m_testLogo || m_testKeys || m_testPad || m_testAchievements || m_testRunning ||
                 m_testScreens != 0 || !m_testKit.empty())
                 Screenshot(m_testShot.c_str());
             else if (m_testUninstall)
@@ -3837,6 +3838,11 @@ namespace launcher_ui
         if (m_testPadWalk)
         {
             TestPadWalkScript(now);
+            return;
+        }
+        if (m_testProfiles)
+        {
+            TestProfilesScript(now);
             return;
         }
         if (m_testExperimental)
