@@ -1,13 +1,13 @@
 # Arkeyan Launcher
 
-**Play Skylanders natively on Mac, Windows and Linux.** Arkeyan Launcher builds *Spyro's Adventure*, *Giants*, *Swap Force*
-and *Trap Team* from your own Xbox 360 disc image into real PC games: no emulator, your own saves, your
+**Play Skylanders natively on Mac, Windows and Linux.** Arkeyan Launcher builds *Spyro's Adventure*, *Giants*, *Swap Force*,
+*Trap Team*, *SuperChargers* and *Imaginators* from your own Xbox 360 disc image into real PC games: no emulator, your own saves, your
 figures in a virtual portal, any controller, keyboard or mouse. Formerly Skylauncher: it updates itself to this version.
 
 <!-- SCREENSHOTS: four gameplay pictures (one per game), hosted outside the repository -->
 
 Arkeyan Launcher contains no game code and no game art. Everything shown from the game is read from your own disc and stays
-on your computer.
+on your computer; only Imaginators' logo, which its disc lacks, is downloaded from Wikimedia Commons once your disc is checked.
 
 ## What you get
 
@@ -28,6 +28,8 @@ on your computer.
 | Giants | ✅ | ⚠️ tested in Wine only | ⚠️ tested in a container only | Chapter 1, and 78 of its 91 levels in an automatic tour |
 | Swap Force | ✅ | ⚠️ tested in Wine only | ⚠️ tested in a container only | The tutorial, the first area of the story and the two-player arenas; 158 of 195 zones in an automatic tour |
 | Trap Team | ✅ | ⚠️ not tested yet | ⚠️ not tested yet | The tutorial, the first chapters and the Academy, a villain captured and kept in its trap; 53 of 56 levels in an automatic tour |
+| SuperChargers | ✅ | ⚠️ not tested yet | ⚠️ not tested yet | The opening and the Academy, a vehicle on the portal |
+| Imaginators | ✅ | ⚠️ not tested yet | ⚠️ not tested yet | The opening and the hub |
 
 Finished a game, or played one on Windows or Linux? Please say so in an
 [issue](https://github.com/mflr0/Arkeyan-Launcher/issues): it is how this table gets filled.
@@ -49,7 +51,7 @@ Every release is checked before it ships, on the four games:
 
 ## What you need
 
-- Your own copy of *Skylanders: Spyro's Adventure*, *Skylanders: Giants*, *Skylanders: Swap Force* or *Skylanders: Trap Team* for Xbox 360, as a disc image (`.iso`).
+- Your own copy of *Skylanders: Spyro's Adventure*, *Skylanders: Giants*, *Skylanders: Swap Force*, *Skylanders: Trap Team*, *Skylanders: SuperChargers* or *Skylanders: Imaginators* for Xbox 360, as a disc image (`.iso`).
 - Windows 10 or 11 (64-bit), a Mac with Apple Silicon, or a Linux PC (below).
 - Apple Silicon Mac required (M1 or later).
 - An internet connection the first time: INSTALL downloads the game tools (about 30 to 40 MB) and the compiler.
@@ -75,6 +77,8 @@ Xbox 360 discs only.
 | Giants | USA, Europe | English, French, German, Spanish, Italian, Dutch, Portuguese, Swedish, Norwegian, Danish, Finnish |
 | Swap Force | USA, Australia, Europe | English, French, Spanish, Italian |
 | Trap Team | Europe | English, German, French, Dutch |
+| SuperChargers | Europe | English, German |
+| Imaginators | Europe | French, Dutch |
 
 Another edition is refused with a message. If you have one, tell us in an issue.
 
@@ -212,7 +216,11 @@ Designed by dorydev, made by mflr0.
 
 The ports are built with [XenonRecomp](https://github.com/hedge-dev/XenonRecomp) and
 [XenosRecomp](https://github.com/hedge-dev/XenosRecomp) (hedge-dev), [plume](https://github.com/renderbag/plume)
-(renderbag) and SDL 3, and adapt parts of [Xenia](https://github.com/xenia-project/xenia). Thank you to all of them.
+(renderbag) and SDL 3, and adapt parts of [Xenia](https://github.com/xenia-project/xenia). The figures' format (the
+blocks of a tag and their checksums) was learned by reading the Skylanders portal code of
+[Dolphin](https://github.com/dolphin-emu/dolphin) and [RPCS3](https://github.com/RPCS3/rpcs3); none of their code is
+used. Imaginators' logo on its game page is [Dycamax's](https://commons.wikimedia.org/wiki/File:Skylanders-imaginators-logo.png)
+(Wikimedia Commons, [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)). Thank you to all of them.
 
 MIT license, see `LICENSE`. The third-party components are listed in `THIRD_PARTY_NOTICES.md`.
 

@@ -355,8 +355,10 @@ namespace launcher_ui
         ui::Text(ui::TextStyle::Body, Tr("A launcher for the native PC ports of Skylanders. No game code or art: it all comes from your disc."));
 
         ui::SectionHeader(Tr("Credits"));
-        ui::Text(ui::TextStyle::Body, Tr("Designed by dorydev."), ui::color::InkSoft);
+        ui::Text(ui::TextStyle::Body, Tr("Designed by dorydev, made by mflr0."), ui::color::InkSoft);
         ui::Text(ui::TextStyle::Body, Tr("Built with SDL 3, Dear ImGui, {fmt}, stb, miniz, XenonRecomp, Outfit and Bungee. MIT licensed."), ui::color::InkSoft);
+        ui::Text(ui::TextStyle::Body, Tr("The games: XenonRecomp, XenosRecomp, plume and SDL 3, with parts adapted from Xenia. The figure format was learned from Dolphin and RPCS3."), ui::color::InkSoft);
+        ui::Text(ui::TextStyle::Body, Tr("Imaginators' logo: Dycamax, Wikimedia Commons, CC BY-SA 4.0."), ui::color::InkSoft);
         ImGui::Dummy(ImVec2(0, ui::space::XXS));
         // Each opens a web page: the External icon, as Release page's; the row's gap is the buttons' (S).
         const ui::ButtonOptions web{ .icon = ui::Icon::External };

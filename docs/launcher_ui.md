@@ -570,8 +570,8 @@ shells, the toast kinds.)
 The launcher opens on Home, the menu page (the ARKEYAN LAUNCHER title goes back to it): empty for now, with "Report a bug" (a new
 GitHub issue) and the GitHub link bottom right. The launcher's own language is in Settings > Launcher > Language
 (`docs/translations.md`); the game's text and voice languages are in that game's settings (Language tab). The game shown last is selected in the sidebar (`[launcher] game=`); the other is one click away.
-1. Left sidebar (grey, fixed width) - the seven games as full-width rows (Spyro's Adventure, Giants and Swap Force enabled, the others "Coming later",
-   SuperChargers Racing included), then Collection and Settings at the bottom. Each enabled row shows its game's icon
+1. Left sidebar (grey, fixed width) - the seven games as full-width rows (Spyro's Adventure, Giants, Swap Force, Trap Team, SuperChargers
+   and Imaginators enabled; SuperChargers Racing "Coming later"; an old `[launcher] experimental_superchargers` line is ignored), then Collection and Settings at the bottom. Each enabled row shows its game's icon
    and its live state (every game's disc is checked at start-up, one after the other: "A game's states"); the
    selected game's row has the bar while its Play page is open. Rows are reachable with the keyboard and the pad like the others.
 2. Play (no tabs) - a hero over the disc's background, with continuous dark shades on the left and bottom.
@@ -835,6 +835,8 @@ What belongs to the game on its page is drawn in **the game's own colours**, tak
 | Giants | the logo's gold to orange, dark brown ink | `GiantsStyle` |
 | Swap Force | the logo's lime to green, dark green ink | `SwapForceStyle` |
 | Trap Team | the title's red (its letters, their shade and darkest tone, sampled from the logo as the launcher decodes it from the disc), dark red ink | `TrapTeamStyle` |
+| SuperChargers | the title's letters, orange to red, and its navy outline (sampled from the logo as the launcher decodes it) | `SuperChargersStyle` |
+| Imaginators | the title's blue letters, light to deep, dark navy ink (sampled the same way) | `ImaginatorsStyle` |
 | any other | the launcher's own blue | |
 
 **The hero action** uses `ui::MainAction` with `separated=true`: an accent-filled primary button, then S of space,
@@ -1168,7 +1170,7 @@ page and sidebar returning to Ready, other games becoming available again, and t
 Swap Force not opened); with `pad` each page's first stop has its ring and the pad legend shows. `SKY_LAUNCHER_LANGUAGE`,
 `SKY_LAUNCHER_TEST_SIZE` and `SKY_LAUNCHER_TEST_SCALE=2` (a Retina screen's density, the same layout) set the rest
 (`docs/polish_audit.md`, "Model screens").
-`SKY_LAUNCHER_TEST_TRAPTEAM=1` with `SKY_LAUNCHER_TEST_DROP=<Trap Team's disc>` also verifies the disc and shoots its page and Home card (`trapteam-04-sidebar-on`, `trapteam-04b-home`), in its colours.
+`SKY_LAUNCHER_TEST_EXPERIMENTAL=<id>` (`superchargers`, `imaginators`, `trapteam`...; `1` is SuperChargers, `SKY_LAUNCHER_TEST_TRAPTEAM=1` Trap Team) with `SKY_LAUNCHER_TEST_DROP=<that game's disc>` verifies the disc and shoots Home, the game's page and Home again with its card (`<id>-01-home`, `<id>-02-page`, `<id>-03-home`), in its colours.
 `SKY_LAUNCHER_TEST_INPUT=pad` shoots any script as a pad player sees it: the pad's glyphs and legends, the focus on each page's (or tab's)
 first stop with its ring.
 `SKY_LAUNCHER_TEST_RUNNING=1` (with `SKY_LAUNCHER_RUNTIME` a stand-in game and `SKY_LAUNCHER_TEST_DROP` Spyro's Adventure's disc)
