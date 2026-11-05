@@ -212,7 +212,7 @@ and every design decision are the author's own; AI tools write the code from tha
 
 ## Credits and license
 
-Designed by dorydev, made by mflr0.
+Designed by dorydev, made by mflr0, UI and UX review by Gumelia.
 
 The ports are built with [XenonRecomp](https://github.com/hedge-dev/XenonRecomp) and
 [XenosRecomp](https://github.com/hedge-dev/XenosRecomp) (hedge-dev; [squidbus's fork](https://github.com/squidbus/XenosRecomp)),
