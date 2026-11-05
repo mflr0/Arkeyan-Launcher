@@ -809,10 +809,13 @@ namespace launcher_ui
             return options;
         };
 
-        const bool swapForce = m_s->game.id == std::string_view("swapforce");
-        if (swapForce)
+        // The games whose Nightmare the game locks until the story is beaten (Swap Force, Imaginators): offered at once, the save
+        // is not changed ([<game>] nightmare_from_start). SuperChargers offers it from the start; Giants and SSA have none;
+        // Trap Team locks it in its scripts, which no option reaches yet.
+        const std::string_view id = m_s->game.id;
+        const bool lockedNightmare = id == "swapforce" || id == "imaginators";
+        if (lockedNightmare)
         {
-            // The only game with a locked difficulty: Nightmare is offered at once, the save is not changed ([swapforce] in launcher.ini).
             ui::SectionHeader(Tr("Difficulty"), nullptr, false);
             if (ui::BeginSettings("##nightmare"))
             {
@@ -824,7 +827,7 @@ namespace launcher_ui
             }
         }
 
-        ui::SectionHeader(Tr("Desktop shortcut"), m_s->disc != DiscState::Ready ? Tr("Choose the disc image first.") : nullptr, swapForce);
+        ui::SectionHeader(Tr("Desktop shortcut"), m_s->disc != DiscState::Ready ? Tr("Choose the disc image first.") : nullptr, lockedNightmare);
         ui::ButtonOptions shortcut;
         shortcut.disabled = m_s->disc != DiscState::Ready;
         if (ui::Button(Tr("Create"), shortcut))
