@@ -449,6 +449,7 @@ namespace launcher_ui
     App::App(const GameInfo& game, const std::string& configPath, LauncherConfig& config, const LauncherOptions& options)
         : m_configPath(configPath), m_config(config), m_session(GameIds())
     {
+        LoadProfiles(); // before anything reads the settings: the active profile's keys and languages
         m_s = &SlotFor(FindEnabledGame(game.id, config) != nullptr ? game : *FindGame("ssa"));
         SetActiveGame(m_s->game.id);
         m_autoPlay = options.play;
@@ -714,7 +715,7 @@ namespace launcher_ui
             if (!name.empty())
             {
                 SetGameMouseButton(m_config, m_s->game.id, *m_mouseCapturing, name);
-                if (!SaveLauncherConfig(m_configPath, m_config))
+                if (!SaveConfig())
                     Toast(Tr("Couldn't save the settings"), ui::ToastKind::Error);
                 m_mouseCapturing = nullptr;
                 return;
@@ -848,7 +849,7 @@ namespace launcher_ui
     void App::Set(const char* section, const char* key, const std::string& value)
     {
         m_config[section][key] = value;
-        if (!SaveLauncherConfig(m_configPath, m_config))
+        if (!SaveConfig())
             Toast(Tr("Couldn't save the settings"), ui::ToastKind::Error);
     }
 
@@ -905,7 +906,7 @@ namespace launcher_ui
         if (!m_s->fromCopy)
             Set(m_s->game.id, "iso", m_s->discPath); // remembered even if the player quits without playing
         StoreDiscLanguages(m_config, m_s->game.id, m_s->check.languages);
-        if (!SaveLauncherConfig(m_configPath, m_config))
+        if (!SaveConfig())
             Toast(Tr("Couldn't save the settings"), ui::ToastKind::Error);
         m_s->verify.StartScenes(m_s->discPath, m_s->game.id);
         m_s->disc = DiscState::Ready;
@@ -967,7 +968,10 @@ namespace launcher_ui
             // The game starts beside the window, which stays: one game at a time (GameSession refuses a second one).
             if (!m_s->fromCopy)
                 Set(m_s->game.id, "iso", m_s->discPath);
-            const GameLaunch launch = PrepareGameLaunch(m_s->game, m_config, m_configPath, m_s->installed.runtime);
+            GameLaunch launch = PrepareGameLaunch(m_s->game, m_config, GameSettingsPath(), m_s->installed.runtime);
+            if (GameSettingsPath() != m_configPath) // a profile's own settings file (profiles_page.cpp)
+                launch.variables.emplace_back("SKY_SETTINGS", GameSettingsPath());
+            RememberProfileGame(m_s->game.id);
             std::string error;
             if (launch.runtime.empty())
                 Toast(launch.error.empty() ? Tr("Couldn't start the game: the file is missing") : launch.error, ui::ToastKind::Error);
@@ -998,9 +1002,12 @@ namespace launcher_ui
             m_sessionStart = now;
         if (!ended)
             return;
-        // The game writes its own section of launcher.ini (the F3 menu): read it again, or the next save here would put
-        // back the values from before the game.
-        m_config = LoadLauncherConfig(m_configPath);
+        // The game writes its own section of its settings file (the F3 menu): read it again, or the next save here would put
+        // back the values from before the game (a profile's own file is handed back to launcher.ini and the profile's).
+        if (GameSettingsPath() == m_configPath)
+            m_config = LoadLauncherConfig(m_configPath);
+        else
+            TakeBackGameSettings();
         // A crash dialog can wait for acknowledgement; the visible page's theme resumes while it is open too.
         m_music.Update(gamemusic::Playback{ .game = m_s->game.id, .gamePage = m_page == Page::Play,
             .running = !m_session.Running().empty(), .installing = AnyInstalling(),
@@ -1458,7 +1465,10 @@ namespace launcher_ui
             ui::PushText(ui::TextStyle::Caption);
             ui::DrawText(draw, ImVec2(left, y), ui::Col(ui::color::Dim), Tr("Native PC ports"));
             ui::PopText();
-            y += ui::type::Caption + ui::space::L;
+            // Who plays (profiles_page.cpp).
+            ImGui::SetCursorScreenPos(ImVec2(left - ui::space::S, y + ui::type::Caption + ui::space::M));
+            DrawProfileButton();
+            y = ImGui::GetCursorScreenPos().y + ui::space::S;
             ui::PushText(ui::TextStyle::Caption, true);
             ui::DrawText(draw, ImVec2(left, y), ui::Col(ui::color::Dim), Tr("YOUR GAMES"));
             ui::PopText();
@@ -2611,6 +2621,7 @@ namespace launcher_ui
         m_lastPage = m_page; // LogoDrop: a new arrival on the game page starts the logo's fall
         DrawWhatsNew();
         DrawIntegrity();
+        DrawProfileEditor();
         DrawProblemReport();
         DrawQuitPrompt();
         DrawToast();

@@ -46,7 +46,7 @@ namespace launcher_ui
         if (SettingGet(m_config, m_s->game.id, "iso") == path)
             m_config[m_s->game.id].erase("iso"); // it never was this game's disc
         StartGameDisc();
-        if (!SaveLauncherConfig(m_configPath, m_config))
+        if (!SaveConfig())
             Toast(Tr("Couldn't save the settings"), ui::ToastKind::Error);
 
         target.started = true; // its own start (below) replaces the first-visit one

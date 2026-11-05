@@ -145,7 +145,7 @@ namespace launcher_ui
         }
         else
             section["state"] = state;
-        if (!SaveLauncherConfig(m_configPath, m_config))
+        if (!SaveConfig())
             Toast(Tr("Couldn't save the settings"), ui::ToastKind::Error);
     }
 

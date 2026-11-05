@@ -16,6 +16,7 @@
 #include "launcher/integrity.h"
 #include "launcher/updater.h"
 #include "launcher/launcher.h"
+#include "launcher/profiles.h"
 #include "launcher/ui/launcher_ui.h"
 #include "launcher/portal_status.h"
 #include "launcher/uninstall.h"
@@ -358,6 +359,20 @@ namespace launcher_ui
         // A game's achievements and play time (achievements_page.cpp), opened from its Play page.
         void DrawAchievements();
         void RefreshProgress(bool force = false);
+        // Player profiles (profiles_page.cpp, launcher/profiles.h): the active one's environment and settings.
+        void LoadProfiles();
+        void UseProfileEnvironment();
+        LauncherConfig ProfileConfig() const;
+        bool SaveConfig(); // m_config to launcher.ini, and the player's part to the profile's file
+        std::string GameSettingsPath() const;
+        void TakeBackGameSettings();
+        void SwitchProfile(const std::string& id);
+        void RememberProfileGame(const std::string& game);
+        unsigned ProfileColor(const profiles::Profile& profile) const;
+        void DrawAvatar(ImDrawList* draw, ImVec2 center, float radius, const profiles::Profile& profile);
+        void DrawProfileButton();
+        void OpenProfileEditor(const std::string& id); // empty: a new profile
+        void DrawProfileEditor();
         const ArtTexture* AchievementIcon(const std::filesystem::path& image);
         void DrawGameVideo();
         void DrawGameKeyboard();
@@ -558,6 +573,18 @@ namespace launcher_ui
 
         std::string m_configPath;
         LauncherConfig& m_config;
+        profiles::List m_profiles;
+        std::vector<std::pair<std::string, std::optional<std::string>>> m_profileEnv; // as the launcher found them
+        std::map<std::string, ArtTexture> m_avatars; // the profiles' pictures, by file
+        struct ProfileEditor
+        {
+            bool open = false;
+            std::string id; // empty: a new profile
+            char name[64] = {};
+            int color = 2;
+            std::string picture; // a picture chosen this time (a file), not yet the profile's
+            bool removePicture = false;
+        } m_profileEditor;
         bool m_running = true;
         bool m_quitPrompt = false; // a quit asked during an install: confirm it
         int m_busyFrames = 0; // frames still drawn after an input, while ImGui settles (hover, focus, menus)

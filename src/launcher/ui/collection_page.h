@@ -70,6 +70,8 @@ namespace launcher_ui
         void TestHeroPortal(bool installing, bool running);
         // The pictures come from the disc once it is verified: drop the cached textures.
         void ClearIcons();
+        // Another player profile became active: its Toy Box and its seats are read again.
+        void ProfileChanged() { Reload(); }
         // A dropped file or folder: figure dumps join the collection. False if it holds none (a disc image).
         bool Drop(const std::string& path);
         std::string Folder() const;

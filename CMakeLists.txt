@@ -124,6 +124,7 @@ add_library(ArkeyanLauncherCore STATIC
     src/launcher/game_music.cpp
     src/launcher/ui/launcher_ui.cpp
     src/launcher/ui/collection_page.cpp
+    src/launcher/ui/profiles_page.cpp
     src/launcher/ui/collection_figure.cpp
     src/launcher/ui/collection_add.cpp
     src/launcher/ui/collection_manage.cpp

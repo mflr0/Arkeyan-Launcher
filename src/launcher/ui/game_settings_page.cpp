@@ -332,7 +332,7 @@ namespace launcher_ui
             if (ui::Toggle("##mouseon", &on))
             {
                 SetGameMouseOn(m_config, game, on);
-                if (!SaveLauncherConfig(m_configPath, m_config))
+                if (!SaveConfig())
                     Toast(Tr("Couldn't save the settings"), ui::ToastKind::Error);
                 m_mouseCapturing = nullptr;
             }
@@ -478,7 +478,7 @@ namespace launcher_ui
         m_s->installView = m_s->kitUsed = false;
         m_config[m_s->game.id].erase("iso");
         StoreDiscLanguages(m_config, m_s->game.id, {});
-        if (!SaveLauncherConfig(m_configPath, m_config))
+        if (!SaveConfig())
             Toast(Tr("Couldn't save the settings"), ui::ToastKind::Error);
         RefreshInstall();
     }
@@ -645,7 +645,7 @@ namespace launcher_ui
 
     void App::RunUninstall(const DataResult& result)
     {
-        if (!SaveLauncherConfig(m_configPath, m_config))
+        if (!SaveConfig())
             Toast(Tr("Couldn't save the settings"), ui::ToastKind::Error);
         m_s->installed = {};
         RefreshInstall();

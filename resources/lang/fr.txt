@@ -986,3 +986,17 @@ The game tools are repaired	Les outils du jeu sont réparés
 Couldn't repair the game tools: {}	Réparation des outils du jeu impossible : {}
 The disc is still being checked: try again in a moment	Le disque est encore en cours de vérification : réessayez dans un instant
 Repair needs the disc of {}	La réparation a besoin du disque de {}
+Change profile	Changer de profil
+Quit the game to change profile	Quittez le jeu pour changer de profil
+Add a profile	Ajouter un profil
+Edit my profile	Modifier mon profil
+Edit the profile	Modifier le profil
+New profile	Nouveau profil
+Pseudo, shown in the games	Pseudo, affiché dans les jeux
+Picture	Photo
+Import an image...	Importer une image...
+Initials	Initiales
+Colour	Couleur
+Create the profile	Créer le profil
+Couldn't read this image	Impossible de lire cette image
+Welcome, {}	Bienvenue, {}
