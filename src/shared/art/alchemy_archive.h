@@ -12,6 +12,7 @@
 #include <functional>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace art::alchemy
@@ -28,6 +29,7 @@ namespace art::alchemy
     {
         uint32_t version;
         bool verified;
+        bool bigEndian = false; // IGA only: v11 comes in both byte orders
     };
     std::vector<FormatVersion> IgaVersions();
     std::vector<FormatVersion> IgzVersions();
@@ -104,6 +106,10 @@ namespace art::alchemy
         std::optional<uint64_t> Pointer(uint32_t value) const;
         // The NUL-terminated text at a file offset (at most 512 bytes).
         std::string String(uint64_t at) const;
+        // v7-v9: the data words of the record with this tag ("ROOT", "ONAM", "EXNM"); empty when the file has none.
+        std::vector<uint32_t> RecordWords(std::string_view tag) const;
+        // v7-v9: the strings of TSTR (EXNM's names are indices here).
+        const std::vector<std::string>& StringTable() const { return m_strings; }
 
     private:
         struct Fixup
@@ -117,6 +123,7 @@ namespace art::alchemy
         std::vector<uint8_t> m_bytes;
         std::vector<uint64_t> m_pools; // file offsets of sections 1.. (a pointer's pool n is section n + 1)
         std::vector<std::pair<uint32_t, Fixup>> m_fixups;
+        std::vector<std::pair<uint32_t, Fixup>> m_records; // every record by its stored tag (RecordWords)
         std::vector<std::string> m_types;
         std::vector<std::string> m_strings; // v7: TSTR
     };
