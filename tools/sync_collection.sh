@@ -31,6 +31,12 @@ fi
 if [[ -f "$from/$lib/host/env.h" ]]; then
     pairs+=("$lib/host/env.h:src/shared/env.h")
 fi
+# The Toy Box link (the window and the running game speak it), from the 0.9.4 runtime on.
+if [[ -f "$from/$lib/host/toybox_link.h" ]]; then
+    for f in toybox_link toybox_socket; do
+        pairs+=("$lib/host/$f.h:src/shared/$f.h" "$lib/host/$f.cpp:src/shared/$f.cpp")
+    done
+fi
 if [[ -f "$from/$lib/host/runtime_names.h" ]]; then
     pairs+=("$lib/host/runtime_names.h:src/shared/runtime_names.h")
 fi
