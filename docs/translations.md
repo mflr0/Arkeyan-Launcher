@@ -4,10 +4,26 @@ The launcher's own text (pages, buttons, states, notifications, dialogs, install
 language. The game's text and voice languages are a different thing: they are the game's, set in each game's settings
 (Language tab, `[<game>] language`).
 
-## The languages
-The launcher has English (the source), French (`fr`), German (`de`), Spanish (`es`), Italian (`it`) and Portuguese (`pt`,
-European). Each uses the informal address of the games, and the Skylanders words the games use in that language.
-The other disc languages (`nl`, `sv`, `no`, `da`, `fi`) are added the same way ("Adding a language").
+## Languages
+English (the source) and ten more: French (`fr`), German (`de`), Spanish (`es`, Spain), Italian (`it`), Portuguese (`pt`, European),
+Dutch (`nl`), Swedish (`sv`), Norwegian (`no`, Bokmål), Danish (`da`) and Finnish (`fi`). Each uses the informal address the games
+use, and the Skylanders words the games use in that language (see "Where the words come from"). Each file has every string of
+the dump; the full test prints `Language <code>: N strings, N in the code` for each, and `text_fit_test.cpp` checks the widths.
+
+## Where the words come from
+Skylanders words are the games' own, not a translator's guess. Per language, the sources are the player's discs (read only, single
+terms only: nothing of them is in git):
+- Spyro's Adventure's own interface text in every one of its ten languages (`text/<language>/global.lxb`): the elements, "Hero Level"
+  and "Level Up", the Portal Master, Soul Gems, magic items, "Skylander" in the plural, the stage word. It is the only source for
+  `nl`, `sv`, `no`, `da` and `fi`.
+- The achievements' names and descriptions (`ReadGameProgress`, the XDBF strings) of the six games, which the console holds in
+  `en fr de es it pt` only: Giants, Swap Force, Trap Team, SuperChargers and Imaginators' words (vehicle, mod, Sensei, trap,
+  villain, Legendary, Nightmare, Eon's Elite) for those languages.
+- Where the games leave a word in English (Portal of Power, Toy Box, Trap Masters in some languages), the launcher does too. A term no
+  disc gives in a language (the ten Imaginators battle classes, Light and Dark as nouns, the later games' words in `nl sv no da fi`)
+  is the natural word of that language, not the game's [?].
+- Two words a language says apart are kept apart: a figure's level ("Stufe", "nivå", "taso") and a stage of the game ("Level", "bana",
+  "kenttä"). The launcher only shows the first.
 
 ## How it works
 - **English is the source, and the key.** The code writes the English text and asks for it translated: `Tr("Cancel")`.
@@ -26,11 +42,6 @@ The other disc languages (`nl`, `sv`, `no`, `da`, `fi`) are added the same way (
   the command-line help, and what other programs print: the installer kit's own lines in the install log, the game's portal
   test answers, GitHub's messages. A message built before the language changed (a toast already shown, a disc check's result)
   stays in the language it was made in until it is made again.
-
-## Languages the launcher has
-English (the source), French (`fr`), Dutch (`nl`), Swedish (`sv`), Norwegian (`no`), Danish (`da`) and Finnish (`fi`). Each file has
-every string of the dump; the full test prints `Language <code>: N strings, N in the code` for each, and `text_fit_test.cpp` checks
-the widths.
 
 ## Which language is shown
 The launcher's language is its own: it never follows the game that is shown. Settings > Launcher > Language:
@@ -81,3 +92,10 @@ things are particular to them:
   ("Doom Stone", "Magna Jet") is data too; the words around it ("Swapper", "Top: ... · Bottom: ...", "Change the
   bottom", "Change the top") are translated, with the Toy Box's French ("Changer le bas", "Changer le haut").
 - **A count with a plural** is two strings (`{} figure`, `{} figures`), as everywhere.
+- **The library's own texts** (a figure's level line "Level 10 (15)", "Shield 2 · Weapon 3", "New", "Unreadable", an Imaginators crystal's
+  battle class, a seat's tag, the sort names, the figures' count) are English in the shared library, with a French variant the
+  launcher no longer asks for: `LevelLabel`, `CardLevelLabel`, `SeatTagText`, `SortText` and `FigureCountText`
+  (`collection_page.cpp`) put each piece through `Tr`/`Tf`, so every language shows its own. The upgrades' names and descriptions are
+  the game's own text, written at the disc check in every language of the disc (`languages` of `upgrades` in
+  `resources/games/<id>/art.json`; Spyro's Adventure and Giants have all of theirs) and asked for in the launcher's language, English
+  where a text is missing; a disc checked by an older version has English and French only until it is checked again.
