@@ -46,7 +46,9 @@ ninth row, **Making HD textures** (`hdtextures`, weighted like a fifth of an ins
 (`InstallProgress::hdTextures`). The kit must know the option: `InstallKit::hdTextures` is true when its builder's file holds the text
 `--hd-textures` (its usage line), so the kit 0.9.1 and later; with an older kit the install does not ask for it and the row is
 disabled. On a game already built the switch runs the step alone (`GameInstaller::StartHdTextures`, no `--out`; log
-`<game folder>/hd-textures.log`, never `install.log`; none of an install's housekeeping). [V] design; the real run is in `docs/launcher_ui.md`.
+`<game folder>/hd-textures.log`, never `install.log`; none of an install's housekeeping). If that step fails, the build is reported as failed (Retry redoes only what is left); turning the switch off in the game's settings lets the next try finish
+without it. Remove game deletes `textures-hd/` with the build (it is not among the folders kept, `game_settings.cpp`), the switch keeps its value, and
+the next install makes the pack again. [V] by `HdTexturesChecks` (`tests/hd_textures_checks.h`, the fake builder) and `SKY_LAUNCHER_TEST_HDTEX` (`docs/launcher_ui.md`).
 
 Cancel stops only the process the launcher started: SIGTERM then SIGKILL after 3 s on macOS and Linux; on Windows
 Arkeyan-Builder runs in a job object, so the compilers it started stop with it (also when the launcher is closed).
