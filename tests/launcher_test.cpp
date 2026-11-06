@@ -1534,6 +1534,7 @@ static void SwitchChecks(const std::filesystem::path& scratch, const std::string
     config["launcher"]["kit"] = SKYLAUNCHER_FAKE_KIT;
     config["ssa"]["iso"] = ssaIso;
     config["giants"]["iso"] = giantsIso;
+    config["launcher"]["game_music"] = "0"; // a menu theme fading out holds PLAY for a moment: the script checks it at once
     launcher_ui::App app(*FindGame("ssa"), ini, config);
     std::string chosen = app.Run();
     EXPECT(app.TestFailures() == 0);
@@ -1869,6 +1870,22 @@ static void SceneChecks(const std::filesystem::path& scratch)
         art::Image light = art::LightOnBlack(onBlack);
         EXPECT(light.width == 2 && light.height == 1 && light.rgba[0] == 0x620080FF && light.rgba[1] == 0xFFFFFFFF);
         EXPECT(art::LightOnBlack(art::Image{ 2, 1, { 0xFF000000, 0xFF000000 } }).rgba.empty());
+    }
+    {
+        // The title screen's logo: a 200x100 picture, black, a white plate around a dark blue 40x20 title; the cut-out keeps
+        // the title opaque in its own colour, with a white rim, and the far black transparent.
+        art::Image burst{ 200, 100, {} };
+        for (uint32_t y = 0; y < burst.height; y++)
+            for (uint32_t x = 0; x < burst.width; x++)
+            {
+                const bool title = x >= 80 && x < 120 && y >= 40 && y < 60, plate = x >= 60 && x < 140 && y >= 25 && y < 75;
+                burst.rgba.push_back(title ? 0xFF801008 : plate ? 0xFFFFFFFF : 0xFF000000);
+            }
+        const art::Image cut = art::TitleCut(burst);
+        EXPECT(cut.width > 40 && cut.width < 200 && cut.height > 20 && cut.height < 100);
+        EXPECT(!cut.rgba.empty() && cut.rgba[size_t(cut.height / 2) * cut.width + cut.width / 2] == 0xFF801008 &&
+            cut.rgba[0] >> 24 < 0x10);
+        EXPECT(art::TitleCut(art::Image{ 2, 1, { 0xFF000000, 0xFF000000 } }).rgba.empty());
     }
     {
         // An STFS package as the discs' dashboard art (art/stfs.h): one table, a file in consecutive blocks and one whose
@@ -2670,7 +2687,7 @@ static int RunChecks(int argc, char** argv)
 
     printf("Launcher catalog and display helpers:\n");
     auto catalog = LauncherGameCatalog();
-    EXPECT(catalog.size() == 7); // the six console games and SuperChargers Racing
+    EXPECT(catalog.size() == 9); // the six console games, SuperChargers Racing, Cloud Patrol and Lost Islands
     EXPECT(std::string(catalog.front().id) == "ssa");
     EXPECT(catalog.front().enabled);
     EXPECT(std::string(catalog.front().name) == "Spyro's Adventure");

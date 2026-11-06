@@ -367,7 +367,6 @@ Drag Arkeyan Launcher to Applications, replacing the old one.	Glissez Arkeyan La
 "System default" follows your system.	« Langue du système » suit votre système.
 Designed by dorydev, made by mflr0, UI/UX by Gumelia.	Conçu par dorydev, réalisé par mflr0, UI/UX par Gumelia.
 Games: XenonRecomp, XenosRecomp, plume, SDL 3, Dear ImGui, FFmpeg, parts of Xenia. Figure format learned from Dolphin and RPCS3.	Jeux : XenonRecomp, XenosRecomp, plume, SDL 3, Dear ImGui, FFmpeg, des parties de Xenia. Format des figurines appris de Dolphin et RPCS3.
-Imaginators' logo: Dycamax, Wikimedia Commons, CC BY-SA 4.0.	Logo d'Imaginators : Dycamax, Wikimedia Commons, CC BY-SA 4.0.
 The game's last log, for a bug report.	Le dernier journal du jeu, pour un rapport de bug.
 The portal can't be opened: using the virtual portal.	Le portail ne s'ouvre pas : le portail virtuel est utilisé.
 The portal can't be opened: the game will wait.	Le portail ne s'ouvre pas : le jeu attendra.
@@ -616,7 +615,6 @@ Name this toy	Nommer ce jouet
 Named: shown at the next start	Nommé : affiché au prochain lancement
 Never	Jamais
 New: never played.	Neuve : jamais jouée.
-Nickname	Surnom
 No element	Aucun élément
 No figure matches	Aucune figurine ne correspond
 No game this launcher knows	Aucun jeu connu de ce launcher
@@ -990,18 +988,18 @@ Change profile	Changer de profil
 Quit the game to change profile	Quittez le jeu pour changer de profil
 Add a profile	Ajouter un profil
 Edit my profile	Modifier mon profil
-Edit the profile	Modifier le profil
+Edit profile	Modifier le profil
 New profile	Nouveau profil
-Pseudo, shown in the games	Pseudo, affiché dans les jeux
+Nickname	Surnom
 Picture	Photo
 Import an image...	Importer une image...
 Initials	Initiales
-Colour	Couleur
+Color	Couleur
 Create the profile	Créer le profil
 Couldn't read this image	Impossible de lire cette image
 Welcome, {}	Bienvenue, {}
 Profiles	Profils
-Manage the profiles	Gérer les profils
+Manage profiles	Gérer les profils
 Each has its own Toy Box, saves, keys and achievements.	Chacun a sa Toy Box, ses sauvegardes, ses touches et ses succès.
 {} (active)	{} (actif)
 Not played yet	Pas encore joué

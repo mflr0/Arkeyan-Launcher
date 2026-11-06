@@ -7,7 +7,7 @@ the launcher's own settings belong to the computer and are shared by every profi
 
 ## In the window
 - The sidebar shows the active profile under the title: its picture, its pseudo, "Change profile". Its menu lists the
-  profiles (the active one checked), then Add a profile, Edit my profile and Manage the profiles. While a game runs, the
+  profiles (the active one checked), then Add a profile, Edit my profile and Manage profiles. While a game runs, the
   profiles are greyed: one quits the game to change.
 - Changing profile reads its Toy Box, seats, saves, keys and achievements again, and shows its last game.
 - Launcher settings > Profiles: every profile with its last game, Edit and Remove (after a confirmation; the folder goes to

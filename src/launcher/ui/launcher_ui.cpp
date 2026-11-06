@@ -1476,6 +1476,13 @@ namespace launcher_ui
             ImGui::SetCursorScreenPos(ImVec2(left - ui::space::S, y + ui::type::Caption + ui::space::XS));
         }
 
+        // The games scroll in their own list between the header and the footer (Collection, Settings), which never move.
+        const float footer = 2 * ui::height::Normal + ui::space::XXS;
+        {
+            const ImVec2 listAt = ImGui::GetCursorScreenPos();
+            const float listH = std::max(ui::height::Large, ImGui::GetWindowPos().y + ImGui::GetWindowHeight() - ui::space::L - footer - ui::space::S - listAt.y);
+            ImGui::BeginChild("##games", ImVec2(SidebarW - 2 * ui::space::S, listH), ImGuiChildFlags_NavFlattened, ImGuiWindowFlags_NoScrollbar);
+        }
         // The games: only those with a runtime can be selected. The ones not out yet fold into one row under them.
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, ui::space::XXS));
         std::vector<const LauncherGameEntry*> later;
@@ -1522,10 +1529,10 @@ namespace launcher_ui
         }
         if (!later.empty())
         {
-            // One compact row; opened, the games to come are listed under it, quietly.
+            // One compact row; opened, the games to come are listed under it, quietly (the list scrolls to them).
             ImGuiStorage* storage = ImGui::GetStateStorage();
             const ImGuiID openKey = ImGui::GetID("##coming-later");
-            const bool open = storage->GetBool(openKey, m_testExperimental && m_testStep == 0);
+            const bool open = storage->GetBool(openKey, false);
             const std::string count = std::to_string(later.size());
             ui::ListRowOptions options;
             options.trailing = count.c_str();
@@ -1533,7 +1540,11 @@ namespace launcher_ui
             options.leadWidth = GameLogoW;
             options.dim = true;
             if (ui::ListRow(Tr("Coming later"), options))
+            {
                 storage->SetBool(openKey, !open);
+                if (!open)
+                    ImGui::SetScrollHereY(0.0f); // the opened row at the top, the games under it in view
+            }
             if (open)
                 for (const LauncherGameEntry* entry : later)
                 {
@@ -1546,10 +1557,10 @@ namespace launcher_ui
                     ui::ListRow(entry->name, game);
                 }
         }
+        ImGui::EndChild();
 
         // The collection, then Settings, at the bottom of the sidebar; selected while their page is shown.
-        const float footer = 2 * ui::height::Normal + ui::space::XXS;
-        ImGui::SetCursorPosY(std::max(ImGui::GetCursorPosY(), ImGui::GetWindowHeight() - ui::space::L - footer));
+        ImGui::SetCursorPosY(ImGui::GetWindowHeight() - ui::space::L - footer);
         {
             ui::ListRowOptions options;
             options.icon = ui::Icon::Star;
@@ -1840,8 +1851,9 @@ namespace launcher_ui
             ui::PopText();
         }
         const float pillY = foot - ui::height::Small - hintH - ui::space::M;
-        const float buttonY = running ? foot - ui::type::Body - ui::space::L - ui::height::Large
-            : pillY - ui::space::M - (installing ? 2 * ui::height::Normal + ui::space::L : ui::height::Main);
+        // The same rows running or not (the logo, the status and the button do not move when the game starts): the running
+        // game's hint takes the pickers' row.
+        const float buttonY = pillY - ui::space::M - (installing ? 2 * ui::height::Normal + ui::space::L : ui::height::Main);
         const float statusY = buttonY - ui::space::L - ui::type::Body;
         const ArtTexture* logo = m_testHeroNoArt ? nullptr : m_s->logo ? &m_s->logo : CachedArt(m_s->game.id, LauncherAssets::Role::Logo, 0);
         const float titleW = std::min(leftW, ui::hero::TitleWidth);
@@ -2016,7 +2028,7 @@ namespace launcher_ui
             }
         }
 
-        ImGui::SetCursorScreenPos(ImVec2(left, running ? buttonY + ui::height::Large + ui::space::L : pillY + ui::height::Small + ui::space::M));
+        ImGui::SetCursorScreenPos(ImVec2(left, running ? pillY + (ui::height::Small - ui::type::Body) / 2 : pillY + ui::height::Small + ui::space::M));
         if (noDisc)
             ui::Text(ui::TextStyle::Body, Tr("Or drop your .iso on this window. It stays on this computer."), ui::color::InkSoft, leftW);
         else if (installing)
@@ -3220,7 +3232,7 @@ namespace launcher_ui
             if (m_testStep == Toasts + 1)
             {
                 expect(m_toasts.Items().size() == 4 && m_toasts.Items()[2].kind == ui::ToastKind::Error, "four messages, one an error");
-                m_testAt = now + 3500; // the others have gone by themselves
+                m_testAt = now + 8500; // the others have gone by themselves (a message stays 5 to 8 s: feedback.cpp)
                 m_testShot = fmt::format("{:02}-toasts-error-kept", m_testStep);
                 break;
             }
@@ -3423,7 +3435,8 @@ namespace launcher_ui
         static const std::vector<int> Steps[] = {
             {},                                                        // 40: the game page
             { ImGuiKey_Escape, ImGuiKey_Escape },                      // 41: B: Home; B again: the ring on the game's row in the sidebar
-            { ImGuiKey_DownArrow, ImGuiKey_DownArrow, ImGuiKey_DownArrow, ImGuiKey_DownArrow, ImGuiKey_DownArrow, ImGuiKey_DownArrow }, // 42: down: past the five other games and Coming later
+            { ImGuiKey_DownArrow, ImGuiKey_DownArrow, ImGuiKey_DownArrow, ImGuiKey_DownArrow, ImGuiKey_DownArrow, ImGuiKey_DownArrow,
+              ImGuiKey_DownArrow }, // 42: down: past the five other games and Coming later
             { ImGuiKey_Space },                                        // 43: A: Collection, the ring on Add a figure
             { ImGuiKey_GamepadFaceUp },                                // 44: Y: the search box takes the keyboard
             { ImGuiKey_Escape },                                       // 45: B: out of the search
@@ -3432,9 +3445,10 @@ namespace launcher_ui
             { ImGuiKey_DownArrow, ImGuiKey_DownArrow, ImGuiKey_DownArrow }, // 48: down: Cancel (choosing), the search's row, the shelf's first row
             { ImGuiKey_Space },                                        // 49: A: it goes on the seat, the choosing ends
             { ImGuiKey_GamepadFaceLeft },                              // 50: X: the focused card's sheet
-            { ImGuiKey_GamepadFaceRight, ImGuiKey_GamepadFaceRight },  // 51: B, B: closed, back to Home
-            { ImGuiKey_Escape, ImGuiKey_DownArrow, ImGuiKey_DownArrow, ImGuiKey_DownArrow, ImGuiKey_DownArrow, ImGuiKey_DownArrow, ImGuiKey_DownArrow,
-              ImGuiKey_DownArrow, ImGuiKey_Space, ImGuiKey_GamepadR2 },                                    // 52: B to the sidebar, down to Settings, A, RT: Settings > Launcher
+            { ImGuiKey_GamepadFaceRight, ImGuiKey_GamepadFaceRight, ImGuiKey_GamepadFaceRight }, // 51: B, B: closed, back to Home; B: the game's row
+                                                                                              // (a frame late: in the next step, downs would move the grid)
+            { ImGuiKey_DownArrow, ImGuiKey_DownArrow, ImGuiKey_DownArrow, ImGuiKey_DownArrow, ImGuiKey_DownArrow, ImGuiKey_DownArrow, ImGuiKey_DownArrow, ImGuiKey_DownArrow,
+              ImGuiKey_Space, ImGuiKey_GamepadR2 }, // 52: down to Settings, A, RT: Settings > Launcher
             { ImGuiKey_Escape },                                       // 53: Escape: back to Home
         };
         // Where each step's keys must have led (checked when the next step begins): the sidebar's rows, the collection, the
@@ -3490,7 +3504,8 @@ namespace launcher_ui
                 io.AddKeyEvent(key, false);
             holding = holding || (step & Hold) != 0;
         }
-        m_testAt = now + (holding ? 1500 : 600);
+        // A pressed key takes two frames of the queue, and an idle window draws few: 100 ms a key past five.
+        m_testAt = now + (holding ? 1500 : 600) + 100 * uint64_t(std::max(0, int(Steps[m_testStep].size()) - 5));
     }
 
     // The action button's states (SKY_LAUNCHER_TEST_BUTTONS, with a [launcher] kit= that is the fake kit and both games'
@@ -4261,8 +4276,11 @@ std::span<const LauncherGameEntry> LauncherGameCatalog(const LauncherConfig& con
         { "superchargers", GameName("superchargers", GameNameForm::Short), 0xFF8A5C, true },
         { "racing", GameName("racing", GameNameForm::Short), 0xE85D75, false },
         { "imaginators", GameName("imaginators", GameNameForm::Short), 0xB49BFF, true },
+        { "cloudpatrol", GameName("cloudpatrol", GameNameForm::Short), 0x7FD4FF, false },
+        { "lostislands", GameName("lostislands", GameNameForm::Short), 0x7BD88F, false },
     };
-    (void)config; // every console game but SuperChargers Racing is shown; an old experimental_superchargers line is ignored
+    (void)config; // every console game but SuperChargers Racing is shown, then the phone games, coming later; an old
+                  // experimental_superchargers line is ignored
     return catalog;
 }
 

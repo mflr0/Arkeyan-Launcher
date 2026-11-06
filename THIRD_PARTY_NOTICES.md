@@ -349,12 +349,6 @@ License: SIL Open Font License 1.1. Source: `resources/fonts/`; the full license
 The GitHub link's icon is the "mark-github" glyph of Primer Octicons, redrawn as an outline (`src/launcher/ui/launcher_ui.cpp`).
 License: MIT, Copyright (c) GitHub Inc.
 
-## Not shipped: Imaginators' logo
-
-The launcher downloads Imaginators' logo for its game page once the player's disc is checked; it is not part of the
-download. Source: [Skylanders-imaginators-logo.png](https://commons.wikimedia.org/wiki/File:Skylanders-imaginators-logo.png),
-by Dycamax, Wikimedia Commons, [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
-
 ## Facts from other projects (no code)
 
 The figures' tag format (the blocks and their checksums) was learned by reading the Skylanders portal code of Dolphin and

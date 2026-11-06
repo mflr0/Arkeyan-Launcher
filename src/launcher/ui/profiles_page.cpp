@@ -208,7 +208,7 @@ namespace launcher_ui
                 OpenProfileEditor({});
             if (ui::MenuItem(Tr("Edit my profile"), { ui::Icon::None }))
                 OpenProfileEditor(m_profiles.active);
-            if (ui::MenuItem(Tr("Manage the profiles"), { ui::Icon::Gear }))
+            if (ui::MenuItem(Tr("Manage profiles"), { ui::Icon::Gear }))
             {
                 GoTo(Page::Settings);
                 m_tab = SettingsTab::Profiles;
@@ -292,7 +292,7 @@ namespace launcher_ui
             return;
         const profiles::Profile* existing = m_profiles.Find(editor.id);
         bool open = true;
-        if (!ui::BeginModal("##profileeditor", existing != nullptr ? Tr("Edit the profile") : Tr("New profile"), &open, ui::ModalSize::Medium))
+        if (!ui::BeginModal("##profileeditor", existing != nullptr ? Tr("Edit profile") : Tr("New profile"), &open, ui::ModalSize::Medium))
         {
             editor.open = open;
             return;
@@ -321,7 +321,7 @@ namespace launcher_ui
             DrawAvatar(draw, center, big / 2, preview);
         ImGui::SetCursorScreenPos(ImVec2(at.x + big + ui::space::L, at.y));
         ImGui::BeginGroup();
-        ui::Text(ui::TextStyle::Caption, Tr("Pseudo, shown in the games"), ui::color::InkSoft);
+        ui::Text(ui::TextStyle::Caption, Tr("Nickname"), ui::color::InkSoft);
         ui::TextField("##profilename", editor.name, sizeof(editor.name), { .hint = Tr("Player 1"), .width = 300 });
         ImGui::Dummy(ImVec2(0, ui::space::XS));
         ui::Text(ui::TextStyle::Caption, Tr("Picture"), ui::color::InkSoft);
@@ -345,7 +345,7 @@ namespace launcher_ui
                 editor.picture.clear(), editor.removePicture = true;
         }
         ImGui::Dummy(ImVec2(0, ui::space::XS));
-        ui::Text(ui::TextStyle::Caption, Tr("Colour"), ui::color::InkSoft);
+        ui::Text(ui::TextStyle::Caption, Tr("Color"), ui::color::InkSoft);
         for (int color = 0; color < 10; color++)
         {
             if (color > 0)

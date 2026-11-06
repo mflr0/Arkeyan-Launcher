@@ -36,7 +36,7 @@ namespace art
     {
         // Bump when a picture is read or composed differently: the cached pictures (not the portraits) are made again.
         constexpr int CacheVersion =
-            6; // 6: Imaginators' logo made transparent; 5: the scenes (<cache>/scenes/); 4: Swap Force's logo from its
+            7; // 7: Imaginators' logo cut from the title screen's picture (title_cut); 6: Imaginators' logo made transparent; 5: the scenes (<cache>/scenes/); 4: Swap Force's logo from its
                // lossless 32-bit picture
 
         std::string Lower(std::string text)
@@ -381,8 +381,6 @@ namespace art
             collection::Json upgrades;
             // Imaginators' creation parts' names (game_text.cpp): the manifest's "parts" part as it is.
             collection::Json parts;
-            // A cleaner logo than the disc's, downloaded by the launcher once the disc is verified (LogoDownload).
-            std::string logoUrl;
         };
 
         std::vector<Materials> ReadMaterials(const collection::Json& json)
@@ -395,9 +393,10 @@ namespace art
 
         Source ReadSource(const collection::Json& json)
         {
-            return { json["stream"].AsString(), json["archive"].AsString(), json["entry"].AsString(),
+            Source source{ json["stream"].AsString(), json["archive"].AsString(), json["entry"].AsString(),
                 json["picture"].AsString(), json["compose"].AsString(), json["plate"].AsString(),
                 json["package"].AsString(), json["file"].AsString() };
+            return source;
         }
 
         const std::vector<Manifest>& Manifests()
@@ -418,7 +417,6 @@ namespace art
                     Manifest m;
                     m.game = json["game"].AsString();
                     m.logo = ReadSource(json["logo"]);
-                    m.logoUrl = json["logo_download"]["url"].AsString();
                     m.background = ReadSource(json["background"]);
                     for (const collection::Json& group : json["scenes"].Items())
                     {
@@ -586,6 +584,8 @@ namespace art
                     out = LightOnBlack(picture);
                 else if (source.compose == "feather")
                     out = Feather(picture);
+                else if (source.compose == "title_cut")
+                    out = TitleCut(picture);
                 else if (source.compose.empty())
                     out = std::move(picture);
                 else
@@ -910,12 +910,6 @@ namespace art
         return 0;
     }
 
-    std::string LogoDownload(std::string_view game)
-    {
-        const Manifest* where = FindManifest(game);
-        return where != nullptr && where->logoUrl.starts_with("https://") ? where->logoUrl : std::string();
-    }
-
     std::string PickScene(const std::vector<std::string>& names, std::string_view last, uint32_t random)
     {
         std::vector<const std::string*> choices;
@@ -923,6 +917,202 @@ namespace art
             if (name != last || names.size() < 2)
                 choices.push_back(&name);
         return choices.empty() ? std::string() : *choices[random % choices.size()];
+    }
+
+    namespace
+    {
+        // A mask's 4-connected pieces (`on` pixels): the label of each pixel (-1: off) and each piece's size and whether it
+        // touches the picture's edge.
+        struct Pieces
+        {
+            std::vector<int> label;
+            std::vector<int> size;
+            std::vector<char> edge;
+        };
+
+        Pieces Label(const std::vector<char>& on, int w, int h)
+        {
+            Pieces out{ std::vector<int>(on.size(), -1), {}, {} };
+            std::vector<int> stack;
+            for (size_t start = 0; start < on.size(); start++)
+            {
+                if (!on[start] || out.label[start] >= 0)
+                    continue;
+                const int id = int(out.size.size());
+                out.size.push_back(0);
+                out.edge.push_back(0);
+                stack.assign(1, int(start));
+                out.label[start] = id;
+                while (!stack.empty())
+                {
+                    const int at = stack.back();
+                    stack.pop_back();
+                    out.size[id]++;
+                    const int x = at % w, y = at / w;
+                    if (x == 0 || y == 0 || x == w - 1 || y == h - 1)
+                        out.edge[id] = 1;
+                    for (const int next : { x > 0 ? at - 1 : -1, x < w - 1 ? at + 1 : -1, y > 0 ? at - w : -1, y < h - 1 ? at + w : -1 })
+                        if (next >= 0 && on[size_t(next)] && out.label[size_t(next)] < 0)
+                            out.label[size_t(next)] = id, stack.push_back(next);
+                }
+            }
+            return out;
+        }
+
+        // The mask grown by `steps` pixels (4-neighbour steps: a diamond).
+        std::vector<char> Grow(const std::vector<char>& on, int w, int h, int steps)
+        {
+            std::vector<int> distance(on.size(), -1);
+            std::vector<int> frontier;
+            for (size_t i = 0; i < on.size(); i++)
+                if (on[i])
+                    distance[i] = 0, frontier.push_back(int(i));
+            for (int step = 1; step <= steps && !frontier.empty(); step++)
+            {
+                std::vector<int> next;
+                for (const int at : frontier)
+                {
+                    const int x = at % w, y = at / w;
+                    for (const int n : { x > 0 ? at - 1 : -1, x < w - 1 ? at + 1 : -1, y > 0 ? at - w : -1, y < h - 1 ? at + w : -1 })
+                        if (n >= 0 && distance[size_t(n)] < 0)
+                            distance[size_t(n)] = step, next.push_back(n);
+                }
+                frontier = std::move(next);
+            }
+            std::vector<char> out(on.size());
+            for (size_t i = 0; i < on.size(); i++)
+                out[i] = distance[i] >= 0;
+            return out;
+        }
+
+        // The enclosed pieces of the space between walls (not touching the edge), those at least `least` times the
+        // largest one's size.
+        std::vector<char> Enclosed(const std::vector<char>& wall, int w, int h, float least)
+        {
+            std::vector<char> open(wall.size());
+            for (size_t i = 0; i < wall.size(); i++)
+                open[i] = !wall[i];
+            const Pieces pieces = Label(open, w, h);
+            int largest = 0;
+            for (size_t id = 0; id < pieces.size.size(); id++)
+                if (!pieces.edge[id])
+                    largest = std::max(largest, pieces.size[id]);
+            std::vector<char> out(wall.size(), 0);
+            for (size_t i = 0; i < wall.size(); i++)
+                if (const int id = pieces.label[i]; id >= 0 && !pieces.edge[size_t(id)] && float(pieces.size[size_t(id)]) >= least * float(largest))
+                    out[i] = 1;
+            return out;
+        }
+
+        // A separable box blur of radius r.
+        std::vector<float> Blur(std::vector<float> in, int w, int h, int r)
+        {
+            std::vector<float> line;
+            for (int pass = 0; pass < 2; pass++)
+            {
+                const int count = pass == 0 ? h : w, length = pass == 0 ? w : h;
+                const size_t step = pass == 0 ? 1 : size_t(w);
+                line.resize(size_t(length));
+                for (int k = 0; k < count; k++)
+                {
+                    const size_t base = pass == 0 ? size_t(k) * w : size_t(k);
+                    for (int i = 0; i < length; i++)
+                        line[size_t(i)] = in[base + size_t(i) * step];
+                    float sum = 0;
+                    for (int i = -r; i <= r; i++)
+                        sum += line[size_t(std::clamp(i, 0, length - 1))];
+                    for (int i = 0; i < length; i++)
+                    {
+                        in[base + size_t(i) * step] = sum / float(2 * r + 1);
+                        sum += line[size_t(std::min(i + r + 1, length - 1))] - line[size_t(std::max(i - r, 0))];
+                    }
+                }
+            }
+            return in;
+        }
+    }
+
+    Image TitleCut(const Image& picture)
+    {
+        const int w = int(picture.width), h = int(picture.height);
+        if (picture.rgba.empty())
+            return {};
+        // The plate: the white light around the letters (bright, no colour). The letters are what it encloses.
+        std::vector<char> plate(picture.rgba.size());
+        for (size_t i = 0; i < plate.size(); i++)
+        {
+            const uint32_t t = picture.rgba[i];
+            const int r = int(t & 0xFF), g = int(t >> 8 & 0xFF), b = int(t >> 16 & 0xFF);
+            const float lum = 0.299f * float(r) + 0.587f * float(g) + 0.114f * float(b);
+            plate[i] = std::max({ r, g, b }) - std::min({ r, g, b }) < 30 && lum > 190;
+        }
+        // The lower word's plate opens at its foot (the burst's rays): close its gaps 10 pixels wide, take what it then
+        // encloses, give it back the 10 pixels. That closing swallows the thin upper word and the elements' icons: those come
+        // from the plate as it is, the pieces that are not already the lower word.
+        std::vector<char> lower = Grow(Enclosed(Grow(plate, w, h, 10), w, h, 0.005f), w, h, 10);
+        for (size_t i = 0; i < lower.size(); i++)
+            lower[i] = lower[i] && !plate[i];
+        {
+            const Pieces pieces = Label(lower, w, h);
+            const int largest = pieces.size.empty() ? 0 : *std::max_element(pieces.size.begin(), pieces.size.end());
+            for (size_t i = 0; i < lower.size(); i++)
+                lower[i] = pieces.label[i] >= 0 && pieces.size[size_t(pieces.label[i])] * 20 >= largest;
+        }
+        std::vector<char> letters = lower;
+        {
+            const std::vector<char> upper = Enclosed(plate, w, h, 0.02f);
+            const Pieces pieces = Label(upper, w, h);
+            std::vector<int> overlap(pieces.size.size(), 0);
+            for (size_t i = 0; i < upper.size(); i++)
+                if (pieces.label[i] >= 0 && lower[i])
+                    overlap[size_t(pieces.label[i])]++;
+            for (size_t i = 0; i < upper.size(); i++)
+                if (const int id = pieces.label[i]; id >= 0 && overlap[size_t(id)] * 10 < pieces.size[size_t(id)] * 3)
+                    letters[i] = 1;
+        }
+        // Their holes filled; then a 4-pixel white rim (the plate's own white, kept as a clean outline) and a soft glow.
+        {
+            std::vector<char> open(letters.size());
+            for (size_t i = 0; i < letters.size(); i++)
+                open[i] = !letters[i];
+            const Pieces pieces = Label(open, w, h);
+            for (size_t i = 0; i < letters.size(); i++)
+                if (pieces.label[i] >= 0 && !pieces.edge[size_t(pieces.label[i])])
+                    letters[i] = 1;
+        }
+        auto toFloat = [](const std::vector<char>& mask) {
+            std::vector<float> out(mask.size());
+            for (size_t i = 0; i < mask.size(); i++)
+                out[i] = mask[i] ? 1.0f : 0.0f;
+            return out;
+        };
+        const std::vector<float> rim = Blur(toFloat(Grow(letters, w, h, 4)), w, h, 1);
+        const std::vector<float> glow = Blur(Blur(Blur(toFloat(Grow(letters, w, h, 6)), w, h, 5), w, h, 5), w, h, 5);
+        constexpr float GlowColor[3] = { 205, 228, 255 }, GlowStrength = 0.6f;
+        Image light{ picture.width, picture.height, std::vector<uint32_t>(picture.rgba.size(), 0) };
+        int left = w, right = -1, top = h, bottom = -1;
+        for (int y = 0; y < h; y++)
+            for (int x = 0; x < w; x++)
+            {
+                const size_t i = size_t(y) * w + x;
+                const float t = rim[i], alpha = std::max(t, glow[i] * GlowStrength);
+                if (alpha < 0.004f)
+                    continue;
+                uint32_t texel = uint32_t(alpha * 255 + 0.5f) << 24;
+                for (int c = 0; c < 3; c++)
+                    texel |= uint32_t(float(picture.rgba[i] >> (8 * c) & 0xFF) * t + GlowColor[c] * (1 - t) + 0.5f) << (8 * c);
+                light.rgba[i] = texel;
+                if (alpha > 0.03f)
+                    left = std::min(left, x), right = std::max(right, x), top = std::min(top, y), bottom = std::max(bottom, y);
+            }
+        if (right < left || bottom < top)
+            return {};
+        Image cut{ uint32_t(right - left + 1), uint32_t(bottom - top + 1), {} };
+        cut.rgba.reserve(size_t(cut.width) * cut.height);
+        for (int y = top; y <= bottom; y++)
+            cut.rgba.insert(cut.rgba.end(), light.rgba.begin() + ptrdiff_t(size_t(y) * w + left),
+                light.rgba.begin() + ptrdiff_t(size_t(y) * w + right + 1));
+        return cut;
     }
 
     Image Feather(const Image& picture)

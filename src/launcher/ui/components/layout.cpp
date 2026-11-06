@@ -136,7 +136,7 @@ namespace ui
 
     bool ListRow(const char* title, const ListRowOptions& options)
     {
-        const float h = std::max(options.minHeight, options.subtitle != nullptr ? height::Large : height::Normal);
+        const float h = options.exactHeight > 0 ? options.exactHeight : std::max(options.minHeight, options.subtitle != nullptr ? height::Large : height::Normal);
         const float w = options.width < 0 ? ImGui::GetContentRegionAvail().x : options.width;
         const ImVec2 min = ImGui::GetCursorScreenPos(), max(min.x + w, min.y + h);
         ImGui::BeginDisabled(options.disabled);

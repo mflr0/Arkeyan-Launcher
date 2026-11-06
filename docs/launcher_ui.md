@@ -455,7 +455,7 @@ only what each line says was not possible: see "Done" at the end of this part.
 logo or initial in the image slot, its version as the note, at the right end of the state's line (the built game's, else the kit's, else the release's), `ui::DrawStatusIcon` through
 `StatusOf(SlotState)` (Info: needs a disc, ready to install, update, interrupted; Busy: checking and every build step; Success:
 ready; Error: every disc problem and a failed build; Neutral: not opened yet), the install's thin bar on the row's foot; the four
-games not out yet are one "Coming later" row with their number (a click lists them, dim and not pressable); Collection and Settings are
+games not out yet are one "Coming later" row with their number (a click opens a menu listing them, not pressable: the column never changes height); Collection and Settings are
 rows with icons; the title is Title-size, fitted, and Caption beside it. Home: "Library" Display, cards on `radius::Panel` with the
 elevation shadow and the Scrim fade, the status a `StatusPill`, "Coming later" Badges, "Report a bug" a Button and the GitHub mark an
 `IconButton` with an `image`. Game page: one **disc block** card (file, "Change disc..." Button, a StatusPill for the disc, the

@@ -67,14 +67,14 @@ namespace art
     // the glow stays a glow on any background) less the burst's faint haze, cut to what is visible.
     Image LightOnBlack(const Image& picture);
 
+    // [Imaginators] The manifest's "title_cut": the title screen's logo, drawn on a burst of white light, cut out: the letters
+    // are what the white (bright, colourless) encloses, the lower word's gaps at its foot closed first; they keep a 4-pixel
+    // white rim and a soft glow. Cropped to what is visible; empty when nothing is enclosed.
+    Image TitleCut(const Image& picture);
+
     // [Imaginators] The manifest's "feather": a picture of the logo on the game's own sky (the dashboard's tile, the sky of
     // its backdrop) fading out from an ellipse to its edges, so that it melts into the backdrop behind it.
     Image Feather(const Image& picture);
-
-    // The https address of a cleaner logo than the disc's (the manifest's "logo_download"), empty when the game has none.
-    // Only the launcher downloads it, once the game's disc is verified; the disc's logo stays the fallback (and the game
-    // icon's source).
-    std::string LogoDownload(std::string_view game);
 
     // The game's logo alone, read from the disc as the manifest says and not cached (Arkeyan-Builder makes the game's icon from it).
     // False when `game` has no manifest or the disc has no readable logo.

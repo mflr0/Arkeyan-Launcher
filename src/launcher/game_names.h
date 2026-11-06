@@ -15,7 +15,7 @@ struct GameNames
     const char* shortName;
 };
 
-// The console Skylanders games, in release order.
+// The Skylanders games, the console ones in release order.
 inline constexpr GameNames g_gameNames[] = {
     { "ssa", "Skylanders: Spyro's Adventure", "Spyro's Adventure" },
     { "giants", "Skylanders: Giants", "Giants" },
@@ -24,6 +24,9 @@ inline constexpr GameNames g_gameNames[] = {
     { "superchargers", "Skylanders: SuperChargers", "SuperChargers" },
     { "racing", "Skylanders: SuperChargers Racing", "SuperChargers Racing" },
     { "imaginators", "Skylanders: Imaginators", "Imaginators" },
+    // The phone and tablet games, listed as coming later.
+    { "cloudpatrol", "Skylanders: Cloud Patrol", "Cloud Patrol" },
+    { "lostislands", "Skylanders: Lost Islands", "Lost Islands" },
 };
 
 // The game's name by its id ("ssa", "giants"...); nullptr for an id that is not a game.

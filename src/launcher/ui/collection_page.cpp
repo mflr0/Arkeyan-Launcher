@@ -790,27 +790,25 @@ namespace launcher_ui
         ImGui::SetCursorScreenPos(ImVec2(at.x + ui::space::M,
             std::round(headerY + ui::height::Small / 2 - ui::CapMiddle(ui::TextStyle::Body, true))));
         ui::Text(ui::TextStyle::Body, Tr("On the portal"), ui::color::Dim, -1, true);
+        const float labelRight = ImGui::GetItemRectMax().x;
+        if (live) // on the title's line, so the seats do not move when the game starts
+        {
+            const ImVec2 badge = ui::BadgeSize(Tr("Live"));
+            ImGui::SetCursorScreenPos(ImVec2(labelRight + ui::space::S, std::round(headerY + (ui::height::Small - badge.y) / 2)));
+            ui::Badge(Tr("Live"), ui::color::Success);
+        }
         ImGui::SetCursorScreenPos(ImVec2(at.x + size.x - ui::space::M - linkW, headerY));
         if (ui::Button(openLabel, open))
             m_app.GoTo(Page::Collection);
-        float rowsY = headerY + ui::height::Small + ui::space::XS;
-        if (live)
-        {
-            rowsY -= ui::space::XXS;
-            ImGui::SetCursorScreenPos(ImVec2(at.x + ui::space::M, rowsY));
-            ui::Badge(Tr("Live"), ui::color::Success);
-            rowsY = ImGui::GetItemRectMax().y + ui::space::XXS;
-        }
+        const float rowsY = headerY + ui::height::Small + ui::space::XS;
         const collection::Game* game = m_model.Game();
-        const auto shownSeat = [](const auto& seat) { return seat.id == "p1" || seat.id == "p2" || seat.id == "item"; };
-        const size_t count = std::count_if(game->seats.begin(), game->seats.end(), shownSeat);
+        // Every seat the game has, as in its Collection: Trap Team's trap, SuperChargers' vehicles, the adventure pack.
+        const size_t count = game != nullptr ? game->seats.size() : 0;
         const float rowH = count == 0 ? 0 : (at.y + size.y - ui::space::M - rowsY - (count - 1) * ui::space::XS) / count;
         size_t rowIndex = 0;
         if (game != nullptr)
             for (size_t i = 0; i < game->seats.size(); i++)
             {
-                const std::string& seatId = game->seats[i].id;
-                if (seatId != "p1" && seatId != "p2" && seatId != "item") continue;
                 const float rowY = std::floor(rowsY + rowIndex * (rowH + ui::space::XS));
                 ImGui::SetCursorScreenPos(ImVec2(at.x + ui::space::M, rowY));
                 rowIndex++;
@@ -831,6 +829,12 @@ namespace launcher_ui
                 row.titleStyle = figure != nullptr ? ui::TextStyle::Label : ui::TextStyle::Body;
                 row.subtitleStyle = ui::TextStyle::Body;
                 row.minHeight = std::floor(rowsY + rowIndex * rowH + (rowIndex - 1) * ui::space::XS) - rowY;
+                if (row.minHeight < ui::height::Large) // many seats (SuperChargers' vehicles): the rows fit the card, the lines smaller
+                {
+                    row.exactHeight = row.minHeight;
+                    row.titleStyle = ui::TextStyle::Body;
+                    row.subtitleStyle = ui::TextStyle::Caption;
+                }
                 row.dim = figure == nullptr;
                 row.imageWidth = ui::height::Normal;
                 row.image = [&](ImDrawList* draw, ImVec2 picture, ImVec2 box) {

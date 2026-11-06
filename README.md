@@ -1,13 +1,14 @@
-# Arkeyan Launcher
+# Arkeyan Launcher: native Skylanders on PC, macOS and Linux
 
-**Play Skylanders natively on Mac, Windows and Linux.** Arkeyan Launcher builds *Spyro's Adventure*, *Giants*, *Swap Force*,
+**Play Skylanders natively on Windows PC, macOS and Linux.** A native PC port of the Xbox 360 Skylanders games, by static
+recompilation. Arkeyan Launcher builds *Spyro's Adventure*, *Giants*, *Swap Force*,
 *Trap Team*, *SuperChargers* and *Imaginators* from your own Xbox 360 disc image into real PC games: no emulator, your own saves, your
 figures in a virtual portal, any controller, keyboard or mouse. Formerly Skylauncher: it updates itself to this version.
 
 <!-- SCREENSHOTS: four gameplay pictures (one per game), hosted outside the repository -->
 
 Arkeyan Launcher contains no game code and no game art. Everything shown from the game is read from your own disc and stays
-on your computer; only Imaginators' logo, which its disc lacks, is downloaded from Wikimedia Commons once your disc is checked.
+on your computer.
 
 ## What you get
 
@@ -86,7 +87,8 @@ Another edition is refused with a message. If you have one, tell us in an issue.
 ## Get started
 
 1. Download Arkeyan Launcher from the [Releases page](https://github.com/mflr0/Arkeyan-Launcher/releases):
-   - **Windows:** `ArkeyanLauncher.exe`. If SmartScreen warns you, choose More info, then Run anyway.
+   - **Windows:** `ArkeyanLauncher.exe`. If SmartScreen warns you, choose More info, then Run anyway. If Windows Defender
+     reports a trojan such as `Bearfoos`, read [Windows Defender alerts](#windows-defender-alerts).
    - **Mac:** `ArkeyanLauncher-macOS.dmg`. The app is not notarized: the first time, macOS blocks it; go to System Settings > Privacy & Security and choose Open Anyway (macOS 14 and earlier: right-click the app and choose Open).
    - **Linux:** `ArkeyanLauncher-x86_64.AppImage`, after `chmod +x`.
 2. Drop your `.iso` on the window, or click the button to choose it. The disc is checked.
@@ -171,6 +173,29 @@ Portal of Power. Then click **Test the portal**.
 - Starting Arkeyan Launcher while it is already open brings its window to the front; a game's shortcut plays that game in it.
 - Updates (Arkeyan Launcher's and each game's) are looked for at every start; an offline start says nothing. Every download is checked against the release's SHA-256.
 
+## Windows Defender alerts
+
+Windows Defender may flag `Arkeyan-Builder.exe` (the kit's builder), `ArkeyanLauncher.exe` or a game it builds as
+`Trojan:Win32/Bearfoos.A!ml` (or `.B!ml`). The
+`!ml` ending means no known malware was found: Defender's machine-learning model guessed, from what the program does. It is
+a known false positive for small projects ([one of many reports](https://www.reddit.com/r/computerviruses/comments/1m4cd4n/bearfoos_trojan/)).
+Arkeyan Launcher matches that guess on every point:
+
+- **It is not signed.** A code-signing certificate costs hundreds of euros a year; a new unsigned program has no
+  reputation with Microsoft yet, and each release starts again from zero.
+- **It downloads and runs programs**: the game kit and a compiler, at INSTALL, then the game it builds on your PC.
+- **It writes a new program on your PC**: the game is compiled from your disc, so its executable exists nowhere else and
+  no antivirus has seen it before.
+- **It updates itself** (it replaces its own executable), as a dropper would.
+
+What you can check, and do:
+
+- The source is all here, and every release is built by GitHub Actions from it (the Actions tab shows each build).
+- Every download is checked against the release's SHA-256 before it runs.
+- Restore the file from Windows Security > Protection history (Allow on device), and add an exclusion for
+  `%APPDATA%\Skylanders\kit`. Reporting it to Microsoft as a false positive
+  ([file submission](https://www.microsoft.com/wdsi/filesubmission)) helps every other player too.
+
 ## Build from source
 
 You need CMake 3.20 or later, Ninja, a C++20 compiler (Clang) and git.
@@ -194,7 +219,8 @@ The developer docs are in `docs/`: `launcher_ui.md` covers the screens and theme
   Traptanium portal's speaker has not been tried yet.
 - The mouse does nothing in the games' own menus yet: use the keyboard or a controller there.
 - The 60 fps option is experimental.
-- The Mac app is not notarized, and Windows SmartScreen may warn about the launcher (see Get started).
+- The Mac app is not notarized, and Windows SmartScreen or Defender may warn about the launcher (see
+  [Windows Defender alerts](#windows-defender-alerts)).
 
 ## How it works
 
@@ -220,8 +246,7 @@ The ports are built with [XenonRecomp](https://github.com/hedge-dev/XenonRecomp)
 [Xenia](https://github.com/xenia-project/xenia). The figures' format (the
 blocks of a tag and their checksums) was learned by reading the Skylanders portal code of
 [Dolphin](https://github.com/dolphin-emu/dolphin) and [RPCS3](https://github.com/RPCS3/rpcs3); none of their code is
-used. Imaginators' logo on its game page is [Dycamax's](https://commons.wikimedia.org/wiki/File:Skylanders-imaginators-logo.png)
-(Wikimedia Commons, [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)). Thank you to all of them.
+used. Thank you to all of them.
 
 MIT license, see `LICENSE`. The third-party components are listed in `THIRD_PARTY_NOTICES.md`.
 
