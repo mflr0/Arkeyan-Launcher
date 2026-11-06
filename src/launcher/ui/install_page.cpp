@@ -176,6 +176,11 @@ namespace launcher_ui
     {
         if (m_s->installer.Running()) // the card shows it; a second start would only fight it
             return;
+        if (m_s->hdJob.Running()) // it works on the build's folder
+        {
+            Toast(Tr("Wait for the HD textures to finish"), ui::ToastKind::Error);
+            return;
+        }
         if (!UpdatingAll() && DefenderNoticeFirst([this] { StartInstall(); }))
             return;
         if (!DiscStillThere())
@@ -313,7 +318,8 @@ namespace launcher_ui
             m_s->installView = m_s->kitUsed = false;
             return;
         }
-        if (m_s->installer.Start(m_s->kit, m_s->discPath, GameInstallFolder(m_s->installSha)))
+        if (m_s->installer.Start(m_s->kit, m_s->discPath, GameInstallFolder(m_s->installSha),
+                HdTexturesOffered() && HdTexturesWanted(*m_s) && m_s->kit && m_s->kit->hdTextures))
         {
             auto& section = m_config["install." + m_s->installSha];
             section["pid"] = std::to_string(m_s->installer.ProcessId());

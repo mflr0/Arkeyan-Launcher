@@ -413,6 +413,7 @@ namespace launcher_ui
             m_testButtons = LauncherEnv("SKY_LAUNCHER_TEST_BUTTONS") != nullptr;
             m_testUninstall = LauncherEnv("SKY_LAUNCHER_TEST_UNINSTALL") != nullptr;
             m_testLogo = LauncherEnv("SKY_LAUNCHER_TEST_LOGO") != nullptr;
+            m_testHdTex = LauncherEnv("SKY_LAUNCHER_TEST_HDTEX") != nullptr;
             m_testKeys = LauncherEnv("SKY_LAUNCHER_TEST_KEYS") != nullptr;
             if (const char* screens = LauncherEnv("SKY_LAUNCHER_TEST_SCREENS"))
                 m_testScreens = std::string_view(screens) == "issues" ? 3 : std::string_view(screens) == "pad" ? 2 : 1;
@@ -555,6 +556,7 @@ namespace launcher_ui
                 FinishCopy();
             if (m_s->portableJob.Done())
                 FinishPortableExport();
+            FinishHdTextures();
             PollInstall();
         }
         m_s = shown;
@@ -671,7 +673,7 @@ namespace launcher_ui
         }
         // Something moves: a check, an install's spinner, an update's bar, a held button, a text cursor, a drag, a component's
         // own motion (a spinner, a sliding toggle).
-        if (AnyVerifying() || AnyInstalling() || m_updates.Busy() || ImGui::IsAnyItemActive() || ui::Ctx().animating)
+        if (AnyVerifying() || AnyInstalling() || AnyHdTextures() || m_updates.Busy() || ImGui::IsAnyItemActive() || ui::Ctx().animating)
             return 0;
         if (m_page == Page::Play && m_logoDropAt != 0 && SDL_GetTicks() < m_logoDropAt + uint64_t(LogoDropMs) + 20) // the logo is falling
             return 0;
@@ -1037,6 +1039,8 @@ namespace launcher_ui
             why = Tf("{} is running", GameName(running, GameNameForm::Short));
         else if (Installing())
             why = Tr("Wait for the installation to finish");
+        else if (m_s->hdJob.Running())
+            why = Tr("Wait for the HD textures to finish");
         else if (m_s->copyJob.Running())
             why = Tr("Wait for the copy to finish");
         else if (m_s->portableJob.Running())
@@ -2668,7 +2672,7 @@ namespace launcher_ui
                 "45-nav-search-left", "46-nav-seat", "47-nav-choosing", "48-nav-card", "49-nav-placed", "50-nav-sheet",
                 "51-nav-back-to-play", "52-nav-settings-controls", "53-nav-settings-back" };
             static const char* const UninstallNames[] = { "01-settings", "02-list", "03-ticked", "04-confirm", "05-result" };
-            if (m_testPadWalk || m_testExperimental || m_testProfiles || m_testHero || m_testButtons || m_testSidebar || m_testCopy || m_testLogo || m_testKeys || m_testPad || m_testAchievements || m_testRunning ||
+            if (m_testPadWalk || m_testExperimental || m_testProfiles || m_testHero || m_testHdTex || m_testButtons || m_testSidebar || m_testCopy || m_testLogo || m_testKeys || m_testPad || m_testAchievements || m_testRunning ||
                 m_testScreens != 0 || !m_testKit.empty())
                 Screenshot(m_testShot.c_str());
             else if (m_testUninstall)
@@ -3896,6 +3900,11 @@ namespace launcher_ui
                 return;
             }
             m_testAt = now + settle;
+            return;
+        }
+        if (m_testHdTex)
+        {
+            TestHdTexturesScript(now);
             return;
         }
         if (m_testHero)

@@ -27,6 +27,7 @@ struct InstallKit
     std::map<std::string, std::string> gameVersions; // "game_version.<id>=" in kit.txt: the version of each game the kit builds ("0.8.2"); a kit before 0.5.2 has none
     std::string tag;                // the release it was downloaded from (its kit/<tag>/ folder), "" for any other kit
     bool chosen = false;            // SKY_LAUNCHER_KIT or "[launcher] kit=": the player's own, never replaced by the launcher
+    bool hdTextures = false;        // the builder knows --hd-textures (0.9.1 on): its file holds the option's name; an older kit does not
 
     bool Builds(std::string_view gameId) const;
     std::string GameVersion(std::string_view gameId) const; // "" when the kit does not say
@@ -113,6 +114,7 @@ struct InstallProgress
     bool startFailed = false;      // the installer never started (the kit, the folder): `error` is in the launcher's language
     std::string runtime;           // @done
     std::string action;            // the current step's last @log line
+    bool hdTextures = false;       // the build was asked for the HD textures: their step is expected after the others
     std::vector<std::string> log;  // every line, @log text and anything else SSABuild printed
     size_t logLines = 0;           // lines in the full log (the copy may hold only the last ones)
 
@@ -131,7 +133,11 @@ public:
     ~GameInstaller();
     // Starts SSABuild; false (and Failed with the reason) when there is no kit or it can't start. False too, and nothing
     // touched, while a build runs: it is stopped with Cancel, never waited for here (this is called on the window's thread).
-    bool Start(const std::optional<InstallKit>& kit, const std::string& iso, const std::filesystem::path& out);
+    // `hdTextures`: also make the game's HD texture pack at the end (--hd-textures auto, docs/tools/hd_textures.md).
+    bool Start(const std::optional<InstallKit>& kit, const std::string& iso, const std::filesystem::path& out, bool hdTextures = false);
+    // The HD texture step alone, for a game already built (no --out): `on` makes the pack, else removes it. Its log is
+    // gameFolder/hd-textures.log, never the install's. Fails to start with a reason when the kit is too old for it.
+    bool StartHdTextures(const std::optional<InstallKit>& kit, const std::string& iso, const std::filesystem::path& gameFolder, bool on);
     // Stops SSABuild, the process this installer started, and on Windows the processes it started in turn. Returns at
     // once; the state becomes Cancelled when SSABuild has exited.
     void Cancel();
@@ -142,6 +148,7 @@ public:
     uint32_t ProcessId() const { return m_pid; } // SSABuild's, while it runs
 
 private:
+    bool Launch(const std::optional<InstallKit>& kit, const std::string& iso, const std::filesystem::path& out, const char* hdTextures, bool hdOnly);
     void Read();
     void Join();
 
@@ -149,6 +156,7 @@ private:
     InstallProgress m_progress;
     std::thread m_thread;
     std::atomic<bool> m_running{ false }, m_cancelled{ false };
+    bool m_hdOnly = false; // the HD texture step alone: none of an install's housekeeping applies
     std::atomic<uint64_t> m_cancelledAt{ 0 };
     SDL_Process* m_process = nullptr;
     std::atomic<uint32_t> m_pid{ 0 };

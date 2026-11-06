@@ -40,6 +40,16 @@ The launcher finds the kit, runs it, shows its progress and then starts the game
    (Settings button on its Play page) > Game has **Reinstall** (held a second), **Remove game** and
    **Game files**. Arkeyan-Builder is incremental, so a reinstall is quick when little changed.
 
+**HD textures (0.9.2).** With `[<game>] hd_textures=1` (Game settings > Video > HD textures, off by default; Swap Force, Trap Team,
+SuperChargers and Imaginators), an install or an update adds `--hd-textures auto` to the build, and the checklist ends with a
+ninth row, **Making HD textures** (`hdtextures`, weighted like a fifth of an install), expected from the start
+(`InstallProgress::hdTextures`). The kit must know the option: `InstallKit::hdTextures` is true when its builder's file holds the text
+`--hd-textures` (its usage line), so the kit 0.9.1 and later; with an older kit the install does not ask for it and the row is
+disabled. On a game already built the switch runs the step alone (`GameInstaller::StartHdTextures`, no `--out`; log
+`<game folder>/hd-textures.log`, never `install.log`; none of an install's housekeeping). If that step fails, the build is reported as failed (Retry redoes only what is left); turning the switch off in the game's settings lets the next try finish
+without it. Remove game deletes `textures-hd/` with the build (it is not among the folders kept, `game_settings.cpp`), the switch keeps its value, and
+the next install makes the pack again. [V] by `HdTexturesChecks` (`tests/hd_textures_checks.h`, the fake builder) and `SKY_LAUNCHER_TEST_HDTEX` (`docs/launcher_ui.md`).
+
 Cancel stops only the process the launcher started: SIGTERM then SIGKILL after 3 s on macOS and Linux; on Windows
 Arkeyan-Builder runs in a job object, so the compilers it started stop with it (also when the launcher is closed).
 Arkeyan-Builder's output is also written to `install.log` in the game folder. `SKY_LAUNCHER_BUILD_JOBS=N` passes `--jobs N`.
@@ -296,6 +306,7 @@ Tested in containers only (amd64 under Rosetta, Mesa's lavapipe, offscreen): a f
 - `src/launcher/game_install.{h,cpp}`: finding the kit and the runtime, the game folder, `InstallProgress::Apply` (one
   stdout line), `ReadInstallLog`, `GameInstaller` (the process and the thread reading its output).
 - `src/launcher/install_checklist.{h,cpp}`: the checklist, the overall fraction, the time left, the failure headline.
+- `src/launcher/ui/hd_textures_page.cpp`: the HD textures switch, its progress and its failure (Game settings > Video).
 - `src/launcher/ui/install_page.cpp`: `App::StartInstall`, `PollInstall`, `RefreshInstall`, `DrawInstall`; the INSTALL button
   stays in `DrawPlay` (`launcher_ui.cpp`).
 

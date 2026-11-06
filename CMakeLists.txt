@@ -190,6 +190,7 @@ target_sources(ArkeyanLauncherCore PRIVATE
     src/launcher/uninstall.cpp
     src/launcher/ui/uninstall_page.cpp
     src/launcher/ui/game_settings_page.cpp
+    src/launcher/ui/hd_textures_page.cpp
     src/launcher/ui/game_data_page.cpp
     src/launcher/report.cpp
     src/launcher/problem_report.cpp

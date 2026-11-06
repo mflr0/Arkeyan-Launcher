@@ -48,6 +48,23 @@ namespace
         return k == s->second.end() ? std::string() : k->second;
     }
 
+    // Whether the builder's file holds `text` (its usage line names every option it takes): the one thing every kit's builder
+    // says about itself, on every system. An unreadable file knows nothing.
+    bool BuilderKnows(const std::filesystem::path& file, std::string_view text)
+    {
+        std::ifstream stream(file, std::ios::binary);
+        std::string chunk(1 << 16, '\0'), tail;
+        while (stream.read(chunk.data(), std::streamsize(chunk.size())) || stream.gcount() > 0)
+        {
+            tail.append(chunk.data(), size_t(stream.gcount()));
+            if (tail.find(text) != std::string::npos)
+                return true;
+            if (tail.size() >= text.size())
+                tail.erase(0, tail.size() - text.size() + 1); // a match may straddle two reads
+        }
+        return false;
+    }
+
     // The kit's builder: Arkeyan-Builder, SkyBuild in a kit up to 0.7.2, or SSABuild in a kit made for 0.4.x launchers.
 #if defined(_WIN32)
     constexpr const char* BuilderNames[] = { "Arkeyan-Builder.exe", "SkyBuild.exe", "SSABuild.exe" };
@@ -99,6 +116,7 @@ namespace
                 }
             }
         }
+        kit.hdTextures = BuilderKnows(ssabuild, "--hd-textures");
         if (kit.games.empty())
             kit.games.push_back("ssa"); // before 0.5.0 a kit builds Spyro's Adventure only and says nothing
         kit.release = version;
@@ -451,16 +469,29 @@ GameInstaller::~GameInstaller()
     Join();
 }
 
-bool GameInstaller::Start(const std::optional<InstallKit>& kit, const std::string& iso, const std::filesystem::path& out)
+bool GameInstaller::Start(const std::optional<InstallKit>& kit, const std::string& iso, const std::filesystem::path& out, bool hdTextures)
+{
+    return Launch(kit, iso, out, hdTextures ? "auto" : nullptr, false);
+}
+
+bool GameInstaller::StartHdTextures(const std::optional<InstallKit>& kit, const std::string& iso, const std::filesystem::path& gameFolder, bool on)
+{
+    return Launch(kit, iso, gameFolder, on ? "auto" : "off", true);
+}
+
+// `hdTextures`: the --hd-textures mode to pass, else none. `hdOnly`: that step alone, `out` being the game's folder.
+bool GameInstaller::Launch(const std::optional<InstallKit>& kit, const std::string& iso, const std::filesystem::path& out, const char* hdTextures, bool hdOnly)
 {
     if (m_running)
         return false;
     Join(); // the one that ended
     m_cancelled = false;
+    m_hdOnly = hdOnly;
     {
         std::lock_guard lock(m_mutex);
         m_progress = {};
         m_progress.state = InstallProgress::State::Running;
+        m_progress.hdTextures = hdTextures != nullptr && !hdOnly;
     }
     auto fail = [&](std::string message) {
         std::lock_guard lock(m_mutex);
@@ -474,25 +505,34 @@ bool GameInstaller::Start(const std::optional<InstallKit>& kit, const std::strin
 
     if (!kit)
         return fail(Tr("Game kit not found. Put the skylanders-kit folder next to Arkeyan Launcher, then press Retry."));
+    if (hdTextures != nullptr && !kit->hdTextures)
+        return fail(Tr("These game tools can't make HD textures. Update them first."));
     std::error_code error;
     std::filesystem::create_directories(out, error);
     if (error)
         return fail(Tf("Couldn't create the game folder: {}", error.message()));
-    m_logFile = out / "install.log";
+    m_logFile = out / (hdOnly ? "hd-textures.log" : "install.log");
     m_out = out;
     m_kitFolder = kit->folder;
-    std::filesystem::rename(m_logFile, out / "install.prev.log", error); // one previous log
+    if (!hdOnly)
+        std::filesystem::rename(m_logFile, out / "install.prev.log", error); // one previous log
     std::ofstream(m_logFile, std::ios::trunc);
 
     std::string program = Utf8(kit->ssabuild), outText = Utf8(out), kitText = Utf8(kit->folder);
-    std::vector<const char*> arguments{ program.c_str(), "--iso", iso.c_str(), "--out", outText.c_str(), "--kit", kitText.c_str() };
+    std::vector<const char*> arguments{ program.c_str(), "--iso", iso.c_str() };
+    if (!hdOnly) // alone, the step finds the game's folder as the games do
+        arguments.insert(arguments.end(), { "--out", outText.c_str() });
+    arguments.insert(arguments.end(), { "--kit", kitText.c_str() });
+    if (hdTextures != nullptr)
+        arguments.insert(arguments.end(), { "--hd-textures", hdTextures });
     const char* jobs = LauncherEnv("SKY_LAUNCHER_BUILD_JOBS"); // else SSABuild picks
     if (jobs != nullptr && *jobs != 0)
         arguments.insert(arguments.end(), { "--jobs", jobs });
 #if defined(_WIN32)
     // The compiler is downloaded into the data folder (an older SSABuild would use %LOCALAPPDATA%).
     std::string toolchainText = Utf8(LauncherDataFolder() / "toolchains");
-    arguments.insert(arguments.end(), { "--toolchain", toolchainText.c_str() });
+    if (!hdOnly)
+        arguments.insert(arguments.end(), { "--toolchain", toolchainText.c_str() });
 #endif
     arguments.push_back(nullptr);
     SDL_Environment* environment = CreateGameEnvironment(); // a builder of an older kit reads the SSA_ names, a newer one the SKY_ names
@@ -590,7 +630,7 @@ void GameInstaller::Read()
         std::lock_guard lock(m_mutex);
         succeeded = !m_cancelled && exitCode == 0 && !m_progress.runtime.empty();
     }
-    if (succeeded)
+    if (succeeded && !m_hdOnly)
     {
         CleanAfterInstall(m_out, m_kitFolder);
         MarkGameLayout(m_out);
@@ -609,7 +649,7 @@ void GameInstaller::Read()
         progress.state = InstallProgress::State::Failed;
         if (progress.error.empty())
             progress.error = exitCode != 0 ? Tf("The installer stopped with exit code {}.", exitCode)
-                                           : std::string(Tr("The installer stopped before the game was built."));
+                                           : std::string(Tr(m_hdOnly ? N_("The HD textures stopped before they were made.") : N_("The installer stopped before the game was built.")));
     }
     m_pid = 0;
     m_running = false;
@@ -660,6 +700,7 @@ InstallProgress GameInstaller::Snapshot(size_t logTail)
     copy.startFailed = m_progress.startFailed;
     copy.runtime = m_progress.runtime;
     copy.action = m_progress.action;
+    copy.hdTextures = m_progress.hdTextures;
     copy.logLines = m_progress.log.size();
     size_t first = m_progress.log.size() - std::min(logTail, m_progress.log.size());
     copy.log.assign(m_progress.log.begin() + first, m_progress.log.end());

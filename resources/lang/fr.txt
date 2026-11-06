@@ -1025,3 +1025,20 @@ Every download is checked against the release's SHA-256 before it runs, and ever
 Not now	Pas maintenant
 Why this happens	Pourquoi cela arrive
 Continue	Continuer
+
+# HD textures (Game settings > Video, and the install's last step).
+HD textures	Textures HD
+Doubles the game's textures from your disc. About {} of disk, a few minutes.	Double la finesse des textures du jeu, d'après votre disque. Environ {} d'espace disque, quelques minutes.
+Needs newer game tools: reinstall the game to get them.	Il faut des outils de jeu plus récents : réinstallez le jeu pour les obtenir.
+Quit the game first.	Quittez d'abord le jeu.
+It is made when the game is installed.	Elles sont faites à l'installation du jeu.
+Making the HD textures. You can keep using the launcher; the game waits.	Création des textures HD. Vous pouvez continuer à utiliser le lanceur ; le jeu attend.
+Removing the HD textures.	Suppression des textures HD.
+HD textures ready	Textures HD prêtes
+HD textures removed	Textures HD supprimées
+HD textures stopped	Textures HD interrompues
+The HD textures weren't made.	Les textures HD n'ont pas pu être créées.
+The HD textures stopped before they were made.	La création des textures HD s'est arrêtée avant la fin.
+Wait for the HD textures to finish	Attendez la fin des textures HD
+These game tools can't make HD textures. Update them first.	Ces outils de jeu ne savent pas créer de textures HD. Mettez-les d'abord à jour.
+Making HD textures	Création des textures HD
