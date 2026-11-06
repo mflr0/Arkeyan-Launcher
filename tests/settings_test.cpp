@@ -215,7 +215,7 @@ namespace
         config["video"]["resolution_scale"] = "3";
         StoreGameVideo(config, "ssa");
         SETTINGS_EXPECT(config["ssa.video"]["resolution_scale"] == "3" && config["giants.video"].count("resolution_scale") == 0);
-        SETTINGS_EXPECT(GameVideoSection("giants") == "giants.video" && GameVideoKeys().size() == 12);
+        SETTINGS_EXPECT(GameVideoSection("giants") == "giants.video" && GameVideoKeys().size() == 14);
 
         // A resolution scale the page does not offer (hand-edited) is shown as Auto and the game gets Auto too (issue #9, S-26).
         SETTINGS_EXPECT(ResolutionScaleOf("3") == 3 && ResolutionScaleOf("10") == 10 && ResolutionScaleOf("auto") == 0 && ResolutionScaleOf("") == 0);
@@ -255,6 +255,70 @@ namespace
         SETTINGS_EXPECT(config["trapteam.video"]["edge_smoothing"] == "light");
         ApplyGameVideo(config, "ssa");
         SETTINGS_EXPECT(config["video"].count("edge_smoothing") == 0 && config["ssa.video"].count("edge_smoothing") == 0);
+
+        // FSR 3 and the speakers (0.9.4), for every game: [<game>.video] upscaler and fsr_quality, [<game>.audio] speakers. The page
+        // reads them as below (an unknown value shows the default), writes the game's sections, and the game reads them from the file.
+        for (const char* id : { "ssa", "giants", "swapforce", "trapteam", "superchargers", "imaginators" })
+        {
+            using namespace launcher_ui;
+            const std::string video = GameVideoSection(id), audio = std::string(id) + ".audio";
+            auto upscaler = [&](const LauncherConfig& c) { return SettingGet(c, video, "upscaler", "off") == "fsr3" ? "fsr3" : "off"; };
+            auto quality = [&](const LauncherConfig& c) { return FsrQualityChoices[ChoiceIndex(FsrQualityChoices, SettingGet(c, video, "fsr_quality"), 0)].value; };
+            auto speakers = [&](const LauncherConfig& c) { return SpeakerChoices[ChoiceIndex(SpeakerChoices, SettingGet(c, audio, "speakers"), 0)].value; };
+
+            // Defaults: a new settings file shows off, quality, auto, and PLAY passes no key (the game's defaults are the same).
+            LauncherConfig fresh;
+            SeedGameVideo(fresh, id);
+            SETTINGS_EXPECT(upscaler(fresh) == std::string("off") && quality(fresh) == std::string("quality") && speakers(fresh) == std::string("auto"));
+            ApplyGameVideo(fresh, id);
+            SETTINGS_EXPECT(fresh["video"].count("upscaler") == 0 && fresh["video"].count("fsr_quality") == 0);
+
+            // Written by the page, through the file and back, and into [video] by PLAY; another game's PLAY drops them.
+            for (const char* preset : { "quality", "balanced", "performance", "ultra_performance" })
+                for (const char* output : { "auto", "stereo", "5.1" })
+                {
+                    LauncherConfig page = fresh;
+                    page[video]["upscaler"] = "fsr3";
+                    page[video]["fsr_quality"] = preset;
+                    page[audio]["speakers"] = output;
+                    fs::path file = root / "fsr.ini";
+                    SETTINGS_EXPECT(SaveLauncherConfig(file.string(), page));
+                    LauncherConfig back = LoadLauncherConfig(file.string());
+                    SETTINGS_EXPECT(upscaler(back) == std::string("fsr3") && quality(back) == std::string(preset) && speakers(back) == std::string(output));
+                    SETTINGS_EXPECT(back[video]["fsr_quality"] == preset && back[audio]["speakers"] == output);
+                    ApplyGameVideo(back, id);
+                    SETTINGS_EXPECT(back["video"]["upscaler"] == "fsr3" && back["video"]["fsr_quality"] == preset);
+                    const char* other = std::string_view(id) == "ssa" ? "giants" : "ssa";
+                    ApplyGameVideo(back, other);
+                    SETTINGS_EXPECT(back["video"].count("upscaler") == 0 && back["video"].count("fsr_quality") == 0);
+                    SETTINGS_EXPECT(back[GameVideoSection(other)].count("upscaler") == 0 && back[std::string(other) + ".audio"].count("speakers") == 0);
+                    fs::remove(file);
+                }
+            // Turned off again: the preset stays for the next time, the game reads off.
+            LauncherConfig off = fresh;
+            off[video]["fsr_quality"] = "performance";
+            off[video]["upscaler"] = "off";
+            SETTINGS_EXPECT(upscaler(off) == std::string("off") && quality(off) == std::string("performance"));
+
+            // An older launcher.ini (0.9.3) has none of the keys: the defaults, and saving does not add them.
+            fs::path old = root / "old.ini";
+            Write(old, "[" + video + "]\nfps_limit=30\nvsync=1\n[" + audio + "]\nvolume=80\n");
+            LauncherConfig before = LoadLauncherConfig(old.string());
+            SeedGameVideo(before, id);
+            SETTINGS_EXPECT(upscaler(before) == std::string("off") && quality(before) == std::string("quality") && speakers(before) == std::string("auto"));
+            SETTINGS_EXPECT(SaveLauncherConfig(old.string(), before));
+            const std::string text = Read(old);
+            SETTINGS_EXPECT(text.find("upscaler") == std::string::npos && text.find("fsr_quality") == std::string::npos && text.find("speakers") == std::string::npos);
+            SETTINGS_EXPECT(LoadLauncherConfig(old.string())[audio]["volume"] == "80");
+            fs::remove(old);
+
+            // A hand-edited value the page does not offer shows the default.
+            LauncherConfig odd;
+            odd[video]["upscaler"] = "fsr2";
+            odd[video]["fsr_quality"] = "ultra";
+            odd[audio]["speakers"] = "7.1";
+            SETTINGS_EXPECT(upscaler(odd) == std::string("off") && quality(odd) == std::string("quality") && speakers(odd) == std::string("auto"));
+        }
 
         // Through the settings file, sections with a dot included.
         fs::path scratch = root / "video.ini";
