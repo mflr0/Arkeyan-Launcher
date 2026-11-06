@@ -70,6 +70,7 @@ All games are updated	Alla spel är uppdaterade
 All types	Alla typer
 Also delete my saves and my figures	Ta även bort mina sparfiler och figurer
 Alternate deco	Alternativ deko
+AMD upscaling: faster, nearly as sharp (F3 in game).	AMD-uppskalning: snabbare, nästan lika skarp (F3 i spelet).
 An antivirus often does this: it may have put the file in quarantine. Restore it from the antivirus's quarantine, or add an exclusion for this folder:	Ett antivirusprogram gör ofta så: det kan ha lagt filen i karantän. Återställ den från antivirusprogrammets karantän eller lägg till ett undantag för den här mappen:
 And 1 other file.	(och 1 fil till)
 And {} other files.	(och {} filer till)
@@ -101,6 +102,7 @@ Auto	Auto
 Auto (follows the window)	Auto (följer fönstret)
 Auto shows more when wide; 16:9 adds bars.	Auto visar mer i bredd; 16:9 lägger till kanter.
 Auto-open Toy Box	Öppna Toy Box automatiskt
+Auto: 5.1 when the device has six channels.	Auto: 5.1 när enheten har sex kanaler.
 Automatic	Automatisk
 Automatic detection	Automatisk identifiering
 Back	Tillbaka
@@ -110,6 +112,7 @@ Backed up	Säkerhetskopierad
 Backspace	Backsteg
 Backup restored	Säkerhetskopian är återställd
 Backups	Säkerhetskopior
+Balanced	Balanserad
 Basic	Grundläggande
 Before you beat the game. Your save is untouched.	Innan du klarade spelet. Din sparfil är orörd.
 Blank figures from old versions. Tidy trashes them.	Tomma figurer från gamla versioner. Städa kastar dem i papperskorgen.
@@ -311,6 +314,8 @@ Exported {} figures to {}	Exporterade {} figurer till {}
 Exporting...	Exporterar...
 Exporting: {} of {}	Exporterar: {} av {}
 FPS counter	FPS-räknare
+FSR 3	FSR 3
+FSR 3 quality	FSR 3-kvalitet
 FXAA also softens texture detail; Gentle keeps more of it.	FXAA mjukar också upp texturdetaljer; Mild behåller mer av dem.
 Favorite	Favorit
 Feb	feb.
@@ -580,6 +585,7 @@ Original resolution	Originalupplösning
 Other	Övrigt
 Other files in the figures folder stay.	Andra filer i figurmappen blir kvar.
 Other seat	Annan plats
+Performance	Prestanda
 PLAY	SPELA
 PLAY WITH	SPELA MED
 Pages	Sidor
@@ -615,6 +621,8 @@ Put back	Lägg tillbaka
 Put back: 	Lägg tillbaka: 
 Put it on {}	Lägg på {}
 Put on the portal	Lägg på portalen
+Quality	Kvalitet
+Quality is the sharpest, Ultra Performance the fastest.	Kvalitet är skarpast, Ultraprestanda snabbast.
 Quit	Avsluta
 Quit the game before restoring a backup	Avsluta spelet innan du återställer en säkerhetskopia
 Quit the game first.	Avsluta spelet först.
@@ -718,11 +726,13 @@ Some figures are marked as in use, but their game is not running.	Vissa figurer 
 Something went wrong while {}.	Något gick fel vid {}.
 Sort: {}	Sortering: {}
 Space	Mellanslag
+Speakers	Högtalare
 Special Power / Back	Specialkraft / Tillbaka
 Spoken lines and cutscenes.	Tal och filmsekvenser.
 Square	Fyrkant
 Standard	Standard
 Starting the installer	Startar installationsprogrammet
+Stereo	Stereo
 Stop	Stoppa
 Stopping keeps the files already copied.	Om du stoppar behålls de redan kopierade filerna.
 Stopping...	Stoppar...
@@ -835,6 +845,7 @@ Trophies	Troféer
 Turn the game music off	Stäng av spelmusiken
 Turn the game music on	Slå på spelmusiken
 Type	Typ
+Ultra Performance	Ultraprestanda
 UPDATE	UPPDATERA
 UPDATING THE GAME	UPPDATERAR SPELET
 UPDATING...	UPPDATERAR...

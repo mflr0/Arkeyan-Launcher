@@ -70,6 +70,7 @@ All games are updated	Alle spill er oppdatert
 All types	Alle typer
 Also delete my saves and my figures	Slett også lagringene og figurene mine
 Alternate deco	Alternativ dekor
+AMD upscaling: faster, nearly as sharp (F3 in game).	AMD-oppskalering: raskere, nesten like skarp (F3 i spillet).
 An antivirus often does this: it may have put the file in quarantine. Restore it from the antivirus's quarantine, or add an exclusion for this folder:	Et antivirusprogram gjør ofte dette: det kan ha lagt filen i karantene. Gjenopprett den fra antivirusprogrammets karantene, eller legg til et unntak for denne mappen:
 And 1 other file.	og 1 annen fil.
 And {} other files.	og {} andre filer.
@@ -101,6 +102,7 @@ Auto	Auto
 Auto (follows the window)	Auto (følger vinduet)
 Auto shows more when wide; 16:9 adds bars.	Auto viser mer når vinduet er bredt; 16:9 legger til svarte kanter.
 Auto-open Toy Box	Åpne Toy Box automatisk
+Auto: 5.1 when the device has six channels.	Auto: 5.1 når enheten har seks kanaler.
 Automatic	Automatisk
 Automatic detection	Automatisk gjenkjenning
 Back	Tilbake
@@ -110,6 +112,7 @@ Backed up	Sikkerhetskopiert
 Backspace	Backspace
 Backup restored	Sikkerhetskopi gjenopprettet
 Backups	Sikkerhetskopier
+Balanced	Balansert
 Basic	Enkel
 Before you beat the game. Your save is untouched.	Før du fullførte spillet. Lagringen din er urørt.
 Blank figures from old versions. Tidy trashes them.	Tomme figurer fra gamle versjoner. Rydd flytter dem til papirkurven.
@@ -311,6 +314,8 @@ Exported {} figures to {}	Eksporterte {} figurer til {}
 Exporting...	Eksporterer...
 Exporting: {} of {}	Eksporterer: {} av {}
 FPS counter	FPS-teller
+FSR 3	FSR 3
+FSR 3 quality	FSR 3-kvalitet
 FXAA also softens texture detail; Gentle keeps more of it.	FXAA myker også opp teksturdetaljer; Mild beholder mer av dem.
 Favorite	Favoritt
 Feb	feb.
@@ -580,6 +585,7 @@ Original resolution	Opprinnelig oppløsning
 Other	Annet
 Other files in the figures folder stay.	Andre filer i figurmappen blir liggende.
 Other seat	Annen plass
+Performance	Ytelse
 PLAY	SPILL
 PLAY WITH	SPILL MED
 Pages	Sider
@@ -615,6 +621,8 @@ Put back	Legg tilbake
 Put back: 	Lagt tilbake: 
 Put it on {}	Sett den på {}
 Put on the portal	Sett på portalen
+Quality	Kvalitet
+Quality is the sharpest, Ultra Performance the fastest.	Kvalitet er skarpest, Ultraytelse raskest.
 Quit	Avslutt
 Quit the game before restoring a backup	Avslutt spillet før du gjenoppretter en sikkerhetskopi
 Quit the game first.	Avslutt spillet først.
@@ -718,11 +726,13 @@ Some figures are marked as in use, but their game is not running.	Noen figurer e
 Something went wrong while {}.	Noe gikk galt under {}.
 Sort: {}	Sorter: {}
 Space	Mellomrom
+Speakers	Høyttalere
 Special Power / Back	Spesialkraft / Tilbake
 Spoken lines and cutscenes.	Replikker og filmsekvenser.
 Square	Firkant
 Standard	Standard
 Starting the installer	Starter installasjonsprogrammet
+Stereo	Stereo
 Stop	Stopp
 Stopping keeps the files already copied.	Å stoppe beholder filene som allerede er kopiert.
 Stopping...	Stopper...
@@ -835,6 +845,7 @@ Trophies	Trofeer
 Turn the game music off	Slå av spillmusikken
 Turn the game music on	Slå på spillmusikken
 Type	Type
+Ultra Performance	Ultraytelse
 UPDATE	OPPDATER
 UPDATING THE GAME	OPPDATERER SPILLET
 UPDATING...	OPPDATERER...

@@ -116,6 +116,17 @@ namespace launcher_ui
         ui::SettingRow(Tr("Resolution scale"), scaleHint.c_str());
         SettingSelect("##scale", video, "resolution_scale", ScaleChoices, 0);
 
+        // FSR 3 (upscaler=fsr3, else off) and its preset, shown while it is on; the game's F3 menu changes both too.
+        ui::SettingRow(Tr("FSR 3"), Tr("AMD upscaling: faster, nearly as sharp (F3 in game)."));
+        bool fsr = SettingGet(m_config, video, "upscaler", "off") == "fsr3";
+        if (ui::Toggle("##upscaler", &fsr))
+            Set(video, "upscaler", fsr ? "fsr3" : "off");
+        if (fsr)
+        {
+            ui::SettingRow(Tr("FSR 3 quality"), Tr("Quality is the sharpest, Ultra Performance the fastest."));
+            SettingSelect("##fsrquality", video, "fsr_quality", FsrQualityChoices, 0);
+        }
+
         ui::SettingRow(Tr("Frame rate limit"), Tr("Made for 30 FPS; 60 and above are experimental."));
         const std::span<const Choice> fpsChoices = FrameRateChoices(m_s->game.id);
         int fpsDefault = 0;
@@ -157,6 +168,9 @@ namespace launcher_ui
         ui::SettingRow(Tr("Volume"), Tr("The game's volume (F3 in game)."));
         const std::string audioSection = std::string(m_s->game.id) + ".audio";
         SettingSelect("##volume", audioSection.c_str(), "volume", VolumeChoices, 10);
+
+        ui::SettingRow(Tr("Speakers"), Tr("Auto: 5.1 when the device has six channels."));
+        SettingSelect("##speakers", audioSection.c_str(), "speakers", SpeakerChoices, 0);
 
         // Trap Team's portal has a speaker for the traps' voices; the game reads the switch from [trapteam.audio].
         if (m_s->game.id == std::string_view("trapteam"))

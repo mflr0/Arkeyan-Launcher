@@ -78,6 +78,11 @@ namespace launcher_ui
         { "8", N_("Anisotropic 8x") }, { "16", N_("Anisotropic 16x") } };
     // The game's FXAA pass (Swap Force, Trap Team): the values are the runtime's edge_smoothing (docs/settings.md).
     inline constexpr Choice EdgeSmoothingChoices[] = { { "game", N_("Game") }, { "light", N_("Gentle") }, { "off", N_("None") } };
+    // FSR 3's presets (upscaler=fsr3): the values are the runtime's fsr_quality, the labels AMD's names (docs/settings.md).
+    inline constexpr Choice FsrQualityChoices[] = { { "quality", N_("Quality") }, { "balanced", N_("Balanced") },
+        { "performance", N_("Performance") }, { "ultra_performance", N_("Ultra Performance") } };
+    // [<game>.audio] speakers: auto is 5.1 when the output device has six channels or more.
+    inline constexpr Choice SpeakerChoices[] = { { "auto", N_("Auto") }, { "stereo", N_("Stereo") }, { "5.1", "5.1" } };
     inline constexpr Choice PortalChoices[] = { { "auto", N_("Automatic detection") }, { "emulated", N_("Virtual (no portal needed)") },
         { "real", N_("Real portal (Wii, PlayStation, Xbox)"), "hid usb" } };
     inline constexpr Choice LanguageChoices[] = { { "en", "English" }, { "fr", "Français" }, { "de", "Deutsch" }, { "es", "Español" },

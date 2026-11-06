@@ -69,6 +69,7 @@ All games are updated	Alle spellen zijn bijgewerkt
 All types	Alle typen
 Also delete my saves and my figures	Ook mijn savegames en figuren verwijderen
 Alternate deco	Alternatieve versie
+AMD upscaling: faster, nearly as sharp (F3 in game).	AMD-opschaling: sneller, bijna even scherp (F3 in het spel).
 An antivirus often does this: it may have put the file in quarantine. Restore it from the antivirus's quarantine, or add an exclusion for this folder:	Dit komt vaak door een antivirusprogramma: het bestand kan in quarantaine staan. Haal het terug uit de quarantaine van je antivirusprogramma of voeg een uitzondering toe voor deze map:
 And 1 other file.	(en nog 1 bestand)
 And {} other files.	(en nog {} bestanden)
@@ -100,6 +101,7 @@ Auto	Auto
 Auto (follows the window)	Auto (volgt het venster)
 Auto shows more when wide; 16:9 adds bars.	Auto toont meer bij een breed scherm; 16:9 voegt balken toe.
 Auto-open Toy Box	Toy Box automatisch openen
+Auto: 5.1 when the device has six channels.	Auto: 5.1 als het apparaat zes kanalen heeft.
 Automatic	Automatisch
 Automatic detection	Automatische detectie
 Back	Terug
@@ -109,6 +111,7 @@ Backed up	Back-up gemaakt
 Backspace	Backspace
 Backup restored	Back-up hersteld
 Backups	Back-ups
+Balanced	Gebalanceerd
 Basic	Standaard
 Before you beat the game. Your save is untouched.	Voordat je het spel uitspeelt. Je savegame blijft ongewijzigd.
 Blank figures from old versions. Tidy trashes them.	Lege figuren van oude versies. Opruimen verplaatst ze naar de prullenbak.
@@ -310,6 +313,8 @@ Exported {} figures to {}	{} figuren geëxporteerd naar {}
 Exporting...	Exporteren...
 Exporting: {} of {}	Exporteren: {} van {}
 FPS counter	FPS-teller
+FSR 3	FSR 3
+FSR 3 quality	FSR 3-kwaliteit
 FXAA also softens texture detail; Gentle keeps more of it.	FXAA verzacht ook texturedetail; Zacht behoudt er meer van.
 Favorite	Favoriet
 Feb	feb.
@@ -579,6 +584,7 @@ Original resolution	Originele resolutie
 Other	Overig
 Other files in the figures folder stay.	Andere bestanden in de figurenmap blijven staan.
 Other seat	Andere plek
+Performance	Prestaties
 PLAY	PLAY
 PLAY WITH	SPELEN MET
 Pages	Pagina's
@@ -614,6 +620,8 @@ Put back	Terugzetten
 Put back: 	Teruggezet: 
 Put it on {}	Op {} zetten
 Put on the portal	Op de portal zetten
+Quality	Kwaliteit
+Quality is the sharpest, Ultra Performance the fastest.	Kwaliteit is het scherpst, Ultraprestaties het snelst.
 Quit	Afsluiten
 Quit the game before restoring a backup	Sluit het spel af voordat je een back-up herstelt
 Quit the game first.	Sluit eerst het spel af.
@@ -717,11 +725,13 @@ Some figures are marked as in use, but their game is not running.	Sommige figure
 Something went wrong while {}.	Er ging iets mis bij {}.
 Sort: {}	Sorteren: {}
 Space	Spatie
+Speakers	Luidsprekers
 Special Power / Back	Speciale kracht / Terug
 Spoken lines and cutscenes.	Gesproken tekst en tussenfilmpjes.
 Square	Vierkant
 Standard	Standaard
 Starting the installer	Het installatieprogramma starten
+Stereo	Stereo
 Stop	Stoppen
 Stopping keeps the files already copied.	Als je stopt, blijven de al gekopieerde bestanden bewaard.
 Stopping...	Stoppen...
@@ -834,6 +844,7 @@ Trophies	Trofeeën
 Turn the game music off	Spelmuziek uitzetten
 Turn the game music on	Spelmuziek aanzetten
 Type	Type
+Ultra Performance	Ultraprestaties
 UPDATE	BIJWERKEN
 UPDATING THE GAME	HET SPEL WORDT BIJGEWERKT
 UPDATING...	BIJWERKEN...

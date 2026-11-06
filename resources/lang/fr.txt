@@ -282,6 +282,17 @@ Volume	Volume
 The game's volume (F3 in game).	Le volume du jeu (F3 en jeu).
 Portal sound	Son du portail
 The traps' voices: a Traptanium portal plays them, else the computer (F3 in game).	Les voix des pièges : un portail Traptanium les joue, sinon l'ordinateur (F3 en jeu).
+FSR 3	FSR 3
+AMD upscaling: faster, nearly as sharp (F3 in game).	Mise à l'échelle AMD : plus rapide, presque aussi net (F3 en jeu).
+FSR 3 quality	Qualité FSR 3
+Quality is the sharpest, Ultra Performance the fastest.	Qualité est le plus net, Ultra Performance le plus rapide.
+Quality	Qualité
+Balanced	Équilibré
+Performance	Performance
+Ultra Performance	Ultra Performance
+Speakers	Haut-parleurs
+Auto: 5.1 when the device has six channels.	Auto : 5.1 quand l'appareil a six canaux.
+Stereo	Stéréo
 Reset to defaults	Valeurs par défaut
 Resolution scale	Échelle de résolution
 Restart now	Redémarrer maintenant

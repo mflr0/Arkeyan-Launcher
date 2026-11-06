@@ -14,8 +14,8 @@ namespace fs = std::filesystem;
 
 namespace
 {
-    constexpr std::array<const char*, 12> VideoKeys = { "fullscreen", "resolution_scale", "fps_limit", "skip_intro_movies", "vsync",
-        "anisotropy", "aspect", "texture_packs", "texture_dump", "original_resolution", "show_fps", "edge_smoothing" };
+    constexpr std::array<const char*, 14> VideoKeys = { "fullscreen", "resolution_scale", "fps_limit", "skip_intro_movies", "vsync",
+        "anisotropy", "aspect", "texture_packs", "texture_dump", "original_resolution", "show_fps", "edge_smoothing", "upscaler", "fsr_quality" };
 
     // Top-level names in the game's folder (docs/install.md has the table).
     // The achievements and the play time (collection/progress.h) go with the saves: kept when the game is removed, deleted with them.

@@ -69,6 +69,7 @@ All games are updated	Todos los juegos están actualizados
 All types	Todos los tipos
 Also delete my saves and my figures	Borrar también mis partidas y mis figuras
 Alternate deco	Decoración alternativa
+AMD upscaling: faster, nearly as sharp (F3 in game).	Escalado de AMD: más rápido, casi igual de nítido (F3 en el juego).
 An antivirus often does this: it may have put the file in quarantine. Restore it from the antivirus's quarantine, or add an exclusion for this folder:	Un antivirus suele hacer esto: puede haber puesto el archivo en cuarentena. Restáuralo desde la cuarentena del antivirus o añade una exclusión para esta carpeta:
 And 1 other file.	y 1 archivo más.
 And {} other files.	y {} archivos más.
@@ -100,6 +101,7 @@ Auto	Auto
 Auto (follows the window)	Auto (sigue la ventana)
 Auto shows more when wide; 16:9 adds bars.	Auto muestra más si es ancho; 16:9 añade barras.
 Auto-open Toy Box	Toy Box automática
+Auto: 5.1 when the device has six channels.	Auto: 5.1 si el dispositivo tiene seis canales.
 Automatic	Automático
 Automatic detection	Detección automática
 Back	Atrás
@@ -109,6 +111,7 @@ Backed up	Copia hecha
 Backspace	Retroceso
 Backup restored	Copia restaurada
 Backups	Copias
+Balanced	Equilibrado
 Basic	Básico
 Before you beat the game. Your save is untouched.	Antes de pasarte el juego. Tu partida no se toca.
 Blank figures from old versions. Tidy trashes them.	Figuras en blanco de versiones antiguas. Limpiar las envía a la papelera.
@@ -310,6 +313,8 @@ Exported {} figures to {}	{} figuras exportadas a {}
 Exporting...	Exportando...
 Exporting: {} of {}	Exportando: {} de {}
 FPS counter	Contador de FPS
+FSR 3	FSR 3
+FSR 3 quality	Calidad de FSR 3
 FXAA also softens texture detail; Gentle keeps more of it.	FXAA también suaviza el detalle de las texturas; Suave conserva más.
 Favorite	Favorito
 Feb	feb.
@@ -579,6 +584,7 @@ Original resolution	Resolución original
 Other	Otro
 Other files in the figures folder stay.	Los demás archivos de la carpeta de figuras se quedan.
 Other seat	Otro sitio
+Performance	Rendimiento
 PLAY	JUGAR
 PLAY WITH	JUGAR CON
 Pages	Páginas
@@ -614,6 +620,8 @@ Put back	Devolver
 Put back: 	Devuelto: 
 Put it on {}	Ponerla en {}
 Put on the portal	Poner en el portal
+Quality	Calidad
+Quality is the sharpest, Ultra Performance the fastest.	Calidad es el más nítido; Ultra rendimiento, el más rápido.
 Quit	Salir
 Quit the game before restoring a backup	Cierra el juego antes de restaurar una copia
 Quit the game first.	Cierra el juego primero.
@@ -717,11 +725,13 @@ Some figures are marked as in use, but their game is not running.	Algunas figura
 Something went wrong while {}.	Algo falló al {}.
 Sort: {}	Orden: {}
 Space	Espacio
+Speakers	Altavoces
 Special Power / Back	Poder especial / Atrás
 Spoken lines and cutscenes.	Diálogos y escenas.
 Square	Cuadrado
 Standard	Estándar
 Starting the installer	Iniciando el instalador
+Stereo	Estéreo
 Stop	Detener
 Stopping keeps the files already copied.	Al detener se conservan los archivos ya copiados.
 Stopping...	Deteniendo...
@@ -834,6 +844,7 @@ Trophies	Trofeos
 Turn the game music off	Desactivar la música del juego
 Turn the game music on	Activar la música del juego
 Type	Tipo
+Ultra Performance	Ultra rendimiento
 UPDATE	ACTUALIZAR
 UPDATING THE GAME	ACTUALIZANDO EL JUEGO
 UPDATING...	ACTUALIZANDO...

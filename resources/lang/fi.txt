@@ -70,6 +70,7 @@ All games are updated	Kaikki pelit on päivitetty
 All types	Kaikki tyypit
 Also delete my saves and my figures	Poista myös tallennukseni ja hahmoni
 Alternate deco	Toinen väritys
+AMD upscaling: faster, nearly as sharp (F3 in game).	AMD-skaalaus: nopeampi, lähes yhtä terävä (F3 pelissä).
 An antivirus often does this: it may have put the file in quarantine. Restore it from the antivirus's quarantine, or add an exclusion for this folder:	Virustorjunta tekee tämän usein: se on voinut siirtää tiedoston karanteeniin. Palauta tiedosto virustorjunnan karanteenista tai lisää tämä kansio poissulkemisiin:
 And 1 other file.	Lisäksi 1 muu tiedosto.
 And {} other files.	Lisäksi {} muuta tiedostoa.
@@ -101,6 +102,7 @@ Auto	Auto
 Auto (follows the window)	Auto (seuraa ikkunaa)
 Auto shows more when wide; 16:9 adds bars.	Auto näyttää enemmän leveänä; 16:9 lisää palkit.
 Auto-open Toy Box	Toy Boxin automaattiavaus
+Auto: 5.1 when the device has six channels.	Auto: 5.1, kun laitteessa on kuusi kanavaa.
 Automatic	Automaattinen
 Automatic detection	Automaattinen tunnistus
 Back	Takaisin
@@ -110,6 +112,7 @@ Backed up	Varmuuskopioitu
 Backspace	Askelpalautin
 Backup restored	Varmuuskopio palautettu
 Backups	Varmuuskopiot
+Balanced	Tasapainotettu
 Basic	Perus
 Before you beat the game. Your save is untouched.	Ennen pelin läpäisyä. Tallennuksesi säilyy koskemattomana.
 Blank figures from old versions. Tidy trashes them.	Vanhojen versioiden tyhjiä hahmoja. Siivous siirtää ne roskakoriin.
@@ -311,6 +314,8 @@ Exported {} figures to {}	Viety {} hahmoa: {}
 Exporting...	Viedään...
 Exporting: {} of {}	Viedään: {} / {}
 FPS counter	FPS-laskuri
+FSR 3	FSR 3
+FSR 3 quality	FSR 3 -laatu
 FXAA also softens texture detail; Gentle keeps more of it.	FXAA pehmentää myös tekstuurien yksityiskohtia; Lempeä säilyttää niitä enemmän.
 Favorite	Suosikki
 Feb	helmi
@@ -580,6 +585,7 @@ Original resolution	Alkuperäinen resoluutio
 Other	Muu
 Other files in the figures folder stay.	Hahmokansion muut tiedostot säilyvät.
 Other seat	Toinen paikka
+Performance	Suorituskyky
 PLAY	PELAA
 PLAY WITH	PELAA KÄYTTÄEN
 Pages	Sivut
@@ -615,6 +621,8 @@ Put back	Palauta
 Put back: 	Palautettu: 
 Put it on {}	Aseta paikalle: {}
 Put on the portal	Aseta portaaliin
+Quality	Laatu
+Quality is the sharpest, Ultra Performance the fastest.	Laatu on terävin, Ultrasuorituskyky nopein.
 Quit	Lopeta
 Quit the game before restoring a backup	Sulje peli ennen varmuuskopion palautusta
 Quit the game first.	Sulje peli ensin.
@@ -718,11 +726,13 @@ Some figures are marked as in use, but their game is not running.	Joitakin hahmo
 Something went wrong while {}.	Jokin meni pieleen vaiheessa: {}.
 Sort: {}	Lajittelu: {}
 Space	Välilyönti
+Speakers	Kaiuttimet
 Special Power / Back	Erikoisvoima / Takaisin
 Spoken lines and cutscenes.	Puhe ja välianimaatiot.
 Square	Neliö
 Standard	Vakio
 Starting the installer	Käynnistetään asennusohjelmaa
+Stereo	Stereo
 Stop	Pysäytä
 Stopping keeps the files already copied.	Pysäyttäminen säilyttää jo kopioidut tiedostot.
 Stopping...	Pysäytetään...
@@ -835,6 +845,7 @@ Trophies	Pokaalit
 Turn the game music off	Mykistä pelin musiikki
 Turn the game music on	Laita pelin musiikki päälle
 Type	Tyyppi
+Ultra Performance	Ultrasuorituskyky
 UPDATE	PÄIVITÄ
 UPDATING THE GAME	PÄIVITETÄÄN PELIÄ
 UPDATING...	PÄIVITETÄÄN...
