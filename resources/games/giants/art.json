@@ -23,7 +23,7 @@
   "portraits": { "archive": "misc/UI_Collection_Champions.bld", "entry": "level.bld", "folder": "/collections/sky2/portraits/" },
   "artworks": { "archive": "misc/PvP_MainControl.arc", "folder": "/ui_pvp_sprites/" },
   "upgrades": { "costs": { "archive": "permanent/global.bld", "set": "Minion_UpgradeCosts" },
-                "languages": { "en": "ENGLISH", "fr": "FRENCH" },
+                "languages": { "en": "ENGLISH", "fr": "FRENCH", "de": "GERMAN", "es": "SPANISH", "it": "ITALIAN", "nl": "DUTCH", "pt": "PORTUGUESE", "sv": "SWEDISH", "no": "NORWEGIAN", "da": "DANISH", "fi": "FINNISH" },
                 "archives": {
               "0": "character/000_AirDragon.bld", "1": "character/001_Gryphon.bld",
               "2": "character/002_SkyTurtle.bld", "3": "character/003_StormGiant.bld",

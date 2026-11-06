@@ -2632,6 +2632,16 @@ static int RunChecks(int argc, char** argv)
         printf("  %s: upgrades from the disc %s, Spyro's first: %s\n", id, spyro.fromDisc ? "yes" : "NO",
             spyro.upgrades.empty() ? "-" : spyro.upgrades[0].name.c_str());
         EXPECT(spyro.fromDisc && spyro.upgrades.size() >= 11 && spyro.upgrades[0].bit == collection::UpgradePathChosenBit + 2);
+        // The disc's other languages are kept too: the launcher asks in its own (German differs from English and French).
+        std::string english = collection::Upgrades(*collection::Catalogue::Get().Find(16), id, "en").upgrades[0].name;
+        for (const char* language : { "de", "es", "it", "nl", "sv", "no", "da", "fi", "pt" })
+        {
+            if (std::string_view(language) == "pt" && std::string_view(id) != "giants")
+                continue; // Giants' disc is the one with Portuguese
+            collection::UpgradeTable other = collection::Upgrades(*collection::Catalogue::Get().Find(16), id, language);
+            printf("  %s: upgrades in %s: %s\n", id, language, other.upgrades.empty() ? "-" : other.upgrades[0].name.c_str());
+            EXPECT(!other.upgrades.empty() && other.upgrades[0].name != english);
+        }
     };
     printf("Disc pictures:\n");
     std::string dataBefore = getenv("SKYLANDERS_DATA") != nullptr ? getenv("SKYLANDERS_DATA") : "";
