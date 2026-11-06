@@ -107,7 +107,7 @@ twelve keys that belong to a game (`fullscreen`, `resolution_scale`, `fps_limit`
 ## Per-game keyboard keys
 
 The runtime reads one `[input]` section (`key_<action>=<SDL key name>`), but the keys are each game's own: **`[ssa.input]`**,
-**`[giants.input]`**, **`[swapforce.input]`** and **`[trapteam.input]`** hold a game's `key_<action>` lines, edited on the game's settings page
+**`[giants.input]`**, **`[swapforce.input]`**, **`[trapteam.input]`**, **`[superchargers.input]`** and **`[imaginators.input]`** hold a game's `key_<action>` lines, edited on the game's settings page
 (Keyboard tab). Only the keys are per game: `device`, `gamepad` and `glyphs` stay in `[input]`.
 
 | Section | Key | Meaning |

@@ -3963,7 +3963,7 @@ namespace launcher_ui
         {
             // Each game's Keyboard tab (set SKY_LAUNCHER_LANGUAGE for the language of the shots; SKY_LAUNCHER_TEST_SIZE=<w>x<h> a
             // taller window to see the Mouse section), then Settings > Portal and its Toy Box keys.
-            static const char* const Games[] = { "ssa", "giants", "swapforce" };
+            static const char* const Games[] = { "ssa", "giants", "swapforce", "trapteam", "superchargers", "imaginators" };
             if (m_testStep == 0)
                 if (const char* size = LauncherEnv("SKY_LAUNCHER_TEST_SIZE"))
                 {

@@ -1177,7 +1177,7 @@ Swap Force not opened); with `pad` each page's first stop has its ring and the p
 first stop with its ring.
 `SKY_LAUNCHER_TEST_RUNNING=1` (with `SKY_LAUNCHER_RUNTIME` a stand-in game and `SKY_LAUNCHER_TEST_DROP` Spyro's Adventure's disc)
 shoots one game at a time ("A game running"): `running-1-game`, `running-2-other`, `running-3-ended`.
-`SKY_LAUNCHER_TEST_KEYS=1` shoots each game's Keyboard tab (`keys-ssa`, `keys-giants`, `keys-swapforce`; `SKY_LAUNCHER_LANGUAGE=fr` for the French ones).
+`SKY_LAUNCHER_TEST_KEYS=1` shoots each game's Keyboard tab (`keys-<game>` for the six games; `SKY_LAUNCHER_LANGUAGE=fr` for the French ones).
 `SKY_LAUNCHER_TEST_PAD=1` shoots each game's Controller tab with a few buttons given other jobs (`pad-ssa`, `pad-giants`, `pad-swapforce`)
 and Swap Force's Game tab with Nightmare from the start on (`game-swapforce`).
 `SKY_LAUNCHER_TEST_LOGO=1` shoots each game's page (`logo-ssa`, `logo-giants`, `logo-swapforce`) from the art already cached in

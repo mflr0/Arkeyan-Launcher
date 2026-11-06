@@ -160,7 +160,7 @@ namespace
             for (const GameKey& key : GameKeys(game))
                 SETTINGS_EXPECT(actions.insert(key.action).second && (std::string_view(key.pad).find("stick") != std::string_view::npos || pads.insert(key.pad).second));
         }
-        for (const char* game : { "superchargers", "imaginators" })
+        for (const char* game : { "superchargers" })
         {
             bool accelerate = false, drift = false;
             for (const GameKey& key : GameKeys(game))
@@ -170,6 +170,8 @@ namespace
             }
             SETTINGS_EXPECT(accelerate && drift);
         }
+        for (const GameKey& key : GameKeys("imaginators")) // no vehicles
+            SETTINGS_EXPECT(std::string_view(key.label).find("vehicle") == std::string_view::npos && std::string_view(key.action) != "rt");
         SeedGameVideo(config, "trapteam");
         SETTINGS_EXPECT(config["trapteam.video"]["fps_limit"] == "30" && config["trapteam.video"]["vsync"] == "0");
         config["trapteam.video"]["fps_limit"] = "60";
