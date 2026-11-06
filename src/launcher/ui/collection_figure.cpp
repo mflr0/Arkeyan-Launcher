@@ -109,6 +109,7 @@ namespace launcher_ui
             m_overlay = Overlay::None;
             m_editing = false;
             m_confirm.clear();
+            m_manageFresh = true;
             return;
         }
         switch (m_overlay)

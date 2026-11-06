@@ -108,7 +108,10 @@ namespace launcher_ui
         const std::string tabs[] = { Tf("Trash · {}", m_trash.size()), Tr("Backups"), Tr("Import and export"), Tf("Unknown toys · {}", unknown),
             Tf("Tidy · {}", m_starters) };
         const char* labels[] = { tabs[0].c_str(), tabs[1].c_str(), tabs[2].c_str(), tabs[3].c_str(), tabs[4].c_str() };
-        ui::Tabs("##managetabs", labels, &m_manageTab);
+        ui::TabsOptions options;
+        options.focusSelected = m_manageFresh;
+        m_manageFresh = false;
+        ui::Tabs("##managetabs", labels, &m_manageTab, options);
         ui::BeginRoomyChild("##managebody", ImVec2(0, OverlayBody(3 * ui::height::Main, 3 * ui::height::Main, 6 * ui::height::Main)), ImGuiChildFlags_NavFlattened, ImGuiWindowFlags_NoBackground);
         ImGui::SetScrollX(0.0f);
         switch (m_manageTab)
@@ -166,6 +169,8 @@ namespace launcher_ui
     void CollectionPage::DrawBackups()
     {
         ui::Text(ui::TextStyle::Caption, Tr("The latest 10 backups are kept."), ui::color::Dim);
+        if (m_backupsOf.empty())
+            m_backupsScrolled.clear();
         bool any = false;
         bool reload = false;
         for (const Figure& figure : m_model.figures)
@@ -179,6 +184,12 @@ namespace launcher_ui
             ui::ListRowOptions options;
             options.trailing = count.c_str();
             options.selected = open;
+            // An opened figure's copies (and their Restore buttons) are under its row: the row goes to the top, so they show.
+            if (open && m_backupsScrolled != figure.path)
+            {
+                m_backupsScrolled = figure.path;
+                ImGui::SetScrollHereY(0.0f);
+            }
             ImGui::PushID(figure.path.c_str());
             if (ui::ListRow(Name(figure).c_str(), options))
                 m_backupsOf = open ? std::string() : figure.path;
@@ -546,7 +557,12 @@ namespace launcher_ui
         case 11:
             m_overlay = Overlay::Manage;
             m_manageTab = 1;
-            m_backupsOf = figureOf(14);
+            for (const Figure& figure : m_model.figures) // the first one with copies: its Restore buttons show with no scrolling
+                if (!Backups(figure.path).empty())
+                {
+                    m_backupsOf = figure.path;
+                    break;
+                }
             break;
         case 12:
         {

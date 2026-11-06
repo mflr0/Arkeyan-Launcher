@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cmath>
 #include <fmt/format.h>
+#include <imgui_internal.h> // the focused ID, for a tab the page selected
 
 namespace ui
 {
@@ -91,6 +92,15 @@ namespace ui
             }
         }
         ImGui::PushID(id);
+        // The selection moved (a bumper, or the page set it): the focus follows when it was on a tab, not left on the tab
+        // the page just left. A focus the player moved to another tab, before pressing it, stays.
+        ImGuiStorage* memory = ImGui::GetStateStorage();
+        const ImGuiID lastId = ImGui::GetID("##selected");
+        const int last = memory->GetInt(lastId, *current);
+        memory->SetInt(lastId, *current);
+        bool followFocus = false;
+        for (int i = 0; i < count && last != *current; i++)
+            followFocus = followFocus || ImGui::GetCurrentContext()->NavId == ImGui::GetID(labels[i]);
         ImDrawList* draw = ImGui::GetWindowDrawList();
         const bool caps = options.bumpers && Ctx().glyphs != Glyphs::Keyboard;
         const float rowH = height::Normal;
@@ -112,10 +122,10 @@ namespace ui
                 change = TabChange::Click;
             }
             State state = ItemState();
-            if (active && options.focusSelected)
+            if (active && (options.focusSelected || followFocus))
             {
-                FocusLastItem(options.showFocus);
-                state.focused = state.focused || options.showFocus;
+                FocusLastItem(options.showFocus || followFocus);
+                state.focused = state.focused || options.showFocus || followFocus;
             }
             unsigned ink = active || state.hovered || state.pressed ? color::Ink : color::Dim;
             ImVec2 textAt(at.x, at.y + (rowH - stroke::Selection - text.y) / 2);
