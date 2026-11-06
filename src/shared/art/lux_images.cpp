@@ -282,12 +282,14 @@ namespace art::lux
 
             const uint8_t* header = FindTag(body, std::min(end, body + 0x100), "\0XET");
             std::string name;
-            if (header == nullptr || !ReadText(header + 0x30, end, name) || !wanted(name))
+            if (header == nullptr || header + 0x30 >= end || !ReadText(header + 0x30, end, name) || !wanted(name))
                 continue;
             static const uint8_t Flushes[8] = { 0xFF, 0xFF, 0x00, 0x00, 0xFF, 0xFF, 0x00, 0x00 };
-            const uint8_t* flushes = std::search(header, std::min(end, body + 0x400), Flushes, Flushes + 8);
-            const uint8_t* physical = FindTag(header, std::min(end, body + 0x400), "SYHP");
-            if (physical == nullptr || flushes + 8 + 24 > end)
+            const uint8_t* limit = std::min(end, body + 0x400);
+            const uint8_t* flushes = std::search(header, limit, Flushes, Flushes + 8);
+            const uint8_t* physical = FindTag(header, limit, "SYHP");
+            // The fetch constant and the SYHP offset and size are read past their tags: all of them must lie in the body.
+            if (physical == nullptr || physical + 20 > end || flushes == limit || flushes + 8 + 24 > end)
                 continue;
 
             // The GPU texture fetch constant (6 words): type, pitch and tiling, format and endianness, size, dimension.
