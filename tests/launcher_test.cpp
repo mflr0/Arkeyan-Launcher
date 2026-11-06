@@ -2108,6 +2108,7 @@ static void SourceFailureChecks(const std::filesystem::path& scratch)
 
 #include "launcher_control_checks.h"
 #include "install_checks.h"
+#include "hd_textures_checks.h"
 #include "persistence_checks.h"
 #include "migration_checks.h"
 #include "copy_checks.h"
@@ -2341,6 +2342,7 @@ static int RunChecks(int argc, char** argv)
     }
     SourceFailureChecks(scratch);
     InstallLifecycleChecks(scratch);
+    HdTexturesChecks(scratch);
     ConfigPersistenceChecks(scratch);
     FolderMigrationChecks(scratch);
     SyntheticCopyChecks(scratch);

@@ -25,6 +25,7 @@ namespace
         { "link", N_("Linking the game"), { 1, 1, 1, 1, 4 } },
         { "movies", N_("Adding the movie shaders"), { 1, 5, 23, 5, 12 } },
         { "finish", N_("Finishing"), { 1, 6, 1, 1, 12 } },
+        { "hdtextures", N_("Making HD textures"), { 20, 20, 20, 20, 20 } }, // only when asked for (Game settings > Video > HD textures): about 2 to 3 minutes
     };
     constexpr float UnknownWeight = 4;
 }
@@ -38,6 +39,9 @@ InstallChecklist MakeInstallChecklist(const InstallProgress& progress, uint64_t 
     for (const KnownStep& step : KnownSteps)
     {
         if (!downloadedKit && std::string_view(step.id) == "kit")
+            continue;
+        if (!progress.hdTextures && std::string_view(step.id) == "hdtextures" &&
+            std::none_of(progress.steps.begin(), progress.steps.end(), [](const InstallProgress::Step& s) { return s.id == "hdtextures"; }))
             continue;
         list.rows.push_back({ step.id, Tr(step.title) });
         weights.push_back(step.weight[column]);

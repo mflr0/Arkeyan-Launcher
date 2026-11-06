@@ -584,7 +584,20 @@ GitHub issue) and the GitHub link bottom right. The launcher's own language is i
 5. Game settings (the Settings button on a game's Play page) - **that game's own settings**, six tabs (the sidebar keeps the
    game selected; B / Escape or **Back** return to its Play page):
    - Video: fullscreen, resolution scale, frame rate limit (30 or 60), skip intro movies, Original resolution (Swap Force only), VSync, texture filtering, widescreen,
-     HD texture packs (and their folder), Advanced > dump textures. The game's own copy, `[<game>.video]` (docs/settings.md).
+     HD texture packs (and their folder), **HD textures** (Swap Force, Trap Team, SuperChargers, Imaginators; below), Advanced > dump textures.
+     The game's own copy, `[<game>.video]` (docs/settings.md).
+     **HD textures** is a switch, off by default, `[<game>] hd_textures`; its line says what it does and the disk it takes for that
+     game (2.2 GB Swap Force, 2.6 SuperChargers, 3.0 Imaginators and Trap Team [?]). On a built game with its disc at hand,
+     flipping it runs the kit's `Arkeyan-Builder --iso <disc> --hd-textures auto` alone as a background job
+     (`GameInstaller::StartHdTextures`; `ui/hd_textures_page.cpp`): under the list a line, a bar with its percentage and **Stop**;
+     the launcher stays usable, PLAY, INSTALL and the other game buttons wait ("Wait for the HD textures to finish"), and the
+     switch itself is disabled while the game runs. Done: a toast "HD textures ready". Stopped or failed: the switch goes back
+     to Off, the half-made `textures-hd/` is removed, and a failure says why under the list (the builder's `@error`, or "These
+     game tools can't make HD textures..." when it could not start). Flipped off: `--hd-textures off` removes the folder.
+     A game not built yet keeps the choice and the install makes the pack as its last step (`docs/install.md`). The switch is
+     disabled with its reason on a kit that does not know the option (a kit before 0.9.1: "Needs newer game tools: reinstall the
+     game to get them."), with no disc image at hand, or while the game runs. Spyro's Adventure and Giants have no switch: their
+     disc is not read for textures yet (`docs/tools/hd_textures.md`, [Lux]).
    - Keyboard: one row per action **the game uses**, named as the game names it with the pad button in brackets ("Attack 1 (X)",
      "1st Power / Accept (A)"), two rows a line: the key's button (click it, press a key; Escape cancels), red when another row of
      the game has the same key, and **Reset to defaults** (held) for this game's keys. The game's own copy, `[<game>.input]`; PLAY puts it

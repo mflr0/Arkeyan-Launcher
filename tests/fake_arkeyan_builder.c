@@ -6,7 +6,9 @@
  *   FAKE_SSABUILD_FAIL=<step id>  fail half way through that step (toolchain, disc, recompile, shaders, compile, link,
  *                                 movies)
  *   FAKE_SSABUILD_DELAY=<seconds> pause between events (default 0.05)
- *   FAKE_SSABUILD_HOLD=<seconds>  wait after the last step, before finishing (to look at a build at 100 %) */
+ *   FAKE_SSABUILD_HOLD=<seconds>  wait after the last step, before finishing (to look at a build at 100 %)
+ * --hd-textures off|auto: as the real one, a last step "hdtextures" after the build, or alone (no --out) as the only step;
+ *   FAKE_SSABUILD_FAIL=hdtextures fails half way through it, and FAKE_SSABUILD_HD_MARKER=<file> gets the mode it was asked for. */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -82,6 +84,22 @@ static int menu_music(const char* path)
     return 0;
 }
 
+/* The HD texture step: "hdtextures" is a step like the others; the mode is written to the marker file when the test names one. */
+static void hd_textures(const char* mode)
+{
+    const char* marker = getenv("FAKE_SSABUILD_HD_MARKER");
+    if (marker != NULL)
+    {
+        FILE* file = fopen(marker, "wb");
+        if (file != NULL)
+        {
+            fprintf(file, "%s\n", mode);
+            fclose(file);
+        }
+    }
+    step("hdtextures", "Making HD textures", strcmp(mode, "off") == 0 ? 2 : 40);
+}
+
 int main(int argc, char** argv)
 {
     if (getenv("FAKE_SSABUILD_CLOSE_OUTPUT") != NULL)
@@ -94,18 +112,27 @@ int main(int argc, char** argv)
         for (int i = 0; i < 500; i++) SLEEP_MS(10);
         return 1;
     }
-    const char *iso = NULL, *out = NULL;
+    const char *iso = NULL, *out = NULL, *hd = NULL;
     for (int i = 1; i + 1 < argc; i++)
     {
         if (strcmp(argv[i], "--iso") == 0)
             iso = argv[++i];
         else if (strcmp(argv[i], "--out") == 0)
             out = argv[++i];
+        else if (strcmp(argv[i], "--hd-textures") == 0)
+            hd = argv[++i];
         else if (strcmp(argv[i], "--menu-music") == 0)
             return menu_music(argv[i + 1]);
     }
     if (getenv("FAKE_SSABUILD_DELAY") != NULL)
         g_delay = (int)(atof(getenv("FAKE_SSABUILD_DELAY")) * 1000);
+    if (iso != NULL && out == NULL && hd != NULL) /* the texture step alone */
+    {
+        printf("@log fake Arkeyan-Builder, iso %s\n", iso);
+        hd_textures(hd);
+        printf("@done textures-hd\n");
+        return 0;
+    }
     if (iso == NULL || out == NULL)
     {
         printf("@error usage: Arkeyan-Builder --iso <iso> --out <game dir>\n");
@@ -132,6 +159,8 @@ int main(int argc, char** argv)
     step("shaders", "Translating the shaders", 5);
     step("compile", "Compiling the game", 5);
     step("link", "Linking the game", 2);
+    if (hd != NULL)
+        hd_textures(hd);
     fflush(stdout);
     if (getenv("FAKE_SSABUILD_HOLD") != NULL)
         SLEEP_MS((int)(atof(getenv("FAKE_SSABUILD_HOLD")) * 1000));

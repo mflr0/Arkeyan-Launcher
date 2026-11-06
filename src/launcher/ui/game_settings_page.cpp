@@ -88,6 +88,8 @@ namespace launcher_ui
         case GameTab::Game: DrawGameTab(); break;
         }
         EndCard();
+        if (m_testHdTex)
+            ImGui::SetScrollHereY(1.0f); // the HD textures screenshots show the bottom of the Video tab
         EndSettingsPage();
     }
 
@@ -204,7 +206,9 @@ namespace launcher_ui
             if (!OpenFolder(GameInstallFolder({}) / "textures"))
                 Toast(Tr("Couldn't open the folder"), ui::ToastKind::Error);
         }
+        DrawHdTextures();
         ui::EndSettings();
+        DrawHdStatus();
 
         ui::SectionHeader(Tr("Advanced"));
         if (ui::BeginSettings("##graphicsadvanced"))
@@ -799,7 +803,7 @@ namespace launcher_ui
         if (!m_s->dataSizesLoaded)
             RefreshDataSizes();
         const GameFolders folders = FoldersOf(m_s->game.id);
-        const bool busy = Installing() || m_s->portableJob.Running(), running = GameIsRunning(folders) || m_session.Running() == m_s->game.id;
+        const bool busy = Installing() || m_s->hdJob.Running() || m_s->portableJob.Running(), running = GameIsRunning(folders) || m_session.Running() == m_s->game.id;
         auto hold = [](const char* tooltip, bool disabled = false) {
             ui::ButtonOptions options;
             options.kind = ui::ButtonKind::Danger;

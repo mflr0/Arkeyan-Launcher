@@ -280,6 +280,11 @@ namespace launcher_ui
         InstalledGame installed;
         std::string ownRuntime;    // a runtime the player set up (FindRuntime): no install needed
         GameInstaller installer;
+        // Game settings > Video > HD textures (docs/tools/hd_textures.md): the kit's texture step alone, and how the last one ended.
+        GameInstaller hdJob;
+        bool hdWatch = false;       // hdJob was started and its end is not handled yet
+        bool hdOn = false;          // it makes the pack (else it removes it)
+        std::string hdMessage;      // why the last one failed, in the launcher's language
         KitDownloader kitDownload;  // the first step of an install when there is no kit yet
         std::string kitError;       // why the downloaded kit can't be used
         bool kitUsed = false;       // this install started with that download
@@ -395,6 +400,15 @@ namespace launcher_ui
         void DrawUpdateAll(ImVec2 right);
         void DrawDataActions();
         void CreateShortcut();
+        void DrawHdTextures();        // the Video tab's "HD textures" row: the switch
+        void TestHdTexturesScript(uint64_t now);
+        void DrawHdStatus();          // under the Video list: the work's progress and Stop, or why it failed
+        bool HdTexturesOffered() const; // this game's disc archives hold textures the kit doubles (the Alchemy games)
+        bool HdTexturesWanted(const GameSlot& slot) const;
+        void SetHdTextures(bool on);
+        void StartHdTextures(bool on);
+        void FinishHdTextures();
+        bool AnyHdTextures() const;
         void DrawPortableExport();    // the Game tab's "Portable copy": the button, the message, the progress
         void StartPortableExport(const std::filesystem::path& folder);
         void FinishPortableExport();
@@ -718,6 +732,7 @@ namespace launcher_ui
         int m_heroNavCase = 0, m_heroNavPhase = -1, m_heroNavWarmup = 0, m_heroNavMoves = 0, m_heroNavDirection = 0;
         uint32_t m_heroNavFrom = 0;
         bool m_testAchievements = false; // SKY_LAUNCHER_TEST_ACHIEVEMENTS: the shown game's page with its play time, then its achievements
+        bool m_testHdTex = false;      // SKY_LAUNCHER_TEST_HDTEX=<game>: the HD textures switch on a built game (TestHdTexturesScript)
         bool m_testLogo = false;       // SKY_LAUNCHER_TEST_LOGO: each game's page with its logo (from the art already read), one shot each
         bool m_testScrollEnd = false;  // the uninstall screenshots: scroll the settings column to its end
         uint64_t m_testHoldAt = 0;     // when the test pressed the hold button (it holds it down for the screenshots)
