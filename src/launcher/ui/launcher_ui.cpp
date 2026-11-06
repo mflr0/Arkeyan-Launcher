@@ -1557,7 +1557,9 @@ namespace launcher_ui
                     ui::ListRow(entry->name, game);
                 }
         }
+        ImGui::PopStyleVar();
         ImGui::EndChild();
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, ui::space::XXS));
 
         // The collection, then Settings, at the bottom of the sidebar; selected while their page is shown.
         ImGui::SetCursorPosY(ImGui::GetWindowHeight() - ui::space::L - footer);
