@@ -302,8 +302,12 @@ namespace launcher_ui
                     if (name.ends_with(tab))
                         m_gameTab = value;
                 m_portableAsk = name.starts_with("13-");
-                if (m_portableAsk) // the copy is offered for an installed game with its disc only
+                if (m_portableAsk) // the copy is offered for an installed game with its disc only (CI runs with no disc image)
+                {
                     m_s->installed.runtime = "padwalk";
+                    w.discBefore = int(m_s->disc);
+                    m_s->disc = DiscState::Ready;
+                }
             }
             else if (name.starts_with("14-") || name.starts_with("15-"))
             {
@@ -568,7 +572,12 @@ namespace launcher_ui
         {
             const bool popup = ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopupId | ImGuiPopupFlags_AnyPopupLevel);
             if (name.starts_with("13-"))
+            {
                 m_s->installed.runtime.clear();
+                if (w.discBefore >= 0)
+                    m_s->disc = DiscState(w.discBefore);
+                w.discBefore = -1;
+            }
             bool ok = true;
             BackTo back = view.back;
             if (name.starts_with("21-")) // the uninstall list is a step of the Launcher tab: B closes it, Settings stays

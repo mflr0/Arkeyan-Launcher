@@ -720,6 +720,7 @@ namespace launcher_ui
             std::vector<ui::Context::TestStop> frameStops; // the last frame's stops, their top windows and rectangles
             std::vector<ui::Context::TestStop> stopsAt;    // the stops when the last move was made
             int disorder = 0;                  // moves out of reading order in this view
+            int discBefore = -1;               // view 13 without a disc image: the disc state it set aside
             int hover = 0;                     // the collection's pointer-on-a-card check: 0 not started, 1 pointer placed, 2 pad pressed, 3 done
             std::vector<uint32_t> frameLegends; // the last frame's legends, by top window
             std::vector<std::string> disorderNotes;
