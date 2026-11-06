@@ -14,7 +14,7 @@
  · {} not a figure	 · {} no es una figura
  · {} unknown toy (Manage)	 · {} juguete desconocido (Gestionar)
  · {} unknown toys (Manage)	 · {} juguetes desconocidos (Gestionar)
-"System default" follows your system.	«Predeterminado del sistema» sigue el idioma de tu sistema.
+"System default" follows your system.	«Según el sistema» sigue el idioma de tu sistema.
 ({} earlier lines in Copy log)	({} líneas anteriores en Copiar registro)
 ,	.
 .	,
@@ -70,8 +70,8 @@ All types	Todos los tipos
 Also delete my saves and my figures	Borrar también mis partidas y mis figuras
 Alternate deco	Decoración alternativa
 An antivirus often does this: it may have put the file in quarantine. Restore it from the antivirus's quarantine, or add an exclusion for this folder:	Un antivirus suele hacer esto: puede haber puesto el archivo en cuarentena. Restáuralo desde la cuarentena del antivirus o añade una exclusión para esta carpeta:
-And 1 other file.	Y 1 archivo más.
-And {} other files.	Y {} archivos más.
+And 1 other file.	y 1 archivo más.
+And {} other files.	y {} archivos más.
 Anisotropic 16x	Anisotrópico 16x
 Anisotropic 2x	Anisotrópico 2x
 Anisotropic 4x	Anisotrópico 4x
@@ -99,7 +99,7 @@ Aug	ago.
 Auto	Auto
 Auto (follows the window)	Auto (sigue la ventana)
 Auto shows more when wide; 16:9 adds bars.	Auto muestra más si es ancho; 16:9 añade barras.
-Auto-open Toy Box	Abrir Toy Box automáticamente
+Auto-open Toy Box	Toy Box automática
 Automatic	Automático
 Automatic detection	Detección automática
 Back	Atrás
@@ -108,10 +108,10 @@ Back up now	Copiar ahora
 Backed up	Copia hecha
 Backspace	Retroceso
 Backup restored	Copia restaurada
-Backups	Copias de seguridad
+Backups	Copias
 Basic	Básico
 Before you beat the game. Your save is untouched.	Antes de pasarte el juego. Tu partida no se toca.
-Blank figures from old versions. Tidy trashes them.	Figuras en blanco de versiones antiguas. Ordenar las envía a la papelera.
+Blank figures from old versions. Tidy trashes them.	Figuras en blanco de versiones antiguas. Limpiar las envía a la papelera.
 Bottom file	Archivo inferior
 Brake / Reverse (vehicle)	Frenar / Marcha atrás (vehículo)
 Builds the game on your PC: about {} min, {} GB, internet needed once.	Crea el juego en tu PC: unos {} min, {} GB, hace falta internet una vez.
@@ -240,7 +240,7 @@ Create	Crear
 Create the profile	Crear el perfil
 Create the {} starter pack	Crear el pack inicial de {}
 Create {}	Crear {}
-Created {}	{} creado
+Created {}	Creado: {}
 Creation Crystals	Cristales de Creación
 Credits	Créditos
 Cross	Cruz
@@ -259,8 +259,8 @@ Delete...	Borrar...
 Deleted figures are kept 30 days.	Las figuras borradas se guardan 30 días.
 Deleting saves and data frees {}.	Borrar partidas y datos libera {}.
 Designed by dorydev, made by mflr0, UI/UX by Gumelia.	Diseñado por dorydev, creado por mflr0, UI/UX por Gumelia.
-Desktop shortcut	Acceso directo en el Escritorio
-Desktop shortcuts	Accesos directos del Escritorio
+Desktop shortcut	Acceso en Escritorio
+Desktop shortcuts	Accesos en Escritorio
 Details	Detalles
 Difficulty	Dificultad
 Disc	Disco
@@ -291,7 +291,7 @@ Edit profile	Editar perfil
 Element	Elemento
 Empty	Vacío
 Empty: the toy's name	Vacío: el nombre del juguete
-Eon's Elite	Élite de Eon
+Eon's Elite	Eon's Elite
 Erase	Borrar
 Escape	Escape
 Event and exclusive	Evento y exclusivo
@@ -317,7 +317,7 @@ Figure dumps (.sky, .bin, .dmp)	Volcados de figuras (.sky, .bin, .dmp)
 Figure sheet	Ficha de la figura
 Figures	Figuras
 File	Archivo
-Files missing or changed	Archivos que faltan o cambiados
+Files missing or changed	Archivos que faltan o han cambiado
 Filters	Filtros
 Finding default.xex	Buscando default.xex
 Fingerprinting default.xex (SHA-256)	Calculando la huella de default.xex (SHA-256)
@@ -361,7 +361,7 @@ Giants	Giants
 GitHub	GitHub
 GitHub says: {}	GitHub dice: {}
 Glow in the Dark	Brilla en la oscuridad
-Gold	Dorado
+Gold	Oro
 Greek	Griego
 HD texture packs	Packs de texturas HD
 HD textures	Texturas HD
@@ -376,7 +376,7 @@ Hide details	Ocultar detalles
 Higher scales need a dedicated graphics card.	Las escalas altas necesitan una tarjeta gráfica dedicada.
 Hold if its game has quit.	Mantén pulsado si su juego se cerró.
 Hold to clear the caches.	Mantén pulsado para vaciar las cachés.
-Hold to confirm	Mantén pulsado para confirmar
+Hold to confirm	Mantén para confirmar
 Hold to delete all of this.	Mantén pulsado para borrar todo esto.
 Hold to delete it for good.	Mantén pulsado para borrarlo para siempre.
 Hold to delete saves, backups and caches.	Mantén pulsado para borrar partidas, copias y cachés.
@@ -417,7 +417,7 @@ Interrupted	Interrumpido
 Interrupted: {} of {} copied	Interrumpido: {} de {} copiados
 It is made when the game is installed.	Se crea al instalar el juego.
 It plays on {} without the launcher or the disc image, with the same saves and settings as the installed game. It never updates: to update it, export it again. Up to {}.	Funciona en {} sin el launcher ni la imagen de disco, con las mismas partidas y ajustes que el juego instalado. Nunca se actualiza: para actualizarlo, expórtalo de nuevo. Hasta {}.
-Item or adventure	Objeto o aventura
+Item or adventure	Objeto
 Its evolved look	Su aspecto evolucionado
 Its name	Su nombre
 Jan	ene.
@@ -467,7 +467,7 @@ Low	Bajo
 Made for 30 FPS; 60 and above are experimental.	Hecho para 30 FPS; 60 o más es experimental.
 Magic	Magia
 Magic Items	Objetos mágicos
-Magic item	Objeto mágico
+Magic item	Objeto
 Making HD textures	Creando texturas HD
 Making the HD textures. You can keep using the launcher; the game waits.	Creando las texturas HD. Puedes seguir usando el launcher; el juego espera.
 Manage	Gestionar
@@ -539,7 +539,7 @@ Not available for {} yet	Aún no disponible para {}
 Not built yet.	Aún no creado.
 Not enough free space: about 6 GB needed.	No hay espacio libre suficiente: hacen falta unos 6 GB.
 Not enough space: {} needed, {} free.	No hay espacio suficiente: hacen falta {}, hay {} libres.
-Not for this game	No es para este juego
+Not for this game	Otro juego
 Not for {}	No es para {}
 Not in the catalog. Name one to show it.	No está en el catálogo. Ponle nombre para mostrarlo.
 Not installed yet	Aún no instalado
@@ -557,7 +557,7 @@ Oct	oct.
 Off	No
 Off: your rate stays, even if the picture stutters.	No: se mantiene tu frecuencia, aunque la imagen se entrecorte.
 Older folders	Carpetas antiguas
-On	Sí
+On	En uso
 On its own	Por sí sola
 On the portal	En el portal
 On the portal for	En el portal para
@@ -601,7 +601,7 @@ Plug in the portal, then test it.	Conecta el portal y pruébalo.
 Portable copy	Copia portátil
 Portable copy saved: {}	Copia portátil guardada: {}
 Portal	Portal
-Portal of Power	Portal del Poder
+Portal of Power	Portal of Power
 Portal sound	Sonido del portal
 Portal: not detected	Portal: no detectado
 Portal: {}	Portal: {}
@@ -631,7 +631,7 @@ Reading the title and icon	Leyendo el título y el icono
 Ready	Listo
 Ready to install	Listo para instalar
 Ready to play	Listo para jugar
-Ready · {} played	Listo · {} jugadas
+Ready · {} played	Listo · {} de juego
 Real portal (Wii, PlayStation, Xbox)	Portal real (Wii, PlayStation, Xbox)
 Real portal: the game will use it.	Portal real: el juego lo usará.
 Reinstall	Reinstalar
@@ -706,7 +706,7 @@ Show in folder	Mostrar en la carpeta
 Show the collection folder	Mostrar la carpeta de la colección
 Show the game	Mostrar el juego
 Silver	Plateado
-Skip intro movies	Saltar vídeos de introducción
+Skip intro movies	Saltar vídeos iniciales
 Skylander Info	Info del Skylander
 Skylander Profile	Perfil del Skylander
 Skylander/Villain Stats	Estadísticas de Skylander/villano
@@ -728,12 +728,12 @@ Stopping...	Deteniendo...
 Strong	Fuerte
 SuperChargers	SuperChargers
 Support	Ayuda
-Swap Force bottoms	Partes inferiores de Swap Force
-Swap Force tops	Partes superiores de Swap Force
+Swap Force bottoms	Swap Force (abajo)
+Swap Force tops	Swap Force (arriba)
 Swapper	Swapper
 Switch Driver (co-op)	Cambiar de piloto (cooperativo)
 Switch Skylander / Villain	Cambiar de Skylander / villano
-System default	Predeterminado del sistema
+System default	Según el sistema
 Take it off	Quitarla
 Tech	Tecnología
 Test	Probar
@@ -786,7 +786,7 @@ The installer couldn't start.	No se pudo iniciar el instalador.
 The installer stopped before the game was built.	El instalador se detuvo antes de crear el juego.
 The installer stopped with exit code {}.	El instalador se detuvo con el código de salida {}.
 The latest 10 backups are kept.	Se conservan las últimas 10 copias.
-The one this trap holds	La que contiene esta trampa
+The one this trap holds	El que contiene esta trampa
 The portal can't be opened: the game will wait.	No se puede abrir el portal: el juego esperará.
 The portal can't be opened: using the virtual portal.	No se puede abrir el portal: se usa el portal virtual.
 The portal test took too long and was stopped.	La prueba del portal tardó demasiado y se detuvo.
@@ -809,8 +809,8 @@ This key is used by another action	Otra acción usa esta tecla
 This looks like the {} disc of {}, but it's damaged or modified. Copy the disc again.	Parece el disco {} de {}, pero está dañado o modificado. Copia el disco de nuevo.
 This version of the game doesn't have the portal test yet. Update the game.	Esta versión del juego aún no tiene la prueba del portal. Actualiza el juego.
 Three steps	Tres pasos
-Tidy the starters	Ordenar los iniciales
-Tidy · {}	Ordenar · {}
+Tidy the starters	Limpiar las figuras en blanco
+Tidy · {}	Limpiar · {}
 Today {}	Hoy {}
 Top: {} · Bottom: {}	Arriba: {} · Abajo: {}
 Total	Total
@@ -823,8 +823,8 @@ Toy type {}	Tipo de juguete {}
 Translating the game code	Traduciendo el código del juego
 Translating the shaders	Traduciendo los shaders
 Trap	Trampa
-Trap Masters	Maestros de las Trampas
-Trap shape	Forma de trampa
+Trap Masters	Maestros de Trampas
+Trap shape	Trampa
 Traps	Trampas
 Trash	Papelera
 Trash · {}	Papelera · {}
@@ -838,7 +838,7 @@ UPDATE	ACTUALIZAR
 UPDATING THE GAME	ACTUALIZANDO EL JUEGO
 UPDATING...	ACTUALIZANDO...
 USB (Xbox) portals	Portales USB (Xbox)
-Undead	No-muertos
+Undead	Muertos
 Uninstall	Desinstalar
 Uninstall everything	Desinstalar todo
 Uninstall everything...	Desinstalar todo...
@@ -943,7 +943,7 @@ portal	portal
 the collection's index can't be written	no se puede escribir el índice de la colección
 the copy can't be read back: {}	no se puede volver a leer la copia: {}
 the installed game is missing: install it again	falta el juego instalado: instálalo de nuevo
-tidied	ordenado
+tidied	limpiado
 today	hoy
 top	parte superior
 yesterday	ayer
@@ -953,7 +953,7 @@ yesterday	ayer
 {} GB	{} GB
 {} KB	{} KB
 {} MB	{} MB
-{} XP · {}	{} XP · {}
+{} XP · {}	{} PX · {}
 {} Xbox, PlayStation and Switch pads are compatible.	{} Los mandos de Xbox, PlayStation y Switch son compatibles.
 {} accepts this portal.	{} acepta este portal.
 {} already plays from its copied game data	{} ya funciona con sus datos de juego copiados
@@ -986,7 +986,7 @@ yesterday	ayer
 {} is running	{} está en ejecución
 {} is running: quit it first.	{} está en ejecución: ciérralo primero.
 {} is running: use its Toy Box	{} está en ejecución: usa su Toy Box
-{} keep no level or gold.	{} no conservan nivel ni oro.
+{} keep no level or gold.	{}: sin nivel ni oro.
 {} min	{} min
 {} of {}	{} de {}
 {} of {} unlocked · {} of {} G	{} de {} desbloqueados · {} de {} G
@@ -1001,14 +1001,39 @@ yesterday	ayer
 {} · empty	{} · vacío
 {} · type {} · variant {:04X}	{} · tipo {} · variante {:04X}
 {} · {}	{} · {}
-{} · {} played	{} · {} jugadas
+{} · {} played	{} · {} de juego
 {} · {} · {} upgrades	{} · {} · {} mejoras
 {} · {} · ~{} min	{} · {} · ~{} min
 {} · ~{} min	{} · ~{} min
 {}%	{}%
 {}'s Toy Box, saves and keys go to the profiles' trash.	La Toy Box, las partidas y las teclas de {} van a la papelera de perfiles.
 {}: game data copied	{}: datos del juego copiados
-{}: pick the new {}	{}: elige el nuevo {}
+{}: pick the new {}	{}: elige la nueva {}
 {}: {} ({} of {})	{}: {} ({} de {})
 {}: {} freed	{}: {} liberados
-{}: {} taken off	{}: {} quitados
+{}: {} taken off	{}: se quitó {}
+# The library's level, seat, sort and count texts.
+Recent	Recientes
+Level	Nivel
+Favorites	Favoritos
+New	Nueva
+Item	Objeto
+P{}	J{}
+Unreadable	Ilegible
+Ready to create	Listo para crear
+Virtual	Virtual
+Shield {}	Escudo {}
+Weapon {}	Arma {}
+Level {} ({})	Nivel {} ({})
+{} figure	{} figura
+{} figures	{} figuras
+Knight	Caballero
+Bowslinger	Arquero
+Quickshot	Tirador
+Ninja	Ninja
+Brawler	Luchador
+Smasher	Aplastador
+Sorcerer	Hechicero
+Swashbuckler	Espadachín
+Sentinel	Centinela
+Bazooker	Bazuquero

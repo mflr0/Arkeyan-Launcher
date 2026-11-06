@@ -14,7 +14,7 @@
  · {} not a figure	 · {} ikke en figur
  · {} unknown toy (Manage)	 · {} ukendt legetøj (Administrer)
  · {} unknown toys (Manage)	 · {} ukendt legetøj (Administrer)
-"System default" follows your system.	"Systemstandard" følger dit system.
+"System default" follows your system.	»Systemstandard« følger dit system.
 ({} earlier lines in Copy log)	({} tidligere linjer i Kopiér log)
 ,	.
 .	,
@@ -60,7 +60,7 @@ Add to favorites	Tilføj til favoritter
 Adding the movie shaders	Tilføjer filmshaderne
 Advanced	Avanceret
 Adventure	Eventyr
-Adventure Packs	Adventure Packs
+Adventure Packs	Eventyrpakker
 Air	Luft
 All	Alle
 All elements	Alle elementer
@@ -68,10 +68,10 @@ All games	Alle spil
 All games are updated	Alle spil er opdateret
 All types	Alle typer
 Also delete my saves and my figures	Slet også mine gemte spil og mine figurer
-Alternate deco	Alternativ deko
+Alternate deco	Alternativ farve
 An antivirus often does this: it may have put the file in quarantine. Restore it from the antivirus's quarantine, or add an exclusion for this folder:	Et antivirusprogram gør ofte dette: Det kan have lagt filen i karantæne. Gendan den fra antivirusprogrammets karantæne, eller tilføj en undtagelse for denne mappe:
-And 1 other file.	Og 1 fil mere.
-And {} other files.	Og {} filer mere.
+And 1 other file.	og 1 fil mere.
+And {} other files.	og {} filer mere.
 Anisotropic 16x	Anisotropisk 16x
 Anisotropic 2x	Anisotropisk 2x
 Anisotropic 4x	Anisotropisk 4x
@@ -241,7 +241,7 @@ Create the profile	Opret profilen
 Create the {} starter pack	Opret startpakken til {}
 Create {}	Opret {}
 Created {}	{} oprettet
-Creation Crystals	Creation Crystals
+Creation Crystals	Skabelseskrystaller
 Credits	Medvirkende
 Cross	Kryds
 Crystal Clear	Crystal Clear
@@ -249,7 +249,7 @@ D-pad down	D-pad ned
 D-pad left	D-pad venstre
 D-pad right	D-pad højre
 D-pad up	D-pad op
-Dark	Mørk
+Dark	Mørke
 Data folder	Datamappe
 Dec	dec.
 Default	Standard
@@ -397,7 +397,7 @@ INSTALLING THE GAME	INSTALLERER SPILLET
 INSTALLING...	INSTALLERER...
 If Windows Defender blocks a file:	Hvis Windows Defender blokerer en fil:
 Import a folder...	Importér en mappe...
-Import an image...	Importér et aftryk...
+Import an image...	Importér et billede...
 Import and export	Import og eksport
 Import figures	Importér figurer
 Import files...	Importér filer...
@@ -417,7 +417,7 @@ Interrupted	Afbrudt
 Interrupted: {} of {} copied	Afbrudt: {} af {} kopieret
 It is made when the game is installed.	Den oprettes, når spillet installeres.
 It plays on {} without the launcher or the disc image, with the same saves and settings as the installed game. It never updates: to update it, export it again. Up to {}.	Det spilles på {} uden launcheren eller diskaftrykket, med de samme gemte spil og indstillinger som det installerede spil. Det opdateres aldrig: Eksportér det igen for at opdatere det. Op til {}.
-Item or adventure	Genstand eller eventyr
+Item or adventure	Genstand
 Its evolved look	Dens udviklede udseende
 Its name	Dens navn
 Jan	jan.
@@ -466,8 +466,8 @@ Looks for updates at each start.	Søger efter opdateringer ved hver start.
 Low	Lav
 Made for 30 FPS; 60 and above are experimental.	Lavet til 30 FPS; 60 og derover er eksperimentelt.
 Magic	Magi
-Magic Items	Magic Items
-Magic item	Magic item
+Magic Items	Magiske genstande
+Magic item	Genstand
 Making HD textures	Laver HD-teksturer
 Making the HD textures. You can keep using the launcher; the game waits.	Laver HD-teksturerne. Du kan fortsætte med at bruge launcheren; spillet venter.
 Manage	Administrer
@@ -494,7 +494,7 @@ Move {} to the trash	Læg {} i papirkurven
 Move {} to the trash? It stays there for 30 days.	Læg {} i papirkurven? Den bliver der i 30 dage.
 Moved to the trash	Lagt i papirkurven
 Movement	Bevægelse
-My Team	Mit Team
+My Team	Mit team
 Name	Navn
 Name (optional)	Navn (valgfrit)
 Name this toy	Navngiv dette legetøj
@@ -557,7 +557,7 @@ Oct	okt.
 Off	Fra
 Off: your rate stays, even if the picture stutters.	Fra: Din hastighed bevares, selv om billedet hakker.
 Older folders	Ældre mapper
-On	Til
+On	På
 On its own	Af sig selv
 On the portal	På portalen
 On the portal for	På portalen til
@@ -584,7 +584,7 @@ PLAY WITH	SPIL MED
 Pages	Sider
 Pause	Pause
 Pick a figure.	Vælg en figur.
-Pick one below	Vælg en nedenfor
+Pick one below	Vælg nedenfor
 Picture	Billede
 Play	Spil
 Play time: {}	Spilletid: {}
@@ -607,7 +607,7 @@ Portal: not detected	Portal: Ikke fundet
 Portal: {}	Portal: {}
 Preparing the compiler	Forbereder kompileren
 Press INSTALL first	Tryk først på INSTALLÉR
-Press a key for "{}" (Escape cancels)	Tryk på en tast til "{}" (Escape annullerer)
+Press a key for "{}" (Escape cancels)	Tryk på en tast til »{}« (Escape annullerer)
 Problem report	Problemrapport
 Profiles	Profiler
 Put back	Læg tilbage
@@ -710,8 +710,8 @@ Skip intro movies	Spring introfilm over
 Skylander Info	Skylander-info
 Skylander Profile	Skylander-profil
 Skylander/Villain Stats	Skylander-/skurkestatistik
-Skylanders	Skylanders
-Skylanders Stats	Skylanders-statistik
+Skylanders	Skylandere
+Skylanders Stats	Skylander-statistik
 Skylanders, Spyro and Activision are trademarks of Activision Publishing, Inc. This project is not affiliated with or endorsed by Activision.	Skylanders, Spyro og Activision er varemærker tilhørende Activision Publishing, Inc. Dette projekt er hverken tilknyttet eller godkendt af Activision.
 Some figures are marked as in use, but their game is not running.	Nogle figurer er markeret som i brug, men deres spil kører ikke.
 Something went wrong while {}.	Noget gik galt under {}.
@@ -735,7 +735,7 @@ Switch Driver (co-op)	Skift fører (co-op)
 Switch Skylander / Villain	Skift Skylander / skurk
 System default	Systemstandard
 Take it off	Tag den af
-Tech	Tech
+Tech	Teknologi
 Test	Test
 Test the portal	Test portalen
 Testing...	Tester...
@@ -823,7 +823,7 @@ Toy type {}	Legetøjstype {}
 Translating the game code	Oversætter spilkoden
 Translating the shaders	Oversætter shaderne
 Trap	Fælde
-Trap Masters	Trap Masters
+Trap Masters	Fældemestre
 Trap shape	Fældeform
 Traps	Fælder
 Trash	Papirkurv
@@ -838,7 +838,7 @@ UPDATE	OPDATÉR
 UPDATING THE GAME	OPDATERER SPILLET
 UPDATING...	OPDATERER...
 USB (Xbox) portals	USB-portaler (Xbox)
-Undead	Undead
+Undead	Udød
 Uninstall	Afinstallér
 Uninstall everything	Afinstallér alt
 Uninstall everything...	Afinstallér alt...
@@ -935,7 +935,7 @@ needs {}	kræver {}
 no answer	intet svar
 no hat	ingen hat
 nothing yet	intet endnu
-only what {} reads	kun det, {} læser
+only what {} reads	kun det {} læser
 owned x{}	ejer x{}
 plays as {0} in {1}	spilles som {0} i {1}
 plays as {}	spilles som {}
@@ -1011,4 +1011,29 @@ yesterday	i går
 {}: pick the new {}	{}: vælg den nye {}
 {}: {} ({} of {})	{}: {} ({} af {})
 {}: {} freed	{}: {} frigjort
-{}: {} taken off	{}: {} taget af
+{}: {} taken off	{}: {} fjernet
+# The library's level, seat, sort and count texts.
+Recent	Seneste
+Level	Niveau
+Favorites	Favoritter
+New	Ny
+Item	Genstand
+P{}	S{}
+Unreadable	Ulæselig
+Ready to create	Klar til at skabe
+Virtual	Virtuel
+Shield {}	Skjold {}
+Weapon {}	Våben {}
+Level {} ({})	Niveau {} ({})
+{} figure	{} figur
+{} figures	{} figurer
+Knight	Ridder
+Bowslinger	Bueskytte
+Quickshot	Hurtigskytte
+Ninja	Ninja
+Brawler	Slagsbror
+Smasher	Knuser
+Sorcerer	Troldmand
+Swashbuckler	Sabelsvinger
+Sentinel	Vogter
+Bazooker	Bazookaskytte

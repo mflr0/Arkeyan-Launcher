@@ -1042,3 +1042,28 @@ The HD textures stopped before they were made.	La création des textures HD s'es
 Wait for the HD textures to finish	Attendez la fin des textures HD
 These game tools can't make HD textures. Update them first.	Ces outils de jeu ne savent pas créer de textures HD. Mettez-les d'abord à jour.
 Making HD textures	Création des textures HD
+# The library's level, seat, sort and count texts (collection_page.cpp).
+Recent	Récents
+Level	Niveau
+Favorites	Favoris
+New	Nouveau
+Item	Objet
+P{}	J{}
+Unreadable	Illisible
+Ready to create	À créer
+Virtual	Virtuel
+Shield {}	Bouclier {}
+Weapon {}	Arme {}
+Level {} ({})	Niveau {} ({})
+{} figure	{} figurine
+{} figures	{} figurines
+Knight	Chevalier
+Bowslinger	Archer
+Quickshot	Tireur
+Ninja	Ninja
+Brawler	Bagarreur
+Smasher	Cogneur
+Sorcerer	Sorcier
+Swashbuckler	Bretteur
+Sentinel	Sentinelle
+Bazooker	Bazookeur

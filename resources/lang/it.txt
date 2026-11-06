@@ -51,7 +51,7 @@ A file of {0} was changed: {1}	Un file di {0} è stato modificato: {1}
 A game is running: quit it first.	Un gioco è in esecuzione: chiudilo prima.
 About	Info
 About {} min, {} GB	Circa {} min, {} GB
-Accelerate (vehicle)	Accelera (veicolo)
+Accelerate (vehicle)	Accelera (mezzo)
 Achievements	Obiettivi
 Action	Azione
 Add a figure	Aggiungi una figura
@@ -68,10 +68,10 @@ All games	Tutti i giochi
 All games are updated	Tutti i giochi sono aggiornati
 All types	Tutti i tipi
 Also delete my saves and my figures	Elimina anche i miei salvataggi e le mie figure
-Alternate deco	Decorazione alternativa
+Alternate deco	Deco alternativa
 An antivirus often does this: it may have put the file in quarantine. Restore it from the antivirus's quarantine, or add an exclusion for this folder:	Spesso lo fa un antivirus: potrebbe aver messo il file in quarantena. Ripristinalo dalla quarantena dell'antivirus o aggiungi un'esclusione per questa cartella:
-And 1 other file.	E un altro file.
-And {} other files.	E altri {} file.
+And 1 other file.	Più un altro file.
+And {} other files.	Più altri {} file.
 Anisotropic 16x	Anisotropico 16x
 Anisotropic 2x	Anisotropico 2x
 Anisotropic 4x	Anisotropico 4x
@@ -99,12 +99,12 @@ Aug	ago
 Auto	Auto
 Auto (follows the window)	Auto (segue la finestra)
 Auto shows more when wide; 16:9 adds bars.	Auto mostra di più in largo; 16:9 aggiunge bande.
-Auto-open Toy Box	Apri la Toy Box in automatico
+Auto-open Toy Box	Toy Box automatica
 Automatic	Automatico
 Automatic detection	Rilevamento automatico
 Back	Indietro
-Back side button	Tasto laterale indietro
-Back up now	Esegui backup ora
+Back side button	Laterale indietro
+Back up now	Esegui backup
 Backed up	Backup eseguito
 Backspace	Backspace
 Backup restored	Backup ripristinato
@@ -113,7 +113,7 @@ Basic	Base
 Before you beat the game. Your save is untouched.	Prima di finire il gioco. Il tuo salvataggio non viene toccato.
 Blank figures from old versions. Tidy trashes them.	Figure vuote di vecchie versioni. Riordina le sposta nel cestino.
 Bottom file	File inferiore
-Brake / Reverse (vehicle)	Freno / Retromarcia (veicolo)
+Brake / Reverse (vehicle)	Freno / Retromarcia (mezzo)
 Builds the game on your PC: about {} min, {} GB, internet needed once.	Costruisce il gioco sul tuo PC: circa {} min, {} GB, serve internet una volta.
 Built for this disc.	Costruito per questo disco.
 Built with SDL 3, Dear ImGui, {fmt}, stb, miniz, XenonRecomp, Outfit and Bungee. MIT licensed.	Realizzato con SDL 3, Dear ImGui, {fmt}, stb, miniz, XenonRecomp, Outfit e Bungee. Licenza MIT.
@@ -131,8 +131,8 @@ Caps Lock	Bloc Maiusc
 Carry on copying	Continua la copia
 Change disc...	Cambia disco...
 Change profile	Cambia profilo
-Change the bottom	Cambia la parte inferiore
-Change the top	Cambia la parte superiore
+Change the bottom	Cambia sotto
+Change the top	Cambia sopra
 Change...	Cambia...
 Changed	Modificato
 Check at startup	Controlla all'avvio
@@ -191,7 +191,7 @@ Copies the disc's files ({}). No image needed after.	Copia i file del disco ({})
 Copies the disc's files. No image needed after.	Copia i file del disco. Poi non serve più l'immagine.
 Copy	Copia
 Copy files	Copia i file
-Copy game log	Copia registro del gioco
+Copy game log	Copia registro gioco
 Copy log	Copia registro
 Copy removed: {} freed	Copia rimossa: {} liberati
 Copy stopped	Copia interrotta
@@ -244,12 +244,12 @@ Created {}	{} creato
 Creation Crystals	Cristalli della Creazione
 Credits	Crediti
 Cross	Croce
-Crystal Clear	Cristallo trasparente
-D-pad down	Croce direzionale giù
-D-pad left	Croce direzionale sinistra
-D-pad right	Croce direzionale destra
-D-pad up	Croce direzionale su
-Dark	Scuro
+Crystal Clear	Cristallino
+D-pad down	D-pad giù
+D-pad left	D-pad sinistra
+D-pad right	D-pad destra
+D-pad up	D-pad su
+Dark	Oscurità
 Data folder	Cartella dati
 Dec	dic
 Default	Predefinito
@@ -275,7 +275,7 @@ Downloading the game tools	Download degli strumenti di gioco
 Downloading the game tools again	Nuovo download degli strumenti di gioco
 Downloading tools	Download degli strumenti
 Drag Arkeyan Launcher to Applications, replacing the old one.	Trascina Arkeyan Launcher in Applicazioni, sostituendo quello vecchio.
-Drift (vehicle)	Derapata (veicolo)
+Drift (vehicle)	Derapata (mezzo)
 Drop figure files or a folder on the window.	Trascina qui i file delle figure o una cartella.
 Drop to 30 FPS when needed	Scendi a 30 FPS se serve
 Dump textures	Esporta le texture
@@ -291,7 +291,7 @@ Edit profile	Modifica profilo
 Element	Elemento
 Empty	Vuoto
 Empty: the toy's name	Vuoto: il nome del giocattolo
-Eon's Elite	Élite di Eon
+Eon's Elite	Eon's Elite
 Erase	Cancella
 Escape	Esc
 Event and exclusive	Evento ed esclusivi
@@ -314,7 +314,7 @@ FXAA also softens texture detail; Gentle keeps more of it.	FXAA ammorbidisce anc
 Favorite	Preferito
 Feb	feb
 Figure dumps (.sky, .bin, .dmp)	Dump di figure (.sky, .bin, .dmp)
-Figure sheet	Scheda della figura
+Figure sheet	Scheda
 Figures	Figure
 File	File
 Files missing or changed	File mancanti o modificati
@@ -327,7 +327,7 @@ Flocked	Vellutato
 Folders	Cartelle
 For pack makers: saves the textures as DDS files.	Per chi crea pacchetti: salva le texture come file DDS.
 For {}	Per {}
-Forward side button	Tasto laterale avanti
+Forward side button	Laterale avanti
 Found	Trovato
 Found, not usable	Trovato, non utilizzabile
 Frame rate limit	Limite di frame rate
@@ -376,7 +376,7 @@ Hide details	Nascondi dettagli
 Higher scales need a dedicated graphics card.	Le scale più alte richiedono una scheda grafica dedicata.
 Hold if its game has quit.	Tieni premuto se il suo gioco è stato chiuso.
 Hold to clear the caches.	Tieni premuto per svuotare le cache.
-Hold to confirm	Tieni premuto per confermare
+Hold to confirm	Tieni per confermare
 Hold to delete all of this.	Tieni premuto per eliminare tutto questo.
 Hold to delete it for good.	Tieni premuto per eliminarlo definitivamente.
 Hold to delete saves, backups and caches.	Tieni premuto per eliminare salvataggi, backup e cache.
@@ -417,14 +417,14 @@ Interrupted	Interrotto
 Interrupted: {} of {} copied	Interrotto: {} di {} copiati
 It is made when the game is installed.	Viene creato quando il gioco è installato.
 It plays on {} without the launcher or the disc image, with the same saves and settings as the installed game. It never updates: to update it, export it again. Up to {}.	Funziona su {} senza il launcher né l'immagine disco, con gli stessi salvataggi e impostazioni del gioco installato. Non si aggiorna mai: per aggiornarlo, esportalo di nuovo. Fino a {}.
-Item or adventure	Oggetto o avventura
+Item or adventure	Oggetto
 Its evolved look	Il suo aspetto evoluto
 Its name	Il suo nome
 Jan	gen
 Japanese	Giapponese
 Jul	lug
 Jump	Salta
-Jump / Drift (vehicle)	Salta / Derapata (veicolo)
+Jump / Drift (vehicle)	Salta / Derapata (mezzo)
 Jun	giu
 Keep installing	Continua a installare
 Keeps textures sharp at an angle.	Mantiene nitide le texture di taglio.
@@ -432,7 +432,7 @@ Kept: Xbox signing keys	Conservate: chiavi di firma Xbox
 Keyboard	Tastiera
 Keyboard bindings reset	Tasti della tastiera reimpostati
 Korean	Coreano
-L stick	Levetta sinistra
+L stick	Levetta L
 Language	Lingua
 Last checked {}	Ultimo controllo {}
 Last played	Ultima partita
@@ -453,7 +453,7 @@ Level {}	Livello {}
 Library	Libreria
 Licenses	Licenze
 Life	Vita
-Light	Chiaro
+Light	Luce
 LightCore	LightCore
 Linking the game	Collegamento del gioco
 Live	Dal vivo
@@ -466,8 +466,8 @@ Looks for updates at each start.	Cerca aggiornamenti a ogni avvio.
 Low	Basso
 Made for 30 FPS; 60 and above are experimental.	Pensato per 30 FPS; 60 e oltre sono sperimentali.
 Magic	Magia
-Magic Items	Oggetti Magici
-Magic item	Oggetto magico
+Magic Items	Oggetti magici
+Magic item	Oggetto
 Making HD textures	Creazione delle texture HD
 Making the HD textures. You can keep using the launcher; the game waits.	Creazione delle texture HD. Puoi continuare a usare il launcher; il gioco aspetta.
 Manage	Gestisci
@@ -481,7 +481,7 @@ Menus, subtitles, spoken lines and cutscenes.	Menu, sottotitoli, dialoghi e film
 Metallic	Metallizzato
 Middle click	Clic centrale
 Minis and sidekicks	Mini e aiutanti
-Missing figure	Figura mancante
+Missing figure	Manca
 Model: {} (id {})	Modello: {} (id {})
 More actions	Altre azioni
 Mouse	Mouse
@@ -497,7 +497,7 @@ Movement	Movimento
 My Team	La mia squadra
 Name	Nome
 Name (optional)	Nome (facoltativo)
-Name this toy	Dai un nome a questo giocattolo
+Name this toy	Nomina il giocattolo
 Name, element, game, level...	Nome, elemento, gioco, livello...
 Named: shown at the next start	Con nome: appare al prossimo avvio
 Native PC ports	Port PC nativi
@@ -539,7 +539,7 @@ Not available for {} yet	Non ancora disponibile per {}
 Not built yet.	Non ancora costruito.
 Not enough free space: about 6 GB needed.	Spazio libero insufficiente: servono circa 6 GB.
 Not enough space: {} needed, {} free.	Spazio insufficiente: servono {}, liberi {}.
-Not for this game	Non per questo gioco
+Not for this game	Altro gioco
 Not for {}	Non per {}
 Not in the catalog. Name one to show it.	Non è nel catalogo. Dagli un nome per mostrarlo.
 Not installed yet	Non ancora installato
@@ -584,7 +584,7 @@ PLAY WITH	GIOCA CON
 Pages	Pagine
 Pause	Pausa
 Pick a figure.	Scegli una figura.
-Pick one below	Scegline una qui sotto
+Pick one below	Scegli qui sotto
 Picture	Immagine
 Play	Gioca
 Play time: {}	Tempo di gioco: {}
@@ -593,7 +593,7 @@ Play {}	Gioca a {}
 Play {} with Arkeyan Launcher	Gioca a {} con Arkeyan Launcher
 Player 1	Giocatore 1
 Player 2	Giocatore 2
-Player {}	Giocatore {}
+Player {}	Giocat. {}
 Playing now	In gioco ora
 Playing now · {} this session	In gioco ora · {} in questa sessione
 Plays in	Funziona in
@@ -601,7 +601,7 @@ Plug in the portal, then test it.	Collega il portale, poi provalo.
 Portable copy	Copia portatile
 Portable copy saved: {}	Copia portatile salvata: {}
 Portal	Portale
-Portal of Power	Portale del Potere
+Portal of Power	Portal of Power
 Portal sound	Suono del portale
 Portal: not detected	Portale: non rilevato
 Portal: {}	Portale: {}
@@ -618,11 +618,11 @@ Quit	Esci
 Quit the game before restoring a backup	Chiudi il gioco prima di ripristinare un backup
 Quit the game first.	Chiudi prima il gioco.
 Quit the game to change profile	Chiudi il gioco per cambiare profilo
-R stick	Levetta destra
-R stick down	Levetta destra giù
-R stick left	Levetta destra a sinistra
-R stick right	Levetta destra a destra
-R stick up	Levetta destra su
+R stick	Levetta R
+R stick down	Levetta R giù
+R stick left	Levetta R sinistra
+R stick right	Levetta R destra
+R stick up	Levetta R su
 Reading default.xex	Lettura di default.xex
 Reading the Xbox 360 disc layout	Lettura della struttura del disco Xbox 360
 Reading the disc	Lettura del disco
@@ -657,7 +657,7 @@ Report copied	Rapporto copiato
 Report saved	Rapporto salvato
 Report saved: {}	Rapporto salvato: {}
 Reset	Reimposta
-Reset to defaults	Ripristina le impostazioni predefinite
+Reset to defaults	Ripristina predefiniti
 Reset to new	Riporta a nuovo
 Reset to new...	Riporta a nuovo...
 Reset {} to new? Level, gold and upgrades are lost.	Riportare {} a nuovo? Livello, oro e potenziamenti vanno persi.
@@ -682,7 +682,7 @@ Same	Uguale
 Same as text	Come il testo
 Save	Salva
 Save as...	Salva come...
-Save backups	Salva i backup
+Save backups	Backup dei salvataggi
 Save to Desktop	Salva sulla Scrivania
 Saved	Salvato
 Saved gamepad (not connected)	Gamepad salvato (non collegato)
@@ -707,11 +707,11 @@ Show the collection folder	Mostra la cartella della collezione
 Show the game	Mostra il gioco
 Silver	Argento
 Skip intro movies	Salta i filmati iniziali
-Skylander Info	Info Skylander
+Skylander Info	Dati Skylander
 Skylander Profile	Profilo Skylander
 Skylander/Villain Stats	Statistiche Skylander/Cattivo
-Skylanders	Skylanders
-Skylanders Stats	Statistiche Skylanders
+Skylanders	Skylander
+Skylanders Stats	Statistiche Skylander
 Skylanders, Spyro and Activision are trademarks of Activision Publishing, Inc. This project is not affiliated with or endorsed by Activision.	Skylanders, Spyro e Activision sono marchi di Activision Publishing, Inc. Questo progetto non è affiliato né approvato da Activision.
 Some figures are marked as in use, but their game is not running.	Alcune figure sono segnate come in uso, ma il loro gioco non è in esecuzione.
 Something went wrong while {}.	Qualcosa è andato storto durante {}.
@@ -728,14 +728,14 @@ Stopping...	Arresto...
 Strong	Forte
 SuperChargers	SuperChargers
 Support	Supporto
-Swap Force bottoms	Parti inferiori Swap Force
-Swap Force tops	Parti superiori Swap Force
+Swap Force bottoms	Swap Force (sotto)
+Swap Force tops	Swap Force (sopra)
 Swapper	Swapper
 Switch Driver (co-op)	Cambia pilota (co-op)
 Switch Skylander / Villain	Cambia Skylander / Cattivo
 System default	Predefinita di sistema
 Take it off	Toglila
-Tech	Tecnologia
+Tech	Tecnica
 Test	Prova
 Test the portal	Prova il portale
 Testing...	Prova in corso...
@@ -786,7 +786,7 @@ The installer couldn't start.	Impossibile avviare l'installer.
 The installer stopped before the game was built.	L'installer si è fermato prima che il gioco fosse costruito.
 The installer stopped with exit code {}.	L'installer si è fermato con codice di uscita {}.
 The latest 10 backups are kept.	Vengono conservati gli ultimi 10 backup.
-The one this trap holds	Quella che contiene questa trappola
+The one this trap holds	Quello contenuto in questa trappola
 The portal can't be opened: the game will wait.	Impossibile aprire il portale: il gioco aspetterà.
 The portal can't be opened: using the virtual portal.	Impossibile aprire il portale: uso il portale virtuale.
 The portal test took too long and was stopped.	La prova del portale ha richiesto troppo tempo ed è stata fermata.
@@ -824,7 +824,7 @@ Translating the game code	Traduzione del codice del gioco
 Translating the shaders	Traduzione degli shader
 Trap	Trappola
 Trap Masters	Maestri delle Trappole
-Trap shape	Forma della trappola
+Trap shape	Trappola
 Traps	Trappole
 Trash	Cestino
 Trash · {}	Cestino · {}
@@ -864,8 +864,8 @@ Use / Talk	Usa / Parla
 Use it for {}	Usalo per {}
 Use the mouse	Usa il mouse
 VSync	VSync
-Vehicle {}	Veicolo {}
-Vehicles	Veicoli
+Vehicle {}	Mezzo {}
+Vehicles	Mezzi
 Verified	Verificato
 Verified, {}	Verificato, {}
 Version {} is available.	La versione {} è disponibile.
@@ -914,7 +914,7 @@ about {0} h {1:02} min left	mancano circa {0} h {1:02} min
 about {} min left	mancano circa {} min
 and {} more	e altri {}
 another game (title ID {:08X})	un altro gioco (ID titolo {:08X})
-bottom	parte inferiore
+bottom	inferiore
 choose a folder outside the installed game	scegli una cartella fuori dal gioco installato
 couldn't copy the game: {}	impossibile copiare il gioco: {}
 couldn't open the disc image	impossibile aprire l'immagine disco
@@ -937,15 +937,15 @@ no hat	nessun cappello
 nothing yet	ancora niente
 only what {} reads	solo ciò che {} legge
 owned x{}	posseduto x{}
-plays as {0} in {1}	funziona come {0} in {1}
-plays as {}	funziona come {}
+plays as {0} in {1}	vale come {0} in {1}
+plays as {}	vale come {}
 portal	portale
 the collection's index can't be written	impossibile scrivere l'indice della collezione
 the copy can't be read back: {}	impossibile rileggere la copia: {}
 the installed game is missing: install it again	il gioco installato manca: installalo di nuovo
 tidied	riordinato
 today	oggi
-top	parte superiore
+top	superiore
 yesterday	ieri
 {0} is missing a file: {1}	A {0} manca un file: {1}
 {0} {1} {2}	{0} {1} {2}
@@ -986,7 +986,7 @@ yesterday	ieri
 {} is running	{} è in esecuzione
 {} is running: quit it first.	{} è in esecuzione: chiudilo prima.
 {} is running: use its Toy Box	{} è in esecuzione: usa la sua Toy Box
-{} keep no level or gold.	{} non conservano livello né oro.
+{} keep no level or gold.	{}: nessun livello né oro.
 {} min	{} min
 {} of {}	{} di {}
 {} of {} unlocked · {} of {} G	{} di {} sbloccati · {} di {} G
@@ -1008,7 +1008,32 @@ yesterday	ieri
 {}%	{}%
 {}'s Toy Box, saves and keys go to the profiles' trash.	La Toy Box, i salvataggi e i tasti di {} vanno nel cestino dei profili.
 {}: game data copied	{}: dati di gioco copiati
-{}: pick the new {}	{}: scegli il nuovo {}
+{}: pick the new {}	{}: scegli la nuova parte ({})
 {}: {} ({} of {})	{}: {} ({} di {})
 {}: {} freed	{}: {} liberati
-{}: {} taken off	{}: {} tolti
+{}: {} taken off	{}: tolto {}
+# The library's level, seat, sort and count texts.
+Recent	Recenti
+Level	Livello
+Favorites	Preferiti
+New	Nuovo
+Item	Oggetto
+P{}	G{}
+Unreadable	Illeggibile
+Ready to create	Da creare
+Virtual	Virtuale
+Shield {}	Scudo {}
+Weapon {}	Arma {}
+Level {} ({})	Livello {} ({})
+{} figure	{} figura
+{} figures	{} figure
+Knight	Cavaliere
+Bowslinger	Arciere
+Quickshot	Tiratore
+Ninja	Ninja
+Brawler	Picchiatore
+Smasher	Fracassatore
+Sorcerer	Stregone
+Swashbuckler	Spadaccino
+Sentinel	Sentinella
+Bazooker	Bazookista

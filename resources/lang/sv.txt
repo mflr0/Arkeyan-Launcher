@@ -15,7 +15,7 @@
  · {} not a figure	 · {} är ingen figur
  · {} unknown toy (Manage)	 · {} okänd figur (Hantera)
  · {} unknown toys (Manage)	 · {} okända figurer (Hantera)
-"System default" follows your system.	"Systemstandard" följer ditt system.
+"System default" follows your system.	”Systemstandard” följer ditt system.
 ({} earlier lines in Copy log)	({} tidigare rader i Kopiera logg)
 ,	 
 .	,
@@ -30,7 +30,7 @@
 144 (experimental)	144 (experimentell)
 16 characters at most	Högst 16 tecken
 16:9 (with bars)	16:9 (med kanter)
-1st Power / Accept	Kraft 1 / Godkänn
+1st Power / Accept	Kraft 1 / Acceptera
 2. Open the blocked item, then Actions > Allow on device.	2. Öppna det blockerade objektet och välj Åtgärder > Tillåt på enhet.
 20%	20 %
 240 (experimental)	240 (experimentell)
@@ -71,8 +71,8 @@ All types	Alla typer
 Also delete my saves and my figures	Ta även bort mina sparfiler och figurer
 Alternate deco	Alternativ deko
 An antivirus often does this: it may have put the file in quarantine. Restore it from the antivirus's quarantine, or add an exclusion for this folder:	Ett antivirusprogram gör ofta så: det kan ha lagt filen i karantän. Återställ den från antivirusprogrammets karantän eller lägg till ett undantag för den här mappen:
-And 1 other file.	Och 1 fil till.
-And {} other files.	Och {} filer till.
+And 1 other file.	(och 1 fil till)
+And {} other files.	(och {} filer till)
 Anisotropic 16x	Anisotropisk 16x
 Anisotropic 2x	Anisotropisk 2x
 Anisotropic 4x	Anisotropisk 4x
@@ -92,7 +92,7 @@ Arkeyan Launcher on GitHub	Arkeyan Launcher på GitHub
 Arkeyan Launcher {} is installed. Restart to use it.	Arkeyan Launcher {} är installerad. Starta om för att använda den.
 At the next start of {}	Vid nästa start av {}
 Attack 1	Attack 1
-Attack 1 / Accept	Attack 1 / Godkänn
+Attack 1 / Accept	Attack 1 / Acceptera
 Attack 2	Attack 2
 Attack 3	Attack 3
 Attack 3 / Back	Attack 3 / Tillbaka
@@ -114,7 +114,7 @@ Basic	Grundläggande
 Before you beat the game. Your save is untouched.	Innan du klarade spelet. Din sparfil är orörd.
 Blank figures from old versions. Tidy trashes them.	Tomma figurer från gamla versioner. Städa kastar dem i papperskorgen.
 Bottom file	Underdelsfil
-Brake / Reverse (vehicle)	Broms / Back (fordon)
+Brake / Reverse (vehicle)	Broms / Backa (fordon)
 Builds the game on your PC: about {} min, {} GB, internet needed once.	Bygger spelet på din dator: cirka {} min, {} GB, internet behövs en gång.
 Built for this disc.	Byggd för den här skivan.
 Built with SDL 3, Dear ImGui, {fmt}, stb, miniz, XenonRecomp, Outfit and Bungee. MIT licensed.	Byggd med SDL 3, Dear ImGui, {fmt}, stb, miniz, XenonRecomp, Outfit och Bungee. MIT-licens.
@@ -218,7 +218,7 @@ Couldn't put it back	Kunde inte lägga tillbaka
 Couldn't put the kit in place: {}	Kunde inte lägga kitet på plats: {}
 Couldn't put the new {} in place: {}	Kunde inte lägga den nya versionen av {} på plats: {}
 Couldn't read the disc image. Check that it's complete.	Kunde inte läsa skivavbilden. Kontrollera att den är komplett.
-Couldn't read this image	Kunde inte läsa den här avbilden
+Couldn't read this image	Kunde inte läsa den här bilden
 Couldn't remove the copy: {}	Kunde inte ta bort kopian: {}
 Couldn't remove the profile	Kunde inte ta bort profilen
 Couldn't repair the game tools: {}	Kunde inte reparera spelverktygen: {}
@@ -250,7 +250,7 @@ D-pad down	Styrkors ned
 D-pad left	Styrkors vänster
 D-pad right	Styrkors höger
 D-pad up	Styrkors upp
-Dark	Mörkt
+Dark	Mörker
 Data folder	Datamapp
 Dec	dec.
 Default	Standard
@@ -269,14 +269,14 @@ Disc checked	Skivan är kontrollerad
 Disc image	Skivavbild
 Disc not found	Skivan hittades inte
 Display refresh rate (up to 60)	Skärmens uppdateringsfrekvens (upp till 60)
-Doubles the game's textures from your disc. About {} of disk, a few minutes.	Dubblar spelets texturer från din skiva. Cirka {} diskutrymme, några minuter.
+Doubles the game's textures from your disc. About {} of disk, a few minutes.	Fördubblar spelets texturer från din skiva. Cirka {} diskutrymme, några minuter.
 Down	Ned
 Downloading Arkeyan Launcher	Hämtar Arkeyan Launcher
 Downloading the game tools	Hämtar spelverktygen
 Downloading the game tools again	Hämtar spelverktygen igen
 Downloading tools	Hämtar verktyg
 Drag Arkeyan Launcher to Applications, replacing the old one.	Dra Arkeyan Launcher till Program och ersätt den gamla.
-Drift (vehicle)	Drift (fordon)
+Drift (vehicle)	Drifta (fordon)
 Drop figure files or a folder on the window.	Släpp figurfiler eller en mapp i fönstret.
 Drop to 30 FPS when needed	Sänk till 30 FPS vid behov
 Dump textures	Dumpa texturer
@@ -298,7 +298,7 @@ Escape	Escape
 Event and exclusive	Event och exklusiva
 Every download is checked against the release's SHA-256 before it runs, and every release is built by GitHub Actions from the public source.	Varje nedladdning kontrolleras mot utgåvans SHA-256 innan den körs, och varje utgåva byggs av GitHub Actions från den öppna källkoden.
 Everything is removed	Allt tas bort
-Evolved	Evolved
+Evolved	Utvecklad
 Experience	Erfarenhet
 Export a portable copy	Exportera en portabel kopia
 Export everything...	Exportera allt...
@@ -398,7 +398,7 @@ INSTALLING THE GAME	INSTALLERAR SPELET
 INSTALLING...	INSTALLERAR...
 If Windows Defender blocks a file:	Om Windows Defender blockerar en fil:
 Import a folder...	Importera en mapp...
-Import an image...	Importera en avbild...
+Import an image...	Importera en bild...
 Import and export	Import och export
 Import figures	Importera figurer
 Import files...	Importera filer...
@@ -418,7 +418,7 @@ Interrupted	Avbruten
 Interrupted: {} of {} copied	Avbruten: {} av {} kopierade
 It is made when the game is installed.	Den skapas när spelet installeras.
 It plays on {} without the launcher or the disc image, with the same saves and settings as the installed game. It never updates: to update it, export it again. Up to {}.	Den spelas på {} utan launchern eller skivavbilden, med samma sparfiler och inställningar som det installerade spelet. Den uppdateras aldrig: exportera den igen för att uppdatera. Upp till {}.
-Item or adventure	Föremål eller äventyr
+Item or adventure	Föremål
 Its evolved look	Dess utvecklade utseende
 Its name	Dess namn
 Jan	jan.
@@ -429,7 +429,7 @@ Jump / Drift (vehicle)	Hoppa / Drifta (fordon)
 Jun	juni
 Keep installing	Fortsätt installera
 Keeps textures sharp at an angle.	Håller texturer skarpa i vinkel.
-Kept: Xbox signing keys	Behållet: Xbox-signeringsnycklar
+Kept: Xbox signing keys	Behållna: Xbox-signeringsnycklar
 Keyboard	Tangentbord
 Keyboard bindings reset	Tangentbordets tangenter är återställda
 Korean	Koreanska
@@ -448,13 +448,13 @@ Left Ctrl	Vänster Ctrl
 Left Shift	Vänster Skift
 Left click	Vänsterklick
 Left click: attack 1. Right click: attack 2. The game keeps the pointer.	Vänsterklick: attack 1. Högerklick: attack 2. Spelet behåller pekaren.
-Legendary	Legendary
+Legendary	Legendarisk
 Level in {}	Nivå i {}
 Level {}	Nivå {}
 Library	Bibliotek
 Licenses	Licenser
 Life	Liv
-Light	Ljust
+Light	Ljus
 LightCore	LightCore
 Linking the game	Länkar spelet
 Live	Live
@@ -468,7 +468,7 @@ Low	Låg
 Made for 30 FPS; 60 and above are experimental.	Gjort för 30 FPS; 60 och över är experimentellt.
 Magic	Magi
 Magic Items	Magiska föremål
-Magic item	Magiskt föremål
+Magic item	Föremål
 Making HD textures	Skapar HD-texturer
 Making the HD textures. You can keep using the launcher; the game waits.	Skapar HD-texturerna. Du kan fortsätta använda launchern; spelet väntar.
 Manage	Hantera
@@ -479,7 +479,7 @@ Mark as not in use · {}	Markera som inte använd · {}
 May	maj
 Menus, subtitles and on-screen text.	Menyer, undertexter och text på skärmen.
 Menus, subtitles, spoken lines and cutscenes.	Menyer, undertexter, tal och filmsekvenser.
-Metallic	Metallic
+Metallic	Metallisk
 Middle click	Mittenklick
 Minis and sidekicks	Minis och sidekicks
 Missing figure	Saknad figur
@@ -501,8 +501,8 @@ Name (optional)	Namn (valfritt)
 Name this toy	Namnge figuren
 Name, element, game, level...	Namn, element, spel, nivå...
 Named: shown at the next start	Namngiven: visas vid nästa start
-Native PC ports	Native PC-portar
-Native PC ports of Skylanders. No game code or art: it comes from your disc.	Native PC-portar av Skylanders. Ingen spelkod eller grafik ingår: den kommer från din skiva.
+Native PC ports	Nativa PC-portar
+Native PC ports of Skylanders. No game code or art: it comes from your disc.	Nativa PC-portar av Skylanders. Ingen spelkod eller grafik ingår: den kommer från din skiva.
 Needs newer game tools: reinstall the game to get them.	Kräver nyare spelverktyg: installera om spelet för att få dem.
 Needs your disc	Kräver din skiva
 Never	Aldrig
@@ -540,7 +540,7 @@ Not available for {} yet	Inte tillgängligt för {} ännu
 Not built yet.	Inte byggt ännu.
 Not enough free space: about 6 GB needed.	Inte tillräckligt med ledigt utrymme: cirka 6 GB behövs.
 Not enough space: {} needed, {} free.	Inte tillräckligt med utrymme: {} behövs, {} är lediga.
-Not for this game	Inte för det här spelet
+Not for this game	Annat spel
 Not for {}	Inte för {}
 Not in the catalog. Name one to show it.	Finns inte i katalogen. Namnge en för att visa den.
 Not installed yet	Inte installerat ännu
@@ -596,7 +596,7 @@ Player 1	Spelare 1
 Player 2	Spelare 2
 Player {}	Spelare {}
 Playing now	Spelas nu
-Playing now · {} this session	Spelas nu · {} denna session
+Playing now · {} this session	Spelas nu · {} den här sessionen
 Plays in	Spelas i
 Plug in the portal, then test it.	Anslut portalen och testa den sedan.
 Portable copy	Portabel kopia
@@ -608,7 +608,7 @@ Portal: not detected	Portal: inte hittad
 Portal: {}	Portal: {}
 Preparing the compiler	Förbereder kompilatorn
 Press INSTALL first	Tryck på INSTALLERA först
-Press a key for "{}" (Escape cancels)	Tryck på en tangent för "{}" (Escape avbryter)
+Press a key for "{}" (Escape cancels)	Tryck på en tangent för ”{}” (Escape avbryter)
 Problem report	Problemrapport
 Profiles	Profiler
 Put back	Lägg tillbaka
@@ -693,7 +693,7 @@ Saves restored from {}	Sparfiler återställda från {}
 Saves {}, figures {}.	Sparfiler {}, figurer {}.
 Search	Sök
 Search the catalog	Sök i katalogen
-Select	Markera
+Select	Välj
 Senseis	Senseis
 Sep	sep.
 Series	Serie
@@ -736,7 +736,7 @@ Switch Driver (co-op)	Byt förare (co-op)
 Switch Skylander / Villain	Byt Skylander / skurk
 System default	Systemstandard
 Take it off	Ta av den
-Tech	Tech
+Tech	Teknologi
 Test	Testa
 Test the portal	Testa portalen
 Testing...	Testar...
@@ -749,7 +749,7 @@ The HD textures weren't made.	HD-texturerna skapades inte.
 The address isn't a secure one (https)	Adressen är inte säker (https)
 The answer has no release in it	Svaret innehåller ingen utgåva
 The answer isn't valid JSON ({})	Svaret är inte giltig JSON ({})
-The author has submitted the launcher and its source code to Microsoft as a false positive; the review is pending.	Upphovspersonen har skickat in launchern och dess källkod till Microsoft som ett falsklarm; granskningen pågår.
+The author has submitted the launcher and its source code to Microsoft as a false positive; the review is pending.	Utvecklaren har skickat in launchern och dess källkod till Microsoft som ett falsklarm; granskningen pågår.
 The copy failed	Kopieringen misslyckades
 The data folder isn't safe to remove.	Det är inte säkert att ta bort datamappen.
 The disc image is damaged. Copy the disc again.	Skivavbilden är skadad. Kopiera skivan igen.
@@ -784,7 +784,7 @@ The game's last log, for a bug report.	Spelets senaste logg, för en buggrapport
 The game's volume (F3 in game).	Spelets volym (F3 i spelet).
 The install stops and can resume later.	Installationen stoppas och kan återupptas senare.
 The installer couldn't start.	Installationsprogrammet kunde inte startas.
-The installer stopped before the game was built.	Installationsprogrammet stoppades innan spelet byggts.
+The installer stopped before the game was built.	Installationsprogrammet stoppades innan spelet hade byggts.
 The installer stopped with exit code {}.	Installationsprogrammet stoppades med slutkod {}.
 The latest 10 backups are kept.	De 10 senaste säkerhetskopiorna behålls.
 The one this trap holds	Den som den här Trapen innehåller
@@ -793,10 +793,10 @@ The portal can't be opened: using the virtual portal.	Portalen kan inte öppnas:
 The portal test took too long and was stopped.	Portaltestet tog för lång tid och stoppades.
 The release {} has no {}	Utgåvan {} saknar {}
 The test failed	Testet misslyckades
-The traps' voices: a Traptanium portal plays them, else the computer (F3 in game).	Trapparnas röster: en Traptanium-portal spelar upp dem, annars datorn (F3 i spelet).
+The traps' voices: a Traptanium portal plays them, else the computer (F3 in game).	Rösterna från Traps: en Traptanium-portal spelar upp dem, annars datorn (F3 i spelet).
 The trash is empty.	Papperskorgen är tom.
 The update failed: {}	Uppdateringen misslyckades: {}
-The wheel is full: take a figure off it first	Hjulet är fullt: ta först av en figur
+The wheel is full: take a figure off it first	Hjulet är fullt: ta bort en figur från det först
 The zip file is damaged	Zip-filen är skadad
 These are your own game tools: restore the file, or set them up again.	Det här är dina egna spelverktyg: återställ filen eller ställ in dem igen.
 These game tools can't build {}	De här spelverktygen kan inte bygga {}
@@ -839,7 +839,7 @@ UPDATE	UPPDATERA
 UPDATING THE GAME	UPPDATERAR SPELET
 UPDATING...	UPPDATERAR...
 USB (Xbox) portals	USB-portaler (Xbox)
-Undead	Undead
+Undead	Odöd
 Uninstall	Avinstallera
 Uninstall everything	Avinstallera allt
 Uninstall everything...	Avinstallera allt...
@@ -998,7 +998,7 @@ yesterday	igår
 {} to level {}	{} till nivå {}
 {} warns about this portal: {}.	{} varnar för den här portalen: {}.
 {} x {} for the 3D scene	{} x {} för 3D-scenen
-{} · Evolved	{} · Evolved
+{} · Evolved	{} · Utvecklad
 {} · empty	{} · tom
 {} · type {} · variant {:04X}	{} · typ {} · variant {:04X}
 {} · {}	{} · {}
@@ -1012,4 +1012,29 @@ yesterday	igår
 {}: pick the new {}	{}: välj ny {}
 {}: {} ({} of {})	{}: {} ({} av {})
 {}: {} freed	{}: {} frigjort
-{}: {} taken off	{}: {} avtagna
+{}: {} taken off	{}: {} togs bort
+# The library's level, seat, sort and count texts.
+Recent	Senaste
+Level	Nivå
+Favorites	Favoriter
+New	Ny
+Item	Föremål
+P{}	S{}
+Unreadable	Oläslig
+Ready to create	Redo att skapa
+Virtual	Virtuell
+Shield {}	Sköld {}
+Weapon {}	Vapen {}
+Level {} ({})	Nivå {} ({})
+{} figure	{} figur
+{} figures	{} figurer
+Knight	Riddare
+Bowslinger	Bågskytt
+Quickshot	Snabbskytt
+Ninja	Ninja
+Brawler	Slagskämpe
+Smasher	Krossare
+Sorcerer	Trollkarl
+Swashbuckler	Fäktare
+Sentinel	Väktare
+Bazooker	Bazookaskytt

@@ -7,13 +7,13 @@
 \n- {} (media ID {:08X}, version {})	\n- {} (media-ID {:08X}, versie {})
  (replaces {})	 (vervangt {})
  · {} already there	 · {} al aanwezig
- · {} are toys you already have	 · {} zijn speelgoed dat je al hebt
+ · {} are toys you already have	 · {} zijn poppetjes die je al hebt
  · {} favorite	 · {} favoriet
  · {} favorites	 · {} favorieten
- · {} is a toy you already have	 · {} is speelgoed dat je al hebt
+ · {} is a toy you already have	 · {} is een poppetje dat je al hebt
  · {} not a figure	 · {} geen figuur
- · {} unknown toy (Manage)	 · {} onbekend speelgoed (Beheren)
- · {} unknown toys (Manage)	 · {} onbekend speelgoed (Beheren)
+ · {} unknown toy (Manage)	 · {} onbekend poppetje (Beheren)
+ · {} unknown toys (Manage)	 · {} onbekende poppetjes (Beheren)
 "System default" follows your system.	"Systeemstandaard" volgt je systeem.
 ({} earlier lines in Copy log)	({} eerdere regels in Log kopiëren)
 ,	.
@@ -70,8 +70,8 @@ All types	Alle typen
 Also delete my saves and my figures	Ook mijn savegames en figuren verwijderen
 Alternate deco	Alternatieve versie
 An antivirus often does this: it may have put the file in quarantine. Restore it from the antivirus's quarantine, or add an exclusion for this folder:	Dit komt vaak door een antivirusprogramma: het bestand kan in quarantaine staan. Haal het terug uit de quarantaine van je antivirusprogramma of voeg een uitzondering toe voor deze map:
-And 1 other file.	En nog 1 bestand.
-And {} other files.	En nog {} bestanden.
+And 1 other file.	(en nog 1 bestand)
+And {} other files.	(en nog {} bestanden)
 Anisotropic 16x	Anisotroop 16x
 Anisotropic 2x	Anisotroop 2x
 Anisotropic 4x	Anisotroop 4x
@@ -290,7 +290,7 @@ Edit my profile	Mijn profiel bewerken
 Edit profile	Profiel bewerken
 Element	Element
 Empty	Leeg
-Empty: the toy's name	Leeg: de naam van het speelgoed
+Empty: the toy's name	Leeg: de naam van het poppetje
 Eon's Elite	Eon's Elite
 Erase	Wissen
 Escape	Escape
@@ -397,7 +397,7 @@ INSTALLING THE GAME	HET SPEL WORDT GEÏNSTALLEERD
 INSTALLING...	INSTALLEREN...
 If Windows Defender blocks a file:	Als Windows Defender een bestand blokkeert:
 Import a folder...	Een map importeren...
-Import an image...	Een image importeren...
+Import an image...	Een afbeelding importeren...
 Import and export	Importeren en exporteren
 Import figures	Figuren importeren
 Import files...	Bestanden importeren...
@@ -417,7 +417,7 @@ Interrupted	Onderbroken
 Interrupted: {} of {} copied	Onderbroken: {} van {} gekopieerd
 It is made when the game is installed.	Wordt gemaakt zodra het spel is geïnstalleerd.
 It plays on {} without the launcher or the disc image, with the same saves and settings as the installed game. It never updates: to update it, export it again. Up to {}.	Het draait op {} zonder de launcher of het schijfimage, met dezelfde savegames en instellingen als het geïnstalleerde spel. Het wordt nooit bijgewerkt: exporteer het opnieuw om het bij te werken. Maximaal {}.
-Item or adventure	Voorwerp of avontuur
+Item or adventure	Item
 Its evolved look	Zijn evolved uiterlijk
 Its name	Zijn naam
 Jan	jan.
@@ -448,8 +448,8 @@ Left Shift	Linker Shift
 Left click	Linkermuisknop
 Left click: attack 1. Right click: attack 2. The game keeps the pointer.	Linkermuisknop: aanval 1. Rechtermuisknop: aanval 2. Het spel houdt de aanwijzer vast.
 Legendary	Legendarisch
-Level in {}	Level in {}
-Level {}	Level {}
+Level in {}	Niveau in {}
+Level {}	Niveau {}
 Library	Bibliotheek
 Licenses	Licenties
 Life	Leven
@@ -461,13 +461,13 @@ Log copied	Log gekopieerd
 Logs	Logs
 Logs and settings, without your names, for a GitHub issue.	Logs en instellingen, zonder je namen, voor een GitHub-issue.
 Logs folder	Logmap
-Looking for the disc image	De schijfimage zoeken
+Looking for the disc image	Het schijfimage zoeken
 Looks for updates at each start.	Zoekt bij elke start naar updates.
 Low	Laag
 Made for 30 FPS; 60 and above are experimental.	Gemaakt voor 30 FPS; 60 en hoger zijn experimenteel.
 Magic	Magie
 Magic Items	Magische voorwerpen
-Magic item	Magisch voorwerp
+Magic item	Item
 Making HD textures	HD-texturen maken
 Making the HD textures. You can keep using the launcher; the game waits.	HD-texturen worden gemaakt. Je kunt de launcher blijven gebruiken; het spel wacht.
 Manage	Beheren
@@ -497,8 +497,8 @@ Movement	Beweging
 My Team	Mijn team
 Name	Naam
 Name (optional)	Naam (optioneel)
-Name this toy	Geef dit speelgoed een naam
-Name, element, game, level...	Naam, element, spel, level...
+Name this toy	Geef dit poppetje een naam
+Name, element, game, level...	Naam, element, spel, niveau...
 Named: shown at the next start	Benoemd: zichtbaar bij de volgende start
 Native PC ports	Native pc-ports
 Native PC ports of Skylanders. No game code or art: it comes from your disc.	Native pc-ports van Skylanders. Geen spelcode of afbeeldingen: die komen van je eigen schijf.
@@ -521,11 +521,11 @@ No hat	Geen hoed
 No notes were published with this version.	Bij deze versie zijn geen notities gepubliceerd.
 No other bottom to take.	Geen ander onderstuk beschikbaar.
 No other top to take.	Geen ander bovenstuk beschikbaar.
-No portal found: the game will wait for one.	Geen portal gevonden: het spel wacht op er een.
+No portal found: the game will wait for one.	Geen portal gevonden: het spel wacht tot je er een aansluit.
 No portal found: using the virtual portal.	Geen portal gevonden: de virtuele portal wordt gebruikt.
 No saves or figures yet.	Nog geen savegames of figuren.
 No tearing, a little more latency.	Geen tearing, iets meer vertraging.
-No unknown toys.	Geen onbekend speelgoed.
+No unknown toys.	Geen onbekende poppetjes.
 None	Geen
 None chosen yet.	Nog niets gekozen.
 None chosen.	Niets gekozen.
@@ -539,7 +539,7 @@ Not available for {} yet	Nog niet beschikbaar voor {}
 Not built yet.	Nog niet gebouwd.
 Not enough free space: about 6 GB needed.	Niet genoeg vrije ruimte: ongeveer 6 GB nodig.
 Not enough space: {} needed, {} free.	Niet genoeg ruimte: {} nodig, {} vrij.
-Not for this game	Niet voor dit spel
+Not for this game	Past hier niet
 Not for {}	Niet voor {}
 Not in the catalog. Name one to show it.	Niet in de catalogus. Geef een naam om het te tonen.
 Not installed yet	Nog niet geïnstalleerd
@@ -584,7 +584,7 @@ PLAY WITH	SPELEN MET
 Pages	Pagina's
 Pause	Pauze
 Pick a figure.	Kies een figuur.
-Pick one below	Kies er hieronder een
+Pick one below	Kies er een
 Picture	Beeld
 Play	Spelen
 Play time: {}	Speeltijd: {}
@@ -660,7 +660,7 @@ Reset	Resetten
 Reset to defaults	Terug naar standaard
 Reset to new	Terugzetten naar nieuw
 Reset to new...	Terugzetten naar nieuw...
-Reset {} to new? Level, gold and upgrades are lost.	{} terugzetten naar nieuw? Level, goud en upgrades gaan verloren.
+Reset {} to new? Level, gold and upgrades are lost.	{} terugzetten naar nieuw? Niveau, goud en upgrades gaan verloren.
 Resolution scale	Resolutieschaal
 Restart now	Nu opnieuw starten
 Restore	Herstellen
@@ -682,7 +682,7 @@ Same	Gelijk
 Same as text	Zelfde als tekst
 Save	Opslaan
 Save as...	Opslaan als...
-Save backups	Back-ups maken
+Save backups	Back-ups van savegames
 Save to Desktop	Op bureaublad opslaan
 Saved	Opgeslagen
 Saved gamepad (not connected)	Opgeslagen gamepad (niet aangesloten)
@@ -728,8 +728,8 @@ Stopping...	Stoppen...
 Strong	Sterk
 SuperChargers	SuperChargers
 Support	Ondersteuning
-Swap Force bottoms	Swap Force-onderstukken
-Swap Force tops	Swap Force-bovenstukken
+Swap Force bottoms	Swap Force-onder
+Swap Force tops	Swap Force-boven
 Swapper	Swapper
 Switch Driver (co-op)	Bestuurder wisselen (coöp)
 Switch Skylander / Villain	Skylander / schurk wisselen
@@ -786,7 +786,7 @@ The installer couldn't start.	Het installatieprogramma kon niet starten.
 The installer stopped before the game was built.	Het installatieprogramma is gestopt voordat het spel was gebouwd.
 The installer stopped with exit code {}.	Het installatieprogramma is gestopt met exitcode {}.
 The latest 10 backups are kept.	De laatste 10 back-ups blijven bewaard.
-The one this trap holds	Degene die deze trap bevat
+The one this trap holds	Degene die deze Trap bevat
 The portal can't be opened: the game will wait.	De portal kan niet worden geopend: het spel wacht.
 The portal can't be opened: using the virtual portal.	De portal kan niet worden geopend: de virtuele portal wordt gebruikt.
 The portal test took too long and was stopped.	De portaltest duurde te lang en is gestopt.
@@ -815,16 +815,16 @@ Today {}	Vandaag {}
 Top: {} · Bottom: {}	Boven: {} · Onder: {}
 Total	Totaal
 Touchpad	Touchpad
-Toy	Speelgoed
+Toy	Poppetje
 Toy Box	Toy Box
 Toy Box in the game: F6, or View + Y on a controller.	Toy Box in het spel: F6, of View + Y op een controller.
 Toy Box keys	Toy Box-toetsen
-Toy type {}	Speelgoedtype {}
+Toy type {}	Type poppetje {}
 Translating the game code	De spelcode vertalen
 Translating the shaders	De shaders vertalen
 Trap	Trap
 Trap Masters	Trap Masters
-Trap shape	Trapvorm
+Trap shape	Vorm van Trap
 Traps	Traps
 Trash	Prullenbak
 Trash · {}	Prullenbak · {}
@@ -838,16 +838,16 @@ UPDATE	BIJWERKEN
 UPDATING THE GAME	HET SPEL WORDT BIJGEWERKT
 UPDATING...	BIJWERKEN...
 USB (Xbox) portals	USB-portals (Xbox)
-Undead	Undead
+Undead	Ondood
 Uninstall	Deïnstalleren
 Uninstall everything	Alles deïnstalleren
 Uninstall everything...	Alles deïnstalleren...
 Unknown	Onbekend
 Unknown release	Onbekende release
-Unknown toy {}	Onbekend speelgoed {}
-Unknown toy {} (variant {:04X})	Onbekend speelgoed {} (variant {:04X})
-Unknown toys	Onbekend speelgoed
-Unknown toys · {}	Onbekend speelgoed · {}
+Unknown toy {}	Onbekend poppetje {}
+Unknown toy {} (variant {:04X})	Onbekend poppetje {} (variant {:04X})
+Unknown toys	Onbekende poppetjes
+Unknown toys · {}	Onbekende poppetjes · {}
 Unlimited (experimental)	Onbeperkt (experimenteel)
 Unreadable. Restore a backup or reset it.	Onleesbaar. Herstel een back-up of reset het.
 Up	Omhoog
@@ -929,8 +929,8 @@ hat {}	hoed {}
 imported	geïmporteerd
 less than a minute	minder dan een minuut
 less than a minute left	nog minder dan een minuut
-level {} · {} gold	level {} · {} goud
-maximum level	maximumlevel
+level {} · {} gold	niveau {} · {} goud
+maximum level	maximumniveau
 needs {}	heeft {} nodig
 no answer	geen antwoord
 no hat	geen hoed
@@ -986,7 +986,7 @@ yesterday	gisteren
 {} is running	{} draait
 {} is running: quit it first.	{} draait: sluit het eerst af.
 {} is running: use its Toy Box	{} draait: gebruik de Toy Box
-{} keep no level or gold.	{} hebben geen level of goud.
+{} keep no level or gold.	{} hebben geen niveau of goud.
 {} min	{} min
 {} of {}	{} van {}
 {} of {} unlocked · {} of {} G	{} van {} ontgrendeld · {} van {} G
@@ -994,7 +994,7 @@ yesterday	gisteren
 {} rejects this portal: {}.	{} weigert deze portal: {}.
 {} settings	Instellingen van {}
 {} stopped unexpectedly (exit code {}).\n\nPress Report to save a report file with the log and where the game stopped.	{} is onverwacht gestopt (exitcode {}).\n\nDruk op Rapporteren om een rapportbestand op te slaan met de log en waar het spel stopte.
-{} to level {}	{} naar level {}
+{} to level {}	{} naar niveau {}
 {} warns about this portal: {}.	{} waarschuwt voor deze portal: {}.
 {} x {} for the 3D scene	{} x {} voor de 3D-scène
 {} · Evolved	{} · Evolved
@@ -1012,3 +1012,28 @@ yesterday	gisteren
 {}: {} ({} of {})	{}: {} ({} van {})
 {}: {} freed	{}: {} vrijgemaakt
 {}: {} taken off	{}: {} eraf gehaald
+# The library's level, seat, sort and count texts.
+Recent	Recent
+Level	Niveau
+Favorites	Favorieten
+New	Nieuw
+Item	Item
+P{}	S{}
+Unreadable	Onleesbaar
+Ready to create	Klaar om te maken
+Virtual	Virtueel
+Shield {}	Schild {}
+Weapon {}	Wapen {}
+Level {} ({})	Niveau {} ({})
+{} figure	{} figuur
+{} figures	{} figuren
+Knight	Ridder
+Bowslinger	Boogschutter
+Quickshot	Snelschutter
+Ninja	Ninja
+Brawler	Bokser
+Smasher	Verpletteraar
+Sorcerer	Tovenaar
+Swashbuckler	Schermer
+Sentinel	Schildwacht
+Bazooker	Bazookist

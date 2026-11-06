@@ -68,8 +68,8 @@ All types	Alle Typen
 Also delete my saves and my figures	Auch meine Spielstände und Figuren löschen
 Alternate deco	Alternatives Design
 An antivirus often does this: it may have put the file in quarantine. Restore it from the antivirus's quarantine, or add an exclusion for this folder:	Das passiert oft durch ein Antivirenprogramm: Es hat die Datei vielleicht in Quarantäne verschoben. Stelle sie aus der Quarantäne wieder her oder lege eine Ausnahme für diesen Ordner an:
-And 1 other file.	Und 1 weitere Datei.
-And {} other files.	Und {} weitere Dateien.
+And 1 other file.	(und 1 weitere Datei)
+And {} other files.	(und {} weitere Dateien)
 Anisotropic 16x	Anisotrop 16x
 Anisotropic 2x	Anisotrop 2x
 Anisotropic 4x	Anisotrop 4x
@@ -280,7 +280,7 @@ Dump textures	Texturen sichern
 Duplicate	Duplizieren
 Duplicated: 	Dupliziert: 
 Each has its own Toy Box, saves, keys and achievements.	Jedes hat seine eigene Toy Box, Spielstände, Tasten und Erfolge.
-Earlier versions of your saves.	Frühere Stände deiner Spielstände.
+Earlier versions of your saves.	Frühere Versionen deiner Spielstände.
 Earth	Erde
 Edge smoothing	Kantenglättung
 Edit	Bearbeiten
@@ -289,7 +289,7 @@ Edit profile	Profil bearbeiten
 Element	Element
 Empty	Leer
 Empty: the toy's name	Leer: der Name der Figur
-Eon's Elite	Eons Elite
+Eon's Elite	Eon's Elite
 Erase	Löschen
 Escape	Esc
 Event and exclusive	Event und exklusiv
@@ -371,23 +371,23 @@ Hat	Hut
 Hero points	Heldenpunkte
 Hidden achievement	Verborgener Erfolg
 Hide details	Details ausblenden
-Higher scales need a dedicated graphics card.	Höhere Stufen brauchen eine dedizierte Grafikkarte.
-Hold if its game has quit.	Halten, wenn das zugehörige Spiel beendet ist.
-Hold to clear the caches.	Halten, um die Caches zu leeren.
+Higher scales need a dedicated graphics card.	Höhere Faktoren brauchen eine dedizierte Grafikkarte.
+Hold if its game has quit.	Halte gedrückt, wenn das zugehörige Spiel beendet ist.
+Hold to clear the caches.	Halte gedrückt, um die Caches zu leeren.
 Hold to confirm	Halten zum Bestätigen
-Hold to delete all of this.	Halten, um alles hiervon zu löschen.
-Hold to delete it for good.	Halten, um es endgültig zu löschen.
-Hold to delete saves, backups and caches.	Halten, um Spielstände, Sicherungen und Caches zu löschen.
-Hold to delete the built game. Saves are kept.	Halten, um das gebaute Spiel zu löschen. Spielstände bleiben.
-Hold to delete the copy.	Halten, um die Kopie zu löschen.
-Hold to delete the partial copy.	Halten, um die unvollständige Kopie zu löschen.
-Hold to give every button its own job back.	Halten, um jeder Taste ihre eigene Aufgabe zurückzugeben.
-Hold to mark them as not in use.	Halten, um sie als nicht benutzt zu markieren.
-Hold to move them to the trash.	Halten, um sie in den Papierkorb zu legen.
-Hold to put this copy back.	Halten, um diese Kopie zurückzulegen.
-Hold to rebuild the game.	Halten, um das Spiel neu zu bauen.
-Hold to reset every key of this game.	Halten, um alle Tasten dieses Spiels zurückzusetzen.
-Hold to restore; your current saves are kept first.	Halten zum Wiederherstellen; deine aktuellen Spielstände werden vorher gesichert.
+Hold to delete all of this.	Halte gedrückt, um alles hiervon zu löschen.
+Hold to delete it for good.	Halte gedrückt, um es endgültig zu löschen.
+Hold to delete saves, backups and caches.	Halte gedrückt, um Spielstände, Sicherungen und Caches zu löschen.
+Hold to delete the built game. Saves are kept.	Halte gedrückt, um das gebaute Spiel zu löschen. Spielstände bleiben.
+Hold to delete the copy.	Halte gedrückt, um die Kopie zu löschen.
+Hold to delete the partial copy.	Halte gedrückt, um die unvollständige Kopie zu löschen.
+Hold to give every button its own job back.	Halte gedrückt, um jeder Taste ihre eigene Aufgabe zurückzugeben.
+Hold to mark them as not in use.	Halte gedrückt, um sie als nicht benutzt zu markieren.
+Hold to move them to the trash.	Halte gedrückt, um sie in den Papierkorb zu legen.
+Hold to put this copy back.	Halte gedrückt, um diese Kopie zurückzulegen.
+Hold to rebuild the game.	Halte gedrückt, um das Spiel neu zu bauen.
+Hold to reset every key of this game.	Halte gedrückt, um alle Tasten dieses Spiels zurückzusetzen.
+Hold to restore; your current saves are kept first.	Halte gedrückt, um wiederherzustellen; deine aktuellen Spielstände werden vorher gesichert.
 INSTALL	INSTALLIEREN
 INSTALLATION INTERRUPTED	INSTALLATION UNTERBROCHEN
 INSTALLATION STOPPED	INSTALLATION GESTOPPT
@@ -395,7 +395,7 @@ INSTALLING THE GAME	SPIEL WIRD INSTALLIERT
 INSTALLING...	INSTALLIERE...
 If Windows Defender blocks a file:	Wenn Windows Defender eine Datei blockiert:
 Import a folder...	Ordner importieren...
-Import an image...	Abbild importieren...
+Import an image...	Bild importieren...
 Import and export	Import und Export
 Import figures	Figuren importieren
 Import files...	Dateien importieren...
@@ -415,7 +415,7 @@ Interrupted	Unterbrochen
 Interrupted: {} of {} copied	Unterbrochen: {} von {} kopiert
 It is made when the game is installed.	Wird beim Installieren des Spiels erstellt.
 It plays on {} without the launcher or the disc image, with the same saves and settings as the installed game. It never updates: to update it, export it again. Up to {}.	Es läuft auf {} ohne den Launcher und ohne Disc-Abbild, mit denselben Spielständen und Einstellungen wie das installierte Spiel. Es wird nie aktualisiert: Exportiere es erneut, um es zu aktualisieren. Bis zu {}.
-Item or adventure	Gegenstand oder Abenteuer
+Item or adventure	Item
 Its evolved look	Sein entwickeltes Aussehen
 Its name	Sein Name
 Jan	Jan.
@@ -446,8 +446,8 @@ Left Shift	Umschalt links
 Left click	Linksklick
 Left click: attack 1. Right click: attack 2. The game keeps the pointer.	Linksklick: Angriff 1. Rechtsklick: Angriff 2. Das Spiel behält den Mauszeiger.
 Legendary	Legendär
-Level in {}	Level in {}
-Level {}	Level {}
+Level in {}	Stufe in {}
+Level {}	Stufe {}
 Library	Bibliothek
 Licenses	Lizenzen
 Life	Leben
@@ -465,7 +465,7 @@ Low	Niedrig
 Made for 30 FPS; 60 and above are experimental.	Für 30 FPS gemacht; 60 und mehr sind experimentell.
 Magic	Magie
 Magic Items	Magische Gegenstände
-Magic item	Magischer Gegenstand
+Magic item	Item
 Making HD textures	HD-Texturen werden erstellt
 Making the HD textures. You can keep using the launcher; the game waits.	HD-Texturen werden erstellt. Du kannst den Launcher weiter nutzen; das Spiel wartet.
 Manage	Verwalten
@@ -479,7 +479,7 @@ Menus, subtitles, spoken lines and cutscenes.	Menüs, Untertitel, Sprechtext und
 Metallic	Metallisch
 Middle click	Mittelklick
 Minis and sidekicks	Minis und Sidekicks
-Missing figure	Fehlende Figur
+Missing figure	Fehlt
 Model: {} (id {})	Modell: {} (ID {})
 More actions	Weitere Aktionen
 Mouse	Maus
@@ -496,7 +496,7 @@ My Team	Mein Team
 Name	Name
 Name (optional)	Name (optional)
 Name this toy	Figur benennen
-Name, element, game, level...	Name, Element, Spiel, Level...
+Name, element, game, level...	Name, Element, Spiel, Stufe...
 Named: shown at the next start	Benannt: wird beim nächsten Start angezeigt
 Native PC ports	Native PC-Ports
 Native PC ports of Skylanders. No game code or art: it comes from your disc.	Native PC-Ports von Skylanders. Kein Spielcode und keine Grafik: Alles stammt von deiner Disc.
@@ -537,7 +537,7 @@ Not available for {} yet	Für {} noch nicht verfügbar
 Not built yet.	Noch nicht gebaut.
 Not enough free space: about 6 GB needed.	Nicht genug freier Platz: Etwa 6 GB nötig.
 Not enough space: {} needed, {} free.	Nicht genug Platz: {} nötig, {} frei.
-Not for this game	Nicht für dieses Spiel
+Not for this game	Passt nicht
 Not for {}	Nicht für {}
 Not in the catalog. Name one to show it.	Nicht im Katalog. Gib einen Namen ein, um sie anzuzeigen.
 Not installed yet	Noch nicht installiert
@@ -582,7 +582,7 @@ PLAY WITH	SPIELEN MIT
 Pages	Seiten
 Pause	Pause
 Pick a figure.	Wähle eine Figur.
-Pick one below	Wähle unten eine aus
+Pick one below	Unten wählen
 Picture	Bild
 Play	Spielen
 Play time: {}	Spielzeit: {}
@@ -599,7 +599,7 @@ Plug in the portal, then test it.	Schließe das Portal an und teste es.
 Portable copy	Portable Kopie
 Portable copy saved: {}	Portable Kopie gespeichert: {}
 Portal	Portal
-Portal of Power	Portal der Macht
+Portal of Power	Portal of Power
 Portal sound	Portalton
 Portal: not detected	Portal: nicht erkannt
 Portal: {}	Portal: {}
@@ -658,7 +658,7 @@ Reset	Zurücksetzen
 Reset to defaults	Auf Standard zurücksetzen
 Reset to new	Auf neu zurücksetzen
 Reset to new...	Auf neu zurücksetzen...
-Reset {} to new? Level, gold and upgrades are lost.	{} auf neu zurücksetzen? Level, Gold und Upgrades gehen verloren.
+Reset {} to new? Level, gold and upgrades are lost.	{} auf neu zurücksetzen? Stufe, Gold und Verbesserungen gehen verloren.
 Resolution scale	Auflösungsfaktor
 Restart now	Jetzt neu starten
 Restore	Wiederherstellen
@@ -680,7 +680,7 @@ Same	Gleich
 Same as text	Wie der Text
 Save	Speichern
 Save as...	Speichern unter...
-Save backups	Sicherungen speichern
+Save backups	Sicherungen der Spielstände
 Save to Desktop	Auf dem Desktop speichern
 Saved	Gespeichert
 Saved gamepad (not connected)	Gespeichertes Gamepad (nicht verbunden)
@@ -708,8 +708,8 @@ Skip intro movies	Intro-Videos überspringen
 Skylander Info	Skylander-Info
 Skylander Profile	Skylander-Profil
 Skylander/Villain Stats	Skylander-/Schurken-Werte
-Skylanders	Skylanders
-Skylanders Stats	Skylanders-Werte
+Skylanders	Skylander
+Skylanders Stats	Skylander-Werte
 Skylanders, Spyro and Activision are trademarks of Activision Publishing, Inc. This project is not affiliated with or endorsed by Activision.	Skylanders, Spyro und Activision sind Marken von Activision Publishing, Inc. Dieses Projekt steht in keiner Verbindung zu Activision und wird nicht von Activision unterstützt.
 Some figures are marked as in use, but their game is not running.	Einige Figuren sind als benutzt markiert, aber ihr Spiel läuft nicht.
 Something went wrong while {}.	Beim Vorgang „{}“ ist etwas schiefgelaufen.
@@ -733,7 +733,7 @@ Switch Driver (co-op)	Fahrer wechseln (Koop)
 Switch Skylander / Villain	Skylander / Schurke wechseln
 System default	Systemstandard
 Take it off	Abnehmen
-Tech	Technik
+Tech	Technologie
 Test	Test
 Test the portal	Portal testen
 Testing...	Teste...
@@ -784,7 +784,7 @@ The installer couldn't start.	Der Installer konnte nicht starten.
 The installer stopped before the game was built.	Der Installer wurde gestoppt, bevor das Spiel gebaut war.
 The installer stopped with exit code {}.	Der Installer wurde mit Exit-Code {} beendet.
 The latest 10 backups are kept.	Die letzten 10 Sicherungen bleiben erhalten.
-The one this trap holds	Die, die diese Falle enthält
+The one this trap holds	Der Schurke in dieser Falle
 The portal can't be opened: the game will wait.	Das Portal lässt sich nicht öffnen: Das Spiel wartet.
 The portal can't be opened: using the virtual portal.	Das Portal lässt sich nicht öffnen: Das virtuelle Portal wird genutzt.
 The portal test took too long and was stopped.	Der Portaltest hat zu lange gedauert und wurde gestoppt.
@@ -836,7 +836,7 @@ UPDATE	AKTUALISIEREN
 UPDATING THE GAME	SPIEL WIRD AKTUALISIERT
 UPDATING...	AKTUALISIERE...
 USB (Xbox) portals	USB-Portale (Xbox)
-Undead	Untote
+Undead	Gespenster
 Uninstall	Deinstallieren
 Uninstall everything	Alles deinstallieren
 Uninstall everything...	Alles deinstallieren...
@@ -847,7 +847,7 @@ Unknown toy {} (variant {:04X})	Unbekannte Figur {} (Variante {:04X})
 Unknown toys	Unbekannte Figuren
 Unknown toys · {}	Unbekannte Figuren · {}
 Unlimited (experimental)	Unbegrenzt (experimentell)
-Unreadable. Restore a backup or reset it.	Nicht lesbar. Stelle eine Sicherung wieder her oder setze es zurück.
+Unreadable. Restore a backup or reset it.	Nicht lesbar. Stelle eine Sicherung wieder her oder setze sie zurück.
 Up	Hoch
 Update all	Alle aktualisieren
 Update available	Update verfügbar
@@ -857,7 +857,7 @@ Update now	Jetzt aktualisieren
 Updates	Updates
 Updates {} games, one after the other	Aktualisiert {} Spiele, eins nach dem anderen
 Updating	Aktualisiere
-Upgrades	Upgrades
+Upgrades	Verbesserungen
 Use / Talk	Benutzen / Sprechen
 Use it for {}	Für {} nutzen
 Use the mouse	Maus verwenden
@@ -927,8 +927,8 @@ hat {}	Hut {}
 imported	importiert
 less than a minute	weniger als eine Minute
 less than a minute left	noch weniger als eine Minute
-level {} · {} gold	Level {} · {} Gold
-maximum level	Höchstlevel
+level {} · {} gold	Stufe {} · {} Gold
+maximum level	Höchststufe
 needs {}	braucht {}
 no answer	keine Antwort
 no hat	kein Hut
@@ -951,7 +951,7 @@ yesterday	gestern
 {} GB	{} GB
 {} KB	{} KB
 {} MB	{} MB
-{} XP · {}	{} XP · {}
+{} XP · {}	{} EP · {}
 {} Xbox, PlayStation and Switch pads are compatible.	{} Xbox-, PlayStation- und Switch-Pads sind kompatibel.
 {} accepts this portal.	{} akzeptiert dieses Portal.
 {} already plays from its copied game data	{} läuft schon von seinen kopierten Spieldaten
@@ -984,7 +984,7 @@ yesterday	gestern
 {} is running	{} läuft
 {} is running: quit it first.	{} läuft: Beende es zuerst.
 {} is running: use its Toy Box	{} läuft: Nutze seine Toy Box
-{} keep no level or gold.	{} behalten kein Level und kein Gold.
+{} keep no level or gold.	{} behalten keine Stufe und kein Gold.
 {} min	{} Min.
 {} of {}	{} von {}
 {} of {} unlocked · {} of {} G	{} von {} freigeschaltet · {} von {} G
@@ -992,7 +992,7 @@ yesterday	gestern
 {} rejects this portal: {}.	{} lehnt dieses Portal ab: {}.
 {} settings	{}-Einstellungen
 {} stopped unexpectedly (exit code {}).\n\nPress Report to save a report file with the log and where the game stopped.	{} wurde unerwartet beendet (Exit-Code {}).\n\nDrücke Melden, um eine Berichtsdatei mit dem Log und der Stelle des Absturzes zu speichern.
-{} to level {}	{} bis Level {}
+{} to level {}	{} bis Stufe {}
 {} warns about this portal: {}.	{} warnt vor diesem Portal: {}.
 {} x {} for the 3D scene	{} x {} für die 3D-Szene
 {} · Evolved	{} · Entwickelt
@@ -1000,7 +1000,7 @@ yesterday	gestern
 {} · type {} · variant {:04X}	{} · Typ {} · Variante {:04X}
 {} · {}	{} · {}
 {} · {} played	{} · {} gespielt
-{} · {} · {} upgrades	{} · {} · {} Upgrades
+{} · {} · {} upgrades	{} · {} · {} Verbesserungen
 {} · {} · ~{} min	{} · {} · ~{} Min.
 {} · ~{} min	{} · ~{} Min.
 {}%	{} %
@@ -1010,3 +1010,28 @@ yesterday	gestern
 {}: {} ({} of {})	{}: {} ({} von {})
 {}: {} freed	{}: {} frei
 {}: {} taken off	{}: {} abgenommen
+# The library's level, seat, sort and count texts.
+Recent	Zuletzt
+Level	Stufe
+Favorites	Favoriten
+New	Neu
+Item	Item
+P{}	S{}
+Unreadable	Nicht lesbar
+Ready to create	Zu erstellen
+Virtual	Virtuell
+Shield {}	Schild {}
+Weapon {}	Waffe {}
+Level {} ({})	Stufe {} ({})
+{} figure	{} Figur
+{} figures	{} Figuren
+Knight	Ritter
+Bowslinger	Bogenschütze
+Quickshot	Flinkschütze
+Ninja	Ninja
+Brawler	Raufbold
+Smasher	Zertrümmerer
+Sorcerer	Zauberer
+Swashbuckler	Haudegen
+Sentinel	Wächter
+Bazooker	Bazookaschütze

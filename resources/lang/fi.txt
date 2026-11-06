@@ -12,7 +12,7 @@
  · {} favorite	 · suosikkeja: {}
  · {} favorites	 · suosikkeja: {}
  · {} is a toy you already have	 · jo omistamasi lelu: {}
- · {} not a figure	 · ei figuuria: {}
+ · {} not a figure	 · ei hahmoja: {}
  · {} unknown toy (Manage)	 · tuntematon lelu: {} (Hallitse)
  · {} unknown toys (Manage)	 · tuntemattomia leluja: {} (Hallitse)
 "System default" follows your system.	"Järjestelmän oletus" seuraa järjestelmääsi.
@@ -69,10 +69,10 @@ All games	Kaikki pelit
 All games are updated	Kaikki pelit on päivitetty
 All types	Kaikki tyypit
 Also delete my saves and my figures	Poista myös tallennukseni ja hahmoni
-Alternate deco	Vaihtoehtoinen väritys
-An antivirus often does this: it may have put the file in quarantine. Restore it from the antivirus's quarantine, or add an exclusion for this folder:	Virustorjunta tekee tämän usein: se on voinut siirtää tiedoston karanteeniin. Palauta tiedosto virustorjunnan karanteenista tai lisää tälle kansiolle poikkeus:
-And 1 other file.	Ja 1 muu tiedosto.
-And {} other files.	Ja {} muuta tiedostoa.
+Alternate deco	Toinen väritys
+An antivirus often does this: it may have put the file in quarantine. Restore it from the antivirus's quarantine, or add an exclusion for this folder:	Virustorjunta tekee tämän usein: se on voinut siirtää tiedoston karanteeniin. Palauta tiedosto virustorjunnan karanteenista tai lisää tämä kansio poissulkemisiin:
+And 1 other file.	Lisäksi 1 muu tiedosto.
+And {} other files.	Lisäksi {} muuta tiedostoa.
 Anisotropic 16x	Anisotrooppinen 16x
 Anisotropic 2x	Anisotrooppinen 2x
 Anisotropic 4x	Anisotrooppinen 4x
@@ -100,7 +100,7 @@ Aug	elo
 Auto	Auto
 Auto (follows the window)	Auto (seuraa ikkunaa)
 Auto shows more when wide; 16:9 adds bars.	Auto näyttää enemmän leveänä; 16:9 lisää palkit.
-Auto-open Toy Box	Avaa Toy Box automaattisesti
+Auto-open Toy Box	Toy Boxin automaattiavaus
 Automatic	Automaattinen
 Automatic detection	Automaattinen tunnistus
 Back	Takaisin
@@ -176,7 +176,7 @@ Close	Sulje
 Code	Koodi
 Collection	Kokoelma
 Color	Väri
-Coming later	Tulossa myöhemmin
+Coming later	Tulossa
 Comparing with the supported releases	Verrataan tuettuihin julkaisuihin
 Compiling the game	Käännetään peli
 Completed steps	Valmiit vaiheet
@@ -242,15 +242,15 @@ Create the profile	Luo profiili
 Create the {} starter pack	Luo pelin {} aloituspaketti
 Create {}	Luo: {}
 Created {}	Luotu: {}
-Creation Crystals	Creation Crystals
+Creation Crystals	Luomiskristallit
 Credits	Tekijät
 Cross	Risti
 Crystal Clear	Crystal Clear
-D-pad down	Suuntaristi alas
-D-pad left	Suuntaristi vasemmalle
-D-pad right	Suuntaristi oikealle
-D-pad up	Suuntaristi ylös
-Dark	Tumma
+D-pad down	D-pad alas
+D-pad left	D-pad vasemmalle
+D-pad right	D-pad oikealle
+D-pad up	D-pad ylös
+Dark	Pimeys
 Data folder	Tietokansio
 Dec	joulu
 Default	Oletus
@@ -292,7 +292,7 @@ Edit profile	Muokkaa profiilia
 Element	Elementti
 Empty	Tyhjä
 Empty: the toy's name	Tyhjä: lelun nimi
-Eon's Elite	Eon's Elite
+Eon's Elite	Eonin eliitti
 Erase	Pyyhi
 Escape	Escape
 Event and exclusive	Tapahtuma ja yksinoikeus
@@ -303,7 +303,7 @@ Experience	Kokemus
 Export a portable copy	Vie kannettava kopio
 Export everything...	Vie kaikki...
 Export first	Vie ensin
-Export for {}	Vie pelille {}
+Export for {}	Vie alustalle {}
 Export stopped	Vienti pysähtyi
 Export the figures to	Vie hahmot kansioon
 Exported {} figure to {}	Viety {} hahmo: {}
@@ -377,7 +377,7 @@ Hide details	Piilota tiedot
 Higher scales need a dedicated graphics card.	Suuremmat skaalat vaativat erillisen näytönohjaimen.
 Hold if its game has quit.	Pidä pohjassa, jos sen peli on sulkeutunut.
 Hold to clear the caches.	Pidä pohjassa tyhjentääksesi välimuistit.
-Hold to confirm	Pidä pohjassa vahvistaaksesi
+Hold to confirm	Pidä vahvistaaksesi
 Hold to delete all of this.	Pidä pohjassa poistaaksesi kaiken tämän.
 Hold to delete it for good.	Pidä pohjassa poistaaksesi pysyvästi.
 Hold to delete saves, backups and caches.	Pidä pohjassa poistaaksesi tallennukset, varmuuskopiot ja välimuistit.
@@ -418,7 +418,7 @@ Interrupted	Keskeytetty
 Interrupted: {} of {} copied	Keskeytetty: {} / {} kopioitu
 It is made when the game is installed.	Se tehdään, kun peli asennetaan.
 It plays on {} without the launcher or the disc image, with the same saves and settings as the installed game. It never updates: to update it, export it again. Up to {}.	Se toimii ilman käynnistintä tai levykuvaa (alusta: {}), samoilla tallennuksilla ja asetuksilla kuin asennettu peli. Se ei päivity: päivitä viemällä se uudelleen. Enintään: {}.
-Item or adventure	Esine tai seikkailu
+Item or adventure	Esine
 Its evolved look	Sen kehittynyt ulkoasu
 Its name	Sen nimi
 Jan	tammi
@@ -433,7 +433,7 @@ Kept: Xbox signing keys	Säilytetty: Xboxin allekirjoitusavaimet
 Keyboard	Näppäimistö
 Keyboard bindings reset	Näppäinmääritykset nollattu
 Korean	korea
-L stick	Vasen sauva
+L stick	L-sauva
 Language	Kieli
 Last checked {}	Viimeksi tarkistettu: {}
 Last played	Viimeksi pelattu
@@ -453,7 +453,7 @@ Level in {}	Taso pelissä {}
 Level {}	Taso {}
 Library	Kirjasto
 Licenses	Lisenssit
-Life	Elämä
+Life	Elo
 Light	Valo
 LightCore	LightCore
 Linking the game	Linkitetään peliä
@@ -468,14 +468,14 @@ Low	Matala
 Made for 30 FPS; 60 and above are experimental.	Tehty 30 FPS:lle; 60 ja yli ovat kokeellisia.
 Magic	Taikuus
 Magic Items	Taikaesineet
-Magic item	Taikaesine
+Magic item	Esine
 Making HD textures	Tehdään HD-tekstuureja
 Making the HD textures. You can keep using the launcher; the game waits.	Tehdään HD-tekstuureja. Voit jatkaa käynnistimen käyttöä; peli odottaa.
 Manage	Hallitse
 Manage profiles	Hallitse profiileja
 Mar	maalis
-Mark as not in use	Merkitse ei käytössä olevaksi
-Mark as not in use · {}	Merkitse ei käytössä olevaksi · {}
+Mark as not in use	Merkitse vapaaksi
+Mark as not in use · {}	Merkitse vapaaksi · {}
 May	touko
 Menus, subtitles and on-screen text.	Valikot, tekstitykset ja ruudun tekstit.
 Menus, subtitles, spoken lines and cutscenes.	Valikot, tekstitykset, puhe ja välianimaatiot.
@@ -523,7 +523,7 @@ No notes were published with this version.	Tälle versiolle ei julkaistu muistii
 No other bottom to take.	Ei muuta alaosaa valittavissa.
 No other top to take.	Ei muuta yläosaa valittavissa.
 No portal found: the game will wait for one.	Portaalia ei löytynyt: peli odottaa sellaista.
-No portal found: using the virtual portal.	Portaalia ei löytynyt: käytetään virtuaalista portaalia.
+No portal found: using the virtual portal.	Portaalia ei löytynyt: käytetään virtuaaliportaalia.
 No saves or figures yet.	Ei vielä tallennuksia tai hahmoja.
 No tearing, a little more latency.	Ei repeilyä, hieman enemmän viivettä.
 No unknown toys.	Ei tuntemattomia leluja.
@@ -591,7 +591,7 @@ Play	Pelaa
 Play time: {}	Peliaika: {}
 Play without updating	Pelaa päivittämättä
 Play {}	Pelaa: {}
-Play {} with Arkeyan Launcher	Pelaa {} (Arkeyan Launcher)
+Play {} with Arkeyan Launcher	Pelaa: {} Arkeyan Launcherilla
 Player 1	Pelaaja 1
 Player 2	Pelaaja 2
 Player {}	Pelaaja {}
@@ -619,11 +619,11 @@ Quit	Lopeta
 Quit the game before restoring a backup	Sulje peli ennen varmuuskopion palautusta
 Quit the game first.	Sulje peli ensin.
 Quit the game to change profile	Sulje peli vaihtaaksesi profiilia
-R stick	Oikea sauva
-R stick down	Oikea sauva alas
-R stick left	Oikea sauva vasemmalle
-R stick right	Oikea sauva oikealle
-R stick up	Oikea sauva ylös
+R stick	R-sauva
+R stick down	R-sauva alas
+R stick left	R-sauva vasemmalle
+R stick right	R-sauva oikealle
+R stick up	R-sauva ylös
 Reading default.xex	Luetaan default.xex
 Reading the Xbox 360 disc layout	Luetaan Xbox 360 -levyn rakennetta
 Reading the disc	Luetaan levyä
@@ -661,9 +661,9 @@ Reset	Nollaa
 Reset to defaults	Palauta oletukset
 Reset to new	Nollaa uudeksi
 Reset to new...	Nollaa uudeksi...
-Reset {} to new? Level, gold and upgrades are lost.	Nollataanko {} uudeksi? Taso, kulta ja parannukset menetetään.
+Reset {} to new? Level, gold and upgrades are lost.	Nollataanko {} uudeksi? Taso, kulta ja päivitykset menetetään.
 Resolution scale	Resoluution skaala
-Restart now	Käynnistä uudelleen nyt
+Restart now	Käynnistä uudelleen
 Restore	Palauta
 Restore a backup...	Palauta varmuuskopio...
 Resume	Jatka
@@ -683,7 +683,7 @@ Same	Sama
 Same as text	Sama kuin teksti
 Save	Tallenna
 Save as...	Tallenna nimellä...
-Save backups	Tallennusten varmuuskopiot
+Save backups	Tallennuskopiot
 Save to Desktop	Tallenna työpöydälle
 Saved	Tallennettu
 Saved gamepad (not connected)	Tallennettu peliohjain (ei kytketty)
@@ -789,7 +789,7 @@ The installer stopped with exit code {}.	Asennusohjelma pysähtyi, poistumiskood
 The latest 10 backups are kept.	Viimeiset 10 varmuuskopiota säilytetään.
 The one this trap holds	Se, jonka ansa pitää sisällään
 The portal can't be opened: the game will wait.	Portaalia ei voi avata: peli odottaa.
-The portal can't be opened: using the virtual portal.	Portaalia ei voi avata: käytetään virtuaalista portaalia.
+The portal can't be opened: using the virtual portal.	Portaalia ei voi avata: käytetään virtuaaliportaalia.
 The portal test took too long and was stopped.	Portaalitesti kesti liian kauan ja se pysäytettiin.
 The release {} has no {}	Julkaisussa {} ei ole kohdetta {}
 The test failed	Testi epäonnistui
@@ -824,7 +824,7 @@ Toy type {}	Lelun tyyppi {}
 Translating the game code	Käännetään pelikoodia
 Translating the shaders	Käännetään varjostimia
 Trap	Ansa
-Trap Masters	Trap Masters
+Trap Masters	Ansamestarit
 Trap shape	Ansan muoto
 Traps	Ansat
 Trash	Roskakori
@@ -860,7 +860,7 @@ Update now	Päivitä nyt
 Updates	Päivitykset
 Updates {} games, one after the other	Päivittää {} peliä peräkkäin
 Updating	Päivitetään
-Upgrades	Parannukset
+Upgrades	Päivitykset
 Use / Talk	Käytä / Puhu
 Use it for {}	Käytä pelille {}
 Use the mouse	Käytä hiirtä
@@ -876,9 +876,9 @@ Video	Video
 Villain	Pahis
 Villains	Pahikset
 Virtual (no portal needed)	Virtuaalinen (ei portaalia)
-Virtual portal	Virtuaalinen portaali
-Virtual portal chosen.	Virtuaalinen portaali valittu.
-Volume	Äänenvoimakkuus
+Virtual portal	Virtuaaliportaali
+Virtual portal chosen.	Virtuaaliportaali valittu.
+Volume	Äänitaso
 Wait for the HD textures to finish	Odota HD-tekstuurien valmistumista
 Wait for the copy to finish	Odota kopioinnin valmistumista
 Wait for the export to finish	Odota viennin valmistumista
@@ -906,7 +906,7 @@ Xbox portal	Xbox-portaali
 YOUR GAMES	PELISI
 Yesterday {}	Eilen {}
 You can set up your portal while you wait.	Voit määrittää portaalisi odottaessasi.
-Your disc images are never touched.	Levykuviin ei koskaan kosketa.
+Your disc images are never touched.	Levykuviasi ei koskaan muokata.
 Your figures	Hahmosi
 Your own copy, as an .iso	Oma kopiosi .iso-tiedostona
 Zoom: automatic	Zoomaus: automaattinen
@@ -938,7 +938,7 @@ no hat	ei hattua
 nothing yet	ei vielä mitään
 only what {} reads	vain se, mitä {} lukee
 owned x{}	omistettu x{}
-plays as {0} in {1}	pelataan nimellä {0} pelissä {1}
+plays as {0} in {1}	nimellä {0} pelissä {1}
 plays as {}	pelataan nimellä {}
 portal	portaali
 the collection's index can't be written	kokoelman hakemistoa ei voi kirjoittaa
@@ -954,7 +954,7 @@ yesterday	eilen
 {} GB	{} Gt
 {} KB	{} kt
 {} MB	{} Mt
-{} XP · {}	{} XP · {}
+{} XP · {}	{} KP · {}
 {} Xbox, PlayStation and Switch pads are compatible.	{} Xbox-, PlayStation- ja Switch-ohjaimet ovat yhteensopivia.
 {} accepts this portal.	{} hyväksyy tämän portaalin.
 {} already plays from its copied game data	{} pelaa jo kopioiduista pelitiedoistaan
@@ -1003,7 +1003,7 @@ yesterday	eilen
 {} · type {} · variant {:04X}	{} · tyyppi {} · variantti {:04X}
 {} · {}	{} · {}
 {} · {} played	{} · pelattu {}
-{} · {} · {} upgrades	{} · {} · parannuksia {}
+{} · {} · {} upgrades	{} · {} · päivityksiä {}
 {} · {} · ~{} min	{} · {} · ~{} min
 {} · ~{} min	{} · ~{} min
 {}%	{} %
@@ -1013,3 +1013,28 @@ yesterday	eilen
 {}: {} ({} of {})	{}: {} ({} / {})
 {}: {} freed	{}: {} vapautui
 {}: {} taken off	{}: {} otettu pois
+# The library's level, seat, sort and count texts.
+Recent	Viimeisimmät
+Level	Taso
+Favorites	Suosikit
+New	Uusi
+Item	Esine
+P{}	P{}
+Unreadable	Ei luettavissa
+Ready to create	Valmis luotavaksi
+Virtual	Virtuaali
+Shield {}	Kilpi {}
+Weapon {}	Ase {}
+Level {} ({})	Taso {} ({})
+{} figure	{} hahmo
+{} figures	{} hahmoa
+Knight	Ritari
+Bowslinger	Jousiampuja
+Quickshot	Pikaampuja
+Ninja	Ninja
+Brawler	Tappelija
+Smasher	Murskaaja
+Sorcerer	Velho
+Swashbuckler	Miekkasankari
+Sentinel	Vartija
+Bazooker	Bazookamies

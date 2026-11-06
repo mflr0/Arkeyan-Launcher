@@ -71,8 +71,8 @@ All types	Alle typer
 Also delete my saves and my figures	Slett også lagringene og figurene mine
 Alternate deco	Alternativ dekor
 An antivirus often does this: it may have put the file in quarantine. Restore it from the antivirus's quarantine, or add an exclusion for this folder:	Et antivirusprogram gjør ofte dette: det kan ha lagt filen i karantene. Gjenopprett den fra antivirusprogrammets karantene, eller legg til et unntak for denne mappen:
-And 1 other file.	Og 1 annen fil.
-And {} other files.	Og {} andre filer.
+And 1 other file.	og 1 annen fil.
+And {} other files.	og {} andre filer.
 Anisotropic 16x	Anisotropisk 16x
 Anisotropic 2x	Anisotropisk 2x
 Anisotropic 4x	Anisotropisk 4x
@@ -145,7 +145,7 @@ Checking your disc	Kontrollerer platen din
 Checking...	Kontrollerer...
 Chinese	Kinesisk
 Choose	Velg
-Choose a figure for {}	Velg en figur for {}
+Choose a figure for {}	Velg en figur: {}
 Choose a folder...	Velg en mappe...
 Choose a key to change it.	Velg en tast for å endre den.
 Choose a type	Velg en type
@@ -181,10 +181,10 @@ Comparing with the supported releases	Sammenligner med støttede utgivelser
 Compiling the game	Kompilerer spillet
 Completed steps	Fullførte trinn
 Continue	Fortsett
-Controller	Spillkontroll
-Controller buttons reset	Spillkontrollknapper tilbakestilt
-Controller, keyboard, real or virtual portal	Spillkontroll, tastatur, ekte eller virtuell portal
-Controller: {}	Spillkontroll: {}
+Controller	Håndkontroll
+Controller buttons reset	Håndkontrollknapper tilbakestilt
+Controller, keyboard, real or virtual portal	Håndkontroll, tastatur, ekte eller virtuell portal
+Controller: {}	Håndkontroll: {}
 Controls	Styring
 Copied: {}, 1 file	Kopiert: {}, 1 fil
 Copied: {}, {} files	Kopiert: {}, {} filer
@@ -298,7 +298,7 @@ Escape	Escape
 Event and exclusive	Arrangement og eksklusive
 Every download is checked against the release's SHA-256 before it runs, and every release is built by GitHub Actions from the public source.	Hver nedlasting kontrolleres mot utgivelsens SHA-256 før den kjøres, og hver utgivelse bygges av GitHub Actions fra den offentlige kildekoden.
 Everything is removed	Alt fjernes
-Evolved	Evolved
+Evolved	Utviklet
 Experience	Erfaring
 Export a portable copy	Eksporter en bærbar kopi
 Export everything...	Eksporter alt...
@@ -418,7 +418,7 @@ Interrupted	Avbrutt
 Interrupted: {} of {} copied	Avbrutt: {} av {} kopiert
 It is made when the game is installed.	Den lages når spillet installeres.
 It plays on {} without the launcher or the disc image, with the same saves and settings as the installed game. It never updates: to update it, export it again. Up to {}.	Det kan spilles på {} uten launcheren eller diskbildet, med samme lagringer og innstillinger som det installerte spillet. Det oppdateres aldri: eksporter det på nytt for å oppdatere. Opptil {}.
-Item or adventure	Gjenstand eller eventyr
+Item or adventure	Gjenstand
 Its evolved look	Det utviklede utseendet
 Its name	Navnet
 Jan	jan.
@@ -433,7 +433,7 @@ Kept: Xbox signing keys	Beholdt: Xbox-signeringsnøkler
 Keyboard	Tastatur
 Keyboard bindings reset	Tastaturtilordninger tilbakestilt
 Korean	Koreansk
-L stick	L-stikke
+L stick	L-spak
 Language	Språk
 Last checked {}	Sist kontrollert {}
 Last played	Sist spilt
@@ -468,7 +468,7 @@ Low	Lav
 Made for 30 FPS; 60 and above are experimental.	Laget for 30 FPS; 60 og over er eksperimentelt.
 Magic	Magi
 Magic Items	Magiske gjenstander
-Magic item	Magisk gjenstand
+Magic item	Gjenstand
 Making HD textures	Lager HD-teksturer
 Making the HD textures. You can keep using the launcher; the game waits.	Lager HD-teksturene. Du kan fortsette å bruke launcheren; spillet venter.
 Manage	Administrer
@@ -540,7 +540,7 @@ Not available for {} yet	Ikke tilgjengelig for {} ennå
 Not built yet.	Ikke bygget ennå.
 Not enough free space: about 6 GB needed.	Ikke nok ledig plass: det trengs ca. 6 GB.
 Not enough space: {} needed, {} free.	Ikke nok plass: {} trengs, {} ledig.
-Not for this game	Ikke for dette spillet
+Not for this game	Annet spill
 Not for {}	Ikke for {}
 Not in the catalog. Name one to show it.	Ikke i katalogen. Gi den et navn for å vise den.
 Not installed yet	Ikke installert ennå
@@ -585,7 +585,7 @@ PLAY WITH	SPILL MED
 Pages	Sider
 Pause	Pause
 Pick a figure.	Velg en figur.
-Pick one below	Velg en nedenfor
+Pick one below	Velg nedenfor
 Picture	Bilde
 Play	Spill
 Play time: {}	Spilletid: {}
@@ -619,11 +619,11 @@ Quit	Avslutt
 Quit the game before restoring a backup	Avslutt spillet før du gjenoppretter en sikkerhetskopi
 Quit the game first.	Avslutt spillet først.
 Quit the game to change profile	Avslutt spillet for å bytte profil
-R stick	R-stikke
-R stick down	R-stikke ned
-R stick left	R-stikke venstre
-R stick right	R-stikke høyre
-R stick up	R-stikke opp
+R stick	R-spak
+R stick down	R-spak ned
+R stick left	R-spak venstre
+R stick right	R-spak høyre
+R stick up	R-spak opp
 Reading default.xex	Leser default.xex
 Reading the Xbox 360 disc layout	Leser Xbox 360-platens oppbygning
 Reading the disc	Leser platen
@@ -665,7 +665,7 @@ Reset {} to new? Level, gold and upgrades are lost.	Tilbakestille {} til ny? Niv
 Resolution scale	Oppløsningsskala
 Restart now	Start på nytt nå
 Restore	Gjenopprett
-Restore a backup...	Gjenopprett en sikkerhetskopi...
+Restore a backup...	Gjenopprett fra sikkerhetskopi...
 Resume	Fortsett
 Retry	Prøv igjen
 Retry to continue from this step.	Prøv igjen for å fortsette fra dette trinnet.
@@ -708,11 +708,11 @@ Show the collection folder	Vis samlingsmappen
 Show the game	Vis spillet
 Silver	Sølv
 Skip intro movies	Hopp over introfilmer
-Skylander Info	Skylander-info
-Skylander Profile	Skylander-profil
-Skylander/Villain Stats	Skylander-/skurkestatistikk
+Skylander Info	Skylanderinfo
+Skylander Profile	Skylanderprofil
+Skylander/Villain Stats	Skylander- og skurkestatistikk
 Skylanders	Skylanders
-Skylanders Stats	Skylanders-statistikk
+Skylanders Stats	Skylanderstatistikk
 Skylanders, Spyro and Activision are trademarks of Activision Publishing, Inc. This project is not affiliated with or endorsed by Activision.	Skylanders, Spyro og Activision er varemerker som tilhører Activision Publishing, Inc. Dette prosjektet er ikke tilknyttet eller godkjent av Activision.
 Some figures are marked as in use, but their game is not running.	Noen figurer er merket som i bruk, men spillet deres kjører ikke.
 Something went wrong while {}.	Noe gikk galt under {}.
@@ -733,7 +733,7 @@ Swap Force bottoms	Swap Force-underdeler
 Swap Force tops	Swap Force-overdeler
 Swapper	Swapper
 Switch Driver (co-op)	Bytt sjåfør (samarbeid)
-Switch Skylander / Villain	Bytt Skylander / skurk
+Switch Skylander / Villain	Bytt skylander / skurk
 System default	Systemstandard
 Take it off	Ta den av
 Tech	Teknologi
@@ -818,7 +818,7 @@ Total	Totalt
 Touchpad	Berøringsflate
 Toy	Figur
 Toy Box	Toy Box
-Toy Box in the game: F6, or View + Y on a controller.	Toy Box i spillet: F6, eller View + Y på en spillkontroll.
+Toy Box in the game: F6, or View + Y on a controller.	Toy Box i spillet: F6, eller View + Y på en håndkontroll.
 Toy Box keys	Taster for Toy Box
 Toy type {}	Figurtype {}
 Translating the game code	Oversetter spillkoden
@@ -839,7 +839,7 @@ UPDATE	OPPDATER
 UPDATING THE GAME	OPPDATERER SPILLET
 UPDATING...	OPPDATERER...
 USB (Xbox) portals	USB-portaler (Xbox)
-Undead	Udød
+Undead	Vandød
 Uninstall	Avinstaller
 Uninstall everything	Avinstaller alt
 Uninstall everything...	Avinstaller alt...
@@ -938,8 +938,8 @@ no hat	uten hatt
 nothing yet	ingenting ennå
 only what {} reads	bare det {} leser
 owned x{}	har x{}
-plays as {0} in {1}	spilles som {0} i {1}
-plays as {}	spilles som {}
+plays as {0} in {1}	som {0} i {1}
+plays as {}	som {}
 portal	portal
 the collection's index can't be written	samlingens indeks kan ikke skrives
 the copy can't be read back: {}	kopien kan ikke leses tilbake: {}
@@ -955,7 +955,7 @@ yesterday	i går
 {} KB	{} KB
 {} MB	{} MB
 {} XP · {}	{} XP · {}
-{} Xbox, PlayStation and Switch pads are compatible.	{} Xbox-, PlayStation- og Switch-kontrollere er kompatible.
+{} Xbox, PlayStation and Switch pads are compatible.	{} Xbox-, PlayStation- og Switch-håndkontroller er kompatible.
 {} accepts this portal.	{} godtar denne portalen.
 {} already plays from its copied game data	{} kjører allerede fra de kopierte spilldataene
 {} backup	{} sikkerhetskopi
@@ -998,7 +998,7 @@ yesterday	i går
 {} to level {}	{} til nivå {}
 {} warns about this portal: {}.	{} advarer om denne portalen: {}.
 {} x {} for the 3D scene	{} x {} for 3D-scenen
-{} · Evolved	{} · Evolved
+{} · Evolved	{} · utviklet
 {} · empty	{} · tom
 {} · type {} · variant {:04X}	{} · type {} · variant {:04X}
 {} · {}	{} · {}
@@ -1012,4 +1012,29 @@ yesterday	i går
 {}: pick the new {}	{}: velg ny {}
 {}: {} ({} of {})	{}: {} ({} av {})
 {}: {} freed	{}: {} frigjort
-{}: {} taken off	{}: {} tatt av
+{}: {} taken off	{}: {} fjernet
+# The library's level, seat, sort and count texts.
+Recent	Nylig
+Level	Nivå
+Favorites	Favoritter
+New	Ny
+Item	Ting
+P{}	S{}
+Unreadable	Uleselig
+Ready to create	Klar til å lage
+Virtual	Virtuell
+Shield {}	Skjold {}
+Weapon {}	Våpen {}
+Level {} ({})	Nivå {} ({})
+{} figure	{} figur
+{} figures	{} figurer
+Knight	Ridder
+Bowslinger	Bueskytter
+Quickshot	Hurtigskytter
+Ninja	Ninja
+Brawler	Slåsser
+Smasher	Knuser
+Sorcerer	Trollmann
+Swashbuckler	Sabelsvinger
+Sentinel	Vokter
+Bazooker	Bazookaskytter
