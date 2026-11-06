@@ -197,6 +197,12 @@ namespace launcher_ui
                 m_running = false;
                 return;
             }
+            if (cancel) // what a run stopped half way leaves behind (the fake builder writes none)
+            {
+                std::error_code error;
+                std::filesystem::create_directories(game / "textures-hd", error);
+                std::ofstream(game / "textures-hd" / "0000000000000000.dds") << "half";
+            }
             SetHdTextures(true);
             expect(m_s->hdJob.Running() && HdTexturesWanted(*m_s), "flipped on: the work runs, the setting is kept");
             stage++;
