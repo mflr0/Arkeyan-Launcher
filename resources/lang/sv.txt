@@ -1,0 +1,1015 @@
+# Arkeyan Launcher in Swedish. English is the source (docs/translations.md); a missing string shows in English.
+# One "English<TAB>Swedish" per line; \n is a new line. Placeholders ({}, {0}, {:g}...) keep their format.
+# "." is the decimal mark and "," the thousands separator (a no-break space, U+00A0).
+@code sv
+@name Svenska
+
+\n\nAllow access in System Settings > Privacy & Security > Files and Folders.	\n\nTillåt åtkomst i Systeminställningar > Integritet och säkerhet > Filer och mappar.
+\n- {} (media ID {:08X}, version {})	\n- {} (media-ID {:08X}, version {})
+ (replaces {})	 (ersätter {})
+ · {} already there	 · {} finns redan
+ · {} are toys you already have	 · {} är figurer du redan har
+ · {} favorite	 · {} favorit
+ · {} favorites	 · {} favoriter
+ · {} is a toy you already have	 · {} är en figur du redan har
+ · {} not a figure	 · {} är ingen figur
+ · {} unknown toy (Manage)	 · {} okänd figur (Hantera)
+ · {} unknown toys (Manage)	 · {} okända figurer (Hantera)
+"System default" follows your system.	"Systemstandard" följer ditt system.
+({} earlier lines in Copy log)	({} tidigare rader i Kopiera logg)
+,	 
+.	,
+0 to {}	0 till {}
+0%	0 %
+1 gamepad connected.	1 spelkontroll ansluten.
+1 to {}	1 till {}
+1. Open Windows Security, then Virus & threat protection > Protection history.	1. Öppna Windows Säkerhet och gå till Virus- och hotskydd > Skyddshistorik.
+10%	10 %
+100%	100 %
+120 (experimental)	120 (experimentell)
+144 (experimental)	144 (experimentell)
+16 characters at most	Högst 16 tecken
+16:9 (with bars)	16:9 (med kanter)
+1st Power / Accept	Kraft 1 / Godkänn
+2. Open the blocked item, then Actions > Allow on device.	2. Öppna det blockerade objektet och välj Åtgärder > Tillåt på enhet.
+20%	20 %
+240 (experimental)	240 (experimentell)
+2nd Power	Kraft 2
+3. In Virus & threat protection settings, choose Manage settings > Exclusions > Add or remove exclusions > Add an exclusion > Folder, and pick %APPDATA%\\Skylanders\\kit.	3. Välj Hantera inställningar under Inställningar för virus- och hotskydd > Undantag > Lägg till eller ta bort undantag > Lägg till ett undantag > Mapp och välj %APPDATA%\\Skylanders\\kit.
+30 (original)	30 (original)
+30%	30 %
+4. Back here, choose Retry.	4. Tillbaka här väljer du Försök igen.
+40%	40 %
+50%	50 %
+60 (experimental)	60 (experimentell)
+60%	60 %
+70%	70 %
+80%	80 %
+90%	90 %
+A figure is in use: quit the game first.	En figur används: avsluta spelet först.
+A file of the game tools was changed: {}	En fil i spelverktygen har ändrats: {}
+A file of {0} was changed: {1}	En fil i {0} har ändrats: {1}
+A game is running: quit it first.	Ett spel körs: avsluta det först.
+About	Om
+About {} min, {} GB	Cirka {} min, {} GB
+Accelerate (vehicle)	Gasa (fordon)
+Achievements	Prestationer
+Action	Åtgärd
+Add a figure	Lägg till en figur
+Add a profile	Lägg till en profil
+Add to favorites	Lägg till i favoriter
+Adding the movie shaders	Lägger till filmshaders
+Advanced	Avancerat
+Adventure	Äventyr
+Adventure Packs	Äventyrspaket
+Air	Luft
+All	Alla
+All elements	Alla element
+All games	Alla spel
+All games are updated	Alla spel är uppdaterade
+All types	Alla typer
+Also delete my saves and my figures	Ta även bort mina sparfiler och figurer
+Alternate deco	Alternativ deko
+An antivirus often does this: it may have put the file in quarantine. Restore it from the antivirus's quarantine, or add an exclusion for this folder:	Ett antivirusprogram gör ofta så: det kan ha lagt filen i karantän. Återställ den från antivirusprogrammets karantän eller lägg till ett undantag för den här mappen:
+And 1 other file.	Och 1 fil till.
+And {} other files.	Och {} filer till.
+Anisotropic 16x	Anisotropisk 16x
+Anisotropic 2x	Anisotropisk 2x
+Anisotropic 4x	Anisotropisk 4x
+Anisotropic 8x	Anisotropisk 8x
+Anonymous: your names are removed. Save it, then add it to a GitHub issue.	Anonym: dina namn tas bort. Spara den och lägg sedan till den i ett GitHub-ärende.
+Appears once the game's disc is checked.	Visas när spelets skiva har kontrollerats.
+Apr	apr.
+Arkeyan Launcher can't remove itself from here: delete it by hand.	Arkeyan Launcher kan inte ta bort sig själv härifrån: radera den manuellt.
+Arkeyan Launcher closed during the install. Resume to continue from this step.	Arkeyan Launcher stängdes under installationen. Återuppta för att fortsätta från det här steget.
+Arkeyan Launcher couldn't find its own file.	Arkeyan Launcher hittade inte sin egen fil.
+Arkeyan Launcher deletes itself when you quit.	Arkeyan Launcher raderar sig själv när du avslutar.
+Arkeyan Launcher goes to the Trash when you quit.	Arkeyan Launcher flyttas till papperskorgen när du avslutar.
+Arkeyan Launcher is up to date.	Arkeyan Launcher är uppdaterad.
+Arkeyan Launcher is up to date. An update is available for {}.	Arkeyan Launcher är uppdaterad. En uppdatering finns för {}.
+Arkeyan Launcher is up to date. {} game updates available.	Arkeyan Launcher är uppdaterad. {} speluppdateringar finns.
+Arkeyan Launcher on GitHub	Arkeyan Launcher på GitHub
+Arkeyan Launcher {} is installed. Restart to use it.	Arkeyan Launcher {} är installerad. Starta om för att använda den.
+At the next start of {}	Vid nästa start av {}
+Attack 1	Attack 1
+Attack 1 / Accept	Attack 1 / Godkänn
+Attack 2	Attack 2
+Attack 3	Attack 3
+Attack 3 / Back	Attack 3 / Tillbaka
+Aug	aug.
+Auto	Auto
+Auto (follows the window)	Auto (följer fönstret)
+Auto shows more when wide; 16:9 adds bars.	Auto visar mer i bredd; 16:9 lägger till kanter.
+Auto-open Toy Box	Öppna Toy Box automatiskt
+Automatic	Automatisk
+Automatic detection	Automatisk identifiering
+Back	Tillbaka
+Back side button	Bakre sidoknapp
+Back up now	Säkerhetskopiera nu
+Backed up	Säkerhetskopierad
+Backspace	Backsteg
+Backup restored	Säkerhetskopian är återställd
+Backups	Säkerhetskopior
+Basic	Grundläggande
+Before you beat the game. Your save is untouched.	Innan du klarade spelet. Din sparfil är orörd.
+Blank figures from old versions. Tidy trashes them.	Tomma figurer från gamla versioner. Städa kastar dem i papperskorgen.
+Bottom file	Underdelsfil
+Brake / Reverse (vehicle)	Broms / Back (fordon)
+Builds the game on your PC: about {} min, {} GB, internet needed once.	Bygger spelet på din dator: cirka {} min, {} GB, internet behövs en gång.
+Built for this disc.	Byggd för den här skivan.
+Built with SDL 3, Dear ImGui, {fmt}, stb, miniz, XenonRecomp, Outfit and Bungee. MIT licensed.	Byggd med SDL 3, Dear ImGui, {fmt}, stb, miniz, XenonRecomp, Outfit och Bungee. MIT-licens.
+Button glyphs	Knappsymboler
+CHECKING...	KONTROLLERAR...
+COMING LATER	KOMMER SENARE
+Caches and logs	Cacheminnen och loggar
+Caches cleared	Cacheminnena är rensade
+Can't read the disc	Kan inte läsa skivan
+Can't read the disc image ({}).{}	Kan inte läsa skivavbilden ({}).{}
+Can't update here: the release page was opened.	Kan inte uppdatera här: utgåvesidan öppnades.
+Can't write to the Desktop folder.	Kan inte skriva till skrivbordsmappen.
+Cancel	Avbryt
+Caps Lock	Caps Lock
+Carry on copying	Fortsätt kopiera
+Change disc...	Byt skiva...
+Change profile	Byt profil
+Change the bottom	Byt underdel
+Change the top	Byt överdel
+Change...	Ändra...
+Changed	Ändrad
+Check at startup	Sök vid start
+Check for updates	Sök efter uppdateringar
+Check now	Sök nu
+Checking Arkeyan Launcher	Kontrollerar Arkeyan Launcher
+Checking the Xbox 360 executable	Kontrollerar Xbox 360-programfilen
+Checking your disc	Kontrollerar din skiva
+Checking...	Kontrollerar...
+Chinese	Kinesiska
+Choose	Välj
+Choose a figure for {}	Välj en figur för {}
+Choose a folder...	Välj en mapp...
+Choose a key to change it.	Välj en tangent för att ändra den.
+Choose a type	Välj en typ
+Choose another	Välj en annan
+Choose disc	Välj skiva
+Choose the disc image first	Välj skivavbilden först
+Choose the disc image first.	Välj skivavbilden först.
+Choose the disc image to carry on.	Välj skivavbilden för att fortsätta.
+Choose the disc image to repair.	Välj skivavbilden som ska repareras.
+Choose what each button does.	Välj vad varje knapp gör.
+Choose your disc	Välj din skiva
+Choose your {} disc image	Välj din skivavbild för {}
+Choose...	Välj...
+Chrome	Krom
+Circle	Cirkel
+Clean up	Städa upp
+Clear all	Rensa allt
+Clear caches	Rensa cacheminnen
+Clear search and filters	Rensa sökning och filter
+Clear the figures	Ta bort figurerna
+Clearing caches frees {}.	Att rensa cacheminnen frigör {}.
+Clearing caches frees {}; deleting saves and data frees {} more.	Att rensa cacheminnen frigör {}; att radera sparfiler och data frigör {} till.
+Click or turn the wheel	Klicka eller vrid hjulet
+Click, then press a mouse button or turn the wheel (Escape cancels).	Klicka och tryck sedan på en musknapp eller vrid hjulet (Escape avbryter).
+Click: put it on {}	Klicka: lägg på {}
+Click: sheet · drag to a seat	Klicka: blad · dra till en plats
+Close	Stäng
+Code	Kod
+Collection	Samling
+Color	Färg
+Coming later	Kommer senare
+Comparing with the supported releases	Jämför med de stödda utgåvorna
+Compiling the game	Kompilerar spelet
+Completed steps	Slutförda steg
+Continue	Fortsätt
+Controller	Handkontroll
+Controller buttons reset	Handkontrollens knappar är återställda
+Controller, keyboard, real or virtual portal	Handkontroll, tangentbord, riktig eller virtuell portal
+Controller: {}	Handkontroll: {}
+Controls	Kontroller
+Copied: {}, 1 file	Kopierat: {}, 1 fil
+Copied: {}, {} files	Kopierat: {}, {} filer
+Copies the disc's files ({}). No image needed after.	Kopierar skivans filer ({}). Ingen avbild behövs efteråt.
+Copies the disc's files. No image needed after.	Kopierar skivans filer. Ingen avbild behövs efteråt.
+Copy	Kopiera
+Copy files	Kopiera filer
+Copy game log	Kopiera spelloggen
+Copy log	Kopiera logg
+Copy removed: {} freed	Kopian är borttagen: {} frigjort
+Copy stopped	Kopieringen stoppades
+Copy stopped: {}. Press the button to carry on.	Kopieringen stoppades: {}. Tryck på knappen för att fortsätta.
+Copying...	Kopierar...
+Copying: {} of {}	Kopierar: {} av {}
+Couldn't back it up	Kunde inte säkerhetskopiera
+Couldn't change it: 	Kunde inte ändra: 
+Couldn't check: {}	Kunde inte kontrollera: {}
+Couldn't create the figure	Kunde inte skapa figuren
+Couldn't create the game folder: {}	Kunde inte skapa spelmappen: {}
+Couldn't create the shortcut	Kunde inte skapa genvägen
+Couldn't create the shortcut: {}	Kunde inte skapa genvägen: {}
+Couldn't delete it: 	Kunde inte radera: 
+Couldn't delete: {}	Kunde inte radera: {}
+Couldn't download the compiler. Check your connection.	Kunde inte hämta kompilatorn. Kontrollera din anslutning.
+Couldn't download the game tools. Check your connection.	Kunde inte hämta spelverktygen. Kontrollera din anslutning.
+Couldn't duplicate it: 	Kunde inte duplicera: 
+Couldn't export the game: {}	Kunde inte exportera spelet: {}
+Couldn't move {} aside: {}	Kunde inte flytta undan {}: {}
+Couldn't open the folder	Kunde inte öppna mappen
+Couldn't put it back	Kunde inte lägga tillbaka
+Couldn't put the kit in place: {}	Kunde inte lägga kitet på plats: {}
+Couldn't put the new {} in place: {}	Kunde inte lägga den nya versionen av {} på plats: {}
+Couldn't read the disc image. Check that it's complete.	Kunde inte läsa skivavbilden. Kontrollera att den är komplett.
+Couldn't read this image	Kunde inte läsa den här avbilden
+Couldn't remove the copy: {}	Kunde inte ta bort kopian: {}
+Couldn't remove the profile	Kunde inte ta bort profilen
+Couldn't repair the game tools: {}	Kunde inte reparera spelverktygen: {}
+Couldn't reset it: 	Kunde inte nollställa: 
+Couldn't restart: start Arkeyan Launcher again	Kunde inte starta om: starta Arkeyan Launcher igen
+Couldn't restore it: 	Kunde inte återställa: 
+Couldn't restore the backup: {}	Kunde inte återställa säkerhetskopian: {}
+Couldn't save it: 	Kunde inte spara: 
+Couldn't save the download: {}	Kunde inte spara nedladdningen: {}
+Couldn't save the name	Kunde inte spara namnet
+Couldn't save the report	Kunde inte spara rapporten
+Couldn't save the settings	Kunde inte spara inställningarna
+Couldn't show the game window.	Kunde inte visa spelfönstret.
+Couldn't start the game: the file is missing	Kunde inte starta spelet: filen saknas
+Couldn't start the game: {}	Kunde inte starta spelet: {}
+Couldn't unpack {}	Kunde inte packa upp {}
+Couldn't write the seats for the next start	Kunde inte skriva platserna till nästa start
+Couldn't write to the game folder.	Kunde inte skriva till spelmappen.
+Create	Skapa
+Create the profile	Skapa profilen
+Create the {} starter pack	Skapa startpaketet för {}
+Create {}	Skapa {}
+Created {}	Skapade {}
+Creation Crystals	Creation Crystals
+Credits	Medverkande
+Cross	Kryss
+Crystal Clear	Kristallklar
+D-pad down	Styrkors ned
+D-pad left	Styrkors vänster
+D-pad right	Styrkors höger
+D-pad up	Styrkors upp
+Dark	Mörkt
+Data folder	Datamapp
+Dec	dec.
+Default	Standard
+Delete	Radera
+Delete saves and data	Radera sparfiler och data
+Delete...	Radera...
+Deleted figures are kept 30 days.	Raderade figurer sparas i 30 dagar.
+Deleting saves and data frees {}.	Att radera sparfiler och data frigör {}.
+Designed by dorydev, made by mflr0, UI/UX by Gumelia.	Design av dorydev, gjord av mflr0, UI/UX av Gumelia.
+Desktop shortcut	Skrivbordsgenväg
+Desktop shortcuts	Skrivbordsgenvägar
+Details	Detaljer
+Difficulty	Svårighetsgrad
+Disc	Skiva
+Disc checked	Skivan är kontrollerad
+Disc image	Skivavbild
+Disc not found	Skivan hittades inte
+Display refresh rate (up to 60)	Skärmens uppdateringsfrekvens (upp till 60)
+Doubles the game's textures from your disc. About {} of disk, a few minutes.	Dubblar spelets texturer från din skiva. Cirka {} diskutrymme, några minuter.
+Down	Ned
+Downloading Arkeyan Launcher	Hämtar Arkeyan Launcher
+Downloading the game tools	Hämtar spelverktygen
+Downloading the game tools again	Hämtar spelverktygen igen
+Downloading tools	Hämtar verktyg
+Drag Arkeyan Launcher to Applications, replacing the old one.	Dra Arkeyan Launcher till Program och ersätt den gamla.
+Drift (vehicle)	Drift (fordon)
+Drop figure files or a folder on the window.	Släpp figurfiler eller en mapp i fönstret.
+Drop to 30 FPS when needed	Sänk till 30 FPS vid behov
+Dump textures	Dumpa texturer
+Duplicate	Duplicera
+Duplicated: 	Duplicerad: 
+Each has its own Toy Box, saves, keys and achievements.	Varje profil har egen Toy Box, egna sparfiler, tangenter och prestationer.
+Earlier versions of your saves.	Tidigare versioner av dina sparfiler.
+Earth	Jord
+Edge smoothing	Kantutjämning
+Edit	Redigera
+Edit my profile	Redigera min profil
+Edit profile	Redigera profil
+Element	Element
+Empty	Tom
+Empty: the toy's name	Tom: figurens namn
+Eon's Elite	Eon's Elite
+Erase	Rensa
+Escape	Escape
+Event and exclusive	Event och exklusiva
+Every download is checked against the release's SHA-256 before it runs, and every release is built by GitHub Actions from the public source.	Varje nedladdning kontrolleras mot utgåvans SHA-256 innan den körs, och varje utgåva byggs av GitHub Actions från den öppna källkoden.
+Everything is removed	Allt tas bort
+Evolved	Evolved
+Experience	Erfarenhet
+Export a portable copy	Exportera en portabel kopia
+Export everything...	Exportera allt...
+Export first	Exportera först
+Export for {}	Exportera för {}
+Export stopped	Exporten stoppades
+Export the figures to	Exportera figurerna till
+Exported {} figure to {}	Exporterade {} figur till {}
+Exported {} figures to {}	Exporterade {} figurer till {}
+Exporting...	Exporterar...
+Exporting: {} of {}	Exporterar: {} av {}
+FPS counter	FPS-räknare
+FXAA also softens texture detail; Gentle keeps more of it.	FXAA mjukar också upp texturdetaljer; Mild behåller mer av dem.
+Favorite	Favorit
+Feb	feb.
+Figure dumps (.sky, .bin, .dmp)	Figurdumpar (.sky, .bin, .dmp)
+Figure sheet	Figurblad
+Figures	Figurer
+File	Fil
+Files missing or changed	Filer saknas eller har ändrats
+Filters	Filter
+Finding default.xex	Hittar default.xex
+Fingerprinting default.xex (SHA-256)	Tar fingeravtryck av default.xex (SHA-256)
+Finishing	Slutför
+Fire	Eld
+Flocked	Flockad
+Folders	Mappar
+For pack makers: saves the textures as DDS files.	För paketskapare: sparar texturerna som DDS-filer.
+For {}	För {}
+Forward side button	Främre sidoknapp
+Found	Hittad
+Found, not usable	Hittad, inte användbar
+Frame rate limit	Bildfrekvensgräns
+Frees {}. Saves and settings are kept.	Frigör {}. Sparfiler och inställningar behålls.
+Fullscreen	Helskärm
+Game	Spel
+Game art comes from your own disc.	Spelets grafik kommer från din egen skiva.
+Game data	Speldata
+Game data copies	Speldatakopior
+Game data damaged	Speldata skadad
+Game data damaged: using the disc image	Speldata skadad: använder skivavbilden
+Game data damaged: using the disc image.	Speldata skadad: använder skivavbilden.
+Game data damaged: {}	Speldata skadad: {}
+Game files	Spelfiler
+Game installed: press PLAY	Spelet är installerat: tryck på SPELA
+Game kit not found. Put the skylanders-kit folder next to Arkeyan Launcher, then press Retry.	Spelkitet hittades inte. Lägg mappen skylanders-kit bredvid Arkeyan Launcher och tryck sedan på Försök igen.
+Game language	Spelspråk
+Game log	Spellogg
+Game log copied	Spelloggen är kopierad
+Game settings	Spelinställningar
+Game text	Speltext
+Game tools	Spelverktyg
+Game uninstalled	Spelet är avinstallerat
+Game voices	Spelröster
+Gamepad	Spelkontroll
+Games	Spel
+Games updated: {} of {}	Spel uppdaterade: {} av {}
+Games: XenonRecomp, XenosRecomp, plume, SDL 3, Dear ImGui, FFmpeg, parts of Xenia. Figure format learned from Dolphin and RPCS3.	Spel: XenonRecomp, XenosRecomp, plume, SDL 3, Dear ImGui, FFmpeg, delar av Xenia. Figurformatet är lärt från Dolphin och RPCS3.
+Gentle	Mild
+Giants	Giants
+GitHub	GitHub
+GitHub says: {}	GitHub säger: {}
+Glow in the Dark	Glow in the Dark
+Gold	Guld
+Greek	Grekiska
+HD texture packs	HD-texturpaket
+HD textures	HD-texturer
+HD textures ready	HD-texturerna är klara
+HD textures removed	HD-texturerna är borttagna
+HD textures stopped	HD-texturerna stoppades
+HID portals	HID-portaler
+Hat	Hatt
+Hero points	Hjältepoäng
+Hidden achievement	Dold prestation
+Hide details	Dölj detaljer
+Higher scales need a dedicated graphics card.	Högre skalor kräver ett dedikerat grafikkort.
+Hold if its game has quit.	Håll in om spelet har avslutats.
+Hold to clear the caches.	Håll in för att rensa cacheminnena.
+Hold to confirm	Håll in för att bekräfta
+Hold to delete all of this.	Håll in för att radera allt det här.
+Hold to delete it for good.	Håll in för att radera den för alltid.
+Hold to delete saves, backups and caches.	Håll in för att radera sparfiler, säkerhetskopior och cacheminnen.
+Hold to delete the built game. Saves are kept.	Håll in för att radera det byggda spelet. Sparfiler behålls.
+Hold to delete the copy.	Håll in för att radera kopian.
+Hold to delete the partial copy.	Håll in för att radera den ofullständiga kopian.
+Hold to give every button its own job back.	Håll in för att ge varje knapp sin uppgift tillbaka.
+Hold to mark them as not in use.	Håll in för att markera dem som inte använda.
+Hold to move them to the trash.	Håll in för att flytta dem till papperskorgen.
+Hold to put this copy back.	Håll in för att lägga tillbaka den här kopian.
+Hold to rebuild the game.	Håll in för att bygga om spelet.
+Hold to reset every key of this game.	Håll in för att återställa alla tangenter för det här spelet.
+Hold to restore; your current saves are kept first.	Håll in för att återställa; dina nuvarande sparfiler sparas först.
+INSTALL	INSTALLERA
+INSTALLATION INTERRUPTED	INSTALLATIONEN AVBRÖTS
+INSTALLATION STOPPED	INSTALLATIONEN STOPPADES
+INSTALLING THE GAME	INSTALLERAR SPELET
+INSTALLING...	INSTALLERAR...
+If Windows Defender blocks a file:	Om Windows Defender blockerar en fil:
+Import a folder...	Importera en mapp...
+Import an image...	Importera en avbild...
+Import and export	Import och export
+Import figures	Importera figurer
+Import files...	Importera filer...
+Import the figures of a folder	Importera figurerna i en mapp
+Imported {}	Importerade {}
+In {}	I {}
+Initials	Initialer
+Install	Installera
+Install failed	Installationen misslyckades
+Install the game first.	Installera spelet först.
+Installation canceled	Installation avbruten
+Installing	Installerar
+Installing Arkeyan Launcher	Installerar Arkeyan Launcher
+Installing · {}	Installerar · {}
+Interact	Interagera
+Interrupted	Avbruten
+Interrupted: {} of {} copied	Avbruten: {} av {} kopierade
+It is made when the game is installed.	Den skapas när spelet installeras.
+It plays on {} without the launcher or the disc image, with the same saves and settings as the installed game. It never updates: to update it, export it again. Up to {}.	Den spelas på {} utan launchern eller skivavbilden, med samma sparfiler och inställningar som det installerade spelet. Den uppdateras aldrig: exportera den igen för att uppdatera. Upp till {}.
+Item or adventure	Föremål eller äventyr
+Its evolved look	Dess utvecklade utseende
+Its name	Dess namn
+Jan	jan.
+Japanese	Japanska
+Jul	juli
+Jump	Hoppa
+Jump / Drift (vehicle)	Hoppa / Drifta (fordon)
+Jun	juni
+Keep installing	Fortsätt installera
+Keeps textures sharp at an angle.	Håller texturer skarpa i vinkel.
+Kept: Xbox signing keys	Behållet: Xbox-signeringsnycklar
+Keyboard	Tangentbord
+Keyboard bindings reset	Tangentbordets tangenter är återställda
+Korean	Koreanska
+L stick	Vänster spak
+Language	Språk
+Last checked {}	Senast kontrollerad {}
+Last played	Senast spelad
+Last played: {}	Senast spelad: {}
+Later	Senare
+Later games	Kommande spel
+Launcher	Launcher
+Launcher settings	Launcherinställningar
+Left	Vänster
+Left Alt	Vänster Alt
+Left Ctrl	Vänster Ctrl
+Left Shift	Vänster Skift
+Left click	Vänsterklick
+Left click: attack 1. Right click: attack 2. The game keeps the pointer.	Vänsterklick: attack 1. Högerklick: attack 2. Spelet behåller pekaren.
+Legendary	Legendary
+Level in {}	Nivå i {}
+Level {}	Nivå {}
+Library	Bibliotek
+Licenses	Licenser
+Life	Liv
+Light	Ljust
+LightCore	LightCore
+Linking the game	Länkar spelet
+Live	Live
+Log copied	Loggen kopierad
+Logs	Loggar
+Logs and settings, without your names, for a GitHub issue.	Loggar och inställningar, utan dina namn, för ett GitHub-ärende.
+Logs folder	Loggmapp
+Looking for the disc image	Letar efter skivavbilden
+Looks for updates at each start.	Söker efter uppdateringar vid varje start.
+Low	Låg
+Made for 30 FPS; 60 and above are experimental.	Gjort för 30 FPS; 60 och över är experimentellt.
+Magic	Magi
+Magic Items	Magiska föremål
+Magic item	Magiskt föremål
+Making HD textures	Skapar HD-texturer
+Making the HD textures. You can keep using the launcher; the game waits.	Skapar HD-texturerna. Du kan fortsätta använda launchern; spelet väntar.
+Manage	Hantera
+Manage profiles	Hantera profiler
+Mar	mars
+Mark as not in use	Markera som inte använd
+Mark as not in use · {}	Markera som inte använd · {}
+May	maj
+Menus, subtitles and on-screen text.	Menyer, undertexter och text på skärmen.
+Menus, subtitles, spoken lines and cutscenes.	Menyer, undertexter, tal och filmsekvenser.
+Metallic	Metallic
+Middle click	Mittenklick
+Minis and sidekicks	Minis och sidekicks
+Missing figure	Saknad figur
+Model: {} (id {})	Modell: {} (id {})
+More actions	Fler åtgärder
+Mouse	Mus
+Move down	Flytta ned
+Move left	Flytta vänster
+Move right	Flytta höger
+Move to the trash	Flytta till papperskorgen
+Move up	Flytta upp
+Move {} to the trash	Flytta {} till papperskorgen
+Move {} to the trash? It stays there for 30 days.	Flytta {} till papperskorgen? Den ligger kvar där i 30 dagar.
+Moved to the trash	Flyttad till papperskorgen
+Movement	Rörelse
+My Team	Mitt lag
+Name	Namn
+Name (optional)	Namn (valfritt)
+Name this toy	Namnge figuren
+Name, element, game, level...	Namn, element, spel, nivå...
+Named: shown at the next start	Namngiven: visas vid nästa start
+Native PC ports	Native PC-portar
+Native PC ports of Skylanders. No game code or art: it comes from your disc.	Native PC-portar av Skylanders. Ingen spelkod eller grafik ingår: den kommer från din skiva.
+Needs newer game tools: reinstall the game to get them.	Kräver nyare spelverktyg: installera om spelet för att få dem.
+Needs your disc	Kräver din skiva
+Never	Aldrig
+New profile	Ny profil
+New: never played.	Ny: aldrig spelad.
+Nickname	Smeknamn
+Nightmare from the start	Mardröm från start
+No backups yet.	Inga säkerhetskopior ännu.
+No disc image needed.	Ingen skivavbild behövs.
+No element	Inget element
+No figure matches	Ingen figur matchar
+No figures yet. Add one, or drop your figure files on the window.	Inga figurer ännu. Lägg till en eller släpp dina figurfiler i fönstret.
+No game log yet.	Ingen spellogg ännu.
+No game this launcher knows	Inget spel som launchern känner till
+No gamepad connected.	Ingen spelkontroll ansluten.
+No hat	Ingen hatt
+No notes were published with this version.	Inga anteckningar publicerades med den här versionen.
+No other bottom to take.	Ingen annan underdel att ta.
+No other top to take.	Ingen annan överdel att ta.
+No portal found: the game will wait for one.	Ingen portal hittades: spelet väntar på en.
+No portal found: using the virtual portal.	Ingen portal hittades: använder den virtuella portalen.
+No saves or figures yet.	Inga sparfiler eller figurer ännu.
+No tearing, a little more latency.	Ingen bildrivning, lite mer fördröjning.
+No unknown toys.	Inga okända figurer.
+None	Ingen
+None chosen yet.	Ingen vald ännu.
+None chosen.	Ingen vald.
+None yet	Inga ännu
+Normal	Normal
+Not a game disc	Inte en spelskiva
+Not an Xbox 360 disc image, or the file is incomplete.	Inte en Xbox 360-skivavbild, eller så är filen ofullständig.
+Not an Xbox 360 game, or the image is incomplete.	Inte ett Xbox 360-spel, eller så är avbilden ofullständig.
+Not available for this game yet	Inte tillgängligt för det här spelet ännu
+Not available for {} yet	Inte tillgängligt för {} ännu
+Not built yet.	Inte byggt ännu.
+Not enough free space: about 6 GB needed.	Inte tillräckligt med ledigt utrymme: cirka 6 GB behövs.
+Not enough space: {} needed, {} free.	Inte tillräckligt med utrymme: {} behövs, {} är lediga.
+Not for this game	Inte för det här spelet
+Not for {}	Inte för {}
+Not in the catalog. Name one to show it.	Finns inte i katalogen. Namnge en för att visa den.
+Not installed yet	Inte installerat ännu
+Not needed: the game plays from its copied data.	Behövs inte: spelet körs från sin kopierade data.
+Not now	Inte nu
+Not played yet	Inte spelat ännu
+Nothing	Ingenting
+Nothing for this seat yet	Inget för den här platsen ännu
+Nothing to remove.	Inget att ta bort.
+Nothing was removed	Inget togs bort
+Nov	nov.
+Now with {}	Nu med {}
+OK	OK
+Oct	okt.
+Off	Av
+Off: your rate stays, even if the picture stutters.	Av: din frekvens behålls, även om bilden hackar.
+Older folders	Äldre mappar
+On	På
+On its own	På egen hand
+On the portal	På portalen
+On the portal for	På portalen för
+On the portal in {}: read-only	På portalen i {}: skrivskyddad
+On the wheel	På hjulet
+On the wheel: {}	På hjulet: {}
+On {} at the next start of {}	På {} vid nästa start av {}
+One file	En fil
+Open	Öppna
+Open its sheet	Öppna dess blad
+Open logs folder	Öppna loggmappen
+Open the Toy Box	Öppna Toy Box
+Open the folder	Öppna mappen
+Opening the disc image	Öppnar skivavbilden
+Opens a new issue on GitHub	Öppnar ett nytt ärende på GitHub
+Opens the Toy Box when the game asks for a figure.	Öppnar Toy Box när spelet ber om en figur.
+Or drop your .iso on this window. It stays on this computer.	Eller släpp din .iso i det här fönstret. Den stannar på den här datorn.
+Original resolution	Originalupplösning
+Other	Övrigt
+Other files in the figures folder stay.	Andra filer i figurmappen blir kvar.
+Other seat	Annan plats
+PLAY	SPELA
+PLAY WITH	SPELA MED
+Pages	Sidor
+Pause	Paus
+Pick a figure.	Välj en figur.
+Pick one below	Välj en nedan
+Picture	Bild
+Play	Spela
+Play time: {}	Speltid: {}
+Play without updating	Spela utan att uppdatera
+Play {}	Spela {}
+Play {} with Arkeyan Launcher	Spela {} med Arkeyan Launcher
+Player 1	Spelare 1
+Player 2	Spelare 2
+Player {}	Spelare {}
+Playing now	Spelas nu
+Playing now · {} this session	Spelas nu · {} denna session
+Plays in	Spelas i
+Plug in the portal, then test it.	Anslut portalen och testa den sedan.
+Portable copy	Portabel kopia
+Portable copy saved: {}	Portabel kopia sparad: {}
+Portal	Portal
+Portal of Power	Portal of Power
+Portal sound	Portalljud
+Portal: not detected	Portal: inte hittad
+Portal: {}	Portal: {}
+Preparing the compiler	Förbereder kompilatorn
+Press INSTALL first	Tryck på INSTALLERA först
+Press a key for "{}" (Escape cancels)	Tryck på en tangent för "{}" (Escape avbryter)
+Problem report	Problemrapport
+Profiles	Profiler
+Put back	Lägg tillbaka
+Put back: 	Lägg tillbaka: 
+Put it on {}	Lägg på {}
+Put on the portal	Lägg på portalen
+Quit	Avsluta
+Quit the game before restoring a backup	Avsluta spelet innan du återställer en säkerhetskopia
+Quit the game first.	Avsluta spelet först.
+Quit the game to change profile	Avsluta spelet för att byta profil
+R stick	Höger spak
+R stick down	Höger spak ned
+R stick left	Höger spak vänster
+R stick right	Höger spak höger
+R stick up	Höger spak upp
+Reading default.xex	Läser default.xex
+Reading the Xbox 360 disc layout	Läser Xbox 360-skivans struktur
+Reading the disc	Läser skivan
+Reading the game's pictures	Läser spelets bilder
+Reading the title and icon	Läser titel och ikon
+Ready	Klar
+Ready to install	Redo att installera
+Ready to play	Redo att spela
+Ready · {} played	Klar · {} spelad
+Real portal (Wii, PlayStation, Xbox)	Riktig portal (Wii, PlayStation, Xbox)
+Real portal: the game will use it.	Riktig portal: spelet använder den.
+Reinstall	Installera om
+Release page	Utgåvesida
+Remove	Ta bort
+Remove Arkeyan Launcher	Ta bort Arkeyan Launcher
+Remove from favorites	Ta bort från favoriter
+Remove game	Ta bort spelet
+Remove the copy	Ta bort kopian
+Remove {}?	Ta bort {}?
+Removed, except	Borttaget, utom
+Removing the HD textures.	Tar bort HD-texturerna.
+Repair	Reparera
+Repair builds the game again from your disc.	Reparera bygger spelet igen från din skiva.
+Repair downloads the game tools again.	Reparera hämtar spelverktygen igen.
+Repair needs the disc of {}	Reparera kräver skivan för {}
+Repair the copy	Reparera kopian
+Replaces the game's textures with your pack.	Ersätter spelets texturer med ditt paket.
+Report	Rapport
+Report a bug	Rapportera en bugg
+Report a problem	Rapportera ett problem
+Report copied	Rapporten kopierad
+Report saved	Rapporten sparad
+Report saved: {}	Rapporten sparad: {}
+Reset	Nollställ
+Reset to defaults	Återställ till standard
+Reset to new	Nollställ till ny
+Reset to new...	Nollställ till ny...
+Reset {} to new? Level, gold and upgrades are lost.	Nollställa {} till ny? Nivå, guld och uppgraderingar går förlorade.
+Resolution scale	Upplösningsskala
+Restart now	Starta om nu
+Restore	Återställ
+Restore a backup...	Återställ en säkerhetskopia...
+Resume	Återuppta
+Retry	Försök igen
+Retry to continue from this step.	Försök igen för att fortsätta från det här steget.
+Retry to start the installation.	Försök igen för att starta installationen.
+Return	Retur
+Right	Höger
+Right Alt	Höger Alt
+Right Ctrl	Höger Ctrl
+Right Shift	Höger Skift
+Right click	Högerklick
+Rumble	Vibration
+Running	Körs
+Russian	Ryska
+Same	Samma
+Same as text	Samma som texten
+Save	Spara
+Save as...	Spara som...
+Save backups	Säkerhetskopior av sparfiler
+Save to Desktop	Spara på skrivbordet
+Saved	Sparad
+Saved gamepad (not connected)	Sparad spelkontroll (inte ansluten)
+Saves	Sparfiler
+Saves and data deleted	Sparfiler och data raderade
+Saves restored from {}	Sparfiler återställda från {}
+Saves {}, figures {}.	Sparfiler {}, figurer {}.
+Search	Sök
+Search the catalog	Sök i katalogen
+Select	Markera
+Senseis	Senseis
+Sep	sep.
+Series	Serie
+Settings	Inställningar
+Settings, saves, figures and builds.	Inställningar, sparfiler, figurer och byggen.
+Shaders	Shaders
+Shake / Insert / Swing	Skaka / Sätt in / Svinga
+Shortcut added to the Desktop	Genväg tillagd på skrivbordet
+Show details	Visa detaljer
+Show in folder	Visa i mappen
+Show the collection folder	Visa samlingsmappen
+Show the game	Visa spelet
+Silver	Silver
+Skip intro movies	Hoppa över introfilmer
+Skylander Info	Skylander-info
+Skylander Profile	Skylander-profil
+Skylander/Villain Stats	Skylander/skurk-statistik
+Skylanders	Skylanders
+Skylanders Stats	Skylanders-statistik
+Skylanders, Spyro and Activision are trademarks of Activision Publishing, Inc. This project is not affiliated with or endorsed by Activision.	Skylanders, Spyro och Activision är varumärken som tillhör Activision Publishing, Inc. Projektet är inte anslutet till eller godkänt av Activision.
+Some figures are marked as in use, but their game is not running.	Vissa figurer är markerade som använda, men deras spel körs inte.
+Something went wrong while {}.	Något gick fel vid {}.
+Sort: {}	Sortering: {}
+Space	Mellanslag
+Special Power / Back	Specialkraft / Tillbaka
+Spoken lines and cutscenes.	Tal och filmsekvenser.
+Square	Fyrkant
+Standard	Standard
+Starting the installer	Startar installationsprogrammet
+Stop	Stoppa
+Stopping keeps the files already copied.	Om du stoppar behålls de redan kopierade filerna.
+Stopping...	Stoppar...
+Strong	Stark
+SuperChargers	SuperChargers
+Support	Support
+Swap Force bottoms	Swap Force-underdelar
+Swap Force tops	Swap Force-överdelar
+Swapper	Swapper
+Switch Driver (co-op)	Byt förare (co-op)
+Switch Skylander / Villain	Byt Skylander / skurk
+System default	Systemstandard
+Take it off	Ta av den
+Tech	Tech
+Test	Testa
+Test the portal	Testa portalen
+Testing...	Testar...
+Texture filtering	Texturfiltrering
+Texture pack folder	Mapp för texturpaket
+That's a folder: choose the disc image (.iso).	Det är en mapp: välj skivavbilden (.iso).
+The 3D scene at the console's size.	3D-scenen i konsolens storlek.
+The HD textures stopped before they were made.	HD-texturerna stoppades innan de hade skapats.
+The HD textures weren't made.	HD-texturerna skapades inte.
+The address isn't a secure one (https)	Adressen är inte säker (https)
+The answer has no release in it	Svaret innehåller ingen utgåva
+The answer isn't valid JSON ({})	Svaret är inte giltig JSON ({})
+The author has submitted the launcher and its source code to Microsoft as a false positive; the review is pending.	Upphovspersonen har skickat in launchern och dess källkod till Microsoft som ett falsklarm; granskningen pågår.
+The copy failed	Kopieringen misslyckades
+The data folder isn't safe to remove.	Det är inte säkert att ta bort datamappen.
+The disc image is damaged. Copy the disc again.	Skivavbilden är skadad. Kopiera skivan igen.
+The disc image is incomplete. Copy the disc again.	Skivavbilden är ofullständig. Kopiera skivan igen.
+The disc image isn't there. Choose it again.	Skivavbilden finns inte. Välj den igen.
+The disc is still being checked: try again in a moment	Skivan kontrolleras fortfarande: försök igen om en stund
+The download failed: {}	Nedladdningen misslyckades: {}
+The download holds no launcher app	Nedladdningen innehåller ingen launcher-app
+The download is damaged: nothing was installed	Nedladdningen är skadad: ingenting installerades
+The download isn't a game kit	Nedladdningen är inte ett spelkit
+The download isn't a zip file	Nedladdningen är inte en zip-fil
+The earlier install is still stopping. Resume in a moment.	Den tidigare installationen håller fortfarande på att stoppas. Återuppta om en stund.
+The figure can't be read. Reopen it before saving.	Figuren kan inte läsas. Öppna den igen innan du sparar.
+The figure was kept, but its seat couldn't be restored.	Figuren behölls, men dess plats kunde inte återställas.
+The figures on the portal when the game starts	Figurerna på portalen när spelet startar
+The file stays where it is.	Filen blir kvar där den är.
+The frame rate in a corner of the game (F3 in game).	Bildfrekvensen i ett hörn av spelet (F3 i spelet).
+The game ({}) wasn't found next to Arkeyan Launcher.\n\nPut it in the same folder.	Spelet ({}) hittades inte bredvid Arkeyan Launcher.\n\nLägg det i samma mapp.
+The game didn't finish the portal test.	Spelet slutförde inte portaltestet.
+The game in one file: it plays without the launcher or the disc image.	Spelet i en fil: det körs utan launchern eller skivavbilden.
+The game is running: quit it first.	Spelet körs: avsluta det först.
+The game is running: quit it to restore a backup.	Spelet körs: avsluta det för att återställa en säkerhetskopia.
+The game is running: use its Toy Box	Spelet körs: använd dess Toy Box
+The game is still installing	Spelet installeras fortfarande
+The game isn't installed yet	Spelet är inte installerat ännu
+The game stopped unexpectedly	Spelet stoppades oväntat
+The game tools are incomplete.	Spelverktygen är ofullständiga.
+The game tools are missing a file: {}	Spelverktygen saknar en fil: {}
+The game tools are repaired	Spelverktygen är reparerade
+The game uses the disc image instead.	Spelet använder skivavbilden i stället.
+The game's last log, for a bug report.	Spelets senaste logg, för en buggrapport.
+The game's volume (F3 in game).	Spelets volym (F3 i spelet).
+The install stops and can resume later.	Installationen stoppas och kan återupptas senare.
+The installer couldn't start.	Installationsprogrammet kunde inte startas.
+The installer stopped before the game was built.	Installationsprogrammet stoppades innan spelet byggts.
+The installer stopped with exit code {}.	Installationsprogrammet stoppades med slutkod {}.
+The latest 10 backups are kept.	De 10 senaste säkerhetskopiorna behålls.
+The one this trap holds	Den som den här Trapen innehåller
+The portal can't be opened: the game will wait.	Portalen kan inte öppnas: spelet väntar.
+The portal can't be opened: using the virtual portal.	Portalen kan inte öppnas: använder den virtuella portalen.
+The portal test took too long and was stopped.	Portaltestet tog för lång tid och stoppades.
+The release {} has no {}	Utgåvan {} saknar {}
+The test failed	Testet misslyckades
+The traps' voices: a Traptanium portal plays them, else the computer (F3 in game).	Trapparnas röster: en Traptanium-portal spelar upp dem, annars datorn (F3 i spelet).
+The trash is empty.	Papperskorgen är tom.
+The update failed: {}	Uppdateringen misslyckades: {}
+The wheel is full: take a figure off it first	Hjulet är fullt: ta först av en figur
+The zip file is damaged	Zip-filen är skadad
+These are your own game tools: restore the file, or set them up again.	Det här är dina egna spelverktyg: återställ filen eller ställ in dem igen.
+These game tools can't build {}	De här spelverktygen kan inte bygga {}
+These game tools can't make HD textures. Update them first.	De här spelverktygen kan inte skapa HD-texturer. Uppdatera dem först.
+This computer has no Desktop folder.	Den här datorn har ingen skrivbordsmapp.
+This copy holds your game. It is for your personal use only: do not share it.	Den här kopian innehåller ditt spel. Den är endast för personligt bruk: dela den inte.
+This disc image is {}, not {}.	Den här skivavbilden är {}, inte {}.
+This game has no folder.	Det här spelet har ingen mapp.
+This is {}, but this disc version isn't supported yet (media ID {:08X}, version {}).\n\nSupported:{}	Det här är {}, men den här skivversionen stöds inte ännu (media-ID {:08X}, version {}).\n\nStöds:{}
+This key is used by another action	Tangenten används av en annan åtgärd
+This looks like the {} disc of {}, but it's damaged or modified. Copy the disc again.	Det här ser ut som {}-skivan för {}, men den är skadad eller ändrad. Kopiera skivan igen.
+This version of the game doesn't have the portal test yet. Update the game.	Den här versionen av spelet har inte portaltestet ännu. Uppdatera spelet.
+Three steps	Tre steg
+Tidy the starters	Städa startpaketen
+Tidy · {}	Städa · {}
+Today {}	Idag {}
+Top: {} · Bottom: {}	Överdel: {} · Underdel: {}
+Total	Totalt
+Touchpad	Pekplatta
+Toy	Figur
+Toy Box	Toy Box
+Toy Box in the game: F6, or View + Y on a controller.	Toy Box i spelet: F6, eller View + Y på en handkontroll.
+Toy Box keys	Toy Box-tangenter
+Toy type {}	Figurtyp {}
+Translating the game code	Översätter spelkoden
+Translating the shaders	Översätter shaders
+Trap	Trap
+Trap Masters	Trap Masters
+Trap shape	Trap-form
+Traps	Traps
+Trash	Papperskorg
+Trash · {}	Papperskorg · {}
+Triangle	Triangel
+Trilinear	Trilinjär
+Trophies	Troféer
+Turn the game music off	Stäng av spelmusiken
+Turn the game music on	Slå på spelmusiken
+Type	Typ
+UPDATE	UPPDATERA
+UPDATING THE GAME	UPPDATERAR SPELET
+UPDATING...	UPPDATERAR...
+USB (Xbox) portals	USB-portaler (Xbox)
+Undead	Undead
+Uninstall	Avinstallera
+Uninstall everything	Avinstallera allt
+Uninstall everything...	Avinstallera allt...
+Unknown	Okänd
+Unknown release	Okänd utgåva
+Unknown toy {}	Okänd figur {}
+Unknown toy {} (variant {:04X})	Okänd figur {} (variant {:04X})
+Unknown toys	Okända figurer
+Unknown toys · {}	Okända figurer · {}
+Unlimited (experimental)	Obegränsad (experimentell)
+Unreadable. Restore a backup or reset it.	Oläslig. Återställ en säkerhetskopia eller nollställ den.
+Up	Upp
+Update all	Uppdatera alla
+Update available	Uppdatering finns
+Update available: {}	Uppdatering finns: {}
+Update failed	Uppdateringen misslyckades
+Update now	Uppdatera nu
+Updates	Uppdateringar
+Updates {} games, one after the other	Uppdaterar {} spel, ett i taget
+Updating	Uppdaterar
+Upgrades	Uppgraderingar
+Use / Talk	Använd / Prata
+Use it for {}	Använd den för {}
+Use the mouse	Använd musen
+VSync	VSync
+Vehicle {}	Fordon {}
+Vehicles	Fordon
+Verified	Verifierad
+Verified, {}	Verifierad, {}
+Version {} is available.	Version {} finns.
+Version {}, {}	Version {}, {}
+Versions	Versioner
+Video	Video
+Villain	Skurk
+Villains	Skurkar
+Virtual (no portal needed)	Virtuell (ingen portal behövs)
+Virtual portal	Virtuell portal
+Virtual portal chosen.	Virtuell portal vald.
+Volume	Volym
+Wait for the HD textures to finish	Vänta tills HD-texturerna är klara
+Wait for the copy to finish	Vänta tills kopieringen är klar
+Wait for the export to finish	Vänta tills exporten är klar
+Wait for the game to finish.	Vänta tills spelet är klart.
+Wait for the installation to finish	Vänta tills installationen är klar
+Water	Vatten
+Welcome, {}	Välkommen, {}
+What goes	Det som tas bort
+What it wears in the game	Vad den bär i spelet
+What's new	Nyheter
+What's new in {}	Nyheter i {}
+Wheel down	Hjul ned
+Wheel up	Hjul upp
+Why this happens	Varför det här händer
+Widescreen	Bredbild
+Windows Defender may block the install	Windows Defender kan blockera installationen
+Windows Defender may report Arkeyan-Builder.exe, ArkeyanLauncher.exe or a game built here as Trojan:Win32/Bearfoos.A!ml. The !ml ending means no known malware was found: Defender's machine-learning model guesses from what the program does. The launcher is not signed, downloads a compiler, builds a new game on your PC and updates itself: that is the whole guess.	Windows Defender kan rapportera Arkeyan-Builder.exe, ArkeyanLauncher.exe eller ett spel byggt här som Trojan:Win32/Bearfoos.A!ml. Ändelsen !ml betyder att ingen känd skadlig kod hittades: Defenders maskininlärningsmodell gissar utifrån vad programmet gör. Launchern är inte signerad, hämtar en kompilator, bygger ett nytt spel på din dator och uppdaterar sig själv: det är hela gissningen.
+Without a real portal, the game uses its virtual one (the Toy Box).	Utan en riktig portal använder spelet sin virtuella (Toy Box).
+Working	Arbetar
+Works in	Fungerar i
+Works in {}	Fungerar i {}
+Wrong disc	Fel skiva
+Xbox One / Series	Xbox One / Series
+Xbox portal	Xbox-portal
+YOUR GAMES	DINA SPEL
+Yesterday {}	Igår {}
+You can set up your portal while you wait.	Du kan ställa in din portal medan du väntar.
+Your disc images are never touched.	Dina skivavbilder rörs aldrig.
+Your figures	Dina figurer
+Your own copy, as an .iso	Din egen kopia, som en .iso
+Zoom: automatic	Zoom: automatisk
+Zoom: {:g}%	Zoom: {:g} %
+about {0} h {1:02} min left	cirka {0} h {1:02} min kvar
+about {} min left	cirka {} min kvar
+and {} more	och {} till
+another game (title ID {:08X})	ett annat spel (titel-ID {:08X})
+bottom	underdel
+choose a folder outside the installed game	välj en mapp utanför det installerade spelet
+couldn't copy the game: {}	kunde inte kopiera spelet: {}
+couldn't open the disc image	kunde inte öppna skivavbilden
+couldn't put the copy in place: {}	kunde inte lägga kopian på plats: {}
+couldn't sign the app (codesign)	kunde inte signera appen (codesign)
+created	skapad
+curl couldn't start ({})	curl kunde inte startas ({})
+deleted	raderad
+every game	alla spel
+figure	figur
+hat {}	hatt {}
+imported	importerad
+less than a minute	mindre än en minut
+less than a minute left	mindre än en minut kvar
+level {} · {} gold	nivå {} · {} guld
+maximum level	maxnivå
+needs {}	kräver {}
+no answer	inget svar
+no hat	ingen hatt
+nothing yet	inget ännu
+only what {} reads	bara det {} läser
+owned x{}	ägda x{}
+plays as {0} in {1}	spelas som {0} i {1}
+plays as {}	spelas som {}
+portal	portal
+the collection's index can't be written	samlingens index kan inte skrivas
+the copy can't be read back: {}	kopian kan inte läsas tillbaka: {}
+the installed game is missing: install it again	det installerade spelet saknas: installera det igen
+tidied	städad
+today	idag
+top	överdel
+yesterday	igår
+{0} is missing a file: {1}	{0} saknar en fil: {1}
+{0} {1} {2}	{0} {1} {2}
+{} (active)	{} (aktiv)
+{} GB	{} GB
+{} KB	{} KB
+{} MB	{} MB
+{} XP · {}	{} XP · {}
+{} Xbox, PlayStation and Switch pads are compatible.	{} Xbox-, PlayStation- och Switch-kontroller är kompatibla.
+{} accepts this portal.	{} godkänner den här portalen.
+{} already plays from its copied game data	{} spelas redan från sin kopierade speldata
+{} backup	{} säkerhetskopia
+{} backups	{} säkerhetskopior
+{} bytes	{} byte
+{} can't be used: {}	{} kan inte användas: {}
+{} can't be verified, so it wasn't installed	{} kan inte verifieras och installerades därför inte
+{} couldn't be removed.	{} kunde inte tas bort.
+{} days ago	för {} dagar sedan
+{} doesn't go on {}	{} passar inte på {}
+{} elapsed	{} har gått
+{} figure copied	{} figur kopierad
+{} figure moved to the trash	{} figur flyttad till papperskorgen
+{} figures copied	{} figurer kopierade
+{} figures moved to the trash	{} figurer flyttade till papperskorgen
+{} files	{} filer
+{} freed.	{} frigjort.
+{} gamepads connected.	{} spelkontroller anslutna.
+{} gold	{} guld
+{} h {:02} min	{} h {:02} min
+{} has no {} for this computer	{} har ingen {} för den här datorn
+{} is a disc image: it stays.	{} är en skivavbild: den blir kvar.
+{} is a link: it stays.	{} är en länk: den blir kvar.
+{} is busy: try again when it is done	{} är upptaget: försök igen när det är klart
+{} is in use by {}	{} används av {}
+{} is not for {}	{} är inte för {}
+{} is not in its folder: it stays.	{} ligger inte i sin mapp: den blir kvar.
+{} is outside Arkeyan Launcher's folders: it stays.	{} ligger utanför Arkeyan Launchers mappar: den blir kvar.
+{} is running	{} körs
+{} is running: quit it first.	{} körs: avsluta det först.
+{} is running: use its Toy Box	{} körs: använd dess Toy Box
+{} keep no level or gold.	{} behåller ingen nivå eller guld.
+{} min	{} min
+{} of {}	{} av {}
+{} of {} unlocked · {} of {} G	{} av {} upplåsta · {} av {} G
+{} points outside its GitHub release, so it wasn't installed	{} pekar utanför sin GitHub-utgåva och installerades därför inte
+{} rejects this portal: {}.	{} avvisar den här portalen: {}.
+{} settings	{}-inställningar
+{} stopped unexpectedly (exit code {}).\n\nPress Report to save a report file with the log and where the game stopped.	{} stoppades oväntat (slutkod {}).\n\nTryck på Rapport för att spara en rapportfil med loggen och var spelet stoppade.
+{} to level {}	{} till nivå {}
+{} warns about this portal: {}.	{} varnar för den här portalen: {}.
+{} x {} for the 3D scene	{} x {} för 3D-scenen
+{} · Evolved	{} · Evolved
+{} · empty	{} · tom
+{} · type {} · variant {:04X}	{} · typ {} · variant {:04X}
+{} · {}	{} · {}
+{} · {} played	{} · {} spelad
+{} · {} · {} upgrades	{} · {} · {} uppgraderingar
+{} · {} · ~{} min	{} · {} · ~{} min
+{} · ~{} min	{} · ~{} min
+{}%	{} %
+{}'s Toy Box, saves and keys go to the profiles' trash.	{}s Toy Box, sparfiler och tangenter flyttas till profilernas papperskorg.
+{}: game data copied	{}: speldata kopierad
+{}: pick the new {}	{}: välj ny {}
+{}: {} ({} of {})	{}: {} ({} av {})
+{}: {} freed	{}: {} frigjort
+{}: {} taken off	{}: {} avtagna

@@ -1,0 +1,1015 @@
+# Arkeyan Launcher in Finnish. English is the source (docs/translations.md); a missing string shows in English.
+# One "English<TAB>Finnish" per line; \n is a new line. Placeholders ({}, {0}, {:g}...) keep their format.
+# A no-break space (U+00A0) sits between a number and its unit or %.
+@code fi
+@name Suomi
+
+\n\nAllow access in System Settings > Privacy & Security > Files and Folders.	\n\nSalli pääsy kohdassa Järjestelmäasetukset > Tietosuoja ja turvallisuus > Tiedostot ja kansiot.
+\n- {} (media ID {:08X}, version {})	\n- {} (media ID {:08X}, versio {})
+ (replaces {})	 (korvaa: {})
+ · {} already there	 · jo olemassa: {}
+ · {} are toys you already have	 · jo omistamiasi leluja: {}
+ · {} favorite	 · suosikkeja: {}
+ · {} favorites	 · suosikkeja: {}
+ · {} is a toy you already have	 · jo omistamasi lelu: {}
+ · {} not a figure	 · ei figuuria: {}
+ · {} unknown toy (Manage)	 · tuntematon lelu: {} (Hallitse)
+ · {} unknown toys (Manage)	 · tuntemattomia leluja: {} (Hallitse)
+"System default" follows your system.	"Järjestelmän oletus" seuraa järjestelmääsi.
+({} earlier lines in Copy log)	({} aiempaa riviä: Kopioi loki)
+,	 
+.	,
+0 to {}	0–{}
+0%	0 %
+1 gamepad connected.	1 peliohjain kytkettynä.
+1 to {}	1–{}
+1. Open Windows Security, then Virus & threat protection > Protection history.	1. Avaa Windows-suojaus ja sitten Virus- ja uhkien torjunta > Suojaushistoria.
+10%	10 %
+100%	100 %
+120 (experimental)	120 (kokeellinen)
+144 (experimental)	144 (kokeellinen)
+16 characters at most	Enintään 16 merkkiä
+16:9 (with bars)	16:9 (palkeilla)
+1st Power / Accept	Voima 1 / Hyväksy
+2. Open the blocked item, then Actions > Allow on device.	2. Avaa estetty kohde ja valitse Toiminnot > Salli laitteella.
+20%	20 %
+240 (experimental)	240 (kokeellinen)
+2nd Power	Voima 2
+3. In Virus & threat protection settings, choose Manage settings > Exclusions > Add or remove exclusions > Add an exclusion > Folder, and pick %APPDATA%\\Skylanders\\kit.	3. Valitse Virus- ja uhkien torjunnan asetuksissa Hallitse asetuksia > Poissulkemiset > Lisää tai poista poissulkemisia > Lisää poissulkeminen > Kansio ja valitse %APPDATA%\\Skylanders\\kit.
+30 (original)	30 (alkuperäinen)
+30%	30 %
+4. Back here, choose Retry.	4. Palaa tänne ja valitse Yritä uudelleen.
+40%	40 %
+50%	50 %
+60 (experimental)	60 (kokeellinen)
+60%	60 %
+70%	70 %
+80%	80 %
+90%	90 %
+A figure is in use: quit the game first.	Hahmo on käytössä: sulje peli ensin.
+A file of the game tools was changed: {}	Pelityökalujen tiedostoa muutettiin: {}
+A file of {0} was changed: {1}	Pelin {0} tiedosto muuttui: {1}
+A game is running: quit it first.	Peli on käynnissä: sulje se ensin.
+About	Tietoja
+About {} min, {} GB	Noin {} min, {} Gt
+Accelerate (vehicle)	Kiihdytä (ajoneuvo)
+Achievements	Saavutukset
+Action	Toiminto
+Add a figure	Lisää hahmo
+Add a profile	Lisää profiili
+Add to favorites	Lisää suosikkeihin
+Adding the movie shaders	Lisätään elokuvien varjostimia
+Advanced	Lisäasetukset
+Adventure	Seikkailu
+Adventure Packs	Seikkailupaketit
+Air	Ilma
+All	Kaikki
+All elements	Kaikki elementit
+All games	Kaikki pelit
+All games are updated	Kaikki pelit on päivitetty
+All types	Kaikki tyypit
+Also delete my saves and my figures	Poista myös tallennukseni ja hahmoni
+Alternate deco	Vaihtoehtoinen väritys
+An antivirus often does this: it may have put the file in quarantine. Restore it from the antivirus's quarantine, or add an exclusion for this folder:	Virustorjunta tekee tämän usein: se on voinut siirtää tiedoston karanteeniin. Palauta tiedosto virustorjunnan karanteenista tai lisää tälle kansiolle poikkeus:
+And 1 other file.	Ja 1 muu tiedosto.
+And {} other files.	Ja {} muuta tiedostoa.
+Anisotropic 16x	Anisotrooppinen 16x
+Anisotropic 2x	Anisotrooppinen 2x
+Anisotropic 4x	Anisotrooppinen 4x
+Anisotropic 8x	Anisotrooppinen 8x
+Anonymous: your names are removed. Save it, then add it to a GitHub issue.	Anonyymi: nimesi poistetaan. Tallenna raportti ja liitä se GitHub-issueen.
+Appears once the game's disc is checked.	Näkyy, kun pelin levy on tarkistettu.
+Apr	huhti
+Arkeyan Launcher can't remove itself from here: delete it by hand.	Arkeyan Launcher ei voi poistaa itseään täältä: poista se käsin.
+Arkeyan Launcher closed during the install. Resume to continue from this step.	Arkeyan Launcher sulkeutui asennuksen aikana. Jatka valitsemalla Jatka.
+Arkeyan Launcher couldn't find its own file.	Arkeyan Launcher ei löytänyt omaa tiedostoaan.
+Arkeyan Launcher deletes itself when you quit.	Arkeyan Launcher poistaa itsensä, kun suljet sen.
+Arkeyan Launcher goes to the Trash when you quit.	Arkeyan Launcher siirtyy roskakoriin, kun suljet sen.
+Arkeyan Launcher is up to date.	Arkeyan Launcher on ajan tasalla.
+Arkeyan Launcher is up to date. An update is available for {}.	Arkeyan Launcher on ajan tasalla. Päivitys saatavilla: {}.
+Arkeyan Launcher is up to date. {} game updates available.	Arkeyan Launcher on ajan tasalla. Pelipäivityksiä saatavilla: {}.
+Arkeyan Launcher on GitHub	Arkeyan Launcher GitHubissa
+Arkeyan Launcher {} is installed. Restart to use it.	Arkeyan Launcher {} on asennettu. Käynnistä uudelleen.
+At the next start of {}	Pelin {} seuraavassa käynnistyksessä
+Attack 1	Hyökkäys 1
+Attack 1 / Accept	Hyökkäys 1 / Hyväksy
+Attack 2	Hyökkäys 2
+Attack 3	Hyökkäys 3
+Attack 3 / Back	Hyökkäys 3 / Takaisin
+Aug	elo
+Auto	Auto
+Auto (follows the window)	Auto (seuraa ikkunaa)
+Auto shows more when wide; 16:9 adds bars.	Auto näyttää enemmän leveänä; 16:9 lisää palkit.
+Auto-open Toy Box	Avaa Toy Box automaattisesti
+Automatic	Automaattinen
+Automatic detection	Automaattinen tunnistus
+Back	Takaisin
+Back side button	Takasivupainike
+Back up now	Varmuuskopioi nyt
+Backed up	Varmuuskopioitu
+Backspace	Askelpalautin
+Backup restored	Varmuuskopio palautettu
+Backups	Varmuuskopiot
+Basic	Perus
+Before you beat the game. Your save is untouched.	Ennen pelin läpäisyä. Tallennuksesi säilyy koskemattomana.
+Blank figures from old versions. Tidy trashes them.	Vanhojen versioiden tyhjiä hahmoja. Siivous siirtää ne roskakoriin.
+Bottom file	Alaosan tiedosto
+Brake / Reverse (vehicle)	Jarruta / Peruuta (ajoneuvo)
+Builds the game on your PC: about {} min, {} GB, internet needed once.	Rakentaa pelin koneellesi: noin {} min, {} Gt, verkkoyhteys tarvitaan kerran.
+Built for this disc.	Tehty tälle levylle.
+Built with SDL 3, Dear ImGui, {fmt}, stb, miniz, XenonRecomp, Outfit and Bungee. MIT licensed.	Tehty näillä: SDL 3, Dear ImGui, {fmt}, stb, miniz, XenonRecomp, Outfit ja Bungee. MIT-lisenssi.
+Button glyphs	Painikekuvakkeet
+CHECKING...	TARKISTETAAN...
+COMING LATER	TULOSSA MYÖHEMMIN
+Caches and logs	Välimuistit ja lokit
+Caches cleared	Välimuistit tyhjennetty
+Can't read the disc	Levyä ei voi lukea
+Can't read the disc image ({}).{}	Levykuvaa ei voi lukea ({}).{}
+Can't update here: the release page was opened.	Päivitys ei onnistu täällä: julkaisusivu avattiin.
+Can't write to the Desktop folder.	Työpöytäkansioon ei voi kirjoittaa.
+Cancel	Peruuta
+Caps Lock	Caps Lock
+Carry on copying	Jatka kopiointia
+Change disc...	Vaihda levy...
+Change profile	Vaihda profiilia
+Change the bottom	Vaihda alaosa
+Change the top	Vaihda yläosa
+Change...	Vaihda...
+Changed	Muutettu
+Check at startup	Tarkista käynnistyksessä
+Check for updates	Tarkista päivitykset
+Check now	Tarkista nyt
+Checking Arkeyan Launcher	Tarkistetaan: Arkeyan Launcher
+Checking the Xbox 360 executable	Tarkistetaan Xbox 360 -ohjelmatiedostoa
+Checking your disc	Tarkistetaan levyä
+Checking...	Tarkistetaan...
+Chinese	kiina
+Choose	Valitse
+Choose a figure for {}	Valitse hahmo kohteelle {}
+Choose a folder...	Valitse kansio...
+Choose a key to change it.	Muuta näppäintä valitsemalla se.
+Choose a type	Valitse tyyppi
+Choose another	Valitse toinen
+Choose disc	Valitse levy
+Choose the disc image first	Valitse ensin levykuva
+Choose the disc image first.	Valitse ensin levykuva.
+Choose the disc image to carry on.	Jatka valitsemalla levykuva.
+Choose the disc image to repair.	Korjaa valitsemalla levykuva.
+Choose what each button does.	Valitse, mitä kukin painike tekee.
+Choose your disc	Valitse levysi
+Choose your {} disc image	Valitse pelin {} levykuva
+Choose...	Valitse...
+Chrome	Chrome
+Circle	Ympyrä
+Clean up	Siivoa
+Clear all	Tyhjennä kaikki
+Clear caches	Tyhjennä välimuistit
+Clear search and filters	Tyhjennä haku ja suodattimet
+Clear the figures	Poista hahmot
+Clearing caches frees {}.	Välimuistien tyhjennys vapauttaa {}.
+Clearing caches frees {}; deleting saves and data frees {} more.	Välimuistien tyhjennys vapauttaa {}; tallennusten ja tietojen poisto vapauttaa {} lisää.
+Click or turn the wheel	Klikkaa tai pyöritä rullaa
+Click, then press a mouse button or turn the wheel (Escape cancels).	Klikkaa ja paina hiiren painiketta tai pyöritä rullaa (Escape peruu).
+Click: put it on {}	Klikkaa: aseta paikalle {}
+Click: sheet · drag to a seat	Klikkaa: kortti · vedä paikkaan
+Close	Sulje
+Code	Koodi
+Collection	Kokoelma
+Color	Väri
+Coming later	Tulossa myöhemmin
+Comparing with the supported releases	Verrataan tuettuihin julkaisuihin
+Compiling the game	Käännetään peli
+Completed steps	Valmiit vaiheet
+Continue	Jatka
+Controller	Ohjain
+Controller buttons reset	Ohjaimen painikkeet nollattu
+Controller, keyboard, real or virtual portal	Ohjain, näppäimistö, oikea tai virtuaalinen portaali
+Controller: {}	Ohjain: {}
+Controls	Ohjaus
+Copied: {}, 1 file	Kopioitu: {}, 1 tiedosto
+Copied: {}, {} files	Kopioitu: {}, {} tiedostoa
+Copies the disc's files ({}). No image needed after.	Kopioi levyn tiedostot ({}). Levykuvaa ei tarvita sen jälkeen.
+Copies the disc's files. No image needed after.	Kopioi levyn tiedostot. Levykuvaa ei tarvita sen jälkeen.
+Copy	Kopioi
+Copy files	Kopioi tiedostot
+Copy game log	Kopioi pelin loki
+Copy log	Kopioi loki
+Copy removed: {} freed	Kopio poistettu: {} vapautui
+Copy stopped	Kopiointi pysähtyi
+Copy stopped: {}. Press the button to carry on.	Kopiointi pysähtyi: {}. Jatka painamalla painiketta.
+Copying...	Kopioidaan...
+Copying: {} of {}	Kopioidaan: {} / {}
+Couldn't back it up	Varmuuskopiointi ei onnistunut
+Couldn't change it: 	Muutos ei onnistunut: 
+Couldn't check: {}	Tarkistus ei onnistunut: {}
+Couldn't create the figure	Hahmon luonti ei onnistunut
+Couldn't create the game folder: {}	Pelikansion luonti ei onnistunut: {}
+Couldn't create the shortcut	Pikakuvakkeen luonti ei onnistunut
+Couldn't create the shortcut: {}	Pikakuvakkeen luonti ei onnistunut: {}
+Couldn't delete it: 	Poisto ei onnistunut: 
+Couldn't delete: {}	Poisto ei onnistunut: {}
+Couldn't download the compiler. Check your connection.	Kääntäjän lataus ei onnistunut. Tarkista yhteytesi.
+Couldn't download the game tools. Check your connection.	Pelityökalujen lataus ei onnistunut. Tarkista yhteytesi.
+Couldn't duplicate it: 	Monistus ei onnistunut: 
+Couldn't export the game: {}	Pelin vienti ei onnistunut: {}
+Couldn't move {} aside: {}	Siirto sivuun ei onnistunut ({}): {}
+Couldn't open the folder	Kansiota ei voitu avata
+Couldn't put it back	Palautus ei onnistunut
+Couldn't put the kit in place: {}	Kitin asettaminen paikalleen ei onnistunut: {}
+Couldn't put the new {} in place: {}	Uuden kohteen ({}) asettaminen paikalleen ei onnistunut: {}
+Couldn't read the disc image. Check that it's complete.	Levykuvaa ei voitu lukea. Tarkista, että se on kokonainen.
+Couldn't read this image	Tätä kuvaa ei voitu lukea
+Couldn't remove the copy: {}	Kopion poisto ei onnistunut: {}
+Couldn't remove the profile	Profiilin poisto ei onnistunut
+Couldn't repair the game tools: {}	Pelityökalujen korjaus ei onnistunut: {}
+Couldn't reset it: 	Nollaus ei onnistunut: 
+Couldn't restart: start Arkeyan Launcher again	Uudelleenkäynnistys ei onnistunut: käynnistä Arkeyan Launcher itse uudelleen
+Couldn't restore it: 	Palautus ei onnistunut: 
+Couldn't restore the backup: {}	Varmuuskopion palautus ei onnistunut: {}
+Couldn't save it: 	Tallennus ei onnistunut: 
+Couldn't save the download: {}	Latauksen tallennus ei onnistunut: {}
+Couldn't save the name	Nimen tallennus ei onnistunut
+Couldn't save the report	Raportin tallennus ei onnistunut
+Couldn't save the settings	Asetusten tallennus ei onnistunut
+Couldn't show the game window.	Pelin ikkunaa ei voitu näyttää.
+Couldn't start the game: the file is missing	Pelin käynnistys ei onnistunut: tiedosto puuttuu
+Couldn't start the game: {}	Pelin käynnistys ei onnistunut: {}
+Couldn't unpack {}	Purku ei onnistunut: {}
+Couldn't write the seats for the next start	Paikkojen tallennus seuraavaa käynnistystä varten ei onnistunut
+Couldn't write to the game folder.	Pelikansioon ei voitu kirjoittaa.
+Create	Luo
+Create the profile	Luo profiili
+Create the {} starter pack	Luo pelin {} aloituspaketti
+Create {}	Luo: {}
+Created {}	Luotu: {}
+Creation Crystals	Creation Crystals
+Credits	Tekijät
+Cross	Risti
+Crystal Clear	Crystal Clear
+D-pad down	Suuntaristi alas
+D-pad left	Suuntaristi vasemmalle
+D-pad right	Suuntaristi oikealle
+D-pad up	Suuntaristi ylös
+Dark	Tumma
+Data folder	Tietokansio
+Dec	joulu
+Default	Oletus
+Delete	Poista
+Delete saves and data	Poista tallennukset ja tiedot
+Delete...	Poista...
+Deleted figures are kept 30 days.	Poistetut hahmot säilyvät 30 päivää.
+Deleting saves and data frees {}.	Tallennusten ja tietojen poisto vapauttaa {}.
+Designed by dorydev, made by mflr0, UI/UX by Gumelia.	Suunnittelu: dorydev, toteutus: mflr0, UI/UX: Gumelia.
+Desktop shortcut	Työpöydän pikakuvake
+Desktop shortcuts	Työpöydän pikakuvakkeet
+Details	Tiedot
+Difficulty	Vaikeustaso
+Disc	Levy
+Disc checked	Levy tarkistettu
+Disc image	Levykuva
+Disc not found	Levyä ei löytynyt
+Display refresh rate (up to 60)	Näytön virkistystaajuus (enintään 60)
+Doubles the game's textures from your disc. About {} of disk, a few minutes.	Kaksinkertaistaa pelin tekstuurit levyltäsi. Noin {} levytilaa, muutama minuutti.
+Down	Alas
+Downloading Arkeyan Launcher	Ladataan: Arkeyan Launcher
+Downloading the game tools	Ladataan pelityökaluja
+Downloading the game tools again	Ladataan pelityökalut uudelleen
+Downloading tools	Ladataan työkaluja
+Drag Arkeyan Launcher to Applications, replacing the old one.	Vedä Arkeyan Launcher Ohjelmat-kansioon ja korvaa vanha.
+Drift (vehicle)	Drift (ajoneuvo)
+Drop figure files or a folder on the window.	Pudota hahmotiedostot tai kansio ikkunaan.
+Drop to 30 FPS when needed	Laske 30 FPS:ään tarvittaessa
+Dump textures	Vie tekstuurit
+Duplicate	Monista
+Duplicated: 	Monistettu: 
+Each has its own Toy Box, saves, keys and achievements.	Jokaisella on oma Toy Box, tallennukset, näppäimet ja saavutukset.
+Earlier versions of your saves.	Tallennustesi aiempia versioita.
+Earth	Maa
+Edge smoothing	Reunojen pehmennys
+Edit	Muokkaa
+Edit my profile	Muokkaa profiiliani
+Edit profile	Muokkaa profiilia
+Element	Elementti
+Empty	Tyhjä
+Empty: the toy's name	Tyhjä: lelun nimi
+Eon's Elite	Eon's Elite
+Erase	Pyyhi
+Escape	Escape
+Event and exclusive	Tapahtuma ja yksinoikeus
+Every download is checked against the release's SHA-256 before it runs, and every release is built by GitHub Actions from the public source.	Jokainen lataus tarkistetaan julkaisun SHA-256-tiivisteellä ennen ajoa, ja jokaisen julkaisun rakentaa GitHub Actions julkisesta lähdekoodista.
+Everything is removed	Kaikki poistetaan
+Evolved	Kehittynyt
+Experience	Kokemus
+Export a portable copy	Vie kannettava kopio
+Export everything...	Vie kaikki...
+Export first	Vie ensin
+Export for {}	Vie pelille {}
+Export stopped	Vienti pysähtyi
+Export the figures to	Vie hahmot kansioon
+Exported {} figure to {}	Viety {} hahmo: {}
+Exported {} figures to {}	Viety {} hahmoa: {}
+Exporting...	Viedään...
+Exporting: {} of {}	Viedään: {} / {}
+FPS counter	FPS-laskuri
+FXAA also softens texture detail; Gentle keeps more of it.	FXAA pehmentää myös tekstuurien yksityiskohtia; Lempeä säilyttää niitä enemmän.
+Favorite	Suosikki
+Feb	helmi
+Figure dumps (.sky, .bin, .dmp)	Hahmovedokset (.sky, .bin, .dmp)
+Figure sheet	Hahmokortti
+Figures	Hahmot
+File	Tiedosto
+Files missing or changed	Tiedostoja puuttuu tai ne on muutettu
+Filters	Suodattimet
+Finding default.xex	Etsitään default.xex
+Fingerprinting default.xex (SHA-256)	Lasketaan default.xex-sormenjälki (SHA-256)
+Finishing	Viimeistellään
+Fire	Tuli
+Flocked	Samettinen
+Folders	Kansiot
+For pack makers: saves the textures as DDS files.	Pakettien tekijöille: tallentaa tekstuurit DDS-tiedostoina.
+For {}	Pelille {}
+Forward side button	Etusivupainike
+Found	Löytyi
+Found, not usable	Löytyi, ei käyttökelpoinen
+Frame rate limit	Kuvataajuuden raja
+Frees {}. Saves and settings are kept.	Vapauttaa {}. Tallennukset ja asetukset säilyvät.
+Fullscreen	Koko näyttö
+Game	Peli
+Game art comes from your own disc.	Pelin grafiikka tulee omalta levyltäsi.
+Game data	Pelin tiedot
+Game data copies	Pelitietojen kopiot
+Game data damaged	Pelin tiedot vioittuneet
+Game data damaged: using the disc image	Pelin tiedot vioittuneet: käytetään levykuvaa
+Game data damaged: using the disc image.	Pelin tiedot vioittuneet: käytetään levykuvaa.
+Game data damaged: {}	Pelin tiedot vioittuneet: {}
+Game files	Pelitiedostot
+Game installed: press PLAY	Peli asennettu: paina PELAA
+Game kit not found. Put the skylanders-kit folder next to Arkeyan Launcher, then press Retry.	Pelikittiä ei löytynyt. Laita skylanders-kit-kansio samaan kansioon kuin Arkeyan Launcher ja paina Yritä uudelleen.
+Game language	Pelin kieli
+Game log	Pelin loki
+Game log copied	Pelin loki kopioitu
+Game settings	Pelin asetukset
+Game text	Pelin teksti
+Game tools	Pelityökalut
+Game uninstalled	Peli poistettu
+Game voices	Pelin äänet
+Gamepad	Peliohjain
+Games	Pelit
+Games updated: {} of {}	Pelejä päivitetty: {} / {}
+Games: XenonRecomp, XenosRecomp, plume, SDL 3, Dear ImGui, FFmpeg, parts of Xenia. Figure format learned from Dolphin and RPCS3.	Pelit: XenonRecomp, XenosRecomp, plume, SDL 3, Dear ImGui, FFmpeg, osia Xenia-projektista. Hahmomuoto opittu Dolphin- ja RPCS3-projekteista.
+Gentle	Lempeä
+Giants	Giants
+GitHub	GitHub
+GitHub says: {}	GitHub sanoo: {}
+Glow in the Dark	Glow in the Dark
+Gold	Kulta
+Greek	kreikka
+HD texture packs	HD-tekstuuripaketit
+HD textures	HD-tekstuurit
+HD textures ready	HD-tekstuurit valmiit
+HD textures removed	HD-tekstuurit poistettu
+HD textures stopped	HD-tekstuurit pysähtyivät
+HID portals	HID-portaalit
+Hat	Hattu
+Hero points	Sankaripisteet
+Hidden achievement	Piilotettu saavutus
+Hide details	Piilota tiedot
+Higher scales need a dedicated graphics card.	Suuremmat skaalat vaativat erillisen näytönohjaimen.
+Hold if its game has quit.	Pidä pohjassa, jos sen peli on sulkeutunut.
+Hold to clear the caches.	Pidä pohjassa tyhjentääksesi välimuistit.
+Hold to confirm	Pidä pohjassa vahvistaaksesi
+Hold to delete all of this.	Pidä pohjassa poistaaksesi kaiken tämän.
+Hold to delete it for good.	Pidä pohjassa poistaaksesi pysyvästi.
+Hold to delete saves, backups and caches.	Pidä pohjassa poistaaksesi tallennukset, varmuuskopiot ja välimuistit.
+Hold to delete the built game. Saves are kept.	Pidä pohjassa poistaaksesi rakennetun pelin. Tallennukset säilyvät.
+Hold to delete the copy.	Pidä pohjassa poistaaksesi kopion.
+Hold to delete the partial copy.	Pidä pohjassa poistaaksesi keskeneräisen kopion.
+Hold to give every button its own job back.	Pidä pohjassa palauttaaksesi kaikkien painikkeiden oletustoiminnot.
+Hold to mark them as not in use.	Pidä pohjassa merkitäksesi ne käyttämättömiksi.
+Hold to move them to the trash.	Pidä pohjassa siirtääksesi ne roskakoriin.
+Hold to put this copy back.	Pidä pohjassa palauttaaksesi tämän kopion.
+Hold to rebuild the game.	Pidä pohjassa rakentaaksesi pelin uudelleen.
+Hold to reset every key of this game.	Pidä pohjassa nollataksesi tämän pelin kaikki näppäimet.
+Hold to restore; your current saves are kept first.	Pidä pohjassa palauttaaksesi; nykyiset tallennuksesi säilytetään ensin.
+INSTALL	ASENNA
+INSTALLATION INTERRUPTED	ASENNUS KESKEYTYI
+INSTALLATION STOPPED	ASENNUS PYSÄHTYI
+INSTALLING THE GAME	ASENNETAAN PELIÄ
+INSTALLING...	ASENNETAAN...
+If Windows Defender blocks a file:	Jos Windows Defender estää tiedoston:
+Import a folder...	Tuo kansio...
+Import an image...	Tuo kuva...
+Import and export	Tuonti ja vienti
+Import figures	Tuo hahmot
+Import files...	Tuo tiedostoja...
+Import the figures of a folder	Tuo kansion hahmot
+Imported {}	Tuotu: {}
+In {}	Pelissä {}
+Initials	Nimikirjaimet
+Install	Asenna
+Install failed	Asennus epäonnistui
+Install the game first.	Asenna peli ensin.
+Installation canceled	Asennus peruttu
+Installing	Asennetaan
+Installing Arkeyan Launcher	Asennetaan: Arkeyan Launcher
+Installing · {}	Asennetaan · {}
+Interact	Toimi
+Interrupted	Keskeytetty
+Interrupted: {} of {} copied	Keskeytetty: {} / {} kopioitu
+It is made when the game is installed.	Se tehdään, kun peli asennetaan.
+It plays on {} without the launcher or the disc image, with the same saves and settings as the installed game. It never updates: to update it, export it again. Up to {}.	Se toimii ilman käynnistintä tai levykuvaa (alusta: {}), samoilla tallennuksilla ja asetuksilla kuin asennettu peli. Se ei päivity: päivitä viemällä se uudelleen. Enintään: {}.
+Item or adventure	Esine tai seikkailu
+Its evolved look	Sen kehittynyt ulkoasu
+Its name	Sen nimi
+Jan	tammi
+Japanese	japani
+Jul	heinä
+Jump	Hyppää
+Jump / Drift (vehicle)	Hyppää / Drift (ajoneuvo)
+Jun	kesä
+Keep installing	Jatka asennusta
+Keeps textures sharp at an angle.	Pitää tekstuurit teräviä vinossa kulmassa.
+Kept: Xbox signing keys	Säilytetty: Xboxin allekirjoitusavaimet
+Keyboard	Näppäimistö
+Keyboard bindings reset	Näppäinmääritykset nollattu
+Korean	korea
+L stick	Vasen sauva
+Language	Kieli
+Last checked {}	Viimeksi tarkistettu: {}
+Last played	Viimeksi pelattu
+Last played: {}	Viimeksi pelattu: {}
+Later	Myöhemmin
+Later games	Myöhemmät pelit
+Launcher	Launcher
+Launcher settings	Launcher-asetukset
+Left	Vasen
+Left Alt	Vasen Alt
+Left Ctrl	Vasen Ctrl
+Left Shift	Vasen Shift
+Left click	Vasen klikkaus
+Left click: attack 1. Right click: attack 2. The game keeps the pointer.	Vasen klikkaus: hyökkäys 1. Oikea klikkaus: hyökkäys 2. Peli pitää osoittimen.
+Legendary	Legendaarinen
+Level in {}	Taso pelissä {}
+Level {}	Taso {}
+Library	Kirjasto
+Licenses	Lisenssit
+Life	Elämä
+Light	Valo
+LightCore	LightCore
+Linking the game	Linkitetään peliä
+Live	Live
+Log copied	Loki kopioitu
+Logs	Lokit
+Logs and settings, without your names, for a GitHub issue.	Lokit ja asetukset ilman nimiäsi GitHub-issueta varten.
+Logs folder	Lokikansio
+Looking for the disc image	Etsitään levykuvaa
+Looks for updates at each start.	Etsii päivityksiä jokaisessa käynnistyksessä.
+Low	Matala
+Made for 30 FPS; 60 and above are experimental.	Tehty 30 FPS:lle; 60 ja yli ovat kokeellisia.
+Magic	Taikuus
+Magic Items	Taikaesineet
+Magic item	Taikaesine
+Making HD textures	Tehdään HD-tekstuureja
+Making the HD textures. You can keep using the launcher; the game waits.	Tehdään HD-tekstuureja. Voit jatkaa käynnistimen käyttöä; peli odottaa.
+Manage	Hallitse
+Manage profiles	Hallitse profiileja
+Mar	maalis
+Mark as not in use	Merkitse ei käytössä olevaksi
+Mark as not in use · {}	Merkitse ei käytössä olevaksi · {}
+May	touko
+Menus, subtitles and on-screen text.	Valikot, tekstitykset ja ruudun tekstit.
+Menus, subtitles, spoken lines and cutscenes.	Valikot, tekstitykset, puhe ja välianimaatiot.
+Metallic	Metallinen
+Middle click	Keskiklikkaus
+Minis and sidekicks	Minit ja apurit
+Missing figure	Puuttuva hahmo
+Model: {} (id {})	Malli: {} (id {})
+More actions	Lisää toimintoja
+Mouse	Hiiri
+Move down	Siirrä alas
+Move left	Siirrä vasemmalle
+Move right	Siirrä oikealle
+Move to the trash	Siirrä roskakoriin
+Move up	Siirrä ylös
+Move {} to the trash	Siirrä roskakoriin: {}
+Move {} to the trash? It stays there for 30 days.	Siirretäänkö roskakoriin: {}? Se säilyy siellä 30 päivää.
+Moved to the trash	Siirretty roskakoriin
+Movement	Liike
+My Team	Oma tiimi
+Name	Nimi
+Name (optional)	Nimi (valinnainen)
+Name this toy	Nimeä tämä lelu
+Name, element, game, level...	Nimi, elementti, peli, taso...
+Named: shown at the next start	Nimetty: näkyy seuraavassa käynnistyksessä
+Native PC ports	Natiivit PC-portit
+Native PC ports of Skylanders. No game code or art: it comes from your disc.	Skylandersin natiivit PC-portit. Ei pelikoodia eikä grafiikkaa: ne tulevat levyltäsi.
+Needs newer game tools: reinstall the game to get them.	Tarvitsee uudemmat pelityökalut: asenna peli uudelleen, niin saat ne.
+Needs your disc	Tarvitsee levysi
+Never	Ei koskaan
+New profile	Uusi profiili
+New: never played.	Uusi: ei vielä pelattu.
+Nickname	Lempinimi
+Nightmare from the start	Painajainen alusta asti
+No backups yet.	Ei vielä varmuuskopioita.
+No disc image needed.	Levykuvaa ei tarvita.
+No element	Ei elementtiä
+No figure matches	Mikään hahmo ei täsmää
+No figures yet. Add one, or drop your figure files on the window.	Ei vielä hahmoja. Lisää yksi tai pudota hahmotiedostot ikkunaan.
+No game log yet.	Ei vielä pelilokia.
+No game this launcher knows	Ei peliä, jonka tämä käynnistin tuntee
+No gamepad connected.	Ei peliohjainta kytkettynä.
+No hat	Ei hattua
+No notes were published with this version.	Tälle versiolle ei julkaistu muistiinpanoja.
+No other bottom to take.	Ei muuta alaosaa valittavissa.
+No other top to take.	Ei muuta yläosaa valittavissa.
+No portal found: the game will wait for one.	Portaalia ei löytynyt: peli odottaa sellaista.
+No portal found: using the virtual portal.	Portaalia ei löytynyt: käytetään virtuaalista portaalia.
+No saves or figures yet.	Ei vielä tallennuksia tai hahmoja.
+No tearing, a little more latency.	Ei repeilyä, hieman enemmän viivettä.
+No unknown toys.	Ei tuntemattomia leluja.
+None	Ei mitään
+None chosen yet.	Ei vielä valittu.
+None chosen.	Ei valittu.
+None yet	Ei vielä
+Normal	Normaali
+Not a game disc	Ei pelilevy
+Not an Xbox 360 disc image, or the file is incomplete.	Ei Xbox 360 -levykuva tai tiedosto on vajaa.
+Not an Xbox 360 game, or the image is incomplete.	Ei Xbox 360 -peli tai kuva on vajaa.
+Not available for this game yet	Ei vielä saatavilla tälle pelille
+Not available for {} yet	Ei vielä saatavilla pelille {}
+Not built yet.	Ei vielä rakennettu.
+Not enough free space: about 6 GB needed.	Vapaata tilaa ei ole tarpeeksi: tarvitaan noin 6 Gt.
+Not enough space: {} needed, {} free.	Tilaa ei ole tarpeeksi: tarvitaan {}, vapaana {}.
+Not for this game	Ei tälle pelille
+Not for {}	Ei pelille {}
+Not in the catalog. Name one to show it.	Ei luettelossa. Nimeä se, niin se näkyy.
+Not installed yet	Ei vielä asennettu
+Not needed: the game plays from its copied data.	Ei tarvita: peli toimii kopioiduilla tiedoillaan.
+Not now	Ei nyt
+Not played yet	Ei vielä pelattu
+Nothing	Ei mitään
+Nothing for this seat yet	Tälle paikalle ei vielä mitään
+Nothing to remove.	Ei poistettavaa.
+Nothing was removed	Mitään ei poistettu
+Nov	marras
+Now with {}	Nyt: {}
+OK	OK
+Oct	loka
+Off	Pois
+Off: your rate stays, even if the picture stutters.	Pois: nopeus pysyy, vaikka kuva nykisi.
+Older folders	Vanhemmat kansiot
+On	Päällä
+On its own	Omillaan
+On the portal	Portaalissa
+On the portal for	Portaalissa pelille
+On the portal in {}: read-only	Portaalissa pelissä {}: vain luku
+On the wheel	Pyörässä
+On the wheel: {}	Pyörässä: {}
+On {} at the next start of {}	Paikka: {} · pelin {} seuraavassa käynnistyksessä
+One file	Yksi tiedosto
+Open	Avaa
+Open its sheet	Avaa kortti
+Open logs folder	Avaa lokikansio
+Open the Toy Box	Avaa Toy Box
+Open the folder	Avaa kansio
+Opening the disc image	Avataan levykuvaa
+Opens a new issue on GitHub	Avaa uuden issuen GitHubissa
+Opens the Toy Box when the game asks for a figure.	Avaa Toy Boxin, kun peli pyytää hahmoa.
+Or drop your .iso on this window. It stays on this computer.	Tai pudota .iso-tiedostosi tähän ikkunaan. Se pysyy tällä tietokoneella.
+Original resolution	Alkuperäinen resoluutio
+Other	Muu
+Other files in the figures folder stay.	Hahmokansion muut tiedostot säilyvät.
+Other seat	Toinen paikka
+PLAY	PELAA
+PLAY WITH	PELAA KÄYTTÄEN
+Pages	Sivut
+Pause	Tauko
+Pick a figure.	Valitse hahmo.
+Pick one below	Valitse alta
+Picture	Kuva
+Play	Pelaa
+Play time: {}	Peliaika: {}
+Play without updating	Pelaa päivittämättä
+Play {}	Pelaa: {}
+Play {} with Arkeyan Launcher	Pelaa {} (Arkeyan Launcher)
+Player 1	Pelaaja 1
+Player 2	Pelaaja 2
+Player {}	Pelaaja {}
+Playing now	Pelataan nyt
+Playing now · {} this session	Pelataan nyt · {} tässä istunnossa
+Plays in	Pelataan pelissä
+Plug in the portal, then test it.	Kytke portaali ja testaa se.
+Portable copy	Kannettava kopio
+Portable copy saved: {}	Kannettava kopio tallennettu: {}
+Portal	Portaali
+Portal of Power	Portal of Power
+Portal sound	Portaalin ääni
+Portal: not detected	Portaali: ei tunnistettu
+Portal: {}	Portaali: {}
+Preparing the compiler	Valmistellaan kääntäjää
+Press INSTALL first	Paina ensin ASENNA
+Press a key for "{}" (Escape cancels)	Paina näppäintä kohteelle "{}" (Escape peruu)
+Problem report	Ongelmaraportti
+Profiles	Profiilit
+Put back	Palauta
+Put back: 	Palautettu: 
+Put it on {}	Aseta paikalle: {}
+Put on the portal	Aseta portaaliin
+Quit	Lopeta
+Quit the game before restoring a backup	Sulje peli ennen varmuuskopion palautusta
+Quit the game first.	Sulje peli ensin.
+Quit the game to change profile	Sulje peli vaihtaaksesi profiilia
+R stick	Oikea sauva
+R stick down	Oikea sauva alas
+R stick left	Oikea sauva vasemmalle
+R stick right	Oikea sauva oikealle
+R stick up	Oikea sauva ylös
+Reading default.xex	Luetaan default.xex
+Reading the Xbox 360 disc layout	Luetaan Xbox 360 -levyn rakennetta
+Reading the disc	Luetaan levyä
+Reading the game's pictures	Luetaan pelin kuvia
+Reading the title and icon	Luetaan nimeä ja kuvaketta
+Ready	Valmis
+Ready to install	Valmis asennettavaksi
+Ready to play	Valmis pelattavaksi
+Ready · {} played	Valmis · pelattu {}
+Real portal (Wii, PlayStation, Xbox)	Oikea portaali (Wii, PlayStation, Xbox)
+Real portal: the game will use it.	Oikea portaali: peli käyttää sitä.
+Reinstall	Asenna uudelleen
+Release page	Julkaisusivu
+Remove	Poista
+Remove Arkeyan Launcher	Poista Arkeyan Launcher
+Remove from favorites	Poista suosikeista
+Remove game	Poista peli
+Remove the copy	Poista kopio
+Remove {}?	Poistetaanko {}?
+Removed, except	Poistettu, paitsi
+Removing the HD textures.	Poistetaan HD-tekstuureja.
+Repair	Korjaa
+Repair builds the game again from your disc.	Korjaus rakentaa pelin uudelleen levyltäsi.
+Repair downloads the game tools again.	Korjaus lataa pelityökalut uudelleen.
+Repair needs the disc of {}	Korjaus tarvitsee pelin {} levyn
+Repair the copy	Korjaa kopio
+Replaces the game's textures with your pack.	Korvaa pelin tekstuurit omalla paketillasi.
+Report	Raportoi
+Report a bug	Ilmoita virheestä
+Report a problem	Ilmoita ongelmasta
+Report copied	Raportti kopioitu
+Report saved	Raportti tallennettu
+Report saved: {}	Raportti tallennettu: {}
+Reset	Nollaa
+Reset to defaults	Palauta oletukset
+Reset to new	Nollaa uudeksi
+Reset to new...	Nollaa uudeksi...
+Reset {} to new? Level, gold and upgrades are lost.	Nollataanko {} uudeksi? Taso, kulta ja parannukset menetetään.
+Resolution scale	Resoluution skaala
+Restart now	Käynnistä uudelleen nyt
+Restore	Palauta
+Restore a backup...	Palauta varmuuskopio...
+Resume	Jatka
+Retry	Yritä uudelleen
+Retry to continue from this step.	Jatka tästä vaiheesta yrittämällä uudelleen.
+Retry to start the installation.	Aloita asennus yrittämällä uudelleen.
+Return	Return
+Right	Oikea
+Right Alt	Oikea Alt
+Right Ctrl	Oikea Ctrl
+Right Shift	Oikea Shift
+Right click	Oikea klikkaus
+Rumble	Värinä
+Running	Käynnissä
+Russian	venäjä
+Same	Sama
+Same as text	Sama kuin teksti
+Save	Tallenna
+Save as...	Tallenna nimellä...
+Save backups	Tallennusten varmuuskopiot
+Save to Desktop	Tallenna työpöydälle
+Saved	Tallennettu
+Saved gamepad (not connected)	Tallennettu peliohjain (ei kytketty)
+Saves	Tallennukset
+Saves and data deleted	Tallennukset ja tiedot poistettu
+Saves restored from {}	Tallennukset palautettu: {}
+Saves {}, figures {}.	Tallennukset {}, hahmot {}.
+Search	Haku
+Search the catalog	Hae luettelosta
+Select	Valitse
+Senseis	Senseit
+Sep	syys
+Series	Sarja
+Settings	Asetukset
+Settings, saves, figures and builds.	Asetukset, tallennukset, hahmot ja rakennetut pelit.
+Shaders	Varjostimet
+Shake / Insert / Swing	Ravista / Syötä / Heilauta
+Shortcut added to the Desktop	Pikakuvake lisätty työpöydälle
+Show details	Näytä tiedot
+Show in folder	Näytä kansiossa
+Show the collection folder	Näytä kokoelmakansio
+Show the game	Näytä peli
+Silver	Hopea
+Skip intro movies	Ohita aloitusvideot
+Skylander Info	Skylander-tiedot
+Skylander Profile	Skylander-profiili
+Skylander/Villain Stats	Skylander/pahis-tilastot
+Skylanders	Skylanders
+Skylanders Stats	Skylander-tilastot
+Skylanders, Spyro and Activision are trademarks of Activision Publishing, Inc. This project is not affiliated with or endorsed by Activision.	Activision Publishing, Inc. omistaa tavaramerkit Skylanders, Spyro ja Activision. Projekti ei ole Activisionin yhteydessä eikä sen hyväksymä.
+Some figures are marked as in use, but their game is not running.	Joitakin hahmoja on merkitty käytössä oleviksi, mutta niiden peli ei ole käynnissä.
+Something went wrong while {}.	Jokin meni pieleen vaiheessa: {}.
+Sort: {}	Lajittelu: {}
+Space	Välilyönti
+Special Power / Back	Erikoisvoima / Takaisin
+Spoken lines and cutscenes.	Puhe ja välianimaatiot.
+Square	Neliö
+Standard	Vakio
+Starting the installer	Käynnistetään asennusohjelmaa
+Stop	Pysäytä
+Stopping keeps the files already copied.	Pysäyttäminen säilyttää jo kopioidut tiedostot.
+Stopping...	Pysäytetään...
+Strong	Voimakas
+SuperChargers	SuperChargers
+Support	Tuki
+Swap Force bottoms	Swap Force -alaosat
+Swap Force tops	Swap Force -yläosat
+Swapper	Swapper
+Switch Driver (co-op)	Vaihda kuljettajaa (yhteispeli)
+Switch Skylander / Villain	Vaihda Skylander / pahis
+System default	Järjestelmän oletus
+Take it off	Ota pois
+Tech	Tekniikka
+Test	Testaa
+Test the portal	Testaa portaali
+Testing...	Testataan...
+Texture filtering	Tekstuurien suodatus
+Texture pack folder	Tekstuuripaketin kansio
+That's a folder: choose the disc image (.iso).	Tämä on kansio: valitse levykuva (.iso).
+The 3D scene at the console's size.	3D-kuva konsolin koossa.
+The HD textures stopped before they were made.	HD-tekstuurit pysähtyivät ennen valmistumista.
+The HD textures weren't made.	HD-tekstuureja ei tehty.
+The address isn't a secure one (https)	Osoite ei ole suojattu (https)
+The answer has no release in it	Vastauksessa ei ole julkaisua
+The answer isn't valid JSON ({})	Vastaus ei ole kelvollista JSONia ({})
+The author has submitted the launcher and its source code to Microsoft as a false positive; the review is pending.	Tekijä on lähettänyt käynnistimen ja sen lähdekoodin Microsoftille vääränä hälytyksenä; käsittely on kesken.
+The copy failed	Kopiointi epäonnistui
+The data folder isn't safe to remove.	Tietokansion poistaminen ei ole turvallista.
+The disc image is damaged. Copy the disc again.	Levykuva on vioittunut. Kopioi levy uudelleen.
+The disc image is incomplete. Copy the disc again.	Levykuva on vajaa. Kopioi levy uudelleen.
+The disc image isn't there. Choose it again.	Levykuvaa ei löydy. Valitse se uudelleen.
+The disc is still being checked: try again in a moment	Levyä tarkistetaan vielä: yritä hetken päästä uudelleen
+The download failed: {}	Lataus epäonnistui: {}
+The download holds no launcher app	Lataus ei sisällä käynnistinsovellusta
+The download is damaged: nothing was installed	Lataus on vioittunut: mitään ei asennettu
+The download isn't a game kit	Lataus ei ole pelikitti
+The download isn't a zip file	Lataus ei ole zip-tiedosto
+The earlier install is still stopping. Resume in a moment.	Aiempi asennus on vielä pysähtymässä. Jatka hetken päästä.
+The figure can't be read. Reopen it before saving.	Hahmoa ei voi lukea. Avaa se uudelleen ennen tallennusta.
+The figure was kept, but its seat couldn't be restored.	Hahmo säilytettiin, mutta sen paikkaa ei voitu palauttaa.
+The figures on the portal when the game starts	Portaalissa pelin alkaessa olevat hahmot
+The file stays where it is.	Tiedosto pysyy paikallaan.
+The frame rate in a corner of the game (F3 in game).	Kuvataajuus pelin nurkassa (F3 pelissä).
+The game ({}) wasn't found next to Arkeyan Launcher.\n\nPut it in the same folder.	Peliä ({}) ei löytynyt samasta kansiosta kuin Arkeyan Launcher.\n\nLaita se samaan kansioon.
+The game didn't finish the portal test.	Peli ei suorittanut portaalitestiä loppuun.
+The game in one file: it plays without the launcher or the disc image.	Peli yhdessä tiedostossa: se toimii ilman käynnistintä tai levykuvaa.
+The game is running: quit it first.	Peli on käynnissä: sulje se ensin.
+The game is running: quit it to restore a backup.	Peli on käynnissä: sulje se palauttaaksesi varmuuskopion.
+The game is running: use its Toy Box	Peli on käynnissä: käytä sen Toy Boxia
+The game is still installing	Peli on vielä asentumassa
+The game isn't installed yet	Peliä ei ole vielä asennettu
+The game stopped unexpectedly	Peli pysähtyi odottamatta
+The game tools are incomplete.	Pelityökalut ovat vajaat.
+The game tools are missing a file: {}	Pelityökaluista puuttuu tiedosto: {}
+The game tools are repaired	Pelityökalut korjattu
+The game uses the disc image instead.	Peli käyttää sen sijaan levykuvaa.
+The game's last log, for a bug report.	Pelin viimeisin loki virheilmoitusta varten.
+The game's volume (F3 in game).	Pelin äänenvoimakkuus (F3 pelissä).
+The install stops and can resume later.	Asennus pysähtyy, ja sitä voi jatkaa myöhemmin.
+The installer couldn't start.	Asennusohjelma ei käynnistynyt.
+The installer stopped before the game was built.	Asennusohjelma pysähtyi ennen kuin peli oli rakennettu.
+The installer stopped with exit code {}.	Asennusohjelma pysähtyi, poistumiskoodi {}.
+The latest 10 backups are kept.	Viimeiset 10 varmuuskopiota säilytetään.
+The one this trap holds	Se, jonka ansa pitää sisällään
+The portal can't be opened: the game will wait.	Portaalia ei voi avata: peli odottaa.
+The portal can't be opened: using the virtual portal.	Portaalia ei voi avata: käytetään virtuaalista portaalia.
+The portal test took too long and was stopped.	Portaalitesti kesti liian kauan ja se pysäytettiin.
+The release {} has no {}	Julkaisussa {} ei ole kohdetta {}
+The test failed	Testi epäonnistui
+The traps' voices: a Traptanium portal plays them, else the computer (F3 in game).	Ansojen äänet: Traptanium-portaali toistaa ne, muuten tietokone (F3 pelissä).
+The trash is empty.	Roskakori on tyhjä.
+The update failed: {}	Päivitys epäonnistui: {}
+The wheel is full: take a figure off it first	Pyörä on täynnä: ota ensin hahmo pois
+The zip file is damaged	Zip-tiedosto on vioittunut
+These are your own game tools: restore the file, or set them up again.	Nämä ovat omat pelityökalusi: palauta tiedosto tai asenna työkalut uudelleen.
+These game tools can't build {}	Nämä pelityökalut eivät voi rakentaa peliä {}
+These game tools can't make HD textures. Update them first.	Nämä pelityökalut eivät osaa tehdä HD-tekstuureja. Päivitä ne ensin.
+This computer has no Desktop folder.	Tällä tietokoneella ei ole työpöytäkansiota.
+This copy holds your game. It is for your personal use only: do not share it.	Tämä kopio sisältää pelisi. Se on vain henkilökohtaiseen käyttöön: älä jaa sitä.
+This disc image is {}, not {}.	Tämä levykuva on {}, ei {}.
+This game has no folder.	Tällä pelillä ei ole kansiota.
+This is {}, but this disc version isn't supported yet (media ID {:08X}, version {}).\n\nSupported:{}	Tämä on {}, mutta tätä levyversiota ei vielä tueta (media ID {:08X}, versio {}).\n\nTuetut:{}
+This key is used by another action	Toinen toiminto käyttää tätä näppäintä
+This looks like the {} disc of {}, but it's damaged or modified. Copy the disc again.	Tämä näyttää {}-levyltä (peli: {}), mutta se on vioittunut tai muokattu. Kopioi levy uudelleen.
+This version of the game doesn't have the portal test yet. Update the game.	Pelin tässä versiossa ei ole vielä portaalitestiä. Päivitä peli.
+Three steps	Kolme vaihetta
+Tidy the starters	Siivoa aloitushahmot
+Tidy · {}	Siivous · {}
+Today {}	Tänään {}
+Top: {} · Bottom: {}	Yläosa: {} · Alaosa: {}
+Total	Yhteensä
+Touchpad	Kosketuslevy
+Toy	Lelu
+Toy Box	Toy Box
+Toy Box in the game: F6, or View + Y on a controller.	Toy Box pelissä: F6 tai View + Y ohjaimella.
+Toy Box keys	Toy Boxin näppäimet
+Toy type {}	Lelun tyyppi {}
+Translating the game code	Käännetään pelikoodia
+Translating the shaders	Käännetään varjostimia
+Trap	Ansa
+Trap Masters	Trap Masters
+Trap shape	Ansan muoto
+Traps	Ansat
+Trash	Roskakori
+Trash · {}	Roskakori · {}
+Triangle	Kolmio
+Trilinear	Trilineaarinen
+Trophies	Pokaalit
+Turn the game music off	Mykistä pelin musiikki
+Turn the game music on	Laita pelin musiikki päälle
+Type	Tyyppi
+UPDATE	PÄIVITÄ
+UPDATING THE GAME	PÄIVITETÄÄN PELIÄ
+UPDATING...	PÄIVITETÄÄN...
+USB (Xbox) portals	USB (Xbox) -portaalit
+Undead	Epäkuollut
+Uninstall	Poista asennus
+Uninstall everything	Poista kaikki
+Uninstall everything...	Poista kaikki...
+Unknown	Tuntematon
+Unknown release	Tuntematon julkaisu
+Unknown toy {}	Tuntematon lelu {}
+Unknown toy {} (variant {:04X})	Tuntematon lelu {} (variantti {:04X})
+Unknown toys	Tuntemattomat lelut
+Unknown toys · {}	Tuntemattomat lelut · {}
+Unlimited (experimental)	Rajoittamaton (kokeellinen)
+Unreadable. Restore a backup or reset it.	Ei luettavissa. Palauta varmuuskopio tai nollaa se.
+Up	Ylös
+Update all	Päivitä kaikki
+Update available	Päivitys saatavilla
+Update available: {}	Päivitys saatavilla: {}
+Update failed	Päivitys epäonnistui
+Update now	Päivitä nyt
+Updates	Päivitykset
+Updates {} games, one after the other	Päivittää {} peliä peräkkäin
+Updating	Päivitetään
+Upgrades	Parannukset
+Use / Talk	Käytä / Puhu
+Use it for {}	Käytä pelille {}
+Use the mouse	Käytä hiirtä
+VSync	VSync
+Vehicle {}	Ajoneuvo {}
+Vehicles	Ajoneuvot
+Verified	Vahvistettu
+Verified, {}	Vahvistettu, {}
+Version {} is available.	Versio {} on saatavilla.
+Version {}, {}	Versio {}, {}
+Versions	Versiot
+Video	Video
+Villain	Pahis
+Villains	Pahikset
+Virtual (no portal needed)	Virtuaalinen (ei portaalia)
+Virtual portal	Virtuaalinen portaali
+Virtual portal chosen.	Virtuaalinen portaali valittu.
+Volume	Äänenvoimakkuus
+Wait for the HD textures to finish	Odota HD-tekstuurien valmistumista
+Wait for the copy to finish	Odota kopioinnin valmistumista
+Wait for the export to finish	Odota viennin valmistumista
+Wait for the game to finish.	Odota pelin päättymistä.
+Wait for the installation to finish	Odota asennuksen valmistumista
+Water	Vesi
+Welcome, {}	Tervetuloa, {}
+What goes	Mitä poistuu
+What it wears in the game	Mitä sillä on päällä pelissä
+What's new	Uutta
+What's new in {}	Uutta versiossa {}
+Wheel down	Rulla alas
+Wheel up	Rulla ylös
+Why this happens	Miksi näin käy
+Widescreen	Laajakuva
+Windows Defender may block the install	Windows Defender voi estää asennuksen
+Windows Defender may report Arkeyan-Builder.exe, ArkeyanLauncher.exe or a game built here as Trojan:Win32/Bearfoos.A!ml. The !ml ending means no known malware was found: Defender's machine-learning model guesses from what the program does. The launcher is not signed, downloads a compiler, builds a new game on your PC and updates itself: that is the whole guess.	Windows Defender voi ilmoittaa tiedoston Arkeyan-Builder.exe, ArkeyanLauncher.exe tai täällä rakennetun pelin nimellä Trojan:Win32/Bearfoos.A!ml. Pääte !ml tarkoittaa, ettei tunnettua haittaohjelmaa löytynyt: Defenderin koneoppimismalli arvaa ohjelman toiminnan perusteella. Käynnistin ei ole allekirjoitettu, se lataa kääntäjän, rakentaa uuden pelin koneellesi ja päivittää itsensä: koko arvaus perustuu tähän.
+Without a real portal, the game uses its virtual one (the Toy Box).	Ilman oikeaa portaalia peli käyttää virtuaalista (Toy Box).
+Working	Toimii
+Works in	Toimii pelissä
+Works in {}	Toimii pelissä {}
+Wrong disc	Väärä levy
+Xbox One / Series	Xbox One / Series
+Xbox portal	Xbox-portaali
+YOUR GAMES	PELISI
+Yesterday {}	Eilen {}
+You can set up your portal while you wait.	Voit määrittää portaalisi odottaessasi.
+Your disc images are never touched.	Levykuviin ei koskaan kosketa.
+Your figures	Hahmosi
+Your own copy, as an .iso	Oma kopiosi .iso-tiedostona
+Zoom: automatic	Zoomaus: automaattinen
+Zoom: {:g}%	Zoomaus: {:g} %
+about {0} h {1:02} min left	noin {0} h {1:02} min jäljellä
+about {} min left	noin {} min jäljellä
+and {} more	ja {} muuta
+another game (title ID {:08X})	toinen peli (title ID {:08X})
+bottom	alaosa
+choose a folder outside the installed game	valitse kansio asennetun pelin ulkopuolelta
+couldn't copy the game: {}	pelin kopiointi ei onnistunut: {}
+couldn't open the disc image	levykuvaa ei voitu avata
+couldn't put the copy in place: {}	kopiota ei voitu asettaa paikalleen: {}
+couldn't sign the app (codesign)	sovellusta ei voitu allekirjoittaa (codesign)
+created	luotu
+curl couldn't start ({})	curl ei käynnistynyt ({})
+deleted	poistettu
+every game	kaikki pelit
+figure	hahmo
+hat {}	hattu {}
+imported	tuotu
+less than a minute	alle minuutti
+less than a minute left	alle minuutti jäljellä
+level {} · {} gold	taso {} · kultaa {}
+maximum level	enimmäistaso
+needs {}	tarvitsee: {}
+no answer	ei vastausta
+no hat	ei hattua
+nothing yet	ei vielä mitään
+only what {} reads	vain se, mitä {} lukee
+owned x{}	omistettu x{}
+plays as {0} in {1}	pelataan nimellä {0} pelissä {1}
+plays as {}	pelataan nimellä {}
+portal	portaali
+the collection's index can't be written	kokoelman hakemistoa ei voi kirjoittaa
+the copy can't be read back: {}	kopiota ei voi lukea takaisin: {}
+the installed game is missing: install it again	asennettu peli puuttuu: asenna se uudelleen
+tidied	siivottu
+today	tänään
+top	yläosa
+yesterday	eilen
+{0} is missing a file: {1}	Pelistä {0} puuttuu tiedosto: {1}
+{0} {1} {2}	{0} {1} {2}
+{} (active)	{} (aktiivinen)
+{} GB	{} Gt
+{} KB	{} kt
+{} MB	{} Mt
+{} XP · {}	{} XP · {}
+{} Xbox, PlayStation and Switch pads are compatible.	{} Xbox-, PlayStation- ja Switch-ohjaimet ovat yhteensopivia.
+{} accepts this portal.	{} hyväksyy tämän portaalin.
+{} already plays from its copied game data	{} pelaa jo kopioiduista pelitiedoistaan
+{} backup	{} varmuuskopio
+{} backups	{} varmuuskopiota
+{} bytes	{} tavua
+{} can't be used: {}	{} ei ole käytettävissä: {}
+{} can't be verified, so it wasn't installed	{} ei voitu vahvistaa, joten sitä ei asennettu
+{} couldn't be removed.	{} ei voitu poistaa.
+{} days ago	{} päivää sitten
+{} doesn't go on {}	{} ei sovi paikkaan: {}
+{} elapsed	{} kulunut
+{} figure copied	{} hahmo kopioitu
+{} figure moved to the trash	{} hahmo siirretty roskakoriin
+{} figures copied	{} hahmoa kopioitu
+{} figures moved to the trash	{} hahmoa siirretty roskakoriin
+{} files	{} tiedostoa
+{} freed.	{} vapautui.
+{} gamepads connected.	{} peliohjainta kytkettynä.
+{} gold	{} kultaa
+{} h {:02} min	{} h {:02} min
+{} has no {} for this computer	{}: ei ole {} tälle tietokoneelle
+{} is a disc image: it stays.	{} on levykuva: se pysyy.
+{} is a link: it stays.	{} on linkki: se pysyy.
+{} is busy: try again when it is done	{} on varattu: yritä uudelleen, kun se on valmis
+{} is in use by {}	{} on käytössä: {}
+{} is not for {}	{} ei ole pelille {}
+{} is not in its folder: it stays.	{} ei ole omassa kansiossaan: se pysyy.
+{} is outside Arkeyan Launcher's folders: it stays.	{} on Launcherin kansioiden ulkopuolella: se pysyy.
+{} is running	{} on käynnissä
+{} is running: quit it first.	{} on käynnissä: sulje se ensin.
+{} is running: use its Toy Box	{} on käynnissä: käytä sen Toy Boxia
+{} keep no level or gold.	{} ei säilytä tasoa eikä kultaa.
+{} min	{} min
+{} of {}	{} / {}
+{} of {} unlocked · {} of {} G	{} / {} avattu · {} / {} G
+{} points outside its GitHub release, so it wasn't installed	{} osoittaa GitHub-julkaisun ulkopuolelle, joten sitä ei asennettu
+{} rejects this portal: {}.	{} hylkää tämän portaalin: {}.
+{} settings	Asetukset: {}
+{} stopped unexpectedly (exit code {}).\n\nPress Report to save a report file with the log and where the game stopped.	{} pysähtyi odottamatta (poistumiskoodi {}).\n\nTallenna raporttitiedosto lokeineen ja pysähtymiskohtineen painamalla Raportoi.
+{} to level {}	{} tasolle {}
+{} warns about this portal: {}.	{} varoittaa tästä portaalista: {}.
+{} x {} for the 3D scene	{} x {} 3D-kuvalle
+{} · Evolved	{} · Kehittynyt
+{} · empty	{} · tyhjä
+{} · type {} · variant {:04X}	{} · tyyppi {} · variantti {:04X}
+{} · {}	{} · {}
+{} · {} played	{} · pelattu {}
+{} · {} · {} upgrades	{} · {} · parannuksia {}
+{} · {} · ~{} min	{} · {} · ~{} min
+{} · ~{} min	{} · ~{} min
+{}%	{} %
+{}'s Toy Box, saves and keys go to the profiles' trash.	Profiilin {} Toy Box, tallennukset ja näppäimet siirtyvät profiilien roskakoriin.
+{}: game data copied	{}: pelitiedot kopioitu
+{}: pick the new {}	{}: valitse uusi {}
+{}: {} ({} of {})	{}: {} ({} / {})
+{}: {} freed	{}: {} vapautui
+{}: {} taken off	{}: {} otettu pois
