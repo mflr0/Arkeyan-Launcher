@@ -26,7 +26,13 @@ namespace launcher_ui
     std::string ElementName(collection::Element element);
     std::string CategoryLabel(collection::Category category);   // the type's name in the launcher's language
     std::string KindLabel(collection::VariantKind kind);        // the version's name in the launcher's language
-    bool French();                                              // the launcher shows French (the library's own French texts)
+    bool French();                                              // the launcher shows French
+    // The library's level, seat, sort and count texts in the launcher's language (the library words them in English and French).
+    std::string LevelLabel(const collection::Figure& figure, const std::string& game);
+    std::string CardLevelLabel(const collection::Card& card, const std::string& game);
+    std::string SeatTagText(const collection::Seat& seat);
+    std::string SortText(collection::Sort sort);
+    std::string FigureCountText(int count);
     unsigned ElementInk(collection::Element element); // 0xRRGGBB
     std::string Lower(std::string text);
     // A line of text at `at`, drawn without an item, cut to `room` with "...".

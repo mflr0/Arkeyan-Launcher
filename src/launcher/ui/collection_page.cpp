@@ -68,6 +68,98 @@ namespace launcher_ui
 
     bool French() { return i18n::Current() == "fr"; }
 
+    namespace
+    {
+        // One piece of the library's English level line ("Level 10 (15)", "Shield 2", "Virtual", a crystal's class...), in the
+        // launcher's language. A piece it does not know stays as it is (a name).
+        std::string LevelPiece(const std::string& piece)
+        {
+            static const char* const Classes[] = { N_("Knight"), N_("Bowslinger"), N_("Quickshot"), N_("Ninja"), N_("Brawler"),
+                N_("Smasher"), N_("Sorcerer"), N_("Swashbuckler"), N_("Sentinel"), N_("Bazooker") };
+            int level = 0, shown = 0;
+            if (std::sscanf(piece.c_str(), "Level %d (%d)", &level, &shown) == 2)
+                return Tf("Level {} ({})", level, shown);
+            if (std::sscanf(piece.c_str(), "Level %d", &level) == 1)
+                return Tf("Level {}", level);
+            if (std::sscanf(piece.c_str(), "Shield %d", &level) == 1)
+                return Tf("Shield {}", level);
+            if (std::sscanf(piece.c_str(), "Weapon %d", &level) == 1)
+                return Tf("Weapon {}", level);
+            if (piece == "Virtual")
+                return Tr("Virtual");
+            if (piece == "Ready to create")
+                return Tr("Ready to create");
+            if (piece == "Unreadable")
+                return Tr("Unreadable");
+            if (piece == "New")
+                return Tr("New");
+            for (const char* name : Classes)
+                if (piece == name)
+                    return Tr(name);
+            return piece;
+        }
+
+        std::string LevelPieces(const std::string& english)
+        {
+            std::string out;
+            for (size_t begin = 0; begin <= english.size();)
+            {
+                size_t end = english.find(" \xC2\xB7 ", begin);
+                if (end == std::string::npos)
+                    end = english.size();
+                if (!out.empty())
+                    out += " \xC2\xB7 ";
+                out += LevelPiece(english.substr(begin, end - begin));
+                begin = end + 3;
+            }
+            return out;
+        }
+    }
+
+    // The library words these in English.
+    std::string LevelLabel(const collection::Figure& figure, const std::string& game)
+    {
+        return LevelPieces(collection::LevelText(figure, game));
+    }
+
+    std::string CardLevelLabel(const collection::Card& card, const std::string& game)
+    {
+        return LevelPieces(collection::CardLevelText(card, game));
+    }
+
+    std::string SeatTagText(const collection::Seat& seat)
+    {
+        if (seat.id.size() == 2 && seat.id[0] == 'p')
+            return Tf("P{}", seat.id.substr(1));
+        if (seat.id == "item")
+            return Tr("Item");
+        if (seat.id == "adventure")
+            return Tr("Adventure");
+        if (seat.id == "trap")
+            return Tr("Trap");
+        return collection::SeatTag(seat);
+    }
+
+    std::string SortText(collection::Sort sort)
+    {
+        switch (sort)
+        {
+        case collection::Sort::Recent: return Tr("Recent");
+        case collection::Sort::Name: return Tr("Name");
+        case collection::Sort::Level: return Tr("Level");
+        case collection::Sort::Element: return Tr("Element");
+        case collection::Sort::Game: return Tr("Game");
+        case collection::Sort::Favorites: return Tr("Favorites");
+        default: return {};
+        }
+    }
+
+    std::string FigureCountText(int count)
+    {
+        // French counts 0 as one.
+        return count == 1 || (count == 0 && French()) ? Tf("{} figure", count) : Tf("{} figures", count);
+    }
+
     unsigned ElementInk(collection::Element element)
     {
         if (size_t(element) < 8)
@@ -386,7 +478,7 @@ namespace launcher_ui
         collection::Card card = CardOf(figure);
         if (card.Busy())
             return Tr("Playing now");
-        return card.Swapper() ? collection::CardLevelText(card, m_model.gameId, French()) : collection::LevelText(figure, m_model.gameId, French());
+        return card.Swapper() ? CardLevelLabel(card, m_model.gameId) : LevelLabel(figure, m_model.gameId);
     }
 
     std::string CollectionPage::SeatName(size_t seat) const
@@ -417,7 +509,7 @@ namespace launcher_ui
         const collection::Game* game = m_model.Game();
         if (game == nullptr || seat >= game->seats.size())
             return {};
-        return game->seats[seat].player > 0 ? collection::SeatTag(game->seats[seat], French()) : Tr("On");
+        return game->seats[seat].player > 0 ? SeatTagText(game->seats[seat]) : Tr("On");
     }
 
     std::string CollectionPage::SectionName(const Section& section) const
@@ -724,7 +816,7 @@ namespace launcher_ui
         ImGui::SetCursorScreenPos(ImVec2(top.x, top.y + row + ui::space::XXS));
         const int shown = int(m_model.figures.size()) - m_hiddenStarters;
         const size_t favourites = std::count_if(m_model.figures.begin(), m_model.figures.end(), [](const Figure& f) { return f.favourite; });
-        std::string summary = collection::FigureCount(shown, French());
+        std::string summary = FigureCountText(shown);
         if (favourites > 0)
             summary += favourites == 1 ? Tf(" · {} favorite", favourites) : Tf(" · {} favorites", favourites);
         ui::Text(ui::TextStyle::Caption, summary.c_str(), ui::color::InkSoft, -1);
@@ -828,7 +920,7 @@ namespace launcher_ui
                 {
                     const collection::Card card = CardOf(*figure);
                     const std::string level = m_heroFixture ? Tf("Level {}", figure->level) : card.Swapper()
-                        ? collection::CardLevelText(card, m_model.gameId, French()) : collection::LevelText(*figure, m_model.gameId, French());
+                        ? CardLevelLabel(card, m_model.gameId) : LevelLabel(*figure, m_model.gameId);
                     detail = level.empty() ? seat : Tf("{} · {}", seat, level);
                 }
                 ImGui::PushID(int(i));
@@ -1046,7 +1138,7 @@ namespace launcher_ui
         // As wide as its longest choice shows uncut (the select's own padding and chevron: SelectWidth).
         float sortWidth = 0;
         for (int sort = 0; sort < int(collection::Sort::Count); sort++)
-            sortWidth = std::max(sortWidth, ui::SelectWidth(Tf("Sort: {}", collection::SortLabel(collection::Sort(sort), French())).c_str()));
+            sortWidth = std::max(sortWidth, ui::SelectWidth(Tf("Sort: {}", SortText(collection::Sort(sort))).c_str()));
         const float searchWidth = std::max(ui::height::SettingControl / 2, ImGui::GetContentRegionAvail().x - filtersWidth - sortWidth - 2 * ui::space::S);
         if (m_focusSearch)
         {
@@ -1058,11 +1150,11 @@ namespace launcher_ui
 
         ui::SelectOptions sortOptions;
         sortOptions.width = sortWidth;
-        const bool sorting = ui::BeginSelect("##sort", Tf("Sort: {}", collection::SortLabel(m_filter.sort, French())).c_str(), sortOptions);
+        const bool sorting = ui::BeginSelect("##sort", Tf("Sort: {}", SortText(m_filter.sort)).c_str(), sortOptions);
         if (sorting)
         {
             for (int sort = 0; sort < int(collection::Sort::Count); sort++)
-                if (ui::SelectOption(collection::SortLabel(collection::Sort(sort), French()).c_str(), m_filter.sort == collection::Sort(sort)))
+                if (ui::SelectOption(SortText(collection::Sort(sort)).c_str(), m_filter.sort == collection::Sort(sort)))
                     m_filter.sort = collection::Sort(sort);
             ui::EndSelect();
         }
@@ -1181,7 +1273,7 @@ namespace launcher_ui
         clear.size = ui::Size::Small;
         if (ui::Button(Tr("Clear all"), clear))
             ClearFilters();
-        const std::string count = collection::FigureCount(FoundCount(), French());
+        const std::string count = FigureCountText(FoundCount());
         ui::PushText(ui::TextStyle::Caption);
         const float countWidth = ImGui::CalcTextSize(count.c_str()).x;
         ui::PopText();
@@ -1404,7 +1496,7 @@ namespace launcher_ui
             // The shelf has no title (the bar says what it shows); what follows does.
             if (section.kind != Section::Kind::Shelf)
             {
-                const std::string count = collection::FigureCount(int(section.items.size()), French());
+                const std::string count = FigureCountText(int(section.items.size()));
                 ui::SectionHeader(SectionName(section).c_str(), count.c_str());
                 ImGui::Dummy(ImVec2(0, ui::space::XXS));
             }

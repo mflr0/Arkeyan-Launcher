@@ -251,7 +251,7 @@ namespace launcher_ui
             uint32_t from = figures::LevelExperience[std::clamp(level - 1, 0, figures::MaxLevelSwapForce - 1)];
             uint32_t to = level >= figures::MaxLevelSwapForce ? from : figures::LevelExperience[level];
             float fraction = to > from ? std::clamp(float(xp - from) / float(to - from), 0.0f, 1.0f) : 1.0f;
-            ui::Text(ui::TextStyle::Title, collection::LevelText(f, m_model.gameId, French()).c_str(), ui::color::Ink, -1);
+            ui::Text(ui::TextStyle::Title, LevelLabel(f, m_model.gameId).c_str(), ui::color::Ink, -1);
             ui::ProgressBar(fraction, -1, false);
             std::string next = level >= figures::MaxLevelSwapForce ? std::string(Tr("maximum level")) : Tf("{} to level {}", ui::FormatNumber(to - xp), level + 1);
             ui::Text(ui::TextStyle::Caption, Tf("{} XP · {}", ui::FormatNumber(xp), next).c_str(), ui::color::Dim);
@@ -714,7 +714,7 @@ namespace launcher_ui
     {
         if (f.toy == nullptr)
             return;
-        std::string language = French() ? "fr" : "en";
+        std::string language = i18n::Current();
         collection::UpgradeTable table = collection::Upgrades(*f.toy, m_model.gameId, language);
         if (table.upgrades.empty())
             return;

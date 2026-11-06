@@ -142,7 +142,7 @@ namespace launcher_ui
                     toys.push_back(&toy);
             if (toys.empty())
                 continue;
-            const std::string count = collection::FigureCount(int(toys.size()), French());
+            const std::string count = FigureCountText(int(toys.size()));
             ui::SectionHeader(pass == 0 ? Tf("Works in {}", ShortGameName(m_addGame)).c_str() : Tr("Later games"), count.c_str(), pass > 0);
             ImGui::Dummy(ImVec2(0, ui::space::XXS));
             for (size_t i = 0; i < toys.size(); i++)
