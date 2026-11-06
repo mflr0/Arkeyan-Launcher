@@ -483,7 +483,10 @@ namespace launcher_ui
             seat = -1;
         }
         if (seat != m_choosing)
+        {
             m_generation++;
+            m_shelfTop = seat >= 0; // choosing starts at the shelf's first row, never under a half-hidden one
+        }
         m_choosing = seat;
     }
 
@@ -634,6 +637,11 @@ namespace launcher_ui
         const float legend = pad ? ui::height::Normal + ImGui::GetStyle().ItemSpacing.y : 0;
         ui::BeginRoomyChild("##shelf", ImVec2(0, -legend), ImGuiChildFlags_NavFlattened, ImGuiWindowFlags_NoBackground);
         ImGui::SetScrollX(0.0f);
+        if (m_shelfTop)
+        {
+            ImGui::SetScrollY(0.0f);
+            m_shelfTop = false;
+        }
         DrawList();
         if (m_testScrollBottom)
             ImGui::SetScrollY(ImGui::GetScrollMaxY());

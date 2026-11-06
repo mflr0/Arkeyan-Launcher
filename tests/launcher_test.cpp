@@ -2474,7 +2474,7 @@ static int RunChecks(int argc, char** argv)
     EXPECT(datadir::GameFolderName("superchargers") == "SuperChargers" && datadir::GameFolderName("imaginators") == "Imaginators");
     EXPECT(LauncherTheme::StyleOf("superchargers").top == LauncherTheme::SuperChargersStyle.top &&
            LauncherTheme::StyleOf("imaginators").top == LauncherTheme::ImaginatorsStyle.top);
-    EXPECT(GameKeys("imaginators").size() == GameKeys("superchargers").size() && !GameKeys("imaginators").empty());
+    EXPECT(!GameKeys("imaginators").empty() && !GameKeys("superchargers").empty()); // each its own list (settings_test.cpp)
     EXPECT(LauncherTheme::StyleOf("trapteam").top == LauncherTheme::TrapTeamStyle.top);
     EXPECT(datadir::GameFolderName("trapteam") == "TrapTeam");
 

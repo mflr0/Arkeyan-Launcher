@@ -230,6 +230,7 @@ namespace launcher_ui
         size_t m_starters = 0;          // untouched starters (Manage > Tidy)
         std::map<std::string, std::vector<BackupRow>> m_backups; // per figure, filled as asked
         int m_manageTab = 0;
+        bool m_shelfTop = false; // the shelf back to its top on the next frame (choosing a figure for a seat)
         bool m_manageFresh = true; // Manage has just opened: the focus goes to the tab it opened on, not the first
         std::string m_backupsOf;
         std::string m_backupsScrolled; // the figure whose backups were scrolled into view when they opened
