@@ -49,6 +49,19 @@ namespace
         { "back", N_("Skylander/Villain Stats"), "Back", SDL_SCANCODE_BACKSPACE }, { "start", N_("Pause"), "Start", SDL_SCANCODE_RETURN },
     };
 
+    // SuperChargers' own controls screen (pause menu, read in the running game): the vehicle's words sit on the same buttons as
+    // the Skylander's. LB drifts like A, LT switches the co-op driver, RB interacts; the D-pad (Customize) and the stick click
+    // (Horn) have no row. Imaginators runs on the same engine; its Back is the Skylander profile.
+    #define SC_ROWS(BACK) \
+        MOVE_ROWS, \
+        { "a", N_("Jump / Drift (vehicle)"), "A", SDL_SCANCODE_SPACE }, { "x", N_("Attack 1"), "X", SDL_SCANCODE_C, "Mouse Left" }, \
+        { "y", N_("Attack 2"), "Y", SDL_SCANCODE_V }, { "b", N_("Brake / Reverse (vehicle)"), "B", SDL_SCANCODE_X, "Mouse Right" }, \
+        { "lb", N_("Drift (vehicle)"), "LB", SDL_SCANCODE_Q }, { "rb", N_("Interact"), "RB", SDL_SCANCODE_E }, \
+        { "lt", N_("Switch Driver (co-op)"), "LT", SDL_SCANCODE_1 }, { "rt", N_("Accelerate (vehicle)"), "RT", SDL_SCANCODE_3 }, \
+        { "back", BACK, "Back", SDL_SCANCODE_BACKSPACE }, { "start", N_("Pause"), "Start", SDL_SCANCODE_RETURN }
+    constexpr GameKey SuperChargers[] = { SC_ROWS(N_("My Team")) };
+    constexpr GameKey Imaginators[] = { SC_ROWS(N_("Skylander Profile")) };
+
     // The SDL names of the keys the launcher words in the player's language (the others, letters and digits, are the same everywhere).
     constexpr std::array<const char*, 16> KeyNames = { N_("Space"), N_("Return"), N_("Backspace"), N_("Escape"), N_("Up"), N_("Down"),
         N_("Left"), N_("Right"), N_("Left Shift"), N_("Right Shift"), N_("Left Ctrl"), N_("Right Ctrl"), N_("Left Alt"), N_("Right Alt"),
@@ -83,8 +96,12 @@ std::span<const GameKey> GameKeys(std::string_view gameId)
         return Giants;
     if (gameId == "swapforce")
         return SwapForce;
-    if (gameId == "trapteam" || gameId == "superchargers" || gameId == "imaginators") // SuperChargers: Trap Team's pad, its driving on the triggers; Imaginators: SuperChargers' engine
+    if (gameId == "trapteam")
         return TrapTeam;
+    if (gameId == "superchargers")
+        return SuperChargers;
+    if (gameId == "imaginators")
+        return Imaginators;
     return {};
 }
 

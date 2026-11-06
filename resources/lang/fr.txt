@@ -788,6 +788,13 @@ Jump	Sauter
 Switch Skylander / Villain	Changer Skylander / Vilain
 Skylander/Villain Stats	Stats Skylander/Vilain
 Skylanders Stats	Stats Skylanders
+Jump / Drift (vehicle)	Sauter / Glissade (véhicule)
+Brake / Reverse (vehicle)	Freiner / Reculer (véhicule)
+Drift (vehicle)	Glissade (véhicule)
+Switch Driver (co-op)	Changer de pilote (coop)
+Accelerate (vehicle)	Accélérer (véhicule)
+My Team	Mon équipe
+Skylander Profile	Profil Skylander
 Pause	Pause
 Hold to reset every key of this game.	Maintenez pour réinitialiser toutes les touches de ce jeu.
 2nd Power	2e pouvoir

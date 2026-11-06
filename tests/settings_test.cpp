@@ -13,6 +13,7 @@
 #include "launcher/ui/launcher_app.h"
 #include "shared/collection/datadir.h"
 #include "shared/collection/save_backup.h"
+#include <set>
 #include <SDL3/SDL.h>
 #include <stb_image_write.h>
 #include <cstdio>
@@ -151,6 +152,24 @@ namespace
             leftBumper = leftBumper || std::string_view(key.action) == "lb";
         }
         SETTINGS_EXPECT(tagTeam && rightBumper && !leftBumper);
+
+        // Every game's list: unique actions, one row per pad button, SuperChargers' driving on the triggers.
+        for (const char* game : { "ssa", "giants", "swapforce", "trapteam", "superchargers", "imaginators" })
+        {
+            std::set<std::string> actions, pads;
+            for (const GameKey& key : GameKeys(game))
+                SETTINGS_EXPECT(actions.insert(key.action).second && (std::string_view(key.pad).find("stick") != std::string_view::npos || pads.insert(key.pad).second));
+        }
+        for (const char* game : { "superchargers", "imaginators" })
+        {
+            bool accelerate = false, drift = false;
+            for (const GameKey& key : GameKeys(game))
+            {
+                accelerate = accelerate || (std::string_view(key.action) == "rt" && std::string_view(key.label) == "Accelerate (vehicle)");
+                drift = drift || (std::string_view(key.action) == "lb" && std::string_view(key.label) == "Drift (vehicle)");
+            }
+            SETTINGS_EXPECT(accelerate && drift);
+        }
         SeedGameVideo(config, "trapteam");
         SETTINGS_EXPECT(config["trapteam.video"]["fps_limit"] == "30" && config["trapteam.video"]["vsync"] == "0");
         config["trapteam.video"]["fps_limit"] = "60";
