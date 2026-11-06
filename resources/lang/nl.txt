@@ -1,0 +1,1014 @@
+# Arkeyan Launcher in Dutch. English is the source (docs/translations.md); a missing string shows in English.
+# One "English<TAB>Dutch" per line; \n is a new line. Placeholders ({}, {0}, {:g}...) keep their format.
+@code nl
+@name Nederlands
+
+\n\nAllow access in System Settings > Privacy & Security > Files and Folders.	\n\nGeef toegang in Systeeminstellingen > Privacy en beveiliging > Bestanden en mappen.
+\n- {} (media ID {:08X}, version {})	\n- {} (media-ID {:08X}, versie {})
+ (replaces {})	 (vervangt {})
+ · {} already there	 · {} al aanwezig
+ · {} are toys you already have	 · {} zijn speelgoed dat je al hebt
+ · {} favorite	 · {} favoriet
+ · {} favorites	 · {} favorieten
+ · {} is a toy you already have	 · {} is speelgoed dat je al hebt
+ · {} not a figure	 · {} geen figuur
+ · {} unknown toy (Manage)	 · {} onbekend speelgoed (Beheren)
+ · {} unknown toys (Manage)	 · {} onbekend speelgoed (Beheren)
+"System default" follows your system.	"Systeemstandaard" volgt je systeem.
+({} earlier lines in Copy log)	({} eerdere regels in Log kopiëren)
+,	.
+.	,
+0 to {}	0 tot {}
+0%	0%
+1 gamepad connected.	1 gamepad aangesloten.
+1 to {}	1 tot {}
+1. Open Windows Security, then Virus & threat protection > Protection history.	1. Open Windows-beveiliging en ga naar Virus- en bedreigingsbeveiliging > Beveiligingsgeschiedenis.
+10%	10%
+100%	100%
+120 (experimental)	120 (experimenteel)
+144 (experimental)	144 (experimenteel)
+16 characters at most	Maximaal 16 tekens
+16:9 (with bars)	16:9 (met balken)
+1st Power / Accept	1e kracht / Accepteren
+2. Open the blocked item, then Actions > Allow on device.	2. Open het geblokkeerde item en kies Acties > Toestaan op apparaat.
+20%	20%
+240 (experimental)	240 (experimenteel)
+2nd Power	2e kracht
+3. In Virus & threat protection settings, choose Manage settings > Exclusions > Add or remove exclusions > Add an exclusion > Folder, and pick %APPDATA%\\Skylanders\\kit.	3. Kies bij de instellingen voor Virus- en bedreigingsbeveiliging Instellingen beheren > Uitsluitingen > Uitsluitingen toevoegen of verwijderen > Een uitsluiting toevoegen > Map en selecteer %APPDATA%\\Skylanders\\kit.
+30 (original)	30 (origineel)
+30%	30%
+4. Back here, choose Retry.	4. Kom hier terug en kies Opnieuw proberen.
+40%	40%
+50%	50%
+60 (experimental)	60 (experimenteel)
+60%	60%
+70%	70%
+80%	80%
+90%	90%
+A figure is in use: quit the game first.	Een figuur is in gebruik: sluit eerst het spel af.
+A file of the game tools was changed: {}	Een bestand van de spelhulpmiddelen is gewijzigd: {}
+A file of {0} was changed: {1}	Een bestand van {0} is gewijzigd: {1}
+A game is running: quit it first.	Er draait een spel: sluit het eerst af.
+About	Over
+About {} min, {} GB	Ongeveer {} min, {} GB
+Accelerate (vehicle)	Optrekken (voertuig)
+Achievements	Prestaties
+Action	Actie
+Add a figure	Figuur toevoegen
+Add a profile	Profiel toevoegen
+Add to favorites	Aan favorieten toevoegen
+Adding the movie shaders	Filmshaders toevoegen
+Advanced	Geavanceerd
+Adventure	Avontuur
+Adventure Packs	Avonturenpakketten
+Air	Lucht
+All	Alles
+All elements	Alle elementen
+All games	Alle spellen
+All games are updated	Alle spellen zijn bijgewerkt
+All types	Alle typen
+Also delete my saves and my figures	Ook mijn savegames en figuren verwijderen
+Alternate deco	Alternatieve versie
+An antivirus often does this: it may have put the file in quarantine. Restore it from the antivirus's quarantine, or add an exclusion for this folder:	Dit komt vaak door een antivirusprogramma: het bestand kan in quarantaine staan. Haal het terug uit de quarantaine van je antivirusprogramma of voeg een uitzondering toe voor deze map:
+And 1 other file.	En nog 1 bestand.
+And {} other files.	En nog {} bestanden.
+Anisotropic 16x	Anisotroop 16x
+Anisotropic 2x	Anisotroop 2x
+Anisotropic 4x	Anisotroop 4x
+Anisotropic 8x	Anisotroop 8x
+Anonymous: your names are removed. Save it, then add it to a GitHub issue.	Anoniem: je namen worden verwijderd. Sla het op en voeg het toe aan een GitHub-issue.
+Appears once the game's disc is checked.	Verschijnt zodra de schijf van het spel is gecontroleerd.
+Apr	apr.
+Arkeyan Launcher can't remove itself from here: delete it by hand.	Arkeyan Launcher kan zichzelf hier niet verwijderen: verwijder het handmatig.
+Arkeyan Launcher closed during the install. Resume to continue from this step.	Arkeyan Launcher is tijdens de installatie gesloten. Hervat om bij deze stap verder te gaan.
+Arkeyan Launcher couldn't find its own file.	Arkeyan Launcher kon zijn eigen bestand niet vinden.
+Arkeyan Launcher deletes itself when you quit.	Arkeyan Launcher verwijdert zichzelf als je afsluit.
+Arkeyan Launcher goes to the Trash when you quit.	Arkeyan Launcher gaat naar de Prullenbak als je afsluit.
+Arkeyan Launcher is up to date.	Arkeyan Launcher is up-to-date.
+Arkeyan Launcher is up to date. An update is available for {}.	Arkeyan Launcher is up-to-date. Er is een update beschikbaar voor {}.
+Arkeyan Launcher is up to date. {} game updates available.	Arkeyan Launcher is up-to-date. Er zijn {} spelupdates beschikbaar.
+Arkeyan Launcher on GitHub	Arkeyan Launcher op GitHub
+Arkeyan Launcher {} is installed. Restart to use it.	Arkeyan Launcher {} is geïnstalleerd. Start opnieuw om het te gebruiken.
+At the next start of {}	Bij de volgende start van {}
+Attack 1	Aanval 1
+Attack 1 / Accept	Aanval 1 / Accepteren
+Attack 2	Aanval 2
+Attack 3	Aanval 3
+Attack 3 / Back	Aanval 3 / Terug
+Aug	aug.
+Auto	Auto
+Auto (follows the window)	Auto (volgt het venster)
+Auto shows more when wide; 16:9 adds bars.	Auto toont meer bij een breed scherm; 16:9 voegt balken toe.
+Auto-open Toy Box	Toy Box automatisch openen
+Automatic	Automatisch
+Automatic detection	Automatische detectie
+Back	Terug
+Back side button	Zijknop achter
+Back up now	Nu back-uppen
+Backed up	Back-up gemaakt
+Backspace	Backspace
+Backup restored	Back-up hersteld
+Backups	Back-ups
+Basic	Standaard
+Before you beat the game. Your save is untouched.	Voordat je het spel uitspeelt. Je savegame blijft ongewijzigd.
+Blank figures from old versions. Tidy trashes them.	Lege figuren van oude versies. Opruimen verplaatst ze naar de prullenbak.
+Bottom file	Onderste bestand
+Brake / Reverse (vehicle)	Remmen / Achteruit (voertuig)
+Builds the game on your PC: about {} min, {} GB, internet needed once.	Bouwt het spel op je pc: ongeveer {} min, {} GB, eenmalig internet nodig.
+Built for this disc.	Gemaakt voor deze schijf.
+Built with SDL 3, Dear ImGui, {fmt}, stb, miniz, XenonRecomp, Outfit and Bungee. MIT licensed.	Gebouwd met SDL 3, Dear ImGui, {fmt}, stb, miniz, XenonRecomp, Outfit en Bungee. MIT-licentie.
+Button glyphs	Knopsymbolen
+CHECKING...	CONTROLEREN...
+COMING LATER	KOMT LATER
+Caches and logs	Caches en logs
+Caches cleared	Caches gewist
+Can't read the disc	Kan de schijf niet lezen
+Can't read the disc image ({}).{}	Kan het schijfimage niet lezen ({}).{}
+Can't update here: the release page was opened.	Bijwerken kan hier niet: de releasepagina is geopend.
+Can't write to the Desktop folder.	Kan niet naar de map Bureaublad schrijven.
+Cancel	Annuleren
+Caps Lock	Caps Lock
+Carry on copying	Doorgaan met kopiëren
+Change disc...	Schijf wijzigen...
+Change profile	Profiel wijzigen
+Change the bottom	Onderste deel wijzigen
+Change the top	Bovenste deel wijzigen
+Change...	Wijzigen...
+Changed	Gewijzigd
+Check at startup	Controleren bij opstarten
+Check for updates	Controleren op updates
+Check now	Nu controleren
+Checking Arkeyan Launcher	Arkeyan Launcher controleren
+Checking the Xbox 360 executable	Het Xbox 360-uitvoerbare bestand controleren
+Checking your disc	Je schijf controleren
+Checking...	Controleren...
+Chinese	Chinees
+Choose	Kiezen
+Choose a figure for {}	Kies een figuur voor {}
+Choose a folder...	Kies een map...
+Choose a key to change it.	Kies een toets om die te wijzigen.
+Choose a type	Kies een type
+Choose another	Kies een andere
+Choose disc	Schijf kiezen
+Choose the disc image first	Kies eerst het schijfimage
+Choose the disc image first.	Kies eerst het schijfimage.
+Choose the disc image to carry on.	Kies het schijfimage om verder te gaan.
+Choose the disc image to repair.	Kies het schijfimage om te herstellen.
+Choose what each button does.	Kies wat elke knop doet.
+Choose your disc	Kies je schijf
+Choose your {} disc image	Kies je schijfimage van {}
+Choose...	Kiezen...
+Chrome	Chroom
+Circle	Cirkel
+Clean up	Opruimen
+Clear all	Alles wissen
+Clear caches	Caches wissen
+Clear search and filters	Zoekopdracht en filters wissen
+Clear the figures	Figuren verwijderen
+Clearing caches frees {}.	Caches wissen maakt {} vrij.
+Clearing caches frees {}; deleting saves and data frees {} more.	Caches wissen maakt {} vrij; savegames en gegevens verwijderen nog {} extra.
+Click or turn the wheel	Klik of draai het wiel
+Click, then press a mouse button or turn the wheel (Escape cancels).	Klik en druk dan op een muisknop of draai het wiel (Escape annuleert).
+Click: put it on {}	Klik: op {} zetten
+Click: sheet · drag to a seat	Klik: figuurblad · sleep naar een plek
+Close	Sluiten
+Code	Code
+Collection	Collectie
+Color	Kleur
+Coming later	Komt later
+Comparing with the supported releases	Vergelijken met de ondersteunde releases
+Compiling the game	Het spel compileren
+Completed steps	Voltooide stappen
+Continue	Doorgaan
+Controller	Controller
+Controller buttons reset	Controllerknoppen opnieuw ingesteld
+Controller, keyboard, real or virtual portal	Controller, toetsenbord, echte of virtuele portal
+Controller: {}	Controller: {}
+Controls	Besturing
+Copied: {}, 1 file	Gekopieerd: {}, 1 bestand
+Copied: {}, {} files	Gekopieerd: {}, {} bestanden
+Copies the disc's files ({}). No image needed after.	Kopieert de bestanden van de schijf ({}). Daarna is geen image nodig.
+Copies the disc's files. No image needed after.	Kopieert de bestanden van de schijf. Daarna is geen image nodig.
+Copy	Kopiëren
+Copy files	Bestanden kopiëren
+Copy game log	Spellog kopiëren
+Copy log	Log kopiëren
+Copy removed: {} freed	Kopie verwijderd: {} vrijgemaakt
+Copy stopped	Kopiëren gestopt
+Copy stopped: {}. Press the button to carry on.	Kopiëren gestopt: {}. Druk op de knop om verder te gaan.
+Copying...	Kopiëren...
+Copying: {} of {}	Kopiëren: {} van {}
+Couldn't back it up	Back-up maken is mislukt
+Couldn't change it: 	Wijzigen is mislukt: 
+Couldn't check: {}	Controleren is mislukt: {}
+Couldn't create the figure	Figuur maken is mislukt
+Couldn't create the game folder: {}	Spelmap maken is mislukt: {}
+Couldn't create the shortcut	Snelkoppeling maken is mislukt
+Couldn't create the shortcut: {}	Snelkoppeling maken is mislukt: {}
+Couldn't delete it: 	Verwijderen is mislukt: 
+Couldn't delete: {}	Verwijderen is mislukt: {}
+Couldn't download the compiler. Check your connection.	Compiler downloaden is mislukt. Controleer je verbinding.
+Couldn't download the game tools. Check your connection.	Spelhulpmiddelen downloaden is mislukt. Controleer je verbinding.
+Couldn't duplicate it: 	Dupliceren is mislukt: 
+Couldn't export the game: {}	Spel exporteren is mislukt: {}
+Couldn't move {} aside: {}	{} opzijzetten is mislukt: {}
+Couldn't open the folder	Map openen is mislukt
+Couldn't put it back	Terugzetten is mislukt
+Couldn't put the kit in place: {}	Kit op zijn plek zetten is mislukt: {}
+Couldn't put the new {} in place: {}	Nieuwe {} op zijn plek zetten is mislukt: {}
+Couldn't read the disc image. Check that it's complete.	Kan het schijfimage niet lezen. Controleer of het compleet is.
+Couldn't read this image	Kan dit image niet lezen
+Couldn't remove the copy: {}	Kopie verwijderen is mislukt: {}
+Couldn't remove the profile	Profiel verwijderen is mislukt
+Couldn't repair the game tools: {}	Spelhulpmiddelen herstellen is mislukt: {}
+Couldn't reset it: 	Resetten is mislukt: 
+Couldn't restart: start Arkeyan Launcher again	Opnieuw starten is mislukt: start Arkeyan Launcher opnieuw
+Couldn't restore it: 	Herstellen is mislukt: 
+Couldn't restore the backup: {}	Back-up herstellen is mislukt: {}
+Couldn't save it: 	Opslaan is mislukt: 
+Couldn't save the download: {}	Download opslaan is mislukt: {}
+Couldn't save the name	Naam opslaan is mislukt
+Couldn't save the report	Rapport opslaan is mislukt
+Couldn't save the settings	Instellingen opslaan is mislukt
+Couldn't show the game window.	Kan het spelvenster niet tonen.
+Couldn't start the game: the file is missing	Spel starten is mislukt: het bestand ontbreekt
+Couldn't start the game: {}	Spel starten is mislukt: {}
+Couldn't unpack {}	{} uitpakken is mislukt
+Couldn't write the seats for the next start	Plekken voor de volgende start schrijven is mislukt
+Couldn't write to the game folder.	Kan niet naar de spelmap schrijven.
+Create	Aanmaken
+Create the profile	Profiel aanmaken
+Create the {} starter pack	Starterpakket van {} aanmaken
+Create {}	{} aanmaken
+Created {}	{} aangemaakt
+Creation Crystals	Creation Crystals
+Credits	Credits
+Cross	Kruis
+Crystal Clear	Kristalhelder
+D-pad down	D-pad omlaag
+D-pad left	D-pad links
+D-pad right	D-pad rechts
+D-pad up	D-pad omhoog
+Dark	Donker
+Data folder	Gegevensmap
+Dec	dec.
+Default	Standaard
+Delete	Verwijderen
+Delete saves and data	Savegames en gegevens verwijderen
+Delete...	Verwijderen...
+Deleted figures are kept 30 days.	Verwijderde figuren blijven 30 dagen bewaard.
+Deleting saves and data frees {}.	Savegames en gegevens verwijderen maakt {} vrij.
+Designed by dorydev, made by mflr0, UI/UX by Gumelia.	Ontworpen door dorydev, gemaakt door mflr0, UI/UX door Gumelia.
+Desktop shortcut	Snelkoppeling op bureaublad
+Desktop shortcuts	Snelkoppelingen op bureaublad
+Details	Details
+Difficulty	Moeilijkheid
+Disc	Schijf
+Disc checked	Schijf gecontroleerd
+Disc image	Schijfimage
+Disc not found	Schijf niet gevonden
+Display refresh rate (up to 60)	Verversingssnelheid van het scherm (tot 60)
+Doubles the game's textures from your disc. About {} of disk, a few minutes.	Verdubbelt de texturen van het spel vanaf je schijf. Ongeveer {} schijfruimte, een paar minuten.
+Down	Omlaag
+Downloading Arkeyan Launcher	Arkeyan Launcher downloaden
+Downloading the game tools	Spelhulpmiddelen downloaden
+Downloading the game tools again	Spelhulpmiddelen opnieuw downloaden
+Downloading tools	Hulpmiddelen downloaden
+Drag Arkeyan Launcher to Applications, replacing the old one.	Sleep Arkeyan Launcher naar Programma's en vervang de oude versie.
+Drift (vehicle)	Driften (voertuig)
+Drop figure files or a folder on the window.	Sleep figuurbestanden of een map naar het venster.
+Drop to 30 FPS when needed	Terugschakelen naar 30 FPS indien nodig
+Dump textures	Texturen dumpen
+Duplicate	Dupliceren
+Duplicated: 	Gedupliceerd: 
+Each has its own Toy Box, saves, keys and achievements.	Elk heeft zijn eigen Toy Box, savegames, toetsen en prestaties.
+Earlier versions of your saves.	Eerdere versies van je savegames.
+Earth	Aarde
+Edge smoothing	Kantenverzachting
+Edit	Bewerken
+Edit my profile	Mijn profiel bewerken
+Edit profile	Profiel bewerken
+Element	Element
+Empty	Leeg
+Empty: the toy's name	Leeg: de naam van het speelgoed
+Eon's Elite	Eon's Elite
+Erase	Wissen
+Escape	Escape
+Event and exclusive	Event en exclusief
+Every download is checked against the release's SHA-256 before it runs, and every release is built by GitHub Actions from the public source.	Elke download wordt gecontroleerd aan de hand van de SHA-256 van de release voordat hij start, en elke release wordt door GitHub Actions gebouwd uit de openbare broncode.
+Everything is removed	Alles wordt verwijderd
+Evolved	Evolved
+Experience	Ervaring
+Export a portable copy	Een draagbare kopie exporteren
+Export everything...	Alles exporteren...
+Export first	Eerst exporteren
+Export for {}	Exporteren voor {}
+Export stopped	Exporteren gestopt
+Export the figures to	De figuren exporteren naar
+Exported {} figure to {}	{} figuur geëxporteerd naar {}
+Exported {} figures to {}	{} figuren geëxporteerd naar {}
+Exporting...	Exporteren...
+Exporting: {} of {}	Exporteren: {} van {}
+FPS counter	FPS-teller
+FXAA also softens texture detail; Gentle keeps more of it.	FXAA verzacht ook texturedetail; Zacht behoudt er meer van.
+Favorite	Favoriet
+Feb	feb.
+Figure dumps (.sky, .bin, .dmp)	Figuurdumps (.sky, .bin, .dmp)
+Figure sheet	Figuurblad
+Figures	Figuren
+File	Bestand
+Files missing or changed	Bestanden ontbreken of zijn gewijzigd
+Filters	Filters
+Finding default.xex	default.xex zoeken
+Fingerprinting default.xex (SHA-256)	Vingerafdruk van default.xex maken (SHA-256)
+Finishing	Afronden
+Fire	Vuur
+Flocked	Fluwelen
+Folders	Mappen
+For pack makers: saves the textures as DDS files.	Voor pakketmakers: slaat de texturen op als DDS-bestanden.
+For {}	Voor {}
+Forward side button	Zijknop voor
+Found	Gevonden
+Found, not usable	Gevonden, niet bruikbaar
+Frame rate limit	Framerate-limiet
+Frees {}. Saves and settings are kept.	Maakt {} vrij. Savegames en instellingen blijven bewaard.
+Fullscreen	Volledig scherm
+Game	Spel
+Game art comes from your own disc.	De afbeeldingen van het spel komen van je eigen schijf.
+Game data	Spelgegevens
+Game data copies	Kopieën van spelgegevens
+Game data damaged	Spelgegevens beschadigd
+Game data damaged: using the disc image	Spelgegevens beschadigd: het schijfimage wordt gebruikt
+Game data damaged: using the disc image.	Spelgegevens beschadigd: het schijfimage wordt gebruikt.
+Game data damaged: {}	Spelgegevens beschadigd: {}
+Game files	Spelbestanden
+Game installed: press PLAY	Spel geïnstalleerd: druk op PLAY
+Game kit not found. Put the skylanders-kit folder next to Arkeyan Launcher, then press Retry.	Spelkit niet gevonden. Zet de map skylanders-kit naast Arkeyan Launcher en druk op Opnieuw proberen.
+Game language	Spelstaal
+Game log	Spellog
+Game log copied	Spellog gekopieerd
+Game settings	Spelinstellingen
+Game text	Speltekst
+Game tools	Spelhulpmiddelen
+Game uninstalled	Spel gedeïnstalleerd
+Game voices	Spelstemmen
+Gamepad	Gamepad
+Games	Spellen
+Games updated: {} of {}	Spellen bijgewerkt: {} van {}
+Games: XenonRecomp, XenosRecomp, plume, SDL 3, Dear ImGui, FFmpeg, parts of Xenia. Figure format learned from Dolphin and RPCS3.	Spellen: XenonRecomp, XenosRecomp, plume, SDL 3, Dear ImGui, FFmpeg, delen van Xenia. Figuurformaat geleerd van Dolphin en RPCS3.
+Gentle	Zacht
+Giants	Giants
+GitHub	GitHub
+GitHub says: {}	GitHub zegt: {}
+Glow in the Dark	Glow in the Dark
+Gold	Goud
+Greek	Grieks
+HD texture packs	HD-texturepakketten
+HD textures	HD-texturen
+HD textures ready	HD-texturen klaar
+HD textures removed	HD-texturen verwijderd
+HD textures stopped	HD-texturen gestopt
+HID portals	HID-portals
+Hat	Hoed
+Hero points	Heldenpunten
+Hidden achievement	Verborgen prestatie
+Hide details	Details verbergen
+Higher scales need a dedicated graphics card.	Hogere schalen vragen om een aparte videokaart.
+Hold if its game has quit.	Houd ingedrukt als het bijbehorende spel is afgesloten.
+Hold to clear the caches.	Houd ingedrukt om de caches te wissen.
+Hold to confirm	Houd ingedrukt om te bevestigen
+Hold to delete all of this.	Houd ingedrukt om dit allemaal te verwijderen.
+Hold to delete it for good.	Houd ingedrukt om het definitief te verwijderen.
+Hold to delete saves, backups and caches.	Houd ingedrukt om savegames, back-ups en caches te verwijderen.
+Hold to delete the built game. Saves are kept.	Houd ingedrukt om het gebouwde spel te verwijderen. Savegames blijven bewaard.
+Hold to delete the copy.	Houd ingedrukt om de kopie te verwijderen.
+Hold to delete the partial copy.	Houd ingedrukt om de gedeeltelijke kopie te verwijderen.
+Hold to give every button its own job back.	Houd ingedrukt om elke knop zijn eigen taak terug te geven.
+Hold to mark them as not in use.	Houd ingedrukt om ze als niet in gebruik te markeren.
+Hold to move them to the trash.	Houd ingedrukt om ze naar de prullenbak te verplaatsen.
+Hold to put this copy back.	Houd ingedrukt om deze kopie terug te zetten.
+Hold to rebuild the game.	Houd ingedrukt om het spel opnieuw te bouwen.
+Hold to reset every key of this game.	Houd ingedrukt om alle toetsen van dit spel te resetten.
+Hold to restore; your current saves are kept first.	Houd ingedrukt om te herstellen; je huidige savegames worden eerst bewaard.
+INSTALL	INSTALLEREN
+INSTALLATION INTERRUPTED	INSTALLATIE ONDERBROKEN
+INSTALLATION STOPPED	INSTALLATIE GESTOPT
+INSTALLING THE GAME	HET SPEL WORDT GEÏNSTALLEERD
+INSTALLING...	INSTALLEREN...
+If Windows Defender blocks a file:	Als Windows Defender een bestand blokkeert:
+Import a folder...	Een map importeren...
+Import an image...	Een image importeren...
+Import and export	Importeren en exporteren
+Import figures	Figuren importeren
+Import files...	Bestanden importeren...
+Import the figures of a folder	De figuren uit een map importeren
+Imported {}	{} geïmporteerd
+In {}	In {}
+Initials	Initialen
+Install	Installeren
+Install failed	Installatie mislukt
+Install the game first.	Installeer eerst het spel.
+Installation canceled	Installatie geannuleerd
+Installing	Installeren
+Installing Arkeyan Launcher	Arkeyan Launcher installeren
+Installing · {}	Installeren · {}
+Interact	Interactie
+Interrupted	Onderbroken
+Interrupted: {} of {} copied	Onderbroken: {} van {} gekopieerd
+It is made when the game is installed.	Wordt gemaakt zodra het spel is geïnstalleerd.
+It plays on {} without the launcher or the disc image, with the same saves and settings as the installed game. It never updates: to update it, export it again. Up to {}.	Het draait op {} zonder de launcher of het schijfimage, met dezelfde savegames en instellingen als het geïnstalleerde spel. Het wordt nooit bijgewerkt: exporteer het opnieuw om het bij te werken. Maximaal {}.
+Item or adventure	Voorwerp of avontuur
+Its evolved look	Zijn evolved uiterlijk
+Its name	Zijn naam
+Jan	jan.
+Japanese	Japans
+Jul	jul.
+Jump	Springen
+Jump / Drift (vehicle)	Springen / Driften (voertuig)
+Jun	jun.
+Keep installing	Doorgaan met installeren
+Keeps textures sharp at an angle.	Houdt texturen scherp onder een hoek.
+Kept: Xbox signing keys	Bewaard: Xbox-ondertekeningssleutels
+Keyboard	Toetsenbord
+Keyboard bindings reset	Toetsenbordinstellingen opnieuw ingesteld
+Korean	Koreaans
+L stick	Linkerstick
+Language	Taal
+Last checked {}	Laatst gecontroleerd {}
+Last played	Laatst gespeeld
+Last played: {}	Laatst gespeeld: {}
+Later	Later
+Later games	Latere spellen
+Launcher	Launcher
+Launcher settings	Launcher-instellingen
+Left	Links
+Left Alt	Linker Alt
+Left Ctrl	Linker Ctrl
+Left Shift	Linker Shift
+Left click	Linkermuisknop
+Left click: attack 1. Right click: attack 2. The game keeps the pointer.	Linkermuisknop: aanval 1. Rechtermuisknop: aanval 2. Het spel houdt de aanwijzer vast.
+Legendary	Legendarisch
+Level in {}	Level in {}
+Level {}	Level {}
+Library	Bibliotheek
+Licenses	Licenties
+Life	Leven
+Light	Licht
+LightCore	LightCore
+Linking the game	Het spel koppelen
+Live	Live
+Log copied	Log gekopieerd
+Logs	Logs
+Logs and settings, without your names, for a GitHub issue.	Logs en instellingen, zonder je namen, voor een GitHub-issue.
+Logs folder	Logmap
+Looking for the disc image	De schijfimage zoeken
+Looks for updates at each start.	Zoekt bij elke start naar updates.
+Low	Laag
+Made for 30 FPS; 60 and above are experimental.	Gemaakt voor 30 FPS; 60 en hoger zijn experimenteel.
+Magic	Magie
+Magic Items	Magische voorwerpen
+Magic item	Magisch voorwerp
+Making HD textures	HD-texturen maken
+Making the HD textures. You can keep using the launcher; the game waits.	HD-texturen worden gemaakt. Je kunt de launcher blijven gebruiken; het spel wacht.
+Manage	Beheren
+Manage profiles	Profielen beheren
+Mar	mrt.
+Mark as not in use	Markeren als niet in gebruik
+Mark as not in use · {}	Markeren als niet in gebruik · {}
+May	mei
+Menus, subtitles and on-screen text.	Menu's, ondertitels en tekst op het scherm.
+Menus, subtitles, spoken lines and cutscenes.	Menu's, ondertitels, gesproken tekst en tussenfilmpjes.
+Metallic	Metallic
+Middle click	Middelste muisknop
+Minis and sidekicks	Minis en sidekicks
+Missing figure	Ontbrekende figuur
+Model: {} (id {})	Model: {} (id {})
+More actions	Meer acties
+Mouse	Muis
+Move down	Omlaag
+Move left	Naar links
+Move right	Naar rechts
+Move to the trash	Naar de prullenbak verplaatsen
+Move up	Omhoog
+Move {} to the trash	{} naar de prullenbak verplaatsen
+Move {} to the trash? It stays there for 30 days.	{} naar de prullenbak verplaatsen? Het blijft daar 30 dagen.
+Moved to the trash	Naar de prullenbak verplaatst
+Movement	Beweging
+My Team	Mijn team
+Name	Naam
+Name (optional)	Naam (optioneel)
+Name this toy	Geef dit speelgoed een naam
+Name, element, game, level...	Naam, element, spel, level...
+Named: shown at the next start	Benoemd: zichtbaar bij de volgende start
+Native PC ports	Native pc-ports
+Native PC ports of Skylanders. No game code or art: it comes from your disc.	Native pc-ports van Skylanders. Geen spelcode of afbeeldingen: die komen van je eigen schijf.
+Needs newer game tools: reinstall the game to get them.	Heeft nieuwere spelhulpmiddelen nodig: installeer het spel opnieuw om ze te krijgen.
+Needs your disc	Heeft je schijf nodig
+Never	Nooit
+New profile	Nieuw profiel
+New: never played.	Nieuw: nog nooit gespeeld.
+Nickname	Bijnaam
+Nightmare from the start	Nachtmerrie vanaf het begin
+No backups yet.	Nog geen back-ups.
+No disc image needed.	Geen schijfimage nodig.
+No element	Geen element
+No figure matches	Geen figuur komt overeen
+No figures yet. Add one, or drop your figure files on the window.	Nog geen figuren. Voeg er een toe of sleep je figuurbestanden naar het venster.
+No game log yet.	Nog geen spellog.
+No game this launcher knows	Geen spel dat deze launcher kent
+No gamepad connected.	Geen gamepad aangesloten.
+No hat	Geen hoed
+No notes were published with this version.	Bij deze versie zijn geen notities gepubliceerd.
+No other bottom to take.	Geen ander onderstuk beschikbaar.
+No other top to take.	Geen ander bovenstuk beschikbaar.
+No portal found: the game will wait for one.	Geen portal gevonden: het spel wacht op er een.
+No portal found: using the virtual portal.	Geen portal gevonden: de virtuele portal wordt gebruikt.
+No saves or figures yet.	Nog geen savegames of figuren.
+No tearing, a little more latency.	Geen tearing, iets meer vertraging.
+No unknown toys.	Geen onbekend speelgoed.
+None	Geen
+None chosen yet.	Nog niets gekozen.
+None chosen.	Niets gekozen.
+None yet	Nog geen
+Normal	Normaal
+Not a game disc	Geen spelschijf
+Not an Xbox 360 disc image, or the file is incomplete.	Geen Xbox 360-schijfimage, of het bestand is niet compleet.
+Not an Xbox 360 game, or the image is incomplete.	Geen Xbox 360-spel, of het image is niet compleet.
+Not available for this game yet	Nog niet beschikbaar voor dit spel
+Not available for {} yet	Nog niet beschikbaar voor {}
+Not built yet.	Nog niet gebouwd.
+Not enough free space: about 6 GB needed.	Niet genoeg vrije ruimte: ongeveer 6 GB nodig.
+Not enough space: {} needed, {} free.	Niet genoeg ruimte: {} nodig, {} vrij.
+Not for this game	Niet voor dit spel
+Not for {}	Niet voor {}
+Not in the catalog. Name one to show it.	Niet in de catalogus. Geef een naam om het te tonen.
+Not installed yet	Nog niet geïnstalleerd
+Not needed: the game plays from its copied data.	Niet nodig: het spel draait vanaf zijn gekopieerde gegevens.
+Not now	Niet nu
+Not played yet	Nog niet gespeeld
+Nothing	Niets
+Nothing for this seat yet	Nog niets voor deze plek
+Nothing to remove.	Niets om te verwijderen.
+Nothing was removed	Er is niets verwijderd
+Nov	nov.
+Now with {}	Nu met {}
+OK	OK
+Oct	okt.
+Off	Uit
+Off: your rate stays, even if the picture stutters.	Uit: je framerate blijft, ook als het beeld hapert.
+Older folders	Oudere mappen
+On	Aan
+On its own	Op zichzelf
+On the portal	Op de portal
+On the portal for	Op de portal voor
+On the portal in {}: read-only	Op de portal in {}: alleen-lezen
+On the wheel	Op het wiel
+On the wheel: {}	Op het wiel: {}
+On {} at the next start of {}	Op {} bij de volgende start van {}
+One file	Eén bestand
+Open	Openen
+Open its sheet	Zijn blad openen
+Open logs folder	Logmap openen
+Open the Toy Box	De Toy Box openen
+Open the folder	De map openen
+Opening the disc image	Het schijfimage openen
+Opens a new issue on GitHub	Opent een nieuw issue op GitHub
+Opens the Toy Box when the game asks for a figure.	Opent de Toy Box wanneer het spel om een figuur vraagt.
+Or drop your .iso on this window. It stays on this computer.	Of sleep je .iso naar dit venster. Het blijft op deze computer.
+Original resolution	Originele resolutie
+Other	Overig
+Other files in the figures folder stay.	Andere bestanden in de figurenmap blijven staan.
+Other seat	Andere plek
+PLAY	PLAY
+PLAY WITH	SPELEN MET
+Pages	Pagina's
+Pause	Pauze
+Pick a figure.	Kies een figuur.
+Pick one below	Kies er hieronder een
+Picture	Beeld
+Play	Spelen
+Play time: {}	Speeltijd: {}
+Play without updating	Spelen zonder bij te werken
+Play {}	{} spelen
+Play {} with Arkeyan Launcher	{} spelen met Arkeyan Launcher
+Player 1	Speler 1
+Player 2	Speler 2
+Player {}	Speler {}
+Playing now	Nu bezig
+Playing now · {} this session	Nu bezig · {} deze sessie
+Plays in	Speelt in
+Plug in the portal, then test it.	Sluit de portal aan en test hem.
+Portable copy	Draagbare kopie
+Portable copy saved: {}	Draagbare kopie opgeslagen: {}
+Portal	Portal
+Portal of Power	Portal of Power
+Portal sound	Portalgeluid
+Portal: not detected	Portal: niet gevonden
+Portal: {}	Portal: {}
+Preparing the compiler	De compiler voorbereiden
+Press INSTALL first	Druk eerst op INSTALLEREN
+Press a key for "{}" (Escape cancels)	Druk op een toets voor "{}" (Escape annuleert)
+Problem report	Probleemrapport
+Profiles	Profielen
+Put back	Terugzetten
+Put back: 	Teruggezet: 
+Put it on {}	Op {} zetten
+Put on the portal	Op de portal zetten
+Quit	Afsluiten
+Quit the game before restoring a backup	Sluit het spel af voordat je een back-up herstelt
+Quit the game first.	Sluit eerst het spel af.
+Quit the game to change profile	Sluit het spel af om van profiel te wisselen
+R stick	Rechterstick
+R stick down	Rechterstick omlaag
+R stick left	Rechterstick naar links
+R stick right	Rechterstick naar rechts
+R stick up	Rechterstick omhoog
+Reading default.xex	default.xex lezen
+Reading the Xbox 360 disc layout	De indeling van de Xbox 360-schijf lezen
+Reading the disc	De schijf lezen
+Reading the game's pictures	De afbeeldingen van het spel lezen
+Reading the title and icon	De titel en het pictogram lezen
+Ready	Klaar
+Ready to install	Klaar om te installeren
+Ready to play	Klaar om te spelen
+Ready · {} played	Klaar · {} gespeeld
+Real portal (Wii, PlayStation, Xbox)	Echte portal (Wii, PlayStation, Xbox)
+Real portal: the game will use it.	Echte portal: het spel gebruikt die.
+Reinstall	Opnieuw installeren
+Release page	Releasepagina
+Remove	Verwijderen
+Remove Arkeyan Launcher	Arkeyan Launcher verwijderen
+Remove from favorites	Uit favorieten verwijderen
+Remove game	Spel verwijderen
+Remove the copy	De kopie verwijderen
+Remove {}?	{} verwijderen?
+Removed, except	Verwijderd, behalve
+Removing the HD textures.	De HD-texturen worden verwijderd.
+Repair	Herstellen
+Repair builds the game again from your disc.	Herstellen bouwt het spel opnieuw op vanaf je schijf.
+Repair downloads the game tools again.	Herstellen downloadt de spelhulpmiddelen opnieuw.
+Repair needs the disc of {}	Voor herstellen is de schijf van {} nodig
+Repair the copy	De kopie herstellen
+Replaces the game's textures with your pack.	Vervangt de texturen van het spel door je pakket.
+Report	Rapporteren
+Report a bug	Een bug melden
+Report a problem	Een probleem melden
+Report copied	Rapport gekopieerd
+Report saved	Rapport opgeslagen
+Report saved: {}	Rapport opgeslagen: {}
+Reset	Resetten
+Reset to defaults	Terug naar standaard
+Reset to new	Terugzetten naar nieuw
+Reset to new...	Terugzetten naar nieuw...
+Reset {} to new? Level, gold and upgrades are lost.	{} terugzetten naar nieuw? Level, goud en upgrades gaan verloren.
+Resolution scale	Resolutieschaal
+Restart now	Nu opnieuw starten
+Restore	Herstellen
+Restore a backup...	Back-up herstellen...
+Resume	Hervatten
+Retry	Opnieuw proberen
+Retry to continue from this step.	Probeer opnieuw om bij deze stap verder te gaan.
+Retry to start the installation.	Probeer opnieuw om de installatie te starten.
+Return	Terug
+Right	Rechts
+Right Alt	Rechter Alt
+Right Ctrl	Rechter Ctrl
+Right Shift	Rechter Shift
+Right click	Rechtermuisknop
+Rumble	Trillen
+Running	Bezig
+Russian	Russisch
+Same	Gelijk
+Same as text	Zelfde als tekst
+Save	Opslaan
+Save as...	Opslaan als...
+Save backups	Back-ups maken
+Save to Desktop	Op bureaublad opslaan
+Saved	Opgeslagen
+Saved gamepad (not connected)	Opgeslagen gamepad (niet aangesloten)
+Saves	Savegames
+Saves and data deleted	Savegames en gegevens verwijderd
+Saves restored from {}	Savegames hersteld uit {}
+Saves {}, figures {}.	Savegames {}, figuren {}.
+Search	Zoeken
+Search the catalog	De catalogus doorzoeken
+Select	Selecteren
+Senseis	Senseis
+Sep	sep.
+Series	Serie
+Settings	Instellingen
+Settings, saves, figures and builds.	Instellingen, savegames, figuren en builds.
+Shaders	Shaders
+Shake / Insert / Swing	Schudden / Plaatsen / Zwaaien
+Shortcut added to the Desktop	Snelkoppeling toegevoegd aan het bureaublad
+Show details	Details tonen
+Show in folder	In map tonen
+Show the collection folder	De collectiemap tonen
+Show the game	Het spel tonen
+Silver	Zilver
+Skip intro movies	Introfilmpjes overslaan
+Skylander Info	Skylander-info
+Skylander Profile	Skylander-profiel
+Skylander/Villain Stats	Skylander-/schurkenstatistieken
+Skylanders	Skylanders
+Skylanders Stats	Skylanders-statistieken
+Skylanders, Spyro and Activision are trademarks of Activision Publishing, Inc. This project is not affiliated with or endorsed by Activision.	Skylanders, Spyro en Activision zijn handelsmerken van Activision Publishing, Inc. Dit project is niet gelieerd aan of goedgekeurd door Activision.
+Some figures are marked as in use, but their game is not running.	Sommige figuren zijn als in gebruik gemarkeerd, maar hun spel draait niet.
+Something went wrong while {}.	Er ging iets mis bij {}.
+Sort: {}	Sorteren: {}
+Space	Spatie
+Special Power / Back	Speciale kracht / Terug
+Spoken lines and cutscenes.	Gesproken tekst en tussenfilmpjes.
+Square	Vierkant
+Standard	Standaard
+Starting the installer	Het installatieprogramma starten
+Stop	Stoppen
+Stopping keeps the files already copied.	Als je stopt, blijven de al gekopieerde bestanden bewaard.
+Stopping...	Stoppen...
+Strong	Sterk
+SuperChargers	SuperChargers
+Support	Ondersteuning
+Swap Force bottoms	Swap Force-onderstukken
+Swap Force tops	Swap Force-bovenstukken
+Swapper	Swapper
+Switch Driver (co-op)	Bestuurder wisselen (coöp)
+Switch Skylander / Villain	Skylander / schurk wisselen
+System default	Systeemstandaard
+Take it off	Eraf halen
+Tech	Tech
+Test	Test
+Test the portal	De portal testen
+Testing...	Testen...
+Texture filtering	Texturefiltering
+Texture pack folder	Map met texturepakket
+That's a folder: choose the disc image (.iso).	Dat is een map: kies het schijfimage (.iso).
+The 3D scene at the console's size.	De 3D-scène op de grootte van de console.
+The HD textures stopped before they were made.	De HD-texturen zijn gestopt voordat ze klaar waren.
+The HD textures weren't made.	De HD-texturen zijn niet gemaakt.
+The address isn't a secure one (https)	Het adres is niet beveiligd (https)
+The answer has no release in it	Het antwoord bevat geen release
+The answer isn't valid JSON ({})	Het antwoord is geen geldige JSON ({})
+The author has submitted the launcher and its source code to Microsoft as a false positive; the review is pending.	De auteur heeft de launcher en de broncode als fout-positief bij Microsoft ingediend; de beoordeling loopt nog.
+The copy failed	Kopiëren is mislukt
+The data folder isn't safe to remove.	De gegevensmap kan niet veilig worden verwijderd.
+The disc image is damaged. Copy the disc again.	Het schijfimage is beschadigd. Kopieer de schijf opnieuw.
+The disc image is incomplete. Copy the disc again.	Het schijfimage is niet compleet. Kopieer de schijf opnieuw.
+The disc image isn't there. Choose it again.	Het schijfimage is er niet meer. Kies het opnieuw.
+The disc is still being checked: try again in a moment	De schijf wordt nog gecontroleerd: probeer het zo opnieuw
+The download failed: {}	Downloaden is mislukt: {}
+The download holds no launcher app	De download bevat geen launcher-app
+The download is damaged: nothing was installed	De download is beschadigd: er is niets geïnstalleerd
+The download isn't a game kit	De download is geen spelkit
+The download isn't a zip file	De download is geen zipbestand
+The earlier install is still stopping. Resume in a moment.	De vorige installatie wordt nog gestopt. Hervat zo meteen.
+The figure can't be read. Reopen it before saving.	De figuur kan niet worden gelezen. Open hem opnieuw voordat je opslaat.
+The figure was kept, but its seat couldn't be restored.	De figuur is bewaard, maar zijn plek kon niet worden hersteld.
+The figures on the portal when the game starts	De figuren op de portal wanneer het spel start
+The file stays where it is.	Het bestand blijft waar het is.
+The frame rate in a corner of the game (F3 in game).	De framerate in een hoek van het spel (F3 in het spel).
+The game ({}) wasn't found next to Arkeyan Launcher.\n\nPut it in the same folder.	Het spel ({}) is niet gevonden naast Arkeyan Launcher.\n\nZet het in dezelfde map.
+The game didn't finish the portal test.	Het spel heeft de portaltest niet afgerond.
+The game in one file: it plays without the launcher or the disc image.	Het spel in één bestand: het draait zonder de launcher of het schijfimage.
+The game is running: quit it first.	Het spel draait: sluit het eerst af.
+The game is running: quit it to restore a backup.	Het spel draait: sluit het af om een back-up te herstellen.
+The game is running: use its Toy Box	Het spel draait: gebruik de Toy Box
+The game is still installing	Het spel wordt nog geïnstalleerd
+The game isn't installed yet	Het spel is nog niet geïnstalleerd
+The game stopped unexpectedly	Het spel is onverwacht gestopt
+The game tools are incomplete.	De spelhulpmiddelen zijn niet compleet.
+The game tools are missing a file: {}	Bij de spelhulpmiddelen ontbreekt een bestand: {}
+The game tools are repaired	De spelhulpmiddelen zijn hersteld
+The game uses the disc image instead.	Het spel gebruikt in plaats daarvan het schijfimage.
+The game's last log, for a bug report.	De laatste log van het spel, voor een bugrapport.
+The game's volume (F3 in game).	Het volume van het spel (F3 in het spel).
+The install stops and can resume later.	De installatie stopt en kan later worden hervat.
+The installer couldn't start.	Het installatieprogramma kon niet starten.
+The installer stopped before the game was built.	Het installatieprogramma is gestopt voordat het spel was gebouwd.
+The installer stopped with exit code {}.	Het installatieprogramma is gestopt met exitcode {}.
+The latest 10 backups are kept.	De laatste 10 back-ups blijven bewaard.
+The one this trap holds	Degene die deze trap bevat
+The portal can't be opened: the game will wait.	De portal kan niet worden geopend: het spel wacht.
+The portal can't be opened: using the virtual portal.	De portal kan niet worden geopend: de virtuele portal wordt gebruikt.
+The portal test took too long and was stopped.	De portaltest duurde te lang en is gestopt.
+The release {} has no {}	De release {} heeft geen {}
+The test failed	De test is mislukt
+The traps' voices: a Traptanium portal plays them, else the computer (F3 in game).	De stemmen van de Traps: een Traptanium Portal speelt ze af, anders de computer (F3 in het spel).
+The trash is empty.	De prullenbak is leeg.
+The update failed: {}	Bijwerken is mislukt: {}
+The wheel is full: take a figure off it first	Het wiel is vol: haal er eerst een figuur af
+The zip file is damaged	Het zipbestand is beschadigd
+These are your own game tools: restore the file, or set them up again.	Dit zijn je eigen spelhulpmiddelen: herstel het bestand of stel ze opnieuw in.
+These game tools can't build {}	Deze spelhulpmiddelen kunnen {} niet bouwen
+These game tools can't make HD textures. Update them first.	Deze spelhulpmiddelen kunnen geen HD-texturen maken. Werk ze eerst bij.
+This computer has no Desktop folder.	Deze computer heeft geen map Bureaublad.
+This copy holds your game. It is for your personal use only: do not share it.	Deze kopie bevat je spel. Alleen voor persoonlijk gebruik: deel hem niet.
+This disc image is {}, not {}.	Dit schijfimage is {}, niet {}.
+This game has no folder.	Dit spel heeft geen map.
+This is {}, but this disc version isn't supported yet (media ID {:08X}, version {}).\n\nSupported:{}	Dit is {}, maar deze schijfversie wordt nog niet ondersteund (media-ID {:08X}, versie {}).\n\nOndersteund:{}
+This key is used by another action	Deze toets wordt door een andere actie gebruikt
+This looks like the {} disc of {}, but it's damaged or modified. Copy the disc again.	Dit lijkt de {}-schijf van {}, maar hij is beschadigd of aangepast. Kopieer de schijf opnieuw.
+This version of the game doesn't have the portal test yet. Update the game.	Deze versie van het spel heeft de portaltest nog niet. Werk het spel bij.
+Three steps	Drie stappen
+Tidy the starters	De starters opruimen
+Tidy · {}	Opruimen · {}
+Today {}	Vandaag {}
+Top: {} · Bottom: {}	Boven: {} · Onder: {}
+Total	Totaal
+Touchpad	Touchpad
+Toy	Speelgoed
+Toy Box	Toy Box
+Toy Box in the game: F6, or View + Y on a controller.	Toy Box in het spel: F6, of View + Y op een controller.
+Toy Box keys	Toy Box-toetsen
+Toy type {}	Speelgoedtype {}
+Translating the game code	De spelcode vertalen
+Translating the shaders	De shaders vertalen
+Trap	Trap
+Trap Masters	Trap Masters
+Trap shape	Trapvorm
+Traps	Traps
+Trash	Prullenbak
+Trash · {}	Prullenbak · {}
+Triangle	Driehoek
+Trilinear	Trilineair
+Trophies	Trofeeën
+Turn the game music off	Spelmuziek uitzetten
+Turn the game music on	Spelmuziek aanzetten
+Type	Type
+UPDATE	BIJWERKEN
+UPDATING THE GAME	HET SPEL WORDT BIJGEWERKT
+UPDATING...	BIJWERKEN...
+USB (Xbox) portals	USB-portals (Xbox)
+Undead	Undead
+Uninstall	Deïnstalleren
+Uninstall everything	Alles deïnstalleren
+Uninstall everything...	Alles deïnstalleren...
+Unknown	Onbekend
+Unknown release	Onbekende release
+Unknown toy {}	Onbekend speelgoed {}
+Unknown toy {} (variant {:04X})	Onbekend speelgoed {} (variant {:04X})
+Unknown toys	Onbekend speelgoed
+Unknown toys · {}	Onbekend speelgoed · {}
+Unlimited (experimental)	Onbeperkt (experimenteel)
+Unreadable. Restore a backup or reset it.	Onleesbaar. Herstel een back-up of reset het.
+Up	Omhoog
+Update all	Alles bijwerken
+Update available	Update beschikbaar
+Update available: {}	Update beschikbaar: {}
+Update failed	Bijwerken mislukt
+Update now	Nu bijwerken
+Updates	Updates
+Updates {} games, one after the other	Werkt {} spellen bij, een voor een
+Updating	Bijwerken
+Upgrades	Upgrades
+Use / Talk	Gebruiken / Praten
+Use it for {}	Gebruiken voor {}
+Use the mouse	De muis gebruiken
+VSync	VSync
+Vehicle {}	Voertuig {}
+Vehicles	Voertuigen
+Verified	Geverifieerd
+Verified, {}	Geverifieerd, {}
+Version {} is available.	Versie {} is beschikbaar.
+Version {}, {}	Versie {}, {}
+Versions	Versies
+Video	Video
+Villain	Schurk
+Villains	Schurken
+Virtual (no portal needed)	Virtueel (geen portal nodig)
+Virtual portal	Virtuele portal
+Virtual portal chosen.	Virtuele portal gekozen.
+Volume	Volume
+Wait for the HD textures to finish	Wacht tot de HD-texturen klaar zijn
+Wait for the copy to finish	Wacht tot het kopiëren klaar is
+Wait for the export to finish	Wacht tot het exporteren klaar is
+Wait for the game to finish.	Wacht tot het spel klaar is.
+Wait for the installation to finish	Wacht tot de installatie klaar is
+Water	Water
+Welcome, {}	Welkom, {}
+What goes	Wat er verdwijnt
+What it wears in the game	Wat het in het spel draagt
+What's new	Wat is er nieuw
+What's new in {}	Wat is er nieuw in {}
+Wheel down	Wiel omlaag
+Wheel up	Wiel omhoog
+Why this happens	Waarom gebeurt dit?
+Widescreen	Breedbeeld
+Windows Defender may block the install	Windows Defender kan de installatie blokkeren
+Windows Defender may report Arkeyan-Builder.exe, ArkeyanLauncher.exe or a game built here as Trojan:Win32/Bearfoos.A!ml. The !ml ending means no known malware was found: Defender's machine-learning model guesses from what the program does. The launcher is not signed, downloads a compiler, builds a new game on your PC and updates itself: that is the whole guess.	Windows Defender kan Arkeyan-Builder.exe, ArkeyanLauncher.exe of een hier gebouwd spel melden als Trojan:Win32/Bearfoos.A!ml. De toevoeging !ml betekent dat er geen bekende malware is gevonden: het machinelearningmodel van Defender doet een gok op basis van wat het programma doet. De launcher is niet ondertekend, downloadt een compiler, bouwt een nieuw spel op je pc en werkt zichzelf bij: dat is de hele gok.
+Without a real portal, the game uses its virtual one (the Toy Box).	Zonder echte portal gebruikt het spel zijn virtuele portal (de Toy Box).
+Working	Bezig
+Works in	Werkt in
+Works in {}	Werkt in {}
+Wrong disc	Verkeerde schijf
+Xbox One / Series	Xbox One / Series
+Xbox portal	Xbox-portal
+YOUR GAMES	JOUW SPELLEN
+Yesterday {}	Gisteren {}
+You can set up your portal while you wait.	Je kunt je portal instellen terwijl je wacht.
+Your disc images are never touched.	Je schijfimages worden nooit aangeraakt.
+Your figures	Je figuren
+Your own copy, as an .iso	Je eigen kopie, als .iso
+Zoom: automatic	Zoom: automatisch
+Zoom: {:g}%	Zoom: {:g}%
+about {0} h {1:02} min left	nog ongeveer {0} u {1:02} min
+about {} min left	nog ongeveer {} min
+and {} more	en nog {}
+another game (title ID {:08X})	een ander spel (titel-ID {:08X})
+bottom	onderste deel
+choose a folder outside the installed game	kies een map buiten het geïnstalleerde spel
+couldn't copy the game: {}	kon het spel niet kopiëren: {}
+couldn't open the disc image	kon het schijfimage niet openen
+couldn't put the copy in place: {}	kon de kopie niet op zijn plek zetten: {}
+couldn't sign the app (codesign)	kon de app niet ondertekenen (codesign)
+created	aangemaakt
+curl couldn't start ({})	curl kon niet starten ({})
+deleted	verwijderd
+every game	elk spel
+figure	figuur
+hat {}	hoed {}
+imported	geïmporteerd
+less than a minute	minder dan een minuut
+less than a minute left	nog minder dan een minuut
+level {} · {} gold	level {} · {} goud
+maximum level	maximumlevel
+needs {}	heeft {} nodig
+no answer	geen antwoord
+no hat	geen hoed
+nothing yet	nog niets
+only what {} reads	alleen wat {} leest
+owned x{}	in bezit x{}
+plays as {0} in {1}	speelt als {0} in {1}
+plays as {}	speelt als {}
+portal	portal
+the collection's index can't be written	de index van de collectie kan niet worden geschreven
+the copy can't be read back: {}	de kopie kan niet worden teruggelezen: {}
+the installed game is missing: install it again	het geïnstalleerde spel ontbreekt: installeer het opnieuw
+tidied	opgeruimd
+today	vandaag
+top	bovenste deel
+yesterday	gisteren
+{0} is missing a file: {1}	{0} mist een bestand: {1}
+{0} {1} {2}	{0} {1} {2}
+{} (active)	{} (actief)
+{} GB	{} GB
+{} KB	{} KB
+{} MB	{} MB
+{} XP · {}	{} XP · {}
+{} Xbox, PlayStation and Switch pads are compatible.	{} Xbox-, PlayStation- en Switch-controllers zijn compatibel.
+{} accepts this portal.	{} accepteert deze portal.
+{} already plays from its copied game data	{} draait al vanaf zijn gekopieerde spelgegevens
+{} backup	{} back-up
+{} backups	{} back-ups
+{} bytes	{} bytes
+{} can't be used: {}	{} kan niet worden gebruikt: {}
+{} can't be verified, so it wasn't installed	{} kan niet worden geverifieerd en is daarom niet geïnstalleerd
+{} couldn't be removed.	{} kon niet worden verwijderd.
+{} days ago	{} dagen geleden
+{} doesn't go on {}	{} past niet op {}
+{} elapsed	{} verstreken
+{} figure copied	{} figuur gekopieerd
+{} figure moved to the trash	{} figuur naar de prullenbak verplaatst
+{} figures copied	{} figuren gekopieerd
+{} figures moved to the trash	{} figuren naar de prullenbak verplaatst
+{} files	{} bestanden
+{} freed.	{} vrijgemaakt.
+{} gamepads connected.	{} gamepads aangesloten.
+{} gold	{} goud
+{} h {:02} min	{} u {:02} min
+{} has no {} for this computer	{} heeft geen {} voor deze computer
+{} is a disc image: it stays.	{} is een schijfimage: het blijft staan.
+{} is a link: it stays.	{} is een link: het blijft staan.
+{} is busy: try again when it is done	{} is bezig: probeer het opnieuw als het klaar is
+{} is in use by {}	{} is in gebruik door {}
+{} is not for {}	{} is niet voor {}
+{} is not in its folder: it stays.	{} staat niet in zijn map: het blijft staan.
+{} is outside Arkeyan Launcher's folders: it stays.	{} staat buiten de mappen van Arkeyan Launcher: het blijft staan.
+{} is running	{} draait
+{} is running: quit it first.	{} draait: sluit het eerst af.
+{} is running: use its Toy Box	{} draait: gebruik de Toy Box
+{} keep no level or gold.	{} hebben geen level of goud.
+{} min	{} min
+{} of {}	{} van {}
+{} of {} unlocked · {} of {} G	{} van {} ontgrendeld · {} van {} G
+{} points outside its GitHub release, so it wasn't installed	{} verwijst buiten zijn GitHub-release en is daarom niet geïnstalleerd
+{} rejects this portal: {}.	{} weigert deze portal: {}.
+{} settings	Instellingen van {}
+{} stopped unexpectedly (exit code {}).\n\nPress Report to save a report file with the log and where the game stopped.	{} is onverwacht gestopt (exitcode {}).\n\nDruk op Rapporteren om een rapportbestand op te slaan met de log en waar het spel stopte.
+{} to level {}	{} naar level {}
+{} warns about this portal: {}.	{} waarschuwt voor deze portal: {}.
+{} x {} for the 3D scene	{} x {} voor de 3D-scène
+{} · Evolved	{} · Evolved
+{} · empty	{} · leeg
+{} · type {} · variant {:04X}	{} · type {} · variant {:04X}
+{} · {}	{} · {}
+{} · {} played	{} · {} gespeeld
+{} · {} · {} upgrades	{} · {} · {} upgrades
+{} · {} · ~{} min	{} · {} · ~{} min
+{} · ~{} min	{} · ~{} min
+{}%	{}%
+{}'s Toy Box, saves and keys go to the profiles' trash.	De Toy Box, savegames en toetsen van {} gaan naar de prullenbak van de profielen.
+{}: game data copied	{}: spelgegevens gekopieerd
+{}: pick the new {}	{}: kies de nieuwe {}
+{}: {} ({} of {})	{}: {} ({} van {})
+{}: {} freed	{}: {} vrijgemaakt
+{}: {} taken off	{}: {} eraf gehaald

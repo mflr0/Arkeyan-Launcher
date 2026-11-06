@@ -27,6 +27,11 @@ The other disc languages (`nl`, `sv`, `no`, `da`, `fi`) are added the same way (
   test answers, GitHub's messages. A message built before the language changed (a toast already shown, a disc check's result)
   stays in the language it was made in until it is made again.
 
+## Languages the launcher has
+English (the source), French (`fr`), Dutch (`nl`), Swedish (`sv`), Norwegian (`no`), Danish (`da`) and Finnish (`fi`). Each file has
+every string of the dump; the full test prints `Language <code>: N strings, N in the code` for each, and `text_fit_test.cpp` checks
+the widths.
+
 ## Which language is shown
 The launcher's language is its own: it never follows the game that is shown. Settings > Launcher > Language:
 **System default**, or one language of the list. Remembered in `[launcher] language` (`docs/settings.md`) and applied at once,
