@@ -215,6 +215,15 @@ GameRunResult RunGame(const std::string& runtime, const std::string& iso, const 
     return result;
 }
 
+std::string GameLanguageToPass(std::string saved, const std::vector<std::string>& held, bool firstHeld, std::string_view launcherLanguage)
+{
+    if (saved.empty() && std::find(held.begin(), held.end(), launcherLanguage) != held.end())
+        saved = std::string(launcherLanguage);
+    if (saved.empty() || held.empty() || std::find(held.begin(), held.end(), saved) != held.end())
+        return saved;
+    return firstHeld ? held.front() : std::string();
+}
+
 GameLaunch PrepareGameLaunch(const GameInfo& game, LauncherConfig& config, const std::string& configPath, const std::string& installed)
 {
     GameLaunch launch;
@@ -254,15 +263,11 @@ GameLaunch PrepareGameLaunch(const GameInfo& game, LauncherConfig& config, const
         pass("SKY_PORTAL_PLACE", "portal", "place");
     // A language the disc does not hold is not passed as is: the text takes the disc's first language and the voices
     // follow the text, which is what the Language tab shows then. Nothing known about the disc: passed as saved.
+    // Nothing chosen: the launcher's own language when the disc holds it (the Language tab shows that too), else the game's.
     const art::DiscLanguages onDisc = StoredDiscLanguages(config, game.id);
     auto passLanguage = [&](const char* variable, const char* key, const std::vector<std::string>& held, bool firstHeld) {
-        const std::string value = setting(game.id, key);
-        if (value.empty())
-            return;
-        if (held.empty() || std::find(held.begin(), held.end(), value) != held.end())
+        if (std::string value = GameLanguageToPass(setting(game.id, key), held, firstHeld, i18n::Current()); !value.empty())
             launch.variables.emplace_back(variable, value);
-        else if (firstHeld)
-            launch.variables.emplace_back(variable, held.front());
     };
     passLanguage("SKY_LANGUAGE", "language", onDisc.text, true);
     passLanguage("SKY_VOICE_LANGUAGE", "voice_language", onDisc.voice, false);

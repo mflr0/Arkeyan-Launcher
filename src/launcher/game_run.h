@@ -10,6 +10,7 @@
 #include <optional>
 #include <string>
 #include <utility>
+#include <string_view>
 #include <vector>
 
 struct SDL_IOStream;
@@ -46,6 +47,9 @@ struct GameLaunch
 // (SKY_LAUNCHER_RUNTIME, else `installed`: the game the launcher built, else the player's own) and the variables: the portal,
 // the languages the disc holds, an older build's folders (docs/settings.md).
 GameLaunch PrepareGameLaunch(const GameInfo& game, LauncherConfig& config, const std::string& configPath, const std::string& installed);
+// The language code a game is started in, for its text (firstHeld) or its voices: the one saved, else the launcher's own
+// when the disc holds it; one the disc lacks becomes the disc's first (text) or nothing (voices). Empty: the game's default.
+std::string GameLanguageToPass(std::string saved, const std::vector<std::string>& held, bool firstHeld, std::string_view launcherLanguage);
 
 // One game at a time (docs/launcher_ui.md, "A game running"). PLAY starts the game without waiting for it: its output goes
 // straight into skylauncher-game.log, so it runs on if the launcher is closed. The game started here is watched until it

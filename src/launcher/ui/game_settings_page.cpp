@@ -457,13 +457,15 @@ namespace launcher_ui
         const bool together = m_s->game.id == std::string_view("trapteam");
         ui::SettingRow(Tr(together ? strings::GameLanguage : strings::GameText),
             Tr(together ? strings::GameLanguageHint : strings::GameTextHint));
+        // Nothing chosen: the launcher's own language when the disc holds it, as the game is then started in it (game_run.cpp).
+        auto fallback = [](const std::vector<Choice>& choices) { return std::max(0, ChoiceIndex(choices, i18n::Current(), 0)); };
         const std::vector<Choice> text = GameLanguageChoices(m_config, m_s->game.id, false);
-        SettingSelect("##text", m_s->game.id, "language", text, 0);
+        SettingSelect("##text", m_s->game.id, "language", text, fallback(text));
         if (!together)
         {
             ui::SettingRow(Tr(strings::GameVoices), Tr(strings::GameVoicesHint));
             const std::vector<Choice> voice = GameLanguageChoices(m_config, m_s->game.id, true);
-            SettingSelect("##voice", m_s->game.id, "voice_language", voice, 0);
+            SettingSelect("##voice", m_s->game.id, "voice_language", voice, fallback(voice));
         }
         ui::EndSettings();
     }

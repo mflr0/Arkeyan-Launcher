@@ -6,6 +6,7 @@
 #include "launcher/game_install.h"
 #include "launcher/game_keys.h"
 #include "launcher/i18n.h"
+#include "launcher/game_run.h"
 #include "launcher/game_settings.h"
 #include "launcher/i18n.h"
 #include "launcher/launcher.h"
@@ -933,6 +934,12 @@ namespace
         art::DiscLanguages europe{ { "es", "it" }, { "es", "it" } };
         StoreDiscLanguages(config, "swapforce", europe);
         SETTINGS_EXPECT(config["swapforce"]["disc_text_languages"] == "es,it");
+        // Nothing chosen: the launcher's language when the disc holds it, else the game's own default.
+        const std::vector<std::string> enFr = { "en", "fr" }, frNl = { "fr", "nl" };
+        SETTINGS_EXPECT(GameLanguageToPass("", enFr, true, "fr") == "fr" && GameLanguageToPass("", enFr, false, "fr") == "fr");
+        SETTINGS_EXPECT(GameLanguageToPass("", { "en" }, true, "fr").empty() && GameLanguageToPass("", {}, true, "fr").empty());
+        SETTINGS_EXPECT(GameLanguageToPass("en", enFr, true, "fr") == "en" && GameLanguageToPass("de", frNl, true, "en") == "fr");
+        SETTINGS_EXPECT(GameLanguageToPass("de", frNl, false, "en").empty() && GameLanguageToPass("de", {}, true, "en") == "de");
         art::DiscLanguages back = StoredDiscLanguages(config, "swapforce");
         SETTINGS_EXPECT(back.text == europe.text && back.voice == europe.voice);
         // It survives the settings file.

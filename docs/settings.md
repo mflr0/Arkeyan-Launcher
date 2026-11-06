@@ -27,7 +27,7 @@ launcher saves the file (a comment over a key that is removed goes with it).
 | `install.<sha256>` | `version` | `0.8.2` | The game's version when it was built (from the kit's `kit.txt`); UPDATE is offered when the release's games line has a higher one | n/a |
 | `install.<sha256>` | `state`, `pid` | `running`, `failed`; process id | An install that runs or stopped: shown again after a restart | n/a |
 | `ssa` | `iso` | path | The verified disc image | yes |
-| `ssa` | `language` | `en` `fr` `de` `es` `it` `nl` `sv` `no` `da` `fi` | Text language | yes |
+| `ssa` | `language` | `en` `fr` `de` `es` `it` `nl` `sv` `no` `da` `fi` | Text language. For every game, empty or absent: the launcher's own language when the disc holds it (the Language tab shows it, the game is started in it; `GameLanguageToPass`), else the game's default; the same for `voice_language` | yes |
 | `ssa` | `voice_language` | same codes | Voice language | yes |
 | `giants` | `language`, `voice_language` | `en` `fr` `de` `es` `es-419` `it` `nl` `pt` `sv` `no` `da` `fi` | Text and voice language (the disc's twelve); `voice_language` empty or absent: the voices follow the text | yes |
 | `swapforce` | `language`, `voice_language` | `en` `fr` (USA, Australia disc) or `es` `it` (Europe disc) | Text and voice language (the disc's two); any language of the list in "Languages a disc holds" below that its disc has | yes |
