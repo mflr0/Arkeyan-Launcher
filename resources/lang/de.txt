@@ -1,0 +1,1012 @@
+@code de
+@name Deutsch
+
+\n\nAllow access in System Settings > Privacy & Security > Files and Folders.	\n\nErlaube den Zugriff unter Systemeinstellungen > Datenschutz & Sicherheit > Dateien und Ordner.
+\n- {} (media ID {:08X}, version {})	\n- {} (Media-ID {:08X}, Version {})
+ (replaces {})	 (ersetzt {})
+ · {} already there	 · {} schon da
+ · {} are toys you already have	 · {} sind Figuren, die du schon hast
+ · {} favorite	 · {} Favorit
+ · {} favorites	 · {} Favoriten
+ · {} is a toy you already have	 · {} ist eine Figur, die du schon hast
+ · {} not a figure	 · {} keine Figur
+ · {} unknown toy (Manage)	 · {} unbekannte Figur (Verwalten)
+ · {} unknown toys (Manage)	 · {} unbekannte Figuren (Verwalten)
+"System default" follows your system.	„Systemstandard“ folgt deinem System.
+({} earlier lines in Copy log)	({} frühere Zeilen unter „Log kopieren“)
+,	.
+.	,
+0 to {}	0 bis {}
+0%	0 %
+1 gamepad connected.	1 Gamepad verbunden.
+1 to {}	1 bis {}
+1. Open Windows Security, then Virus & threat protection > Protection history.	1. Öffne Windows-Sicherheit, dann Viren- & Bedrohungsschutz > Schutzverlauf.
+10%	10 %
+100%	100 %
+120 (experimental)	120 (experimentell)
+144 (experimental)	144 (experimentell)
+16 characters at most	Höchstens 16 Zeichen
+16:9 (with bars)	16:9 (mit Balken)
+1st Power / Accept	1. Kraft / Bestätigen
+2. Open the blocked item, then Actions > Allow on device.	2. Öffne das blockierte Element, dann Aktionen > Auf Gerät zulassen.
+20%	20 %
+240 (experimental)	240 (experimentell)
+2nd Power	2. Kraft
+3. In Virus & threat protection settings, choose Manage settings > Exclusions > Add or remove exclusions > Add an exclusion > Folder, and pick %APPDATA%\\Skylanders\\kit.	3. Wähle in den Einstellungen für Viren- & Bedrohungsschutz Einstellungen verwalten > Ausschlüsse > Ausschlüsse hinzufügen oder entfernen > Ausschluss hinzufügen > Ordner und wähle %APPDATA%\\Skylanders\\kit.
+30 (original)	30 (original)
+30%	30 %
+4. Back here, choose Retry.	4. Komm hierher zurück und wähle Erneut versuchen.
+40%	40 %
+50%	50 %
+60 (experimental)	60 (experimentell)
+60%	60 %
+70%	70 %
+80%	80 %
+90%	90 %
+A figure is in use: quit the game first.	Eine Figur wird benutzt: Beende zuerst das Spiel.
+A file of the game tools was changed: {}	Eine Datei der Spiel-Tools wurde geändert: {}
+A file of {0} was changed: {1}	Eine Datei von {0} wurde geändert: {1}
+A game is running: quit it first.	Ein Spiel läuft: Beende es zuerst.
+About	Info
+About {} min, {} GB	Etwa {} Min., {} GB
+Accelerate (vehicle)	Gas geben (Fahrzeug)
+Achievements	Erfolge
+Action	Aktion
+Add a figure	Figur hinzufügen
+Add a profile	Profil hinzufügen
+Add to favorites	Zu Favoriten
+Adding the movie shaders	Film-Shader werden hinzugefügt
+Advanced	Erweitert
+Adventure	Abenteuer
+Adventure Packs	Abenteuerpakete
+Air	Luft
+All	Alle
+All elements	Alle Elemente
+All games	Alle Spiele
+All games are updated	Alle Spiele sind aktuell
+All types	Alle Typen
+Also delete my saves and my figures	Auch meine Spielstände und Figuren löschen
+Alternate deco	Alternatives Design
+An antivirus often does this: it may have put the file in quarantine. Restore it from the antivirus's quarantine, or add an exclusion for this folder:	Das passiert oft durch ein Antivirenprogramm: Es hat die Datei vielleicht in Quarantäne verschoben. Stelle sie aus der Quarantäne wieder her oder lege eine Ausnahme für diesen Ordner an:
+And 1 other file.	Und 1 weitere Datei.
+And {} other files.	Und {} weitere Dateien.
+Anisotropic 16x	Anisotrop 16x
+Anisotropic 2x	Anisotrop 2x
+Anisotropic 4x	Anisotrop 4x
+Anisotropic 8x	Anisotrop 8x
+Anonymous: your names are removed. Save it, then add it to a GitHub issue.	Anonym: Deine Namen werden entfernt. Speichere ihn und hänge ihn an ein GitHub-Issue.
+Appears once the game's disc is checked.	Erscheint, sobald die Disc des Spiels geprüft ist.
+Apr	Apr.
+Arkeyan Launcher can't remove itself from here: delete it by hand.	Arkeyan Launcher kann sich hier nicht selbst entfernen: Lösche ihn von Hand.
+Arkeyan Launcher closed during the install. Resume to continue from this step.	Arkeyan Launcher wurde während der Installation geschlossen. Mach weiter, um bei diesem Schritt fortzufahren.
+Arkeyan Launcher couldn't find its own file.	Arkeyan Launcher hat seine eigene Datei nicht gefunden.
+Arkeyan Launcher deletes itself when you quit.	Arkeyan Launcher löscht sich beim Beenden selbst.
+Arkeyan Launcher goes to the Trash when you quit.	Arkeyan Launcher kommt beim Beenden in den Papierkorb.
+Arkeyan Launcher is up to date.	Arkeyan Launcher ist aktuell.
+Arkeyan Launcher is up to date. An update is available for {}.	Arkeyan Launcher ist aktuell. Für {} gibt es ein Update.
+Arkeyan Launcher is up to date. {} game updates available.	Arkeyan Launcher ist aktuell. {} Spiel-Updates verfügbar.
+Arkeyan Launcher on GitHub	Arkeyan Launcher auf GitHub
+Arkeyan Launcher {} is installed. Restart to use it.	Arkeyan Launcher {} ist installiert. Starte neu, um ihn zu nutzen.
+At the next start of {}	Beim nächsten Start von {}
+Attack 1	Angriff 1
+Attack 1 / Accept	Angriff 1 / Bestätigen
+Attack 2	Angriff 2
+Attack 3	Angriff 3
+Attack 3 / Back	Angriff 3 / Zurück
+Aug	Aug.
+Auto	Auto
+Auto (follows the window)	Auto (folgt dem Fenster)
+Auto shows more when wide; 16:9 adds bars.	Auto zeigt bei Breite mehr; 16:9 fügt Balken hinzu.
+Auto-open Toy Box	Toy Box automatisch öffnen
+Automatic	Automatisch
+Automatic detection	Automatische Erkennung
+Back	Zurück
+Back side button	Seitentaste hinten
+Back up now	Jetzt sichern
+Backed up	Gesichert
+Backspace	Rücktaste
+Backup restored	Sicherung wiederhergestellt
+Backups	Sicherungen
+Basic	Einfach
+Before you beat the game. Your save is untouched.	Bevor du das Spiel besiegst. Dein Spielstand bleibt unberührt.
+Blank figures from old versions. Tidy trashes them.	Leere Figuren aus alten Versionen. „Aufräumen“ wirft sie in den Papierkorb.
+Bottom file	Unterteil-Datei
+Brake / Reverse (vehicle)	Bremsen / Rückwärts (Fahrzeug)
+Builds the game on your PC: about {} min, {} GB, internet needed once.	Baut das Spiel auf deinem PC: etwa {} Min., {} GB, einmal Internet nötig.
+Built for this disc.	Für diese Disc gebaut.
+Built with SDL 3, Dear ImGui, {fmt}, stb, miniz, XenonRecomp, Outfit and Bungee. MIT licensed.	Gebaut mit SDL 3, Dear ImGui, {fmt}, stb, miniz, XenonRecomp, Outfit und Bungee. MIT-Lizenz.
+Button glyphs	Tastensymbole
+CHECKING...	PRÜFUNG...
+COMING LATER	BALD
+Caches and logs	Caches und Logs
+Caches cleared	Caches geleert
+Can't read the disc	Disc nicht lesbar
+Can't read the disc image ({}).{}	Disc-Abbild nicht lesbar ({}).{}
+Can't update here: the release page was opened.	Hier kein Update möglich: Die Release-Seite wurde geöffnet.
+Can't write to the Desktop folder.	Schreiben in den Desktop-Ordner nicht möglich.
+Cancel	Abbrechen
+Caps Lock	Feststelltaste
+Carry on copying	Kopieren fortsetzen
+Change disc...	Disc wechseln...
+Change profile	Profil wechseln
+Change the bottom	Unterteil ändern
+Change the top	Oberteil ändern
+Change...	Ändern...
+Changed	Geändert
+Check at startup	Beim Start prüfen
+Check for updates	Nach Updates suchen
+Check now	Jetzt prüfen
+Checking Arkeyan Launcher	Arkeyan Launcher wird geprüft
+Checking the Xbox 360 executable	Xbox-360-Programmdatei wird geprüft
+Checking your disc	Deine Disc wird geprüft
+Checking...	Prüfung...
+Chinese	Chinesisch
+Choose	Wählen
+Choose a figure for {}	Figur für {} wählen
+Choose a folder...	Ordner wählen...
+Choose a key to change it.	Wähle eine Taste, um sie zu ändern.
+Choose a type	Typ wählen
+Choose another	Andere wählen
+Choose disc	Disc wählen
+Choose the disc image first	Wähle zuerst das Disc-Abbild
+Choose the disc image first.	Wähle zuerst das Disc-Abbild.
+Choose the disc image to carry on.	Wähle das Disc-Abbild, um fortzufahren.
+Choose the disc image to repair.	Wähle das Disc-Abbild für die Reparatur.
+Choose what each button does.	Lege fest, was jede Taste tut.
+Choose your disc	Wähle deine Disc
+Choose your {} disc image	Wähle dein Disc-Abbild von {}
+Choose...	Wählen...
+Chrome	Chrom
+Circle	Kreis
+Clean up	Aufräumen
+Clear all	Alle entfernen
+Clear caches	Caches leeren
+Clear search and filters	Suche und Filter zurücksetzen
+Clear the figures	Figuren entfernen
+Clearing caches frees {}.	Caches leeren gibt {} frei.
+Clearing caches frees {}; deleting saves and data frees {} more.	Caches leeren gibt {} frei; Spielstände und Daten löschen gibt {} mehr frei.
+Click or turn the wheel	Klicken oder Rad drehen
+Click, then press a mouse button or turn the wheel (Escape cancels).	Klicke, dann drücke eine Maustaste oder drehe das Rad (Esc bricht ab).
+Click: put it on {}	Klick: auf {} stellen
+Click: sheet · drag to a seat	Klick: Datenblatt · ziehen auf einen Platz
+Close	Schließen
+Code	Code
+Collection	Sammlung
+Color	Farbe
+Coming later	Bald verfügbar
+Comparing with the supported releases	Vergleich mit den unterstützten Releases
+Compiling the game	Spiel wird kompiliert
+Completed steps	Erledigte Schritte
+Continue	Weiter
+Controller	Controller
+Controller buttons reset	Controller-Tasten zurückgesetzt
+Controller, keyboard, real or virtual portal	Controller, Tastatur, echtes oder virtuelles Portal
+Controller: {}	Controller: {}
+Controls	Steuerung
+Copied: {}, 1 file	Kopiert: {}, 1 Datei
+Copied: {}, {} files	Kopiert: {}, {} Dateien
+Copies the disc's files ({}). No image needed after.	Kopiert die Dateien der Disc ({}). Danach kein Abbild mehr nötig.
+Copies the disc's files. No image needed after.	Kopiert die Dateien der Disc. Danach kein Abbild mehr nötig.
+Copy	Kopieren
+Copy files	Dateien kopieren
+Copy game log	Spiel-Log kopieren
+Copy log	Log kopieren
+Copy removed: {} freed	Kopie entfernt: {} frei
+Copy stopped	Kopieren gestoppt
+Copy stopped: {}. Press the button to carry on.	Kopieren gestoppt: {}. Drücke die Taste, um fortzufahren.
+Copying...	Kopiert...
+Copying: {} of {}	Kopiere: {} von {}
+Couldn't back it up	Sicherung fehlgeschlagen
+Couldn't change it: 	Änderung fehlgeschlagen: 
+Couldn't check: {}	Prüfung fehlgeschlagen: {}
+Couldn't create the figure	Figur konnte nicht erstellt werden
+Couldn't create the game folder: {}	Spielordner konnte nicht erstellt werden: {}
+Couldn't create the shortcut	Verknüpfung konnte nicht erstellt werden
+Couldn't create the shortcut: {}	Verknüpfung konnte nicht erstellt werden: {}
+Couldn't delete it: 	Löschen fehlgeschlagen: 
+Couldn't delete: {}	Löschen fehlgeschlagen: {}
+Couldn't download the compiler. Check your connection.	Compiler konnte nicht geladen werden. Prüfe deine Verbindung.
+Couldn't download the game tools. Check your connection.	Spiel-Tools konnten nicht geladen werden. Prüfe deine Verbindung.
+Couldn't duplicate it: 	Duplizieren fehlgeschlagen: 
+Couldn't export the game: {}	Spiel konnte nicht exportiert werden: {}
+Couldn't move {} aside: {}	{} konnte nicht beiseitegelegt werden: {}
+Couldn't open the folder	Ordner konnte nicht geöffnet werden
+Couldn't put it back	Zurücklegen fehlgeschlagen
+Couldn't put the kit in place: {}	Kit konnte nicht abgelegt werden: {}
+Couldn't put the new {} in place: {}	Neues {} konnte nicht abgelegt werden: {}
+Couldn't read the disc image. Check that it's complete.	Disc-Abbild nicht lesbar. Prüfe, ob es vollständig ist.
+Couldn't read this image	Dieses Abbild ist nicht lesbar
+Couldn't remove the copy: {}	Kopie konnte nicht entfernt werden: {}
+Couldn't remove the profile	Profil konnte nicht entfernt werden
+Couldn't repair the game tools: {}	Spiel-Tools konnten nicht repariert werden: {}
+Couldn't reset it: 	Zurücksetzen fehlgeschlagen: 
+Couldn't restart: start Arkeyan Launcher again	Neustart fehlgeschlagen: Starte Arkeyan Launcher erneut
+Couldn't restore it: 	Wiederherstellung fehlgeschlagen: 
+Couldn't restore the backup: {}	Sicherung konnte nicht wiederhergestellt werden: {}
+Couldn't save it: 	Speichern fehlgeschlagen: 
+Couldn't save the download: {}	Download konnte nicht gespeichert werden: {}
+Couldn't save the name	Name konnte nicht gespeichert werden
+Couldn't save the report	Bericht konnte nicht gespeichert werden
+Couldn't save the settings	Einstellungen konnten nicht gespeichert werden
+Couldn't show the game window.	Spielfenster konnte nicht angezeigt werden.
+Couldn't start the game: the file is missing	Spielstart fehlgeschlagen: Die Datei fehlt
+Couldn't start the game: {}	Spielstart fehlgeschlagen: {}
+Couldn't unpack {}	{} konnte nicht entpackt werden
+Couldn't write the seats for the next start	Plätze für den nächsten Start konnten nicht geschrieben werden
+Couldn't write to the game folder.	Schreiben in den Spielordner nicht möglich.
+Create	Erstellen
+Create the profile	Profil erstellen
+Create the {} starter pack	Starterpaket für {} erstellen
+Create {}	{} erstellen
+Created {}	{} erstellt
+Creation Crystals	Kreationskristalle
+Credits	Mitwirkende
+Cross	Kreuz
+Crystal Clear	Kristallklar
+D-pad down	Steuerkreuz runter
+D-pad left	Steuerkreuz links
+D-pad right	Steuerkreuz rechts
+D-pad up	Steuerkreuz hoch
+Dark	Dunkel
+Data folder	Datenordner
+Dec	Dez.
+Default	Standard
+Delete	Löschen
+Delete saves and data	Spielstände und Daten löschen
+Delete...	Löschen...
+Deleted figures are kept 30 days.	Gelöschte Figuren bleiben 30 Tage erhalten.
+Deleting saves and data frees {}.	Spielstände und Daten löschen gibt {} frei.
+Designed by dorydev, made by mflr0, UI/UX by Gumelia.	Entworfen von dorydev, gebaut von mflr0, UI/UX von Gumelia.
+Desktop shortcut	Desktop-Verknüpfung
+Desktop shortcuts	Desktop-Verknüpfungen
+Details	Details
+Difficulty	Schwierigkeit
+Disc	Disc
+Disc checked	Disc geprüft
+Disc image	Disc-Abbild
+Disc not found	Disc nicht gefunden
+Display refresh rate (up to 60)	Bildwiederholrate des Displays (bis 60)
+Doubles the game's textures from your disc. About {} of disk, a few minutes.	Verdoppelt die Texturen des Spiels von deiner Disc. Etwa {} Speicher, ein paar Minuten.
+Down	Runter
+Downloading Arkeyan Launcher	Arkeyan Launcher wird geladen
+Downloading the game tools	Spiel-Tools werden geladen
+Downloading the game tools again	Spiel-Tools werden erneut geladen
+Downloading tools	Tools werden geladen
+Drag Arkeyan Launcher to Applications, replacing the old one.	Ziehe Arkeyan Launcher in „Programme“ und ersetze den alten.
+Drift (vehicle)	Driften (Fahrzeug)
+Drop figure files or a folder on the window.	Ziehe Figurendateien oder einen Ordner auf das Fenster.
+Drop to 30 FPS when needed	Bei Bedarf auf 30 FPS senken
+Dump textures	Texturen sichern
+Duplicate	Duplizieren
+Duplicated: 	Dupliziert: 
+Each has its own Toy Box, saves, keys and achievements.	Jedes hat seine eigene Toy Box, Spielstände, Tasten und Erfolge.
+Earlier versions of your saves.	Frühere Stände deiner Spielstände.
+Earth	Erde
+Edge smoothing	Kantenglättung
+Edit	Bearbeiten
+Edit my profile	Mein Profil bearbeiten
+Edit profile	Profil bearbeiten
+Element	Element
+Empty	Leer
+Empty: the toy's name	Leer: der Name der Figur
+Eon's Elite	Eons Elite
+Erase	Löschen
+Escape	Esc
+Event and exclusive	Event und exklusiv
+Every download is checked against the release's SHA-256 before it runs, and every release is built by GitHub Actions from the public source.	Jeder Download wird vor dem Start mit dem SHA-256 des Releases geprüft, und jedes Release wird von GitHub Actions aus dem öffentlichen Quellcode gebaut.
+Everything is removed	Alles wird entfernt
+Evolved	Entwickelt
+Experience	Erfahrung
+Export a portable copy	Portable Kopie exportieren
+Export everything...	Alles exportieren...
+Export first	Erst exportieren
+Export for {}	Für {} exportieren
+Export stopped	Export gestoppt
+Export the figures to	Figuren exportieren nach
+Exported {} figure to {}	{} Figur nach {} exportiert
+Exported {} figures to {}	{} Figuren nach {} exportiert
+Exporting...	Exportiere...
+Exporting: {} of {}	Exportiere: {} von {}
+FPS counter	FPS-Anzeige
+FXAA also softens texture detail; Gentle keeps more of it.	FXAA macht auch Texturdetails weicher; „Sanft“ behält mehr davon.
+Favorite	Favorit
+Feb	Feb.
+Figure dumps (.sky, .bin, .dmp)	Figuren-Dumps (.sky, .bin, .dmp)
+Figure sheet	Datenblatt
+Figures	Figuren
+File	Datei
+Files missing or changed	Dateien fehlen oder wurden geändert
+Filters	Filter
+Finding default.xex	default.xex wird gesucht
+Fingerprinting default.xex (SHA-256)	Fingerabdruck von default.xex (SHA-256)
+Finishing	Abschluss
+Fire	Feuer
+Flocked	Beflockt
+Folders	Ordner
+For pack makers: saves the textures as DDS files.	Für Pack-Ersteller: sichert die Texturen als DDS-Dateien.
+For {}	Für {}
+Forward side button	Seitentaste vorn
+Found	Gefunden
+Found, not usable	Gefunden, nicht nutzbar
+Frame rate limit	Bildratenlimit
+Frees {}. Saves and settings are kept.	Gibt {} frei. Spielstände und Einstellungen bleiben.
+Fullscreen	Vollbild
+Game	Spiel
+Game art comes from your own disc.	Die Spielgrafik stammt von deiner eigenen Disc.
+Game data	Spieldaten
+Game data copies	Spieldaten-Kopien
+Game data damaged	Spieldaten beschädigt
+Game data damaged: using the disc image	Spieldaten beschädigt: Das Disc-Abbild wird genutzt
+Game data damaged: using the disc image.	Spieldaten beschädigt: Das Disc-Abbild wird genutzt.
+Game data damaged: {}	Spieldaten beschädigt: {}
+Game files	Spieldateien
+Game installed: press PLAY	Spiel installiert: Drücke SPIELEN
+Game kit not found. Put the skylanders-kit folder next to Arkeyan Launcher, then press Retry.	Spiel-Kit nicht gefunden. Lege den Ordner skylanders-kit neben Arkeyan Launcher und drücke Erneut versuchen.
+Game language	Spielsprache
+Game log	Spiel-Log
+Game log copied	Spiel-Log kopiert
+Game settings	Spieleinstellungen
+Game text	Spieltext
+Game tools	Spiel-Tools
+Game uninstalled	Spiel deinstalliert
+Game voices	Spielstimmen
+Gamepad	Gamepad
+Games	Spiele
+Games updated: {} of {}	Spiele aktualisiert: {} von {}
+Games: XenonRecomp, XenosRecomp, plume, SDL 3, Dear ImGui, FFmpeg, parts of Xenia. Figure format learned from Dolphin and RPCS3.	Spiele: XenonRecomp, XenosRecomp, plume, SDL 3, Dear ImGui, FFmpeg, Teile von Xenia. Das Figurenformat stammt aus Dolphin und RPCS3.
+Gentle	Sanft
+Giants	Giants
+GitHub	GitHub
+GitHub says: {}	GitHub sagt: {}
+Glow in the Dark	Leuchtet im Dunkeln
+Gold	Gold
+Greek	Griechisch
+HD texture packs	HD-Texturpakete
+HD textures	HD-Texturen
+HD textures ready	HD-Texturen bereit
+HD textures removed	HD-Texturen entfernt
+HD textures stopped	HD-Texturen gestoppt
+HID portals	HID-Portale
+Hat	Hut
+Hero points	Heldenpunkte
+Hidden achievement	Verborgener Erfolg
+Hide details	Details ausblenden
+Higher scales need a dedicated graphics card.	Höhere Stufen brauchen eine dedizierte Grafikkarte.
+Hold if its game has quit.	Halten, wenn das zugehörige Spiel beendet ist.
+Hold to clear the caches.	Halten, um die Caches zu leeren.
+Hold to confirm	Halten zum Bestätigen
+Hold to delete all of this.	Halten, um alles hiervon zu löschen.
+Hold to delete it for good.	Halten, um es endgültig zu löschen.
+Hold to delete saves, backups and caches.	Halten, um Spielstände, Sicherungen und Caches zu löschen.
+Hold to delete the built game. Saves are kept.	Halten, um das gebaute Spiel zu löschen. Spielstände bleiben.
+Hold to delete the copy.	Halten, um die Kopie zu löschen.
+Hold to delete the partial copy.	Halten, um die unvollständige Kopie zu löschen.
+Hold to give every button its own job back.	Halten, um jeder Taste ihre eigene Aufgabe zurückzugeben.
+Hold to mark them as not in use.	Halten, um sie als nicht benutzt zu markieren.
+Hold to move them to the trash.	Halten, um sie in den Papierkorb zu legen.
+Hold to put this copy back.	Halten, um diese Kopie zurückzulegen.
+Hold to rebuild the game.	Halten, um das Spiel neu zu bauen.
+Hold to reset every key of this game.	Halten, um alle Tasten dieses Spiels zurückzusetzen.
+Hold to restore; your current saves are kept first.	Halten zum Wiederherstellen; deine aktuellen Spielstände werden vorher gesichert.
+INSTALL	INSTALLIEREN
+INSTALLATION INTERRUPTED	INSTALLATION UNTERBROCHEN
+INSTALLATION STOPPED	INSTALLATION GESTOPPT
+INSTALLING THE GAME	SPIEL WIRD INSTALLIERT
+INSTALLING...	INSTALLIERE...
+If Windows Defender blocks a file:	Wenn Windows Defender eine Datei blockiert:
+Import a folder...	Ordner importieren...
+Import an image...	Abbild importieren...
+Import and export	Import und Export
+Import figures	Figuren importieren
+Import files...	Dateien importieren...
+Import the figures of a folder	Die Figuren eines Ordners importieren
+Imported {}	{} importiert
+In {}	In {}
+Initials	Initialen
+Install	Installieren
+Install failed	Installation fehlgeschlagen
+Install the game first.	Installiere zuerst das Spiel.
+Installation canceled	Installation abgebrochen
+Installing	Installation läuft
+Installing Arkeyan Launcher	Arkeyan Launcher wird installiert
+Installing · {}	Installiere · {}
+Interact	Interagieren
+Interrupted	Unterbrochen
+Interrupted: {} of {} copied	Unterbrochen: {} von {} kopiert
+It is made when the game is installed.	Wird beim Installieren des Spiels erstellt.
+It plays on {} without the launcher or the disc image, with the same saves and settings as the installed game. It never updates: to update it, export it again. Up to {}.	Es läuft auf {} ohne den Launcher und ohne Disc-Abbild, mit denselben Spielständen und Einstellungen wie das installierte Spiel. Es wird nie aktualisiert: Exportiere es erneut, um es zu aktualisieren. Bis zu {}.
+Item or adventure	Gegenstand oder Abenteuer
+Its evolved look	Sein entwickeltes Aussehen
+Its name	Sein Name
+Jan	Jan.
+Japanese	Japanisch
+Jul	Juli
+Jump	Springen
+Jump / Drift (vehicle)	Springen / Driften (Fahrzeug)
+Jun	Juni
+Keep installing	Weiter installieren
+Keeps textures sharp at an angle.	Hält Texturen auch bei schrägem Winkel scharf.
+Kept: Xbox signing keys	Behalten: Xbox-Signaturschlüssel
+Keyboard	Tastatur
+Keyboard bindings reset	Tastaturbelegung zurückgesetzt
+Korean	Koreanisch
+L stick	L-Stick
+Language	Sprache
+Last checked {}	Zuletzt geprüft {}
+Last played	Zuletzt gespielt
+Last played: {}	Zuletzt gespielt: {}
+Later	Später
+Later games	Spätere Spiele
+Launcher	Launcher
+Launcher settings	Launcher-Einstellungen
+Left	Links
+Left Alt	Alt links
+Left Ctrl	Strg links
+Left Shift	Umschalt links
+Left click	Linksklick
+Left click: attack 1. Right click: attack 2. The game keeps the pointer.	Linksklick: Angriff 1. Rechtsklick: Angriff 2. Das Spiel behält den Mauszeiger.
+Legendary	Legendär
+Level in {}	Level in {}
+Level {}	Level {}
+Library	Bibliothek
+Licenses	Lizenzen
+Life	Leben
+Light	Licht
+LightCore	LightCore
+Linking the game	Spiel wird verknüpft
+Live	Live
+Log copied	Log kopiert
+Logs	Logs
+Logs and settings, without your names, for a GitHub issue.	Logs und Einstellungen ohne deine Namen, für ein GitHub-Issue.
+Logs folder	Log-Ordner
+Looking for the disc image	Disc-Abbild wird gesucht
+Looks for updates at each start.	Sucht bei jedem Start nach Updates.
+Low	Niedrig
+Made for 30 FPS; 60 and above are experimental.	Für 30 FPS gemacht; 60 und mehr sind experimentell.
+Magic	Magie
+Magic Items	Magische Gegenstände
+Magic item	Magischer Gegenstand
+Making HD textures	HD-Texturen werden erstellt
+Making the HD textures. You can keep using the launcher; the game waits.	HD-Texturen werden erstellt. Du kannst den Launcher weiter nutzen; das Spiel wartet.
+Manage	Verwalten
+Manage profiles	Profile verwalten
+Mar	März
+Mark as not in use	Als nicht benutzt markieren
+Mark as not in use · {}	Als nicht benutzt markieren · {}
+May	Mai
+Menus, subtitles and on-screen text.	Menüs, Untertitel und Bildschirmtext.
+Menus, subtitles, spoken lines and cutscenes.	Menüs, Untertitel, Sprechtext und Zwischensequenzen.
+Metallic	Metallisch
+Middle click	Mittelklick
+Minis and sidekicks	Minis und Sidekicks
+Missing figure	Fehlende Figur
+Model: {} (id {})	Modell: {} (ID {})
+More actions	Weitere Aktionen
+Mouse	Maus
+Move down	Nach unten
+Move left	Nach links
+Move right	Nach rechts
+Move to the trash	In den Papierkorb
+Move up	Nach oben
+Move {} to the trash	{} in den Papierkorb
+Move {} to the trash? It stays there for 30 days.	{} in den Papierkorb legen? Dort bleibt es 30 Tage.
+Moved to the trash	In den Papierkorb gelegt
+Movement	Bewegung
+My Team	Mein Team
+Name	Name
+Name (optional)	Name (optional)
+Name this toy	Figur benennen
+Name, element, game, level...	Name, Element, Spiel, Level...
+Named: shown at the next start	Benannt: wird beim nächsten Start angezeigt
+Native PC ports	Native PC-Ports
+Native PC ports of Skylanders. No game code or art: it comes from your disc.	Native PC-Ports von Skylanders. Kein Spielcode und keine Grafik: Alles stammt von deiner Disc.
+Needs newer game tools: reinstall the game to get them.	Braucht neuere Spiel-Tools: Installiere das Spiel neu, um sie zu erhalten.
+Needs your disc	Braucht deine Disc
+Never	Nie
+New profile	Neues Profil
+New: never played.	Neu: noch nie gespielt.
+Nickname	Spitzname
+Nightmare from the start	Albtraum von Anfang an
+No backups yet.	Noch keine Sicherungen.
+No disc image needed.	Kein Disc-Abbild nötig.
+No element	Kein Element
+No figure matches	Keine Figur passt
+No figures yet. Add one, or drop your figure files on the window.	Noch keine Figuren. Füge eine hinzu oder ziehe deine Figurendateien auf das Fenster.
+No game log yet.	Noch kein Spiel-Log.
+No game this launcher knows	Kein Spiel, das dieser Launcher kennt
+No gamepad connected.	Kein Gamepad verbunden.
+No hat	Kein Hut
+No notes were published with this version.	Zu dieser Version wurden keine Hinweise veröffentlicht.
+No other bottom to take.	Kein anderes Unterteil verfügbar.
+No other top to take.	Kein anderes Oberteil verfügbar.
+No portal found: the game will wait for one.	Kein Portal gefunden: Das Spiel wartet auf eines.
+No portal found: using the virtual portal.	Kein Portal gefunden: Das virtuelle Portal wird genutzt.
+No saves or figures yet.	Noch keine Spielstände oder Figuren.
+No tearing, a little more latency.	Kein Tearing, etwas mehr Latenz.
+No unknown toys.	Keine unbekannten Figuren.
+None	Keine
+None chosen yet.	Noch keine gewählt.
+None chosen.	Keine gewählt.
+None yet	Noch keine
+Normal	Normal
+Not a game disc	Keine Spiel-Disc
+Not an Xbox 360 disc image, or the file is incomplete.	Kein Xbox-360-Disc-Abbild, oder die Datei ist unvollständig.
+Not an Xbox 360 game, or the image is incomplete.	Kein Xbox-360-Spiel, oder das Abbild ist unvollständig.
+Not available for this game yet	Für dieses Spiel noch nicht verfügbar
+Not available for {} yet	Für {} noch nicht verfügbar
+Not built yet.	Noch nicht gebaut.
+Not enough free space: about 6 GB needed.	Nicht genug freier Platz: Etwa 6 GB nötig.
+Not enough space: {} needed, {} free.	Nicht genug Platz: {} nötig, {} frei.
+Not for this game	Nicht für dieses Spiel
+Not for {}	Nicht für {}
+Not in the catalog. Name one to show it.	Nicht im Katalog. Gib einen Namen ein, um sie anzuzeigen.
+Not installed yet	Noch nicht installiert
+Not needed: the game plays from its copied data.	Nicht nötig: Das Spiel läuft von seinen kopierten Daten.
+Not now	Nicht jetzt
+Not played yet	Noch nicht gespielt
+Nothing	Nichts
+Nothing for this seat yet	Noch nichts für diesen Platz
+Nothing to remove.	Nichts zu entfernen.
+Nothing was removed	Nichts wurde entfernt
+Nov	Nov.
+Now with {}	Jetzt mit {}
+OK	OK
+Oct	Okt.
+Off	Aus
+Off: your rate stays, even if the picture stutters.	Aus: Deine Rate bleibt, auch wenn das Bild ruckelt.
+Older folders	Ältere Ordner
+On	An
+On its own	Von selbst
+On the portal	Auf dem Portal
+On the portal for	Auf dem Portal für
+On the portal in {}: read-only	Auf dem Portal in {}: schreibgeschützt
+On the wheel	Auf dem Rad
+On the wheel: {}	Auf dem Rad: {}
+On {} at the next start of {}	Auf {} beim nächsten Start von {}
+One file	Eine Datei
+Open	Öffnen
+Open its sheet	Datenblatt öffnen
+Open logs folder	Log-Ordner öffnen
+Open the Toy Box	Toy Box öffnen
+Open the folder	Ordner öffnen
+Opening the disc image	Disc-Abbild wird geöffnet
+Opens a new issue on GitHub	Öffnet ein neues Issue auf GitHub
+Opens the Toy Box when the game asks for a figure.	Öffnet die Toy Box, wenn das Spiel nach einer Figur fragt.
+Or drop your .iso on this window. It stays on this computer.	Oder ziehe deine .iso auf dieses Fenster. Sie bleibt auf diesem Computer.
+Original resolution	Originalauflösung
+Other	Andere
+Other files in the figures folder stay.	Andere Dateien im Figurenordner bleiben.
+Other seat	Anderer Platz
+PLAY	SPIELEN
+PLAY WITH	SPIELEN MIT
+Pages	Seiten
+Pause	Pause
+Pick a figure.	Wähle eine Figur.
+Pick one below	Wähle unten eine aus
+Picture	Bild
+Play	Spielen
+Play time: {}	Spielzeit: {}
+Play without updating	Ohne Update spielen
+Play {}	{} spielen
+Play {} with Arkeyan Launcher	{} mit Arkeyan Launcher spielen
+Player 1	Spieler 1
+Player 2	Spieler 2
+Player {}	Spieler {}
+Playing now	Läuft gerade
+Playing now · {} this session	Läuft gerade · {} in dieser Sitzung
+Plays in	Läuft in
+Plug in the portal, then test it.	Schließe das Portal an und teste es.
+Portable copy	Portable Kopie
+Portable copy saved: {}	Portable Kopie gespeichert: {}
+Portal	Portal
+Portal of Power	Portal der Macht
+Portal sound	Portalton
+Portal: not detected	Portal: nicht erkannt
+Portal: {}	Portal: {}
+Preparing the compiler	Compiler wird vorbereitet
+Press INSTALL first	Drücke zuerst INSTALLIEREN
+Press a key for "{}" (Escape cancels)	Drücke eine Taste für „{}“ (Esc bricht ab)
+Problem report	Problembericht
+Profiles	Profile
+Put back	Zurücklegen
+Put back: 	Zurückgelegt: 
+Put it on {}	Auf {} stellen
+Put on the portal	Aufs Portal stellen
+Quit	Beenden
+Quit the game before restoring a backup	Beende das Spiel, bevor du eine Sicherung wiederherstellst
+Quit the game first.	Beende zuerst das Spiel.
+Quit the game to change profile	Beende das Spiel, um das Profil zu wechseln
+R stick	R-Stick
+R stick down	R-Stick runter
+R stick left	R-Stick links
+R stick right	R-Stick rechts
+R stick up	R-Stick hoch
+Reading default.xex	default.xex wird gelesen
+Reading the Xbox 360 disc layout	Xbox-360-Disc-Aufbau wird gelesen
+Reading the disc	Disc wird gelesen
+Reading the game's pictures	Bilder des Spiels werden gelesen
+Reading the title and icon	Titel und Symbol werden gelesen
+Ready	Bereit
+Ready to install	Bereit zur Installation
+Ready to play	Bereit zum Spielen
+Ready · {} played	Bereit · {} gespielt
+Real portal (Wii, PlayStation, Xbox)	Echtes Portal (Wii, PlayStation, Xbox)
+Real portal: the game will use it.	Echtes Portal: Das Spiel nutzt es.
+Reinstall	Neu installieren
+Release page	Release-Seite
+Remove	Entfernen
+Remove Arkeyan Launcher	Arkeyan Launcher entfernen
+Remove from favorites	Aus Favoriten entfernen
+Remove game	Spiel entfernen
+Remove the copy	Kopie entfernen
+Remove {}?	{} entfernen?
+Removed, except	Entfernt, außer
+Removing the HD textures.	HD-Texturen werden entfernt.
+Repair	Reparieren
+Repair builds the game again from your disc.	Reparieren baut das Spiel neu aus deiner Disc.
+Repair downloads the game tools again.	Reparieren lädt die Spiel-Tools erneut.
+Repair needs the disc of {}	Reparieren braucht die Disc von {}
+Repair the copy	Kopie reparieren
+Replaces the game's textures with your pack.	Ersetzt die Texturen des Spiels durch dein Pack.
+Report	Melden
+Report a bug	Fehler melden
+Report a problem	Problem melden
+Report copied	Bericht kopiert
+Report saved	Bericht gespeichert
+Report saved: {}	Bericht gespeichert: {}
+Reset	Zurücksetzen
+Reset to defaults	Auf Standard zurücksetzen
+Reset to new	Auf neu zurücksetzen
+Reset to new...	Auf neu zurücksetzen...
+Reset {} to new? Level, gold and upgrades are lost.	{} auf neu zurücksetzen? Level, Gold und Upgrades gehen verloren.
+Resolution scale	Auflösungsfaktor
+Restart now	Jetzt neu starten
+Restore	Wiederherstellen
+Restore a backup...	Sicherung wiederherstellen...
+Resume	Fortsetzen
+Retry	Erneut versuchen
+Retry to continue from this step.	Versuche es erneut, um bei diesem Schritt fortzufahren.
+Retry to start the installation.	Versuche es erneut, um die Installation zu starten.
+Return	Eingabe
+Right	Rechts
+Right Alt	Alt rechts
+Right Ctrl	Strg rechts
+Right Shift	Umschalt rechts
+Right click	Rechtsklick
+Rumble	Vibration
+Running	Läuft
+Russian	Russisch
+Same	Gleich
+Same as text	Wie der Text
+Save	Speichern
+Save as...	Speichern unter...
+Save backups	Sicherungen speichern
+Save to Desktop	Auf dem Desktop speichern
+Saved	Gespeichert
+Saved gamepad (not connected)	Gespeichertes Gamepad (nicht verbunden)
+Saves	Spielstände
+Saves and data deleted	Spielstände und Daten gelöscht
+Saves restored from {}	Spielstände wiederhergestellt aus {}
+Saves {}, figures {}.	Spielstände {}, Figuren {}.
+Search	Suchen
+Search the catalog	Katalog durchsuchen
+Select	Auswählen
+Senseis	Senseis
+Sep	Sept.
+Series	Serie
+Settings	Einstellungen
+Settings, saves, figures and builds.	Einstellungen, Spielstände, Figuren und Builds.
+Shaders	Shader
+Shake / Insert / Swing	Schütteln / Einstecken / Schwingen
+Shortcut added to the Desktop	Verknüpfung auf dem Desktop angelegt
+Show details	Details anzeigen
+Show in folder	Im Ordner zeigen
+Show the collection folder	Sammlungsordner anzeigen
+Show the game	Spiel anzeigen
+Silver	Silber
+Skip intro movies	Intro-Videos überspringen
+Skylander Info	Skylander-Info
+Skylander Profile	Skylander-Profil
+Skylander/Villain Stats	Skylander-/Schurken-Werte
+Skylanders	Skylanders
+Skylanders Stats	Skylanders-Werte
+Skylanders, Spyro and Activision are trademarks of Activision Publishing, Inc. This project is not affiliated with or endorsed by Activision.	Skylanders, Spyro und Activision sind Marken von Activision Publishing, Inc. Dieses Projekt steht in keiner Verbindung zu Activision und wird nicht von Activision unterstützt.
+Some figures are marked as in use, but their game is not running.	Einige Figuren sind als benutzt markiert, aber ihr Spiel läuft nicht.
+Something went wrong while {}.	Beim Vorgang „{}“ ist etwas schiefgelaufen.
+Sort: {}	Sortierung: {}
+Space	Leertaste
+Special Power / Back	Spezialkraft / Zurück
+Spoken lines and cutscenes.	Sprechtext und Zwischensequenzen.
+Square	Quadrat
+Standard	Standard
+Starting the installer	Installer wird gestartet
+Stop	Stopp
+Stopping keeps the files already copied.	Beim Stoppen bleiben die schon kopierten Dateien erhalten.
+Stopping...	Wird gestoppt...
+Strong	Stark
+SuperChargers	SuperChargers
+Support	Support
+Swap Force bottoms	Swap-Force-Unterteile
+Swap Force tops	Swap-Force-Oberteile
+Swapper	Swapper
+Switch Driver (co-op)	Fahrer wechseln (Koop)
+Switch Skylander / Villain	Skylander / Schurke wechseln
+System default	Systemstandard
+Take it off	Abnehmen
+Tech	Technik
+Test	Test
+Test the portal	Portal testen
+Testing...	Teste...
+Texture filtering	Texturfilterung
+Texture pack folder	Texturpaket-Ordner
+That's a folder: choose the disc image (.iso).	Das ist ein Ordner: Wähle das Disc-Abbild (.iso).
+The 3D scene at the console's size.	Die 3D-Szene in der Größe der Konsole.
+The HD textures stopped before they were made.	Die HD-Texturen wurden gestoppt, bevor sie fertig waren.
+The HD textures weren't made.	Die HD-Texturen wurden nicht erstellt.
+The address isn't a secure one (https)	Die Adresse ist nicht sicher (https)
+The answer has no release in it	Die Antwort enthält kein Release
+The answer isn't valid JSON ({})	Die Antwort ist kein gültiges JSON ({})
+The author has submitted the launcher and its source code to Microsoft as a false positive; the review is pending.	Der Autor hat den Launcher und seinen Quellcode als Fehlalarm bei Microsoft eingereicht; die Prüfung steht noch aus.
+The copy failed	Kopieren fehlgeschlagen
+The data folder isn't safe to remove.	Der Datenordner lässt sich nicht sicher entfernen.
+The disc image is damaged. Copy the disc again.	Das Disc-Abbild ist beschädigt. Kopiere die Disc erneut.
+The disc image is incomplete. Copy the disc again.	Das Disc-Abbild ist unvollständig. Kopiere die Disc erneut.
+The disc image isn't there. Choose it again.	Das Disc-Abbild ist nicht da. Wähle es erneut.
+The disc is still being checked: try again in a moment	Die Disc wird noch geprüft: Versuche es gleich noch einmal
+The download failed: {}	Download fehlgeschlagen: {}
+The download holds no launcher app	Der Download enthält keine Launcher-App
+The download is damaged: nothing was installed	Der Download ist beschädigt: Es wurde nichts installiert
+The download isn't a game kit	Der Download ist kein Spiel-Kit
+The download isn't a zip file	Der Download ist keine Zip-Datei
+The earlier install is still stopping. Resume in a moment.	Die frühere Installation wird noch beendet. Mach gleich weiter.
+The figure can't be read. Reopen it before saving.	Die Figur ist nicht lesbar. Öffne sie vor dem Speichern erneut.
+The figure was kept, but its seat couldn't be restored.	Die Figur blieb erhalten, aber ihr Platz konnte nicht wiederhergestellt werden.
+The figures on the portal when the game starts	Die Figuren auf dem Portal beim Spielstart
+The file stays where it is.	Die Datei bleibt, wo sie ist.
+The frame rate in a corner of the game (F3 in game).	Die Bildrate in einer Ecke des Spiels (F3 im Spiel).
+The game ({}) wasn't found next to Arkeyan Launcher.\n\nPut it in the same folder.	Das Spiel ({}) wurde nicht neben Arkeyan Launcher gefunden.\n\nLege es in denselben Ordner.
+The game didn't finish the portal test.	Das Spiel hat den Portaltest nicht beendet.
+The game in one file: it plays without the launcher or the disc image.	Das Spiel in einer Datei: Es läuft ohne Launcher und ohne Disc-Abbild.
+The game is running: quit it first.	Das Spiel läuft: Beende es zuerst.
+The game is running: quit it to restore a backup.	Das Spiel läuft: Beende es, um eine Sicherung wiederherzustellen.
+The game is running: use its Toy Box	Das Spiel läuft: Nutze seine Toy Box
+The game is still installing	Das Spiel wird noch installiert
+The game isn't installed yet	Das Spiel ist noch nicht installiert
+The game stopped unexpectedly	Das Spiel wurde unerwartet beendet
+The game tools are incomplete.	Die Spiel-Tools sind unvollständig.
+The game tools are missing a file: {}	Bei den Spiel-Tools fehlt eine Datei: {}
+The game tools are repaired	Die Spiel-Tools sind repariert
+The game uses the disc image instead.	Das Spiel nutzt stattdessen das Disc-Abbild.
+The game's last log, for a bug report.	Das letzte Log des Spiels, für einen Fehlerbericht.
+The game's volume (F3 in game).	Die Lautstärke des Spiels (F3 im Spiel).
+The install stops and can resume later.	Die Installation stoppt und kann später fortgesetzt werden.
+The installer couldn't start.	Der Installer konnte nicht starten.
+The installer stopped before the game was built.	Der Installer wurde gestoppt, bevor das Spiel gebaut war.
+The installer stopped with exit code {}.	Der Installer wurde mit Exit-Code {} beendet.
+The latest 10 backups are kept.	Die letzten 10 Sicherungen bleiben erhalten.
+The one this trap holds	Die, die diese Falle enthält
+The portal can't be opened: the game will wait.	Das Portal lässt sich nicht öffnen: Das Spiel wartet.
+The portal can't be opened: using the virtual portal.	Das Portal lässt sich nicht öffnen: Das virtuelle Portal wird genutzt.
+The portal test took too long and was stopped.	Der Portaltest hat zu lange gedauert und wurde gestoppt.
+The release {} has no {}	Das Release {} hat kein {}
+The test failed	Der Test ist fehlgeschlagen
+The traps' voices: a Traptanium portal plays them, else the computer (F3 in game).	Die Stimmen der Fallen: Ein Traptanium-Portal spielt sie ab, sonst der Computer (F3 im Spiel).
+The trash is empty.	Der Papierkorb ist leer.
+The update failed: {}	Update fehlgeschlagen: {}
+The wheel is full: take a figure off it first	Das Rad ist voll: Nimm zuerst eine Figur herunter
+The zip file is damaged	Die Zip-Datei ist beschädigt
+These are your own game tools: restore the file, or set them up again.	Das sind deine eigenen Spiel-Tools: Stelle die Datei wieder her oder richte sie neu ein.
+These game tools can't build {}	Diese Spiel-Tools können {} nicht bauen
+These game tools can't make HD textures. Update them first.	Diese Spiel-Tools können keine HD-Texturen erstellen. Aktualisiere sie zuerst.
+This computer has no Desktop folder.	Dieser Computer hat keinen Desktop-Ordner.
+This copy holds your game. It is for your personal use only: do not share it.	Diese Kopie enthält dein Spiel. Sie ist nur für den persönlichen Gebrauch: Gib sie nicht weiter.
+This disc image is {}, not {}.	Dieses Disc-Abbild ist {}, nicht {}.
+This game has no folder.	Dieses Spiel hat keinen Ordner.
+This is {}, but this disc version isn't supported yet (media ID {:08X}, version {}).\n\nSupported:{}	Das ist {}, aber diese Disc-Version wird noch nicht unterstützt (Media-ID {:08X}, Version {}).\n\nUnterstützt:{}
+This key is used by another action	Diese Taste wird von einer anderen Aktion benutzt
+This looks like the {} disc of {}, but it's damaged or modified. Copy the disc again.	Das sieht aus wie die {}-Disc von {}, ist aber beschädigt oder verändert. Kopiere die Disc erneut.
+This version of the game doesn't have the portal test yet. Update the game.	Diese Version des Spiels hat den Portaltest noch nicht. Aktualisiere das Spiel.
+Three steps	Drei Schritte
+Tidy the starters	Starter aufräumen
+Tidy · {}	Aufräumen · {}
+Today {}	Heute {}
+Top: {} · Bottom: {}	Oben: {} · Unten: {}
+Total	Gesamt
+Touchpad	Touchpad
+Toy	Figur
+Toy Box	Toy Box
+Toy Box in the game: F6, or View + Y on a controller.	Toy Box im Spiel: F6 oder Ansicht + Y am Controller.
+Toy Box keys	Toy-Box-Tasten
+Toy type {}	Figurentyp {}
+Translating the game code	Spielcode wird übersetzt
+Translating the shaders	Shader werden übersetzt
+Trap	Falle
+Trap Masters	Fallenmeister
+Trap shape	Fallenform
+Traps	Fallen
+Trash	Papierkorb
+Trash · {}	Papierkorb · {}
+Triangle	Dreieck
+Trilinear	Trilinear
+Trophies	Trophäen
+Turn the game music off	Spielmusik ausschalten
+Turn the game music on	Spielmusik einschalten
+Type	Typ
+UPDATE	AKTUALISIEREN
+UPDATING THE GAME	SPIEL WIRD AKTUALISIERT
+UPDATING...	AKTUALISIERE...
+USB (Xbox) portals	USB-Portale (Xbox)
+Undead	Untote
+Uninstall	Deinstallieren
+Uninstall everything	Alles deinstallieren
+Uninstall everything...	Alles deinstallieren...
+Unknown	Unbekannt
+Unknown release	Unbekanntes Release
+Unknown toy {}	Unbekannte Figur {}
+Unknown toy {} (variant {:04X})	Unbekannte Figur {} (Variante {:04X})
+Unknown toys	Unbekannte Figuren
+Unknown toys · {}	Unbekannte Figuren · {}
+Unlimited (experimental)	Unbegrenzt (experimentell)
+Unreadable. Restore a backup or reset it.	Nicht lesbar. Stelle eine Sicherung wieder her oder setze es zurück.
+Up	Hoch
+Update all	Alle aktualisieren
+Update available	Update verfügbar
+Update available: {}	Update verfügbar: {}
+Update failed	Update fehlgeschlagen
+Update now	Jetzt aktualisieren
+Updates	Updates
+Updates {} games, one after the other	Aktualisiert {} Spiele, eins nach dem anderen
+Updating	Aktualisiere
+Upgrades	Upgrades
+Use / Talk	Benutzen / Sprechen
+Use it for {}	Für {} nutzen
+Use the mouse	Maus verwenden
+VSync	VSync
+Vehicle {}	Fahrzeug {}
+Vehicles	Fahrzeuge
+Verified	Geprüft
+Verified, {}	Geprüft, {}
+Version {} is available.	Version {} ist verfügbar.
+Version {}, {}	Version {}, {}
+Versions	Versionen
+Video	Video
+Villain	Schurke
+Villains	Schurken
+Virtual (no portal needed)	Virtuell (kein Portal nötig)
+Virtual portal	Virtuelles Portal
+Virtual portal chosen.	Virtuelles Portal gewählt.
+Volume	Lautstärke
+Wait for the HD textures to finish	Warte, bis die HD-Texturen fertig sind
+Wait for the copy to finish	Warte, bis das Kopieren fertig ist
+Wait for the export to finish	Warte, bis der Export fertig ist
+Wait for the game to finish.	Warte, bis das Spiel fertig ist.
+Wait for the installation to finish	Warte, bis die Installation fertig ist
+Water	Wasser
+Welcome, {}	Willkommen, {}
+What goes	Was dazugehört
+What it wears in the game	Was sie im Spiel trägt
+What's new	Neuigkeiten
+What's new in {}	Neuigkeiten in {}
+Wheel down	Rad runter
+Wheel up	Rad hoch
+Why this happens	Warum das passiert
+Widescreen	Breitbild
+Windows Defender may block the install	Windows Defender blockiert vielleicht die Installation
+Windows Defender may report Arkeyan-Builder.exe, ArkeyanLauncher.exe or a game built here as Trojan:Win32/Bearfoos.A!ml. The !ml ending means no known malware was found: Defender's machine-learning model guesses from what the program does. The launcher is not signed, downloads a compiler, builds a new game on your PC and updates itself: that is the whole guess.	Windows Defender meldet Arkeyan-Builder.exe, ArkeyanLauncher.exe oder ein hier gebautes Spiel eventuell als Trojan:Win32/Bearfoos.A!ml. Die Endung !ml heißt: Es wurde keine bekannte Malware gefunden; das Machine-Learning-Modell von Defender rät anhand dessen, was das Programm tut. Der Launcher ist nicht signiert, lädt einen Compiler, baut auf deinem PC ein neues Spiel und aktualisiert sich selbst: Darauf beruht die ganze Vermutung.
+Without a real portal, the game uses its virtual one (the Toy Box).	Ohne echtes Portal nutzt das Spiel sein virtuelles (die Toy Box).
+Working	Arbeitet
+Works in	Läuft in
+Works in {}	Läuft in {}
+Wrong disc	Falsche Disc
+Xbox One / Series	Xbox One / Series
+Xbox portal	Xbox-Portal
+YOUR GAMES	DEINE SPIELE
+Yesterday {}	Gestern {}
+You can set up your portal while you wait.	Du kannst dein Portal einrichten, während du wartest.
+Your disc images are never touched.	Deine Disc-Abbilder werden nie verändert.
+Your figures	Deine Figuren
+Your own copy, as an .iso	Deine eigene Kopie als .iso
+Zoom: automatic	Zoom: automatisch
+Zoom: {:g}%	Zoom: {:g} %
+about {0} h {1:02} min left	noch etwa {0} Std. {1:02} Min.
+about {} min left	noch etwa {} Min.
+and {} more	und {} weitere
+another game (title ID {:08X})	ein anderes Spiel (Titel-ID {:08X})
+bottom	Unterteil
+choose a folder outside the installed game	Wähle einen Ordner außerhalb des installierten Spiels
+couldn't copy the game: {}	Spiel konnte nicht kopiert werden: {}
+couldn't open the disc image	Disc-Abbild konnte nicht geöffnet werden
+couldn't put the copy in place: {}	Kopie konnte nicht abgelegt werden: {}
+couldn't sign the app (codesign)	App konnte nicht signiert werden (codesign)
+created	erstellt
+curl couldn't start ({})	curl konnte nicht starten ({})
+deleted	gelöscht
+every game	jedes Spiel
+figure	Figur
+hat {}	Hut {}
+imported	importiert
+less than a minute	weniger als eine Minute
+less than a minute left	noch weniger als eine Minute
+level {} · {} gold	Level {} · {} Gold
+maximum level	Höchstlevel
+needs {}	braucht {}
+no answer	keine Antwort
+no hat	kein Hut
+nothing yet	noch nichts
+only what {} reads	nur was {} liest
+owned x{}	im Besitz x{}
+plays as {0} in {1}	spielt als {0} in {1}
+plays as {}	spielt als {}
+portal	Portal
+the collection's index can't be written	Der Index der Sammlung kann nicht geschrieben werden
+the copy can't be read back: {}	Die Kopie lässt sich nicht zurücklesen: {}
+the installed game is missing: install it again	Das installierte Spiel fehlt: Installiere es erneut
+tidied	aufgeräumt
+today	heute
+top	Oberteil
+yesterday	gestern
+{0} is missing a file: {1}	Bei {0} fehlt eine Datei: {1}
+{0} {1} {2}	{0}. {1} {2}
+{} (active)	{} (aktiv)
+{} GB	{} GB
+{} KB	{} KB
+{} MB	{} MB
+{} XP · {}	{} XP · {}
+{} Xbox, PlayStation and Switch pads are compatible.	{} Xbox-, PlayStation- und Switch-Pads sind kompatibel.
+{} accepts this portal.	{} akzeptiert dieses Portal.
+{} already plays from its copied game data	{} läuft schon von seinen kopierten Spieldaten
+{} backup	{} Sicherung
+{} backups	{} Sicherungen
+{} bytes	{} Bytes
+{} can't be used: {}	{} kann nicht genutzt werden: {}
+{} can't be verified, so it wasn't installed	{} lässt sich nicht verifizieren und wurde nicht installiert
+{} couldn't be removed.	{} konnte nicht entfernt werden.
+{} days ago	vor {} Tagen
+{} doesn't go on {}	{} passt nicht auf {}
+{} elapsed	{} vergangen
+{} figure copied	{} Figur kopiert
+{} figure moved to the trash	{} Figur in den Papierkorb gelegt
+{} figures copied	{} Figuren kopiert
+{} figures moved to the trash	{} Figuren in den Papierkorb gelegt
+{} files	{} Dateien
+{} freed.	{} frei.
+{} gamepads connected.	{} Gamepads verbunden.
+{} gold	{} Gold
+{} h {:02} min	{} Std. {:02} Min.
+{} has no {} for this computer	{} hat kein {} für diesen Computer
+{} is a disc image: it stays.	{} ist ein Disc-Abbild: Es bleibt.
+{} is a link: it stays.	{} ist ein Link: Er bleibt.
+{} is busy: try again when it is done	{} ist beschäftigt: Versuche es nach dem Ende erneut
+{} is in use by {}	{} wird von {} benutzt
+{} is not for {}	{} ist nicht für {}
+{} is not in its folder: it stays.	{} liegt nicht in seinem Ordner: Es bleibt.
+{} is outside Arkeyan Launcher's folders: it stays.	{} liegt außerhalb der Ordner von Arkeyan Launcher: Es bleibt.
+{} is running	{} läuft
+{} is running: quit it first.	{} läuft: Beende es zuerst.
+{} is running: use its Toy Box	{} läuft: Nutze seine Toy Box
+{} keep no level or gold.	{} behalten kein Level und kein Gold.
+{} min	{} Min.
+{} of {}	{} von {}
+{} of {} unlocked · {} of {} G	{} von {} freigeschaltet · {} von {} G
+{} points outside its GitHub release, so it wasn't installed	{} verweist auf etwas außerhalb seines GitHub-Releases und wurde nicht installiert
+{} rejects this portal: {}.	{} lehnt dieses Portal ab: {}.
+{} settings	{}-Einstellungen
+{} stopped unexpectedly (exit code {}).\n\nPress Report to save a report file with the log and where the game stopped.	{} wurde unerwartet beendet (Exit-Code {}).\n\nDrücke Melden, um eine Berichtsdatei mit dem Log und der Stelle des Absturzes zu speichern.
+{} to level {}	{} bis Level {}
+{} warns about this portal: {}.	{} warnt vor diesem Portal: {}.
+{} x {} for the 3D scene	{} x {} für die 3D-Szene
+{} · Evolved	{} · Entwickelt
+{} · empty	{} · leer
+{} · type {} · variant {:04X}	{} · Typ {} · Variante {:04X}
+{} · {}	{} · {}
+{} · {} played	{} · {} gespielt
+{} · {} · {} upgrades	{} · {} · {} Upgrades
+{} · {} · ~{} min	{} · {} · ~{} Min.
+{} · ~{} min	{} · ~{} Min.
+{}%	{} %
+{}'s Toy Box, saves and keys go to the profiles' trash.	Toy Box, Spielstände und Tasten von {} kommen in den Papierkorb der Profile.
+{}: game data copied	{}: Spieldaten kopiert
+{}: pick the new {}	{}: Wähle das neue {}
+{}: {} ({} of {})	{}: {} ({} von {})
+{}: {} freed	{}: {} frei
+{}: {} taken off	{}: {} abgenommen

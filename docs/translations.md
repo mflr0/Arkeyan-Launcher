@@ -4,6 +4,11 @@ The launcher's own text (pages, buttons, states, notifications, dialogs, install
 language. The game's text and voice languages are a different thing: they are the game's, set in each game's settings
 (Language tab, `[<game>] language`).
 
+## The languages
+The launcher has English (the source), French (`fr`), German (`de`), Spanish (`es`), Italian (`it`) and Portuguese (`pt`,
+European). Each uses the informal address of the games, and the Skylanders words the games use in that language.
+The other disc languages (`nl`, `sv`, `no`, `da`, `fi`) are added the same way ("Adding a language").
+
 ## How it works
 - **English is the source, and the key.** The code writes the English text and asks for it translated: `Tr("Cancel")`.
   `Tf("{} min ago", minutes)` formats too. A string that sits in a table or a constant (where it can't call `Tr` yet) is
