@@ -3,6 +3,8 @@
 A game the launcher installed can be exported as one file that plays on its own: no disc image and no launcher are needed
 to start it. The game's settings page, **Game** tab, **Portable copy** section, has one button for the system the launcher
 runs on: **Export for macOS**, **Export for Windows** or **Export for Linux**.
+The button is disabled, with "Install the game first." or "Choose the disc image first." under the section's title, until the game
+is built and its disc image is verified; the explanation dialog is closed whenever that is not so (it once opened with "Up to 0 bytes").
 
 Code: `src/launcher/portable_export.{h,cpp}` (the export, no UI), `src/launcher/ui/game_settings_page.cpp`
 (`DrawPortableExport`: the section, the message, the folder dialog, the progress), the pack format

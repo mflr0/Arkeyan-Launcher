@@ -716,7 +716,9 @@ namespace launcher_ui
         if (!m_s->portableMessage.empty())
             note(m_s->portableMessage);
 
-        // What the copy is, before anything is written.
+        // What the copy is, before anything is written: only for a game that is installed and has its disc (not "Up to 0 bytes").
+        if (!ready)
+            m_portableAsk = false;
         if (m_portableAsk && ui::BeginModal("##portable", Tr("Export a portable copy"), &m_portableAsk, ui::ModalSize::Medium))
         {
             ui::Text(ui::TextStyle::Body, Tr("This copy holds your game. It is for your personal use only: do not share it."), ui::color::Ink);
