@@ -1037,3 +1037,26 @@ Sorcerer	Tovenaar
 Swashbuckler	Schermer
 Sentinel	Schildwacht
 Bazooker	Bazookist
+
+# The Toy Box window (docs/toybox_window.md)
+A real figure	Een echte figuur
+A real figure is there: lift it off the portal first	Daar staat een echte figuur: haal hem eerst van de portal
+Another Toy Box window has this game	Een ander Toy Box-venster heeft dit spel
+Another program is using this figure	Een ander programma gebruikt deze figuur
+Couldn't open the Toy Box window	Kan het Toy Box-venster niet openen
+It is already there	Hij staat er al
+Now in {}	Nu in {}
+On the portal of {}	Op de portal van {}
+Open with the game	Openen met het spel
+Real figure · on the portal	Echte figuur · op de portal
+Start a game first	Start eerst een spel
+The Toy Box in its own window, to keep beside the game	De Toy Box in een eigen venster, naast het spel
+The Toy Box window opens each time you play	Het Toy Box-venster opent elke keer dat je speelt
+The game cannot read this figure there	Het spel kan deze figuur daar niet lezen
+The game did not find this figure	Het spel vond deze figuur niet
+The game has no virtual portal now	Het spel heeft nu geen virtuele portal
+The game is newer: update the launcher	Het spel is nieuwer: werk de launcher bij
+The game is older: update it	Het spel is ouder: werk het bij
+The portal is full	De portal is vol
+Toy Box window	Toy Box-venster
+Waiting for the game...	Wachten op het spel...

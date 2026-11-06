@@ -418,7 +418,8 @@ namespace launcher_ui
         }
         if (ui::BeginMenu("##puton"))
         {
-            ui::Text(ui::TextStyle::Caption, Tf("At the next start of {}", FullGameName(m_model.gameId)).c_str(), ui::color::Dim, -1);
+            ui::Text(ui::TextStyle::Caption, (m_model.Live() ? Tf("Now in {}", FullGameName(m_model.gameId))
+                                                             : Tf("At the next start of {}", FullGameName(m_model.gameId))).c_str(), ui::color::Dim, -1);
             for (size_t i = 0; game != nullptr && i < game->seats.size(); i++)
             {
                 std::string text = SeatName(i);
@@ -426,7 +427,7 @@ namespace launcher_ui
                     if (const Figure* held = m_model.Find(m_model.seats[i]))
                         text += Tf(" (replaces {})", Name(*held));
                 const bool fits = SeatAccepts(game->seats[i], f) && (f.toy == nullptr || collection::Catalogue::Get().Accepts(m_model.gameId, f.type));
-                if (ui::MenuItem((text + "##seat" + std::to_string(i)).c_str(), { ui::Icon::None, seated == int(i), false, !fits }))
+                if (ui::MenuItem((text + "##seat" + std::to_string(i)).c_str(), { ui::Icon::None, seated == int(i), false, !fits || m_model.RealSeat(i) }))
                     PutOn(i, path);
             }
             if (seated >= 0)

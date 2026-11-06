@@ -34,6 +34,7 @@ struct LauncherOptions
     bool play = false;     // --play: start the game as soon as its disc is checked and it is built
     bool startGames = false; // PLAY starts the game and the window stays (GameSession); else PLAY closes it and returns the choice
     bool requests = false;   // this process holds the data folder's lock: it reads what a second start asks (single_instance.h)
+    std::string toybox;      // --toybox <id>: this process is the Toy Box window of that game (docs/toybox_window.md)
 };
 std::string RunLauncherWindow(const GameInfo& game, const std::string& configPath, LauncherConfig& config,
     const std::string& previous, std::string* installed = nullptr, const GameInfo** played = nullptr, const LauncherOptions& options = {});

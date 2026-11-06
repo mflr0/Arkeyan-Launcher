@@ -1035,3 +1035,26 @@ Sorcerer	Zauberer
 Swashbuckler	Haudegen
 Sentinel	Wächter
 Bazooker	Bazookaschütze
+
+# The Toy Box window (docs/toybox_window.md)
+A real figure	Eine echte Figur
+A real figure is there: lift it off the portal first	Dort steht eine echte Figur: Nimm sie zuerst vom Portal
+Another Toy Box window has this game	Ein anderes Toy-Box-Fenster hat dieses Spiel
+Another program is using this figure	Ein anderes Programm benutzt diese Figur
+Couldn't open the Toy Box window	Toy-Box-Fenster konnte nicht geöffnet werden
+It is already there	Sie ist schon dort
+Now in {}	Jetzt in {}
+On the portal of {}	Auf dem Portal von {}
+Open with the game	Mit dem Spiel öffnen
+Real figure · on the portal	Echte Figur · auf dem Portal
+Start a game first	Starte zuerst ein Spiel
+The Toy Box in its own window, to keep beside the game	Die Toy Box in einem eigenen Fenster, neben dem Spiel
+The Toy Box window opens each time you play	Das Toy-Box-Fenster öffnet sich bei jedem Spielstart
+The game cannot read this figure there	Das Spiel kann diese Figur dort nicht lesen
+The game did not find this figure	Das Spiel hat diese Figur nicht gefunden
+The game has no virtual portal now	Das Spiel hat gerade kein virtuelles Portal
+The game is newer: update the launcher	Das Spiel ist neuer: Aktualisiere den Launcher
+The game is older: update it	Das Spiel ist älter: Aktualisiere es
+The portal is full	Das Portal ist voll
+Toy Box window	Toy-Box-Fenster
+Waiting for the game...	Warte auf das Spiel...

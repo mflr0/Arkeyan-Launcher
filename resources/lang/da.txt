@@ -1037,3 +1037,26 @@ Sorcerer	Troldmand
 Swashbuckler	Sabelsvinger
 Sentinel	Vogter
 Bazooker	Bazookaskytte
+
+# The Toy Box window (docs/toybox_window.md)
+A real figure	En rigtig figur
+A real figure is there: lift it off the portal first	Der står en rigtig figur: tag den af portalen først
+Another Toy Box window has this game	Et andet Toy Box-vindue har dette spil
+Another program is using this figure	Et andet program bruger denne figur
+Couldn't open the Toy Box window	Kunne ikke åbne Toy Box-vinduet
+It is already there	Den er der allerede
+Now in {}	Nu i {}
+On the portal of {}	På portalen i {}
+Open with the game	Åbn med spillet
+Real figure · on the portal	Rigtig figur · på portalen
+Start a game first	Start et spil først
+The Toy Box in its own window, to keep beside the game	Toy Box i sit eget vindue, ved siden af spillet
+The Toy Box window opens each time you play	Toy Box-vinduet åbner hver gang du spiller
+The game cannot read this figure there	Spillet kan ikke læse denne figur der
+The game did not find this figure	Spillet fandt ikke denne figur
+The game has no virtual portal now	Spillet har ingen virtuel portal nu
+The game is newer: update the launcher	Spillet er nyere: opdater launcheren
+The game is older: update it	Spillet er ældre: opdater det
+The portal is full	Portalen er fuld
+Toy Box window	Toy Box-vindue
+Waiting for the game...	Venter på spillet...

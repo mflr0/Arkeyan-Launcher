@@ -70,6 +70,18 @@ namespace launcher_ui
     public:
         explicit CollectionPage(App& app);
         void SelectGame(const std::string& id) { m_model.gameId = id; } // before the page is first opened
+        // The Toy Box window (docs/toybox_window.md): this page shows `game`'s portal live, over the link to it.
+        void SetLive(const std::string& game, toyboxlinkclient::Client* link)
+        {
+            m_model.gameId = game;
+            m_model.live = link;
+        }
+        void LinkChanged() { m_model.Load(); m_generation++; } // connected, waiting, ended: the seats read again
+        // SKY_LAUNCHER_TEST_TOYBOX (toybox_window.cpp): what a drop on a seat, the seat's X and a click on a seat do.
+        void TestPutOn(size_t seat, const std::string& path) { PutOn(seat, path); }
+        void TestTakeOff(size_t seat) { TakeOff(seat); }
+        void TestChoose(int seat) { Choose(seat); }
+        std::vector<toyboxlink::Seat> TestLiveSeats() const { return m_model.liveSeats; }
 
         void Draw();
         void DrawHeroPortal(ImVec2 at, ImVec2 size, bool live);
@@ -154,6 +166,10 @@ namespace launcher_ui
         // A swapper (Swap Force) is one card: the top stands for it, the bottom is drawn small at its corner.
         collection::Card CardOf(const collection::Figure& figure) const;
         bool Busy(const collection::Figure& figure) const { return CardOf(figure).Busy(); }
+        // Busy, but not by the game whose portal the Toy Box window shows: that game moves its own figures between seats.
+        bool SeatBusy(const collection::Figure& figure) const;
+        void DrawLiveLine(); // the Toy Box window's line over the seats: the game, live or waiting, Open with the game
+        void DrawRealSeat(ImDrawList* draw, size_t seat, ImVec2 at, ImVec2 end); // a real toy on the portal (read only)
         void DrawBottom(ImDrawList* draw, const collection::Figure& bottom, ImVec2 at, float size);
         void CloseOverlay();
         void Toast(const std::string& text, ui::ToastKind kind = ui::ToastKind::Info);

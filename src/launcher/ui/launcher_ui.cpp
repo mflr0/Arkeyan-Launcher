@@ -360,6 +360,8 @@ namespace launcher_ui
         }
         // Sized once the window knows its display's scale, then shown.
         UpdateUiScale(true);
+        if (ToyboxWindow())
+            PlaceToyboxWindow();
         SDL_ShowWindow(m_window);
         m_renderer = SDL_CreateRenderer(m_window, offscreen ? SDL_SOFTWARE_RENDERER : nullptr);
         if (m_renderer == nullptr)
@@ -433,7 +435,8 @@ namespace launcher_ui
         }
         RefreshGamepads();
         m_github = CreateGitHubMarkTexture(m_renderer, 128);
-        m_portal.Start();
+        if (!ToyboxWindow()) // the window shows what the game reads, from the game itself
+            m_portal.Start();
         return true;
     }
 
@@ -457,6 +460,9 @@ namespace launcher_ui
         m_autoPlay = options.play;
         m_startGames = options.startGames;
         m_requests = options.requests;
+        m_toybox = options.toybox;
+        if (!m_toybox.empty())
+            m_page = Page::Collection; // the Toy Box window: that page alone (toybox_window.cpp)
         if (options.openGame)
             m_page = Page::Play; // a shortcut opens on the game, not on the launcher's menu
         for (const GameInfo& each : g_games)
@@ -606,6 +612,24 @@ namespace launcher_ui
             fprintf(stderr, "launcher: cannot open the window: %s\n", SDL_GetError());
             return {};
         }
+        if (ToyboxWindow())
+        {
+            StartToyboxLink();
+            while (m_running)
+            {
+                SDL_Event event;
+                if (int wait = IdleWait(); wait > 0 && SDL_WaitEventTimeout(&event, std::min(wait, 100)))
+                    HandleEvent(event);
+                while (SDL_PollEvent(&event))
+                    HandleEvent(event);
+                PollToyboxLink();
+                RunToyboxScript();
+                Frame();
+                TestScript();
+            }
+            SaveToyboxPlace();
+            return {};
+        }
         if (m_shots.empty())
         {
             m_s->started = true;
@@ -633,6 +657,7 @@ namespace launcher_ui
                 HandleEvent(event);
             PollSlots();
             PollGame();
+            PollToyboxWindow();
             CheckQueuedDiscs();
             PollUpdateAll();
             PollUpdates();
@@ -2613,6 +2638,10 @@ namespace launcher_ui
             ui::Ctx().testStops = &m_walk.frameStops;
             ui::Ctx().testNavigationItems = &m_walk.items; // and their labels
         }
+        if (ToyboxWindow())
+            DrawToyboxPage();
+        else
+        {
         DrawBackdrop();
         DrawSidebar();
 
@@ -2651,6 +2680,7 @@ namespace launcher_ui
             m_toasts.HasFocus() || m_reportOpen || m_whatsNewOpen || m_integrityOpen || m_quitPrompt || m_defenderNoticeOpen;
         m_backTaken = m_pagesTaken || (m_page == Page::Collection && m_s->collection->TakesBack());
         m_focusTo = FocusTo::None; // a request no page answered (its item wasn't drawn) is dropped
+        }
 
         ImGui::Render();
         // ImGui works in window points: scale them to the output's pixels (Retina and other high-density displays).
@@ -2659,6 +2689,8 @@ namespace launcher_ui
         SDL_SetRenderDrawColor(m_renderer, 11, 15, 46, 255);
         SDL_RenderClear(m_renderer);
         ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), m_renderer);
+        if (ToyboxWindow())
+            ToyboxShot();
         if (!m_shots.empty() && m_testAt != 0 && SDL_GetTicks() >= m_testAt)
         {
             static const char* const Names[] = { "01-no-iso", "02-verified", "03-game-video", "04-controls", "05-collection", "06-home",

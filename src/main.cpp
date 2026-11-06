@@ -26,6 +26,24 @@ int main(int argc, char** argv)
     for (const std::string& unknown : arguments.unknown)
         fprintf(stderr, "launcher: ignoring the option %s (--help lists them)\n", unknown.c_str());
     datadir::ApplyPortable(); // portable.txt beside the launcher: its data folder, the games' too
+    // The Toy Box window: the launcher started again by itself for the game running, beside the one launcher (it holds no
+    // lock, starts no game and checks no update; docs/toybox_window.md).
+    if (!arguments.toybox.empty())
+    {
+        const GameInfo* toyboxGame = FindGame(arguments.toybox);
+        if (toyboxGame == nullptr)
+        {
+            fprintf(stderr, "launcher: --toybox: no game called \"%s\"\n", arguments.toybox.c_str());
+            return 1;
+        }
+        std::string toyboxConfigPath = LauncherConfigPath();
+        LauncherConfig toyboxConfig = LoadLauncherConfig(toyboxConfigPath);
+        LauncherOptions toyboxOptions;
+        toyboxOptions.toybox = toyboxGame->id;
+        RunLauncherWindow(*toyboxGame, toyboxConfigPath, toyboxConfig, {}, nullptr, nullptr, toyboxOptions);
+        SDL_Quit();
+        return 0;
+    }
     // One launcher per data folder, decided before any window, update check or file write: a second start hands its
     // request (come to the front; a shortcut's game to play) to the one running and exits (single_instance.h).
     single_instance::Lock instance;

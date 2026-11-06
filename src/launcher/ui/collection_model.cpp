@@ -1,4 +1,5 @@
 #include "launcher/ui/collection_model.h"
+#include "launcher/toybox_link_client.h"
 #include "launcher/atomic_file.h"
 #include "launcher/game_names.h"
 #include "launcher/env.h"
@@ -309,11 +310,30 @@ namespace launcher_ui
     {
         figures = collection::List();
         const collection::Game* game = Game();
-        seats = game != nullptr ? ReadSeats(*game, SessionFile(*game)) : std::vector<std::string>{};
+        if (live != nullptr)
+            LoadLive();
+        else
+            seats = game != nullptr ? ReadSeats(*game, SessionFile(*game)) : std::vector<std::string>{};
         for (std::string& seat : seats)
             if (const collection::Figure* figure = Find(seat))
                 seat = figure->path;
         m_signature = Signature();
+    }
+
+    void CollectionModel::LoadLive()
+    {
+        const collection::Game* game = Game();
+        const size_t count = game != nullptr ? game->seats.size() : 0;
+        m_liveGeneration = live->Generation();
+        liveSeats = live->Seats();
+        liveSeats.resize(count);
+        seats.assign(count, std::string());
+        for (size_t i = 0; i < count; i++)
+            if (liveSeats[i].kind == toyboxlink::Seat::Kind::Virtual)
+            {
+                const collection::Figure* figure = Find(liveSeats[i].path);
+                seats[i] = figure != nullptr ? figure->path : liveSeats[i].path;
+            }
     }
 
     std::string CollectionModel::Signature() const
@@ -342,6 +362,12 @@ namespace launcher_ui
 
     bool CollectionModel::Poll(uint64_t now, uint64_t interval)
     {
+        if (live != nullptr && live->Generation() != m_liveGeneration)
+        {
+            // The game sent its seats: shown at once (the figures' files are looked at on the usual beat).
+            LoadLive();
+            return true;
+        }
         if (now < m_nextPoll)
             return false;
         m_nextPoll = now + interval;
@@ -407,6 +433,8 @@ namespace launcher_ui
     bool CollectionModel::CanEditSeats() const
     {
         const collection::Game* game = Game();
+        if (live != nullptr)
+            return game != nullptr && live->Current() == toyboxlinkclient::Client::State::Connected;
         return game != nullptr && !SessionFile(*game).empty() && RunningGame() != gameId;
     }
 
@@ -419,6 +447,15 @@ namespace launcher_ui
     {
         if (!CanEditSeats() || seat >= seats.size())
             return false;
+        if (live != nullptr)
+        {
+            // The game does it (its Toy Box's own checks: the lock of another program, a full portal, a real toy) and sends
+            // its seats back; a figure on its portal is the game's, so it can move between seats.
+            if (RealSeat(seat))
+                return false;
+            const collection::Figure* figure = path.empty() ? nullptr : Find(path);
+            return path.empty() ? live->Off(int(seat)) : live->Put(int(seat), figure != nullptr ? figure->path : path);
+        }
         const collection::Figure* found = path.empty() ? nullptr : Find(path);
         const std::string spelled = found != nullptr ? found->path : Canonical(path);
         if (!spelled.empty())
