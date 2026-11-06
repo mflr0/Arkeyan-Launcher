@@ -45,6 +45,7 @@ launcher saves the file (a comment over a key that is removed goes with it).
 | `video` | `show_fps` | `0` (default), `1` | The FPS counter: a small frame rate readout in a corner of the game (<game> settings > Video > FPS counter; the game's F3 menu writes it too) | yes |
 | `audio` | `volume` | `0` to `100` (default `100`) | The game's master volume, in `[<game>.audio]` (<game> settings > Video > Volume; the game's F3 menu writes it too). The runtime reads `[audio]`, then the game's own section | no: the game reads `launcher.ini` itself |
 | `audio` | `portal_sound` | `1` (default), `0` | Trap Team only, in `[trapteam.audio]`: the traps' voices from the portal's speaker. A real Traptanium portal plays them itself, any other portal leaves them to the computer, mixed at the game's volume; `0` silences both (Trap Team settings > Video > Portal sound; the game's F3 menu writes it too) | no: the game reads `launcher.ini` itself |
+| `audio` | `speakers` | `auto` (default), `stereo`, `5.1` | The game's sound output, in `[<game>.audio]`, every game: `auto` plays 5.1 when the output device has six channels or more, else stereo (<game> settings > Video > Speakers: Auto, Stereo, 5.1; the game's F3 menu shows it). Since 0.9.4 | no: the game reads `launcher.ini` itself |
 | `video` | `skip_intro_movies` | `0`, `1` | Skip the start-up logos (legal, ATVI, XPEC, Toys for Bob); the story movies still play | yes |
 | `video` | `vsync` | `0`, `1` | Wait for the display's refresh | yes |
 | `video` | `anisotropy` | `1`, `2`, `4`, `8`, `16` | Texture filtering | yes |
@@ -53,6 +54,8 @@ launcher saves the file (a comment over a key that is removed goes with it).
 | `video` | `texture_dump` | `0` (default), `1` | Write the game's textures as DDS files, for pack makers (<game> settings > Video > Advanced) | yes |
 | `video` | `original_resolution` | `0` (default), `1` | Swap Force only: keep the console's 3D image (1040x620) stretched to the screen instead of the full frame (<game> settings > Video > Original resolution) | yes |
 | `video` | `edge_smoothing` | `game`, `light`, `off` (not set: `light` from resolution scale 2, `game` at 1) | Swap Force and Trap Team only: the game's FXAA pass, which also softens texture detail. `game` leaves it, `light` filters only strong edges, `off` draws a plain copy (<game> settings > Video > Edge smoothing: Game, Gentle, None; the game's F3 menu writes it too) | yes |
+| `video` | `upscaler` | `off` (default), `fsr3` | AMD FidelityFX Super Resolution 3, every game: the 3D scene is drawn smaller and upscaled to the window; the HUD and menus stay at full size (<game> settings > Video > FSR 3, a switch; the game's F3 menu changes it too). Since 0.9.4 | yes |
+| `video` | `fsr_quality` | `quality` (default), `balanced`, `performance`, `ultra_performance` | FSR 3's preset, used while `upscaler=fsr3`: AMD's names, from the sharpest to the fastest (<game> settings > Video > FSR 3 quality: Quality, Balanced, Performance, Ultra Performance, shown while FSR 3 is on; turned off, the preset is kept; the game's F3 menu changes it too). Since 0.9.4 | yes |
 | `input` | `device` | `auto`, `keyboard`, `gamepad` | What the game listens to | yes |
 | `input` | `gamepad` | SDL GUID | The gamepad chosen when `device=gamepad` | yes |
 | `input` | `key_<action>` | SDL scancode name (`Space`, `Return`, `W`...): a key's **physical place**, shown with the player's layout | Keyboard binding | yes |
@@ -82,12 +85,12 @@ Japanese/Japonais, Korean/Coréen, Chinese/Chinois); an unknown code is ignored,
 ## Per-game video
 
 The runtime reads one `[video]` section, but the games do not have to share it. Each game keeps its own copy of the
-twelve keys that belong to a game (`fullscreen`, `resolution_scale`, `fps_limit`, `skip_intro_movies`, `vsync`,
-`anisotropy`, `aspect`, `texture_packs`, `texture_dump`, `original_resolution`, `show_fps`, `edge_smoothing`) in **`[ssa.video]`**, **`[giants.video]`**, **`[swapforce.video]`** and **`[trapteam.video]`**:
+fourteen keys that belong to a game (`fullscreen`, `resolution_scale`, `fps_limit`, `skip_intro_movies`, `vsync`,
+`anisotropy`, `aspect`, `texture_packs`, `texture_dump`, `original_resolution`, `show_fps`, `edge_smoothing`, `upscaler`, `fsr_quality`) in **`[ssa.video]`**, **`[giants.video]`**, **`[swapforce.video]`**, **`[trapteam.video]`**, **`[superchargers.video]`** and **`[imaginators.video]`**:
 
 | Section | Key | Meaning |
 | --- | --- | --- |
-| `<game>.video` | the twelve `video` keys above | The game's own video settings. The game's settings page (Video tab) edits this copy. |
+| `<game>.video` | the fourteen `video` keys above | The game's own video settings. The game's settings page (Video tab) edits this copy. |
 
 - The first time, a game's copy starts from the `[video]` the player already had (`SeedGameVideo`). Trap Team starts at 30 FPS even if the shared limit is 60; later choices are kept.
 - **PLAY** puts the copy of the game that starts into `[video]` (keys it lacks are dropped, so the runtime's defaults apply):
@@ -97,6 +100,13 @@ twelve keys that belong to a game (`fullscreen`, `resolution_scale`, `fps_limit`
   and `fps_limit`, travel this way; `tests/settings_test.cpp` follows them from the page's write to the file the game
   parses. With 60 FPS on, with automatic fallback enabled, a computer that cannot hold 60 gets a steady 30 FPS (the game says "30 FPS: 60 not held" once
   per run) and goes back to 60 when it holds.
+- **FSR 3 and the speakers** (0.9.4, all six games): the Video tab shows FSR 3 (a switch, `upscaler` `off`/`fsr3`) under
+  Resolution scale, FSR 3 quality (the four AMD presets, `fsr_quality`) under it while FSR 3 is on, and Speakers (`speakers` in
+  `[<game>.audio]`: Auto, Stereo, 5.1) under Volume. A value the page does not offer shows the default. `tests/settings_test.cpp`
+  checks, for each game, the defaults (off, quality, auto, nothing passed by PLAY), every preset and output written by the page,
+  saved, read back and put in `[video]` by PLAY (and dropped by another game's PLAY), and a 0.9.3 `launcher.ini` without the keys
+  (the defaults, and saving does not add them) [V]. What the game does with them is the runtime's: ArkeyanRuntime's
+  `docs/settings.md` [?] until the game side ships.
 - A game's copy that is still empty (a page only looked at it) is seeded from the `[video]` the player already had, like a
   missing one (`SeedGameVideo`).
 - Since 0.6.2 the launcher does not copy `[video]` back when the game ends: the game's own menu (F3: volume, FPS counter,

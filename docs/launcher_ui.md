@@ -583,7 +583,7 @@ GitHub issue) and the GitHub link bottom right. The launcher's own language is i
    Clicking a game goes back to Play; clicking the gear again, or B / Escape, goes back to the page you came from.
 5. Game settings (the Settings button on a game's Play page) - **that game's own settings**, six tabs (the sidebar keeps the
    game selected; B / Escape or **Back** return to its Play page):
-   - Video: fullscreen, resolution scale, frame rate limit (30 or 60), skip intro movies, Original resolution (Swap Force only), VSync, texture filtering, widescreen,
+   - Video: fullscreen, resolution scale, FSR 3 (a switch) and FSR 3 quality (shown while it is on), frame rate limit (30 or 60), volume, speakers, skip intro movies, Original resolution (Swap Force only), VSync, texture filtering, widescreen,
      HD texture packs (and their folder), **HD textures** (Swap Force, Trap Team, SuperChargers, Imaginators; below), Advanced > dump textures.
      The game's own copy, `[<game>.video]` (docs/settings.md).
      **HD textures** is a switch, off by default, `[<game>] hd_textures`; its line says what it does and the disk it takes for that
