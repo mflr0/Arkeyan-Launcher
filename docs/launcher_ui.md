@@ -1193,6 +1193,10 @@ shoots one game at a time ("A game running"): `running-1-game`, `running-2-other
 and Swap Force's Game tab with Nightmare from the start on (`game-swapforce`).
 `SKY_LAUNCHER_TEST_LOGO=1` shoots each game's page (`logo-ssa`, `logo-giants`, `logo-swapforce`) from the art already cached in
 `SKYLANDERS_DATA`; `SKY_LAUNCHER_TEST_SIZE=<w>x<h>` sets the window (the default one, a large one).
+`SKY_LAUNCHER_TEST_HDTEX=<game>` (with `SKY_LAUNCHER_TEST_DROP=<its disc>`, `SKY_LAUNCHER_KIT=<a kit>`, scratch data) records the game as built with a
+stand-in executable, opens its Video tab at the bottom, flips the HD textures switch as a click would and shoots `hdtex-<game>-1-off`,
+`-2-running` and `-3-done` (`-3-failed`, or `-3-stopped` with `SKY_LAUNCHER_TEST_HDTEX_CANCEL=1`); each outcome is checked ("ok hdtex: ...", "FAIL hdtex: ...").
+With the tests' fake kit (`build/fake-kit`, `FAKE_SSABUILD_FAIL=hdtextures` for a failure) or a real one. A kit that does not know the option ends after `-1-off`.
 `SKY_LAUNCHER_TEST_UPDATE=1` with `SKY_LAUNCHER_UPDATE_URL=file://<fake latest.json>` shows the update screens (`20-` to `24-`).
 `ArkeyanLauncherTest --no-disc <absolute scratch dir>` runs only the checks that need no disc image (the unit parts; the build workflow runs it on
 the three systems); the full run is `ArkeyanLauncherTest <disc> <scratch dir>`.
