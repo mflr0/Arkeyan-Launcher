@@ -697,7 +697,9 @@ runtime, so it follows the same rule as an installed game.
 The portal reads and polls `CollectionModel`, including the session file and figure stats. Each seat is a focusable
 ListRow with the disc portrait or the collection's generated icon, the figure's name, seat and level; empty seats use a
 ring and plus. Activating a seat opens Collection's existing chooser; while running, Collection keeps its existing
-read-only rules. Open the Toy Box opens Collection, the launcher's existing figure view. The device picker keeps its
+read-only rules. Open the Toy Box opens Collection, the launcher's existing figure view; while the game runs the same
+button reads **Toy Box window** ("Toy Box" when the card is narrow) and opens the game's Toy Box in a window of its own
+(`toybox_window.md`). The device picker keeps its
 existing menu and choices; the portal pill still opens Launcher settings > Controls. Virtual portal is shown even when
 no hardware detector is available. Buttons, pills and rows use their usual keyboard and gamepad focus rings.
 

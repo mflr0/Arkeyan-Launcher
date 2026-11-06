@@ -147,6 +147,11 @@ cannot read stay in the list, greyed.
 For Trap Team, choose the villain a trap holds and whether it is evolved in the Collection, with the trap off the portal.
 No capture needed. The Toy Box shows both.
 
+**Toy Box window:** while a game runs, the On the portal card's **Toy Box window** opens the game's Toy Box in a window of its
+own, to keep beside the game (on a second monitor): put figures on, swap players, take them off, and the game follows at
+once. Tick **Open with the game** in it to have it with every game. With a real portal plugged in, one player can play a real
+figure and the other a virtual one.
+
 To use a real portal (Wii, PlayStation, Xbox 360 or Xbox One), plug it in and choose it in Settings > Controls >
 Portal of Power. Then click **Test the portal**.
 
@@ -208,7 +213,7 @@ ninja -C build ArkeyanLauncher
 ```
 
 The developer docs are in `docs/`: `launcher_ui.md` covers the screens and theme, `install.md` the install,
-`collection_ui.md` the figures, `updates.md` the updater and releases, `portable.md` the portable copy, and `support.md` the logs.
+`collection_ui.md` the figures, `toybox_window.md` the Toy Box window, `updates.md` the updater and releases, `portable.md` the portable copy, and `support.md` the logs.
 
 ## Known issues
 
