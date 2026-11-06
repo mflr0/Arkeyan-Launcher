@@ -1234,8 +1234,13 @@ namespace launcher_ui
             tip += "\n" + Tf("Click: put it on {}", SeatName(size_t(m_choosing)));
         else
             tip += std::string("\n") + Tr("Click: sheet · drag to a seat");
-        if (hovered) // under the pointer only: with the pad's focus the legend says what the buttons do
+        // Under the pointer only, and not while the pad is moving the focus (the pointer rests on a card): the legend says what
+        // the buttons do.
+        const bool bubble = hovered && !ImGui::GetIO().NavVisible;
+        if (bubble)
             ui::Bubble(tip.c_str(), ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
+        if (hovered && m_app.m_testPadWalk)
+            m_app.m_drawn["figure-hover"] = bubble ? "bubble" : "none";
         ImGui::PopID();
         // A click (Enter, A): onto the seat being chosen for, else the figure's sheet.
         if (pressed)
@@ -1301,7 +1306,7 @@ namespace launcher_ui
             starHovered = ImGui::IsItemHovered();
             ImGui::PopItemFlag();
             ImGui::PopID();
-            if (starHovered)
+            if (starHovered && !ImGui::GetIO().NavVisible)
                 ui::Bubble(figure.favourite ? Tr("Remove from favorites") : Tr("Add to favorites"), ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
             ImGui::SetCursorScreenPos(cursor);
         }

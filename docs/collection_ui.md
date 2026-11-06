@@ -198,6 +198,10 @@ At the first visit to the page (`CollectionPage::Open`):
   ListRow per figure with its count, opening its copies: when, level and gold, Restore (Danger, held)), Import and export
   (files, a folder, drop files or a folder on the window; export everything; show in folder), Unknown toys (name one:
   `catalogue.json` of the collection, applied at the next start), Tidy (the starters, but those on a seat; Danger, held).
+  The dialog opens with the focus on the tab it opens on (Manage > Backups from the sheet: the Backups tab, not the first one),
+  and LT / RT move the focus with the selection when it is on a tab. A figure's copies, opened, are scrolled under its row so their
+  Restore buttons show. A card's tip ("Click: sheet · drag to a seat") is for the pointer: it is not drawn while the pad moves the
+  focus (`NavVisible`; the pad walk's `25-collection` checks it).
   Import adds a dump whose serial a dump already there has (a played copy and an older copy are one toy: only one can sit
   on a portal) and says so in the toast; byte-identical dumps are skipped, files over 1 MB and non-files are refused, and
   a copy is written whole or not at all. Export never overwrites: a file of the same bytes counts as done, another takes
