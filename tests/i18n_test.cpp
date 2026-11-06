@@ -285,6 +285,13 @@ int I18nChecks()
     I18N_EXPECT(i18n::Current() == "fr" && std::string(i18n::Tr("Cancel")) != "Cancel");
     I18N_EXPECT(std::string(i18n::Tr("A string no language has")) == "A string no language has");
     I18N_EXPECT(i18n::Tf("Last checked {}", 5) != "Last checked 5");
+    // The game's Language tab in French: its rows, their hints and the names of the languages written in the launcher's own words
+    // (a language the font can't draw) are French; the names that are each language's own ("English", "Français") stay as they are.
+    for (const char* label : { "Language", "Game text", "Menus, subtitles and on-screen text.", "Game voices", "Spoken lines and cutscenes.",
+             "Game language", "Menus, subtitles, spoken lines and cutscenes.", "Same as text", "System default", "Russian", "Greek",
+             "Japanese", "Korean", "Chinese" })
+        I18N_EXPECT(std::string(i18n::Tr(label)) != label);
+    I18N_EXPECT(std::string(i18n::Tr("English")) == "English");
     i18n::SetLanguage("zz"); // a language without a file: English
     I18N_EXPECT(i18n::Current() == "en" && std::string(i18n::Tr("Cancel")) == "Cancel");
     I18N_EXPECT(i18n::Tf("about {} min left", 3) == "about 3 min left");

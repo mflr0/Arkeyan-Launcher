@@ -1772,6 +1772,35 @@ static void NavChecks(const std::filesystem::path& scratch, const std::string& i
 // Every page, tab and dialog walked with the pad (App::TestPadWalkScript, quick: until every control is reached): no control
 // the D-pad can't reach, no move out of reading order, a legend on each, B one step back, LB / RB the main page before and after.
 // Without a disc the game pages show their no-disc state. A child process, as NavChecks; scratch folders only.
+bool WriteLoopingImage(const std::filesystem::path& file); // tests/vfs_test.cpp
+
+// The launcher starting with a looping disc image registered as the game's disc (the 80 KB image that once ran it out of memory at
+// every start): the disc is refused, the game's page shows it, the window ends. A child process, scratch folders only.
+static void LoopingDiscStartChecks(const std::filesystem::path& scratch)
+{
+#if !defined(_WIN32)
+    std::filesystem::path root = scratch / "loopdisc";
+    std::filesystem::create_directories(root / "home");
+    std::filesystem::create_directories(root / "shots");
+    EXPECT(WriteLoopingImage(root / "loop.iso"));
+    {
+        std::ofstream ini(root / "x.ini");
+        ini << "[launcher]\ngame=ssa\n[ssa]\niso=" << (root / "loop.iso").string() << "\n";
+    }
+    std::string command = "env -u SKY_MIGRATE_FROM -u SKY_FIGURES -u SKY_SETTINGS -u SSA_MIGRATE_FROM -u SSA_FIGURES -u SSA_SETTINGS SDL_VIDEO_DRIVER=offscreen SDL_AUDIO_DRIVER=dummy HOME='" +
+        (root / "home").string() + "' SKYLANDERS_DATA='" + (root / "data").string() + "' SKY_LAUNCHER_DATA='" + (root / "launcher").string() +
+        "' SKY_COLLECTION='" + (root / "collection").string() + "' SKY_SAVE_DIR='" + (root / "saves").string() + "' SKY_LAUNCHER_INI='" +
+        (root / "x.ini").string() + "' SKY_LAUNCHER_NO_UPDATE_CHECK=1 SKY_LAUNCHER_SHOTS='" + (root / "shots").string() +
+        "' SKY_LAUNCHER_TEST_EXPERIMENTAL=ssa perl -e 'alarm 120; exec @ARGV' '" + SKYLAUNCHER_TEST_EXE + "' > '" + (root / "out.txt").string() + "' 2>&1";
+    EXPECT(std::system(command.c_str()) == 0); // not killed for its memory, not stopped by the alarm
+    std::error_code error;
+    EXPECT(std::filesystem::exists(root / "shots" / "ssa-02-page.png", error)); // the game's page was drawn, with the disc refused
+    printf("Looping disc image registered: the launcher starts and refuses it\n");
+#else
+    (void)scratch;
+#endif
+}
+
 static void PadWalkChecks(const std::filesystem::path& scratch, const std::string& iso)
 {
     std::filesystem::path root = scratch / "padwalk";
@@ -1798,7 +1827,7 @@ static void PadWalkChecks(const std::filesystem::path& scratch, const std::strin
         if (line.starts_with("padwalk: ") && line.find(" views") != std::string::npos)
             views = std::atoi(line.c_str() + 9);
     }
-    EXPECT(views == 36);
+    EXPECT(views == 50);
     printf("Pad walk: %d views, every control reached, B and LB / RB checked\n", views);
 }
 
@@ -2371,6 +2400,7 @@ static int RunChecks(int argc, char** argv)
     g_failures += UninstallChecks(scratch);
     g_failures += PortableChecks(scratch);
     g_failures += VfsChecks(scratch);
+    LoopingDiscStartChecks(scratch);
     g_failures += LuxImageChecks();
     g_failures += SingleInstanceChecks(scratch / "instance");
     g_failures += I18nChecks();

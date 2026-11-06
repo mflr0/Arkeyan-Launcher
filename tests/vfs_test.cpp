@@ -60,7 +60,21 @@ namespace
         out.write(reinterpret_cast<const char*>(image.data()), std::streamsize(length));
         return bool(out);
     }
+
+    // The 80 KB image whose directory has many records that each point back at the root.
+    bool WriteFanImage(const std::filesystem::path& file)
+    {
+        std::vector<uint8_t> image = Image(Sector, 40);
+        for (size_t i = 0; i < 40; i++)
+        {
+            Entry(image, i * 48, 34, Sector, 0x10, 40);
+            Put16(image, 34 * Sector + i * 48 + 2, i + 1 < 40 ? uint16_t((i + 1) * 12) : 0); // the next record
+        }
+        return Write(file, image, image.size());
+    }
 }
+
+bool WriteLoopingImage(const std::filesystem::path& file) { return WriteFanImage(file); }
 
 int VfsChecks(const std::filesystem::path& scratch)
 {
@@ -91,13 +105,7 @@ int VfsChecks(const std::filesystem::path& scratch)
     // Many directory records that each point back at the root (an 80 KB image that once ran the launcher out of memory):
     // refused at once, the walk is bounded by the extents it has seen, not by the branching to the power of the depth.
     {
-        std::vector<uint8_t> image = Image(Sector, 40);
-        for (size_t i = 0; i < 40; i++)
-        {
-            Entry(image, i * 48, 34, Sector, 0x10, 40);
-            Put16(image, 34 * Sector + i * 48 + 2, i + 1 < 40 ? uint16_t((i + 1) * 12) : 0); // the next record
-        }
-        EXPECT(Write(root / "fan.iso", image, image.size()));
+        EXPECT(WriteFanImage(root / "fan.iso"));
         DiscFileSystem disc;
         EXPECT(!disc.Open((root / "fan.iso").string().c_str()));
         EXPECT(disc.Files().empty());

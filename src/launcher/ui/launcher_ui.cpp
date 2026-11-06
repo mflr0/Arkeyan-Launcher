@@ -2549,7 +2549,8 @@ namespace launcher_ui
         ImGuiIO& frameIo = ImGui::GetIO();
         frameIo.DisplaySize = ImVec2(frameIo.DisplaySize.x / m_uiScale, frameIo.DisplaySize.y / m_uiScale);
         frameIo.DisplayFramebufferScale = ImVec2(frameIo.DisplayFramebufferScale.x * m_uiScale, frameIo.DisplayFramebufferScale.y * m_uiScale);
-        if (SDL_GetMouseFocus() == nullptr && !m_testSeatX) // the backend's outside-the-window position is in unscaled window units
+        const bool testPointer = m_testSeatX || (m_testPadWalk && (m_walk.hover == 1 || m_walk.hover == 2)); // the test's own pointer
+        if (SDL_GetMouseFocus() == nullptr && !testPointer) // the backend's outside-the-window position is in unscaled window units
             frameIo.AddMousePosEvent(-FLT_MAX, -FLT_MAX);
         if (m_testHero || m_testNav || m_testSeatX || m_testPadInput)
             frameIo.BackendFlags |= ImGuiBackendFlags_HasGamepad; // the test's pad keys count with no pad plugged in

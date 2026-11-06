@@ -40,7 +40,7 @@ component has becomes a component (or an option of one) first, with its states d
   arrival (`LogoDrop`, `DrawHeroLogo`), the disc's pictures as textures (`LoadArt`, `CachedArt`), `SystemReducesMotion`.
 - `src/shared/art/` - ArkeyanRuntime's disc picture readers and per-game provider (`game_art`), copied by its
   `tools/sync_skylauncher.sh`: Xenos textures, SSA's `strm`/APKF, Giants' IGA/IGZ.
-- `src/shared/` - what isn't the launcher's alone: the disc reader (`vfs`), the platform layer, `stb_impl.cpp`, the embedded fonts
+- `src/shared/` - what isn't the launcher's alone: the disc reader (`vfs`: each directory extent is walked once, with bounds on depth, entries and sizes, so a looping or oversized image is refused, "Not an Xbox 360 disc image", never a crash; `tests/vfs_test.cpp`), the platform layer, `stb_impl.cpp`, the embedded fonts
   and the figure engine.
 - `src/shared/collection/` and `src/shared/figures/` - ArkeyanRuntime's collection library (copied by `tools/sync_collection.sh`:
   tag, crypto, catalogue, folder, locks, backups) and the launcher's `figure_icons` (generated icons and their `IconStyle`).
@@ -908,6 +908,8 @@ and menu behaves the same way, the in-game Toy Box's:
   view without a legend; then on B not going back one step, and on the main pages on LB and RB not opening the page before and
   after. `ArkeyanLauncherTest` runs it quick (`PadWalkChecks`: each view until every stop is reached, the catalogue for 300
   moves), with no disc in `--no-disc`.
+  It also checks, on arrival or at the end of a view, that Manage's focus is on the tab it opened on (`33-`), that the portable copy's
+  dialog is closed for a game not installed (`49-`) and that no figure's tip shows under the pad's focus (`25-`).
 
 ## Interaction rules
 - **Focus.** Every control takes the keyboard and pad focus and shows it: the components draw the one ring (`ui::FocusRing`,
@@ -1125,7 +1127,7 @@ games and Coming later, A into Collection, Y for the search, the D-pad to a seat
 row, the shelf) and A to put a card there, X for a card's sheet, B back, then down to Settings, A, RT to its Launcher tab, Escape. Each step's page is checked ("FAIL nav step";
 a timeout stops a run that went astray); `ArkeyanLauncherTest` runs it (`NavChecks`).
 With `SKY_LAUNCHER_TEST_PADWALK=1` it walks every page, tab and dialog with the pad ("Navigation model"; `pad_walk.cpp`):
-`00-first-start` to `35-install-ready`, each shot as a pad player arrives there, then walked, every result a `padwalk` line
+`00-first-start` to `49-portable-not-installed` (since 0.9.2 with the Profiles menu, editor and tab, the file check's dialog, the pages and game settings of Trap Team, SuperChargers and Imaginators with their portal panel and Toy Box button), each shot as a pad player arrives there, then walked, every result a `padwalk` line
 (`FAIL padwalk` for a stop never reached, a move out of reading order, B or LB / RB not doing their job). The Spyro's Adventure
 views want `SKY_LAUNCHER_TEST_DROP`; without a disc they show its no-disc state. `SKY_SAVE_DIR` and `SKY_COLLECTION` scratch.
 With `SKY_LAUNCHER_TEST_INSTALL=1` and `SKY_LAUNCHER_KIT=$PWD/build/fake-kit` it shows the install screens instead

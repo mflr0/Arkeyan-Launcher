@@ -6,6 +6,7 @@
 #include "launcher/ui/launcher_app.h"
 #include "launcher/ui/collection_page.h"
 #include <algorithm>
+#include <cfloat>
 #include <cstdio>
 #include <fmt/format.h>
 #include <imgui_internal.h>
@@ -154,6 +155,20 @@ namespace launcher_ui
             { "33-manage-backups", BackTo::Closes, false },
             { "34-manage-import", BackTo::Closes, false },
             { "35-install-ready", BackTo::Home, false },
+            { "36-profile-menu", BackTo::Closes, false },
+            { "37-profile-editor", BackTo::Closes, false },
+            { "38-settings-profiles", BackTo::Home, false },
+            { "39-file-check", BackTo::Closes, false },
+            { "40-game-trapteam", BackTo::Home, true },
+            { "41-game-superchargers", BackTo::Home, true },
+            { "42-game-imaginators", BackTo::Home, true },
+            { "43-trapteam-game", BackTo::GamePage, false },
+            { "44-trapteam-controller", BackTo::GamePage, false },
+            { "45-superchargers-game", BackTo::GamePage, false },
+            { "46-superchargers-controller", BackTo::GamePage, false },
+            { "47-imaginators-game", BackTo::GamePage, false },
+            { "48-imaginators-controller", BackTo::GamePage, false },
+            { "49-portable-not-installed", BackTo::GamePage, false },
         };
         ImGuiContext& g = *ImGui::GetCurrentContext();
         ImGuiIO& io = ImGui::GetIO();
@@ -250,6 +265,11 @@ namespace launcher_ui
             m_reportOpen = false;
             m_portableAsk = false;
             m_un = {};
+            w.hover = 0;
+            m_drawn.erase("figure-hover");
+            m_integrityOpen = false;
+            m_findings.clear();
+            m_profileEditor.open = false;
             if (name == "00-first-start")
                 ; // as the launcher opens: Home, the focus in the sidebar
             else if (name == "01-home")
@@ -282,6 +302,8 @@ namespace launcher_ui
                     if (name.ends_with(tab))
                         m_gameTab = value;
                 m_portableAsk = name.starts_with("13-");
+                if (m_portableAsk) // the copy is offered for an installed game with its disc only
+                    m_s->installed.runtime = "padwalk";
             }
             else if (name.starts_with("14-") || name.starts_with("15-"))
             {
@@ -318,6 +340,42 @@ namespace launcher_ui
                 GoTo(Page::Play);
                 m_s->installed.runtime.clear();
             }
+            else if (name.starts_with("36-") || name.starts_with("37-") || name.starts_with("38-"))
+            {
+                if (m_profiles.profiles.size() < 2) // a second profile, to have something to switch to
+                    profiles::Add(m_profiles, "Kaos", 7);
+                GoTo(name.starts_with("38-") ? Page::Settings : Page::Home);
+                m_tab = SettingsTab::Profiles;
+                m_testOpenProfileMenu = name.starts_with("36-");
+                if (name.starts_with("37-"))
+                    OpenProfileEditor({});
+            }
+            else if (name.starts_with("39-"))
+            {
+                game("ssa");
+                GoTo(Page::Play);
+                using Kind = filelist::Problem::Kind;
+                ShowFinding({ "ssa", "ssa-game", { { Kind::Missing, "game/data.bin" }, { Kind::Changed, "game/engine.dat" } } });
+            }
+            else if (name.starts_with("40-") || name.starts_with("41-") || name.starts_with("42-"))
+            {
+                game(name.starts_with("40-") ? "trapteam" : name.starts_with("41-") ? "superchargers" : "imaginators");
+                GoTo(Page::Play);
+            }
+            else if (name.starts_with("49-"))
+            {
+                game("ssa");
+                GoTo(Page::GameSettings);
+                m_gameTab = GameTab::Game;
+                m_s->installed.runtime.clear();
+                m_portableAsk = true; // set as a dialog left open on an earlier page would be
+            }
+            else if (name.size() > 2 && name[0] == '4' && name[1] >= '3' && name[1] <= '8')
+            {
+                game(name[1] <= '4' ? "trapteam" : name[1] <= '6' ? "superchargers" : "imaginators");
+                GoTo(Page::GameSettings);
+                m_gameTab = name.ends_with("controller") ? GameTab::Controller : GameTab::Game;
+            }
             else
             {
                 // The collection: its screens as its own screenshot test sets them (CollectionPage::TestScreen).
@@ -339,6 +397,41 @@ namespace launcher_ui
         }
         case 1: // the stops of the window the focus is in, from the frame just drawn
         {
+            // The pointer rests on a figure's card, then the pad moves the focus: the card's tip ("Click: sheet...") stays hidden.
+            if (name.starts_with("25-") && w.hover < 3)
+            {
+                if (w.hover == 0)
+                {
+                    const auto card = std::find_if(w.frameStops.begin(), w.frameStops.end(), [&](const Stop& s) {
+                        return s.shown && s.root == RootOf(g.NavWindow) && s.max.x - s.min.x > 90 && s.max.y - s.min.y > 110 && s.min.x > 300;
+                    });
+                    if (card != w.frameStops.end())
+                        io.AddMousePosEvent(MidX(*card), MidY(*card));
+                    w.hover = card != w.frameStops.end() ? 1 : 3;
+                    w.wait = 3;
+                }
+                else if (w.hover == 1)
+                {
+                    press(ImGuiKey_GamepadDpadRight);
+                    w.hover = 2;
+                    w.wait = 2;
+                }
+                else
+                {
+                    io.AddKeyEvent(w.release, false);
+                    const auto tip = m_drawn.find("figure-hover");
+                    io.AddMousePosEvent(-FLT_MAX, -FLT_MAX);
+                    w.hover = 3;
+                    w.wait = 2;
+                    if (tip != m_drawn.end() && tip->second == "bubble")
+                        fail("a figure's tip shows while the pad moves the focus");
+                    else if (tip == m_drawn.end())
+                        fail("no card was under the pointer: the tip check did not run");
+                    else
+                        fprintf(stderr, "padwalk %s: the tip stays hidden over a card under the pointer while the pad moves the focus\n", view.name);
+                }
+                return;
+            }
             w.root = RootOf(g.NavWindow);
             w.expected.clear();
             for (const Stop& stop : w.frameStops)
@@ -353,6 +446,14 @@ namespace launcher_ui
                     fail(fmt::format("two stops share an ID ({})", label != ui::Ctx().testNavigationLabels.end() ? label->second : fmt::format("{:08x}", stop.id)));
                 }
             }
+            if (name.starts_with("33-")) // the focus follows the tab that was selected (the ring was left on "Trash")
+            {
+                const auto label = ui::Ctx().testNavigationLabels.find(g.NavId);
+                if (label != ui::Ctx().testNavigationLabels.end() && label->second.starts_with("Trash"))
+                    fail("the focus ring stays on the Trash tab while Backups is the active tab");
+            }
+            if (name.starts_with("49-") && m_portableAsk)
+                fail("the portable copy opens for a game that is not installed");
             w.seen.assign(1, g.NavId);
             w.edges.clear();
             w.moves = 0;
@@ -361,7 +462,7 @@ namespace launcher_ui
             w.pageAt = m_page;
             fprintf(stderr, "padwalk %s: %zu stops in %s\n", view.name, w.expected.size(), RootName(g.NavWindow));
             // The pad's hints at the foot of every page and dialog (a menu shows its rows only).
-            if (!name.starts_with("05-") && std::find(w.frameLegends.begin(), w.frameLegends.end(), w.root) == w.frameLegends.end())
+            if (!name.starts_with("05-") && !name.starts_with("36-") && std::find(w.frameLegends.begin(), w.frameLegends.end(), w.root) == w.frameLegends.end())
                 fail("no pad legend");
             w.phase = 2;
             return;
@@ -466,6 +567,8 @@ namespace launcher_ui
         case 7:
         {
             const bool popup = ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopupId | ImGuiPopupFlags_AnyPopupLevel);
+            if (name.starts_with("13-"))
+                m_s->installed.runtime.clear();
             bool ok = true;
             BackTo back = view.back;
             if (name.starts_with("21-")) // the uninstall list is a step of the Launcher tab: B closes it, Settings stays
@@ -478,7 +581,7 @@ namespace launcher_ui
                 case BackTo::Sidebar: ok = std::string_view(RootName(g.NavWindow)) == "##sidebar"; break;
                 case BackTo::Home: ok = m_page == Page::Home; break;
                 case BackTo::GamePage: ok = m_page == Page::Play; break;
-                case BackTo::Closes: ok = !popup && !m_reportOpen && !m_portableAsk && m_page == w.pageAt; break;
+                case BackTo::Closes: ok = !popup && !m_reportOpen && !m_portableAsk && !m_integrityOpen && m_page == w.pageAt; break;
                 case BackTo::StaysOpen: ok = popup && m_page == w.pageAt; break;
                 case BackTo::Collection: ok = m_page == Page::Collection && !m_s->collection->TakesBack(); break;
                 }
@@ -511,6 +614,11 @@ namespace launcher_ui
             else if (name.starts_with("04-"))
             {
                 game("swapforce");
+                GoTo(Page::Play);
+            }
+            else if (name.starts_with("40-") || name.starts_with("41-") || name.starts_with("42-"))
+            {
+                game(name.starts_with("40-") ? "trapteam" : name.starts_with("41-") ? "superchargers" : "imaginators");
                 GoTo(Page::Play);
             }
             else if (name.starts_with("19-"))
