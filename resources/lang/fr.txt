@@ -1006,3 +1006,15 @@ Not played yet	Pas encore joué
 {}'s Toy Box, saves and keys go to the profiles' trash.	La Toy Box, les sauvegardes et les touches de {} partent dans la corbeille des profils.
 Remove {}?	Supprimer {} ?
 Couldn't remove the profile	Impossible de supprimer le profil
+Windows Defender may block the install	Windows Defender peut bloquer l'installation
+Windows Defender may report Arkeyan-Builder.exe, ArkeyanLauncher.exe or a game built here as Trojan:Win32/Bearfoos.A!ml. The !ml ending means no known malware was found: Defender's machine-learning model guesses from what the program does. The launcher is not signed, downloads a compiler, builds a new game on your PC and updates itself: that is the whole guess.	Windows Defender peut signaler Arkeyan-Builder.exe, ArkeyanLauncher.exe ou un jeu construit ici comme Trojan:Win32/Bearfoos.A!ml. La fin « !ml » veut dire qu'aucun logiciel malveillant connu n'a été trouvé : le modèle d'apprentissage automatique de Defender devine d'après ce que fait le programme. Le launcher n'est pas signé, télécharge un compilateur, construit un nouveau jeu sur ton PC et se met à jour lui-même : c'est tout ce qui fonde ce soupçon.
+The author has submitted the launcher and its source code to Microsoft as a false positive; the review is pending.	L'auteur a soumis le launcher et son code source à Microsoft comme faux positif ; l'examen est en cours.
+If Windows Defender blocks a file:	Si Windows Defender bloque un fichier :
+1. Open Windows Security, then Virus & threat protection > Protection history.	1. Ouvre Sécurité Windows, puis Protection contre les virus et menaces > Historique de protection.
+2. Open the blocked item, then Actions > Allow on device.	2. Ouvre l'élément bloqué, puis Actions > Autoriser sur l'appareil.
+3. In Virus & threat protection settings, choose Manage settings > Exclusions > Add or remove exclusions > Add an exclusion > Folder, and pick %APPDATA%\\Skylanders\\kit.	3. Dans Paramètres de protection contre les virus et menaces, choisis Gérer les paramètres > Exclusions > Ajouter ou supprimer des exclusions > Ajouter une exclusion > Dossier, puis %APPDATA%\\Skylanders\\kit.
+4. Back here, choose Retry.	4. De retour ici, choisis Réessayer.
+Every download is checked against the release's SHA-256 before it runs, and every release is built by GitHub Actions from the public source.	Chaque téléchargement est vérifié avec le SHA-256 de la version avant de s'exécuter, et chaque version est construite par GitHub Actions à partir du code source public.
+Not now	Pas maintenant
+Why this happens	Pourquoi cela arrive
+Continue	Continuer

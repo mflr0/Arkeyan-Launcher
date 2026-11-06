@@ -206,10 +206,10 @@ namespace launcher_ui
         switch (pressed)
         {
         case WhatsNew: m_whatsNewOpen = true; break;
-        case UpdateLauncher: m_updates.UpdateLauncher(); m_updateWasBusy = true; break;
+        case UpdateLauncher: UpdateLauncherNow(); break;
         case Later: m_updateLater = true; break;
         case Cancel: m_updates.Cancel(); break;
-        case Retry: m_updates.UpdateLauncher(); m_updateWasBusy = true; break;
+        case Retry: UpdateLauncherNow(); break;
         case Dismiss: m_updates.Dismiss(); break;
         case Restart:
         {
@@ -232,6 +232,14 @@ namespace launcher_ui
             break;
         }
         }
+    }
+
+    void App::UpdateLauncherNow()
+    {
+        if (DefenderNoticeFirst([this] { UpdateLauncherNow(); }))
+            return;
+        m_updates.UpdateLauncher();
+        m_updateWasBusy = true;
     }
 
     // The release notes of the update on offer.
@@ -311,8 +319,7 @@ namespace launcher_ui
             switch (result)
             {
             case ui::ModalResult::Confirm:
-                m_updates.UpdateLauncher();
-                m_updateWasBusy = true;
+                UpdateLauncherNow();
                 break;
             default:
                 break;

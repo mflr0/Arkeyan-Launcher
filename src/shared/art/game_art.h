@@ -67,9 +67,9 @@ namespace art
     // the glow stays a glow on any background) less the burst's faint haze, cut to what is visible.
     Image LightOnBlack(const Image& picture);
 
-    // [Imaginators] The manifest's "title_cut": the title screen's logo, drawn on a burst of white light, cut out: the letters
-    // are what the white (bright, colourless) encloses, the lower word's gaps at its foot closed first; they keep a 4-pixel
-    // white rim and a soft glow. Cropped to what is visible; empty when nothing is enclosed.
+    // [Imaginators] The manifest's "title_cut": the title screen's logo, drawn on a burst of white light, cut out with that
+    // light: the largest bright cloud without the burst's thin rays, its gaps closed and its holes (the dark letters) filled,
+    // a soft edge. Cropped to what is visible; empty when nothing is bright.
     Image TitleCut(const Image& picture);
 
     // [Imaginators] The manifest's "feather": a picture of the logo on the game's own sky (the dashboard's tile, the sky of

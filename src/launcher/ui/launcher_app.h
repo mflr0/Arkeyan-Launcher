@@ -27,6 +27,7 @@
 #include <SDL3/SDL.h>
 #include <atomic>
 #include <filesystem>
+#include <functional>
 #include <imgui.h>
 #include <map>
 #include <memory>
@@ -422,6 +423,10 @@ namespace launcher_ui
         float BannerHeight();
         void DrawUpdateBanner(float height);
         void DrawWhatsNew();
+        void UpdateLauncherNow(); // the launcher's own update, after the Defender notice
+        // defender_notice.cpp: once, on Windows, before the first install or update; true while it holds `then` back.
+        bool DefenderNoticeFirst(std::function<void()> then);
+        void DrawDefenderNotice();
         // integrity_page.cpp: the file check at start (integrity.h), its dialog and Repair.
         void StartIntegrityCheck();
         void PollIntegrity();
@@ -639,6 +644,8 @@ namespace launcher_ui
             int total = 0, started = 0, failed = 0;
         } m_updateAll;
         bool m_whatsNewOpen = false;
+        bool m_defenderNoticeOpen = false;
+        std::function<void()> m_defenderThen; // what the player asked for, run on Continue
         IntegrityCheck m_integrity;
         bool m_integrityPolled = true;                 // the last check's report has been taken
         std::vector<IntegrityFinding> m_findings;      // what is wrong, the first one in the dialog

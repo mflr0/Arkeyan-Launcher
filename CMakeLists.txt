@@ -3,7 +3,7 @@ project(ArkeyanLauncher LANGUAGES C CXX)
 if(WIN32)
     enable_language(RC) # the exe's icon, manifest and version (resources/windows/skylauncher.rc.in)
 endif()
-set(LAUNCHER_VERSION "0.9.0" CACHE STRING "Version shown in the app bundle")
+set(LAUNCHER_VERSION "0.9.1" CACHE STRING "Version shown in the app bundle")
 # SKYLAUNCHER_VERSION is the name before 0.6.0: still accepted.
 if(SKYLAUNCHER_VERSION)
     set(LAUNCHER_VERSION "${SKYLAUNCHER_VERSION}")
@@ -198,7 +198,8 @@ target_sources(ArkeyanLauncherCore PRIVATE
     src/launcher/ui/install_page.cpp
     src/launcher/ui/integrity_page.cpp
     src/launcher/ui/support_page.cpp
-    src/launcher/ui/update_page.cpp)
+    src/launcher/ui/update_page.cpp
+    src/launcher/ui/defender_notice.cpp)
 target_include_directories(ArkeyanLauncherCore PUBLIC src PRIVATE lib/stb lib/miniz)
 target_link_libraries(ArkeyanLauncherCore PUBLIC SDL3::SDL3-static fmt::fmt XenonXex imgui)
 target_compile_definitions(ArkeyanLauncherCore PRIVATE SKYLAUNCHER_VERSION_STRING="${LAUNCHER_VERSION}" SSA_SOURCE_FONT_DIR="${CMAKE_SOURCE_DIR}/resources/fonts")

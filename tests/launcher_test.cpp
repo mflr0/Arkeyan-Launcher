@@ -1872,17 +1872,19 @@ static void SceneChecks(const std::filesystem::path& scratch)
         EXPECT(art::LightOnBlack(art::Image{ 2, 1, { 0xFF000000, 0xFF000000 } }).rgba.empty());
     }
     {
-        // The title screen's logo: a 200x100 picture, black, a white plate around a dark blue 40x20 title; the cut-out keeps
-        // the title opaque in its own colour, with a white rim, and the far black transparent.
+        // The title screen's logo: a 200x100 picture, black, a white plate around a dark blue 40x20 title, a 2-pixel ray from
+        // the plate to the left edge; the cut-out keeps the title opaque in its own colour inside its light, without the ray,
+        // and the far black transparent.
         art::Image burst{ 200, 100, {} };
         for (uint32_t y = 0; y < burst.height; y++)
             for (uint32_t x = 0; x < burst.width; x++)
             {
                 const bool title = x >= 80 && x < 120 && y >= 40 && y < 60, plate = x >= 60 && x < 140 && y >= 25 && y < 75;
-                burst.rgba.push_back(title ? 0xFF801008 : plate ? 0xFFFFFFFF : 0xFF000000);
+                const bool ray = x < 60 && (y == 50 || y == 51);
+                burst.rgba.push_back(title ? 0xFF801008 : plate || ray ? 0xFFFFFFFF : 0xFF000000);
             }
         const art::Image cut = art::TitleCut(burst);
-        EXPECT(cut.width > 40 && cut.width < 200 && cut.height > 20 && cut.height < 100);
+        EXPECT(cut.width > 40 && cut.width < 100 && cut.height > 20 && cut.height < 100);
         EXPECT(!cut.rgba.empty() && cut.rgba[size_t(cut.height / 2) * cut.width + cut.width / 2] == 0xFF801008 &&
             cut.rgba[0] >> 24 < 0x10);
         EXPECT(art::TitleCut(art::Image{ 2, 1, { 0xFF000000, 0xFF000000 } }).rgba.empty());
@@ -2624,6 +2626,21 @@ static int RunChecks(int argc, char** argv)
         EXPECT(doomTop != nullptr && !collection::PortraitPath("swapforce", *doomTop).empty());
         EXPECT(std::filesystem::exists(scratch / "art-data" / "SwapForce" / "portraits")); // the data folder is SwapForce/
     }
+    if (const char* imaginatorsIso = skyenv::Get("SKY_LAUNCHER_TEST_IMAGINATORS_ISO"); imaginatorsIso != nullptr)
+    {
+        DiscFileSystem gameDisc;
+        EXPECT(gameDisc.Open(imaginatorsIso));
+        // Imaginators' logo is one solid piece in its light: no see-through gap across the words (the cut that broke
+        // the lower word left the background showing between and under its letters).
+        art::Image logo;
+        EXPECT(art::ReadLogo("imaginators", art::ReadFrom(gameDisc), logo) && logo.width > 100 && logo.height > 50);
+        size_t band = 0, solid = 0;
+        for (uint32_t y = logo.height * 2 / 5; y < logo.height * 9 / 10; y++)
+            for (uint32_t x = logo.width * 3 / 20; x < logo.width * 17 / 20; x++)
+                band++, solid += (logo.rgba[size_t(y) * logo.width + x] >> 24) == 0xFF;
+        printf("  imaginators: logo %ux%u, %zu of %zu pixels of the words' band opaque\n", logo.width, logo.height, solid, band);
+        EXPECT(band > 0 && solid * 100 >= band * 98);
+    }
     if (dataBefore.empty())
         TestUnsetEnv("SKYLANDERS_DATA");
     else
@@ -2795,6 +2812,8 @@ int main(int argc, char** argv)
 {
     // Unbuffered: a check that ends the process early still leaves every line before it in the CI log.
     setvbuf(stdout, nullptr, _IONBF, 0);
+    // The Windows Defender notice would hold every scripted install and update on Windows (defender_notice.cpp).
+    SDL_SetEnvironmentVariable(SDL_GetEnvironment(), "SKY_LAUNCHER_NO_DEFENDER_NOTICE", "1", true);
     try
     {
         return RunChecks(argc, argv);

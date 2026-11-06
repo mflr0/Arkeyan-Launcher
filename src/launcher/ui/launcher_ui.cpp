@@ -2638,11 +2638,12 @@ namespace launcher_ui
         DrawProfileEditor();
         DrawProblemReport();
         DrawQuitPrompt();
+        DrawDefenderNotice();
         DrawToast();
         // Who answers B / Escape next frame: an open menu or dialog, a field being edited, the collection's search or View.
         // LB / RB belong to the pages unless a dialog, a menu or a field has the input.
         m_pagesTaken = ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopupId | ImGuiPopupFlags_AnyPopupLevel) || ImGui::IsAnyItemActive() ||
-            m_toasts.HasFocus() || m_reportOpen || m_whatsNewOpen || m_integrityOpen || m_quitPrompt;
+            m_toasts.HasFocus() || m_reportOpen || m_whatsNewOpen || m_integrityOpen || m_quitPrompt || m_defenderNoticeOpen;
         m_backTaken = m_pagesTaken || (m_page == Page::Collection && m_s->collection->TakesBack());
         m_focusTo = FocusTo::None; // a request no page answered (its item wasn't drawn) is dropped
 

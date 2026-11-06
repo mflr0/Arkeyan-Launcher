@@ -36,7 +36,7 @@ namespace art
     {
         // Bump when a picture is read or composed differently: the cached pictures (not the portraits) are made again.
         constexpr int CacheVersion =
-            7; // 7: Imaginators' logo cut from the title screen's picture (title_cut); 6: Imaginators' logo made transparent; 5: the scenes (<cache>/scenes/); 4: Swap Force's logo from its
+            8; // 8: Imaginators' logo kept in its cloud of light; 7: Imaginators' logo cut from the title screen's picture (title_cut); 6: Imaginators' logo made transparent; 5: the scenes (<cache>/scenes/); 4: Swap Force's logo from its
                // lossless 32-bit picture
 
         std::string Lower(std::string text)
@@ -1037,81 +1037,59 @@ namespace art
         const int w = int(picture.width), h = int(picture.height);
         if (picture.rgba.empty())
             return {};
-        // The plate: the white light around the letters (bright, no colour). The letters are what it encloses.
-        std::vector<char> plate(picture.rgba.size());
-        for (size_t i = 0; i < plate.size(); i++)
+        // The title keeps the light it sits in: the bright cloud around the letters, without the burst's thin rays and bolts
+        // (opened by 4 pixels), its gaps closed (24 pixels) so the dark letters inside are enclosed, then filled. Cutting the
+        // letters out of that light broke them where their 3D sides are as bright as it.
+        std::vector<char> bright(picture.rgba.size());
+        for (size_t i = 0; i < bright.size(); i++)
         {
             const uint32_t t = picture.rgba[i];
-            const int r = int(t & 0xFF), g = int(t >> 8 & 0xFF), b = int(t >> 16 & 0xFF);
-            const float lum = 0.299f * float(r) + 0.587f * float(g) + 0.114f * float(b);
-            plate[i] = std::max({ r, g, b }) - std::min({ r, g, b }) < 30 && lum > 190;
+            bright[i] = 0.299f * float(t & 0xFF) + 0.587f * float(t >> 8 & 0xFF) + 0.114f * float(t >> 16 & 0xFF) > 140;
         }
-        // The lower word's plate opens at its foot (the burst's rays): close its gaps 10 pixels wide, take what it then
-        // encloses, give it back the 10 pixels. That closing swallows the thin upper word and the elements' icons: those come
-        // from the plate as it is, the pieces that are not already the lower word.
-        std::vector<char> lower = Grow(Enclosed(Grow(plate, w, h, 10), w, h, 0.005f), w, h, 10);
-        for (size_t i = 0; i < lower.size(); i++)
-            lower[i] = lower[i] && !plate[i];
-        {
-            const Pieces pieces = Label(lower, w, h);
-            const int largest = pieces.size.empty() ? 0 : *std::max_element(pieces.size.begin(), pieces.size.end());
-            for (size_t i = 0; i < lower.size(); i++)
-                lower[i] = pieces.label[i] >= 0 && pieces.size[size_t(pieces.label[i])] * 20 >= largest;
-        }
-        std::vector<char> letters = lower;
-        {
-            const std::vector<char> upper = Enclosed(plate, w, h, 0.02f);
-            const Pieces pieces = Label(upper, w, h);
-            std::vector<int> overlap(pieces.size.size(), 0);
-            for (size_t i = 0; i < upper.size(); i++)
-                if (pieces.label[i] >= 0 && lower[i])
-                    overlap[size_t(pieces.label[i])]++;
-            for (size_t i = 0; i < upper.size(); i++)
-                if (const int id = pieces.label[i]; id >= 0 && overlap[size_t(id)] * 10 < pieces.size[size_t(id)] * 3)
-                    letters[i] = 1;
-        }
-        // Their holes filled; then a 4-pixel white rim (the plate's own white, kept as a clean outline) and a soft glow.
-        {
-            std::vector<char> open(letters.size());
-            for (size_t i = 0; i < letters.size(); i++)
-                open[i] = !letters[i];
-            const Pieces pieces = Label(open, w, h);
-            for (size_t i = 0; i < letters.size(); i++)
-                if (pieces.label[i] >= 0 && !pieces.edge[size_t(pieces.label[i])])
-                    letters[i] = 1;
-        }
-        auto toFloat = [](const std::vector<char>& mask) {
-            std::vector<float> out(mask.size());
-            for (size_t i = 0; i < mask.size(); i++)
-                out[i] = mask[i] ? 1.0f : 0.0f;
-            return out;
+        auto shrink = [w, h](const std::vector<char>& on, int steps) {
+            std::vector<char> off(on.size());
+            for (size_t i = 0; i < on.size(); i++)
+                off[i] = !on[i];
+            off = Grow(off, w, h, steps);
+            for (char& v : off)
+                v = !v;
+            return off;
         };
-        const std::vector<float> rim = Blur(toFloat(Grow(letters, w, h, 4)), w, h, 1);
-        const std::vector<float> glow = Blur(Blur(Blur(toFloat(Grow(letters, w, h, 6)), w, h, 5), w, h, 5), w, h, 5);
-        constexpr float GlowColor[3] = { 205, 228, 255 }, GlowStrength = 0.6f;
-        Image light{ picture.width, picture.height, std::vector<uint32_t>(picture.rgba.size(), 0) };
+        std::vector<char> cloud = Grow(shrink(bright, 4), w, h, 4);
+        {
+            const Pieces pieces = Label(cloud, w, h);
+            const auto largest = std::max_element(pieces.size.begin(), pieces.size.end());
+            if (largest == pieces.size.end())
+                return {};
+            const int id = int(largest - pieces.size.begin());
+            for (size_t i = 0; i < cloud.size(); i++)
+                cloud[i] = pieces.label[i] == id;
+        }
+        cloud = shrink(Grow(cloud, w, h, 24), 24);
+        {
+            const std::vector<char> holes = Enclosed(cloud, w, h, 0.0f);
+            for (size_t i = 0; i < cloud.size(); i++)
+                cloud[i] = cloud[i] || holes[i];
+        }
+        std::vector<float> alpha(cloud.size());
+        for (size_t i = 0; i < cloud.size(); i++)
+            alpha[i] = cloud[i] ? 1.0f : 0.0f;
+        alpha = Blur(Blur(Blur(std::move(alpha), w, h, 2), w, h, 2), w, h, 2);
         int left = w, right = -1, top = h, bottom = -1;
         for (int y = 0; y < h; y++)
             for (int x = 0; x < w; x++)
-            {
-                const size_t i = size_t(y) * w + x;
-                const float t = rim[i], alpha = std::max(t, glow[i] * GlowStrength);
-                if (alpha < 0.004f)
-                    continue;
-                uint32_t texel = uint32_t(alpha * 255 + 0.5f) << 24;
-                for (int c = 0; c < 3; c++)
-                    texel |= uint32_t(float(picture.rgba[i] >> (8 * c) & 0xFF) * t + GlowColor[c] * (1 - t) + 0.5f) << (8 * c);
-                light.rgba[i] = texel;
-                if (alpha > 0.03f)
+                if (alpha[size_t(y) * w + x] > 0.03f)
                     left = std::min(left, x), right = std::max(right, x), top = std::min(top, y), bottom = std::max(bottom, y);
-            }
         if (right < left || bottom < top)
             return {};
         Image cut{ uint32_t(right - left + 1), uint32_t(bottom - top + 1), {} };
         cut.rgba.reserve(size_t(cut.width) * cut.height);
         for (int y = top; y <= bottom; y++)
-            cut.rgba.insert(cut.rgba.end(), light.rgba.begin() + ptrdiff_t(size_t(y) * w + left),
-                light.rgba.begin() + ptrdiff_t(size_t(y) * w + right + 1));
+            for (int x = left; x <= right; x++)
+            {
+                const size_t i = size_t(y) * w + x;
+                cut.rgba.push_back((picture.rgba[i] & 0xFFFFFFu) | uint32_t(alpha[i] * 255 + 0.5f) << 24);
+            }
         return cut;
     }
 

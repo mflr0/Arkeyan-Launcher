@@ -176,6 +176,8 @@ namespace launcher_ui
     {
         if (m_s->installer.Running()) // the card shows it; a second start would only fight it
             return;
+        if (!UpdatingAll() && DefenderNoticeFirst([this] { StartInstall(); }))
+            return;
         if (!DiscStillThere())
             return;
         if (m_session.Running() == m_s->game.id) // its build can't be replaced while it runs
@@ -223,7 +225,7 @@ namespace launcher_ui
 
     void App::StartUpdateAll()
     {
-        if (UpdatingAll())
+        if (UpdatingAll() || DefenderNoticeFirst([this] { StartUpdateAll(); }))
             return;
         m_updateAll = {};
         for (const auto& slot : m_slots)
@@ -825,7 +827,7 @@ namespace launcher_ui
                     StartVerify(m_testDrop);
                 if (m_s->disc == DiscState::Ready)
                     StartInstall();
-                if (m_s->installView)
+                if (m_s->installView || m_defenderNoticeOpen) // SKY_LAUNCHER_TEST_DEFENDER: the notice's shot
                     m_testAt = now + 3000;
             }
             else if (m_s->installer.Running() || m_s->installView)
