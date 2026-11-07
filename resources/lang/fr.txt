@@ -1078,3 +1078,26 @@ Sorcerer	Sorcier
 Swashbuckler	Bretteur
 Sentinel	Sentinelle
 Bazooker	Bazookeur
+
+# The Toy Box window (docs/toybox_window.md)
+A real figure	Une vraie figurine
+A real figure is there: lift it off the portal first	Une vraie figurine est là : retirez-la d’abord du portail
+Another Toy Box window has this game	Une autre fenêtre Toy Box a ce jeu
+Another program is using this figure	Un autre programme utilise cette figurine
+Couldn't open the Toy Box window	Impossible d’ouvrir la fenêtre Toy Box
+It is already there	Elle y est déjà
+Now in {}	Maintenant dans {}
+On the portal of {}	Sur le portail de {}
+Open with the game	Ouvrir avec le jeu
+Real figure · on the portal	Vraie figurine · sur le portail
+Start a game first	Lancez d’abord un jeu
+The Toy Box in its own window, to keep beside the game	La Toy Box dans sa propre fenêtre, à garder à côté du jeu
+The Toy Box window opens each time you play	La fenêtre Toy Box s’ouvre à chaque partie
+The game cannot read this figure there	Le jeu ne peut pas lire cette figurine ici
+The game did not find this figure	Le jeu n’a pas trouvé cette figurine
+The game has no virtual portal now	Le jeu n’a pas de portail virtuel pour l’instant
+The game is newer: update the launcher	Le jeu est plus récent : mettez à jour le launcher
+The game is older: update it	Le jeu est plus ancien : mettez-le à jour
+The portal is full	Le portail est plein
+Toy Box window	Fenêtre Toy Box
+Waiting for the game...	En attente du jeu...

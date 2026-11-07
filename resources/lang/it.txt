@@ -1048,3 +1048,26 @@ Sorcerer	Stregone
 Swashbuckler	Spadaccino
 Sentinel	Sentinella
 Bazooker	Bazookista
+
+# The Toy Box window (docs/toybox_window.md)
+A real figure	Una figura vera
+A real figure is there: lift it off the portal first	C'è una figura vera: toglila prima dal portale
+Another Toy Box window has this game	Un'altra finestra Toy Box ha questo gioco
+Another program is using this figure	Un altro programma sta usando questa figura
+Couldn't open the Toy Box window	Impossibile aprire la finestra Toy Box
+It is already there	È già lì
+Now in {}	Ora in {}
+On the portal of {}	Sul portale di {}
+Open with the game	Apri con il gioco
+Real figure · on the portal	Figura vera · sul portale
+Start a game first	Avvia prima un gioco
+The Toy Box in its own window, to keep beside the game	La Toy Box in una finestra tutta sua, accanto al gioco
+The Toy Box window opens each time you play	La finestra Toy Box si apre ogni volta che giochi
+The game cannot read this figure there	Il gioco non può leggere questa figura lì
+The game did not find this figure	Il gioco non ha trovato questa figura
+The game has no virtual portal now	Il gioco ora non ha un portale virtuale
+The game is newer: update the launcher	Il gioco è più recente: aggiorna il launcher
+The game is older: update it	Il gioco è più vecchio: aggiornalo
+The portal is full	Il portale è pieno
+Toy Box window	Finestra Toy Box
+Waiting for the game...	In attesa del gioco...

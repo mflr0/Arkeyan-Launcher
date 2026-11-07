@@ -4,10 +4,16 @@
 // of the game's next session, and what changes on disk while a game runs (docs/collection_ui.md).
 #include "shared/collection/collection.h"
 #include "shared/collection/search.h"
+#include "shared/toybox_link.h"
 #include <cstdint>
 #include <string>
 #include <string_view>
 #include <vector>
+
+namespace toyboxlinkclient
+{
+    class Client;
+}
 
 namespace launcher_ui
 {
@@ -77,6 +83,12 @@ namespace launcher_ui
         std::vector<collection::Figure> figures; // List(): every dump of the collection
         std::string gameId = "ssa";               // the game whose seats, views and sections are shown
         std::vector<std::string> seats;           // per seat of Game()
+        // The Toy Box window (docs/toybox_window.md): the running game's seats come over its link (`live`), and every
+        // change of a seat is sent to the game, which puts the figure on its portal at once and sends its seats back.
+        toyboxlinkclient::Client* live = nullptr;
+        std::vector<toyboxlink::Seat> liveSeats; // per seat of Game(): a virtual figure, a real toy (read only), nothing
+        bool Live() const { return live != nullptr; }
+        bool RealSeat(size_t seat) const { return seat < liveSeats.size() && liveSeats[seat].kind == toyboxlink::Seat::Kind::Real; }
 
         const collection::Game* Game() const;
         void Load();
@@ -114,7 +126,9 @@ namespace launcher_ui
 
     private:
         std::string Signature() const;
+        void LoadLive(); // seats and liveSeats from the link
         std::string m_signature;
         uint64_t m_nextPoll = 0;
+        uint64_t m_liveGeneration = 0;
     };
 }

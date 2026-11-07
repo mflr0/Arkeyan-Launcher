@@ -1511,6 +1511,7 @@ int PortableChecks(const std::filesystem::path& scratch); // tests/portable_test
 int VfsChecks(const std::filesystem::path& scratch); // tests/vfs_test.cpp
 int LuxImageChecks();                                           // tests/lux_images_test.cpp
 int SingleInstanceChecks(const std::filesystem::path& scratch); // tests/single_instance_test.cpp
+int ToyboxLinkChecks(const std::filesystem::path& scratch);     // tests/toybox_link_test.cpp
 int ExportPortableTool(int argc, char** argv);         // tests/portable_test.cpp
 
 // The launcher window switching games in place (App::TestSwitchScript, in an offscreen window): both discs checked, a
@@ -2348,6 +2349,8 @@ static int RunChecks(int argc, char** argv)
         SweepChecks(scratch);
         return g_failures == 0 ? 0 : 1;
     }
+    if (skyenv::Get("SKY_LAUNCHER_TEST_TOYBOX_ONLY") != nullptr) // only the Toy Box window's link (quick to rerun)
+        return ToyboxLinkChecks(scratch / "toybox-link") == 0 ? 0 : 1;
     if (skyenv::Get("SKY_LAUNCHER_TEST_INSTANCE_ONLY") != nullptr) // only one launcher per data folder (quick to rerun)
         return SingleInstanceChecks(scratch / "instance") == 0 ? 0 : 1;
     if (skyenv::Get("SKY_LAUNCHER_TEST_PORTABLE_ONLY") != nullptr) // only "Export a portable copy" (quick to rerun)
@@ -2405,6 +2408,7 @@ static int RunChecks(int argc, char** argv)
     LoopingDiscStartChecks(scratch);
     g_failures += LuxImageChecks();
     g_failures += SingleInstanceChecks(scratch / "instance");
+    g_failures += ToyboxLinkChecks(scratch / "toybox-link");
     g_failures += I18nChecks();
     g_failures += TextFitChecks();
     g_failures += NavigationChecks();

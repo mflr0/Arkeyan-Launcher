@@ -336,6 +336,8 @@ LauncherArguments ParseLauncherArguments(int argc, const char* const* argv)
             arguments.game = argv[++i];
         else if (argument.rfind("--game=", 0) == 0)
             arguments.game = std::string(argument.substr(7));
+        else if (argument == "--toybox" && i + 1 < argc)
+            arguments.toybox = argv[++i];
         else
             arguments.unknown.emplace_back(argument);
     }
@@ -348,6 +350,7 @@ const char* LauncherUsage()
            "  --game <id>  open on that game's page: ssa (Spyro's Adventure), giants (Giants), swapforce (Swap Force), trapteam (Trap Team),\n"
            "               superchargers (SuperChargers) or imaginators (Imaginators)\n"
            "  --play       start the game as soon as its disc is checked (what a desktop shortcut runs)\n"
+           "  --toybox <id> the Toy Box window of that game while it runs (the launcher opens it)\n"
            "  --help       show this";
 }
 

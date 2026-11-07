@@ -19,6 +19,7 @@
 #include "launcher/profiles.h"
 #include "launcher/ui/launcher_ui.h"
 #include "launcher/portal_status.h"
+#include "launcher/toybox_link_client.h"
 #include "launcher/uninstall.h"
 #include "launcher/ui/theme/launcher_theme.h"
 #include "launcher/ui/collection_page.h"
@@ -570,6 +571,13 @@ namespace launcher_ui
         void Set(const char* section, const char* key, const std::string& value);
         // A message at the bottom right: an Error stays until it is closed; Info and Success go by themselves.
         void Toast(std::string text, ui::ToastKind kind = ui::ToastKind::Info);
+        // The Toy Box window (toybox_window.cpp, docs/toybox_window.md). The option "Open with the game" (its own file).
+        bool ToyboxWithGame(bool fresh = false) const; // `fresh`: read its file again (the window may have changed it)
+        void SetToyboxWithGame(bool on);
+        bool ToyboxWindow() const { return !m_toybox.empty(); } // this process is the Toy Box window
+        // The window: the game runs but never wrote its link file (a game from before the link): it needs updating.
+        bool ToyboxGameWithoutLink() const;
+        void OpenToyboxWindow(); // the launcher: start it for the game running, or bring it to the front
         void RefreshGamepads();
         PadFamily PadFamilyNow() const; // whose button names the Keyboard tab shows (game_keys.h)
         ui::Glyphs PadGlyphs() const;   // the same family as the pictures of its buttons (never the keyboard)
@@ -690,6 +698,36 @@ namespace launcher_ui
         // one's state is what the pages draw (m_s).
         std::vector<std::unique_ptr<GameSlot>> m_slots;
         GameSlot* m_s = nullptr;
+
+        // The Toy Box window (toybox_window.cpp). In the launcher: the window's process, and the game it was opened with;
+        // in the window (--toybox <game>, m_toybox): its link to the game.
+        std::string m_toybox;
+        SDL_Process* m_toyboxProcess = nullptr;
+        std::string m_toyboxOpenedFor;
+        std::unique_ptr<toyboxlinkclient::Client> m_link;
+        toyboxlinkclient::Client::State m_linkState = toyboxlinkclient::Client::State::Waiting;
+        uint64_t m_linkSince = 0, m_linkGeneration = 0, m_nextRaiseLook = 0;
+        bool m_linkSeen = false; // the game answered once: losing it then means it ended
+        mutable int m_toyboxWithGame = -1; // the option as last read or set; -1: not read yet
+        void PollToyboxWindow(); // the launcher: open it with the game, see its process end
+        void PlaceToyboxWindow(); // the window: its saved place and size, its title
+        void SaveToyboxPlace();
+        void StartToyboxLink();
+        void PollToyboxLink();   // the window: the link's state, the game's answers, a raise request, the end
+        void DrawToyboxPage();   // the window: the Collection page over the whole window
+        // SKY_LAUNCHER_TEST_TOYBOX="<s>:put <seat> <file>|<s>:off <seat>|<s>:choose <seat>|<s>:shot <name>|<s>:quit", times in
+        // seconds after the game answered; shots in SKY_LAUNCHER_TOYBOX_SHOTS (toybox_window.cpp).
+        struct ToyboxStep
+        {
+            double at = 0;
+            std::string action;
+        };
+        std::vector<ToyboxStep> m_toyboxScript;
+        size_t m_toyboxNext = 0;
+        uint64_t m_toyboxConnectedAt = 0;
+        std::string m_toyboxShot; // taken at the end of the next frame
+        void RunToyboxScript();
+        void ToyboxShot(); // in Frame, once drawn
 
         enum class UninstallStage { Closed, List, Result };
         struct UninstallState

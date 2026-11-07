@@ -105,6 +105,7 @@ struct LauncherArguments
     bool play = false;
     bool help = false;
     bool afterUpdate = false;
+    std::string toybox; // --toybox <id>: the Toy Box window of that game, while it runs (docs/toybox_window.md)
     std::vector<std::string> unknown;
 };
 LauncherArguments ParseLauncherArguments(int argc, const char* const* argv);

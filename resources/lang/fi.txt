@@ -1049,3 +1049,26 @@ Sorcerer	Velho
 Swashbuckler	Miekkasankari
 Sentinel	Vartija
 Bazooker	Bazookamies
+
+# The Toy Box window (docs/toybox_window.md)
+A real figure	Oikea hahmo
+A real figure is there: lift it off the portal first	Siinä on oikea hahmo: ota se ensin pois portaalista
+Another Toy Box window has this game	Toinen Toy Box -ikkuna käyttää tätä peliä
+Another program is using this figure	Toinen ohjelma käyttää tätä hahmoa
+Couldn't open the Toy Box window	Toy Box -ikkunaa ei voitu avata
+It is already there	Se on jo siellä
+Now in {}	Nyt pelissä {}
+On the portal of {}	Pelin {} portaalissa
+Open with the game	Avaa pelin kanssa
+Real figure · on the portal	Oikea hahmo · portaalissa
+Start a game first	Käynnistä ensin peli
+The Toy Box in its own window, to keep beside the game	Toy Box omassa ikkunassaan, pelin vieressä
+The Toy Box window opens each time you play	Toy Box -ikkuna avautuu aina kun pelaat
+The game cannot read this figure there	Peli ei voi lukea tätä hahmoa siinä
+The game did not find this figure	Peli ei löytänyt tätä hahmoa
+The game has no virtual portal now	Pelillä ei ole nyt virtuaaliportaalia
+The game is newer: update the launcher	Peli on uudempi: päivitä launcher
+The game is older: update it	Peli on vanhempi: päivitä se
+The portal is full	Portaali on täynnä
+Toy Box window	Toy Box -ikkuna
+Waiting for the game...	Odotetaan peliä...

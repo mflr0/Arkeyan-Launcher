@@ -94,6 +94,8 @@ At the first visit to the page (`CollectionPage::Open`):
   slot *i* (`WriteSeats`) and reads it back (`ReadSeats`): a figure goes to its slot's seat when it fits, else to the
   first seat that takes it (as the Toy Box does). The seats are per game (`catalogue.json` `games[].seats`). Swap Force's
   portal has six slots (see "Swappers"): `SeatFirstSlot` and `SlotSeat` map the seats to them.
+- **While the game runs** the seats are read-only here, with a **Toy Box window** button beside "<game> is running": the Toy
+  Box window is this page, live, the seats changed through the game (`toybox_window.md`).
 - **Which games**: over the seats, "On the portal for" and a Select ("Spyro's Adventure", as narrow as the longest name, with a
   tooltip) lists the games that can start with prepared seats,
   those the launcher has a runtime for (`SessionFile` not empty): Spyro's Adventure, Giants (Player 1, Player 2, Item or

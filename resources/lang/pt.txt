@@ -1048,3 +1048,26 @@ Sorcerer	Feiticeiro
 Swashbuckler	Espadachim
 Sentinel	Sentinela
 Bazooker	Bazuqueiro
+
+# The Toy Box window (docs/toybox_window.md)
+A real figure	Uma figura real
+A real figure is there: lift it off the portal first	Está lá uma figura real: tira-a primeiro do portal
+Another Toy Box window has this game	Outra janela da Toy Box tem este jogo
+Another program is using this figure	Outro programa está a usar esta figura
+Couldn't open the Toy Box window	Não foi possível abrir a janela da Toy Box
+It is already there	Já está lá
+Now in {}	Agora em {}
+On the portal of {}	No portal de {}
+Open with the game	Abrir com o jogo
+Real figure · on the portal	Figura real · no portal
+Start a game first	Inicia primeiro um jogo
+The Toy Box in its own window, to keep beside the game	A Toy Box na sua própria janela, ao lado do jogo
+The Toy Box window opens each time you play	A janela da Toy Box abre sempre que jogas
+The game cannot read this figure there	O jogo não consegue ler esta figura aí
+The game did not find this figure	O jogo não encontrou esta figura
+The game has no virtual portal now	O jogo não tem portal virtual agora
+The game is newer: update the launcher	O jogo é mais recente: atualiza o launcher
+The game is older: update it	O jogo é mais antigo: atualiza-o
+The portal is full	O portal está cheio
+Toy Box window	Janela da Toy Box
+Waiting for the game...	À espera do jogo...

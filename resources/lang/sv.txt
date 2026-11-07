@@ -1049,3 +1049,26 @@ Sorcerer	Trollkarl
 Swashbuckler	Fäktare
 Sentinel	Väktare
 Bazooker	Bazookaskytt
+
+# The Toy Box window (docs/toybox_window.md)
+A real figure	En riktig figur
+A real figure is there: lift it off the portal first	Där står en riktig figur: ta först av den från portalen
+Another Toy Box window has this game	Ett annat Toy Box-fönster har det här spelet
+Another program is using this figure	Ett annat program använder den här figuren
+Couldn't open the Toy Box window	Kunde inte öppna Toy Box-fönstret
+It is already there	Den är redan där
+Now in {}	Nu i {}
+On the portal of {}	På portalen i {}
+Open with the game	Öppna med spelet
+Real figure · on the portal	Riktig figur · på portalen
+Start a game first	Starta ett spel först
+The Toy Box in its own window, to keep beside the game	Toy Box i ett eget fönster, bredvid spelet
+The Toy Box window opens each time you play	Toy Box-fönstret öppnas varje gång du spelar
+The game cannot read this figure there	Spelet kan inte läsa den här figuren där
+The game did not find this figure	Spelet hittade inte den här figuren
+The game has no virtual portal now	Spelet har ingen virtuell portal nu
+The game is newer: update the launcher	Spelet är nyare: uppdatera launchern
+The game is older: update it	Spelet är äldre: uppdatera det
+The portal is full	Portalen är full
+Toy Box window	Toy Box-fönster
+Waiting for the game...	Väntar på spelet...
