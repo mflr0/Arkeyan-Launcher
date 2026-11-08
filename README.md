@@ -14,8 +14,8 @@ on your computer.
 
 - **Native games**, built once on your computer from your disc (2 to 4 minutes on an Apple Silicon Mac), at a higher resolution
   than the console's, at 30 or 60 FPS.
-- **AMD FSR 3** upscaling and frame generation, switches in the game's settings (frame generation: not in Swap Force, not
-  on Windows yet), and **5.1 sound** when your speakers have six channels.
+- **AMD FSR 3** upscaling and frame generation, switches in the game's settings (frame generation: not on Windows yet, not
+  tested on Linux yet), and **5.1 sound** when your speakers have six channels.
 - **No portal needed.** Your figures live in the **Toy Box**: put any of them on the virtual portal from the game (F6), swap
   in one press, create figures from the catalogue, choose the villain in a trap. A real Portal of Power works too,
   even beside a virtual figure for the second player.
