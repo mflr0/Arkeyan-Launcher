@@ -417,6 +417,8 @@ namespace launcher_ui
             m_testLogo = LauncherEnv("SKY_LAUNCHER_TEST_LOGO") != nullptr;
             m_testHdTex = LauncherEnv("SKY_LAUNCHER_TEST_HDTEX") != nullptr;
             m_testKeys = LauncherEnv("SKY_LAUNCHER_TEST_KEYS") != nullptr;
+            if (const char* game = LauncherEnv("SKY_LAUNCHER_TEST_GAMETABS"))
+                m_testGameTabs = game;
             if (const char* screens = LauncherEnv("SKY_LAUNCHER_TEST_SCREENS"))
                 m_testScreens = std::string_view(screens) == "issues" ? 3 : std::string_view(screens) == "pad" ? 2 : 1;
             const char* input = LauncherEnv("SKY_LAUNCHER_TEST_INPUT");
@@ -2704,7 +2706,7 @@ namespace launcher_ui
                 "45-nav-search-left", "46-nav-seat", "47-nav-choosing", "48-nav-card", "49-nav-placed", "50-nav-sheet",
                 "51-nav-back-to-play", "52-nav-settings-controls", "53-nav-settings-back" };
             static const char* const UninstallNames[] = { "01-settings", "02-list", "03-ticked", "04-confirm", "05-result" };
-            if (m_testPadWalk || m_testExperimental || m_testProfiles || m_testHero || m_testHdTex || m_testButtons || m_testSidebar || m_testCopy || m_testLogo || m_testKeys || m_testPad || m_testAchievements || m_testRunning ||
+            if (m_testPadWalk || m_testExperimental || m_testProfiles || m_testHero || m_testHdTex || m_testButtons || m_testSidebar || m_testCopy || m_testLogo || m_testKeys || !m_testGameTabs.empty() || m_testPad || m_testAchievements || m_testRunning ||
                 m_testScreens != 0 || !m_testKit.empty())
                 Screenshot(m_testShot.c_str());
             else if (m_testUninstall)
@@ -3997,6 +3999,36 @@ namespace launcher_ui
                 m_gameTab = GameTab::Game;
                 m_testShot = "game-swapforce";
             }
+            m_testAt = now + 600;
+            return;
+        }
+        if (!m_testGameTabs.empty())
+        {
+            // Each tab of one game's settings, FSR 3 and frame generation on so their rows show (set SKY_LAUNCHER_LANGUAGE for the
+            // language, SKY_LAUNCHER_TEST_SIZE=<w>x<h> a window tall enough for the longest tab). Shots "tabs-<game>-<NN>-<tab>".
+            static const std::pair<GameTab, const char*> Tabs[] = { { GameTab::Video, "video" }, { GameTab::Keyboard, "keyboard" },
+                { GameTab::Controller, "controller" }, { GameTab::Language, "language" }, { GameTab::Disc, "disc" },
+                { GameTab::Saves, "saves" }, { GameTab::Game, "game" } };
+            if (m_testStep == 0)
+                if (const char* size = LauncherEnv("SKY_LAUNCHER_TEST_SIZE"))
+                {
+                    int w = 0, h = 0;
+                    if (std::sscanf(size, "%dx%d", &w, &h) == 2)
+                        SDL_SetWindowSize(m_window, w, h);
+                }
+            const GameInfo* game = FindGame(m_testGameTabs.c_str());
+            if (game == nullptr || m_testStep >= int(std::size(Tabs)))
+            {
+                m_running = false;
+                return;
+            }
+            SelectGame(*game);
+            const std::string video = GameVideoSection(m_testGameTabs);
+            m_config[video]["upscaler"] = "fsr3";
+            m_config[video]["fsr_frame_generation"] = "on";
+            m_page = Page::GameSettings;
+            m_gameTab = Tabs[m_testStep].first;
+            m_testShot = fmt::format("tabs-{}-{:02}-{}", m_testGameTabs, m_testStep, Tabs[m_testStep].second);
             m_testAt = now + 600;
             return;
         }

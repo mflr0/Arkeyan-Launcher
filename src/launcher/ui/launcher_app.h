@@ -745,6 +745,7 @@ namespace launcher_ui
         bool m_uninstalled = false;    // done: the window only shows the result and quits
         bool m_testUninstall = false;  // SKY_LAUNCHER_TEST_UNINSTALL: the uninstall screens
         bool m_testKeys = false;       // SKY_LAUNCHER_TEST_KEYS: each game's Keyboard tab, one shot each
+        std::string m_testGameTabs;    // SKY_LAUNCHER_TEST_GAMETABS=<game>: each tab of that game's settings, one shot each
         int m_testScreens = 0;         // SKY_LAUNCHER_TEST_SCREENS: Home, the game page and its Keyboard tab; 1 with the mouse, 2 with a pad, 3 issue checks
         bool m_testPadInput = false;   // SKY_LAUNCHER_TEST_INPUT=pad (or SCREENS=pad): any script's shots as with a pad (its legends, the ring)
         int m_testFocusView = -1;      // the page and tab the last pad focus was given on
