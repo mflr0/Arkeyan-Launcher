@@ -846,6 +846,8 @@ Turn the game music off	Mykistä pelin musiikki
 Turn the game music on	Laita pelin musiikki päälle
 Type	Tyyppi
 Ultra Performance	Ultrasuorituskyky
+Frame generation	Kehysten luonti
+Doubles the frames shown; a little more input delay (F3 in game).	Kaksinkertaistaa näytetyt kuvat; hieman enemmän viivettä (F3 pelissä).
 UPDATE	PÄIVITÄ
 UPDATING THE GAME	PÄIVITETÄÄN PELIÄ
 UPDATING...	PÄIVITETÄÄN...

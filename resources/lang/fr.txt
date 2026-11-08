@@ -290,6 +290,8 @@ Quality	Qualité
 Balanced	Équilibré
 Performance	Performance
 Ultra Performance	Ultra Performance
+Frame generation	Génération d'images
+Doubles the frames shown; a little more input delay (F3 in game).	Double les images affichées ; un peu plus de latence (F3 en jeu).
 Speakers	Haut-parleurs
 Auto: 5.1 when the device has six channels.	Auto : 5.1 quand l'appareil a six canaux.
 Stereo	Stéréo

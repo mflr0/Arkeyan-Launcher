@@ -845,6 +845,8 @@ Turn the game music off	Slå spilmusikken fra
 Turn the game music on	Slå spilmusikken til
 Type	Type
 Ultra Performance	Ultra-ydeevne
+Frame generation	Billedgenerering
+Doubles the frames shown; a little more input delay (F3 in game).	Fordobler de viste billeder; lidt mere forsinkelse (F3 i spillet).
 UPDATE	OPDATÉR
 UPDATING THE GAME	OPDATERER SPILLET
 UPDATING...	OPDATERER...

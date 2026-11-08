@@ -845,6 +845,8 @@ Turn the game music off	Spelmuziek uitzetten
 Turn the game music on	Spelmuziek aanzetten
 Type	Type
 Ultra Performance	Ultraprestaties
+Frame generation	Framegeneratie
+Doubles the frames shown; a little more input delay (F3 in game).	Verdubbelt de getoonde beelden; iets meer invoervertraging (F3 in het spel).
 UPDATE	BIJWERKEN
 UPDATING THE GAME	HET SPEL WORDT BIJGEWERKT
 UPDATING...	BIJWERKEN...

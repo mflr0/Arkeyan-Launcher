@@ -56,6 +56,7 @@ launcher saves the file (a comment over a key that is removed goes with it).
 | `video` | `edge_smoothing` | `game`, `light`, `off` (not set: `light` from resolution scale 2, `game` at 1) | Swap Force and Trap Team only: the game's FXAA pass, which also softens texture detail. `game` leaves it, `light` filters only strong edges, `off` draws a plain copy (<game> settings > Video > Edge smoothing: Game, Gentle, None; the game's F3 menu writes it too) | yes |
 | `video` | `upscaler` | `off` (default), `fsr3` | AMD FidelityFX Super Resolution 3, every game: the 3D scene is drawn smaller and upscaled to the window; the HUD and menus stay at full size (<game> settings > Video > FSR 3, a switch; the game's F3 menu changes it too). Since 0.9.4 | yes |
 | `video` | `fsr_quality` | `quality` (default), `balanced`, `performance`, `ultra_performance` | FSR 3's preset, used while `upscaler=fsr3`: AMD's names, from the sharpest to the fastest (<game> settings > Video > FSR 3 quality: Quality, Balanced, Performance, Ultra Performance, shown while FSR 3 is on; turned off, the preset is kept; the game's F3 menu changes it too). Since 0.9.4 | yes |
+| `video` | `fsr_frame_generation` | `off` (default), `on` | FSR 3 frame generation: one generated frame between two real ones, so twice the frames shown for a little more input delay; used while `upscaler=fsr3` (<game> settings > Video > Frame generation, shown while FSR 3 is on, except in Swap Force and on Windows, where the game cannot run it yet (`FrameGenerationOffered`); turned off, the choice is kept; the game's F3 menu changes it too and greys it with its reason where a game or backend cannot). Since 0.9.4 | yes |
 | `input` | `device` | `auto`, `keyboard`, `gamepad` | What the game listens to | yes |
 | `input` | `gamepad` | SDL GUID | The gamepad chosen when `device=gamepad` | yes |
 | `input` | `key_<action>` | SDL scancode name (`Space`, `Return`, `W`...): a key's **physical place**, shown with the player's layout | Keyboard binding | yes |
@@ -86,7 +87,7 @@ Japanese/Japonais, Korean/Coréen, Chinese/Chinois); an unknown code is ignored,
 
 The runtime reads one `[video]` section, but the games do not have to share it. Each game keeps its own copy of the
 fourteen keys that belong to a game (`fullscreen`, `resolution_scale`, `fps_limit`, `skip_intro_movies`, `vsync`,
-`anisotropy`, `aspect`, `texture_packs`, `texture_dump`, `original_resolution`, `show_fps`, `edge_smoothing`, `upscaler`, `fsr_quality`) in **`[ssa.video]`**, **`[giants.video]`**, **`[swapforce.video]`**, **`[trapteam.video]`**, **`[superchargers.video]`** and **`[imaginators.video]`**:
+`anisotropy`, `aspect`, `texture_packs`, `texture_dump`, `original_resolution`, `show_fps`, `edge_smoothing`, `upscaler`, `fsr_quality`, `fsr_frame_generation`) in **`[ssa.video]`**, **`[giants.video]`**, **`[swapforce.video]`**, **`[trapteam.video]`**, **`[superchargers.video]`** and **`[imaginators.video]`**:
 
 | Section | Key | Meaning |
 | --- | --- | --- |
@@ -101,7 +102,7 @@ fourteen keys that belong to a game (`fullscreen`, `resolution_scale`, `fps_limi
   parses. With 60 FPS on, with automatic fallback enabled, a computer that cannot hold 60 gets a steady 30 FPS (the game says "30 FPS: 60 not held" once
   per run) and goes back to 60 when it holds.
 - **FSR 3 and the speakers** (0.9.4, all six games): the Video tab shows FSR 3 (a switch, `upscaler` `off`/`fsr3`) under
-  Resolution scale, FSR 3 quality (the four AMD presets, `fsr_quality`) under it while FSR 3 is on, and Speakers (`speakers` in
+  Resolution scale, FSR 3 quality (the four AMD presets, `fsr_quality`) and Frame generation (`fsr_frame_generation`, not in Swap Force nor on Windows) under it while FSR 3 is on, and Speakers (`speakers` in
   `[<game>.audio]`: Auto, Stereo, 5.1) under Volume. A value the page does not offer shows the default. `tests/settings_test.cpp`
   checks, for each game, the defaults (off, quality, auto, nothing passed by PLAY), every preset and output written by the page,
   saved, read back and put in `[video]` by PLAY (and dropped by another game's PLAY), and a 0.9.3 `launcher.ini` without the keys

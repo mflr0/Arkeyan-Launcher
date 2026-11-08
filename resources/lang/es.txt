@@ -845,6 +845,8 @@ Turn the game music off	Desactivar la música del juego
 Turn the game music on	Activar la música del juego
 Type	Tipo
 Ultra Performance	Ultra rendimiento
+Frame generation	Generación de fotogramas
+Doubles the frames shown; a little more input delay (F3 in game).	Duplica los fotogramas mostrados; algo más de retraso de entrada (F3 en el juego).
 UPDATE	ACTUALIZAR
 UPDATING THE GAME	ACTUALIZANDO EL JUEGO
 UPDATING...	ACTUALIZANDO...

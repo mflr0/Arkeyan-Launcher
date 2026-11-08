@@ -125,6 +125,15 @@ namespace launcher_ui
         {
             ui::SettingRow(Tr("FSR 3 quality"), Tr("Quality is the sharpest, Ultra Performance the fastest."));
             SettingSelect("##fsrquality", video, "fsr_quality", FsrQualityChoices, 0);
+            // FSR 3 frame generation (fsr_frame_generation=on, else off): needs the upscaler, so shown with it, where the game
+            // can run it.
+            if (FrameGenerationOffered(m_s->game.id))
+            {
+                ui::SettingRow(Tr("Frame generation"), Tr("Doubles the frames shown; a little more input delay (F3 in game)."));
+                bool frameGeneration = SettingGet(m_config, video, "fsr_frame_generation", "off") == "on";
+                if (ui::Toggle("##framegen", &frameGeneration))
+                    Set(video, "fsr_frame_generation", frameGeneration ? "on" : "off");
+            }
         }
 
         ui::SettingRow(Tr("Frame rate limit"), Tr("Made for 30 FPS; 60 and above are experimental."));

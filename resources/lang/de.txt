@@ -843,6 +843,8 @@ Turn the game music off	Spielmusik ausschalten
 Turn the game music on	Spielmusik einschalten
 Type	Typ
 Ultra Performance	Ultra-Leistung
+Frame generation	Frame Generation
+Doubles the frames shown; a little more input delay (F3 in game).	Verdoppelt die angezeigten Bilder; etwas mehr Eingabeverzögerung (F3 im Spiel).
 UPDATE	AKTUALISIEREN
 UPDATING THE GAME	SPIEL WIRD AKTUALISIERT
 UPDATING...	AKTUALISIERE...

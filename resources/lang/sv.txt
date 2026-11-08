@@ -846,6 +846,8 @@ Turn the game music off	Stäng av spelmusiken
 Turn the game music on	Slå på spelmusiken
 Type	Typ
 Ultra Performance	Ultraprestanda
+Frame generation	Bildgenerering
+Doubles the frames shown; a little more input delay (F3 in game).	Fördubblar bilderna som visas; lite mer fördröjning (F3 i spelet).
 UPDATE	UPPDATERA
 UPDATING THE GAME	UPPDATERAR SPELET
 UPDATING...	UPPDATERAR...

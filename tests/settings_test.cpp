@@ -215,7 +215,7 @@ namespace
         config["video"]["resolution_scale"] = "3";
         StoreGameVideo(config, "ssa");
         SETTINGS_EXPECT(config["ssa.video"]["resolution_scale"] == "3" && config["giants.video"].count("resolution_scale") == 0);
-        SETTINGS_EXPECT(GameVideoSection("giants") == "giants.video" && GameVideoKeys().size() == 14);
+        SETTINGS_EXPECT(GameVideoSection("giants") == "giants.video" && GameVideoKeys().size() == 15);
 
         // A resolution scale the page does not offer (hand-edited) is shown as Auto and the game gets Auto too (issue #9, S-26).
         SETTINGS_EXPECT(ResolutionScaleOf("3") == 3 && ResolutionScaleOf("10") == 10 && ResolutionScaleOf("auto") == 0 && ResolutionScaleOf("") == 0);
@@ -256,7 +256,7 @@ namespace
         ApplyGameVideo(config, "ssa");
         SETTINGS_EXPECT(config["video"].count("edge_smoothing") == 0 && config["ssa.video"].count("edge_smoothing") == 0);
 
-        // FSR 3 and the speakers (0.9.4), for every game: [<game>.video] upscaler and fsr_quality, [<game>.audio] speakers. The page
+        // FSR 3 and the speakers (0.9.4), for every game: [<game>.video] upscaler, fsr_quality and fsr_frame_generation, [<game>.audio] speakers. The page
         // reads them as below (an unknown value shows the default), writes the game's sections, and the game reads them from the file.
         for (const char* id : { "ssa", "giants", "swapforce", "trapteam", "superchargers", "imaginators" })
         {
@@ -264,6 +264,7 @@ namespace
             const std::string video = GameVideoSection(id), audio = std::string(id) + ".audio";
             auto upscaler = [&](const LauncherConfig& c) { return SettingGet(c, video, "upscaler", "off") == "fsr3" ? "fsr3" : "off"; };
             auto quality = [&](const LauncherConfig& c) { return FsrQualityChoices[ChoiceIndex(FsrQualityChoices, SettingGet(c, video, "fsr_quality"), 0)].value; };
+            auto frameGeneration = [&](const LauncherConfig& c) { return SettingGet(c, video, "fsr_frame_generation", "off") == "on" ? "on" : "off"; };
             auto speakers = [&](const LauncherConfig& c) { return SpeakerChoices[ChoiceIndex(SpeakerChoices, SettingGet(c, audio, "speakers"), 0)].value; };
 
             // Defaults: a new settings file shows off, quality, auto, and PLAY passes no key (the game's defaults are the same).
@@ -272,6 +273,7 @@ namespace
             SETTINGS_EXPECT(upscaler(fresh) == std::string("off") && quality(fresh) == std::string("quality") && speakers(fresh) == std::string("auto"));
             ApplyGameVideo(fresh, id);
             SETTINGS_EXPECT(fresh["video"].count("upscaler") == 0 && fresh["video"].count("fsr_quality") == 0);
+            SETTINGS_EXPECT(frameGeneration(fresh) == std::string("off") && fresh["video"].count("fsr_frame_generation") == 0);
 
             // Written by the page, through the file and back, and into [video] by PLAY; another game's PLAY drops them.
             for (const char* preset : { "quality", "balanced", "performance", "ultra_performance" })
@@ -281,6 +283,7 @@ namespace
                     page[video]["upscaler"] = "fsr3";
                     page[video]["fsr_quality"] = preset;
                     page[audio]["speakers"] = output;
+                    page[video]["fsr_frame_generation"] = std::string_view(output) == "stereo" ? "off" : "on";
                     fs::path file = root / "fsr.ini";
                     SETTINGS_EXPECT(SaveLauncherConfig(file.string(), page));
                     LauncherConfig back = LoadLauncherConfig(file.string());
@@ -288,9 +291,11 @@ namespace
                     SETTINGS_EXPECT(back[video]["fsr_quality"] == preset && back[audio]["speakers"] == output);
                     ApplyGameVideo(back, id);
                     SETTINGS_EXPECT(back["video"]["upscaler"] == "fsr3" && back["video"]["fsr_quality"] == preset);
+                    SETTINGS_EXPECT(back["video"]["fsr_frame_generation"] == page[video]["fsr_frame_generation"]);
                     const char* other = std::string_view(id) == "ssa" ? "giants" : "ssa";
                     ApplyGameVideo(back, other);
                     SETTINGS_EXPECT(back["video"].count("upscaler") == 0 && back["video"].count("fsr_quality") == 0);
+                    SETTINGS_EXPECT(back["video"].count("fsr_frame_generation") == 0);
                     SETTINGS_EXPECT(back[GameVideoSection(other)].count("upscaler") == 0 && back[std::string(other) + ".audio"].count("speakers") == 0);
                     fs::remove(file);
                 }
@@ -308,7 +313,8 @@ namespace
             SETTINGS_EXPECT(upscaler(before) == std::string("off") && quality(before) == std::string("quality") && speakers(before) == std::string("auto"));
             SETTINGS_EXPECT(SaveLauncherConfig(old.string(), before));
             const std::string text = Read(old);
-            SETTINGS_EXPECT(text.find("upscaler") == std::string::npos && text.find("fsr_quality") == std::string::npos && text.find("speakers") == std::string::npos);
+            SETTINGS_EXPECT(text.find("upscaler") == std::string::npos && text.find("fsr_quality") == std::string::npos && text.find("speakers") == std::string::npos &&
+                            text.find("fsr_frame_generation") == std::string::npos);
             SETTINGS_EXPECT(LoadLauncherConfig(old.string())[audio]["volume"] == "80");
             fs::remove(old);
 
@@ -317,6 +323,14 @@ namespace
             odd[video]["upscaler"] = "fsr2";
             odd[video]["fsr_quality"] = "ultra";
             odd[audio]["speakers"] = "7.1";
+            odd[video]["fsr_frame_generation"] = "2x";
+            SETTINGS_EXPECT(frameGeneration(odd) == std::string("off"));
+            // Offered where the game can run it: never in Swap Force, never on Windows (D3D12 not proven yet).
+#if defined(_WIN32)
+            SETTINGS_EXPECT(!FrameGenerationOffered("giants") && !FrameGenerationOffered("swapforce"));
+#else
+            SETTINGS_EXPECT(FrameGenerationOffered("giants") && FrameGenerationOffered("ssa") && !FrameGenerationOffered("swapforce"));
+#endif
             SETTINGS_EXPECT(upscaler(odd) == std::string("off") && quality(odd) == std::string("quality") && speakers(odd) == std::string("auto"));
         }
 

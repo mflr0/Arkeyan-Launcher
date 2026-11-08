@@ -14,8 +14,8 @@ namespace fs = std::filesystem;
 
 namespace
 {
-    constexpr std::array<const char*, 14> VideoKeys = { "fullscreen", "resolution_scale", "fps_limit", "skip_intro_movies", "vsync",
-        "anisotropy", "aspect", "texture_packs", "texture_dump", "original_resolution", "show_fps", "edge_smoothing", "upscaler", "fsr_quality" };
+    constexpr std::array<const char*, 15> VideoKeys = { "fullscreen", "resolution_scale", "fps_limit", "skip_intro_movies", "vsync",
+        "anisotropy", "aspect", "texture_packs", "texture_dump", "original_resolution", "show_fps", "edge_smoothing", "upscaler", "fsr_quality", "fsr_frame_generation" };
 
     // Top-level names in the game's folder (docs/install.md has the table).
     // The achievements and the play time (collection/progress.h) go with the saves: kept when the game is removed, deleted with them.
@@ -197,6 +197,16 @@ const char* DefaultFrameRate(std::string_view gameId)
 {
     // Giants and Swap Force hold 60. SSA stays at 30 until its 60 at scale 2 is merged (the perfparity work); it moves to "60" here then.
     return gameId == "giants" || gameId == "swapforce" ? "60" : "30";
+}
+
+bool FrameGenerationOffered(std::string_view gameId)
+{
+#if defined(_WIN32)
+    (void)gameId;
+    return false;
+#else
+    return gameId != "swapforce";
+#endif
 }
 
 int ResolutionScaleOf(std::string_view value)

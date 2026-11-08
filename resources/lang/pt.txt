@@ -845,6 +845,8 @@ Turn the game music off	Desligar a música do jogo
 Turn the game music on	Ligar a música do jogo
 Type	Tipo
 Ultra Performance	Ultra desempenho
+Frame generation	Geração de quadros
+Doubles the frames shown; a little more input delay (F3 in game).	Duplica os quadros exibidos; um pouco mais de atraso de entrada (F3 no jogo).
 UPDATE	ATUALIZAR
 UPDATING THE GAME	A ATUALIZAR O JOGO
 UPDATING...	A ATUALIZAR...
