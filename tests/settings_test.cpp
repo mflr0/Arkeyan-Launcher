@@ -325,11 +325,11 @@ namespace
             odd[audio]["speakers"] = "7.1";
             odd[video]["fsr_frame_generation"] = "2x";
             SETTINGS_EXPECT(frameGeneration(odd) == std::string("off"));
-            // Offered where the game can run it: never in Swap Force, never on Windows (D3D12 not proven yet).
+            // Offered where the game can run it: every game, never on Windows (D3D12 not proven yet).
 #if defined(_WIN32)
             SETTINGS_EXPECT(!FrameGenerationOffered("giants") && !FrameGenerationOffered("swapforce"));
 #else
-            SETTINGS_EXPECT(FrameGenerationOffered("giants") && FrameGenerationOffered("ssa") && !FrameGenerationOffered("swapforce"));
+            SETTINGS_EXPECT(FrameGenerationOffered("giants") && FrameGenerationOffered("ssa") && FrameGenerationOffered("swapforce"));
 #endif
             SETTINGS_EXPECT(upscaler(odd) == std::string("off") && quality(odd) == std::string("quality") && speakers(odd) == std::string("auto"));
         }

@@ -201,11 +201,11 @@ const char* DefaultFrameRate(std::string_view gameId)
 
 bool FrameGenerationOffered(std::string_view gameId)
 {
-#if defined(_WIN32)
     (void)gameId;
+#if defined(_WIN32)
     return false;
 #else
-    return gameId != "swapforce";
+    return true;
 #endif
 }
 
