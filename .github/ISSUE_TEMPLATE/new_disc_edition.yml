@@ -1,0 +1,38 @@
+name: New disc edition
+description: Your disc is refused as an edition the launcher doesn't know yet.
+title: "New disc edition: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        On the game's page, under the message about your disc, click **Copy disc details** and paste them below.
+        They hold the game, its title and media IDs, its version, region and languages, the size and SHA-256 of
+        `default.xex`, the size of the disc image and the launcher's version. Nothing else.
+
+        **Never attach the disc image (ISO) or any file from the game.**
+  - type: textarea
+    id: details
+    attributes:
+      label: Disc details
+      description: Paste what "Copy disc details" copied.
+      render: text
+    validations:
+      required: true
+  - type: input
+    id: disc
+    attributes:
+      label: Where the disc comes from
+      description: The country it was bought in, and what its box says (for example "Xbox 360, PAL, Germany").
+    validations:
+      required: false
+  - type: dropdown
+    id: system
+    attributes:
+      label: Your computer
+      options:
+        - macOS
+        - Windows
+        - Linux
+    validations:
+      required: true

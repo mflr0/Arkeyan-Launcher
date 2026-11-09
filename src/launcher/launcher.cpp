@@ -2,6 +2,7 @@
 #include "launcher/atomic_file.h"
 #include "launcher/env.h"
 #include "launcher/i18n.h"
+#include "launcher/updater.h"
 #include "launcher/ui/launcher_ui.h"
 #include "shared/collection/datadir.h"
 #include "shared/art/alchemy_archive.h"
@@ -84,6 +85,30 @@ namespace
     std::string FormatVersion(uint32_t version)
     {
         return fmt::format("{}.{}.{}.{}", version >> 28, (version >> 24) & 0xF, (version >> 8) & 0xFFFF, version & 0xFF);
+    }
+
+    // The XEX2 security info's region mask (0x178 into it; its offset is at 0x10): the consoles the disc runs on.
+    std::optional<uint32_t> ReadRegion(const std::vector<uint8_t>& xex)
+    {
+        if (xex.size() < 0x14)
+            return {};
+        uint32_t security = ReadBE32(&xex[0x10]);
+        if (security == 0 || security > xex.size() || xex.size() - security < 0x17C)
+            return {};
+        return ReadBE32(&xex[security + 0x178]);
+    }
+
+    std::string RegionText(uint32_t region)
+    {
+        if (region == 0xFFFFFFFF)
+            return fmt::format("{:08X} (region free)", region);
+        std::string names;
+        const std::pair<uint32_t, const char*> areas[] = { { 0x000000FF, "North America" }, { 0x0000FF00, "Japan and Asia" },
+            { 0x00FF0000, "Europe and Australia" } };
+        for (const auto& [mask, name] : areas)
+            if (region & mask)
+                names += (names.empty() ? "" : ", ") + std::string(name);
+        return names.empty() ? fmt::format("{:08X}", region) : fmt::format("{:08X} ({})", region, names);
     }
 
     std::string_view Trim(std::string_view text)
@@ -243,6 +268,27 @@ GameSourceCheck CheckGameSource(const std::string& path, const GameInfo& game, c
         return { WrongGame, Tf("This disc image is {}, not {}.", found, game.name), {}, owner != nullptr ? owner->id : "" };
     }
 
+    // The disc's languages, from its files' names. Trap Team's are entries inside two or three of its archives: their
+    // names, read from the headers.
+    auto languages = [&] {
+        std::vector<std::string> names;
+        for (const auto& file : disc.Files())
+            names.push_back(file.first);
+        auto archiveNames = [&disc](const std::string& path) {
+            std::vector<std::string> entries;
+            const DiscFileSystem::Entry* file = disc.Find(path);
+            if (file == nullptr || file->directory)
+                return entries;
+            auto archive = art::alchemy::IgaArchive::Open(
+                [&](uint64_t offset, size_t size, uint8_t* out) { return disc.Read(*file, offset, out, uint32_t(size)) == size; },
+                file->size);
+            for (size_t i = 0; archive && i < archive->Count(); i++)
+                entries.push_back(archive->Name(i));
+            return entries;
+        };
+        return art::LanguagesOnDisc(game.id, names, archiveNames);
+    };
+
     report(0.84f, Tr("Fingerprinting default.xex (SHA-256)"));
     std::string sha256 = Sha256Hex(xex);
     report(0.97f, Tr("Comparing with the supported releases"));
@@ -251,23 +297,7 @@ GameSourceCheck CheckGameSource(const std::string& path, const GameInfo& game, c
         if (sha256 == release.defaultXexSha256)
         {
             report(1.0f, Tr("Verified"));
-            std::vector<std::string> names;
-            for (const auto& file : disc.Files())
-                names.push_back(file.first);
-            // Trap Team's languages are entries inside two or three of its archives: their names, read from the headers.
-            auto archiveNames = [&disc](const std::string& path) {
-                std::vector<std::string> entries;
-                const DiscFileSystem::Entry* file = disc.Find(path);
-                if (file == nullptr || file->directory)
-                    return entries;
-                auto archive = art::alchemy::IgaArchive::Open(
-                    [&](uint64_t offset, size_t size, uint8_t* out) { return disc.Read(*file, offset, out, uint32_t(size)) == size; },
-                    file->size);
-                for (size_t i = 0; archive && i < archive->Count(); i++)
-                    entries.push_back(archive->Name(i));
-                return entries;
-            };
-            return { Ok, {}, sha256, {}, art::LanguagesOnDisc(game.id, names, archiveNames) };
+            return { Ok, {}, sha256, {}, languages() };
         }
     }
     for (const GameRelease& release : game.releases)
@@ -281,8 +311,29 @@ GameSourceCheck CheckGameSource(const std::string& path, const GameInfo& game, c
     std::string supported;
     for (const GameRelease& release : game.releases)
         supported += Tf("\n- {} (media ID {:08X}, version {})", release.label, release.mediaId, FormatVersion(release.version));
-    return { WrongVersion, Tf("This is {}, but this disc version isn't supported yet (media ID {:08X}, version {}).\n\nSupported:{}",
+    GameSourceCheck check{ WrongVersion, Tf("This is {}, but this disc version isn't supported yet (media ID {:08X}, version {}).\n\nSupported:{}",
         game.name, execution->mediaId, FormatVersion(execution->version), supported) };
+    // For a "New disc edition" issue: ids, sizes and the executable's hash. No path, no name, no game bytes.
+    const std::optional<uint32_t> region = ReadRegion(xex);
+    const art::DiscLanguages found = languages();
+    auto join = [](const std::vector<std::string>& codes) {
+        std::string text;
+        for (const std::string& code : codes)
+            text += (text.empty() ? "" : ", ") + code;
+        return text;
+    };
+    std::error_code sizeError;
+    const uintmax_t discSize = copy ? 0 : std::filesystem::file_size(datadir::FromText(path), sizeError);
+    check.discDetails = fmt::format("Arkeyan Launcher {}: a disc edition it doesn't know\n", LauncherVersion());
+    check.discDetails += fmt::format("Game: {}\nTitle ID: {:08X}\nMedia ID: {:08X}\nVersion: {}\n", game.name, execution->titleId,
+        execution->mediaId, FormatVersion(execution->version));
+    check.discDetails += fmt::format("Region: {}\n", region ? RegionText(*region) : "not known");
+    check.discDetails += fmt::format("Languages: {}\n", found.text.empty() && found.voice.empty() ? std::string("not known")
+        : fmt::format("text {}; voices {}", found.text.empty() ? "not known" : join(found.text), found.voice.empty() ? "not known" : join(found.voice)));
+    check.discDetails += fmt::format("default.xex: {} bytes, SHA-256 {}\n", xex.size(), sha256);
+    check.discDetails += copy ? std::string("Disc image: a copy of the game data (a folder)\n")
+        : sizeError ? std::string("Disc image: size not known\n") : fmt::format("Disc image: {} bytes\n", discSize);
+    return check;
 }
 
 TitleMetadata ReadTitleMetadata(const std::vector<uint8_t>& xex)

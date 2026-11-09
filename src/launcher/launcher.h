@@ -55,6 +55,9 @@ struct GameSourceCheck
     std::string xexSha256; // the verified default.xex (Ok only): which installed game belongs to this disc
     std::string otherGame; // WrongGame, when the disc is another supported game: its id ("This disc is Spyro's Adventure")
     art::DiscLanguages languages; // the text and voice languages the disc holds (Ok only; empty lists: not known)
+    // WrongVersion: what "Copy disc details" puts on the clipboard for a "New disc edition" issue (the game, its ids,
+    // region and languages, default.xex's size and SHA-256, the image's size, the launcher's version; nothing else).
+    std::string discDetails;
 };
 
 std::string Sha256Hex(std::span<const uint8_t> data); // lowercase hex
