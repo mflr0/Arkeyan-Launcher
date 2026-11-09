@@ -5,7 +5,7 @@ page) and ArkeyanRuntime's collection library (`docs/collection.md` and `docs/co
 `runtime/host/figures/` and `runtime/host/collection/` (`SSARecomp/host/` in older checkouts), with `tools/sync_skylauncher.sh` to copy it here) do the
 same jobs.
 
-| Job | Skylauncher (`src/shared/figures/`) | SSARecomp library |
+| Job | Skylauncher (`src/shared/figures/`) | ArkeyanRecomp library |
 | --- | --- | --- |
 | Tag dump: header, CRC, AES, stats, nickname, reset | `figure_file.*` | `figures/figure_data.*`, `figure_crypto.*`, `figure_tag.*` |
 | Toy catalogue | `figure_catalog.*`: a C++ table, Spyro's Adventure's toys only | `collection/catalogue.*` + `catalogue.json`: six games, variants, which game accepts what |

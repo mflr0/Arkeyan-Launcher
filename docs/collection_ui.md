@@ -10,7 +10,7 @@ and words, a sheet with three main actions. The look is dorydev's: the colours, 
 
 - `src/shared/collection/` and `src/shared/figures/` (all but `figure_icons.*`) are ArkeyanRuntime's files, copied by
   `tools/sync_collection.sh [--check] <ssa-recomp>` (same file list as ArkeyanRuntime's `tools/sync_skylauncher.sh`, into
-  Skylanders' layout). Change them in SSARecomp, where the tests are, and copy them over. The catalogue
+  Skylanders' layout). Change them in ArkeyanRecomp, where the tests are, and copy them over. The catalogue
   (`resources/collection/catalogue.json`) is built into the executable (`cmake/embed_file.cmake`).
 - `figures/figure_icons.*` is the launcher's: `IconStyle` (outline, fills, badge colours) draws the generated icons for any
   catalogue toy and variant kind; the library's own `collection/icons.*` is not used for drawing, only for
@@ -314,7 +314,7 @@ every player seat of that game (the in-game quick swap wheel, hold Tab or View) 
 
 The launcher and Toy Box already agreed when using the same API. Portraits previously preferred the viewed game,
 large pictures had a separate search and halves searched oldest first. All now use the same selector. The workshop's
-`SSACollectionTest` covers separate synthetic game caches, variants, sizes and every incomplete-swapper case;
+`ArkeyanCollectionTest` covers separate synthetic game caches, variants, sizes and every incomplete-swapper case;
 `ArkeyanLauncherTest --no-disc` checks the synced behavior with synthetic PNGs. No toy family blocks the rule.
 
 A run with the player's discs must confirm that checking them populates these caches, that an older game's page and

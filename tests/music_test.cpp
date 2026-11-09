@@ -217,7 +217,7 @@ namespace
         MUSIC_EXPECT(gamemusic::Extract("giants", disc, fake, "1")); // another game: its own file
         // A kit that cannot: remembered by its version, asked again only when the kit changes.
         std::filesystem::remove(gamemusic::File("giants"));
-        SDL_setenv_unsafe("FAKE_SSABUILD_NO_MUSIC", "1", 1);
+        SDL_setenv_unsafe("FAKE_ARKEYAN_BUILDER_NO_MUSIC", "1", 1);
         MUSIC_EXPECT(!gamemusic::Extract(game, disc, fake, "2") && !std::filesystem::exists(file));
         MUSIC_EXPECT(std::filesystem::exists(file.parent_path() / "menu_music.none"));
         {
@@ -226,7 +226,7 @@ namespace
             std::getline(in, key);
             MUSIC_EXPECT(key == "2:2");
         }
-        SDL_unsetenv_unsafe("FAKE_SSABUILD_NO_MUSIC");
+        SDL_unsetenv_unsafe("FAKE_ARKEYAN_BUILDER_NO_MUSIC");
         MUSIC_EXPECT(!gamemusic::Extract(game, disc, fake, "2") && !std::filesystem::exists(file)); // same kit: not asked
         MUSIC_EXPECT(gamemusic::Extract(game, disc, fake, "3") && std::filesystem::is_regular_file(file)); // a newer kit: asked
         MUSIC_EXPECT(gamemusic::Extract(game, disc, {}, "3")); // there: kept, no kit needed
@@ -240,10 +240,10 @@ namespace
         std::ofstream(file, std::ios::binary | std::ios::trunc).write(reinterpret_cast<const char*>(old.data()), old.size());
         MUSIC_EXPECT(gamemusic::Extract(game, disc, fake, "4"));
         MUSIC_EXPECT(cachedRate() == 8000);
-        SDL_setenv_unsafe("FAKE_SSABUILD_NO_MUSIC", "1", 1);
+        SDL_setenv_unsafe("FAKE_ARKEYAN_BUILDER_NO_MUSIC", "1", 1);
         MUSIC_EXPECT(gamemusic::Extract(game, disc, fake, "5")); // a failed refresh retains the playable file
         MUSIC_EXPECT(cachedRate() == 8000);
-        SDL_unsetenv_unsafe("FAKE_SSABUILD_NO_MUSIC");
+        SDL_unsetenv_unsafe("FAKE_ARKEYAN_BUILDER_NO_MUSIC");
         MUSIC_EXPECT(gamemusic::Extract(game, disc, fake, "6"));
     }
 

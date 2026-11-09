@@ -777,7 +777,7 @@ PLAY starts the game **beside the window, which stays open** (`GameSession`, `la
   `running-3-ended`).
 
 `SKY_LAUNCHER_TEST_SIDEBAR=1` (with `SKY_LAUNCHER_SHOTS`, a `[launcher] kit=` that is the fake kit and both games' `iso=`;
-`FAKE_SSABUILD_HOLD` keeps the build at 100 %) shoots and checks the line through an install and an update at 0, 50 and 100 %,
+`FAKE_ARKEYAN_BUILDER_HOLD` keeps the build at 100 %) shoots and checks the line through an install and an update at 0, 50 and 100 %,
 with the other game shown meanwhile, then a failed build: `ArkeyanLauncherTest` runs it (`SidebarChecks`).
 
 ## Achievements and play time
@@ -1209,7 +1209,7 @@ and Swap Force's Game tab with Nightmare from the start on (`game-swapforce`).
 `SKY_LAUNCHER_TEST_HDTEX=<game>` (with `SKY_LAUNCHER_TEST_DROP=<its disc>`, `SKY_LAUNCHER_KIT=<a kit>`, scratch data) records the game as built with a
 stand-in executable, opens its Video tab at the bottom, flips the Use HD textures switch as a click would and shoots `hdtex-<game>-1-off`,
 `-2-running` and `-3-done` (`-3-failed`, or `-3-stopped` with `SKY_LAUNCHER_TEST_HDTEX_CANCEL=1`); each outcome is checked ("ok hdtex: ...", "FAIL hdtex: ...").
-With the tests' fake kit (`build/fake-kit`, `FAKE_SSABUILD_FAIL=hdtextures` for a failure) or a real one. A kit that does not know the option ends after `-1-off`.
+With the tests' fake kit (`build/fake-kit`, `FAKE_ARKEYAN_BUILDER_FAIL=hdtextures` for a failure) or a real one. A kit that does not know the option ends after `-1-off`.
 `SKY_LAUNCHER_TEST_UPDATE=1` with `SKY_LAUNCHER_UPDATE_URL=file://<fake latest.json>` shows the update screens (`20-` to `24-`).
 `ArkeyanLauncherTest --no-disc <absolute scratch dir>` runs only the checks that need no disc image (the unit parts; the build workflow runs it on
 the three systems); the full run is `ArkeyanLauncherTest <disc> <scratch dir>`.

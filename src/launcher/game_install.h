@@ -1,7 +1,7 @@
 #pragma once
 
-// Installing the game: the player kit's SSABuild recompiles and builds the game from the player's own disc, on their
-// machine (docs/install.md). The launcher finds the kit, starts SSABuild, follows its "@" events on stdout and remembers
+// Installing the game: the player kit's Arkeyan-Builder recompiles and builds the game from the player's own disc, on their
+// machine (docs/install.md). The launcher finds the kit, starts Arkeyan-Builder, follows its "@" events on stdout and remembers
 // the built game per disc, by the SHA-256 of its default.xex.
 #include "launcher/launcher.h"
 #include <atomic>
@@ -22,7 +22,7 @@ struct InstallKit
     std::filesystem::path folder;
     std::filesystem::path ssabuild; // the kit's builder: Arkeyan-Builder (SkyBuild, SSABuild in older kits)
     std::string release;            // "version=" in kit.txt: the release it came from, "" when it has none
-    std::string version;            // "build=" (else "version=") in the kit's kit.txt, else a fingerprint of SSABuild
+    std::string version;            // "build=" (else "version=") in the kit's kit.txt, else a fingerprint of Arkeyan-Builder
     std::vector<std::string> games; // "games=" in kit.txt: what the kit builds ("ssa", "giants", "swapforce", "trapteam"); a kit before 0.5.0 has none: SSA only
     std::map<std::string, std::string> gameVersions; // "game_version.<id>=" in kit.txt: the version of each game the kit builds ("0.8.2"); a kit before 0.5.2 has none
     std::string tag;                // the release it was downloaded from (its kit/<tag>/ folder), "" for any other kit
@@ -41,7 +41,7 @@ bool KitOlderThanLauncher(const InstallKit& kit, std::string_view launcherVersio
 // %APPDATA%\Skylanders on Windows, ~/Library/Application Support/Skylanders on macOS, ~/.local/share/Skylanders on Linux), or
 // SKY_LAUNCHER_DATA (tests). The built games are in <game>/ (SSA/), the downloaded kits in kit/, the compiler in toolchains/.
 std::filesystem::path LauncherDataFolder();
-std::filesystem::path DownloadedKitsFolder(); // kit/<release tag>/ folders, each holding SSABuild
+std::filesystem::path DownloadedKitsFolder(); // kit/<release tag>/ folders, each holding Arkeyan-Builder
 
 // The kit in `folder`: empty when it holds no Arkeyan-Builder (nor SkyBuild or SSABuild, from older kits).
 std::optional<InstallKit> InstallKitIn(const std::filesystem::path& folder);
@@ -97,7 +97,7 @@ inline constexpr int GiantsInstallMinutes = 15;
 inline int InstallMinutesFor(std::string_view gameId) { return gameId == "giants" ? GiantsInstallMinutes : InstallMinutes; }
 inline constexpr int InstallGigabytes = 6;
 
-// What SSABuild has said so far.
+// What Arkeyan-Builder has said so far.
 struct InstallProgress
 {
     enum class State { Idle, Running, Failed, Cancelled, Done, Interrupted }; // Interrupted: read back from install.log
@@ -110,12 +110,12 @@ struct InstallProgress
     State state = State::Idle;
     std::vector<Step> steps;
     uint64_t done = 0, total = 0;  // the current step's @progress
-    std::string error;             // @error, or why SSABuild stopped
+    std::string error;             // @error, or why Arkeyan-Builder stopped
     bool startFailed = false;      // the installer never started (the kit, the folder): `error` is in the launcher's language
     std::string runtime;           // @done
     std::string action;            // the current step's last @log line
     bool hdTextures = false;       // the build was asked for the HD textures: their step is expected after the others
-    std::vector<std::string> log;  // every line, @log text and anything else SSABuild printed
+    std::vector<std::string> log;  // every line, @log text and anything else Arkeyan-Builder printed
     size_t logLines = 0;           // lines in the full log (the copy may hold only the last ones)
 
     // Applies one stdout line at time `now`.
@@ -123,29 +123,29 @@ struct InstallProgress
 };
 
 // An install read back from its install.log (the launcher was closed while it ran, or it failed): Interrupted, or
-// Failed when SSABuild reported an error. Its steps have no times. Idle when there is no log.
+// Failed when Arkeyan-Builder reported an error. Its steps have no times. Idle when there is no log.
 InstallProgress ReadInstallLog(const std::filesystem::path& gameFolder);
 
-// Runs SSABuild for one disc. Its stdout (and stderr) is read on a thread; the window polls Snapshot().
+// Runs Arkeyan-Builder for one disc. Its stdout (and stderr) is read on a thread; the window polls Snapshot().
 class GameInstaller
 {
 public:
     ~GameInstaller();
-    // Starts SSABuild; false (and Failed with the reason) when there is no kit or it can't start. False too, and nothing
+    // Starts Arkeyan-Builder; false (and Failed with the reason) when there is no kit or it can't start. False too, and nothing
     // touched, while a build runs: it is stopped with Cancel, never waited for here (this is called on the window's thread).
     // `hdTextures`: also make the game's HD texture pack at the end (--hd-textures auto, docs/tools/hd_textures.md).
     bool Start(const std::optional<InstallKit>& kit, const std::string& iso, const std::filesystem::path& out, bool hdTextures = false);
     // The HD texture step alone, for a game already built (no --out): `on` makes the pack, else removes it. Its log is
     // gameFolder/hd-textures.log, never the install's. Fails to start with a reason when the kit is too old for it.
     bool StartHdTextures(const std::optional<InstallKit>& kit, const std::string& iso, const std::filesystem::path& gameFolder, bool on);
-    // Stops SSABuild, the process this installer started, and on Windows the processes it started in turn. Returns at
-    // once; the state becomes Cancelled when SSABuild has exited.
+    // Stops Arkeyan-Builder, the process this installer started, and on Windows the processes it started in turn. Returns at
+    // once; the state becomes Cancelled when Arkeyan-Builder has exited.
     void Cancel();
     // A copy of the progress with at most `logTail` log lines (the last ones).
     InstallProgress Snapshot(size_t logTail = 0);
     std::string FullLog();
     bool Running() const { return m_running; }
-    uint32_t ProcessId() const { return m_pid; } // SSABuild's, while it runs
+    uint32_t ProcessId() const { return m_pid; } // Arkeyan-Builder's, while it runs
 
 private:
     bool Launch(const std::optional<InstallKit>& kit, const std::string& iso, const std::filesystem::path& out, const char* hdTextures, bool hdOnly);
@@ -160,7 +160,7 @@ private:
     std::atomic<uint64_t> m_cancelledAt{ 0 };
     SDL_Process* m_process = nullptr;
     std::atomic<uint32_t> m_pid{ 0 };
-    void* m_job = nullptr; // Windows job object holding SSABuild and its compilers
+    void* m_job = nullptr; // Windows job object holding Arkeyan-Builder and its compilers
     std::filesystem::path m_logFile;
     std::filesystem::path m_out, m_kitFolder; // the game folder being built and the kit building it
 };

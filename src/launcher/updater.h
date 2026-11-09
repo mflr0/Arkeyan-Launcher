@@ -2,7 +2,7 @@
 
 // Updates from GitHub releases (docs/updates.md): the launcher itself (ArkeyanLauncher.exe, the .app, the AppImage) and, from
 // a configurable repository, the player kit. No telemetry: one request to api.github.com for the latest release, at most
-// once a day, then the asset. HTTPS is curl (curl.exe ships with Windows 10 and 11, as SSABuild already relies on).
+// once a day, then the asset. HTTPS is curl (curl.exe ships with Windows 10 and 11, as Arkeyan-Builder already relies on).
 #include <atomic>
 #include <cstdint>
 #include <filesystem>

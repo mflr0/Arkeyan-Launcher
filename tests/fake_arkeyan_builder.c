@@ -3,12 +3,12 @@
  * point the launcher at that folder with SKY_LAUNCHER_KIT.
  * Same steps, titles and order as the real one: toolchain, disc, recompile, shaders, compile, link, movies, then the
  * second shaders/compile/link pass that follows the movie shaders.
- *   FAKE_SSABUILD_FAIL=<step id>  fail half way through that step (toolchain, disc, recompile, shaders, compile, link,
+ *   FAKE_ARKEYAN_BUILDER_FAIL=<step id>  fail half way through that step (toolchain, disc, recompile, shaders, compile, link,
  *                                 movies)
- *   FAKE_SSABUILD_DELAY=<seconds> pause between events (default 0.05)
- *   FAKE_SSABUILD_HOLD=<seconds>  wait after the last step, before finishing (to look at a build at 100 %)
+ *   FAKE_ARKEYAN_BUILDER_DELAY=<seconds> pause between events (default 0.05)
+ *   FAKE_ARKEYAN_BUILDER_HOLD=<seconds>  wait after the last step, before finishing (to look at a build at 100 %)
  * --hd-textures off|auto: as the real one, a last step "hdtextures" after the build, or alone (no --out) as the only step;
- *   FAKE_SSABUILD_FAIL=hdtextures fails half way through it, and FAKE_SSABUILD_HD_MARKER=<file> gets the mode it was asked for. */
+ *   FAKE_ARKEYAN_BUILDER_FAIL=hdtextures fails half way through it, and FAKE_ARKEYAN_BUILDER_HD_MARKER=<file> gets the mode it was asked for. */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -32,9 +32,9 @@ static int g_step = 0;
 
 static void step(const char* id, const char* title, int count)
 {
-    const char* fail = getenv("FAKE_SSABUILD_FAIL");
-    const char* failStep = getenv("FAKE_SSABUILD_FAIL_STEP");
-    const char* pauseStep = getenv("FAKE_SSABUILD_PAUSE_STEP");
+    const char* fail = getenv("FAKE_ARKEYAN_BUILDER_FAIL");
+    const char* failStep = getenv("FAKE_ARKEYAN_BUILDER_FAIL_STEP");
+    const char* pauseStep = getenv("FAKE_ARKEYAN_BUILDER_PAUSE_STEP");
     ++g_step;
     printf("@step %s %s\n", id, title);
     for (int i = 1; i <= count; i++)
@@ -59,10 +59,10 @@ static void step(const char* id, const char* title, int count)
 }
 
 /* --menu-music <file.wav>: a 0.1 s stereo 16-bit WAV of silence at 8 kHz, as the real one writes the game's theme.
- * FAKE_SSABUILD_NO_MUSIC set: fails, as a kit before 0.6.1 does (it does not know the option). */
+ * FAKE_ARKEYAN_BUILDER_NO_MUSIC set: fails, as a kit before 0.6.1 does (it does not know the option). */
 static int menu_music(const char* path)
 {
-    if (getenv("FAKE_SSABUILD_NO_MUSIC") != NULL)
+    if (getenv("FAKE_ARKEYAN_BUILDER_NO_MUSIC") != NULL)
     {
         printf("@error unknown option --menu-music\n");
         return 2;
@@ -87,7 +87,7 @@ static int menu_music(const char* path)
 /* The HD texture step: "hdtextures" is a step like the others; the mode is written to the marker file when the test names one. */
 static void hd_textures(const char* mode)
 {
-    const char* marker = getenv("FAKE_SSABUILD_HD_MARKER");
+    const char* marker = getenv("FAKE_ARKEYAN_BUILDER_HD_MARKER");
     if (marker != NULL)
     {
         FILE* file = fopen(marker, "wb");
@@ -102,7 +102,7 @@ static void hd_textures(const char* mode)
 
 int main(int argc, char** argv)
 {
-    if (getenv("FAKE_SSABUILD_CLOSE_OUTPUT") != NULL)
+    if (getenv("FAKE_ARKEYAN_BUILDER_CLOSE_OUTPUT") != NULL)
     {
 #if !defined(_WIN32)
         signal(SIGTERM, SIG_IGN);
@@ -124,8 +124,8 @@ int main(int argc, char** argv)
         else if (strcmp(argv[i], "--menu-music") == 0)
             return menu_music(argv[i + 1]);
     }
-    if (getenv("FAKE_SSABUILD_DELAY") != NULL)
-        g_delay = (int)(atof(getenv("FAKE_SSABUILD_DELAY")) * 1000);
+    if (getenv("FAKE_ARKEYAN_BUILDER_DELAY") != NULL)
+        g_delay = (int)(atof(getenv("FAKE_ARKEYAN_BUILDER_DELAY")) * 1000);
     if (iso != NULL && out == NULL && hd != NULL) /* the texture step alone */
     {
         printf("@log fake Arkeyan-Builder, iso %s\n", iso);
@@ -140,7 +140,7 @@ int main(int argc, char** argv)
     }
 
     printf("@log fake Arkeyan-Builder, iso %s\n", iso);
-    const char* ending = getenv("FAKE_SSABUILD_ENDING");
+    const char* ending = getenv("FAKE_ARKEYAN_BUILDER_ENDING");
     if (ending != NULL)
     {
         if (strcmp(ending, "error") == 0)
@@ -162,8 +162,8 @@ int main(int argc, char** argv)
     if (hd != NULL)
         hd_textures(hd);
     fflush(stdout);
-    if (getenv("FAKE_SSABUILD_HOLD") != NULL)
-        SLEEP_MS((int)(atof(getenv("FAKE_SSABUILD_HOLD")) * 1000));
+    if (getenv("FAKE_ARKEYAN_BUILDER_HOLD") != NULL)
+        SLEEP_MS((int)(atof(getenv("FAKE_ARKEYAN_BUILDER_HOLD")) * 1000));
     printf("@log finished\n");
 
     char path[4096];

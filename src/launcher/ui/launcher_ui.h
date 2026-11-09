@@ -39,7 +39,7 @@ struct LauncherOptions
 std::string RunLauncherWindow(const GameInfo& game, const std::string& configPath, LauncherConfig& config,
     const std::string& previous, std::string* installed = nullptr, const GameInfo** played = nullptr, const LauncherOptions& options = {});
 
-// Small pure helpers, also used by SSALauncherTest.
+// Small pure helpers, also used by ArkeyanRuntimeLauncherTest.
 std::string LauncherLanguageLabel(const LauncherConfig& config, const GameInfo& game);
 std::string LauncherVoiceLabel(const LauncherConfig& config, const GameInfo& game);
 bool LauncherFullscreen(const LauncherConfig& config);

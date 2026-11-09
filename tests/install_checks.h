@@ -17,8 +17,8 @@ inline void InstallLifecycleChecks(const std::filesystem::path& scratch)
         if (installer.Running()) installer.Cancel();
         return installer.Snapshot(3);
     };
-    TestSetEnv("FAKE_SSABUILD_DELAY", "0");
-    for (const char* key : { "FAKE_SSABUILD_FAIL", "FAKE_SSABUILD_FAIL_STEP", "FAKE_SSABUILD_PAUSE_STEP", "FAKE_SSABUILD_HOLD", "FAKE_SSABUILD_ENDING" })
+    TestSetEnv("FAKE_ARKEYAN_BUILDER_DELAY", "0");
+    for (const char* key : { "FAKE_ARKEYAN_BUILDER_FAIL", "FAKE_ARKEYAN_BUILDER_FAIL_STEP", "FAKE_ARKEYAN_BUILDER_PAUSE_STEP", "FAKE_ARKEYAN_BUILDER_HOLD", "FAKE_ARKEYAN_BUILDER_ENDING" })
         TestUnsetEnv(key);
     const auto kit = InstallKitIn(SKYLAUNCHER_FAKE_KIT);
     EXPECT(kit.has_value());
@@ -63,7 +63,7 @@ inline void InstallLifecycleChecks(const std::filesystem::path& scratch)
             std::ofstream(previousRuntime) << "previous build";
             MarkGameLayout(out);
         }
-        TestSetEnv("FAKE_SSABUILD_PAUSE_STEP", ordinal.c_str());
+        TestSetEnv("FAKE_ARKEYAN_BUILDER_PAUSE_STEP", ordinal.c_str());
         EXPECT(installer.Start(kit, "synthetic.iso", out));
         const uint64_t deadline = SDL_GetTicks() + 5000;
         do
@@ -84,10 +84,10 @@ inline void InstallLifecycleChecks(const std::filesystem::path& scratch)
         EXPECT(recovered.state == InstallProgress::State::Interrupted && recovered.steps.size() == index + 1);
         EXPECT(!recovered.steps.empty() && recovered.steps.back().id == steps[index] && recovered.done == 1);
         for (const auto& step : recovered.steps) EXPECT(step.startedAt == 0 && step.endedAt == 0);
-        TestUnsetEnv("FAKE_SSABUILD_PAUSE_STEP");
+        TestUnsetEnv("FAKE_ARKEYAN_BUILDER_PAUSE_STEP");
 
         // Failure at this occurrence, including the second shaders/compile/link passes; retry the same installer.
-        TestSetEnv("FAKE_SSABUILD_FAIL_STEP", ordinal.c_str());
+        TestSetEnv("FAKE_ARKEYAN_BUILDER_FAIL_STEP", ordinal.c_str());
         EXPECT(installer.Start(kit, "synthetic.iso", out));
         state = wait(installer);
         EXPECT(state.state == InstallProgress::State::Failed && !state.startFailed && state.steps.size() == index + 1);
@@ -95,7 +95,7 @@ inline void InstallLifecycleChecks(const std::filesystem::path& scratch)
         EXPECT(ReadInstallLog(out).state == InstallProgress::State::Failed && ReadInstallLog(out).error == state.error);
         EXPECT(fs::exists(out / "ssabuild-work" / "keep") && fs::exists(out / "layout.txt") == updating);
         EXPECT(!updating || read(previousRuntime) == "previous build");
-        TestUnsetEnv("FAKE_SSABUILD_FAIL_STEP");
+        TestUnsetEnv("FAKE_ARKEYAN_BUILDER_FAIL_STEP");
         const std::string failedLog = read(out / "install.log");
         EXPECT(installer.Start(kit, "synthetic.iso", out));
         state = wait(installer);
@@ -111,7 +111,7 @@ inline void InstallLifecycleChecks(const std::filesystem::path& scratch)
     // A second Start while a build runs changes nothing and does not wait for it (it is called on the window's thread; issue #9, S-28).
     {
         const fs::path out = root / "twice";
-        TestSetEnv("FAKE_SSABUILD_PAUSE_STEP", "2");
+        TestSetEnv("FAKE_ARKEYAN_BUILDER_PAUSE_STEP", "2");
         EXPECT(installer.Start(kit, "synthetic.iso", out));
         const uint64_t deadline = SDL_GetTicks() + 5000;
         do { state = installer.Snapshot(2); SDL_Delay(5); } while (!(state.steps.size() == 2 && state.done == 1) && installer.Running() && SDL_GetTicks() < deadline);
@@ -125,12 +125,12 @@ inline void InstallLifecycleChecks(const std::filesystem::path& scratch)
         installer.Cancel();
         state = wait(installer);
         EXPECT(state.state == InstallProgress::State::Cancelled);
-        TestUnsetEnv("FAKE_SSABUILD_PAUSE_STEP");
+        TestUnsetEnv("FAKE_ARKEYAN_BUILDER_PAUSE_STEP");
     }
 
     for (const char* ending : { "empty", "exit", "error" })
     {
-        TestSetEnv("FAKE_SSABUILD_ENDING", ending);
+        TestSetEnv("FAKE_ARKEYAN_BUILDER_ENDING", ending);
         EXPECT(installer.Start(kit, "synthetic.iso", root / ending));
         state = wait(installer);
         EXPECT(state.state == InstallProgress::State::Failed && !state.startFailed && state.runtime.empty());
@@ -143,7 +143,7 @@ inline void InstallLifecycleChecks(const std::filesystem::path& scratch)
         else EXPECT(state.error.find("before the game was built") != std::string::npos);
         EXPECT(!fs::exists(root / ending / "layout.txt"));
     }
-    TestUnsetEnv("FAKE_SSABUILD_ENDING");
-    TestUnsetEnv("FAKE_SSABUILD_DELAY");
+    TestUnsetEnv("FAKE_ARKEYAN_BUILDER_ENDING");
+    TestUnsetEnv("FAKE_ARKEYAN_BUILDER_DELAY");
     printf("Install lifecycle: ten interruption/failure/retry boundaries, log recovery and startup/EOF errors checked\n");
 }

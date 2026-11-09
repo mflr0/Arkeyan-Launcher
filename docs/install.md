@@ -111,7 +111,7 @@ the current or legacy runtime name for that game next to the launcher. A runtime
 ### One data folder, "Skylanders"
 
 The launcher, the game and Arkeyan-Builder keep everything under one root per OS, chosen by the shared `datadir` helper
-(`src/shared/collection/datadir.{h,cpp}`, copied from SSARecomp by `tools/sync_collection.sh`):
+(`src/shared/collection/datadir.{h,cpp}`, copied from ArkeyanRecomp by `tools/sync_collection.sh`):
 
 | OS | Root |
 | --- | --- |
@@ -142,7 +142,7 @@ ArkeyanRuntime's `docs/settings.md`): date, time and size, newest first. **Resto
 as a backup of its own, then copies the chosen one back byte for byte. It is refused while the game runs: the game holds
 `SSA/saves-backup/game.lock` with its process id while it plays, and a marker a crash left behind is dropped once that
 process is gone. The code is the shared library's `save_backup.{h,cpp}` (`src/shared/collection/`, synced from
-SSARecomp by `tools/sync_collection.sh`), so the game and the launcher agree on the folder, the names and the rotation
+ArkeyanRecomp by `tools/sync_collection.sh`), so the game and the launcher agree on the folder, the names and the rotation
 (the last 10, plus one per day for 7 days).
 
 **Moving from the older layout.** Before 0.3.1 the data was in `<roaming>/SSARecomp/` (and its nested `SSARecomp/`),
@@ -278,7 +278,7 @@ extracted, and the next build then failed in an unclear way. Since 0.8.1 the lau
   `integrity` case of the kit flow (`App::TestIntegrityScript`): a kit next to the launcher that lost its `Arkeyan-Builder` is named at
   start, INSTALL is blocked, Repair unpacks the fake release's kit over it, the install writes the game's list, a changed game
   file is named at the next check and Repair builds the game again. The list format and the checker have their own tests in the
-  workshop (`SSAFileListTest`; `src/shared/collection/file_list.*` is a copy).
+  workshop (`ArkeyanFileListTest`; `src/shared/collection/file_list.*` is a copy).
 
 ## Linux
 
@@ -312,7 +312,7 @@ Tested in containers only (amd64 under Rosetta, Mesa's lavapipe, offscreen): a f
 ## Testing without the kit
 
 `tests/fake_arkeyan_builder.c` prints the same events with delays (target `FakeArkeyanBuilder`, built as `<build>/fake-kit/Arkeyan-Builder`
-with a `kit.txt`). `FAKE_SSABUILD_FAIL=<step id>` makes it fail half way through that step, `FAKE_SSABUILD_DELAY` sets
+with a `kit.txt`). `FAKE_ARKEYAN_BUILDER_FAIL=<step id>` makes it fail half way through that step, `FAKE_ARKEYAN_BUILDER_DELAY` sets
 the pause between events (0.05 s).
 
 - `ArkeyanLauncherTest` parses events, then runs the fake kit through `GameInstaller` (a failure, a success, a cancel), and

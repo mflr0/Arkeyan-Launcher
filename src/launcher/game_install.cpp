@@ -124,7 +124,7 @@ namespace
             kit.version = version;
         if (kit.version.empty())
         {
-            // No version file: SSABuild's size and date, which change with every kit.
+            // No version file: Arkeyan-Builder's size and date, which change with every kit.
             auto size = std::filesystem::file_size(ssabuild, error);
             auto time = std::filesystem::last_write_time(ssabuild, error).time_since_epoch().count();
             kit.version = fmt::format("{}-{}", uint64_t(size), int64_t(time));
@@ -442,7 +442,7 @@ void CleanAfterInstall(const std::filesystem::path& gameFolder, const std::files
         }
     }
 
-    // A compiler archive whose extracted copy is ready (SSABuild deletes it itself; this is for older installs).
+    // A compiler archive whose extracted copy is ready (Arkeyan-Builder deletes it itself; this is for older installs).
     fs::path toolchains = LauncherDataFolder() / "toolchains";
     for (const auto& entry : ListDirectory(toolchains, error))
         if (entry.path().extension() == ".zip" && fs::exists(entry.path().parent_path() / entry.path().stem() / "ssabuild-ready.txt", error))
@@ -525,7 +525,7 @@ bool GameInstaller::Launch(const std::optional<InstallKit>& kit, const std::stri
     arguments.insert(arguments.end(), { "--kit", kitText.c_str() });
     if (hdTextures != nullptr)
         arguments.insert(arguments.end(), { "--hd-textures", hdTextures });
-    const char* jobs = LauncherEnv("SKY_LAUNCHER_BUILD_JOBS"); // else SSABuild picks
+    const char* jobs = LauncherEnv("SKY_LAUNCHER_BUILD_JOBS"); // else Arkeyan-Builder picks
     if (jobs != nullptr && *jobs != 0)
         arguments.insert(arguments.end(), { "--jobs", jobs });
 #if defined(_WIN32)
@@ -556,7 +556,7 @@ bool GameInstaller::Launch(const std::optional<InstallKit>& kit, const std::stri
         return fail(Tf("Couldn't start the game: {}", SDL_GetError()));
 
 #if defined(_WIN32)
-    // A job holds SSABuild and the compilers it starts, so cancelling (or closing the launcher) stops them all.
+    // A job holds Arkeyan-Builder and the compilers it starts, so cancelling (or closing the launcher) stops them all.
     HANDLE job = CreateJobObjectW(nullptr, nullptr);
     if (job != nullptr)
     {
@@ -616,7 +616,7 @@ void GameInstaller::Read()
         }
         if (exited && (output == nullptr || SDL_GetIOStatus(output) == SDL_IO_STATUS_EOF || SDL_GetIOStatus(output) == SDL_IO_STATUS_ERROR))
             break;
-        // The pipe is non-blocking. Once SSABuild has exited, a process it left behind may still hold the pipe open.
+        // The pipe is non-blocking. Once Arkeyan-Builder has exited, a process it left behind may still hold the pipe open.
         SDL_Delay(20);
     }
     if (!pending.empty())
@@ -668,7 +668,7 @@ void GameInstaller::Cancel()
     else
         SDL_KillProcess(m_process, true);
 #else
-    SDL_KillProcess(m_process, false); // SIGTERM lets SSABuild stop its compilers; Read() forces it after a while
+    SDL_KillProcess(m_process, false); // SIGTERM lets Arkeyan-Builder stop its compilers; Read() forces it after a while
 #endif
 }
 

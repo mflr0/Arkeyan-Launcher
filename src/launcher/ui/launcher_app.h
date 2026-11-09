@@ -302,7 +302,7 @@ namespace launcher_ui
         bool installView = false;  // the progress card replaces the logo
         bool installLog = false;   // "Show details"
         InstallProgress installPast; // an install of an earlier launcher session, read back from its install.log
-        uint32_t installPastPid = 0; // its SSABuild, if that one may still be running
+        uint32_t installPastPid = 0; // its Arkeyan-Builder, if that one may still be running
         uint64_t installPastCheck = 0; // when to look again whether it still runs
 
         // Game settings > Saves: the saves' backups (save_backup.h), read when the tab opens and after a restore.

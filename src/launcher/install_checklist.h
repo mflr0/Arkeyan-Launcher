@@ -1,6 +1,6 @@
 #pragma once
 
-// The install card's model: SSABuild's events (InstallProgress) turned into a fixed checklist of steps, one overall
+// The install card's model: Arkeyan-Builder's events (InstallProgress) turned into a fixed checklist of steps, one overall
 // fraction and a time left. Pure: the UI draws it, ArkeyanLauncherTest checks it.
 #include "launcher/game_install.h"
 #include <cstdint>
@@ -26,15 +26,15 @@ struct InstallChecklist
     float overall = 0;          // 0..1, the rows weighted by their usual share of the time
     uint64_t elapsedMs = 0;     // since the first step (0 when unknown)
     int64_t etaMs = -1;         // time left; -1 until the current step has some progress to go by
-    std::string action;         // what SSABuild is doing now, one short line
+    std::string action;         // what Arkeyan-Builder is doing now, one short line
 };
 
-// The known steps, in SSABuild's order (tools/ssabuild/main.cpp in SSARecomp): "toolchain", "disc", "recompile",
+// The known steps, in Arkeyan-Builder's order (tools/arkeyan-builder/main.cpp in ArkeyanRecomp): "toolchain", "disc", "recompile",
 // "shaders", "compile", "link", "movies", then "finish", which collects the second shaders/compile/link pass that
 // follows the movie shaders. Other step ids get a row of their own before "finish".
 InstallChecklist MakeInstallChecklist(const InstallProgress& progress, uint64_t now, std::string_view game = {});
 
-// What went wrong, for the player, in one sentence ("The compiler couldn't be downloaded..."); SSABuild's own message
+// What went wrong, for the player, in one sentence ("The compiler couldn't be downloaded..."); Arkeyan-Builder's own message
 // is shown under it.
 std::string InstallFailureHeadline(const InstallChecklist& list, const InstallProgress& progress);
 

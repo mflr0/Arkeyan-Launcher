@@ -229,9 +229,9 @@ namespace
         SetEnv("SKY_LAUNCHER_DATA", (scratch / "window-launcher-data").string());
         SetEnv("SKY_COLLECTION", (scratch / "window-collection").string());
         SetEnv("SKY_LAUNCHER_NO_UPDATE_CHECK", "1");
-        SetEnv("FAKE_SSABUILD_DELAY", "0.01");
-        UnsetEnv("FAKE_SSABUILD_FAIL");
-        UnsetEnv("FAKE_SSABUILD_HOLD");
+        SetEnv("FAKE_ARKEYAN_BUILDER_DELAY", "0.01");
+        UnsetEnv("FAKE_ARKEYAN_BUILDER_FAIL");
+        UnsetEnv("FAKE_ARKEYAN_BUILDER_HOLD");
         // The other window checks leave their switches set (the first script that matches runs): only this one may be.
         for (const char* other : { "SWITCH", "SIDEBAR", "INSTALL", "UPDATE", "NAV", "COLLECTION", "SEATX", "BUTTONS", "DROP" })
             UnsetEnv((std::string("SKY_LAUNCHER_TEST_") + other).c_str());

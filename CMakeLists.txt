@@ -207,7 +207,7 @@ target_sources(ArkeyanLauncherCore PRIVATE
     src/launcher/ui/defender_notice.cpp)
 target_include_directories(ArkeyanLauncherCore PUBLIC src PRIVATE lib/stb lib/miniz)
 target_link_libraries(ArkeyanLauncherCore PUBLIC SDL3::SDL3-static fmt::fmt XenonXex imgui)
-target_compile_definitions(ArkeyanLauncherCore PRIVATE SKYLAUNCHER_VERSION_STRING="${LAUNCHER_VERSION}" SSA_SOURCE_FONT_DIR="${CMAKE_SOURCE_DIR}/resources/fonts")
+target_compile_definitions(ArkeyanLauncherCore PRIVATE SKYLAUNCHER_VERSION_STRING="${LAUNCHER_VERSION}" ARKEYAN_SOURCE_FONT_DIR="${CMAKE_SOURCE_DIR}/resources/fonts")
 if(APPLE)
     target_link_libraries(ArkeyanLauncherCore PUBLIC "-framework CoreGraphics" "-framework CoreFoundation")
 endif()

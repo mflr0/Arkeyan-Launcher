@@ -931,7 +931,7 @@ void MakeKitRelease(const std::filesystem::path& folder, const std::vector<std::
 int ShellChecks(const std::filesystem::path& scratch)
 {
     {
-        TestSetEnv("FAKE_SSABUILD_CLOSE_OUTPUT", "1");
+        TestSetEnv("FAKE_ARKEYAN_BUILDER_CLOSE_OUTPUT", "1");
         GameInstaller installer;
         SHELL_EXPECT(installer.Start(InstallKitIn(SKYLAUNCHER_FAKE_KIT), "synthetic.iso", scratch / "closed-output-install"));
         SDL_Delay(100);
@@ -939,7 +939,7 @@ int ShellChecks(const std::filesystem::path& scratch)
         installer.Cancel();
         while (installer.Running()) SDL_Delay(10);
         SHELL_EXPECT(SDL_GetTicks() - started < 4500 && installer.Snapshot().state == InstallProgress::State::Cancelled);
-        TestUnsetEnv("FAKE_SSABUILD_CLOSE_OUTPUT");
+        TestUnsetEnv("FAKE_ARKEYAN_BUILDER_CLOSE_OUTPUT");
     }
     ChecklistChecks(scratch);
     GameRunChecks(scratch);

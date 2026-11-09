@@ -2,7 +2,7 @@
 # Copies ArkeyanRuntime's figure and collection library, its disc picture readers and the games' art manifests
 # (src/shared/art, resources/games/<id>/art.json, docs/launcher_ui.md "Disc art") into this checkout
 # (docs/collection_ui.md), or with --check only
-# lists the files that differ. The SSARecomp copies are the reference (they have the tests): change them there.
+# lists the files that differ. The ArkeyanRecomp copies are the reference (they have the tests): change them there.
 # Same files as ArkeyanRuntime's tools/sync_skylauncher.sh, into Arkeyan Launcher's layout (src/shared/). The library is in
 # runtime/host/ (ArkeyanRuntime's tree since the multi-game reorganisation) or SSARecomp/host/ (older checkouts).
 #   tools/sync_collection.sh [--check] <ssa-recomp dir>

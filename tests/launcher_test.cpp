@@ -1,5 +1,5 @@
 // Checks the launcher's disc verification and settings file without showing any UI.
-// usage: SSALauncherTest <game disc .iso> <scratch dir> [<damaged copy of the image>...]
+// usage: ArkeyanRuntimeLauncherTest <game disc .iso> <scratch dir> [<damaged copy of the image>...]
 #include "test_env.h"
 #include "atomic_write_checks.h"
 #include "launcher/portal_status.h"
@@ -181,16 +181,16 @@ namespace
         EXPECT(kit && kit->version == "fake-1");
         auto run = [&](const char* fail) {
             if (fail != nullptr)
-                SDL_SetEnvironmentVariable(SDL_GetEnvironment(), "FAKE_SSABUILD_FAIL", fail, true);
+                SDL_SetEnvironmentVariable(SDL_GetEnvironment(), "FAKE_ARKEYAN_BUILDER_FAIL", fail, true);
             else
-                SDL_UnsetEnvironmentVariable(SDL_GetEnvironment(), "FAKE_SSABUILD_FAIL");
+                SDL_UnsetEnvironmentVariable(SDL_GetEnvironment(), "FAKE_ARKEYAN_BUILDER_FAIL");
             GameInstaller installer;
             installer.Start(kit, iso, scratch / "game");
             while (installer.Running())
                 SDL_Delay(20);
             return installer.Snapshot(1000);
         };
-        SDL_SetEnvironmentVariable(SDL_GetEnvironment(), "FAKE_SSABUILD_DELAY", "0", true);
+        SDL_SetEnvironmentVariable(SDL_GetEnvironment(), "FAKE_ARKEYAN_BUILDER_DELAY", "0", true);
         InstallProgress failed = run("shaders");
         EXPECT(failed.state == InstallProgress::State::Failed && failed.error.find("didn't compile") != std::string::npos);
         EXPECT(failed.steps.size() == 4 && failed.runtime.empty());
@@ -245,8 +245,8 @@ namespace
             SDL_UnsetEnvironmentVariable(SDL_GetEnvironment(), "SKY_LAUNCHER_DATA");
         }
 
-        // Cancel stops the fake SSABuild, slowed down so it is still running.
-        SDL_SetEnvironmentVariable(SDL_GetEnvironment(), "FAKE_SSABUILD_DELAY", "0.2", true);
+        // Cancel stops the fake Arkeyan-Builder, slowed down so it is still running.
+        SDL_SetEnvironmentVariable(SDL_GetEnvironment(), "FAKE_ARKEYAN_BUILDER_DELAY", "0.2", true);
         GameInstaller installer;
         installer.Start(kit, iso, scratch / "game");
         SDL_Delay(500);
@@ -1526,8 +1526,8 @@ static void SwitchChecks(const std::filesystem::path& scratch, const std::string
     set("SKY_LAUNCHER_DATA", (scratch / "launcher_data").string());
     set("SKY_COLLECTION", (scratch / "collection").string());
     set("SKY_LAUNCHER_NO_UPDATE_CHECK", "1");
-    SDL_UnsetEnvironmentVariable(SDL_GetEnvironment(), "FAKE_SSABUILD_FAIL");
-    set("FAKE_SSABUILD_DELAY", "0.01"); // long enough that Giants is still building when SSA is shown again
+    SDL_UnsetEnvironmentVariable(SDL_GetEnvironment(), "FAKE_ARKEYAN_BUILDER_FAIL");
+    set("FAKE_ARKEYAN_BUILDER_DELAY", "0.01"); // long enough that Giants is still building when SSA is shown again
     set("SKY_LAUNCHER_SHOTS", (scratch / "shots").string());
     set("SKY_LAUNCHER_TEST_SWITCH", "1");
     std::string ini = (scratch / "switch.ini").string();
@@ -1558,7 +1558,7 @@ static void SidebarChecks(const std::filesystem::path& scratch, const std::strin
     set("SKY_LAUNCHER_DATA", (scratch / "sidebar-launcher-data").string());
     set("SKY_COLLECTION", (scratch / "sidebar-collection").string());
     set("SKY_LAUNCHER_NO_UPDATE_CHECK", "1");
-    SDL_UnsetEnvironmentVariable(SDL_GetEnvironment(), "FAKE_SSABUILD_FAIL");
+    SDL_UnsetEnvironmentVariable(SDL_GetEnvironment(), "FAKE_ARKEYAN_BUILDER_FAIL");
     set("SKY_LAUNCHER_SHOTS", (scratch / "sidebar-shots").string());
     set("SKY_LAUNCHER_TEST_SIDEBAR", "1");
     std::string ini = (scratch / "sidebar.ini").string();
@@ -1573,8 +1573,8 @@ static void SidebarChecks(const std::filesystem::path& scratch, const std::strin
         EXPECT(app.TestFailures() == 0);
     }
     SDL_UnsetEnvironmentVariable(SDL_GetEnvironment(), "SKY_LAUNCHER_TEST_SIDEBAR");
-    SDL_UnsetEnvironmentVariable(SDL_GetEnvironment(), "FAKE_SSABUILD_HOLD");
-    SDL_UnsetEnvironmentVariable(SDL_GetEnvironment(), "FAKE_SSABUILD_FAIL");
+    SDL_UnsetEnvironmentVariable(SDL_GetEnvironment(), "FAKE_ARKEYAN_BUILDER_HOLD");
+    SDL_UnsetEnvironmentVariable(SDL_GetEnvironment(), "FAKE_ARKEYAN_BUILDER_FAIL");
     SetActiveGame("ssa");
 }
 
@@ -1685,8 +1685,8 @@ static void KitFlowChecks(const std::filesystem::path& scratch, const std::strin
         set("SKY_LAUNCHER_BASE_PATH", (root / "base").string());
         bool updates = std::string_view(test.mode) == "updates", offline = std::string_view(test.mode) == "offline";
         set("SKY_LAUNCHER_UPDATE_URL", TestFileUrl(scratch / "kitflow" / (updates ? "release-updates" : offline ? "no-release" : integrity ? "release-integrity" : "release") / "latest.json"));
-        set("FAKE_SSABUILD_DELAY", "0.01");
-        SDL_UnsetEnvironmentVariable(SDL_GetEnvironment(), "FAKE_SSABUILD_FAIL");
+        set("FAKE_ARKEYAN_BUILDER_DELAY", "0.01");
+        SDL_UnsetEnvironmentVariable(SDL_GetEnvironment(), "FAKE_ARKEYAN_BUILDER_FAIL");
         SDL_UnsetEnvironmentVariable(SDL_GetEnvironment(), "SKY_LAUNCHER_KIT");
         set("SKY_LAUNCHER_SHOTS", (root / "shots").string());
         set("SKY_LAUNCHER_TEST_KIT", test.mode);
@@ -1707,7 +1707,7 @@ static void KitFlowChecks(const std::filesystem::path& scratch, const std::strin
     SDL_UnsetEnvironmentVariable(SDL_GetEnvironment(), "SKY_LAUNCHER_TEST_KIT");
     SDL_UnsetEnvironmentVariable(SDL_GetEnvironment(), "SKY_LAUNCHER_BASE_PATH");
     SDL_UnsetEnvironmentVariable(SDL_GetEnvironment(), "SKY_LAUNCHER_UPDATE_URL");
-    SDL_UnsetEnvironmentVariable(SDL_GetEnvironment(), "FAKE_SSABUILD_DELAY");
+    SDL_UnsetEnvironmentVariable(SDL_GetEnvironment(), "FAKE_ARKEYAN_BUILDER_DELAY");
 }
 
 // The X on every seat of the collection page, in the offscreen window (App::TestSeatXScript): players, item and adventure seats,

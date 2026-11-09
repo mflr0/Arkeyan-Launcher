@@ -41,7 +41,7 @@ namespace launcher_report
     // The files the report is made of. Missing files are named in the report, not skipped silently.
     struct Sources
     {
-        std::filesystem::path runtimeFolder; // <data>/SSA: SSARecomp.log, install.log, install-logs/
+        std::filesystem::path runtimeFolder; // <data>/SSA: Arkeyan.log (SSARecomp.log from older kits), install.log, install-logs/
         std::filesystem::path logFolder;     // <data>/logs: skylauncher-game.log, migration.log
         std::filesystem::path settingsFile;  // <data>/launcher.ini
         Versions versions;

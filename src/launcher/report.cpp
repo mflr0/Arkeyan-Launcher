@@ -348,7 +348,7 @@ std::string launcher_report::BuildReport(const Sources& sources)
     Section(report, "install.log", sources.runtimeFolder / "install.log");
     Section(report, "install.prev.log", sources.runtimeFolder / "install.prev.log");
 
-    // The step logs SSABuild kept after a successful install.
+    // The step logs Arkeyan-Builder kept after a successful install.
     std::vector<fs::path> kept;
     std::error_code error;
     for (fs::directory_iterator it(sources.runtimeFolder / "install-logs", error), end; !error && it != end; it.increment(error))

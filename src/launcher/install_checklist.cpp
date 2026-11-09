@@ -105,7 +105,7 @@ InstallChecklist MakeInstallChecklist(const InstallProgress& progress, uint64_t 
         for (InstallChecklist::Row& r : list.rows)
             r.state = InstallChecklist::RowState::Done;
     else if (progress.state == State::Running)
-        list.current = 0; // SSABuild has started but said nothing yet
+        list.current = 0; // Arkeyan-Builder has started but said nothing yet
 
     // The overall fraction, by weight.
     float total = 0, done = 0;
@@ -150,7 +150,7 @@ InstallChecklist MakeInstallChecklist(const InstallProgress& progress, uint64_t 
         }
     }
 
-    // The current action: SSABuild's last @log line in the step, else its count.
+    // The current action: Arkeyan-Builder's last @log line in the step, else its count.
     if (progress.state == State::Running)
     {
         list.action = progress.action;

@@ -351,7 +351,7 @@ namespace launcher_ui
                 progress.total = kit.total >> 20;
                 return progress;
             }
-            // Downloaded: the kit's step, done, then SSABuild's.
+            // Downloaded: the kit's step, done, then Arkeyan-Builder's.
             progress = slot.installer.Snapshot(logTail);
             progress.steps.insert(progress.steps.begin(), slot.kitStep);
             return progress;
@@ -366,7 +366,7 @@ namespace launcher_ui
 
     void App::PollInstall()
     {
-        // An SSABuild left running by an earlier launcher: wait for it to stop before offering to resume.
+        // A builder left running by an earlier launcher: wait for it to stop before offering to resume.
         if (m_s->installPastPid != 0 && SDL_GetTicks() >= m_s->installPastCheck)
         {
             m_s->installPastCheck = SDL_GetTicks() + 1000;
@@ -425,7 +425,7 @@ namespace launcher_ui
             SetInstallState(m_s->installSha, "failed");
     }
 
-    // The progress card: a checklist of SSABuild's steps (waiting, running with a spinner, done with a tick and its time,
+    // The progress card: a checklist of Arkeyan-Builder's steps (waiting, running with a spinner, done with a tick and its time,
     // failed), the overall bar and the time left, the current action on one line, the log behind "Show details".
     void App::DrawInstall(ImVec2 at, ImVec2 size)
     {
@@ -558,7 +558,7 @@ namespace launcher_ui
             ImGui::SetCursorScreenPos(ImVec2(rowAt.x, rowAt.y + std::max(rowH, titleHeight + ui::space::XS)));
         }
 
-        // Under the steps: what SSABuild does now (one line that replaces itself), or why it stopped.
+        // Under the steps: what Arkeyan-Builder does now (one line that replaces itself), or why it stopped.
         ImGui::Dummy(ImVec2(0, ui::space::XXS));
         if (running)
         {
@@ -868,8 +868,8 @@ namespace launcher_ui
         case 1:
             if (!m_s->installView)
             {
-                SDL_SetEnvironmentVariable(SDL_GetEnvironment(), "FAKE_SSABUILD_FAIL", "movies", true);
-                SDL_SetEnvironmentVariable(SDL_GetEnvironment(), "FAKE_SSABUILD_DELAY", "0.08", true);
+                SDL_SetEnvironmentVariable(SDL_GetEnvironment(), "FAKE_ARKEYAN_BUILDER_FAIL", "movies", true);
+                SDL_SetEnvironmentVariable(SDL_GetEnvironment(), "FAKE_ARKEYAN_BUILDER_DELAY", "0.08", true);
                 StartInstall();
                 break;
             }
@@ -897,8 +897,8 @@ namespace launcher_ui
         case 5:
             if (progress.state == InstallProgress::State::Failed)
             {
-                SDL_UnsetEnvironmentVariable(SDL_GetEnvironment(), "FAKE_SSABUILD_FAIL");
-                SDL_SetEnvironmentVariable(SDL_GetEnvironment(), "FAKE_SSABUILD_DELAY", "0.01", true);
+                SDL_UnsetEnvironmentVariable(SDL_GetEnvironment(), "FAKE_ARKEYAN_BUILDER_FAIL");
+                SDL_SetEnvironmentVariable(SDL_GetEnvironment(), "FAKE_ARKEYAN_BUILDER_DELAY", "0.01", true);
                 StartInstall();
             }
             else if (!m_s->installView)

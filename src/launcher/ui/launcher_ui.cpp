@@ -290,8 +290,8 @@ namespace launcher_ui
             directories.emplace_back(std::string(base) + "fonts");
             directories.emplace_back(std::string(base) + "../Resources/fonts");
         }
-#ifdef SSA_SOURCE_FONT_DIR
-        directories.emplace_back(SSA_SOURCE_FONT_DIR);
+#ifdef ARKEYAN_SOURCE_FONT_DIR
+        directories.emplace_back(ARKEYAN_SOURCE_FONT_DIR);
 #endif
         bool found = false;
         for (const std::string& directory : directories)
@@ -3016,7 +3016,7 @@ namespace launcher_ui
         case 9: // UPDATE: the kit first, then the rebuild
             SelectGame(giants);
             expect(UpdateAvailable(g) && KitNeedsFetch(g), "UPDATE needs the release's kit");
-            SDL_SetEnvironmentVariable(SDL_GetEnvironment(), "FAKE_SSABUILD_DELAY", "0.15", true); // slow enough for a shot of the card
+            SDL_SetEnvironmentVariable(SDL_GetEnvironment(), "FAKE_ARKEYAN_BUILDER_DELAY", "0.15", true); // slow enough for a shot of the card
             StartInstall();
             expect(g.kitUsed && g.kitDownload.Running() && g.kitTag == next, "UPDATE fetches the kit of the release the game names");
             shoot("giants-updating", 1500);
@@ -3063,7 +3063,7 @@ namespace launcher_ui
                 RecordInstalledGame(m_config, slot->check.xexSha256, slot->installed.runtime, slot->installed.kitVersion, "0.1.0");
                 RefreshInstall();
             }
-            SDL_SetEnvironmentVariable(SDL_GetEnvironment(), "FAKE_SSABUILD_DELAY", "0.5", true);
+            SDL_SetEnvironmentVariable(SDL_GetEnvironment(), "FAKE_ARKEYAN_BUILDER_DELAY", "0.5", true);
             StartUpdateAll();
             expect(UpdatingAll() && a.installer.Running(), "a second run starts");
             shoot("home-updating-again", 1500); // the shot is taken once the first build has run a moment; the step moves on after it
@@ -3145,8 +3145,8 @@ namespace launcher_ui
                 return;
             expect(a.disc == DiscState::Ready, "SSA's disc is ready");
             m_testSha = a.check.xexSha256;
-            env("FAKE_SSABUILD_DELAY", "0.08");
-            env("FAKE_SSABUILD_HOLD", "2");
+            env("FAKE_ARKEYAN_BUILDER_DELAY", "0.08");
+            env("FAKE_ARKEYAN_BUILDER_HOLD", "2");
             expect(line() == "Ready to install", "a verified disc with no build is not ready to play");
             shoot("before-install", 600);
             break;
@@ -3208,8 +3208,8 @@ namespace launcher_ui
             if (a.installer.Running() || a.installView)
                 return;
             expect(line() == "Ready to play", "Ready to play after the update");
-            env("FAKE_SSABUILD_HOLD", "0");
-            env("FAKE_SSABUILD_FAIL", "compile");
+            env("FAKE_ARKEYAN_BUILDER_HOLD", "0");
+            env("FAKE_ARKEYAN_BUILDER_FAIL", "compile");
             m_config["install." + m_testSha]["kit"] = "0.0.0-old";
             RefreshInstall();
             StartInstall();
@@ -3283,7 +3283,7 @@ namespace launcher_ui
                 expect(m_toasts.Items().size() == 1 && m_toasts.Items()[0].kind == ui::ToastKind::Error, "only the error is left (it stays until closed)");
                 m_toasts.Clear();
             }
-            SDL_UnsetEnvironmentVariable(SDL_GetEnvironment(), "FAKE_SSABUILD_FAIL");
+            SDL_UnsetEnvironmentVariable(SDL_GetEnvironment(), "FAKE_ARKEYAN_BUILDER_FAIL");
             m_running = false;
             break;
         }
@@ -3628,7 +3628,7 @@ namespace launcher_ui
             m_testButtonsOff = false;
             if (!Installing() && !slot.installView)
             {
-                SDL_SetEnvironmentVariable(SDL_GetEnvironment(), "FAKE_SSABUILD_DELAY", "0.03", true);
+                SDL_SetEnvironmentVariable(SDL_GetEnvironment(), "FAKE_ARKEYAN_BUILDER_DELAY", "0.03", true);
                 StartInstall();
             }
             else if (Installing() && MakeInstallChecklist(InstallSnapshot(), now).overall >= 0.4f)

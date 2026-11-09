@@ -20,14 +20,14 @@ inline void HdTexturesChecks(const std::filesystem::path& scratch)
         if (installer.Running()) installer.Cancel();
         return installer.Snapshot(3);
     };
-    TestSetEnv("FAKE_SSABUILD_DELAY", "0");
-    for (const char* key : { "FAKE_SSABUILD_FAIL", "FAKE_SSABUILD_FAIL_STEP", "FAKE_SSABUILD_PAUSE_STEP", "FAKE_SSABUILD_HOLD", "FAKE_SSABUILD_ENDING", "FAKE_SSABUILD_HD_MARKER" })
+    TestSetEnv("FAKE_ARKEYAN_BUILDER_DELAY", "0");
+    for (const char* key : { "FAKE_ARKEYAN_BUILDER_FAIL", "FAKE_ARKEYAN_BUILDER_FAIL_STEP", "FAKE_ARKEYAN_BUILDER_PAUSE_STEP", "FAKE_ARKEYAN_BUILDER_HOLD", "FAKE_ARKEYAN_BUILDER_ENDING", "FAKE_ARKEYAN_BUILDER_HD_MARKER" })
         TestUnsetEnv(key);
     const auto kit = InstallKitIn(SKYLAUNCHER_FAKE_KIT);
     EXPECT(kit.has_value());
     if (!kit) return;
     const std::string marker = (root / "marker.txt").string();
-    TestSetEnv("FAKE_SSABUILD_HD_MARKER", marker.c_str());
+    TestSetEnv("FAKE_ARKEYAN_BUILDER_HD_MARKER", marker.c_str());
 
     // A kit knows the option when its builder's file names it; an older one (a file that does not) does not.
     EXPECT(kit->hdTextures);
@@ -62,7 +62,7 @@ inline void HdTexturesChecks(const std::filesystem::path& scratch)
     EXPECT(state.state == InstallProgress::State::Done && read(marker) == "off");
 
     // Stopped while it works: Cancelled, no runtime, and the game's folder holds no install log.
-    TestSetEnv("FAKE_SSABUILD_PAUSE_STEP", "1");
+    TestSetEnv("FAKE_ARKEYAN_BUILDER_PAUSE_STEP", "1");
     EXPECT(installer.StartHdTextures(kit, "synthetic.iso", game, true));
     const uint64_t deadline = SDL_GetTicks() + 5000;
     do { state = installer.Snapshot(); SDL_Delay(5); } while (!(state.steps.size() == 1 && state.done == 1) && installer.Running() && SDL_GetTicks() < deadline);
@@ -70,15 +70,15 @@ inline void HdTexturesChecks(const std::filesystem::path& scratch)
     installer.Cancel();
     state = wait(installer);
     EXPECT(state.state == InstallProgress::State::Cancelled && state.runtime.empty() && !fs::exists(game / "install.log"));
-    TestUnsetEnv("FAKE_SSABUILD_PAUSE_STEP");
+    TestUnsetEnv("FAKE_ARKEYAN_BUILDER_PAUSE_STEP");
 
     // A failure says why, in the builder's words, and is not a start failure.
-    TestSetEnv("FAKE_SSABUILD_FAIL", "hdtextures");
+    TestSetEnv("FAKE_ARKEYAN_BUILDER_FAIL", "hdtextures");
     EXPECT(installer.StartHdTextures(kit, "synthetic.iso", game, true));
     state = wait(installer);
     EXPECT(state.state == InstallProgress::State::Failed && !state.startFailed && state.runtime.empty());
     EXPECT(state.error.find("Making HD textures failed") != std::string::npos);
-    TestUnsetEnv("FAKE_SSABUILD_FAIL");
+    TestUnsetEnv("FAKE_ARKEYAN_BUILDER_FAIL");
 
     // A kit too old for the option: nothing starts, and the reason is the launcher's own.
     EXPECT(!installer.StartHdTextures(tooOld, "synthetic.iso", game, true));
@@ -115,7 +115,7 @@ inline void HdTexturesChecks(const std::filesystem::path& scratch)
         const InstallChecklist plain = MakeInstallChecklist(state, SDL_GetTicks());
         EXPECT(std::none_of(plain.rows.begin(), plain.rows.end(), [](const auto& row) { return row.id == "hdtextures"; }));
     }
-    TestUnsetEnv("FAKE_SSABUILD_HD_MARKER");
-    TestUnsetEnv("FAKE_SSABUILD_DELAY");
+    TestUnsetEnv("FAKE_ARKEYAN_BUILDER_HD_MARKER");
+    TestUnsetEnv("FAKE_ARKEYAN_BUILDER_DELAY");
     printf("HD textures: on, off, cancel, failure, too-old kit and the install's last step checked\n");
 }
