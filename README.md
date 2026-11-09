@@ -14,8 +14,8 @@ on your computer.
 
 - **Native games**, built once on your computer from your disc (2 to 4 minutes on an Apple Silicon Mac), at a higher resolution
   than the console's, at 30 or 60 FPS.
-- **AMD FSR 3** upscaling and frame generation, switches in the game's settings (frame generation: not on Windows yet, not
-  tested on Linux yet), and **5.1 sound** when your speakers have six channels.
+- **AMD FSR 3** upscaling, a switch in the game's settings (frame generation comes later), **HD textures** made from your disc,
+  and **5.1 sound** when your speakers have six channels.
 - **No portal needed.** Your figures live in the **Toy Box**: put any of them on the virtual portal from the game (F6), swap
   in one press, create figures from the catalogue, choose the villain in a trap. A real Portal of Power works too,
   even beside a virtual figure for the second player.
@@ -161,8 +161,8 @@ Portal of Power. Then click **Test the portal**.
 ## Settings
 
 - **Resolution scale:** Auto picks x1 on integrated graphics and x2 on dedicated cards. If the game is slow, use x1.
-- **Frame rate:** the default is 60 for Giants and Swap Force and 30 (the original) for Spyro's Adventure and Trap Team. 60, 120, 144, 240
-  and unlimited are experimental (Giants stops at 60); "Display refresh rate" follows the screen, up to 60.
+- **Frame rate:** the default is 60 for Giants and Swap Force and 30 (the original) for Spyro's Adventure and Trap Team. 60 is
+  experimental.
 - **Portable mode:** put an empty file named `portable.txt` next to the launcher (on macOS, next to the app). The
   settings, saves, figures and games then live in a `data` folder beside it, for the launcher and for every game it
   starts. Move the folder and everything comes along.
