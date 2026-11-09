@@ -1,5 +1,6 @@
-// A game's texture pack (docs/tools/hd_textures.md): the switch in its settings > Video > Textures, the kit's texture step run alone when
-// it is flipped on a built game, and the progress and failure it shows. Off by default ([<game>] hd_textures).
+// A game's HD textures (docs/tools/hd_textures.md): the "Use HD textures" switch in its settings > Video > Textures, the kit's texture
+// step run alone when it is flipped on a built game, and the progress and failure it shows. Off by default ([<game>] hd_textures, which
+// the game reads too: it alone decides whether the game uses <game folder>/textures-hd).
 #include "launcher/env.h"
 #include "launcher/ui/launcher_app.h"
 #include "shared/collection/datadir.h"
@@ -11,20 +12,24 @@ namespace launcher_ui
 {
     namespace
     {
-        // The pack of a whole disc, measured with the kit's builder (docs/tools/hd_textures.md).
+        // The HD textures of a whole disc, measured with the kit's builder (docs/tools/hd_textures.md).
         uint64_t PackBytes(std::string_view game)
         {
-            const double gigabytes = game == "swapforce" ? 2.2 : game == "superchargers" ? 2.6 : 3.0; // Imaginators 3.0; Trap Team the same until measured
+            const double gigabytes = game == "giants"          ? 4.8
+                                     : game == "ssa"           ? 2.3
+                                     : game == "swapforce"     ? 2.2
+                                     : game == "superchargers" ? 2.6
+                                                               : 3.0; // Imaginators 3.0; Trap Team the same until measured
             return uint64_t(gigabytes * double(1ull << 30));
         }
     }
 
-    // The Alchemy games: the builder reads their textures from the disc's archives. Spyro's Adventure and Giants (Lux) are not
-    // read yet: their pack would hold only the textures the player dumped.
+    // Every game: the builder reads the Alchemy games' textures from the disc's archives, and Spyro's Adventure's and Giants' (Lux)
+    // from their level and UI files.
     bool App::HdTexturesOffered() const
     {
         const std::string_view id = m_s->game.id;
-        return id == "swapforce" || id == "trapteam" || id == "superchargers" || id == "imaginators";
+        return id == "ssa" || id == "giants" || id == "swapforce" || id == "trapteam" || id == "superchargers" || id == "imaginators";
     }
 
     bool App::HdTexturesWanted(const GameSlot& slot) const
@@ -63,8 +68,8 @@ namespace launcher_ui
             disabled = true;
         }
         else if (!built)
-            hint += "\n" + std::string(Tr("It is made when the game is installed."));
-        ui::SettingRow(Tr("Texture pack"), hint.c_str());
+            hint += "\n" + std::string(Tr("They are made when the game is installed."));
+        ui::SettingRow(Tr("Use HD textures"), hint.c_str());
         bool value = HdTexturesWanted(*m_s);
         if (ui::Toggle("##hdtextures", &value, disabled))
             SetHdTextures(value);
@@ -79,7 +84,7 @@ namespace launcher_ui
         if (m_s->hdJob.Running())
         {
             const InstallProgress progress = m_s->hdJob.Snapshot();
-            note(m_s->hdOn ? Tr("Making the texture pack. You can keep using the launcher; the game waits.") : Tr("Removing the texture pack."));
+            note(m_s->hdOn ? Tr("Making the HD textures. You can keep using the launcher; the game waits.") : Tr("Removing the HD textures."));
             if (progress.total > 0)
                 ui::ProgressBar(float(double(std::min(progress.done, progress.total)) / double(progress.total)), -1, true);
             else
@@ -127,10 +132,10 @@ namespace launcher_ui
         using State = InstallProgress::State;
         if (progress.state == State::Done)
         {
-            Toast(m_s->hdOn ? Tr("Texture pack ready") : Tr("Texture pack removed"), ui::ToastKind::Success);
+            Toast(m_s->hdOn ? Tr("HD textures ready") : Tr("HD textures removed"), ui::ToastKind::Success);
             return;
         }
-        // A pack left half made would be read by the game: it goes, and the switch with it.
+        // HD textures left half made would be read by the game: they go, and the switch with them.
         if (m_s->hdOn)
         {
             Set(m_s->game.id, "hd_textures", "0");
@@ -139,10 +144,10 @@ namespace launcher_ui
         }
         if (progress.state == State::Cancelled)
         {
-            Toast(Tr("Texture pack stopped"));
+            Toast(Tr("HD textures stopped"));
             return;
         }
-        m_s->hdMessage = progress.error.empty() ? std::string(Tr("The texture pack wasn't made.")) : progress.error;
+        m_s->hdMessage = progress.error.empty() ? std::string(Tr("The HD textures weren't made.")) : progress.error;
         Toast(m_s->hdMessage, ui::ToastKind::Error);
     }
 

@@ -117,7 +117,7 @@ namespace launcher_ui
             ui::SettingRow(Tr("Widescreen"), Tr("Auto shows more when wide; 16:9 adds bars."));
             SettingSelect("##aspect", video, "aspect", AspectChoices, 0);
 
-            ui::SettingRow(Tr("Frame rate limit"), Tr("Made for 30 FPS; 60 and above are experimental."));
+            ui::SettingRow(Tr("Frame rate limit"), Tr("Made for 30 FPS; 60 is experimental."));
             const std::span<const Choice> fpsChoices = FrameRateChoices(m_s->game.id);
             int fpsDefault = 0;
             for (size_t i = 0; i < fpsChoices.size(); i++)
@@ -126,7 +126,7 @@ namespace launcher_ui
             SettingSelect("##fps", video, "fps_limit", fpsChoices, fpsDefault);
 
             const std::string fpsLimit = SettingGet(m_config, video, "fps_limit", DefaultFrameRate(m_s->game.id));
-            if (fpsLimit == "60" || fpsLimit == "display")
+            if (std::string_view(fpsChoices[size_t(ChoiceIndex(fpsChoices, fpsLimit, fpsDefault))].value) == "60")
             {
                 ui::SettingRow(Tr("Drop to 30 FPS when needed"),
                     Tr("Off: your rate stays, even if the picture stutters."));
@@ -182,14 +182,14 @@ namespace launcher_ui
             {
                 ui::SettingRow(Tr("FSR 3 quality"), Tr("Native AA is the sharpest, Ultra Performance the fastest."));
                 SettingSelect("##fsrquality", video, "fsr_quality", FsrQualityChoices, 1); // Quality
-                // FSR 3 frame generation (fsr_frame_generation=on, else off): needs the upscaler, so shown with it, where the game
-                // can run it.
+                // FSR 3 frame generation: needs the upscaler, so shown with it, where the game can run it. Greyed and off until
+                // it renders as it should (0.9.4): the game ignores fsr_frame_generation meanwhile, its F3 row says the same.
                 if (FrameGenerationOffered(m_s->game.id))
                 {
-                    ui::SettingRow(Tr("Frame generation"), Tr("Doubles the frames shown; a little more input delay (F3 in game)."));
-                    bool frameGeneration = SettingGet(m_config, video, "fsr_frame_generation", "off") == "on";
-                    if (ui::Toggle("##framegen", &frameGeneration))
-                        Set(video, "fsr_frame_generation", frameGeneration ? "on" : "off");
+                    const std::string hint = std::string(Tr("Doubles the frames shown; a little more input delay (F3 in game).")) + "\n" + Tr("Coming later");
+                    ui::SettingRow(Tr("Frame generation"), hint.c_str());
+                    bool frameGeneration = false;
+                    ui::Toggle("##framegen", &frameGeneration, true);
                 }
             }
 
@@ -213,25 +213,25 @@ namespace launcher_ui
             ui::EndSettings();
         }
 
-        // The game's texture pack (made from the disc), the player's own packs, and the dump for pack makers.
+        // The game's HD textures (made from the disc). The player's own packs, their folder and the dump that makes them are
+        // greyed and off until custom packs come (0.9.4): PLAY passes texture_packs=0 and texture_dump=0 (ApplyGameVideo).
         ui::SectionHeader(Tr("Textures"));
         if (ui::BeginSettings("##textures"))
         {
             DrawHdTextures();
-            ui::SettingRow(Tr("Custom texture packs"), Tr("Replaces the game's textures with your pack."));
-            toggle("##texturepacks", "texture_packs", "1");
+            auto later = [&](const char* label, const char* hint, const char* id) {
+                const std::string text = std::string(Tr(hint)) + "\n" + Tr("Coming later");
+                ui::SettingRow(Tr(label), text.c_str());
+                bool off = false;
+                ui::Toggle(id, &off, true);
+            };
+            later(N_("Custom texture packs"), N_("Replaces the game's textures with your pack."), "##texturepacks");
             ui::SettingRow(Tr("Custom packs folder"), nullptr);
             ui::ButtonOptions folder;
             folder.icon = ui::Icon::Folder;
-            if (ui::Button(Tr("Show in folder"), folder))
-            {
-                std::error_code error;
-                std::filesystem::create_directories(GameInstallFolder({}) / "textures", error);
-                if (!OpenFolder(GameInstallFolder({}) / "textures"))
-                    Toast(Tr("Couldn't open the folder"), ui::ToastKind::Error);
-            }
-            ui::SettingRow(Tr("Dump textures"), Tr("For pack makers: saves the textures as DDS files."));
-            toggle("##texturedump", "texture_dump", "0");
+            folder.disabled = true;
+            ui::Button(Tr("Show in folder"), folder);
+            later(N_("Dump textures"), N_("For pack makers: saves the textures as DDS files."), "##texturedump");
             ui::EndSettings();
         }
         DrawHdStatus();

@@ -224,11 +224,23 @@ void ApplyGameVideo(LauncherConfig& config, std::string_view gameId)
         config["video"].erase(scale);
     // A game with no saved frame rate gets the one its page shows, never a saved one changed.
     config["video"].emplace("fps_limit", DefaultFrameRate(gameId));
+    // Custom texture packs and the dump are greyed on the page until they come (0.9.4): off, whatever an older version saved.
+    // The game reads its own section over [video], so the keys leave it.
+    for (const char* key : { "texture_packs", "texture_dump" })
+    {
+        if (auto own = config.find(GameVideoSection(gameId)); own != config.end())
+            own->second.erase(key);
+        config["video"][key] = "0";
+    }
 }
 
 void StoreGameVideo(LauncherConfig& config, std::string_view gameId) { CopyVideo(config, "video", GameVideoSection(gameId)); }
 
-unsigned MaxFrameRate(std::string_view gameId) { return gameId == "giants" ? 60 : 0; }
+unsigned MaxFrameRate(std::string_view gameId)
+{
+    (void)gameId;
+    return 60;
+}
 
 void MigrateFrameRates(LauncherConfig& config)
 {
@@ -241,17 +253,23 @@ void MigrateFrameRates(LauncherConfig& config)
                 limit != giants->second.end() && (limit->second == "0" || limit->second == "120" || limit->second == "144" || limit->second == "240"))
                 limit->second = "60";
     }
-    std::string& done = config["launcher"]["frame_rates"];
-    if (done == "1")
-        return;
-    done = "1";
-    for (auto& [name, section] : config)
-    {
-        bool video = name == "video" || (name.size() > 6 && name.compare(name.size() - 6, 6, ".video") == 0);
-        if (auto limit = section.find("fps_limit"); video && limit != section.end() &&
-            (limit->second == "0" || limit->second == "120" || limit->second == "144" || limit->second == "240"))
-            limit->second = "60";
-    }
+    // Every video section's limit above 60 (and "display", up to 60) becomes 60: once for the first versions' values
+    // ([launcher] frame_rates=1), once more when the page stopped offering more than 60 (0.9.4, frame_rates_cap=1).
+    auto toSixty = [&](const char* marker, bool display) {
+        std::string& done = config["launcher"][marker];
+        if (done == "1")
+            return;
+        done = "1";
+        for (auto& [name, section] : config)
+        {
+            bool video = name == "video" || (name.size() > 6 && name.compare(name.size() - 6, 6, ".video") == 0);
+            if (auto limit = section.find("fps_limit"); video && limit != section.end() &&
+                (limit->second == "0" || limit->second == "120" || limit->second == "144" || limit->second == "240" || (display && limit->second == "display")))
+                limit->second = "60";
+        }
+    };
+    toSixty("frame_rates", false);
+    toSixty("frame_rates_cap", true);
 }
 
 GameFolders FoldersOf(std::string_view gameId)

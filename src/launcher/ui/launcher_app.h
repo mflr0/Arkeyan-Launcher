@@ -56,14 +56,13 @@ namespace launcher_ui
         const char* aliases = nullptr; // other values of the settings file that show as this choice (space separated)
     };
 
-    // "display": the display's refresh rate, up to 60 for now (the runtime reads it as 60); above 60 the runtime paces the frames itself.
-    inline constexpr Choice FpsChoices[] = { { "display", N_("Display refresh rate (up to 60)") }, { "30", N_("30 (original)") },
-        { "60", N_("60 (experimental)") }, { "120", N_("120 (experimental)") }, { "144", N_("144 (experimental)") }, { "240", N_("240 (experimental)") },
-        { "0", N_("Unlimited (experimental)") } };
-    // The frame rates a game is offered: the list up to 60 when the game is capped there (MaxFrameRate).
+    // 30 and 60 only (MaxFrameRate). The older values the runtime reads as 60 ("display", above 60, no limit) show as 60.
+    inline constexpr Choice FpsChoices[] = { { "30", N_("30 (original)") }, { "60", N_("60 (experimental)"), "display 0 120 144 240" } };
+    // The frame rates a game is offered.
     inline std::span<const Choice> FrameRateChoices(std::string_view gameId)
     {
-        return MaxFrameRate(gameId) == 60 ? std::span<const Choice>(FpsChoices, 3) : std::span<const Choice>(FpsChoices);
+        (void)gameId;
+        return FpsChoices;
     }
     inline constexpr Choice VolumeChoices[] = { { "0", N_("0%") }, { "10", N_("10%") }, { "20", N_("20%") }, { "30", N_("30%") },
         { "40", N_("40%") }, { "50", N_("50%") }, { "60", N_("60%") }, { "70", N_("70%") }, { "80", N_("80%") }, { "90", N_("90%") },
@@ -287,7 +286,7 @@ namespace launcher_ui
         InstalledGame installed;
         std::string ownRuntime;    // a runtime the player set up (FindRuntime): no install needed
         GameInstaller installer;
-        // Game settings > Video > Texture pack (docs/tools/hd_textures.md): the kit's texture step alone, and how the last one ended.
+        // Game settings > Video > Use HD textures (docs/tools/hd_textures.md): the kit's texture step alone, and how the last one ended.
         GameInstaller hdJob;
         bool hdWatch = false;       // hdJob was started and its end is not handled yet
         bool hdOn = false;          // it makes the pack (else it removes it)
@@ -408,10 +407,10 @@ namespace launcher_ui
         void DrawUpdateAll(ImVec2 right);
         void DrawDataActions();
         void CreateShortcut();
-        void DrawHdTextures();        // the Video tab's "Texture pack" row: the switch
+        void DrawHdTextures();        // the Video tab's "Use HD textures" row: the switch
         void TestHdTexturesScript(uint64_t now);
         void DrawHdStatus();          // under the Video list: the work's progress and Stop, or why it failed
-        bool HdTexturesOffered() const; // this game's disc archives hold textures the kit doubles (the Alchemy games)
+        bool HdTexturesOffered() const; // the kit doubles this game's textures from its disc (every game)
         bool HdTexturesWanted(const GameSlot& slot) const;
         void SetHdTextures(bool on);
         void StartHdTextures(bool on);
@@ -780,7 +779,7 @@ namespace launcher_ui
         int m_heroNavCase = 0, m_heroNavPhase = -1, m_heroNavWarmup = 0, m_heroNavMoves = 0, m_heroNavDirection = 0;
         uint32_t m_heroNavFrom = 0;
         bool m_testAchievements = false; // SKY_LAUNCHER_TEST_ACHIEVEMENTS: the shown game's page with its play time, then its achievements
-        bool m_testHdTex = false;      // SKY_LAUNCHER_TEST_HDTEX=<game>: the texture pack switch on a built game (TestHdTexturesScript)
+        bool m_testHdTex = false;      // SKY_LAUNCHER_TEST_HDTEX=<game>: the HD textures switch on a built game (TestHdTexturesScript)
         bool m_testLogo = false;       // SKY_LAUNCHER_TEST_LOGO: each game's page with its logo (from the art already read), one shot each
         bool m_testScrollEnd = false;  // the uninstall screenshots: scroll the settings column to its end
         uint64_t m_testHoldAt = 0;     // when the test pressed the hold button (it holds it down for the screenshots)

@@ -83,7 +83,7 @@ inline void HdTexturesChecks(const std::filesystem::path& scratch)
     // A kit too old for the option: nothing starts, and the reason is the launcher's own.
     EXPECT(!installer.StartHdTextures(tooOld, "synthetic.iso", game, true));
     state = installer.Snapshot();
-    EXPECT(state.state == InstallProgress::State::Failed && state.startFailed && state.error.find("can't make the texture pack") != std::string::npos);
+    EXPECT(state.state == InstallProgress::State::Failed && state.startFailed && state.error.find("can't make the HD textures") != std::string::npos);
     EXPECT(!installer.Start(tooOld, "synthetic.iso", root / "old-install", true));
     EXPECT(installer.Snapshot().startFailed && !fs::exists(root / "old-install" / "install.log"));
     EXPECT(!installer.StartHdTextures({}, "synthetic.iso", game, true) && installer.Snapshot().startFailed);
@@ -104,7 +104,7 @@ inline void HdTexturesChecks(const std::filesystem::path& scratch)
     {
         const InstallChecklist done = MakeInstallChecklist(state, SDL_GetTicks());
         EXPECT(done.overall == 1.0f && done.rows.back().id == "hdtextures" && done.rows.back().state == InstallChecklist::RowState::Done);
-        EXPECT(done.rows.back().title == "Making the texture pack");
+        EXPECT(done.rows.back().title == "Making the HD textures");
     }
     fs::remove(marker);
     EXPECT(installer.Start(kit, "synthetic.iso", without));

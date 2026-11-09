@@ -1067,7 +1067,7 @@ namespace launcher_ui
         else if (Installing())
             why = Tr("Wait for the installation to finish");
         else if (m_s->hdJob.Running())
-            why = Tr("Wait for the texture pack to finish");
+            why = Tr("Wait for the HD textures to finish");
         else if (m_s->copyJob.Running())
             why = Tr("Wait for the copy to finish");
         else if (m_s->portableJob.Running())

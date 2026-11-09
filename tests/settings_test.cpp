@@ -105,14 +105,37 @@ namespace
 
     void GiantsCap()
     {
-        SETTINGS_EXPECT(MaxFrameRate("giants") == 60 && MaxFrameRate("ssa") == 0 && MaxFrameRate("swapforce") == 0);
-        SETTINGS_EXPECT(launcher_ui::FrameRateChoices("giants").size() == 3 && std::string(launcher_ui::FrameRateChoices("giants").back().value) == "60");
-        SETTINGS_EXPECT(launcher_ui::FrameRateChoices("ssa").size() == std::size(launcher_ui::FpsChoices) && launcher_ui::FrameRateChoices("swapforce").size() == std::size(launcher_ui::FpsChoices));
-        // A file from the version before the cap (frame rates already migrated): Giants' higher values become 60, once; the others stay.
+        // 0.9.4: 30 and 60 only, for every game.
+        for (const char* id : { "ssa", "giants", "swapforce", "trapteam", "superchargers", "imaginators" })
+        {
+            SETTINGS_EXPECT(MaxFrameRate(id) == 60 && launcher_ui::FrameRateChoices(id).size() == 2);
+            SETTINGS_EXPECT(std::string(launcher_ui::FrameRateChoices(id)[0].value) == "30" && std::string(launcher_ui::FrameRateChoices(id)[1].value) == "60");
+        }
+        // A file from 0.9.3 (both earlier passes done) with a rate above 60 chosen since, "display" or no limit: 60, once.
+        {
+            LauncherConfig config;
+            config["launcher"]["frame_rates"] = "1";
+            config["launcher"]["giants_cap"] = "1";
+            config["ssa.video"]["fps_limit"] = "144";
+            config["swapforce.video"]["fps_limit"] = "display";
+            config["trapteam.video"]["fps_limit"] = "30";
+            config["video"]["fps_limit"] = "0";
+            MigrateFrameRates(config);
+            SETTINGS_EXPECT(config["ssa.video"]["fps_limit"] == "60" && config["swapforce.video"]["fps_limit"] == "60");
+            SETTINGS_EXPECT(config["trapteam.video"]["fps_limit"] == "30" && config["video"]["fps_limit"] == "60");
+            SETTINGS_EXPECT(config["launcher"]["frame_rates_cap"] == "1");
+            // A hand-edited value afterwards shows as 60 on the page (the runtime reads it as 60).
+            config["ssa.video"]["fps_limit"] = "240";
+            MigrateFrameRates(config);
+            SETTINGS_EXPECT(config["ssa.video"]["fps_limit"] == "240");
+            SETTINGS_EXPECT(launcher_ui::ChoiceIndex(launcher_ui::FrameRateChoices("ssa"), config["ssa.video"]["fps_limit"], 0) == 1);
+        }
+        // A file from the version before the cap (frame rates already migrated): Giants' higher values become 60, once.
         for (const char* old : { "0", "120", "144", "240" })
         {
             LauncherConfig config;
             config["launcher"]["frame_rates"] = "1";
+            config["launcher"]["frame_rates_cap"] = "1"; // the giants_cap pass alone
             config["giants.video"]["fps_limit"] = old;
             config["ssa.video"]["fps_limit"] = old;
             config["swapforce.video"]["fps_limit"] = old;

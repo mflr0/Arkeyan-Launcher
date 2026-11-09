@@ -25,14 +25,11 @@
 1. Open Windows Security, then Virus & threat protection > Protection history.	1. Apri Sicurezza di Windows, poi Protezione da virus e minacce > Cronologia protezione.
 10%	10%
 100%	100%
-120 (experimental)	120 (sperimentale)
-144 (experimental)	144 (sperimentale)
 16 characters at most	Massimo 16 caratteri
 16:9 (with bars)	16:9 (con bande)
 1st Power / Accept	1º Potere / Accetta
 2. Open the blocked item, then Actions > Allow on device.	2. Apri l'elemento bloccato, poi Azioni > Consenti nel dispositivo.
 20%	20%
-240 (experimental)	240 (sperimentale)
 2nd Power	2º Potere
 3. In Virus & threat protection settings, choose Manage settings > Exclusions > Add or remove exclusions > Add an exclusion > Folder, and pick %APPDATA%\\Skylanders\\kit.	3. In Impostazioni di Protezione da virus e minacce, scegli Gestisci impostazioni > Esclusioni > Aggiungi o rimuovi esclusioni > Aggiungi un'esclusione > Cartella, e seleziona %APPDATA%\\Skylanders\\kit.
 30 (original)	30 (originale)
@@ -269,7 +266,6 @@ Disc	Disco
 Disc checked	Disco verificato
 Disc image	Immagine disco
 Disc not found	Disco non trovato
-Display refresh rate (up to 60)	Frequenza di aggiornamento dello schermo (fino a 60)
 Doubles the game's textures from your disc. About {} of disk, a few minutes.	Raddoppia le texture del gioco dal tuo disco. Circa {} di spazio, alcuni minuti.
 Down	Giù
 Downloading Arkeyan Launcher	Download di Arkeyan Launcher
@@ -368,10 +364,10 @@ Glow in the Dark	Fosforescente
 Gold	Oro
 Greek	Greco
 Custom texture packs	Pacchetti di texture personalizzati
-Texture pack	Pacchetto di texture
-Texture pack ready	Pacchetto di texture pronto
-Texture pack removed	Pacchetto di texture rimosso
-Texture pack stopped	Pacchetto di texture interrotto
+Use HD textures	Usa texture HD
+HD textures ready	Texture HD pronte
+HD textures removed	Texture HD rimosse
+HD textures stopped	Texture HD interrotte
 HID portals	Portali HID
 Hat	Cappello
 Hero points	Punti eroe
@@ -419,7 +415,7 @@ Installing · {}	Installazione · {}
 Interact	Interagisci
 Interrupted	Interrotto
 Interrupted: {} of {} copied	Interrotto: {} di {} copiati
-It is made when the game is installed.	Viene creato quando il gioco è installato.
+They are made when the game is installed.	Vengono create quando il gioco è installato.
 It plays on {} without the launcher or the disc image, with the same saves and settings as the installed game. It never updates: to update it, export it again. Up to {}.	Funziona su {} senza il launcher né l'immagine disco, con gli stessi salvataggi e impostazioni del gioco installato. Non si aggiorna mai: per aggiornarlo, esportalo di nuovo. Fino a {}.
 Item or adventure	Oggetto
 Its evolved look	Il suo aspetto evoluto
@@ -468,12 +464,12 @@ Logs folder	Cartella dei registri
 Looking for the disc image	Ricerca dell'immagine disco
 Looks for updates at each start.	Cerca aggiornamenti a ogni avvio.
 Low	Basso
-Made for 30 FPS; 60 and above are experimental.	Pensato per 30 FPS; 60 e oltre sono sperimentali.
+Made for 30 FPS; 60 is experimental.	Pensato per 30 FPS; 60 è sperimentale.
 Magic	Magia
 Magic Items	Oggetti magici
 Magic item	Oggetto
-Making the texture pack	Creazione del pacchetto di texture
-Making the texture pack. You can keep using the launcher; the game waits.	Creazione del pacchetto di texture. Puoi continuare a usare il launcher; il gioco aspetta.
+Making the HD textures	Creazione delle texture HD
+Making the HD textures. You can keep using the launcher; the game waits.	Creazione delle texture HD. Puoi continuare a usare il launcher; il gioco aspetta.
 Manage	Gestisci
 Manage profiles	Gestisci i profili
 Mar	mar
@@ -651,7 +647,7 @@ Remove game	Rimuovi il gioco
 Remove the copy	Rimuovi la copia
 Remove {}?	Rimuovere {}?
 Removed, except	Rimosso, tranne
-Removing the texture pack.	Rimozione del pacchetto di texture.
+Removing the HD textures.	Rimozione delle texture HD.
 Repair	Ripara
 Repair builds the game again from your disc.	Ripara ricostruisce il gioco dal tuo disco.
 Repair downloads the game tools again.	Ripara scarica di nuovo gli strumenti di gioco.
@@ -753,8 +749,8 @@ Texture filtering	Filtro texture
 Custom packs folder	Cartella dei pacchetti personalizzati
 That's a folder: choose the disc image (.iso).	Questa è una cartella: scegli l'immagine disco (.iso).
 The 3D scene at the console's size.	La scena 3D alla dimensione della console.
-The texture pack stopped before it was made.	Il pacchetto di texture si è fermato prima di essere creato.
-The texture pack wasn't made.	Il pacchetto di texture non è stato creato.
+The HD textures stopped before they were made.	Le texture HD si sono fermate prima di essere create.
+The HD textures weren't made.	Le texture HD non sono state create.
 The address isn't a secure one (https)	L'indirizzo non è sicuro (https)
 The answer has no release in it	La risposta non contiene alcuna versione
 The answer isn't valid JSON ({})	La risposta non è un JSON valido ({})
@@ -809,7 +805,7 @@ The wheel is full: take a figure off it first	La ruota è piena: togli prima una
 The zip file is damaged	Il file zip è danneggiato
 These are your own game tools: restore the file, or set them up again.	Sono i tuoi strumenti di gioco: ripristina il file o configurali di nuovo.
 These game tools can't build {}	Questi strumenti di gioco non possono costruire {}
-These game tools can't make the texture pack. Update them first.	Questi strumenti di gioco non possono creare il pacchetto di texture. Aggiornali prima.
+These game tools can't make the HD textures. Update them first.	Questi strumenti di gioco non possono creare le texture HD. Aggiornali prima.
 This computer has no Desktop folder.	Questo computer non ha una cartella Scrivania.
 This copy holds your game. It is for your personal use only: do not share it.	Questa copia contiene il tuo gioco. È solo per uso personale: non condividerla.
 This disc image is {}, not {}.	Questa immagine disco è {}, non {}.
@@ -861,7 +857,6 @@ Unknown toy {}	Giocattolo sconosciuto {}
 Unknown toy {} (variant {:04X})	Giocattolo sconosciuto {} (variante {:04X})
 Unknown toys	Giocattoli sconosciuti
 Unknown toys · {}	Giocattoli sconosciuti · {}
-Unlimited (experimental)	Illimitato (sperimentale)
 Unreadable. Restore a backup or reset it.	Illeggibile. Ripristina un backup o reimpostalo.
 Up	Su
 Update all	Aggiorna tutto
@@ -895,7 +890,7 @@ Virtual (no portal needed)	Virtuale (nessun portale necessario)
 Virtual portal	Portale virtuale
 Virtual portal chosen.	Portale virtuale scelto.
 Volume	Volume
-Wait for the texture pack to finish	Aspetta che il pacchetto di texture finisca
+Wait for the HD textures to finish	Aspetta che le texture HD finiscano
 Wait for the copy to finish	Aspetta che la copia finisca
 Wait for the export to finish	Aspetta che l'esportazione finisca
 Wait for the game to finish.	Aspetta che il gioco finisca.

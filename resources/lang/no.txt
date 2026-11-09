@@ -26,14 +26,11 @@
 1. Open Windows Security, then Virus & threat protection > Protection history.	1. Åpne Windows-sikkerhet, og velg Virus- og trusselbeskyttelse > Beskyttelseslogg.
 10%	10 %
 100%	100 %
-120 (experimental)	120 (eksperimentell)
-144 (experimental)	144 (eksperimentell)
 16 characters at most	Maks 16 tegn
 16:9 (with bars)	16:9 (med svarte kanter)
 1st Power / Accept	Kraft 1 / Godta
 2. Open the blocked item, then Actions > Allow on device.	2. Åpne det blokkerte elementet, og velg Handlinger > Tillat på enhet.
 20%	20 %
-240 (experimental)	240 (eksperimentell)
 2nd Power	Kraft 2
 3. In Virus & threat protection settings, choose Manage settings > Exclusions > Add or remove exclusions > Add an exclusion > Folder, and pick %APPDATA%\\Skylanders\\kit.	3. Under innstillinger for Virus- og trusselbeskyttelse velger du Administrer innstillinger > Ekskluderinger > Legg til eller fjern ekskluderinger > Legg til en ekskludering > Mappe, og velger %APPDATA%\\Skylanders\\kit.
 30 (original)	30 (original)
@@ -270,7 +267,6 @@ Disc	Plate
 Disc checked	Plate kontrollert
 Disc image	Diskbilde
 Disc not found	Fant ikke platen
-Display refresh rate (up to 60)	Skjermens oppdateringsfrekvens (opptil 60)
 Doubles the game's textures from your disc. About {} of disk, a few minutes.	Dobler spillets teksturer fra platen din. Ca. {} diskplass, noen minutter.
 Down	Ned
 Downloading Arkeyan Launcher	Laster ned Arkeyan Launcher
@@ -369,10 +365,10 @@ Glow in the Dark	Glow in the Dark
 Gold	Gull
 Greek	Gresk
 Custom texture packs	Egne teksturpakker
-Texture pack	Teksturpakke
-Texture pack ready	Teksturpakken er klar
-Texture pack removed	Teksturpakken er fjernet
-Texture pack stopped	Teksturpakken stoppet
+Use HD textures	Bruk HD-teksturer
+HD textures ready	HD-teksturene er klare
+HD textures removed	HD-teksturene er fjernet
+HD textures stopped	HD-teksturene stoppet
 HID portals	HID-portaler
 Hat	Hatt
 Hero points	Heltepoeng
@@ -420,7 +416,7 @@ Installing · {}	Installerer · {}
 Interact	Samhandle
 Interrupted	Avbrutt
 Interrupted: {} of {} copied	Avbrutt: {} av {} kopiert
-It is made when the game is installed.	Den lages når spillet installeres.
+They are made when the game is installed.	De lages når spillet installeres.
 It plays on {} without the launcher or the disc image, with the same saves and settings as the installed game. It never updates: to update it, export it again. Up to {}.	Det kan spilles på {} uten launcheren eller diskbildet, med samme lagringer og innstillinger som det installerte spillet. Det oppdateres aldri: eksporter det på nytt for å oppdatere. Opptil {}.
 Item or adventure	Gjenstand
 Its evolved look	Det utviklede utseendet
@@ -469,12 +465,12 @@ Logs folder	Loggmappe
 Looking for the disc image	Leter etter diskbildet
 Looks for updates at each start.	Ser etter oppdateringer ved hver oppstart.
 Low	Lav
-Made for 30 FPS; 60 and above are experimental.	Laget for 30 FPS; 60 og over er eksperimentelt.
+Made for 30 FPS; 60 is experimental.	Laget for 30 FPS; 60 er eksperimentelt.
 Magic	Magi
 Magic Items	Magiske gjenstander
 Magic item	Gjenstand
-Making the texture pack	Lager teksturpakken
-Making the texture pack. You can keep using the launcher; the game waits.	Lager teksturpakken. Du kan fortsette å bruke launcheren; spillet venter.
+Making the HD textures	Lager HD-teksturene
+Making the HD textures. You can keep using the launcher; the game waits.	Lager HD-teksturene. Du kan fortsette å bruke launcheren; spillet venter.
 Manage	Administrer
 Manage profiles	Administrer profiler
 Mar	mars
@@ -652,7 +648,7 @@ Remove game	Fjern spill
 Remove the copy	Fjern kopien
 Remove {}?	Fjerne {}?
 Removed, except	Fjernet, unntatt
-Removing the texture pack.	Fjerner teksturpakken.
+Removing the HD textures.	Fjerner HD-teksturene.
 Repair	Reparer
 Repair builds the game again from your disc.	Reparer bygger spillet på nytt fra platen din.
 Repair downloads the game tools again.	Reparer laster ned spillverktøyene på nytt.
@@ -754,8 +750,8 @@ Texture filtering	Teksturfiltrering
 Custom packs folder	Mappe for egne pakker
 That's a folder: choose the disc image (.iso).	Det er en mappe: velg diskbildet (.iso).
 The 3D scene at the console's size.	3D-scenen i konsollens størrelse.
-The texture pack stopped before it was made.	Teksturpakken stoppet før den ble laget.
-The texture pack wasn't made.	Teksturpakken ble ikke laget.
+The HD textures stopped before they were made.	HD-teksturene stoppet før de ble laget.
+The HD textures weren't made.	HD-teksturene ble ikke laget.
 The address isn't a secure one (https)	Adressen er ikke sikker (https)
 The answer has no release in it	Svaret inneholder ingen utgivelse
 The answer isn't valid JSON ({})	Svaret er ikke gyldig JSON ({})
@@ -810,7 +806,7 @@ The wheel is full: take a figure off it first	Hjulet er fullt: ta av en figur f�
 The zip file is damaged	Zip-filen er skadet
 These are your own game tools: restore the file, or set them up again.	Dette er dine egne spillverktøy: gjenopprett filen, eller sett dem opp på nytt.
 These game tools can't build {}	Disse spillverktøyene kan ikke bygge {}
-These game tools can't make the texture pack. Update them first.	Disse spillverktøyene kan ikke lage teksturpakken. Oppdater dem først.
+These game tools can't make the HD textures. Update them first.	Disse spillverktøyene kan ikke lage HD-teksturene. Oppdater dem først.
 This computer has no Desktop folder.	Denne datamaskinen har ingen skrivebordsmappe.
 This copy holds your game. It is for your personal use only: do not share it.	Denne kopien inneholder spillet ditt. Den er kun til personlig bruk: ikke del den.
 This disc image is {}, not {}.	Dette diskbildet er {}, ikke {}.
@@ -862,7 +858,6 @@ Unknown toy {}	Ukjent figur {}
 Unknown toy {} (variant {:04X})	Ukjent figur {} (variant {:04X})
 Unknown toys	Ukjente figurer
 Unknown toys · {}	Ukjente figurer · {}
-Unlimited (experimental)	Ubegrenset (eksperimentell)
 Unreadable. Restore a backup or reset it.	Uleselig. Gjenopprett en sikkerhetskopi eller tilbakestill den.
 Up	Opp
 Update all	Oppdater alle
@@ -896,7 +891,7 @@ Virtual (no portal needed)	Virtuell (ingen portal nødvendig)
 Virtual portal	Virtuell portal
 Virtual portal chosen.	Virtuell portal valgt.
 Volume	Volum
-Wait for the texture pack to finish	Vent til teksturpakken er ferdig
+Wait for the HD textures to finish	Vent til HD-teksturene er ferdige
 Wait for the copy to finish	Vent til kopieringen er ferdig
 Wait for the export to finish	Vent til eksporten er ferdig
 Wait for the game to finish.	Vent til spillet er ferdig.

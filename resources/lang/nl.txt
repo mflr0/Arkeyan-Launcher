@@ -25,14 +25,11 @@
 1. Open Windows Security, then Virus & threat protection > Protection history.	1. Open Windows-beveiliging en ga naar Virus- en bedreigingsbeveiliging > Beveiligingsgeschiedenis.
 10%	10%
 100%	100%
-120 (experimental)	120 (experimenteel)
-144 (experimental)	144 (experimenteel)
 16 characters at most	Maximaal 16 tekens
 16:9 (with bars)	16:9 (met balken)
 1st Power / Accept	1e kracht / Accepteren
 2. Open the blocked item, then Actions > Allow on device.	2. Open het geblokkeerde item en kies Acties > Toestaan op apparaat.
 20%	20%
-240 (experimental)	240 (experimenteel)
 2nd Power	2e kracht
 3. In Virus & threat protection settings, choose Manage settings > Exclusions > Add or remove exclusions > Add an exclusion > Folder, and pick %APPDATA%\\Skylanders\\kit.	3. Kies bij de instellingen voor Virus- en bedreigingsbeveiliging Instellingen beheren > Uitsluitingen > Uitsluitingen toevoegen of verwijderen > Een uitsluiting toevoegen > Map en selecteer %APPDATA%\\Skylanders\\kit.
 30 (original)	30 (origineel)
@@ -269,7 +266,6 @@ Disc	Schijf
 Disc checked	Schijf gecontroleerd
 Disc image	Schijfimage
 Disc not found	Schijf niet gevonden
-Display refresh rate (up to 60)	Verversingssnelheid van het scherm (tot 60)
 Doubles the game's textures from your disc. About {} of disk, a few minutes.	Verdubbelt de texturen van het spel vanaf je schijf. Ongeveer {} schijfruimte, een paar minuten.
 Down	Omlaag
 Downloading Arkeyan Launcher	Arkeyan Launcher downloaden
@@ -368,10 +364,10 @@ Glow in the Dark	Glow in the Dark
 Gold	Goud
 Greek	Grieks
 Custom texture packs	Eigen texturepakketten
-Texture pack	Texturepakket
-Texture pack ready	Texturepakket klaar
-Texture pack removed	Texturepakket verwijderd
-Texture pack stopped	Texturepakket gestopt
+Use HD textures	HD-textures gebruiken
+HD textures ready	HD-textures klaar
+HD textures removed	HD-textures verwijderd
+HD textures stopped	HD-textures gestopt
 HID portals	HID-portals
 Hat	Hoed
 Hero points	Heldenpunten
@@ -419,7 +415,7 @@ Installing · {}	Installeren · {}
 Interact	Interactie
 Interrupted	Onderbroken
 Interrupted: {} of {} copied	Onderbroken: {} van {} gekopieerd
-It is made when the game is installed.	Wordt gemaakt zodra het spel is geïnstalleerd.
+They are made when the game is installed.	Ze worden gemaakt zodra het spel is geïnstalleerd.
 It plays on {} without the launcher or the disc image, with the same saves and settings as the installed game. It never updates: to update it, export it again. Up to {}.	Het draait op {} zonder de launcher of het schijfimage, met dezelfde savegames en instellingen als het geïnstalleerde spel. Het wordt nooit bijgewerkt: exporteer het opnieuw om het bij te werken. Maximaal {}.
 Item or adventure	Item
 Its evolved look	Zijn evolved uiterlijk
@@ -468,12 +464,12 @@ Logs folder	Logmap
 Looking for the disc image	Het schijfimage zoeken
 Looks for updates at each start.	Zoekt bij elke start naar updates.
 Low	Laag
-Made for 30 FPS; 60 and above are experimental.	Gemaakt voor 30 FPS; 60 en hoger zijn experimenteel.
+Made for 30 FPS; 60 is experimental.	Gemaakt voor 30 FPS; 60 is experimenteel.
 Magic	Magie
 Magic Items	Magische voorwerpen
 Magic item	Item
-Making the texture pack	Texturepakket wordt gemaakt
-Making the texture pack. You can keep using the launcher; the game waits.	Texturepakket wordt gemaakt. Je kunt de launcher blijven gebruiken; het spel wacht.
+Making the HD textures	HD-textures worden gemaakt
+Making the HD textures. You can keep using the launcher; the game waits.	HD-textures worden gemaakt. Je kunt de launcher blijven gebruiken; het spel wacht.
 Manage	Beheren
 Manage profiles	Profielen beheren
 Mar	mrt.
@@ -651,7 +647,7 @@ Remove game	Spel verwijderen
 Remove the copy	De kopie verwijderen
 Remove {}?	{} verwijderen?
 Removed, except	Verwijderd, behalve
-Removing the texture pack.	Texturepakket wordt verwijderd.
+Removing the HD textures.	HD-textures worden verwijderd.
 Repair	Herstellen
 Repair builds the game again from your disc.	Herstellen bouwt het spel opnieuw op vanaf je schijf.
 Repair downloads the game tools again.	Herstellen downloadt de spelhulpmiddelen opnieuw.
@@ -753,8 +749,8 @@ Texture filtering	Texturefiltering
 Custom packs folder	Map met eigen pakketten
 That's a folder: choose the disc image (.iso).	Dat is een map: kies het schijfimage (.iso).
 The 3D scene at the console's size.	De 3D-scène op de grootte van de console.
-The texture pack stopped before it was made.	Het texturepakket is gestopt voordat het klaar was.
-The texture pack wasn't made.	Het texturepakket is niet gemaakt.
+The HD textures stopped before they were made.	De HD-textures zijn gestopt voordat ze klaar waren.
+The HD textures weren't made.	De HD-textures zijn niet gemaakt.
 The address isn't a secure one (https)	Het adres is niet beveiligd (https)
 The answer has no release in it	Het antwoord bevat geen release
 The answer isn't valid JSON ({})	Het antwoord is geen geldige JSON ({})
@@ -809,7 +805,7 @@ The wheel is full: take a figure off it first	Het wiel is vol: haal er eerst een
 The zip file is damaged	Het zipbestand is beschadigd
 These are your own game tools: restore the file, or set them up again.	Dit zijn je eigen spelhulpmiddelen: herstel het bestand of stel ze opnieuw in.
 These game tools can't build {}	Deze spelhulpmiddelen kunnen {} niet bouwen
-These game tools can't make the texture pack. Update them first.	Deze spelhulpmiddelen kunnen het texturepakket niet maken. Werk ze eerst bij.
+These game tools can't make the HD textures. Update them first.	Deze spelhulpmiddelen kunnen de HD-textures niet maken. Werk ze eerst bij.
 This computer has no Desktop folder.	Deze computer heeft geen map Bureaublad.
 This copy holds your game. It is for your personal use only: do not share it.	Deze kopie bevat je spel. Alleen voor persoonlijk gebruik: deel hem niet.
 This disc image is {}, not {}.	Dit schijfimage is {}, niet {}.
@@ -861,7 +857,6 @@ Unknown toy {}	Onbekend poppetje {}
 Unknown toy {} (variant {:04X})	Onbekend poppetje {} (variant {:04X})
 Unknown toys	Onbekende poppetjes
 Unknown toys · {}	Onbekende poppetjes · {}
-Unlimited (experimental)	Onbeperkt (experimenteel)
 Unreadable. Restore a backup or reset it.	Onleesbaar. Herstel een back-up of reset het.
 Up	Omhoog
 Update all	Alles bijwerken
@@ -895,7 +890,7 @@ Virtual (no portal needed)	Virtueel (geen portal nodig)
 Virtual portal	Virtuele portal
 Virtual portal chosen.	Virtuele portal gekozen.
 Volume	Volume
-Wait for the texture pack to finish	Wacht tot het texturepakket klaar is
+Wait for the HD textures to finish	Wacht tot de HD-textures klaar zijn
 Wait for the copy to finish	Wacht tot het kopiëren klaar is
 Wait for the export to finish	Wacht tot het exporteren klaar is
 Wait for the game to finish.	Wacht tot het spel klaar is.

@@ -27,18 +27,19 @@ bool FrameGenerationOffered(std::string_view gameId);
 // A saved resolution_scale as the game takes it: 1 to 10, else 0 (Auto: missing, "auto", or any value outside the list the page
 // offers). The page shows it and PLAY passes it on, so they agree.
 int ResolutionScaleOf(std::string_view value);
-// PLAY: the game's copy replaces [video]; a resolution_scale the page does not offer is dropped (the game picks Auto).
+// PLAY: the game's copy replaces [video]; a resolution_scale the page does not offer is dropped (the game picks Auto); custom
+// texture packs and the dump are off (texture_packs=0, texture_dump=0: greyed on the page until they come).
 void ApplyGameVideo(LauncherConfig& config, std::string_view gameId);
 // The game ended: [video] (what the runtime may have changed) is the game's copy again.
 void StoreGameVideo(LauncherConfig& config, std::string_view gameId);
 
 // Once per settings file ([launcher] frame_rates=1 says it was done): the frame rates 0, 120, 144 and 240, which older versions
-// accepted and ran as 60, become 60 in [video] and [<game>.video], so an update does not change what a player had. A choice made
-// afterwards stays.
+// accepted and ran as 60, become 60 in [video] and [<game>.video], so an update does not change what a player had. Once more for
+// 0.9.4, which offers 30 and 60 only (frame_rates_cap=1): the same values and "display" become 60.
 void MigrateFrameRates(LauncherConfig& config);
 
-// The highest frame rate a game is offered: 60 for Giants, 0 (no cap) for the others. Giants' summon cutscene lasts 10 % less above 60
-// (the runtime caps it too), so its page lists 30 and 60 only and a higher saved value becomes 60 once.
+// The highest frame rate a game is offered: 60 for every game (0.9.4: the pages list 30 and 60 only; the runtime reads a higher
+// value as 60). Giants was first: its summon cutscene lasts 10 % less above 60.
 unsigned MaxFrameRate(std::string_view gameId);
 
 // What a game keeps in its folder (<data>/SSA, <data>/Giants), told apart for the delete and uninstall buttons.
