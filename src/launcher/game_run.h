@@ -124,6 +124,10 @@ struct PortalProbeEntry
     // What the portal answered to the game's reset (older runtimes: nothing): its id ("01 28"), the model's name, and what
     // Spyro's Adventure makes of it: "works", "warns", "rejected" or "unknown", with the reason.
     std::string id, model, verdict, verdictReason;
+    // HID portals: the write method that got an answer (empty: none), and each method tried with what the portal answered
+    // ("hid-write", "R: error: write failed (...); S: not tried").
+    std::string write;
+    std::vector<std::pair<std::string, std::string>> methods;
 };
 struct PortalProbeResult
 {
@@ -136,3 +140,11 @@ struct PortalProbeResult
 PortalProbeResult ParsePortalProbe(const std::string& output);
 // Runs the probe, waiting at most `timeoutMs`.
 PortalProbeResult RunPortalProbe(const std::string& runtime, uint32_t timeoutMs = 15000);
+// Why one portal can't be used, in the launcher's words (translated), with the system's own reason; empty when it answered.
+std::string PortalStatusText(const PortalProbeEntry& entry);
+// What the game will do with the portal, given the setting's mode ("auto", "real", "emulated") and the test; `good` is
+// whether that is what the player wants. The words never contradict an entry's pill: "Found" answers, "Found, not
+// answering" opened without an answer, "Found, can't be opened" did not open.
+std::string PortalVerdict(const std::string& mode, const PortalProbeResult& result, bool& good);
+// What "Copy" puts on the clipboard for a bug report: every portal with each write method's line, the notes, the verdict.
+std::string PortalProbeText(const std::string& mode, const PortalProbeResult& result);

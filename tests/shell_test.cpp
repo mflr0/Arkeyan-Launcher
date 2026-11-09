@@ -167,6 +167,54 @@ namespace
         PortalProbeResult transport = ParsePortalProbe("{\"transport\":\"usb\",\"available\":false,\"status\":\"error: libusb-1.0 not found\"}\n{\"done\":true,\"count\":0}\n");
         SHELL_EXPECT(transport.ran && transport.portals.empty() && transport.notes.size() == 1 && transport.notes[0].find("libusb-1.0 not found") != std::string::npos);
         SHELL_EXPECT(!ParsePortalProbe("{\"kind\":\"hid\"").ran && !ParsePortalProbe("").ran);
+        // A HID portal with its write methods (an object), then the fields after it: the original Wii portal on Linux, which
+        // opens and does not answer. Its words: "Found, not answering" with the reason, never "can't be opened".
+        PortalProbeResult silent = ParsePortalProbe("{\"kind\":\"hid\",\"vid\":\"1430\",\"pid\":\"0150\",\"product\":\"Spyro Porta\",\"opened\":true,"
+            "\"status\":\"error: write failed (hid-write: Protocol error; usb-control: libusb: cannot claim interface 0 (LIBUSB_ERROR_BUSY))\",\"write\":\"\","
+            "\"methods\":{\"hid-write\":\"R: error: write failed (hid-write: Protocol error); S: not tried\",\"usb-control\":\"R: error: no 'R' answer within 1 s; S: not tried\"},"
+            "\"id\":\"02 18\",\"model\":\"a model\",\"verdict\":\"works\",\"verdict_reason\":\"\"}\n{\"done\":true,\"count\":1}\n");
+        SHELL_EXPECT(silent.ran && silent.portals.size() == 1);
+        if (silent.portals.size() == 1)
+        {
+            const PortalProbeEntry& wii = silent.portals[0];
+            SHELL_EXPECT(wii.methods.size() == 2 && wii.methods[0].first == "hid-write" && wii.methods[1].first == "usb-control");
+            SHELL_EXPECT(wii.methods[1].second == "R: error: no 'R' answer within 1 s; S: not tried" && wii.write.empty());
+            SHELL_EXPECT(wii.id == "02 18" && wii.model == "a model" && wii.verdict == "works"); // read past the object
+            SHELL_EXPECT(PortalStatusText(wii) == "The portal refused the game's command: hid-write: Protocol error; usb-control: libusb: cannot claim interface 0 (LIBUSB_ERROR_BUSY).");
+            bool good = true;
+            SHELL_EXPECT(PortalVerdict("auto", silent, good) == "The portal doesn't answer: using the virtual portal." && !good);
+            SHELL_EXPECT(PortalVerdict("real", silent, good) == "The portal doesn't answer: the game will wait." && !good);
+            const std::string copied = PortalProbeText("auto", silent);
+            SHELL_EXPECT(copied.find("hid 1430:0150 \"Spyro Porta\": opened, error: write failed") != std::string::npos);
+            SHELL_EXPECT(copied.find("  hid-write: R: error: write failed (hid-write: Protocol error); S: not tried\n") != std::string::npos);
+            SHELL_EXPECT(copied.find("  usb-control: R: error: no 'R' answer within 1 s; S: not tried\n") != std::string::npos);
+            SHELL_EXPECT(copied.find("=> The portal doesn't answer: using the virtual portal.\n") != std::string::npos);
+            SHELL_EXPECT(copied.rfind("Portal test (Arkeyan Launcher ", 0) == 0);
+        }
+        // Each reason in the launcher's words; an answer has none.
+        PortalProbeEntry entry;
+        entry.status = "ok";
+        SHELL_EXPECT(PortalStatusText(entry).empty());
+        entry.status = "error: no answer within 1 s";
+        SHELL_EXPECT(PortalStatusText(entry) == "The portal didn't answer the game within 1 second.");
+        entry.status = "error: cannot open (LIBUSB_ERROR_ACCESS); Linux needs the portal's udev rule: SUBSYSTEM==...";
+        SHELL_EXPECT(PortalStatusText(entry) == "Linux needs the portal's udev rule: see the README.");
+        entry.status = "error: cannot open (access denied)";
+        SHELL_EXPECT(PortalStatusText(entry) == "The portal can't be opened: access denied.");
+        entry.status = "error: read failed (LIBUSB_ERROR_IO)";
+        SHELL_EXPECT(PortalStatusText(entry) == "Reading the portal failed: LIBUSB_ERROR_IO.");
+        entry.status = "error: cannot claim interface (LIBUSB_ERROR_BUSY)";
+        SHELL_EXPECT(PortalStatusText(entry) == "Another program is using the portal: LIBUSB_ERROR_BUSY.");
+        entry.status = "error: something new";
+        SHELL_EXPECT(PortalStatusText(entry) == "something new");
+        // A portal that answers wins; one that did not open says so.
+        PortalProbeResult closed;
+        closed.ran = true;
+        closed.portals.push_back({ "usb", "1430", "1f17", "Xbox 360 portal", false, "error: cannot open (access denied)" });
+        bool usable = true;
+        SHELL_EXPECT(PortalVerdict("auto", closed, usable) == "The portal can't be opened: using the virtual portal." && !usable);
+        closed.portals.push_back({ "hid", "1430", "0150", "Portal", true, "ok" });
+        SHELL_EXPECT(PortalVerdict("auto", closed, usable) == "Real portal: the game will use it." && usable);
 
 #if !defined(_WIN32)
         // A stand-in runtime: a shell script that prints, then exits with a code, or answers --portal-probe.

@@ -7,8 +7,10 @@
 #include "launcher/game_names.h"
 #include "launcher/game_settings.h"
 #include "launcher/launcher.h"
+#include "launcher/updater.h"
 #include <SDL3/SDL.h>
 #include <algorithm>
+#include <cstring>
 #include <fmt/format.h>
 #include <fstream>
 #include "launcher/game_window.h"
@@ -112,7 +114,8 @@ namespace
         return exitCode;
     }
 
-    // Minimal reader for the probe's lines: one flat JSON object, string / number / boolean values.
+    // Minimal reader for the probe's lines: one JSON object, string / number / boolean values, and objects of strings
+    // one level deep, whose entries come out as "<key>.<name>" in their order ("methods": each write method's result).
     bool ParseFlatObject(const std::string& line, std::vector<std::pair<std::string, std::string>>& fields)
     {
         size_t i = line.find('{');
@@ -151,6 +154,36 @@ namespace
                 return false;
             i++;
             skip();
+            if (i < line.size() && line[i] == '{')
+            {
+                for (i++;;)
+                {
+                    skip();
+                    if (i < line.size() && line[i] == '}')
+                    {
+                        i++;
+                        break;
+                    }
+                    std::string name, entry;
+                    if (!string(name))
+                        return false;
+                    skip();
+                    if (i >= line.size() || line[i] != ':')
+                        return false;
+                    i++;
+                    skip();
+                    if (!string(entry))
+                        return false;
+                    fields.emplace_back(key + "." + name, entry);
+                    skip();
+                    if (i < line.size() && line[i] == ',')
+                        i++;
+                }
+                skip();
+                if (i < line.size() && line[i] == ',')
+                    i++;
+                continue;
+            }
             if (i < line.size() && line[i] == '"')
             {
                 if (!string(value))
@@ -522,6 +555,10 @@ PortalProbeResult ParsePortalProbe(const std::string& output)
                 entry.model = get("model");
                 entry.verdict = get("verdict");
                 entry.verdictReason = get("verdict_reason");
+                entry.write = get("write");
+                for (const auto& [name, value] : fields)
+                    if (name.starts_with("methods."))
+                        entry.methods.emplace_back(name.substr(8), value);
                 if (entry.product.empty())
                     entry.product = get("name"); // the first draft of the contract
                 if (entry.status.empty())
@@ -534,6 +571,80 @@ PortalProbeResult ParsePortalProbe(const std::string& output)
     if (!result.ran)
         result.error = Tr("The game didn't finish the portal test.");
     return result;
+}
+
+std::string PortalStatusText(const PortalProbeEntry& entry)
+{
+    if (entry.status.empty() || entry.status == "ok")
+        return {};
+    std::string why = entry.status.starts_with("error: ") ? entry.status.substr(7) : entry.status;
+    // "<what> (<the system's reason>)": the reason stays as the system gave it.
+    auto inside = [&](const char* what) -> std::optional<std::string> {
+        if (!why.starts_with(what))
+            return std::nullopt;
+        size_t open = why.find('(', strlen(what)), close = why.rfind(')');
+        return open != std::string::npos && close != std::string::npos && close > open ? why.substr(open + 1, close - open - 1) : std::string();
+    };
+    if (why.find("udev rule") != std::string::npos)
+        return Tr("Linux needs the portal's udev rule: see the README.");
+    if (why.find("answer within 1 s") != std::string::npos)
+        return Tr("The portal didn't answer the game within 1 second.");
+    if (auto reason = inside("write failed"))
+        return Tf("The portal refused the game's command: {}.", *reason);
+    if (auto reason = inside("read failed"))
+        return Tf("Reading the portal failed: {}.", *reason);
+    if (auto reason = inside("cannot open"))
+        return Tf("The portal can't be opened: {}.", *reason);
+    if (auto reason = inside("cannot claim interface"))
+        return Tf("Another program is using the portal: {}.", *reason);
+    if (why.starts_with("no portal interface"))
+        return Tr("This device has no portal interface.");
+    return why;
+}
+
+std::string PortalVerdict(const std::string& mode, const PortalProbeResult& result, bool& good)
+{
+    // Opened is not enough: a portal that opens but does not answer the game's commands (its status an error) is no
+    // portal for the game. Older runtimes give no status.
+    bool answered = false, opened = false;
+    for (const PortalProbeEntry& entry : result.portals)
+    {
+        opened = opened || entry.opened;
+        answered = answered || (entry.opened && (entry.status.empty() || entry.status == "ok"));
+    }
+    good = answered || mode == "emulated";
+    if (mode == "emulated")
+        return Tr("Virtual portal chosen.");
+    if (answered)
+        return Tr("Real portal: the game will use it.");
+    if (result.portals.empty())
+        return mode == "real" ? Tr("No portal found: the game will wait for one.") : Tr("No portal found: using the virtual portal.");
+    if (opened)
+        return mode == "real" ? Tr("The portal doesn't answer: the game will wait.") : Tr("The portal doesn't answer: using the virtual portal.");
+    return mode == "real" ? Tr("The portal can't be opened: the game will wait.") : Tr("The portal can't be opened: using the virtual portal.");
+}
+
+std::string PortalProbeText(const std::string& mode, const PortalProbeResult& result)
+{
+    std::string text = fmt::format("Portal test (Arkeyan Launcher {}, portal mode {})\n", LauncherVersion(), mode);
+    if (!result.error.empty())
+        return text + result.error + "\n";
+    if (result.portals.empty())
+        text += "no portal found\n";
+    for (const PortalProbeEntry& entry : result.portals)
+    {
+        text += fmt::format("{} {}:{} \"{}\": {}, {}\n", entry.kind, entry.vid, entry.pid, entry.product, entry.opened ? "opened" : "not opened", entry.status);
+        if (!entry.id.empty())
+            text += fmt::format("  model: {} {}; Spyro's Adventure: {} ({})\n", entry.id, entry.model, entry.verdict, entry.verdictReason);
+        for (const auto& [method, line] : entry.methods)
+            text += fmt::format("  {}: {}\n", method, line);
+        if (!entry.write.empty())
+            text += fmt::format("  the game writes with {}\n", entry.write);
+    }
+    for (const std::string& note : result.notes)
+        text += note + "\n";
+    bool good = false;
+    return text + "=> " + PortalVerdict(mode, result, good) + "\n";
 }
 
 PortalProbeResult RunPortalProbe(const std::string& runtime, uint32_t timeoutMs)

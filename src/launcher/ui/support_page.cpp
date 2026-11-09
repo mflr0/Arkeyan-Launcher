@@ -44,29 +44,6 @@ namespace launcher_ui
             g_saveFailed = true;
     }
 
-    namespace
-    {
-        // What the game will do with the portal, given the mode and what the test found.
-        std::string PortalVerdict(const std::string& mode, const PortalProbeResult& result, bool& good)
-        {
-            bool opened = false;
-            // Opened is not enough: a portal that opens but does not answer the game's commands (its status an error) is no
-            // portal for the game. Older runtimes give no status.
-            for (const PortalProbeEntry& entry : result.portals)
-                opened = opened || (entry.opened && (entry.status.empty() || entry.status == "ok"));
-            good = opened || mode == "emulated";
-            if (mode == "emulated")
-                return Tr("Virtual portal chosen.");
-            if (opened)
-                return Tr("Real portal: the game will use it.");
-            if (result.portals.empty())
-                return mode == "real" ? Tr("No portal found: the game will wait for one.")
-                                      : Tr("No portal found: using the virtual portal.");
-            return mode == "real" ? Tr("The portal can't be opened: the game will wait.")
-                                  : Tr("The portal can't be opened: using the virtual portal.");
-        }
-    }
-
     // One text file with the last logs, the settings and the versions; it is shown before it can be saved or copied.
     void App::OpenProblemReport()
     {
@@ -169,7 +146,9 @@ namespace launcher_ui
         for (const PortalProbeEntry& entry : result.portals)
         {
             std::string name = entry.product.empty() ? std::string(entry.kind == "usb" ? Tr("Xbox portal") : Tr("Portal")) : entry.product;
-            ui::StatusPill(entry.opened ? ui::Status::Success : ui::Status::Error, entry.opened ? Tr("Found") : Tr("Found, not usable"));
+            const std::string problem = PortalStatusText(entry);
+            const ui::Status pill = !entry.opened ? ui::Status::Error : problem.empty() ? ui::Status::Success : ui::Status::Warning;
+            ui::StatusPill(pill, !entry.opened ? Tr("Found, can't be opened") : problem.empty() ? Tr("Found") : Tr("Found, not answering"));
             ImGui::SameLine(0, ui::space::XS);
             ImGui::AlignTextToFramePadding();
             ui::Text(ui::TextStyle::Body, fmt::format("{} ({} {}:{})", name, entry.kind == "usb" ? "USB" : "HID", entry.vid, entry.pid).c_str(), ui::color::Ink, -1);
@@ -183,17 +162,21 @@ namespace launcher_ui
                     ui::Text(ui::TextStyle::Caption, (entry.verdict == "rejected" ? Tf("{} rejects this portal: {}.", spyro, entry.verdictReason)
                                                            : Tf("{} warns about this portal: {}.", spyro, entry.verdictReason)).c_str(), ui::color::InkSoft);
             }
-            if (!entry.opened)
-            {
-                std::string why = entry.status.starts_with("error: ") ? entry.status.substr(7) : entry.status;
-                ui::Text(ui::TextStyle::Caption, why.c_str(), ui::color::Dim);
-            }
+            if (!problem.empty())
+                ui::Text(ui::TextStyle::Caption, problem.c_str(), ui::color::Dim);
         }
         for (const std::string& note : result.notes)
             ui::Text(ui::TextStyle::Caption, note.c_str(), ui::color::Dim);
         bool good = false;
         const std::string verdict = PortalVerdict(mode, result, good);
         ui::StatusPill(good ? ui::Status::Success : ui::Status::Neutral, verdict.c_str());
+        // Every portal with each write method's line, for a GitHub issue.
+        ImGui::SameLine(0, ui::space::S);
+        if (ui::Button(Tr("Copy")))
+        {
+            SDL_SetClipboardText(PortalProbeText(mode, result).c_str());
+            Toast(Tr("Test result copied"), ui::ToastKind::Success);
+        }
     }
 
     void App::DrawLogs()
