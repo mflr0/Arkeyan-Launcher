@@ -40,9 +40,9 @@ The launcher finds the kit, runs it, shows its progress and then starts the game
    (Settings button on its Play page) > Game has **Reinstall** (held a second), **Remove game** and
    **Game files**. Arkeyan-Builder is incremental, so a reinstall is quick when little changed.
 
-**HD textures (0.9.2).** With `[<game>] hd_textures=1` (Game settings > Video > HD textures, off by default; Swap Force, Trap Team,
+**Texture pack (0.9.2; "HD textures" before 0.9.4).** With `[<game>] hd_textures=1` (Game settings > Video > Textures > Texture pack, off by default; Swap Force, Trap Team,
 SuperChargers and Imaginators), an install or an update adds `--hd-textures auto` to the build, and the checklist ends with a
-ninth row, **Making HD textures** (`hdtextures`, weighted like a fifth of an install), expected from the start
+ninth row, **Making the texture pack** (`hdtextures`, weighted like a fifth of an install), expected from the start
 (`InstallProgress::hdTextures`). The kit must know the option: `InstallKit::hdTextures` is true when its builder's file holds the text
 `--hd-textures` (its usage line), so the kit 0.9.1 and later; with an older kit the install does not ask for it and the row is
 disabled. On a game already built the switch runs the step alone (`GameInstaller::StartHdTextures`, no `--out`; log
@@ -306,7 +306,7 @@ Tested in containers only (amd64 under Rosetta, Mesa's lavapipe, offscreen): a f
 - `src/launcher/game_install.{h,cpp}`: finding the kit and the runtime, the game folder, `InstallProgress::Apply` (one
   stdout line), `ReadInstallLog`, `GameInstaller` (the process and the thread reading its output).
 - `src/launcher/install_checklist.{h,cpp}`: the checklist, the overall fraction, the time left, the failure headline.
-- `src/launcher/ui/hd_textures_page.cpp`: the HD textures switch, its progress and its failure (Game settings > Video).
+- `src/launcher/ui/hd_textures_page.cpp`: the Texture pack switch, its progress and its failure (Game settings > Video > Textures).
 - `src/launcher/ui/install_page.cpp`: `App::StartInstall`, `PollInstall`, `RefreshInstall`, `DrawInstall`; the INSTALL button
   stays in `DrawPlay` (`launcher_ui.cpp`).
 

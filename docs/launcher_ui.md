@@ -581,19 +581,24 @@ GitHub issue) and the GitHub link bottom right. The launcher's own language is i
 3. Collection - see below.
 4. Settings (the gear) - **the launcher's own settings and what both games share**, in four tabs: Controls (device, portal, glyphs), Launcher (language slot, updates, data folder, **Remove Arkeyan Launcher**: "Uninstall everything", below), Support (report a problem, logs), About (version, credits).
    Clicking a game goes back to Play; clicking the gear again, or B / Escape, goes back to the page you came from.
-5. Game settings (the Settings button on a game's Play page) - **that game's own settings**, six tabs (the sidebar keeps the
-   game selected; B / Escape or **Back** return to its Play page):
-   - Video: fullscreen, resolution scale, FSR 3 (a switch) and FSR 3 quality (shown while it is on), frame rate limit (30 or 60), volume, speakers, skip intro movies, Original resolution (Swap Force only), VSync, texture filtering, widescreen,
-     HD texture packs (and their folder), **HD textures** (Swap Force, Trap Team, SuperChargers, Imaginators; below), Advanced > dump textures.
+5. Game settings (the Settings button on a game's Play page) - **that game's own settings**, eight tabs in the order a player
+   looks for them (0.9.4): the picture and performance, the controls, the sound, the language, then the game's files: Video,
+   Keyboard, Controller, Sound, Language, Disc, Saves, Game (the sidebar keeps the game selected; B / Escape or **Back** return
+   to its Play page):
+   - Video, in three sections: **Display** (fullscreen, widescreen, frame rate limit and Drop to 30 FPS at 60, VSync, FPS
+     counter, skip intro movies), **Image quality** (resolution scale, FSR 3 (a switch) with FSR 3 quality and Frame generation
+     shown while it is on, Original resolution (Swap Force only), texture filtering, edge smoothing (Swap Force, Trap Team)),
+     **Textures** (**Texture pack** (Swap Force, Trap Team, SuperChargers, Imaginators; below), Custom texture packs and their
+     folder, dump textures).
      The game's own copy, `[<game>.video]` (docs/settings.md).
-     **HD textures** is a switch, off by default, `[<game>] hd_textures`; its line says what it does and the disk it takes for that
+     **Texture pack** ("HD textures" before 0.9.4) is a switch, off by default, `[<game>] hd_textures`; its line says what it does and the disk it takes for that
      game (2.2 GB Swap Force, 2.6 SuperChargers, 3.0 Imaginators and Trap Team [?]). On a built game with its disc at hand,
      flipping it runs the kit's `Arkeyan-Builder --iso <disc> --hd-textures auto` alone as a background job
      (`GameInstaller::StartHdTextures`; `ui/hd_textures_page.cpp`): under the list a line, a bar with its percentage and **Stop**;
-     the launcher stays usable, PLAY, INSTALL and the other game buttons wait ("Wait for the HD textures to finish"), and the
-     switch itself is disabled while the game runs. Done: a toast "HD textures ready". Stopped or failed: the switch goes back
+     the launcher stays usable, PLAY, INSTALL and the other game buttons wait ("Wait for the texture pack to finish"), and the
+     switch itself is disabled while the game runs. Done: a toast "Texture pack ready". Stopped or failed: the switch goes back
      to Off, the half-made `textures-hd/` is removed, and a failure says why under the list (the builder's `@error`, or "These
-     game tools can't make HD textures..." when it could not start). Flipped off: `--hd-textures off` removes the folder.
+     game tools can't make the texture pack..." when it could not start). Flipped off: `--hd-textures off` removes the folder.
      A game not built yet keeps the choice and the install makes the pack as its last step (`docs/install.md`). The switch is
      disabled with its reason on a kit that does not know the option (a kit before 0.9.1: "Needs newer game tools: reinstall the
      game to get them."), with no disc image at hand, or while the game runs. Spyro's Adventure and Giants have no switch: their
@@ -602,6 +607,7 @@ GitHub issue) and the GitHub link bottom right. The launcher's own language is i
      "1st Power / Accept (A)"), two rows a line: the key's button (click it, press a key; Escape cancels), red when another row of
      the game has the same key, and **Reset to defaults** (held) for this game's keys. The game's own copy, `[<game>.input]`; PLAY puts it
      in `[input]` (docs/settings.md, "Per-game keyboard keys", which also lists each game's rows and where their names come from).
+   - Sound (0.9.4): volume, speakers (Auto, Stereo, 5.1) and Trap Team's portal sound, `[<game>.audio]` (docs/settings.md).
    - Language: game text and game voices (`[<game>] language`, `voice_language`). Giants' disc has twelve languages for both (English,
      French, German, Spanish, Latin-American Spanish `es-419`, Italian, Dutch, Portuguese, Swedish, Norwegian, Danish, Finnish) and its
      voices default to **Same as text** (an empty `voice_language`); Spyro's Adventure has ten, its voices default to English; Swap Force's
@@ -1142,7 +1148,7 @@ games and Coming later, A into Collection, Y for the search, the D-pad to a seat
 row, the shelf) and A to put a card there, X for a card's sheet, B back, then down to Settings, A, RT to its Launcher tab, Escape. Each step's page is checked ("FAIL nav step";
 a timeout stops a run that went astray); `ArkeyanLauncherTest` runs it (`NavChecks`).
 With `SKY_LAUNCHER_TEST_PADWALK=1` it walks every page, tab and dialog with the pad ("Navigation model"; `pad_walk.cpp`):
-`00-first-start` to `49-portable-not-installed` (since 0.9.2 with the Profiles menu, editor and tab, the file check's dialog, the pages and game settings of Trap Team, SuperChargers and Imaginators with their portal panel and Toy Box button), each shot as a pad player arrives there, then walked, every result a `padwalk` line
+`00-first-start` to `50-ssa-sound` (`50-` the Sound tab, 0.9.4; since 0.9.2 with the Profiles menu, editor and tab, the file check's dialog, the pages and game settings of Trap Team, SuperChargers and Imaginators with their portal panel and Toy Box button), each shot as a pad player arrives there, then walked, every result a `padwalk` line
 (`FAIL padwalk` for a stop never reached, a move out of reading order, B or LB / RB not doing their job). The Spyro's Adventure
 views want `SKY_LAUNCHER_TEST_DROP`; without a disc they show its no-disc state. `SKY_SAVE_DIR` and `SKY_COLLECTION` scratch.
 With `SKY_LAUNCHER_TEST_INSTALL=1` and `SKY_LAUNCHER_KIT=$PWD/build/fake-kit` it shows the install screens instead
@@ -1192,13 +1198,15 @@ Swap Force not opened); with `pad` each page's first stop has its ring and the p
 first stop with its ring.
 `SKY_LAUNCHER_TEST_RUNNING=1` (with `SKY_LAUNCHER_RUNTIME` a stand-in game and `SKY_LAUNCHER_TEST_DROP` Spyro's Adventure's disc)
 shoots one game at a time ("A game running"): `running-1-game`, `running-2-other`, `running-3-ended`.
+`SKY_LAUNCHER_TEST_GAMETABS=<game>` shoots every tab of that game's settings, FSR 3 and frame generation on so their rows show
+(`tabs-<game>-<NN>-<tab>`; `SKY_LAUNCHER_LANGUAGE` the language, `SKY_LAUNCHER_TEST_SIZE=1280x1650` a window tall enough for the Video tab).
 `SKY_LAUNCHER_TEST_KEYS=1` shoots each game's Keyboard tab (`keys-<game>` for the six games; `SKY_LAUNCHER_LANGUAGE=fr` for the French ones).
 `SKY_LAUNCHER_TEST_PAD=1` shoots each game's Controller tab with a few buttons given other jobs (`pad-ssa`, `pad-giants`, `pad-swapforce`)
 and Swap Force's Game tab with Nightmare from the start on (`game-swapforce`).
 `SKY_LAUNCHER_TEST_LOGO=1` shoots each game's page (`logo-ssa`, `logo-giants`, `logo-swapforce`) from the art already cached in
 `SKYLANDERS_DATA`; `SKY_LAUNCHER_TEST_SIZE=<w>x<h>` sets the window (the default one, a large one).
 `SKY_LAUNCHER_TEST_HDTEX=<game>` (with `SKY_LAUNCHER_TEST_DROP=<its disc>`, `SKY_LAUNCHER_KIT=<a kit>`, scratch data) records the game as built with a
-stand-in executable, opens its Video tab at the bottom, flips the HD textures switch as a click would and shoots `hdtex-<game>-1-off`,
+stand-in executable, opens its Video tab at the bottom, flips the Texture pack switch as a click would and shoots `hdtex-<game>-1-off`,
 `-2-running` and `-3-done` (`-3-failed`, or `-3-stopped` with `SKY_LAUNCHER_TEST_HDTEX_CANCEL=1`); each outcome is checked ("ok hdtex: ...", "FAIL hdtex: ...").
 With the tests' fake kit (`build/fake-kit`, `FAKE_SSABUILD_FAIL=hdtextures` for a failure) or a real one. A kit that does not know the option ends after `-1-off`.
 `SKY_LAUNCHER_TEST_UPDATE=1` with `SKY_LAUNCHER_UPDATE_URL=file://<fake latest.json>` shows the update screens (`20-` to `24-`).
