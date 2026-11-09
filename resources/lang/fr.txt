@@ -36,7 +36,7 @@ Dec	déc.
 \n- {} (media ID {:08X}, version {})	\n- {} (ID du média {:08X}, version {})
 Can't read the disc image ({}).{}	Impossible de lire l'image disque ({}).{}
 Test	Tester
-Texture pack folder	Dossier des packs de textures
+Custom packs folder	Dossier des packs personnalisés
 The copy failed	La copie a échoué
 The disc image isn't there. Choose it again.	L'image disque est introuvable. Choisissez-la à nouveau.
 That's a folder: choose the disc image (.iso).	C'est un dossier : choisissez l'image disque (.iso).
@@ -56,7 +56,6 @@ Couldn't write to the game folder.	Impossible d'écrire dans le dossier du jeu.
 Native PC ports of Skylanders. No game code or art: it comes from your disc.	Les portages PC natifs de Skylanders. Aucun code ni image du jeu : tout vient de votre disque.
 About	À propos
 Adding the movie shaders	Ajout des shaders des vidéos
-Advanced	Avancé
 Anisotropic 16x	Anisotrope 16x
 Anisotropic 2x	Anisotrope 2x
 Anisotropic 4x	Anisotrope 4x
@@ -166,7 +165,7 @@ Game uninstalled	Jeu désinstallé
 Game voices	Voix du jeu
 Gamepad	Manette
 GitHub says: {}	GitHub répond : {}
-HD texture packs	Packs de textures HD
+Custom texture packs	Packs de textures personnalisés
 HID portals	Portails HID
 Hide details	Masquer
 Hold to rebuild the game.	Maintenez pour reconstruire le jeu.
@@ -285,8 +284,9 @@ The traps' voices: a Traptanium portal plays them, else the computer (F3 in game
 FSR 3	FSR 3
 AMD upscaling: faster, nearly as sharp (F3 in game).	Mise à l'échelle AMD : plus rapide, presque aussi net (F3 en jeu).
 FSR 3 quality	Qualité FSR 3
-Quality is the sharpest, Ultra Performance the fastest.	Qualité est le plus net, Ultra Performance le plus rapide.
+Native AA is the sharpest, Ultra Performance the fastest.	AA natif est le plus net, Ultra Performance le plus rapide.
 Quality	Qualité
+Native AA	AA natif
 Balanced	Équilibré
 Performance	Performance
 Ultra Performance	Ultra Performance
@@ -422,6 +422,10 @@ Verified, {}	Vérifié, {}
 Version {} is available.	La version {} est disponible.
 Version {}, {}	Version {}, {}
 Video	Vidéo
+Sound	Son
+Display	Affichage
+Image quality	Qualité d'image
+Textures	Textures
 Virtual (no portal needed)	Virtuel (aucun portail nécessaire)
 Virtual portal chosen.	Portail virtuel choisi.
 Wait for the installation to finish	Attendez la fin de l'installation
@@ -1039,22 +1043,22 @@ Not now	Pas maintenant
 Why this happens	Pourquoi cela arrive
 Continue	Continuer
 
-# HD textures (Game settings > Video, and the install's last step).
-HD textures	Textures HD
+# The texture pack (Game settings > Video, and the install's last step).
+Texture pack	Pack de textures
 Doubles the game's textures from your disc. About {} of disk, a few minutes.	Double la finesse des textures du jeu, d'après votre disque. Environ {} d'espace disque, quelques minutes.
 Needs newer game tools: reinstall the game to get them.	Il faut des outils de jeu plus récents : réinstallez le jeu pour les obtenir.
 Quit the game first.	Quittez d'abord le jeu.
-It is made when the game is installed.	Elles sont faites à l'installation du jeu.
-Making the HD textures. You can keep using the launcher; the game waits.	Création des textures HD. Vous pouvez continuer à utiliser le lanceur ; le jeu attend.
-Removing the HD textures.	Suppression des textures HD.
-HD textures ready	Textures HD prêtes
-HD textures removed	Textures HD supprimées
-HD textures stopped	Textures HD interrompues
-The HD textures weren't made.	Les textures HD n'ont pas pu être créées.
-The HD textures stopped before they were made.	La création des textures HD s'est arrêtée avant la fin.
-Wait for the HD textures to finish	Attendez la fin des textures HD
-These game tools can't make HD textures. Update them first.	Ces outils de jeu ne savent pas créer de textures HD. Mettez-les d'abord à jour.
-Making HD textures	Création des textures HD
+It is made when the game is installed.	Il est créé à l'installation du jeu.
+Making the texture pack. You can keep using the launcher; the game waits.	Création du pack de textures. Vous pouvez continuer à utiliser le lanceur ; le jeu attend.
+Removing the texture pack.	Suppression du pack de textures.
+Texture pack ready	Pack de textures prêt
+Texture pack removed	Pack de textures supprimé
+Texture pack stopped	Pack de textures interrompu
+The texture pack wasn't made.	Le pack de textures n'a pas pu être créé.
+The texture pack stopped before it was made.	La création du pack de textures s'est arrêtée avant la fin.
+Wait for the texture pack to finish	Attendez la fin du pack de textures
+These game tools can't make the texture pack. Update them first.	Ces outils de jeu ne savent pas créer le pack de textures. Mettez-les d'abord à jour.
+Making the texture pack	Création du pack de textures
 # The library's level, seat, sort and count texts (collection_page.cpp).
 Recent	Récents
 Level	Niveau

@@ -178,7 +178,7 @@ namespace launcher_ui
             return;
         if (m_s->hdJob.Running()) // it works on the build's folder
         {
-            Toast(Tr("Wait for the HD textures to finish"), ui::ToastKind::Error);
+            Toast(Tr("Wait for the texture pack to finish"), ui::ToastKind::Error);
             return;
         }
         if (!UpdatingAll() && DefenderNoticeFirst([this] { StartInstall(); }))

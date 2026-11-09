@@ -58,7 +58,6 @@ Add a figure	Figuur toevoegen
 Add a profile	Profiel toevoegen
 Add to favorites	Aan favorieten toevoegen
 Adding the movie shaders	Filmshaders toevoegen
-Advanced	Geavanceerd
 Adventure	Avontuur
 Adventure Packs	Avonturenpakketten
 Air	Lucht
@@ -368,11 +367,11 @@ GitHub says: {}	GitHub zegt: {}
 Glow in the Dark	Glow in the Dark
 Gold	Goud
 Greek	Grieks
-HD texture packs	HD-texturepakketten
-HD textures	HD-texturen
-HD textures ready	HD-texturen klaar
-HD textures removed	HD-texturen verwijderd
-HD textures stopped	HD-texturen gestopt
+Custom texture packs	Eigen texturepakketten
+Texture pack	Texturepakket
+Texture pack ready	Texturepakket klaar
+Texture pack removed	Texturepakket verwijderd
+Texture pack stopped	Texturepakket gestopt
 HID portals	HID-portals
 Hat	Hoed
 Hero points	Heldenpunten
@@ -473,8 +472,8 @@ Made for 30 FPS; 60 and above are experimental.	Gemaakt voor 30 FPS; 60 en hoger
 Magic	Magie
 Magic Items	Magische voorwerpen
 Magic item	Item
-Making HD textures	HD-texturen maken
-Making the HD textures. You can keep using the launcher; the game waits.	HD-texturen worden gemaakt. Je kunt de launcher blijven gebruiken; het spel wacht.
+Making the texture pack	Texturepakket wordt gemaakt
+Making the texture pack. You can keep using the launcher; the game waits.	Texturepakket wordt gemaakt. Je kunt de launcher blijven gebruiken; het spel wacht.
 Manage	Beheren
 Manage profiles	Profielen beheren
 Mar	mrt.
@@ -621,7 +620,8 @@ Put back: 	Teruggezet:
 Put it on {}	Op {} zetten
 Put on the portal	Op de portal zetten
 Quality	Kwaliteit
-Quality is the sharpest, Ultra Performance the fastest.	Kwaliteit is het scherpst, Ultraprestaties het snelst.
+Native AA	Native AA
+Native AA is the sharpest, Ultra Performance the fastest.	Native AA is het scherpst, Ultraprestaties het snelst.
 Quit	Afsluiten
 Quit the game before restoring a backup	Sluit het spel af voordat je een back-up herstelt
 Quit the game first.	Sluit eerst het spel af.
@@ -651,7 +651,7 @@ Remove game	Spel verwijderen
 Remove the copy	De kopie verwijderen
 Remove {}?	{} verwijderen?
 Removed, except	Verwijderd, behalve
-Removing the HD textures.	De HD-texturen worden verwijderd.
+Removing the texture pack.	Texturepakket wordt verwijderd.
 Repair	Herstellen
 Repair builds the game again from your disc.	Herstellen bouwt het spel opnieuw op vanaf je schijf.
 Repair downloads the game tools again.	Herstellen downloadt de spelhulpmiddelen opnieuw.
@@ -750,11 +750,11 @@ Test	Test
 Test the portal	De portal testen
 Testing...	Testen...
 Texture filtering	Texturefiltering
-Texture pack folder	Map met texturepakket
+Custom packs folder	Map met eigen pakketten
 That's a folder: choose the disc image (.iso).	Dat is een map: kies het schijfimage (.iso).
 The 3D scene at the console's size.	De 3D-scène op de grootte van de console.
-The HD textures stopped before they were made.	De HD-texturen zijn gestopt voordat ze klaar waren.
-The HD textures weren't made.	De HD-texturen zijn niet gemaakt.
+The texture pack stopped before it was made.	Het texturepakket is gestopt voordat het klaar was.
+The texture pack wasn't made.	Het texturepakket is niet gemaakt.
 The address isn't a secure one (https)	Het adres is niet beveiligd (https)
 The answer has no release in it	Het antwoord bevat geen release
 The answer isn't valid JSON ({})	Het antwoord is geen geldige JSON ({})
@@ -809,7 +809,7 @@ The wheel is full: take a figure off it first	Het wiel is vol: haal er eerst een
 The zip file is damaged	Het zipbestand is beschadigd
 These are your own game tools: restore the file, or set them up again.	Dit zijn je eigen spelhulpmiddelen: herstel het bestand of stel ze opnieuw in.
 These game tools can't build {}	Deze spelhulpmiddelen kunnen {} niet bouwen
-These game tools can't make HD textures. Update them first.	Deze spelhulpmiddelen kunnen geen HD-texturen maken. Werk ze eerst bij.
+These game tools can't make the texture pack. Update them first.	Deze spelhulpmiddelen kunnen het texturepakket niet maken. Werk ze eerst bij.
 This computer has no Desktop folder.	Deze computer heeft geen map Bureaublad.
 This copy holds your game. It is for your personal use only: do not share it.	Deze kopie bevat je spel. Alleen voor persoonlijk gebruik: deel hem niet.
 This disc image is {}, not {}.	Dit schijfimage is {}, niet {}.
@@ -885,13 +885,17 @@ Version {} is available.	Versie {} is beschikbaar.
 Version {}, {}	Versie {}, {}
 Versions	Versies
 Video	Video
+Sound	Geluid
+Display	Weergave
+Image quality	Beeldkwaliteit
+Textures	Textures
 Villain	Schurk
 Villains	Schurken
 Virtual (no portal needed)	Virtueel (geen portal nodig)
 Virtual portal	Virtuele portal
 Virtual portal chosen.	Virtuele portal gekozen.
 Volume	Volume
-Wait for the HD textures to finish	Wacht tot de HD-texturen klaar zijn
+Wait for the texture pack to finish	Wacht tot het texturepakket klaar is
 Wait for the copy to finish	Wacht tot het kopiëren klaar is
 Wait for the export to finish	Wacht tot het exporteren klaar is
 Wait for the game to finish.	Wacht tot het spel klaar is.

@@ -58,7 +58,6 @@ Add a figure	Adicionar uma figura
 Add a profile	Adicionar um perfil
 Add to favorites	Adicionar aos favoritos
 Adding the movie shaders	A adicionar os shaders dos filmes
-Advanced	Avançado
 Adventure	Aventura
 Adventure Packs	Pacotes de Aventura
 Air	Ar
@@ -368,11 +367,11 @@ GitHub says: {}	O GitHub diz: {}
 Glow in the Dark	Brilha no Escuro
 Gold	Ouro
 Greek	Grego
-HD texture packs	Pacotes de texturas HD
-HD textures	Texturas HD
-HD textures ready	Texturas HD prontas
-HD textures removed	Texturas HD removidas
-HD textures stopped	Texturas HD interrompidas
+Custom texture packs	Pacotes de texturas personalizados
+Texture pack	Pacote de texturas
+Texture pack ready	Pacote de texturas pronto
+Texture pack removed	Pacote de texturas removido
+Texture pack stopped	Pacote de texturas interrompido
 HID portals	Portais HID
 Hat	Chapéu
 Hero points	Pontos de herói
@@ -473,8 +472,8 @@ Made for 30 FPS; 60 and above are experimental.	Feito para 30 FPS; 60 e mais sã
 Magic	Magia
 Magic Items	Itens Mágicos
 Magic item	Item
-Making HD textures	A criar texturas HD
-Making the HD textures. You can keep using the launcher; the game waits.	A criar as texturas HD. Podes continuar a usar o launcher; o jogo espera.
+Making the texture pack	A criar o pacote de texturas
+Making the texture pack. You can keep using the launcher; the game waits.	A criar o pacote de texturas. Podes continuar a usar o launcher; o jogo espera.
 Manage	Gerir
 Manage profiles	Gerir perfis
 Mar	mar
@@ -621,7 +620,8 @@ Put back: 	Reposto:
 Put it on {}	Pôr em {}
 Put on the portal	Pôr no portal
 Quality	Qualidade
-Quality is the sharpest, Ultra Performance the fastest.	Qualidade é o mais nítido, Ultra desempenho o mais rápido.
+Native AA	AA nativo
+Native AA is the sharpest, Ultra Performance the fastest.	AA nativo é o mais nítido, Ultra desempenho o mais rápido.
 Quit	Sair
 Quit the game before restoring a backup	Sai do jogo antes de restaurar uma cópia de segurança
 Quit the game first.	Sai primeiro do jogo.
@@ -651,7 +651,7 @@ Remove game	Remover jogo
 Remove the copy	Remover a cópia
 Remove {}?	Remover {}?
 Removed, except	Removido, exceto
-Removing the HD textures.	A remover as texturas HD.
+Removing the texture pack.	A remover o pacote de texturas.
 Repair	Reparar
 Repair builds the game again from your disc.	Reparar cria o jogo outra vez a partir do teu disco.
 Repair downloads the game tools again.	Reparar transfere as ferramentas do jogo outra vez.
@@ -750,11 +750,11 @@ Test	Testar
 Test the portal	Testar o portal
 Testing...	A testar...
 Texture filtering	Filtragem de texturas
-Texture pack folder	Pasta do pacote de texturas
+Custom packs folder	Pasta dos pacotes personalizados
 That's a folder: choose the disc image (.iso).	Isto é uma pasta: escolhe a imagem do disco (.iso).
 The 3D scene at the console's size.	A cena 3D no tamanho da consola.
-The HD textures stopped before they were made.	As texturas HD pararam antes de serem criadas.
-The HD textures weren't made.	As texturas HD não foram criadas.
+The texture pack stopped before it was made.	O pacote de texturas parou antes de ser criado.
+The texture pack wasn't made.	O pacote de texturas não foi criado.
 The address isn't a secure one (https)	O endereço não é seguro (https)
 The answer has no release in it	A resposta não tem nenhuma versão
 The answer isn't valid JSON ({})	A resposta não é um JSON válido ({})
@@ -809,7 +809,7 @@ The wheel is full: take a figure off it first	A roda está cheia: tira primeiro 
 The zip file is damaged	O ficheiro zip está danificado
 These are your own game tools: restore the file, or set them up again.	Estas são as tuas próprias ferramentas do jogo: restaura o ficheiro ou configura-as de novo.
 These game tools can't build {}	Estas ferramentas do jogo não conseguem criar {}
-These game tools can't make HD textures. Update them first.	Estas ferramentas do jogo não conseguem criar texturas HD. Atualiza-as primeiro.
+These game tools can't make the texture pack. Update them first.	Estas ferramentas do jogo não conseguem criar o pacote de texturas. Atualiza-as primeiro.
 This computer has no Desktop folder.	Este computador não tem pasta do Ambiente de Trabalho.
 This copy holds your game. It is for your personal use only: do not share it.	Esta cópia contém o teu jogo. É só para uso pessoal: não a partilhes.
 This disc image is {}, not {}.	Esta imagem de disco é {}, não {}.
@@ -885,13 +885,17 @@ Version {} is available.	A versão {} está disponível.
 Version {}, {}	Versão {}, {}
 Versions	Versões
 Video	Vídeo
+Sound	Som
+Display	Ecrã
+Image quality	Qualidade de imagem
+Textures	Texturas
 Villain	Vilão
 Villains	Vilões
 Virtual (no portal needed)	Virtual (sem portal)
 Virtual portal	Portal virtual
 Virtual portal chosen.	Portal virtual escolhido.
 Volume	Volume
-Wait for the HD textures to finish	Espera que as texturas HD terminem
+Wait for the texture pack to finish	Espera que o pacote de texturas termine
 Wait for the copy to finish	Espera que a cópia termine
 Wait for the export to finish	Espera que a exportação termine
 Wait for the game to finish.	Espera que o jogo termine.

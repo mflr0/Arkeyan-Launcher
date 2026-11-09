@@ -169,6 +169,7 @@ namespace launcher_ui
             { "47-imaginators-game", BackTo::GamePage, false },
             { "48-imaginators-controller", BackTo::GamePage, false },
             { "49-portable-not-installed", BackTo::GamePage, false },
+            { "50-ssa-sound", BackTo::GamePage, false },
         };
         ImGuiContext& g = *ImGui::GetCurrentContext();
         ImGuiIO& io = ImGui::GetIO();
@@ -293,7 +294,7 @@ namespace launcher_ui
             else if (name.find("-ssa-") != std::string_view::npos || name.starts_with("06-") || name.starts_with("13-"))
             {
                 static const std::pair<const char*, GameTab> Tabs[] = { { "video", GameTab::Video }, { "keyboard", GameTab::Keyboard },
-                    { "controller", GameTab::Controller }, { "language", GameTab::Language }, { "disc", GameTab::Disc },
+                    { "controller", GameTab::Controller }, { "sound", GameTab::Sound }, { "language", GameTab::Language }, { "disc", GameTab::Disc },
                     { "saves", GameTab::Saves }, { "game", GameTab::Game } };
                 game("ssa");
                 GoTo(Page::GameSettings);

@@ -1828,7 +1828,7 @@ static void PadWalkChecks(const std::filesystem::path& scratch, const std::strin
         if (line.starts_with("padwalk: ") && line.find(" views") != std::string::npos)
             views = std::atoi(line.c_str() + 9);
     }
-    EXPECT(views == 50);
+    EXPECT(views == 51);
     printf("Pad walk: %d views, every control reached, B and LB / RB checked\n", views);
 }
 

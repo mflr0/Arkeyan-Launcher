@@ -59,7 +59,6 @@ Add a figure	Legg til en figur
 Add a profile	Legg til en profil
 Add to favorites	Legg til i favoritter
 Adding the movie shaders	Legger til shaderne for filmene
-Advanced	Avansert
 Adventure	Eventyr
 Adventure Packs	Eventyrpakker
 Air	Luft
@@ -369,11 +368,11 @@ GitHub says: {}	GitHub sier: {}
 Glow in the Dark	Glow in the Dark
 Gold	Gull
 Greek	Gresk
-HD texture packs	HD-teksturpakker
-HD textures	HD-teksturer
-HD textures ready	HD-teksturer klare
-HD textures removed	HD-teksturer fjernet
-HD textures stopped	HD-teksturer stoppet
+Custom texture packs	Egne teksturpakker
+Texture pack	Teksturpakke
+Texture pack ready	Teksturpakken er klar
+Texture pack removed	Teksturpakken er fjernet
+Texture pack stopped	Teksturpakken stoppet
 HID portals	HID-portaler
 Hat	Hatt
 Hero points	Heltepoeng
@@ -474,8 +473,8 @@ Made for 30 FPS; 60 and above are experimental.	Laget for 30 FPS; 60 og over er 
 Magic	Magi
 Magic Items	Magiske gjenstander
 Magic item	Gjenstand
-Making HD textures	Lager HD-teksturer
-Making the HD textures. You can keep using the launcher; the game waits.	Lager HD-teksturene. Du kan fortsette å bruke launcheren; spillet venter.
+Making the texture pack	Lager teksturpakken
+Making the texture pack. You can keep using the launcher; the game waits.	Lager teksturpakken. Du kan fortsette å bruke launcheren; spillet venter.
 Manage	Administrer
 Manage profiles	Administrer profiler
 Mar	mars
@@ -622,7 +621,8 @@ Put back: 	Lagt tilbake:
 Put it on {}	Sett den på {}
 Put on the portal	Sett på portalen
 Quality	Kvalitet
-Quality is the sharpest, Ultra Performance the fastest.	Kvalitet er skarpest, Ultraytelse raskest.
+Native AA	Native AA
+Native AA is the sharpest, Ultra Performance the fastest.	Native AA er skarpest, Ultraytelse raskest.
 Quit	Avslutt
 Quit the game before restoring a backup	Avslutt spillet før du gjenoppretter en sikkerhetskopi
 Quit the game first.	Avslutt spillet først.
@@ -652,7 +652,7 @@ Remove game	Fjern spill
 Remove the copy	Fjern kopien
 Remove {}?	Fjerne {}?
 Removed, except	Fjernet, unntatt
-Removing the HD textures.	Fjerner HD-teksturene.
+Removing the texture pack.	Fjerner teksturpakken.
 Repair	Reparer
 Repair builds the game again from your disc.	Reparer bygger spillet på nytt fra platen din.
 Repair downloads the game tools again.	Reparer laster ned spillverktøyene på nytt.
@@ -751,11 +751,11 @@ Test	Test
 Test the portal	Test portalen
 Testing...	Tester...
 Texture filtering	Teksturfiltrering
-Texture pack folder	Mappe for teksturpakke
+Custom packs folder	Mappe for egne pakker
 That's a folder: choose the disc image (.iso).	Det er en mappe: velg diskbildet (.iso).
 The 3D scene at the console's size.	3D-scenen i konsollens størrelse.
-The HD textures stopped before they were made.	HD-teksturene stoppet før de ble laget.
-The HD textures weren't made.	HD-teksturene ble ikke laget.
+The texture pack stopped before it was made.	Teksturpakken stoppet før den ble laget.
+The texture pack wasn't made.	Teksturpakken ble ikke laget.
 The address isn't a secure one (https)	Adressen er ikke sikker (https)
 The answer has no release in it	Svaret inneholder ingen utgivelse
 The answer isn't valid JSON ({})	Svaret er ikke gyldig JSON ({})
@@ -810,7 +810,7 @@ The wheel is full: take a figure off it first	Hjulet er fullt: ta av en figur f�
 The zip file is damaged	Zip-filen er skadet
 These are your own game tools: restore the file, or set them up again.	Dette er dine egne spillverktøy: gjenopprett filen, eller sett dem opp på nytt.
 These game tools can't build {}	Disse spillverktøyene kan ikke bygge {}
-These game tools can't make HD textures. Update them first.	Disse spillverktøyene kan ikke lage HD-teksturer. Oppdater dem først.
+These game tools can't make the texture pack. Update them first.	Disse spillverktøyene kan ikke lage teksturpakken. Oppdater dem først.
 This computer has no Desktop folder.	Denne datamaskinen har ingen skrivebordsmappe.
 This copy holds your game. It is for your personal use only: do not share it.	Denne kopien inneholder spillet ditt. Den er kun til personlig bruk: ikke del den.
 This disc image is {}, not {}.	Dette diskbildet er {}, ikke {}.
@@ -886,13 +886,17 @@ Version {} is available.	Versjon {} er tilgjengelig.
 Version {}, {}	Versjon {}, {}
 Versions	Versjoner
 Video	Video
+Sound	Lyd
+Display	Skjerm
+Image quality	Bildekvalitet
+Textures	Teksturer
 Villain	Skurk
 Villains	Skurker
 Virtual (no portal needed)	Virtuell (ingen portal nødvendig)
 Virtual portal	Virtuell portal
 Virtual portal chosen.	Virtuell portal valgt.
 Volume	Volum
-Wait for the HD textures to finish	Vent til HD-teksturene er ferdige
+Wait for the texture pack to finish	Vent til teksturpakken er ferdig
 Wait for the copy to finish	Vent til kopieringen er ferdig
 Wait for the export to finish	Vent til eksporten er ferdig
 Wait for the game to finish.	Vent til spillet er ferdig.

@@ -1,4 +1,5 @@
-// A game's own settings (the Settings button on its Play page): Video, Keyboard, Language, Disc, Saves and Game (shortcut, folders,
+// A game's own settings (the Settings button on its Play page), what a player looks for first on the left: Video (display, image
+// quality, textures), Keyboard, Controller, Sound, Language, then the game's files: Disc, Saves and Game (shortcut, folders,
 // reinstall, delete data, uninstall). Arkeyan Launcher's own settings and what all games share (the controller) are in
 // the gear's Settings (launcher_ui.cpp). The video keys and the keyboard keys are the game's own copy in [<game>.video] and [<game>.input] (game_settings.h, game_keys.h).
 #include "launcher/ui/launcher_app.h"
@@ -72,7 +73,7 @@ namespace launcher_ui
         const char* title = GameName(m_s->game.id, GameNameForm::Full);
         BeginSettingsPage("##gamesettingscolumn", title != nullptr ? title : m_s->game.name, true);
 
-        static const char* const Tabs[] = { N_("Video"), N_("Keyboard"), N_("Controller"), N_("Language"), N_("Disc"), N_("Saves"), N_("Game") };
+        static const char* const Tabs[] = { N_("Video"), N_("Keyboard"), N_("Controller"), N_("Sound"), N_("Language"), N_("Disc"), N_("Saves"), N_("Game") };
         int tab = int(m_gameTab);
         DrawTabBar(Tabs, int(std::size(Tabs)), &tab);
         m_gameTab = GameTab(tab);
@@ -82,6 +83,7 @@ namespace launcher_ui
         case GameTab::Video: DrawGameVideo(); break;
         case GameTab::Keyboard: DrawGameKeyboard(); break;
         case GameTab::Controller: DrawGameController(); break;
+        case GameTab::Sound: DrawGameSound(); break;
         case GameTab::Language: DrawGameLanguage(); break;
         case GameTab::Disc: DrawGameDisc(); break;
         case GameTab::Saves: DrawSaveBackups(); break;
@@ -89,16 +91,14 @@ namespace launcher_ui
         }
         EndCard();
         if (m_testHdTex)
-            ImGui::SetScrollHereY(1.0f); // the HD textures screenshots show the bottom of the Video tab
+            ImGui::SetScrollHereY(1.0f); // the texture pack screenshots show the bottom of the Video tab
         EndSettingsPage();
     }
 
-    // ---- Video and language ------------------------------------------------------------------------------------------
+    // ---- Video, sound and language --------------------------------------------------------------------------------------
 
     void App::DrawGameVideo()
     {
-        if (!ui::BeginSettings("##graphics"))
-            return;
         const std::string videoSection = GameVideoSection(m_s->game.id);
         const char* video = videoSection.c_str();
         auto toggle = [&](const char* id, const char* key, const char* fallback) {
@@ -107,75 +107,143 @@ namespace launcher_ui
                 Set(video, key, value ? "1" : "0");
         };
 
-        ui::SettingRow(Tr("Fullscreen"), nullptr);
-        toggle("##fullscreen", "fullscreen", "0");
-
-        std::string scaleHint = Tr("Higher scales need a dedicated graphics card.");
-        if (int scale = ResolutionScaleOf(SettingGet(m_config, video, "resolution_scale")); scale >= 1)
-            scaleHint += "\n" + Tf("{} x {} for the 3D scene", 1120 * scale, 704 * scale);
-        ui::SettingRow(Tr("Resolution scale"), scaleHint.c_str());
-        SettingSelect("##scale", video, "resolution_scale", ScaleChoices, 0);
-
-        // FSR 3 (upscaler=fsr3, else off) and its preset, shown while it is on; the game's F3 menu changes both too.
-        ui::SettingRow(Tr("FSR 3"), Tr("AMD upscaling: faster, nearly as sharp (F3 in game)."));
-        bool fsr = SettingGet(m_config, video, "upscaler", "off") == "fsr3";
-        if (ui::Toggle("##upscaler", &fsr))
-            Set(video, "upscaler", fsr ? "fsr3" : "off");
-        if (fsr)
+        // The window and the pace.
+        ui::SectionHeader(Tr("Display"), nullptr, false);
+        if (ui::BeginSettings("##display"))
         {
-            ui::SettingRow(Tr("FSR 3 quality"), Tr("Quality is the sharpest, Ultra Performance the fastest."));
-            SettingSelect("##fsrquality", video, "fsr_quality", FsrQualityChoices, 0);
-            // FSR 3 frame generation (fsr_frame_generation=on, else off): needs the upscaler, so shown with it, where the game
-            // can run it.
-            if (FrameGenerationOffered(m_s->game.id))
-            {
-                ui::SettingRow(Tr("Frame generation"), Tr("Doubles the frames shown; a little more input delay (F3 in game)."));
-                bool frameGeneration = SettingGet(m_config, video, "fsr_frame_generation", "off") == "on";
-                if (ui::Toggle("##framegen", &frameGeneration))
-                    Set(video, "fsr_frame_generation", frameGeneration ? "on" : "off");
-            }
-        }
+            ui::SettingRow(Tr("Fullscreen"), nullptr);
+            toggle("##fullscreen", "fullscreen", "0");
 
-        ui::SettingRow(Tr("Frame rate limit"), Tr("Made for 30 FPS; 60 and above are experimental."));
-        const std::span<const Choice> fpsChoices = FrameRateChoices(m_s->game.id);
-        int fpsDefault = 0;
-        for (size_t i = 0; i < fpsChoices.size(); i++)
-            if (std::string_view(fpsChoices[i].value) == DefaultFrameRate(m_s->game.id))
-                fpsDefault = int(i);
-        SettingSelect("##fps", video, "fps_limit", fpsChoices, fpsDefault);
+            ui::SettingRow(Tr("Widescreen"), Tr("Auto shows more when wide; 16:9 adds bars."));
+            SettingSelect("##aspect", video, "aspect", AspectChoices, 0);
 
-        const std::string fpsLimit = SettingGet(m_config, video, "fps_limit", DefaultFrameRate(m_s->game.id));
-        if (fpsLimit == "60" || fpsLimit == "display")
-        {
-            ui::SettingRow(Tr("Drop to 30 FPS when needed"),
-                Tr("Off: your rate stays, even if the picture stutters."));
-            const std::string fallbackDefault = SettingGet(m_config, "video", "fps_auto_fallback", "1");
-            toggle("##fpsautofallback", "fps_auto_fallback", fallbackDefault.c_str());
-            // Offscreen page check: feed the switch through ImGui, then capture the rendered page.
-            if (!m_shots.empty() && LauncherEnv("SKY_LAUNCHER_TEST_FPS_FALLBACK") != nullptr)
+            ui::SettingRow(Tr("Frame rate limit"), Tr("Made for 30 FPS; 60 and above are experimental."));
+            const std::span<const Choice> fpsChoices = FrameRateChoices(m_s->game.id);
+            int fpsDefault = 0;
+            for (size_t i = 0; i < fpsChoices.size(); i++)
+                if (std::string_view(fpsChoices[i].value) == DefaultFrameRate(m_s->game.id))
+                    fpsDefault = int(i);
+            SettingSelect("##fps", video, "fps_limit", fpsChoices, fpsDefault);
+
+            const std::string fpsLimit = SettingGet(m_config, video, "fps_limit", DefaultFrameRate(m_s->game.id));
+            if (fpsLimit == "60" || fpsLimit == "display")
             {
-                static int stage = 0;
-                static uint64_t captureAt = 0;
-                m_testAt = SDL_GetTicks() + 60000;
-                if (stage == 0)
+                ui::SettingRow(Tr("Drop to 30 FPS when needed"),
+                    Tr("Off: your rate stays, even if the picture stutters."));
+                const std::string fallbackDefault = SettingGet(m_config, "video", "fps_auto_fallback", "1");
+                toggle("##fpsautofallback", "fps_auto_fallback", fallbackDefault.c_str());
+                // Offscreen page check: feed the switch through ImGui, then capture the rendered page.
+                if (!m_shots.empty() && LauncherEnv("SKY_LAUNCHER_TEST_FPS_FALLBACK") != nullptr)
                 {
-                    ImGui::ActivateItemByID(ImGui::GetItemID());
-                    captureAt = SDL_GetTicks() + 300;
-                    stage++;
-                }
-                else if (SDL_GetTicks() >= captureAt)
-                {
-                    Screenshot(("fps-fallback-" + std::string(m_s->game.id)).c_str());
-                    m_running = false;
+                    static int stage = 0;
+                    static uint64_t captureAt = 0;
+                    m_testAt = SDL_GetTicks() + 60000;
+                    if (stage == 0)
+                    {
+                        ImGui::ActivateItemByID(ImGui::GetItemID());
+                        captureAt = SDL_GetTicks() + 300;
+                        stage++;
+                    }
+                    else if (SDL_GetTicks() >= captureAt)
+                    {
+                        Screenshot(("fps-fallback-" + std::string(m_s->game.id)).c_str());
+                        m_running = false;
+                    }
                 }
             }
+
+            ui::SettingRow(Tr("VSync"), Tr("No tearing, a little more latency."));
+            toggle("##vsync", "vsync", "1");
+
+            ui::SettingRow(Tr("FPS counter"), Tr("The frame rate in a corner of the game (F3 in game)."));
+            toggle("##showfps", "show_fps", "0");
+
+            ui::SettingRow(Tr("Skip intro movies"), nullptr);
+            toggle("##skipintromovies", "skip_intro_movies", "0");
+            ui::EndSettings();
         }
 
-        ui::SettingRow(Tr("FPS counter"), Tr("The frame rate in a corner of the game (F3 in game)."));
-        toggle("##showfps", "show_fps", "0");
+        // What the 3D scene is drawn at, and how it is smoothed.
+        ui::SectionHeader(Tr("Image quality"));
+        if (ui::BeginSettings("##imagequality"))
+        {
+            std::string scaleHint = Tr("Higher scales need a dedicated graphics card.");
+            if (int scale = ResolutionScaleOf(SettingGet(m_config, video, "resolution_scale")); scale >= 1)
+                scaleHint += "\n" + Tf("{} x {} for the 3D scene", 1120 * scale, 704 * scale);
+            ui::SettingRow(Tr("Resolution scale"), scaleHint.c_str());
+            SettingSelect("##scale", video, "resolution_scale", ScaleChoices, 0);
 
-        ui::SettingRow(Tr("Volume"), Tr("The game's volume (F3 in game)."));
+            // FSR 3 (upscaler=fsr3, else off) and its preset, shown while it is on; the game's F3 menu changes both too.
+            ui::SettingRow(Tr("FSR 3"), Tr("AMD upscaling: faster, nearly as sharp (F3 in game)."));
+            bool fsr = SettingGet(m_config, video, "upscaler", "off") == "fsr3";
+            if (ui::Toggle("##upscaler", &fsr))
+                Set(video, "upscaler", fsr ? "fsr3" : "off");
+            if (fsr)
+            {
+                ui::SettingRow(Tr("FSR 3 quality"), Tr("Native AA is the sharpest, Ultra Performance the fastest."));
+                SettingSelect("##fsrquality", video, "fsr_quality", FsrQualityChoices, 1); // Quality
+                // FSR 3 frame generation (fsr_frame_generation=on, else off): needs the upscaler, so shown with it, where the game
+                // can run it.
+                if (FrameGenerationOffered(m_s->game.id))
+                {
+                    ui::SettingRow(Tr("Frame generation"), Tr("Doubles the frames shown; a little more input delay (F3 in game)."));
+                    bool frameGeneration = SettingGet(m_config, video, "fsr_frame_generation", "off") == "on";
+                    if (ui::Toggle("##framegen", &frameGeneration))
+                        Set(video, "fsr_frame_generation", frameGeneration ? "on" : "off");
+                }
+            }
+
+            if (m_s->game.id == std::string_view("swapforce"))
+            {
+                ui::SettingRow(Tr("Original resolution"), Tr("The 3D scene at the console's size."));
+                toggle("##originalresolution", "original_resolution", "0");
+            }
+
+            ui::SettingRow(Tr("Texture filtering"), Tr("Keeps textures sharp at an angle."));
+            SettingSelect("##filter", video, "anisotropy", FilterChoices, 0);
+
+            // The games whose FXAA pass the runtime knows. Not chosen, the runtime picks Gentle from resolution scale 2 (the automatic
+            // scale is 2 on Apple silicon and discrete GPUs, 1 on integrated ones: the page shows Gentle, the runtime may use Game there).
+            if (m_s->game.id == std::string_view("swapforce") || m_s->game.id == std::string_view("trapteam"))
+            {
+                ui::SettingRow(Tr("Edge smoothing"), Tr("FXAA also softens texture detail; Gentle keeps more of it."));
+                SettingSelect("##edgesmoothing", video, "edge_smoothing", EdgeSmoothingChoices, ResolutionScaleOf(SettingGet(m_config, video, "resolution_scale")) == 1 ? 0 : 1);
+            }
+
+            ui::EndSettings();
+        }
+
+        // The game's texture pack (made from the disc), the player's own packs, and the dump for pack makers.
+        ui::SectionHeader(Tr("Textures"));
+        if (ui::BeginSettings("##textures"))
+        {
+            DrawHdTextures();
+            ui::SettingRow(Tr("Custom texture packs"), Tr("Replaces the game's textures with your pack."));
+            toggle("##texturepacks", "texture_packs", "1");
+            ui::SettingRow(Tr("Custom packs folder"), nullptr);
+            ui::ButtonOptions folder;
+            folder.icon = ui::Icon::Folder;
+            if (ui::Button(Tr("Show in folder"), folder))
+            {
+                std::error_code error;
+                std::filesystem::create_directories(GameInstallFolder({}) / "textures", error);
+                if (!OpenFolder(GameInstallFolder({}) / "textures"))
+                    Toast(Tr("Couldn't open the folder"), ui::ToastKind::Error);
+            }
+            ui::SettingRow(Tr("Dump textures"), Tr("For pack makers: saves the textures as DDS files."));
+            toggle("##texturedump", "texture_dump", "0");
+            ui::EndSettings();
+        }
+        DrawHdStatus();
+    }
+
+    // The game's sound: [<game>.audio], which the game reads after [audio].
+    void App::DrawGameSound()
+    {
+        if (!ui::BeginSettings("##sound"))
+            return;
         const std::string audioSection = std::string(m_s->game.id) + ".audio";
+        ui::SettingRow(Tr("Volume"), Tr("The game's volume (F3 in game)."));
         SettingSelect("##volume", audioSection.c_str(), "volume", VolumeChoices, 10);
 
         ui::SettingRow(Tr("Speakers"), Tr("Auto: 5.1 when the device has six channels."));
@@ -190,56 +258,7 @@ namespace launcher_ui
             if (ui::Toggle("##portalsound", &portalSound))
                 Set(audioSection.c_str(), "portal_sound", portalSound ? "1" : "0");
         }
-
-        ui::SettingRow(Tr("Skip intro movies"), nullptr);
-        toggle("##skipintromovies", "skip_intro_movies", "0");
-
-        if (m_s->game.id == std::string_view("swapforce"))
-        {
-            ui::SettingRow(Tr("Original resolution"), Tr("The 3D scene at the console's size."));
-            toggle("##originalresolution", "original_resolution", "0");
-        }
-
-        ui::SettingRow(Tr("VSync"), Tr("No tearing, a little more latency."));
-        toggle("##vsync", "vsync", "1");
-
-        ui::SettingRow(Tr("Texture filtering"), Tr("Keeps textures sharp at an angle."));
-        SettingSelect("##filter", video, "anisotropy", FilterChoices, 0);
-
-        // The games whose FXAA pass the runtime knows. Not chosen, the runtime picks Gentle from resolution scale 2 (the automatic
-        // scale is 2 on Apple silicon and discrete GPUs, 1 on integrated ones: the page shows Gentle, the runtime may use Game there).
-        if (m_s->game.id == std::string_view("swapforce") || m_s->game.id == std::string_view("trapteam"))
-        {
-            ui::SettingRow(Tr("Edge smoothing"), Tr("FXAA also softens texture detail; Gentle keeps more of it."));
-            SettingSelect("##edgesmoothing", video, "edge_smoothing", EdgeSmoothingChoices, ResolutionScaleOf(SettingGet(m_config, video, "resolution_scale")) == 1 ? 0 : 1);
-        }
-
-        ui::SettingRow(Tr("Widescreen"), Tr("Auto shows more when wide; 16:9 adds bars."));
-        SettingSelect("##aspect", video, "aspect", AspectChoices, 0);
-
-        ui::SettingRow(Tr("HD texture packs"), Tr("Replaces the game's textures with your pack."));
-        toggle("##texturepacks", "texture_packs", "1");
-        ui::SettingRow(Tr("Texture pack folder"), nullptr);
-        ui::ButtonOptions folder;
-        folder.icon = ui::Icon::Folder;
-        if (ui::Button(Tr("Show in folder"), folder))
-        {
-            std::error_code error;
-            std::filesystem::create_directories(GameInstallFolder({}) / "textures", error);
-            if (!OpenFolder(GameInstallFolder({}) / "textures"))
-                Toast(Tr("Couldn't open the folder"), ui::ToastKind::Error);
-        }
-        DrawHdTextures();
         ui::EndSettings();
-        DrawHdStatus();
-
-        ui::SectionHeader(Tr("Advanced"));
-        if (ui::BeginSettings("##graphicsadvanced"))
-        {
-            ui::SettingRow(Tr("Dump textures"), Tr("For pack makers: saves the textures as DDS files."));
-            toggle("##texturedump", "texture_dump", "0");
-            ui::EndSettings();
-        }
     }
 
     // The keys of this game, as key caps: the movement (the left stick) as a cross of four keys, the right stick's as another

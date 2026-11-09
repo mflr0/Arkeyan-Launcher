@@ -79,8 +79,9 @@ namespace launcher_ui
         { "8", N_("Anisotropic 8x") }, { "16", N_("Anisotropic 16x") } };
     // The game's FXAA pass (Swap Force, Trap Team): the values are the runtime's edge_smoothing (docs/settings.md).
     inline constexpr Choice EdgeSmoothingChoices[] = { { "game", N_("Game") }, { "light", N_("Gentle") }, { "off", N_("None") } };
-    // FSR 3's presets (upscaler=fsr3): the values are the runtime's fsr_quality, the labels AMD's names (docs/settings.md).
-    inline constexpr Choice FsrQualityChoices[] = { { "quality", N_("Quality") }, { "balanced", N_("Balanced") },
+    // FSR 3's presets (upscaler=fsr3), from the sharpest: the values are the runtime's fsr_quality, the labels AMD's names
+    // (docs/settings.md). Native AA renders at full size (FSR as anti-aliasing); Quality, the second, is the default.
+    inline constexpr Choice FsrQualityChoices[] = { { "native", N_("Native AA") }, { "quality", N_("Quality") }, { "balanced", N_("Balanced") },
         { "performance", N_("Performance") }, { "ultra_performance", N_("Ultra Performance") } };
     // [<game>.audio] speakers: auto is 5.1 when the output device has six channels or more.
     inline constexpr Choice SpeakerChoices[] = { { "auto", N_("Auto") }, { "stereo", N_("Stereo") }, { "5.1", "5.1" } };
@@ -215,7 +216,7 @@ namespace launcher_ui
     // page) opens that game's own settings.
     enum class Page { Home, Play, Collection, Settings, GameSettings, Achievements };
     enum class SettingsTab { Controls, Launcher, Support, About, Profiles };
-    enum class GameTab { Video, Keyboard, Controller, Language, Disc, Saves, Game };
+    enum class GameTab { Video, Keyboard, Controller, Sound, Language, Disc, Saves, Game };
     enum class DiscState { None, Verifying, Ready, Failed };
     // Everything a game can be in, read from its slot by App::SlotStatus: the one place that decides (docs/launcher_ui.md).
     enum class SlotState
@@ -286,7 +287,7 @@ namespace launcher_ui
         InstalledGame installed;
         std::string ownRuntime;    // a runtime the player set up (FindRuntime): no install needed
         GameInstaller installer;
-        // Game settings > Video > HD textures (docs/tools/hd_textures.md): the kit's texture step alone, and how the last one ended.
+        // Game settings > Video > Texture pack (docs/tools/hd_textures.md): the kit's texture step alone, and how the last one ended.
         GameInstaller hdJob;
         bool hdWatch = false;       // hdJob was started and its end is not handled yet
         bool hdOn = false;          // it makes the pack (else it removes it)
@@ -391,6 +392,7 @@ namespace launcher_ui
         std::string m_profileToRemove; // the profile whose removal waits for its confirmation
         const ArtTexture* AchievementIcon(const std::filesystem::path& image);
         void DrawGameVideo();
+        void DrawGameSound();
         void DrawGameKeyboard();
         void DrawGameLanguage();
         void DrawGameDisc();
@@ -406,7 +408,7 @@ namespace launcher_ui
         void DrawUpdateAll(ImVec2 right);
         void DrawDataActions();
         void CreateShortcut();
-        void DrawHdTextures();        // the Video tab's "HD textures" row: the switch
+        void DrawHdTextures();        // the Video tab's "Texture pack" row: the switch
         void TestHdTexturesScript(uint64_t now);
         void DrawHdStatus();          // under the Video list: the work's progress and Stop, or why it failed
         bool HdTexturesOffered() const; // this game's disc archives hold textures the kit doubles (the Alchemy games)
@@ -778,7 +780,7 @@ namespace launcher_ui
         int m_heroNavCase = 0, m_heroNavPhase = -1, m_heroNavWarmup = 0, m_heroNavMoves = 0, m_heroNavDirection = 0;
         uint32_t m_heroNavFrom = 0;
         bool m_testAchievements = false; // SKY_LAUNCHER_TEST_ACHIEVEMENTS: the shown game's page with its play time, then its achievements
-        bool m_testHdTex = false;      // SKY_LAUNCHER_TEST_HDTEX=<game>: the HD textures switch on a built game (TestHdTexturesScript)
+        bool m_testHdTex = false;      // SKY_LAUNCHER_TEST_HDTEX=<game>: the texture pack switch on a built game (TestHdTexturesScript)
         bool m_testLogo = false;       // SKY_LAUNCHER_TEST_LOGO: each game's page with its logo (from the art already read), one shot each
         bool m_testScrollEnd = false;  // the uninstall screenshots: scroll the settings column to its end
         uint64_t m_testHoldAt = 0;     // when the test pressed the hold button (it holds it down for the screenshots)

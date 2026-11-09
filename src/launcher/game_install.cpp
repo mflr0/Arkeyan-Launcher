@@ -506,7 +506,7 @@ bool GameInstaller::Launch(const std::optional<InstallKit>& kit, const std::stri
     if (!kit)
         return fail(Tr("Game kit not found. Put the skylanders-kit folder next to Arkeyan Launcher, then press Retry."));
     if (hdTextures != nullptr && !kit->hdTextures)
-        return fail(Tr("These game tools can't make HD textures. Update them first."));
+        return fail(Tr("These game tools can't make the texture pack. Update them first."));
     std::error_code error;
     std::filesystem::create_directories(out, error);
     if (error)
@@ -649,7 +649,7 @@ void GameInstaller::Read()
         progress.state = InstallProgress::State::Failed;
         if (progress.error.empty())
             progress.error = exitCode != 0 ? Tf("The installer stopped with exit code {}.", exitCode)
-                                           : std::string(Tr(m_hdOnly ? N_("The HD textures stopped before they were made.") : N_("The installer stopped before the game was built.")));
+                                           : std::string(Tr(m_hdOnly ? N_("The texture pack stopped before it was made.") : N_("The installer stopped before the game was built.")));
     }
     m_pid = 0;
     m_running = false;

@@ -59,7 +59,6 @@ Add a figure	Lägg till en figur
 Add a profile	Lägg till en profil
 Add to favorites	Lägg till i favoriter
 Adding the movie shaders	Lägger till filmshaders
-Advanced	Avancerat
 Adventure	Äventyr
 Adventure Packs	Äventyrspaket
 Air	Luft
@@ -369,11 +368,11 @@ GitHub says: {}	GitHub säger: {}
 Glow in the Dark	Glow in the Dark
 Gold	Guld
 Greek	Grekiska
-HD texture packs	HD-texturpaket
-HD textures	HD-texturer
-HD textures ready	HD-texturerna är klara
-HD textures removed	HD-texturerna är borttagna
-HD textures stopped	HD-texturerna stoppades
+Custom texture packs	Egna texturpaket
+Texture pack	Texturpaket
+Texture pack ready	Texturpaketet är klart
+Texture pack removed	Texturpaketet är borttaget
+Texture pack stopped	Texturpaketet stoppades
 HID portals	HID-portaler
 Hat	Hatt
 Hero points	Hjältepoäng
@@ -474,8 +473,8 @@ Made for 30 FPS; 60 and above are experimental.	Gjort för 30 FPS; 60 och över 
 Magic	Magi
 Magic Items	Magiska föremål
 Magic item	Föremål
-Making HD textures	Skapar HD-texturer
-Making the HD textures. You can keep using the launcher; the game waits.	Skapar HD-texturerna. Du kan fortsätta använda launchern; spelet väntar.
+Making the texture pack	Skapar texturpaketet
+Making the texture pack. You can keep using the launcher; the game waits.	Skapar texturpaketet. Du kan fortsätta använda launchern; spelet väntar.
 Manage	Hantera
 Manage profiles	Hantera profiler
 Mar	mars
@@ -622,7 +621,8 @@ Put back: 	Lägg tillbaka:
 Put it on {}	Lägg på {}
 Put on the portal	Lägg på portalen
 Quality	Kvalitet
-Quality is the sharpest, Ultra Performance the fastest.	Kvalitet är skarpast, Ultraprestanda snabbast.
+Native AA	Native AA
+Native AA is the sharpest, Ultra Performance the fastest.	Native AA är skarpast, Ultraprestanda snabbast.
 Quit	Avsluta
 Quit the game before restoring a backup	Avsluta spelet innan du återställer en säkerhetskopia
 Quit the game first.	Avsluta spelet först.
@@ -652,7 +652,7 @@ Remove game	Ta bort spelet
 Remove the copy	Ta bort kopian
 Remove {}?	Ta bort {}?
 Removed, except	Borttaget, utom
-Removing the HD textures.	Tar bort HD-texturerna.
+Removing the texture pack.	Tar bort texturpaketet.
 Repair	Reparera
 Repair builds the game again from your disc.	Reparera bygger spelet igen från din skiva.
 Repair downloads the game tools again.	Reparera hämtar spelverktygen igen.
@@ -751,11 +751,11 @@ Test	Testa
 Test the portal	Testa portalen
 Testing...	Testar...
 Texture filtering	Texturfiltrering
-Texture pack folder	Mapp för texturpaket
+Custom packs folder	Mapp för egna paket
 That's a folder: choose the disc image (.iso).	Det är en mapp: välj skivavbilden (.iso).
 The 3D scene at the console's size.	3D-scenen i konsolens storlek.
-The HD textures stopped before they were made.	HD-texturerna stoppades innan de hade skapats.
-The HD textures weren't made.	HD-texturerna skapades inte.
+The texture pack stopped before it was made.	Texturpaketet stoppades innan det hade skapats.
+The texture pack wasn't made.	Texturpaketet skapades inte.
 The address isn't a secure one (https)	Adressen är inte säker (https)
 The answer has no release in it	Svaret innehåller ingen utgåva
 The answer isn't valid JSON ({})	Svaret är inte giltig JSON ({})
@@ -810,7 +810,7 @@ The wheel is full: take a figure off it first	Hjulet är fullt: ta bort en figur
 The zip file is damaged	Zip-filen är skadad
 These are your own game tools: restore the file, or set them up again.	Det här är dina egna spelverktyg: återställ filen eller ställ in dem igen.
 These game tools can't build {}	De här spelverktygen kan inte bygga {}
-These game tools can't make HD textures. Update them first.	De här spelverktygen kan inte skapa HD-texturer. Uppdatera dem först.
+These game tools can't make the texture pack. Update them first.	De här spelverktygen kan inte skapa texturpaketet. Uppdatera dem först.
 This computer has no Desktop folder.	Den här datorn har ingen skrivbordsmapp.
 This copy holds your game. It is for your personal use only: do not share it.	Den här kopian innehåller ditt spel. Den är endast för personligt bruk: dela den inte.
 This disc image is {}, not {}.	Den här skivavbilden är {}, inte {}.
@@ -886,13 +886,17 @@ Version {} is available.	Version {} finns.
 Version {}, {}	Version {}, {}
 Versions	Versioner
 Video	Video
+Sound	Ljud
+Display	Skärm
+Image quality	Bildkvalitet
+Textures	Texturer
 Villain	Skurk
 Villains	Skurkar
 Virtual (no portal needed)	Virtuell (ingen portal behövs)
 Virtual portal	Virtuell portal
 Virtual portal chosen.	Virtuell portal vald.
 Volume	Volym
-Wait for the HD textures to finish	Vänta tills HD-texturerna är klara
+Wait for the texture pack to finish	Vänta tills texturpaketet är klart
 Wait for the copy to finish	Vänta tills kopieringen är klar
 Wait for the export to finish	Vänta tills exporten är klar
 Wait for the game to finish.	Vänta tills spelet är klart.

@@ -1,4 +1,4 @@
-// A game's HD textures (docs/tools/hd_textures.md): the switch in its settings > Video, the kit's texture step run alone when
+// A game's texture pack (docs/tools/hd_textures.md): the switch in its settings > Video > Textures, the kit's texture step run alone when
 // it is flipped on a built game, and the progress and failure it shows. Off by default ([<game>] hd_textures).
 #include "launcher/env.h"
 #include "launcher/ui/launcher_app.h"
@@ -64,7 +64,7 @@ namespace launcher_ui
         }
         else if (!built)
             hint += "\n" + std::string(Tr("It is made when the game is installed."));
-        ui::SettingRow(Tr("HD textures"), hint.c_str());
+        ui::SettingRow(Tr("Texture pack"), hint.c_str());
         bool value = HdTexturesWanted(*m_s);
         if (ui::Toggle("##hdtextures", &value, disabled))
             SetHdTextures(value);
@@ -79,7 +79,7 @@ namespace launcher_ui
         if (m_s->hdJob.Running())
         {
             const InstallProgress progress = m_s->hdJob.Snapshot();
-            note(m_s->hdOn ? Tr("Making the HD textures. You can keep using the launcher; the game waits.") : Tr("Removing the HD textures."));
+            note(m_s->hdOn ? Tr("Making the texture pack. You can keep using the launcher; the game waits.") : Tr("Removing the texture pack."));
             if (progress.total > 0)
                 ui::ProgressBar(float(double(std::min(progress.done, progress.total)) / double(progress.total)), -1, true);
             else
@@ -127,7 +127,7 @@ namespace launcher_ui
         using State = InstallProgress::State;
         if (progress.state == State::Done)
         {
-            Toast(m_s->hdOn ? Tr("HD textures ready") : Tr("HD textures removed"), ui::ToastKind::Success);
+            Toast(m_s->hdOn ? Tr("Texture pack ready") : Tr("Texture pack removed"), ui::ToastKind::Success);
             return;
         }
         // A pack left half made would be read by the game: it goes, and the switch with it.
@@ -139,10 +139,10 @@ namespace launcher_ui
         }
         if (progress.state == State::Cancelled)
         {
-            Toast(Tr("HD textures stopped"));
+            Toast(Tr("Texture pack stopped"));
             return;
         }
-        m_s->hdMessage = progress.error.empty() ? std::string(Tr("The HD textures weren't made.")) : progress.error;
+        m_s->hdMessage = progress.error.empty() ? std::string(Tr("The texture pack wasn't made.")) : progress.error;
         Toast(m_s->hdMessage, ui::ToastKind::Error);
     }
 

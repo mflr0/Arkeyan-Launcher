@@ -305,7 +305,7 @@ namespace launcher_ui
             start = Clock::now(); page.m_testScrollBottom = true; Tick(app, false); Tick(app, false); Tick(app, false);
             printf("time,scroll_bottom_ms,%.3f\n", Ms(start) / 3); page.m_testScrollBottom = false;
             for (int i = 0; i < 4; ++i) { app.GoTo(Page::Settings); app.m_tab = SettingsTab(i); Measure(app, ("settings_" + std::to_string(i)).c_str()); }
-            for (int i = 0; i < 7; ++i) { app.GoTo(Page::GameSettings); app.m_gameTab = GameTab(i); Measure(app, ("game_settings_" + std::to_string(i)).c_str()); }
+            for (int i = 0; i < 8; ++i) { app.GoTo(Page::GameSettings); app.m_gameTab = GameTab(i); Measure(app, ("game_settings_" + std::to_string(i)).c_str()); }
             app.GoTo(Page::Achievements); Measure(app, "achievements");
             app.GoTo(Page::Collection); SDL_HideWindow(app.m_window); Measure(app, "hidden_collection");
             app.GoTo(Page::Play); Measure(app, "hidden_play");

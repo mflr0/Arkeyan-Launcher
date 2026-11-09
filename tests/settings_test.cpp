@@ -263,7 +263,7 @@ namespace
             using namespace launcher_ui;
             const std::string video = GameVideoSection(id), audio = std::string(id) + ".audio";
             auto upscaler = [&](const LauncherConfig& c) { return SettingGet(c, video, "upscaler", "off") == "fsr3" ? "fsr3" : "off"; };
-            auto quality = [&](const LauncherConfig& c) { return FsrQualityChoices[ChoiceIndex(FsrQualityChoices, SettingGet(c, video, "fsr_quality"), 0)].value; };
+            auto quality = [&](const LauncherConfig& c) { return FsrQualityChoices[ChoiceIndex(FsrQualityChoices, SettingGet(c, video, "fsr_quality"), 1)].value; }; // the page's default, Quality, is the second
             auto frameGeneration = [&](const LauncherConfig& c) { return SettingGet(c, video, "fsr_frame_generation", "off") == "on" ? "on" : "off"; };
             auto speakers = [&](const LauncherConfig& c) { return SpeakerChoices[ChoiceIndex(SpeakerChoices, SettingGet(c, audio, "speakers"), 0)].value; };
 
@@ -276,7 +276,7 @@ namespace
             SETTINGS_EXPECT(frameGeneration(fresh) == std::string("off") && fresh["video"].count("fsr_frame_generation") == 0);
 
             // Written by the page, through the file and back, and into [video] by PLAY; another game's PLAY drops them.
-            for (const char* preset : { "quality", "balanced", "performance", "ultra_performance" })
+            for (const char* preset : { "native", "quality", "balanced", "performance", "ultra_performance" })
                 for (const char* output : { "auto", "stereo", "5.1" })
                 {
                     LauncherConfig page = fresh;

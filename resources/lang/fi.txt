@@ -59,7 +59,6 @@ Add a figure	Lisää hahmo
 Add a profile	Lisää profiili
 Add to favorites	Lisää suosikkeihin
 Adding the movie shaders	Lisätään elokuvien varjostimia
-Advanced	Lisäasetukset
 Adventure	Seikkailu
 Adventure Packs	Seikkailupaketit
 Air	Ilma
@@ -369,11 +368,11 @@ GitHub says: {}	GitHub sanoo: {}
 Glow in the Dark	Glow in the Dark
 Gold	Kulta
 Greek	kreikka
-HD texture packs	HD-tekstuuripaketit
-HD textures	HD-tekstuurit
-HD textures ready	HD-tekstuurit valmiit
-HD textures removed	HD-tekstuurit poistettu
-HD textures stopped	HD-tekstuurit pysähtyivät
+Custom texture packs	Omat tekstuuripaketit
+Texture pack	Tekstuuripaketti
+Texture pack ready	Tekstuuripaketti valmis
+Texture pack removed	Tekstuuripaketti poistettu
+Texture pack stopped	Tekstuuripaketti pysähtyi
 HID portals	HID-portaalit
 Hat	Hattu
 Hero points	Sankaripisteet
@@ -474,8 +473,8 @@ Made for 30 FPS; 60 and above are experimental.	Tehty 30 FPS:lle; 60 ja yli ovat
 Magic	Taikuus
 Magic Items	Taikaesineet
 Magic item	Esine
-Making HD textures	Tehdään HD-tekstuureja
-Making the HD textures. You can keep using the launcher; the game waits.	Tehdään HD-tekstuureja. Voit jatkaa käynnistimen käyttöä; peli odottaa.
+Making the texture pack	Tehdään tekstuuripakettia
+Making the texture pack. You can keep using the launcher; the game waits.	Tehdään tekstuuripakettia. Voit jatkaa käynnistimen käyttöä; peli odottaa.
 Manage	Hallitse
 Manage profiles	Hallitse profiileja
 Mar	maalis
@@ -622,7 +621,8 @@ Put back: 	Palautettu:
 Put it on {}	Aseta paikalle: {}
 Put on the portal	Aseta portaaliin
 Quality	Laatu
-Quality is the sharpest, Ultra Performance the fastest.	Laatu on terävin, Ultrasuorituskyky nopein.
+Native AA	Natiivi AA
+Native AA is the sharpest, Ultra Performance the fastest.	Natiivi AA on terävin, Ultrasuorituskyky nopein.
 Quit	Lopeta
 Quit the game before restoring a backup	Sulje peli ennen varmuuskopion palautusta
 Quit the game first.	Sulje peli ensin.
@@ -652,7 +652,7 @@ Remove game	Poista peli
 Remove the copy	Poista kopio
 Remove {}?	Poistetaanko {}?
 Removed, except	Poistettu, paitsi
-Removing the HD textures.	Poistetaan HD-tekstuureja.
+Removing the texture pack.	Poistetaan tekstuuripakettia.
 Repair	Korjaa
 Repair builds the game again from your disc.	Korjaus rakentaa pelin uudelleen levyltäsi.
 Repair downloads the game tools again.	Korjaus lataa pelityökalut uudelleen.
@@ -751,11 +751,11 @@ Test	Testaa
 Test the portal	Testaa portaali
 Testing...	Testataan...
 Texture filtering	Tekstuurien suodatus
-Texture pack folder	Tekstuuripaketin kansio
+Custom packs folder	Omien pakettien kansio
 That's a folder: choose the disc image (.iso).	Tämä on kansio: valitse levykuva (.iso).
 The 3D scene at the console's size.	3D-kuva konsolin koossa.
-The HD textures stopped before they were made.	HD-tekstuurit pysähtyivät ennen valmistumista.
-The HD textures weren't made.	HD-tekstuureja ei tehty.
+The texture pack stopped before it was made.	Tekstuuripaketti pysähtyi ennen valmistumista.
+The texture pack wasn't made.	Tekstuuripakettia ei tehty.
 The address isn't a secure one (https)	Osoite ei ole suojattu (https)
 The answer has no release in it	Vastauksessa ei ole julkaisua
 The answer isn't valid JSON ({})	Vastaus ei ole kelvollista JSONia ({})
@@ -810,7 +810,7 @@ The wheel is full: take a figure off it first	Pyörä on täynnä: ota ensin hah
 The zip file is damaged	Zip-tiedosto on vioittunut
 These are your own game tools: restore the file, or set them up again.	Nämä ovat omat pelityökalusi: palauta tiedosto tai asenna työkalut uudelleen.
 These game tools can't build {}	Nämä pelityökalut eivät voi rakentaa peliä {}
-These game tools can't make HD textures. Update them first.	Nämä pelityökalut eivät osaa tehdä HD-tekstuureja. Päivitä ne ensin.
+These game tools can't make the texture pack. Update them first.	Nämä pelityökalut eivät osaa tehdä tekstuuripakettia. Päivitä ne ensin.
 This computer has no Desktop folder.	Tällä tietokoneella ei ole työpöytäkansiota.
 This copy holds your game. It is for your personal use only: do not share it.	Tämä kopio sisältää pelisi. Se on vain henkilökohtaiseen käyttöön: älä jaa sitä.
 This disc image is {}, not {}.	Tämä levykuva on {}, ei {}.
@@ -886,13 +886,17 @@ Version {} is available.	Versio {} on saatavilla.
 Version {}, {}	Versio {}, {}
 Versions	Versiot
 Video	Video
+Sound	Ääni
+Display	Näyttö
+Image quality	Kuvanlaatu
+Textures	Tekstuurit
 Villain	Pahis
 Villains	Pahikset
 Virtual (no portal needed)	Virtuaalinen (ei portaalia)
 Virtual portal	Virtuaaliportaali
 Virtual portal chosen.	Virtuaaliportaali valittu.
 Volume	Äänitaso
-Wait for the HD textures to finish	Odota HD-tekstuurien valmistumista
+Wait for the texture pack to finish	Odota tekstuuripaketin valmistumista
 Wait for the copy to finish	Odota kopioinnin valmistumista
 Wait for the export to finish	Odota viennin valmistumista
 Wait for the game to finish.	Odota pelin päättymistä.

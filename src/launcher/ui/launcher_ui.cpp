@@ -1067,7 +1067,7 @@ namespace launcher_ui
         else if (Installing())
             why = Tr("Wait for the installation to finish");
         else if (m_s->hdJob.Running())
-            why = Tr("Wait for the HD textures to finish");
+            why = Tr("Wait for the texture pack to finish");
         else if (m_s->copyJob.Running())
             why = Tr("Wait for the copy to finish");
         else if (m_s->portableJob.Running())
@@ -4007,7 +4007,7 @@ namespace launcher_ui
             // Each tab of one game's settings, FSR 3 and frame generation on so their rows show (set SKY_LAUNCHER_LANGUAGE for the
             // language, SKY_LAUNCHER_TEST_SIZE=<w>x<h> a window tall enough for the longest tab). Shots "tabs-<game>-<NN>-<tab>".
             static const std::pair<GameTab, const char*> Tabs[] = { { GameTab::Video, "video" }, { GameTab::Keyboard, "keyboard" },
-                { GameTab::Controller, "controller" }, { GameTab::Language, "language" }, { GameTab::Disc, "disc" },
+                { GameTab::Controller, "controller" }, { GameTab::Sound, "sound" }, { GameTab::Language, "language" }, { GameTab::Disc, "disc" },
                 { GameTab::Saves, "saves" }, { GameTab::Game, "game" } };
             if (m_testStep == 0)
                 if (const char* size = LauncherEnv("SKY_LAUNCHER_TEST_SIZE"))
