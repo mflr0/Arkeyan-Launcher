@@ -329,7 +329,20 @@ For pack makers: saves the textures as DDS files.	Til pakkeudviklere: Gemmer tek
 For {}	Til {}
 Forward side button	Sideknap fremad
 Found	Fundet
-Found, not usable	Fundet, ikke brugbar
+Found, not answering	Fundet, svarer ikke
+Found, can't be opened	Fundet, kan ikke åbnes
+The portal doesn't answer: the game will wait.	Portalen svarer ikke: Spillet venter.
+The portal doesn't answer: using the virtual portal.	Portalen svarer ikke: Bruger den virtuelle portal.
+The portal didn't answer the game within 1 second.	Portalen svarede ikke spillet inden for 1 sekund.
+The portal refused the game's command: {}.	Portalen afviste spillets kommando: {}.
+Reading the portal failed: {}.	Portalen kunne ikke læses: {}.
+The portal can't be opened: {}.	Portalen kan ikke åbnes: {}.
+Linux needs the portal's udev rule: see the README.	Linux skal bruge portalens udev-regel: Se README.
+Another program is using the portal: {}.	Et andet program bruger portalen: {}.
+This device has no portal interface.	Denne enhed har ingen portalgrænseflade.
+Test result copied	Testresultat kopieret
+Copy disc details	Kopiér diskinfo
+Disc details copied	Diskinfo kopieret
 Frame rate limit	Billedhastighedsgrænse
 Frees {}. Saves and settings are kept.	Frigør {}. Gemte spil og indstillinger beholdes.
 Fullscreen	Fuld skærm

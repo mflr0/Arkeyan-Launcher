@@ -330,7 +330,20 @@ For pack makers: saves the textures as DDS files.	For pakkeskapere: lagrer tekst
 For {}	For {}
 Forward side button	Fremre sideknapp
 Found	Funnet
-Found, not usable	Funnet, ikke brukbar
+Found, not answering	Funnet, svarer ikke
+Found, can't be opened	Funnet, kan ikke åpnes
+The portal doesn't answer: the game will wait.	Portalen svarer ikke: spillet venter.
+The portal doesn't answer: using the virtual portal.	Portalen svarer ikke: bruker den virtuelle portalen.
+The portal didn't answer the game within 1 second.	Portalen svarte ikke spillet innen 1 sekund.
+The portal refused the game's command: {}.	Portalen avviste spillets kommando: {}.
+Reading the portal failed: {}.	Kunne ikke lese portalen: {}.
+The portal can't be opened: {}.	Portalen kan ikke åpnes: {}.
+Linux needs the portal's udev rule: see the README.	Linux trenger portalens udev-regel: se README.
+Another program is using the portal: {}.	Et annet program bruker portalen: {}.
+This device has no portal interface.	Denne enheten har ikke noe portalgrensesnitt.
+Test result copied	Testresultat kopiert
+Copy disc details	Kopier platedetaljer
+Disc details copied	Platedetaljer kopiert
 Frame rate limit	Bildefrekvensgrense
 Frees {}. Saves and settings are kept.	Frigjør {}. Lagringer og innstillinger beholdes.
 Fullscreen	Fullskjerm

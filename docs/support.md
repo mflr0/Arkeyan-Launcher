@@ -61,11 +61,18 @@ GitHub issue with a template to attach it to), **Copy log**, **Close**. Nothing 
 Under COLLECTION's title the launcher shows "Portal: <model>" (for example "Portal: Portal of Power") or "Portal: not
 detected"; on the game page, beside the controller, a Pill says "Portal" (a green check) or "No portal" (a dashed circle), with
 that line in its tooltip, and opens Launcher settings > Controls. The tooltips say that without a real portal the game uses the
-virtual portal (its Toy Box). It is read with SDL's HID API (`SDL_hid_enumerate(0x1430, 0)`, Activision's vendor id) by a
-worker thread (`src/launcher/portal_status.{h,cpp}`) that scans once at start, then only when `SDL_hid_device_change_count()`
-changes, at most every 2 s, so the UI never waits. Models by product id: `0150` Portal of Power, `1F17` Xbox 360 portal
-(only where the OS exposes it as HID), any other Activision id "Skylanders portal (1430:XXXX)". If SDL's HID can't start,
-nothing is shown. Checks: `PortalChecks` in `tests/launcher_test.cpp`, with fake enumerators.
+virtual portal (its Toy Box). A worker thread (`src/launcher/portal_status.{h,cpp}`) reads two lists, opening nothing (a
+game using the portal is never disturbed), so the UI never waits:
+- SDL's HID API (`SDL_hid_enumerate(0x1430, 0)`, Activision's vendor id): once at start, then when
+  `SDL_hid_device_change_count()` changes, at most every 2 s;
+- the system's USB devices, every 2 s (an Xbox portal is not a HID device, and no change count covers it): Linux reads
+  `/sys/bus/usb/devices/*/idVendor` and `idProduct`, macOS the IOKit registry (`IOUSBHostDevice`), Windows the
+  configuration manager (`CM_Get_Device_ID_List`, the present `USB\VID_xxxx&PID_yyyy` ids; links `cfgmgr32`).
+
+A device on both lists counts once. Models: `1430:0150` Portal of Power, `1430:1F17` Xbox 360 portal, `24C6:FA00` Xbox One
+portal, any other Activision id "Skylanders portal (1430:XXXX)". If neither list can be read, nothing is shown. (Before
+0.9.5 only the HID list was read: an Xbox 360 portal the game used showed as "Virtual portal".) Checks: `PortalChecks` in
+`tests/launcher_test.cpp`: fake enumerators, a fake sysfs folder, Windows ids.
 
 ## Test the portal
 
@@ -77,13 +84,27 @@ and reads its stdout, at most 15 s:
 {"done":true,"count":1}
 ```
 
-Transport lines (`{"transport":"usb","available":false,"status":"error: ..."}`) become a note under the result. One flat JSON object per line (`kind` `hid` or `usb`, `opened`, `status` `ok` or `error: <why>`; `name` is read as `product`
-too), then the `done` line; anything else on stdout is ignored. The card lists each portal ("Found" / "Found, not usable"
-with the reason) and says what the game will do given the mode: real portal, virtual portal, or waiting for one. No
-portal: "No portal found: the game will use the virtual portal". Each portal line of a newer runtime also carries `id`, `model`, `verdict` and `verdict_reason` (the portal's answer to the game's
-reset command: "Model: Spyro's Adventure portal (Xbox 360) (id 01 28)", then "Spyro's Adventure accepts this portal." or, in red, why
-the game would reject or warn about it; the contract is the runtime's `docs/portal_probe.md`). A runtime without `--portal-probe` exits with code 2: "This
-version of the game doesn't have the portal test yet". Parser and tests: `ParsePortalProbe`, `tests/shell_test.cpp`.
+Transport lines (`{"transport":"usb","available":false,"status":"error: ..."}`) become a note under the result. One JSON
+object per line (`kind` `hid` or `usb`, `opened`, `status` `ok` or `error: <why>`; `name` is read as `product` too), then
+the `done` line; anything else on stdout is ignored. A HID portal's line also carries `write` (the method that got an
+answer) and `methods`, an object of strings (each write method tried and what the portal answered to `R` and `S`); the
+parser reads objects of strings one level deep (before 0.9.5 the object ended the line's reading, and `id`, `model` and
+`verdict` after it were lost).
+
+The card lists each portal with a pill that never contradicts the verdict under it (0.9.5): **Found** (it answered the
+game's reset), **Found, not answering** (it opened and did not answer) or **Found, can't be opened**, then the reason in
+the launcher's words (`PortalStatusText`: "The portal didn't answer the game within 1 second.", "The portal refused the
+game's command: <the system's reason>.", "Linux needs the portal's udev rule: see the README."...), translated, with the
+system's own reason left as it is. Then what the game will do given the mode (`PortalVerdict`): "Real portal: the game will
+use it.", "The portal doesn't answer: ..." (opened, no answer), "The portal can't be opened: ..." (none opened), "No portal
+found: ...", each ending with "the game will wait" (mode real) or "using the virtual portal". **Copy** beside it puts the
+whole result on the clipboard (`PortalProbeText`): the launcher's version and the mode, each portal's line, its model,
+every method's line and the method the game writes with, the notes, the verdict. Each portal line of a newer runtime also
+carries `id`, `model`, `verdict` and `verdict_reason` (the portal's answer to the game's reset command: "Model: Spyro's
+Adventure portal (Xbox 360) (id 01 28)", then "Spyro's Adventure accepts this portal." or, in red, why the game would
+reject or warn about it; the contract is the runtime's `docs/portal_probe.md`). A runtime without `--portal-probe` exits
+with code 2: "This version of the game doesn't have the portal test yet". Parser, words and tests: `ParsePortalProbe`,
+`PortalStatusText`, `PortalVerdict`, `PortalProbeText`, `tests/shell_test.cpp`.
 
 Portal mode is `[portal] mode` = `auto`, `emulated` (Virtual) or `real`; the launcher passes it as `SKY_PORTAL`. Older
 `hid` and `usb` values still work and show as "Real portal".

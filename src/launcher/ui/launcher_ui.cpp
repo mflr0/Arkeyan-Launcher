@@ -420,7 +420,7 @@ namespace launcher_ui
             if (const char* game = LauncherEnv("SKY_LAUNCHER_TEST_GAMETABS"))
                 m_testGameTabs = game;
             if (const char* screens = LauncherEnv("SKY_LAUNCHER_TEST_SCREENS"))
-                m_testScreens = std::string_view(screens) == "issues" ? 3 : std::string_view(screens) == "pad" ? 2 : 1;
+                m_testScreens = std::string_view(screens) == "portal" ? 4 : std::string_view(screens) == "issues" ? 3 : std::string_view(screens) == "pad" ? 2 : 1;
             const char* input = LauncherEnv("SKY_LAUNCHER_TEST_INPUT");
             m_testPadInput = m_testScreens == 2 || (input != nullptr && std::string_view(input) == "pad");
             m_testGallery = LauncherEnv("SKY_LAUNCHER_TEST_GALLERY") != nullptr;
@@ -2008,7 +2008,7 @@ namespace launcher_ui
             picker.tooltip = pickerTip.c_str();
             const float pickerW = std::min(ui::PillWidth(pickerId.c_str(), picker), ControllerW);
             picker.width = pickerW;
-            const launcher_portal::Status portal = m_portal.Current();
+            const launcher_portal::Status portal = m_testPortal ? *m_testPortal : m_portal.Current();
             const std::string portalId = std::string(portal.connected ? Tr("Portal") : Tr("Virtual portal")) + "##portal";
             const std::string portalTip = portal.Line() + "\n" + Tr(strings::PortalTip);
             ui::PillOptions portalPill;
@@ -2083,6 +2083,16 @@ namespace launcher_ui
                 ImGui::SetCursorScreenPos(ImVec2(left, ImGui::GetCursorScreenPos().y));
                 if (ui::Button(Tf("Use it for {}", other->name).c_str(), { .kind = ui::ButtonKind::Primary }))
                     UseDiscForOtherGame();
+            }
+            // Another edition of this game: its details for a "New disc edition" issue (README).
+            if (m_s->check.status == GameSourceStatus::WrongVersion && !m_s->check.discDetails.empty())
+            {
+                ImGui::SetCursorScreenPos(ImVec2(left, ImGui::GetCursorScreenPos().y));
+                if (ui::Button(Tr("Copy disc details")))
+                {
+                    SDL_SetClipboardText(m_s->check.discDetails.c_str());
+                    Toast(Tr("Disc details copied"), ui::ToastKind::Success);
+                }
             }
         }
         else if (update && !installing && state.buttonEnabled)
@@ -3654,6 +3664,55 @@ namespace launcher_ui
     // SKY_LAUNCHER_TEST_SCALE=2 draws them at twice the density (a Retina screen's), the same layout.
     void App::TestScreensScript(uint64_t now)
     {
+        if (m_testScreens == 4) // the portal test's two results and the game page's chip with an Xbox 360 portal (0.9.5)
+        {
+            GameSlot& ssa = SlotFor(*FindGame("ssa"));
+            // The original Wii portal on Linux, which opens and does not answer; then an Xbox 360 portal that answers
+            // beside a Wii portal the system won't open.
+            static const char* const silent =
+                "{\"kind\":\"hid\",\"vid\":\"1430\",\"pid\":\"0150\",\"product\":\"Spyro Porta\",\"opened\":true,"
+                "\"status\":\"error: write failed (Protocol error)\",\"write\":\"\",\"methods\":{\"hid-write\":\"R: error: write failed "
+                "(Protocol error); S: not tried\",\"usb-control\":\"R: error: no 'R' answer within 1 s; S: not tried\"}}\n{\"done\":true,\"count\":1}\n";
+            static const char* const found =
+                "{\"kind\":\"usb\",\"vid\":\"1430\",\"pid\":\"1f17\",\"product\":\"Xbox 360 portal\",\"opened\":true,\"status\":\"ok\","
+                "\"id\":\"01 28\",\"model\":\"Spyro's Adventure portal (Xbox 360)\",\"verdict\":\"works\",\"verdict_reason\":\"\"}\n"
+                "{\"kind\":\"hid\",\"vid\":\"1430\",\"pid\":\"0150\",\"product\":\"Spyro Porta\",\"opened\":false,"
+                "\"status\":\"error: cannot open (Permission denied)\"}\n{\"done\":true,\"count\":2}\n";
+            static const char* const shots[] = { "portal-not-answering", "portal-found", "portal-chip" };
+            switch (m_testStep)
+            {
+            case 0:
+                if (ssa.disc == DiscState::None)
+                {
+                    SelectGame(*FindGame("ssa"));
+                    if (!m_testDrop.empty())
+                        StartVerify(m_testDrop);
+                }
+                [[fallthrough]];
+            case 1:
+                if (ssa.disc == DiscState::Verifying)
+                    return;
+                ssa.installed.runtime = "fixture"; // the Test button on (once the disc check is done: it sets the slot)
+                m_page = Page::Settings;
+                m_tab = SettingsTab::Controls;
+                m_probe.result = ParsePortalProbe(m_testStep == 0 ? silent : found);
+                m_probe.ran = true;
+                m_probe.done = true;
+                break;
+            case 2:
+                if (ssa.disc == DiscState::Verifying)
+                    return;
+                ssa.installed.runtime = "test-built";
+                ssa.installed.gameVersion = "99.0.0";
+                m_testPortal = launcher_portal::Status{ true, true, "Xbox 360 portal" };
+                m_page = Page::Play;
+                break;
+            default: m_running = false; return;
+            }
+            m_testShot = shots[m_testStep];
+            m_testAt = now + (m_testStep == 2 ? 2200 : 900);
+            return;
+        }
         if (m_testScreens == 3) // the changed Settings and Collection screens, without a release request or a game
         {
             m_page = Page::Settings;

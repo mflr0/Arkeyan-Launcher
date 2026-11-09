@@ -735,6 +735,14 @@ disagree; the page's other lines (the disc's status, the install card, the game 
 | verified disc and built (or an own runtime) | Ready to play | a checked circle, green | PLAY |
 | the game is running (started here, or found running: "A game running") | Running | a play triangle, green | RUNNING (off) |
 
+A disc that fails shows why under the pickers (`check.message`, in red). **Unknown release** adds **Copy disc details**
+(0.9.5): it copies `check.discDetails`, built by `CheckGameSource` (`src/launcher/launcher.cpp`), eight lines in English
+for a "New disc edition" issue (`.github/ISSUE_TEMPLATE/new_disc_edition.yml`, the README's "Another edition is refused"):
+the launcher's version, the game, its title ID, media ID and version, the region (the XEX's security info, `0x178`: North
+America, Japan and Asia, Europe and Australia, or region free), the languages its files hold (`art::LanguagesOnDisc`, "not
+known" otherwise), `default.xex`'s size and SHA-256, the image's size. No path, no file name, no game bytes. Test: the
+WrongVersion case of `tests/launcher_test.cpp` compares the whole text.
+
 While a game runs, every **other** game's main button is off and says so ("SPYRO'S ADVENTURE IS RUNNING", fitted to the button),
 whatever its own state would offer (a busy one, checking or installing, keeps its progress). Its sidebar line is its own.
 
@@ -1194,6 +1202,10 @@ page and sidebar returning to Ready, other games becoming available again, and t
 Swap Force not opened); with `pad` each page's first stop has its ring and the pad legend shows. `SKY_LAUNCHER_LANGUAGE`,
 `SKY_LAUNCHER_TEST_SIZE` and `SKY_LAUNCHER_TEST_SCALE=2` (a Retina screen's density, the same layout) set the rest
 (`docs/polish_audit.md`, "Model screens").
+`SKY_LAUNCHER_TEST_SCREENS=portal` (0.9.5; `SKY_LAUNCHER_TEST_DROP=<SSA disc>`, `SKY_LAUNCHER_TEST_SIZE=1280x1000` shows the
+whole result) shoots `portal-not-answering` (Settings > Controls, a probe fixture: the original Wii portal on Linux, opened,
+no answer), `portal-found` (an Xbox 360 portal that answers beside a Wii portal that won't open) and `portal-chip` (the game
+page with an Xbox 360 portal on the chip). Nothing runs the game: the probe's output is a fixture.
 `SKY_LAUNCHER_TEST_EXPERIMENTAL=<id>` (`superchargers`, `imaginators`, `trapteam`...; `1` is SuperChargers, `SKY_LAUNCHER_TEST_TRAPTEAM=1` Trap Team) with `SKY_LAUNCHER_TEST_DROP=<that game's disc>` verifies the disc and shoots Home, the game's page and Home again with its card (`<id>-01-home`, `<id>-02-page`, `<id>-03-home`), in its colours.
 `SKY_LAUNCHER_TEST_INPUT=pad` shoots any script as a pad player sees it: the pad's glyphs and legends, the focus on each page's (or tab's)
 first stop with its ring.

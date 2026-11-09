@@ -329,7 +329,20 @@ For pack makers: saves the textures as DDS files.	Per chi crea pacchetti: salva 
 For {}	Per {}
 Forward side button	Laterale avanti
 Found	Trovato
-Found, not usable	Trovato, non utilizzabile
+Found, not answering	Trovato, non risponde
+Found, can't be opened	Trovato, non si apre
+The portal doesn't answer: the game will wait.	Il portale non risponde: il gioco aspetterà.
+The portal doesn't answer: using the virtual portal.	Il portale non risponde: uso il portale virtuale.
+The portal didn't answer the game within 1 second.	Il portale non ha risposto al gioco entro 1 secondo.
+The portal refused the game's command: {}.	Il portale ha rifiutato il comando del gioco: {}.
+Reading the portal failed: {}.	Lettura del portale non riuscita: {}.
+The portal can't be opened: {}.	Impossibile aprire il portale: {}.
+Linux needs the portal's udev rule: see the README.	Linux richiede la regola udev del portale: vedi il README.
+Another program is using the portal: {}.	Un altro programma sta usando il portale: {}.
+This device has no portal interface.	Questo dispositivo non ha un'interfaccia portale.
+Test result copied	Risultato del test copiato
+Copy disc details	Copia dati del disco
+Disc details copied	Dati del disco copiati
 Frame rate limit	Limite di frame rate
 Frees {}. Saves and settings are kept.	Libera {}. Salvataggi e impostazioni restano.
 Fullscreen	Schermo intero

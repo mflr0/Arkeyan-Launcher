@@ -330,7 +330,20 @@ For pack makers: saves the textures as DDS files.	Pakettien tekijöille: tallent
 For {}	Pelille {}
 Forward side button	Etusivupainike
 Found	Löytyi
-Found, not usable	Löytyi, ei käyttökelpoinen
+Found, not answering	Löytyi, ei vastaa
+Found, can't be opened	Löytyi, ei voi avata
+The portal doesn't answer: the game will wait.	Portaali ei vastaa: peli odottaa.
+The portal doesn't answer: using the virtual portal.	Portaali ei vastaa: käytetään virtuaaliportaalia.
+The portal didn't answer the game within 1 second.	Portaali ei vastannut peliin 1 sekunnin kuluessa.
+The portal refused the game's command: {}.	Portaali hylkäsi pelin komennon: {}.
+Reading the portal failed: {}.	Portaalin lukeminen epäonnistui: {}.
+The portal can't be opened: {}.	Portaalia ei voi avata: {}.
+Linux needs the portal's udev rule: see the README.	Linux tarvitsee portaalin udev-säännön: katso README.
+Another program is using the portal: {}.	Toinen ohjelma käyttää portaalia: {}.
+This device has no portal interface.	Tässä laitteessa ei ole portaalin liitäntää.
+Test result copied	Testin tulos kopioitu
+Copy disc details	Kopioi levyn tiedot
+Disc details copied	Levyn tiedot kopioitu
 Frame rate limit	Kuvataajuuden raja
 Frees {}. Saves and settings are kept.	Vapauttaa {}. Tallennukset ja asetukset säilyvät.
 Fullscreen	Koko näyttö

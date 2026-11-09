@@ -329,7 +329,20 @@ For pack makers: saves the textures as DDS files.	Voor pakketmakers: slaat de te
 For {}	Voor {}
 Forward side button	Zijknop voor
 Found	Gevonden
-Found, not usable	Gevonden, niet bruikbaar
+Found, not answering	Gevonden, antwoordt niet
+Found, can't be opened	Gevonden, kan niet worden geopend
+The portal doesn't answer: the game will wait.	De portal antwoordt niet: het spel wacht.
+The portal doesn't answer: using the virtual portal.	De portal antwoordt niet: de virtuele portal wordt gebruikt.
+The portal didn't answer the game within 1 second.	De portal heeft het spel niet binnen 1 seconde geantwoord.
+The portal refused the game's command: {}.	De portal weigerde de opdracht van het spel: {}.
+Reading the portal failed: {}.	Lezen van de portal mislukt: {}.
+The portal can't be opened: {}.	De portal kan niet worden geopend: {}.
+Linux needs the portal's udev rule: see the README.	Linux heeft de udev-regel van de portal nodig: zie de README.
+Another program is using the portal: {}.	Een ander programma gebruikt de portal: {}.
+This device has no portal interface.	Dit apparaat heeft geen portal-interface.
+Test result copied	Testresultaat gekopieerd
+Copy disc details	Schijfgegevens kopiëren
+Disc details copied	Schijfgegevens gekopieerd
 Frame rate limit	Framerate-limiet
 Frees {}. Saves and settings are kept.	Maakt {} vrij. Savegames en instellingen blijven bewaard.
 Fullscreen	Volledig scherm

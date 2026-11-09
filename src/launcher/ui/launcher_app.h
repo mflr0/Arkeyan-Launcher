@@ -825,6 +825,7 @@ namespace launcher_ui
         std::string m_testSha, m_testPath, m_testRuntime[2];
         bool m_testNav = false;        // SKY_LAUNCHER_TEST_NAV: keyboard and pad navigation, keys sent to ImGui
         bool m_testControllers = false; // open the controller menu (its screenshot)
+        std::optional<launcher_portal::Status> m_testPortal; // the portal screenshots' chip (SKY_LAUNCHER_TEST_SCREENS=portal)
         bool m_testButtons = false;     // SKY_LAUNCHER_TEST_BUTTONS: the action button's states, both games
         bool m_testButtonsOff = false;  // its "disabled" shot: the main button drawn disabled
         bool m_testGallery = false;     // SKY_LAUNCHER_TEST_GALLERY: the component gallery (gallery.cpp)

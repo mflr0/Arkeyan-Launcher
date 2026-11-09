@@ -146,7 +146,20 @@ Fingerprinting default.xex (SHA-256)	Calcul de l'empreinte de default.xex (SHA-2
 Finishing	Finalisation
 Folders	Dossiers
 Found	Détecté
-Found, not usable	Détecté, inutilisable
+Found, not answering	Détecté, ne répond pas
+Found, can't be opened	Détecté, ne s'ouvre pas
+The portal doesn't answer: the game will wait.	Le portail ne répond pas : le jeu attendra.
+The portal doesn't answer: using the virtual portal.	Le portail ne répond pas : le portail virtuel est utilisé.
+The portal didn't answer the game within 1 second.	Le portail n'a pas répondu au jeu en 1 seconde.
+The portal refused the game's command: {}.	Le portail a refusé la commande du jeu : {}.
+Reading the portal failed: {}.	La lecture du portail a échoué : {}.
+The portal can't be opened: {}.	Le portail ne s'ouvre pas : {}.
+Linux needs the portal's udev rule: see the README.	Linux a besoin de la règle udev du portail : voir le README.
+Another program is using the portal: {}.	Un autre programme utilise le portail : {}.
+This device has no portal interface.	Cet appareil n'a pas d'interface de portail.
+Test result copied	Résultat du test copié
+Copy disc details	Copier les infos du disque
+Disc details copied	Infos du disque copiées
 Frame rate limit	Limite d'images par seconde
 Fullscreen	Plein écran
 Game	Jeu

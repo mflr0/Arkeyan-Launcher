@@ -330,7 +330,20 @@ For pack makers: saves the textures as DDS files.	För paketskapare: sparar text
 For {}	För {}
 Forward side button	Främre sidoknapp
 Found	Hittad
-Found, not usable	Hittad, inte användbar
+Found, not answering	Hittad, svarar inte
+Found, can't be opened	Hittad, kan inte öppnas
+The portal doesn't answer: the game will wait.	Portalen svarar inte: spelet väntar.
+The portal doesn't answer: using the virtual portal.	Portalen svarar inte: använder den virtuella portalen.
+The portal didn't answer the game within 1 second.	Portalen svarade inte spelet inom 1 sekund.
+The portal refused the game's command: {}.	Portalen avvisade spelets kommando: {}.
+Reading the portal failed: {}.	Det gick inte att läsa portalen: {}.
+The portal can't be opened: {}.	Portalen kan inte öppnas: {}.
+Linux needs the portal's udev rule: see the README.	Linux behöver portalens udev-regel: se README.
+Another program is using the portal: {}.	Ett annat program använder portalen: {}.
+This device has no portal interface.	Den här enheten har inget portalgränssnitt.
+Test result copied	Testresultatet kopierat
+Copy disc details	Kopiera skivinfo
+Disc details copied	Skivinfo kopierad
 Frame rate limit	Bildfrekvensgräns
 Frees {}. Saves and settings are kept.	Frigör {}. Sparfiler och inställningar behålls.
 Fullscreen	Helskärm
