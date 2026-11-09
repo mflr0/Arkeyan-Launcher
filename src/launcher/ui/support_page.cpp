@@ -50,8 +50,10 @@ namespace launcher_ui
         std::string PortalVerdict(const std::string& mode, const PortalProbeResult& result, bool& good)
         {
             bool opened = false;
+            // Opened is not enough: a portal that opens but does not answer the game's commands (its status an error) is no
+            // portal for the game. Older runtimes give no status.
             for (const PortalProbeEntry& entry : result.portals)
-                opened = opened || entry.opened;
+                opened = opened || (entry.opened && (entry.status.empty() || entry.status == "ok"));
             good = opened || mode == "emulated";
             if (mode == "emulated")
                 return Tr("Virtual portal chosen.");
