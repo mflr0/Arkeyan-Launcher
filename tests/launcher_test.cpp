@@ -1332,12 +1332,14 @@ static void SweepChecks(const std::filesystem::path& scratch)
     printf("Collection sweep: backups, atomic writes, names, import, export, labels, nicknames, tidy and locks checked\n");
 }
 
-// The portal status: the VID:PID table and the status logic with fake enumerators.
-static void PortalChecks()
+// The portal status: the VID:PID table, the status logic with fake enumerators, and the USB lists (a fake sysfs, Windows ids).
+static void PortalChecks(const std::filesystem::path& scratch)
 {
     using namespace launcher_portal;
     EXPECT(ModelName(0x1430, 0x0150) == "Portal of Power");
     EXPECT(ModelName(0x1430, 0x1F17) == "Xbox 360 portal");
+    EXPECT(ModelName(0x24C6, 0xFA00) == "Xbox One portal");
+    EXPECT(ModelName(0x24C6, 0x5000).empty());
     EXPECT(ModelName(0x1430, 0x0ABC) == "Skylanders portal (1430:0ABC)");
     EXPECT(ModelName(0x045E, 0x0150).empty());
 
@@ -1351,7 +1353,46 @@ static void PortalChecks()
     EXPECT(!foreign.connected && foreign.Line() == "Portal: not detected");
     Status failed = Query([] { return Scan{}; });
     EXPECT(!failed.connected && failed.Line().empty());
-    printf("Portal status: table and status line checked\n");
+
+    // An Xbox portal is not a HID device: the USB list finds it while HID finds nothing (the issue's Linux player).
+    Status xbox = MakeStatus(Merge(Scan{ true, {} }, Scan{ true, { { 0x1D6B, 0x0002 }, { 0x1430, 0x1F17 } } }));
+    EXPECT(xbox.connected && xbox.Line() == "Portal: Xbox 360 portal");
+    Status xboxOne = MakeStatus(Merge(Scan{}, Scan{ true, { { 0x24C6, 0xFA00 } } }));
+    EXPECT(xboxOne.available && xboxOne.connected && xboxOne.Line() == "Portal: Xbox One portal");
+    Scan both = Merge(Scan{ true, { { 0x1430, 0x0150 } } }, Scan{ true, { { 0x1430, 0x0150 }, { 0x1430, 0x1F17 } } });
+    EXPECT(both.devices.size() == 2 && both.devices[0].productId == 0x0150 && both.devices[1].productId == 0x1F17);
+    EXPECT(!Merge(Scan{}, Scan{}).available);
+
+    // Linux: one folder per device with its ids as 4 hex digits; interfaces ("1-2:1.0") have none.
+    const std::filesystem::path sys = scratch / "portal-sysfs";
+    std::filesystem::remove_all(sys);
+    auto ids = [&](const char* folder, const char* vendor, const char* product) {
+        std::filesystem::create_directories(sys / folder);
+        if (vendor != nullptr)
+            std::ofstream(sys / folder / "idVendor") << vendor << "\n";
+        if (product != nullptr)
+            std::ofstream(sys / folder / "idProduct") << product << "\n";
+    };
+    ids("usb1", "1d6b", "0002");
+    ids("1-2", "1430", "1f17");
+    ids("1-2:1.0", nullptr, nullptr);
+    ids("1-3", "24c6", "zz00");
+    Scan listed = ListSysfsUsb(sys.string());
+    bool foundXbox = false;
+    for (const Device& device : listed.devices)
+        foundXbox = foundXbox || (device.vendorId == 0x1430 && device.productId == 0x1F17);
+    EXPECT(listed.available && listed.devices.size() == 2 && foundXbox);
+    EXPECT(!ListSysfsUsb((sys / "missing").string()).available);
+    std::filesystem::remove_all(sys);
+
+    // Windows: device instance ids from the configuration manager.
+    Device device;
+    EXPECT(ParseWindowsUsbId("USB\\VID_1430&PID_1F17\\5&2B6A1E9&0&3", device) && device.vendorId == 0x1430 && device.productId == 0x1F17);
+    EXPECT(ParseWindowsUsbId("usb\\vid_24c6&pid_fa00&mi_00\\7&1", device) && device.vendorId == 0x24C6 && device.productId == 0xFA00);
+    EXPECT(!ParseWindowsUsbId("HID\\VID_1430&PID_0150\\1", device));
+    EXPECT(!ParseWindowsUsbId("USB\\VID_14&PID_0150", device));
+    EXPECT(!ParseWindowsUsbId("USB\\ROOT_HUB30\\4&1", device));
+    printf("Portal status: table, status line and USB lists checked\n");
 }
 
 // Hold to confirm (HoldConfirm): the timing, a release or the pointer leaving cancels, one action per press, buttons
@@ -2132,6 +2173,30 @@ static void SourceFailureChecks(const std::filesystem::path& scratch)
     EXPECT(Check(scratch / "other_game.iso") == GameSourceStatus::WrongGame);
     WriteDiscImage(scratch / "other_region.iso", "default.xex", FakeXex(0x415608AB, 0x12345678, 0x00000100));
     EXPECT(Check(scratch / "other_region.iso") == GameSourceStatus::WrongVersion);
+    {
+        // "Copy disc details": the game, its ids, the region from the security info, default.xex's size and SHA-256, the
+        // image's size and the launcher's version; no path, no file name.
+        std::vector<uint8_t> xex = FakeXex(0x415608AB, 0x12345678, 0x00000100);
+        xex.resize(0x300);
+        Put32BE(&xex[0x10], 0x100);           // the security info
+        Put32BE(&xex[0x100 + 0x178], 0x00FF0000); // its region: Europe and Australia
+        const std::filesystem::path image = scratch / "other_edition.iso";
+        WriteDiscImage(image, "default.xex", xex);
+        GameSourceCheck check = CheckGameSource(image.string(), *FindGame("ssa"));
+        EXPECT(check.status == GameSourceStatus::WrongVersion);
+        const std::string expected = "Arkeyan Launcher " + LauncherVersion() + ": a disc edition it doesn't know\n"
+            "Game: " + std::string(FindGame("ssa")->name) + "\nTitle ID: 415608AB\nMedia ID: 12345678\nVersion: 0.0.1.0\n"
+            "Region: 00FF0000 (Europe and Australia)\nLanguages: not known\n"
+            "default.xex: 768 bytes, SHA-256 " + Sha256Hex(xex) + "\n"
+            "Disc image: " + std::to_string(std::filesystem::file_size(image)) + " bytes\n";
+        EXPECT(check.discDetails == expected);
+        if (check.discDetails != expected)
+            fprintf(stderr, "disc details:\n%s", check.discDetails.c_str());
+        EXPECT(check.discDetails.find("other_edition") == std::string::npos && check.discDetails.find(scratch.string()) == std::string::npos);
+        // No security info: the region is not known; a supported disc has no details.
+        GameSourceCheck plain = CheckGameSource((scratch / "other_region.iso").string(), *FindGame("ssa"));
+        EXPECT(plain.discDetails.find("Region: not known\n") != std::string::npos);
+    }
     WriteDiscImage(scratch / "modified.iso", "default.xex", FakeXex(0x415608AB, 0x53CE7B97, 2));
     EXPECT(Check(scratch / "modified.iso") == GameSourceStatus::Damaged);
 
@@ -2392,7 +2457,7 @@ static int RunChecks(int argc, char** argv)
     PictureChecks(scratch);
     HoldChecks();
     EditChecks();
-    PortalChecks();
+    PortalChecks(scratch);
     InstallChecks(scratch, noDisc ? "synthetic.iso" : iso.string());
     g_failures += ShellChecks(scratch);
     LauncherControlChecks(scratch);

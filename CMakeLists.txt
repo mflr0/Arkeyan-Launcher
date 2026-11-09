@@ -3,7 +3,7 @@ project(ArkeyanLauncher LANGUAGES C CXX)
 if(WIN32)
     enable_language(RC) # the exe's icon, manifest and version (resources/windows/skylauncher.rc.in)
 endif()
-set(LAUNCHER_VERSION "0.9.4" CACHE STRING "Version shown in the app bundle")
+set(LAUNCHER_VERSION "0.9.5" CACHE STRING "Version shown in the app bundle")
 # SKYLAUNCHER_VERSION is the name before 0.6.0: still accepted.
 if(SKYLAUNCHER_VERSION)
     set(LAUNCHER_VERSION "${SKYLAUNCHER_VERSION}")
@@ -209,11 +209,12 @@ target_include_directories(ArkeyanLauncherCore PUBLIC src PRIVATE lib/stb lib/mi
 target_link_libraries(ArkeyanLauncherCore PUBLIC SDL3::SDL3-static fmt::fmt XenonXex imgui)
 target_compile_definitions(ArkeyanLauncherCore PRIVATE SKYLAUNCHER_VERSION_STRING="${LAUNCHER_VERSION}" ARKEYAN_SOURCE_FONT_DIR="${CMAKE_SOURCE_DIR}/resources/fonts")
 if(APPLE)
-    target_link_libraries(ArkeyanLauncherCore PUBLIC "-framework CoreGraphics" "-framework CoreFoundation")
+    target_link_libraries(ArkeyanLauncherCore PUBLIC "-framework CoreGraphics" "-framework CoreFoundation" "-framework IOKit")
 endif()
 if(WIN32)
     target_link_libraries(ArkeyanLauncherCore PUBLIC ole32 uuid) # the desktop shortcut (IShellLink)
     target_link_libraries(ArkeyanLauncherCore PUBLIC ws2_32) # the Toy Box window's link to the game (src/shared/toybox_socket.cpp)
+    target_link_libraries(ArkeyanLauncherCore PUBLIC cfgmgr32) # the USB device list for the portal chip (src/launcher/portal_status.cpp)
 endif()
 
 # Fonts are data, not game content: Outfit and Bungee (SIL Open Font License, license files next to them).
