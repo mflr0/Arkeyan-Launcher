@@ -23,6 +23,14 @@ on your computer.
 - **Your saves are safe**: written in one go, earlier versions kept, restored in two clicks.
 - **Updates in one click**, for the launcher and each game, checked against the release's SHA-256.
 - **A portable copy** of an installed game in one file, to play it anywhere without the launcher.
+- **Two players on one computer**, each with a controller and a figure, real or virtual.
+- **Profiles**, each with its own Toy Box, saves, keys and achievements, and the games' **achievements** in the launcher.
+- **The launcher in eleven languages**: English, French, German, Spanish, Italian, Portuguese, Dutch, Swedish, Norwegian,
+  Danish and Finnish.
+- **Each system's own graphics**: Direct3D 12 on Windows, Metal on macOS, Vulkan on Linux.
+
+Coming later: online co-op, frame generation, custom texture packs, and SuperChargers Racing, Cloud Patrol and Lost
+Islands.
 
 ## The games
 
@@ -42,7 +50,7 @@ Finished a game, or played one on Windows or Linux? Please say so in an
 
 ## Tested
 
-Every release is checked before it ships, on the four games:
+Every release is checked before it ships, on the six games:
 
 - **A clean install of each game** from the release's own kit, then its first level played by a script in a real window
   (movies on, figures on the virtual portal, frames captured).
@@ -167,7 +175,8 @@ Portal of Power. Then click **Test the portal**.
   settings, saves, figures and games then live in a `data` folder beside it, for the launcher and for every game it
   starts. Move the folder and everything comes along.
 - The launcher and the games share one settings file, `launcher.ini`.
-- **Language:** the launcher is available in English and French (Settings, Launcher tab).
+- **Language:** the launcher is available in eleven languages (Settings, Launcher tab); System default follows your system's
+  language. A game's own text and voices come from your disc (Supported discs, above).
 - **Your saves are safe:** each save is written in one go, and the previous version is kept before it is replaced. To go
   back to one, open the game's settings (the gear next to PLAY) > Saves > Restore.
 
