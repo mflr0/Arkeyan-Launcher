@@ -591,6 +591,7 @@ namespace launcher_ui
                 FinishPortableExport();
             FinishHdTextures();
             PollInstall();
+            PollEditionReport();
         }
         m_s = shown;
         SetActiveGame(m_s->game.id);
@@ -915,6 +916,7 @@ namespace launcher_ui
     {
         m_s->disc = DiscState::Verifying;
         m_s->discPath = path;
+        m_s->editionText.clear();
         m_s->discSize = 0;
         m_s->fromCopy = m_s->copy.state == gamedata::State::Complete && path == datadir::Text(gamedata::Folder(m_s->game.id));
         SDL_PathInfo info;
@@ -2128,6 +2130,19 @@ namespace launcher_ui
                 {
                     SDL_SetClipboardText(m_s->check.discDetails.c_str());
                     Toast(Tr("Disc details copied"), ui::ToastKind::Success);
+                }
+                // The kit reads the disc further: whether its game code is a supported release's (a report to paste).
+                ImGui::SameLine(0, ui::space::XS);
+                const bool finding = m_s->editionJob.Running() || (m_s->editionAfterKit && m_s->kitDownload.Running());
+                if (ui::Button(finding ? Tr("Finding your edition…") : Tr("Find my edition"),
+                        { .disabled = !finding && (m_s->kitDownload.Running() || m_s->installer.Running()), .loading = finding }))
+                    FindEdition();
+                // The report is on the clipboard; its verdict (its last line, in English like the report) stays here.
+                if (size_t result = m_s->editionText.rfind("Result: "); result != std::string::npos)
+                {
+                    ImGui::SetCursorScreenPos(ImVec2(left, ImGui::GetCursorScreenPos().y));
+                    const std::string verdict = m_s->editionText.substr(result + 8, m_s->editionText.find('\n', result) - result - 8);
+                    ui::Text(ui::TextStyle::Caption, verdict.c_str(), ui::color::InkSoft, leftW);
                 }
             }
         }

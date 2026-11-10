@@ -310,6 +310,58 @@ namespace launcher_ui
         m_s->kitDownload.Start(SettingGet(m_config, "update", "kit_repo", "mflr0/Arkeyan-Launcher"), m_s->kitTag, DownloadedKitsFolder());
     }
 
+    void App::FindEdition()
+    {
+        if (m_s->editionJob.Running() || m_s->kitDownload.Running() || m_s->installer.Running())
+            return;
+        m_s->kit = FindInstallKit(m_config, m_s->game.id);
+        if (m_s->kit && m_s->kit->editionReport)
+        {
+            m_s->editionJob.Start(m_s->kit->ssabuild, m_s->discPath);
+            return;
+        }
+        if (m_s->kit && m_s->kit->chosen) // the player's own kit: not ours to replace
+        {
+            Toast(Tr("These game tools can't find editions: update them"), ui::ToastKind::Error);
+            return;
+        }
+        m_s->editionAfterKit = true;
+        m_s->kitTag = WantedKitTag(*m_s);
+        m_s->kitDownload.Start(SettingGet(m_config, "update", "kit_repo", "mflr0/Arkeyan-Launcher"), m_s->kitTag, DownloadedKitsFolder());
+    }
+
+    void App::PollEditionReport()
+    {
+        if (m_s->editionAfterKit && !m_s->kitDownload.Running())
+        {
+            m_s->editionAfterKit = false;
+            KitDownloader::Snapshot_ kit = m_s->kitDownload.Snapshot();
+            if (kit.state == KitDownloader::State::Done)
+            {
+                Set("update", "kit_tag", kit.tag);
+                Set("update", "kit_fetched", m_s->kitTag);
+                m_s->kit = FindInstallKit(m_config, m_s->game.id);
+                if (m_s->kit && m_s->kit->editionReport)
+                    m_s->editionJob.Start(m_s->kit->ssabuild, m_s->discPath);
+                else
+                    Toast(Tr("These game tools can't find editions: update them"), ui::ToastKind::Error);
+            }
+            else if (kit.state == KitDownloader::State::Failed)
+                Toast(kit.error.empty() ? Tr("Couldn't download the game tools") : kit.error, ui::ToastKind::Error);
+        }
+        if (std::optional<EditionReport> report = m_s->editionJob.Take())
+        {
+            if (report->ok)
+            {
+                m_s->editionText = report->text;
+                SDL_SetClipboardText(report->text.c_str());
+                Toast(Tr("Edition report copied"), ui::ToastKind::Success);
+            }
+            else
+                Toast(Tf("Couldn't find the edition: {}", report->text), ui::ToastKind::Error);
+        }
+    }
+
     void App::StartInstaller()
     {
         // A kit that lost a file (an antivirus, often) would fail the build in an unclear way: the file is named instead.

@@ -5,6 +5,7 @@
 // public entry point.
 #include "assets/launcher_assets.h"
 #include "launcher/game_copy.h"
+#include "launcher/edition_report.h"
 #include "launcher/portable_export.h"
 #include "launcher/game_install.h"
 #include "launcher/game_music.h"
@@ -300,6 +301,11 @@ namespace launcher_ui
         bool hdOn = false;          // it makes the pack (else it removes it)
         std::string hdMessage;      // why the last one failed, in the launcher's language
         KitDownloader kitDownload;  // the first step of an install when there is no kit yet
+        // "Find my edition" on a disc of an unknown edition: the kit's report (fetching the kit first when there is none
+        // that makes it), shown under the message once copied.
+        EditionReportJob editionJob;
+        bool editionAfterKit = false; // kitDownload runs for it: the report follows
+        std::string editionText;
         std::string kitError;       // why the downloaded kit can't be used
         bool kitUsed = false;       // this install started with that download
         std::string kitTag;         // the release whose kit that download fetches
@@ -540,6 +546,8 @@ namespace launcher_ui
         bool Installing() const { return m_s->installer.Running() || m_s->kitDownload.Running(); }
         void StartInstaller();
         void StartKitDownload();
+        void FindEdition();        // "Find my edition"
+        void PollEditionReport();
         bool KitNeedsFetch(const GameSlot& slot) const; // no kit, one from an older release, or one that can't build the game
         bool UpdateAvailable() const;                   // the release has a newer version of this game than the one built (docs/updates.md)
         bool UpdateAvailable(const GameSlot& slot) const;

@@ -184,6 +184,7 @@ target_sources(ArkeyanLauncherCore PRIVATE
     src/launcher/game_keys.cpp
     src/launcher/game_settings.cpp
     src/launcher/game_copy.cpp
+    src/launcher/edition_report.cpp
     src/launcher/portable_export.cpp
     src/launcher/shortcut.cpp
     src/launcher/single_instance.cpp

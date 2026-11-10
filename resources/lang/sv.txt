@@ -345,6 +345,13 @@ This device has no portal interface.	Den här enheten har inget portalgränssnit
 Test result copied	Testresultatet kopierat
 Copy disc details	Kopiera skivinfo
 Disc details copied	Skivinfo kopierad
+Find my edition	Hitta min utgåva
+Finding your edition…	Letar efter din utgåva…
+Edition report copied	Utgåverapport kopierad
+Couldn't find the edition: {}	Utgåvan hittades inte: {}
+These game tools can't find editions: update them	De här spelverktygen hittar inga utgåvor: uppdatera dem
+Comparing the game code with the supported releases	Jämför spelkoden med de stödda utgåvorna
+Couldn't download the game tools	Kunde inte ladda ner spelverktygen
 Frame rate limit	Bildfrekvensgräns
 Frees {}. Saves and settings are kept.	Frigör {}. Sparfiler och inställningar behålls.
 Fullscreen	Helskärm

@@ -6,16 +6,18 @@ body:
   - type: markdown
     attributes:
       value: |
-        On the game's page, under the message about your disc, click **Copy disc details** and paste them below.
-        They hold the game, its title and media IDs, its version, region and languages, the size and SHA-256 of
-        `default.xex`, the size of the disc image and the launcher's version. Nothing else.
+        On the game's page, under the message about your disc, click **Find my edition** and paste the report below
+        (it is copied for you). It holds the game, its title and media IDs, its version, region and languages, the size
+        and SHA-256 of `default.xex` and of its game code, whether that code is a supported edition's, and the addresses
+        of the game the tools found in it. Nothing from the game itself. If Find my edition can't run, click
+        **Copy disc details** instead and paste those.
 
         **Never attach the disc image (ISO) or any file from the game.**
   - type: textarea
     id: details
     attributes:
-      label: Disc details
-      description: Paste what "Copy disc details" copied.
+      label: Edition report
+      description: Paste what "Find my edition" (or "Copy disc details") copied.
       render: text
     validations:
       required: true

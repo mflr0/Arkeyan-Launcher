@@ -160,6 +160,13 @@ This device has no portal interface.	Cet appareil n'a pas d'interface de portail
 Test result copied	Résultat du test copié
 Copy disc details	Copier les infos du disque
 Disc details copied	Infos du disque copiées
+Find my edition	Trouver mon édition
+Finding your edition…	Recherche de votre édition…
+Edition report copied	Rapport d'édition copié
+Couldn't find the edition: {}	Édition introuvable : {}
+These game tools can't find editions: update them	Ces outils de jeu ne trouvent pas les éditions : mettez-les à jour
+Comparing the game code with the supported releases	Comparaison du code du jeu avec les versions prises en charge
+Couldn't download the game tools	Impossible de télécharger les outils de jeu
 Frame rate limit	Limite d'images par seconde
 Fullscreen	Plein écran
 Game	Jeu

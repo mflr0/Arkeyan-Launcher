@@ -1,6 +1,7 @@
 // Checks the launcher's disc verification and settings file without showing any UI.
 // usage: ArkeyanRuntimeLauncherTest <game disc .iso> <scratch dir> [<damaged copy of the image>...]
 #include "test_env.h"
+#include "launcher/edition_report.h"
 #include "atomic_write_checks.h"
 #include "launcher/portal_status.h"
 #include "launcher/env.h"
@@ -2187,7 +2188,7 @@ static void SourceFailureChecks(const std::filesystem::path& scratch)
         const std::string expected = "Arkeyan Launcher " + LauncherVersion() + ": a disc edition it doesn't know\n"
             "Game: " + std::string(FindGame("ssa")->name) + "\nTitle ID: 415608AB\nMedia ID: 12345678\nVersion: 0.0.1.0\n"
             "Region: 00FF0000 (Europe and Australia)\nLanguages: not known\n"
-            "default.xex: 768 bytes, SHA-256 " + Sha256Hex(xex) + "\n"
+            "default.xex: 768 bytes, SHA-256 " + Sha256Hex(xex) + "\nLoaded image: not readable\n"
             "Disc image: " + std::to_string(std::filesystem::file_size(image)) + " bytes\n";
         EXPECT(check.discDetails == expected);
         if (check.discDetails != expected)
@@ -2199,6 +2200,24 @@ static void SourceFailureChecks(const std::filesystem::path& scratch)
     }
     WriteDiscImage(scratch / "modified.iso", "default.xex", FakeXex(0x415608AB, 0x53CE7B97, 2));
     EXPECT(Check(scratch / "modified.iso") == GameSourceStatus::Damaged);
+
+    {
+        // "Find my edition": the kit's report, as printed; a builder error comes back as the reason; a kit that has the
+        // option says so.
+        const auto kit = InstallKitIn(SKYLAUNCHER_FAKE_KIT);
+        EXPECT(kit && kit->editionReport);
+        const std::string image = (scratch / "other_region.iso").string();
+        EditionReport report = kit ? RunEditionReport(kit->ssabuild, image) : EditionReport{};
+        EXPECT(report.ok && report.text.starts_with("Edition report (") && report.text.ends_with("supported release\n") &&
+               report.text.find('@') == std::string::npos);
+        TestSetEnv("FAKE_ARKEYAN_BUILDER_FAIL", "edition");
+        report = kit ? RunEditionReport(kit->ssabuild, image) : EditionReport{};
+        TestUnsetEnv("FAKE_ARKEYAN_BUILDER_FAIL");
+        EXPECT(!report.ok && report.text == "not an Xbox 360 disc image, or the file is incomplete");
+        report = RunEditionReport(scratch / "no-builder", image);
+        EXPECT(!report.ok && !report.text.empty());
+        printf("Find my edition: the kit's report, its error, a missing builder\n");
+    }
 
 }
 
@@ -2670,6 +2689,33 @@ static int RunChecks(int argc, char** argv)
                    art::JoinLanguages(check.languages.text) == expected && art::JoinLanguages(check.languages.voice) == expected);
         }
     printf("  verified in %lld ms\n", milliseconds(start));
+
+    {
+        // Another edition of the same game code: the player's default.xex under another media ID, version and region.
+        DiscFileSystem source;
+        EXPECT(source.Open(iso.string().c_str()));
+        std::vector<uint8_t> xex = source.ReadAll("default.xex");
+        auto be32 = [&](size_t at) { return uint32_t(xex[at]) << 24 | uint32_t(xex[at + 1]) << 16 | uint32_t(xex[at + 2]) << 8 | xex[at + 3]; };
+        size_t info = 0;
+        for (uint32_t i = 0; i < be32(0x14); i++)
+            if (be32(0x18 + i * 8) == 0x00040006)
+                info = be32(0x18 + i * 8 + 4);
+        EXPECT(info != 0);
+        Put32BE(&xex[info], 0x1234ABCD);
+        Put32BE(&xex[info + 4], 0x0000000E);
+        Put32BE(&xex[be32(0x10) + 0x178], 0x000000FF);
+        const std::filesystem::path edition = scratch / "header_only_edition.iso";
+        WriteDiscImage(edition, "default.xex", xex);
+        GameSourceCheck accepted = CheckGameSource(edition.string(), game);
+        EXPECT(accepted.status == GameSourceStatus::Ok && accepted.xexSha256 == Sha256Hex(xex) && accepted.languages.text.empty());
+        // The same header over other code (one byte of its data changed): refused, its details say the code differs.
+        xex[be32(0x08) + (xex.size() - be32(0x08)) / 2] ^= 0x5A;
+        WriteDiscImage(edition, "default.xex", xex);
+        GameSourceCheck refused = CheckGameSource(edition.string(), game);
+        EXPECT(refused.status == GameSourceStatus::WrongVersion && refused.discDetails.find("Loaded image: ") != std::string::npos);
+        std::filesystem::remove(edition);
+        printf("A header-only edition is accepted; other code is refused\n");
+    }
 
     DiscFileSystem disc;
     EXPECT(disc.Open(iso.string().c_str()));

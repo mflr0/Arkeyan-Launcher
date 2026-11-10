@@ -18,6 +18,9 @@ struct GameRelease
     uint32_t mediaId;
     uint32_t version;             // XEX execution info version
     const char* defaultXexSha256; // lowercase hex
+    // SHA-256 of its loaded image (the decrypted, decompressed executable), lowercase hex. A disc of another edition with
+    // this image runs the same game code: only its XEX header (region, media ID, version) differs.
+    const char* imageSha256;
 };
 
 struct GameInfo

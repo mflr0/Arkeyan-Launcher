@@ -31,6 +31,8 @@ namespace
     constexpr uint32_t XexMagic = 0x58455832; // "XEX2"
     constexpr uint32_t XexHeaderResourceInfo = 0x000002FF;
     constexpr uint32_t XexHeaderExecutionInfo = 0x00040006;
+    constexpr uint32_t XexHeaderFileFormatInfo = 0x000003FF;
+    constexpr uint32_t XexHeaderImportLibraries = 0x000103FF;
 
     // SPA (title XDBF) ids of the title's own name string and icon image.
     constexpr uint16_t TitleNameStringId = 0x8000;
@@ -64,6 +66,52 @@ namespace
                 return ReadBE32(&xex[0x18 + i * 8 + 4]);
         }
         return {};
+    }
+
+    // Whether XenonUtils' image loader, which trusts the header, can read this file: the header, the security and file
+    // format infos, the first compressed block and the import table are in bounds (the next blocks are checked by their
+    // hash chain inside the loader). Called before decrypting an unverified default.xex: a damaged or invented file is
+    // refused instead of crashing the loader.
+    bool XexImageReadable(const std::vector<uint8_t>& xex)
+    {
+        if (xex.size() < 0x18 || ReadBE32(xex.data()) != XexMagic)
+            return false;
+        const uint64_t size = xex.size(), header = ReadBE32(&xex[0x08]), security = ReadBE32(&xex[0x10]);
+        const uint64_t count = ReadBE32(&xex[0x14]);
+        if (header > size || header < 0x18 + count * 8 || security + 0x180 > header)
+            return false;
+        const uint64_t imageSize = ReadBE32(&xex[security + 4]);
+        if (imageSize < 0x1000 || imageSize > (512u << 20))
+            return false;
+        const auto format = FindXexHeader(xex, XexHeaderFileFormatInfo);
+        if (!format || *format + 8 > header)
+            return false;
+        const uint64_t infoSize = ReadBE32(&xex[*format]);
+        const unsigned encryption = unsigned(xex[*format + 4]) << 8 | xex[*format + 5];
+        const unsigned compression = unsigned(xex[*format + 6]) << 8 | xex[*format + 7];
+        if (infoSize < 8 || *format + infoSize > header || encryption > 1 || compression > 2)
+            return false;
+        if (auto imports = FindXexHeader(xex, XexHeaderImportLibraries))
+        {
+            if (*imports + 12 > header || *imports + ReadBE32(&xex[*imports]) > header
+                || uint64_t(ReadBE32(&xex[*imports + 4])) + 12 > ReadBE32(&xex[*imports]))
+                return false;
+        }
+        const uint64_t data = size - header;
+        if (compression == 0) // stored
+            return imageSize <= data;
+        if (compression == 1) // basic: data and zero runs
+        {
+            uint64_t stored = 0;
+            for (uint64_t at = *format + 8; at + 8 <= *format + infoSize; at += 8)
+                stored += ReadBE32(&xex[at]);
+            return stored <= data;
+        }
+        // LZX: the window, then the first block's size and hash (each block holds the next one's).
+        if (infoSize < 8 + 4 + 24)
+            return false;
+        const uint64_t window = ReadBE32(&xex[*format + 8]), firstBlock = ReadBE32(&xex[*format + 12]);
+        return window >= 0x8000 && window <= 0x200000 && (window & (window - 1)) == 0 && firstBlock >= 24 && firstBlock <= data;
     }
 
     struct ExecutionInfo
@@ -300,6 +348,24 @@ GameSourceCheck CheckGameSource(const std::string& path, const GameInfo& game, c
             return { Ok, {}, sha256, {}, languages() };
         }
     }
+    // Another edition of the same game code (only the XEX header differs: region, media ID, version): it runs as that release.
+    report(0.98f, Tr("Comparing the game code with the supported releases"));
+    std::string imageSha256;
+    size_t imageSize = 0;
+    if (XexImageReadable(xex))
+        if (Image image = Image::ParseImage(xex.data(), xex.size()); image.data != nullptr)
+        {
+            imageSize = image.size;
+            imageSha256 = Sha256Hex({ image.data.get(), imageSize });
+        }
+    for (const GameRelease& release : game.releases)
+    {
+        if (!imageSha256.empty() && imageSha256 == release.imageSha256)
+        {
+            report(1.0f, Tr("Verified"));
+            return { Ok, {}, sha256, {}, languages() };
+        }
+    }
     for (const GameRelease& release : game.releases)
     {
         if (release.mediaId == execution->mediaId && release.version == execution->version)
@@ -331,6 +397,8 @@ GameSourceCheck CheckGameSource(const std::string& path, const GameInfo& game, c
     check.discDetails += fmt::format("Languages: {}\n", found.text.empty() && found.voice.empty() ? std::string("not known")
         : fmt::format("text {}; voices {}", found.text.empty() ? "not known" : join(found.text), found.voice.empty() ? "not known" : join(found.voice)));
     check.discDetails += fmt::format("default.xex: {} bytes, SHA-256 {}\n", xex.size(), sha256);
+    check.discDetails += imageSha256.empty() ? std::string("Loaded image: not readable\n")
+        : fmt::format("Loaded image: {} bytes, SHA-256 {} (another game code than the supported releases')\n", imageSize, imageSha256);
     check.discDetails += copy ? std::string("Disc image: a copy of the game data (a folder)\n")
         : sizeError ? std::string("Disc image: size not known\n") : fmt::format("Disc image: {} bytes\n", discSize);
     return check;

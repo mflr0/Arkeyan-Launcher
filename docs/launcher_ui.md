@@ -740,8 +740,23 @@ A disc that fails shows why under the pickers (`check.message`, in red). **Unkno
 for a "New disc edition" issue (`.github/ISSUE_TEMPLATE/new_disc_edition.yml`, the README's "Another edition is refused"):
 the launcher's version, the game, its title ID, media ID and version, the region (the XEX's security info, `0x178`: North
 America, Japan and Asia, Europe and Australia, or region free), the languages its files hold (`art::LanguagesOnDisc`, "not
-known" otherwise), `default.xex`'s size and SHA-256, the image's size. No path, no file name, no game bytes. Test: the
-WrongVersion case of `tests/launcher_test.cpp` compares the whole text.
+known" otherwise), `default.xex`'s size and SHA-256, its loaded image's size and SHA-256 ("not readable" when it can't be
+decrypted), the image's size. No path, no file name, no game bytes. Test: the WrongVersion case of
+`tests/launcher_test.cpp` compares the whole text.
+
+A disc whose `default.xex` is unknown but whose loaded image (decrypted, decompressed) is a supported release's
+(`GameRelease::imageSha256`, `src/launcher/launcher_games.cpp`) is that release: `Ok` (only its XEX header differs, as
+between Swap Force's two editions). `XexImageReadable` (`launcher.cpp`) checks the header's bounds first, so a damaged or
+invented file is refused, not decrypted. Test: the SSA disc's executable under another media ID, version and region is
+accepted; with one data byte changed it is `WrongVersion`.
+
+**Find my edition** (0.9.5), beside Copy disc details: `App::FindEdition` (`ui/install_page.cpp`) runs the kit's
+Arkeyan-Builder `--edition-report <disc>` on a worker (`EditionReportJob`, `src/launcher/edition_report.{h,cpp}`), with a
+kit whose builder knows the option (`InstallKit::editionReport`); without one it downloads the release's kit first (the
+player's own kit is never replaced: a toast says to update it). The report (plain text, in English) goes to the clipboard
+with a toast, and its `Result:` line stays under the buttons; the button spins meanwhile. A failure shows the builder's
+`@error` in a toast. Test: `RunEditionReport` against the fake builder (`tests/fake_arkeyan_builder.c --edition-report`:
+the report, `FAKE_ARKEYAN_BUILDER_FAIL=edition`'s error, a missing builder).
 
 While a game runs, every **other** game's main button is off and says so ("SPYRO'S ADVENTURE IS RUNNING", fitted to the button),
 whatever its own state would offer (a busy one, checking or installing, keeps its progress). Its sidebar line is its own.

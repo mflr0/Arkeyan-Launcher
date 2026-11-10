@@ -345,6 +345,13 @@ This device has no portal interface.	Tässä laitteessa ei ole portaalin liitän
 Test result copied	Testin tulos kopioitu
 Copy disc details	Kopioi levyn tiedot
 Disc details copied	Levyn tiedot kopioitu
+Find my edition	Etsi versioni
+Finding your edition…	Etsitään versiotasi…
+Edition report copied	Versioraportti kopioitu
+Couldn't find the edition: {}	Versiota ei löytynyt: {}
+These game tools can't find editions: update them	Nämä pelityökalut eivät löydä versioita: päivitä ne
+Comparing the game code with the supported releases	Verrataan pelin koodia tuettuihin julkaisuihin
+Couldn't download the game tools	Pelityökalujen lataus epäonnistui
 Frame rate limit	Kuvataajuuden raja
 Frees {}. Saves and settings are kept.	Vapauttaa {}. Tallennukset ja asetukset säilyvät.
 Fullscreen	Koko näyttö

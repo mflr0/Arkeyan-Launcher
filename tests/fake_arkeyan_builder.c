@@ -8,7 +8,8 @@
  *   FAKE_ARKEYAN_BUILDER_DELAY=<seconds> pause between events (default 0.05)
  *   FAKE_ARKEYAN_BUILDER_HOLD=<seconds>  wait after the last step, before finishing (to look at a build at 100 %)
  * --hd-textures off|auto: as the real one, a last step "hdtextures" after the build, or alone (no --out) as the only step;
- *   FAKE_ARKEYAN_BUILDER_FAIL=hdtextures fails half way through it, and FAKE_ARKEYAN_BUILDER_HD_MARKER=<file> gets the mode it was asked for. */
+ *   FAKE_ARKEYAN_BUILDER_FAIL=hdtextures fails half way through it, and FAKE_ARKEYAN_BUILDER_HD_MARKER=<file> gets the mode it was asked for.
+ * --edition-report <iso>: a fixed report (edition_report). */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -84,6 +85,23 @@ static int menu_music(const char* path)
     return 0;
 }
 
+/* --edition-report <iso>: a report as the real one prints it (plain text, exit 0). FAKE_ARKEYAN_BUILDER_FAIL=edition: an
+ * @error and exit 1, as for a disc it can't read. */
+static int edition_report(const char* iso)
+{
+    (void)iso;
+    const char* fail = getenv("FAKE_ARKEYAN_BUILDER_FAIL");
+    if (fail != NULL && strcmp(fail, "edition") == 0)
+    {
+        printf("@error not an Xbox 360 disc image, or the file is incomplete\n");
+        return 1;
+    }
+    printf("Edition report (Arkeyan-Builder fake)\nGame: Skylanders Spyro's Adventure (ssa)\nTitle ID: 415608AB\n"
+           "Media ID: 12345678\nVersion: 0.0.1.0\nSupported releases:\n- USA, Europe: different game code\n"
+           "Result: not supported yet: the game code differs from every supported release\n");
+    return 0;
+}
+
 /* The HD texture step: "hdtextures" is a step like the others; the mode is written to the marker file when the test names one. */
 static void hd_textures(const char* mode)
 {
@@ -123,6 +141,8 @@ int main(int argc, char** argv)
             hd = argv[++i];
         else if (strcmp(argv[i], "--menu-music") == 0)
             return menu_music(argv[i + 1]);
+        else if (strcmp(argv[i], "--edition-report") == 0)
+            return edition_report(argv[i + 1]);
     }
     if (getenv("FAKE_ARKEYAN_BUILDER_DELAY") != NULL)
         g_delay = (int)(atof(getenv("FAKE_ARKEYAN_BUILDER_DELAY")) * 1000);
