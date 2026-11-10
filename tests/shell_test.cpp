@@ -248,6 +248,16 @@ void GameRunChecks(const std::filesystem::path &scratch) {
                transport.notes.size() == 1 &&
                transport.notes[0].find("libusb-1.0 not found") !=
                    std::string::npos);
+  // The game's lines about the devices that may be a portal (Windows), shown as
+  // they come, after the portals.
+  PortalProbeResult noted = ParsePortalProbe(
+      "{\"note\":\"windows device: USB\\\\VID_24C6&PID_FA01\\\\6&1 \\\"Xbox "
+      "Gaming Device\\\", driver xboxgip\"}\n{\"done\":true,\"count\":0}\n");
+  SHELL_EXPECT(noted.ran && noted.portals.empty() && noted.notes.size() == 1 &&
+               noted.notes[0] == "windows device: USB\\VID_24C6&PID_FA01\\6&1 "
+                                 "\"Xbox Gaming Device\", driver xboxgip");
+  SHELL_EXPECT(PortalProbeText("auto", noted).find("windows device: USB") !=
+               std::string::npos);
   SHELL_EXPECT(!ParsePortalProbe("{\"kind\":\"hid\"").ran &&
                !ParsePortalProbe("").ran);
   // A HID portal with its write methods (an object), then the fields after it:
