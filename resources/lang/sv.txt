@@ -726,6 +726,8 @@ Show the collection folder	Visa samlingsmappen
 Show the game	Visa spelet
 Silver	Silver
 Skip intro movies	Hoppa över introfilmer
+Graphics API	Grafik-API
+Direct3D 12 by default; the game uses the other if it cannot start.	Direct3D 12 som standard; startar den inte använder spelet den andra.
 Skylander Info	Skylander-info
 Skylander Profile	Skylander-profil
 Skylander/Villain Stats	Skylander/skurk-statistik

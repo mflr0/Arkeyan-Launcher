@@ -160,6 +160,30 @@ namespace launcher_ui
 
             ui::SettingRow(Tr("Skip intro movies"), nullptr);
             toggle("##skipintromovies", "skip_intro_movies", "0");
+
+            if (GpuBackendShown)
+            {
+                ui::SettingRow(Tr("Graphics API"), Tr("Direct3D 12 by default; the game uses the other if it cannot start."));
+                SettingSelect("##gpubackend", video, "gpu_backend", GpuBackendChoices, 0);
+            }
+            // Offscreen page check (SKY_LAUNCHER_TEST_GPU_BACKEND=<value>): the row's write where it is shown, then the page.
+            if (!m_shots.empty())
+                if (const char* chosen = LauncherEnv("SKY_LAUNCHER_TEST_GPU_BACKEND"))
+                {
+                    static uint64_t captureAt = 0;
+                    if (captureAt == 0)
+                    {
+                        if (GpuBackendShown)
+                            Set(video, "gpu_backend", chosen);
+                        captureAt = SDL_GetTicks() + 300;
+                        m_testAt = SDL_GetTicks() + 60000;
+                    }
+                    else if (SDL_GetTicks() >= captureAt)
+                    {
+                        Screenshot(("gpu-backend-" + std::string(m_s->game.id)).c_str());
+                        m_running = false;
+                    }
+                }
             ui::EndSettings();
         }
 

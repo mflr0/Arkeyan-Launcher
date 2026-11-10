@@ -725,6 +725,8 @@ Show the collection folder	De collectiemap tonen
 Show the game	Het spel tonen
 Silver	Zilver
 Skip intro movies	Introfilmpjes overslaan
+Graphics API	Grafische API
+Direct3D 12 by default; the game uses the other if it cannot start.	Standaard Direct3D 12; start die niet, dan gebruikt het spel de andere.
 Skylander Info	Skylander-info
 Skylander Profile	Skylander-profiel
 Skylander/Villain Stats	Skylander-/schurkenstatistieken

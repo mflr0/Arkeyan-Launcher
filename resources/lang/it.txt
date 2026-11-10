@@ -725,6 +725,8 @@ Show the collection folder	Mostra la cartella della collezione
 Show the game	Mostra il gioco
 Silver	Argento
 Skip intro movies	Salta i filmati iniziali
+Graphics API	API grafica
+Direct3D 12 by default; the game uses the other if it cannot start.	Direct3D 12 predefinita; se non si avvia, il gioco usa l'altra.
 Skylander Info	Dati Skylander
 Skylander Profile	Profilo Skylander
 Skylander/Villain Stats	Statistiche Skylander/Cattivo
