@@ -85,6 +85,7 @@ Arkeyan Launcher goes to the Trash when you quit.	Arkeyan Launcher flyttas till 
 Arkeyan Launcher is up to date.	Arkeyan Launcher är uppdaterad.
 Arkeyan Launcher is up to date. An update is available for {}.	Arkeyan Launcher är uppdaterad. En uppdatering finns för {}.
 Arkeyan Launcher is up to date. {} game updates available.	Arkeyan Launcher är uppdaterad. {} speluppdateringar finns.
+Arkeyan Launcher on Discord	Arkeyan Launcher på Discord
 Arkeyan Launcher on GitHub	Arkeyan Launcher på GitHub
 Arkeyan Launcher {} is installed. Restart to use it.	Arkeyan Launcher {} är installerad. Starta om för att använda den.
 At the next start of {}	Vid nästa start av {}

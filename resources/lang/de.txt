@@ -82,6 +82,7 @@ Arkeyan Launcher goes to the Trash when you quit.	Arkeyan Launcher kommt beim Be
 Arkeyan Launcher is up to date.	Arkeyan Launcher ist aktuell.
 Arkeyan Launcher is up to date. An update is available for {}.	Arkeyan Launcher ist aktuell. Für {} gibt es ein Update.
 Arkeyan Launcher is up to date. {} game updates available.	Arkeyan Launcher ist aktuell. {} Spiel-Updates verfügbar.
+Arkeyan Launcher on Discord	Arkeyan Launcher auf Discord
 Arkeyan Launcher on GitHub	Arkeyan Launcher auf GitHub
 Arkeyan Launcher {} is installed. Restart to use it.	Arkeyan Launcher {} ist installiert. Starte neu, um ihn zu nutzen.
 At the next start of {}	Beim nächsten Start von {}

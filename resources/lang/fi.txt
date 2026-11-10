@@ -85,6 +85,7 @@ Arkeyan Launcher goes to the Trash when you quit.	Arkeyan Launcher siirtyy roska
 Arkeyan Launcher is up to date.	Arkeyan Launcher on ajan tasalla.
 Arkeyan Launcher is up to date. An update is available for {}.	Arkeyan Launcher on ajan tasalla. Päivitys saatavilla: {}.
 Arkeyan Launcher is up to date. {} game updates available.	Arkeyan Launcher on ajan tasalla. Pelipäivityksiä saatavilla: {}.
+Arkeyan Launcher on Discord	Arkeyan Launcher Discordissa
 Arkeyan Launcher on GitHub	Arkeyan Launcher GitHubissa
 Arkeyan Launcher {} is installed. Restart to use it.	Arkeyan Launcher {} on asennettu. Käynnistä uudelleen.
 At the next start of {}	Pelin {} seuraavassa käynnistyksessä

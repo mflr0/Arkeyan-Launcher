@@ -328,6 +328,7 @@ Arkeyan Launcher couldn't find its own file.	Arkeyan Launcher n'a pas trouvé so
 Arkeyan Launcher is up to date.	Arkeyan Launcher est à jour.
 Arkeyan Launcher is up to date. An update is available for {}.	Arkeyan Launcher est à jour. Une mise à jour est disponible pour {}.
 Arkeyan Launcher is up to date. {} game updates available.	Arkeyan Launcher est à jour. {} mises à jour de jeux disponibles.
+Arkeyan Launcher on Discord	Arkeyan Launcher sur Discord
 Arkeyan Launcher on GitHub	Arkeyan Launcher sur GitHub
 Arkeyan Launcher closed during the install. Resume to continue from this step.	Arkeyan Launcher a été fermé pendant l'installation. Appuyez sur Reprendre pour continuer à cette étape.
 Arkeyan Launcher {} is installed. Restart to use it.	Arkeyan Launcher {} est installé. Redémarrez pour l'utiliser.

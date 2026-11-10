@@ -191,12 +191,30 @@ namespace launcher_ui
         15.32f, 11.23f }, { 15.37f, 4.89f }, { 13.66f, 2.34f }, { 11.11f, 0.63f }
     };
 
-    // The mark as a white texture whose alpha is its coverage, rasterised once (even-odd, 4x4 samples per pixel):
-    // ImGui's concave fill can't triangulate this outline.
-    SDL_Texture* CreateGitHubMarkTexture(SDL_Renderer* renderer, int size)
+    // The Discord mark, drawn on the same 16x16 grid: the body, then the two eyes as holes (even-odd).
+    std::vector<std::vector<ImVec2>> DiscordMark()
+    {
+        std::vector<std::vector<ImVec2>> contours{ {
+            { 5.3f, 2.0f }, { 6.0f, 3.0f }, { 8.0f, 2.75f }, { 10.0f, 3.0f }, { 10.7f, 2.0f }, { 12.6f, 2.8f },
+            { 13.6f, 3.6f }, { 14.6f, 5.6f }, { 15.5f, 8.5f }, { 15.8f, 11.6f }, { 15.7f, 12.4f }, { 14.4f, 13.4f },
+            { 12.9f, 14.0f }, { 11.9f, 14.2f }, { 11.2f, 13.1f }, { 10.8f, 12.5f }, { 9.5f, 12.9f }, { 8.0f, 13.05f },
+            { 6.5f, 12.9f }, { 5.2f, 12.5f }, { 4.8f, 13.1f }, { 4.1f, 14.2f }, { 3.1f, 14.0f }, { 1.6f, 13.4f },
+            { 0.3f, 12.4f }, { 0.2f, 11.6f }, { 0.5f, 8.5f }, { 1.4f, 5.6f }, { 2.4f, 3.6f }, { 3.4f, 2.8f } } };
+        for (float cx : { 5.35f, 10.65f })
+        {
+            std::vector<ImVec2> eye;
+            for (int i = 0; i < 24; i++)
+                eye.push_back({ cx + 1.25f * std::cos(i * 6.2831853f / 24), 9.0f + 1.4f * std::sin(i * 6.2831853f / 24) });
+            contours.push_back(eye);
+        }
+        return contours;
+    }
+
+    // A mark as a white texture whose alpha is its coverage, rasterised once (even-odd over every contour, 4x4 samples
+    // per pixel): ImGui's concave fill can't triangulate these outlines.
+    SDL_Texture* CreateMarkTexture(SDL_Renderer* renderer, int size, const std::vector<std::vector<ImVec2>>& contours)
     {
         constexpr int Samples = 4;
-        constexpr size_t Count = std::size(GitHubMark);
         std::vector<uint8_t> rgba(size_t(size) * size * 4, 255);
         for (int y = 0; y < size; y++)
             for (int x = 0; x < size; x++)
@@ -207,17 +225,23 @@ namespace launcher_ui
                     {
                         float px = (x + (sx + 0.5f) / Samples) * 16 / size, py = (y + (sy + 0.5f) / Samples) * 16 / size;
                         bool inside = false;
-                        for (size_t i = 0, j = Count - 1; i < Count; j = i++)
-                        {
-                            const ImVec2 &a = GitHubMark[i], &b = GitHubMark[j];
-                            if ((a.y > py) != (b.y > py) && px < (b.x - a.x) * (py - a.y) / (b.y - a.y) + a.x)
-                                inside = !inside;
-                        }
+                        for (const std::vector<ImVec2>& contour : contours)
+                            for (size_t i = 0, j = contour.size() - 1; i < contour.size(); j = i++)
+                            {
+                                const ImVec2 &a = contour[i], &b = contour[j];
+                                if ((a.y > py) != (b.y > py) && px < (b.x - a.x) * (py - a.y) / (b.y - a.y) + a.x)
+                                    inside = !inside;
+                            }
                         covered += inside;
                     }
                 rgba[(size_t(y) * size + x) * 4 + 3] = uint8_t(covered * 255 / (Samples * Samples));
             }
         return LoadRgba(renderer, rgba, size, size);
+    }
+
+    SDL_Texture* CreateGitHubMarkTexture(SDL_Renderer* renderer, int size)
+    {
+        return CreateMarkTexture(renderer, size, { std::vector<ImVec2>(std::begin(GitHubMark), std::end(GitHubMark)) });
     }
 
     // ---- Disc verification on a worker thread --------------------------------------------------------------------
@@ -437,6 +461,7 @@ namespace launcher_ui
         }
         RefreshGamepads();
         m_github = CreateGitHubMarkTexture(m_renderer, 128);
+        m_discord = CreateMarkTexture(m_renderer, 128, DiscordMark());
         if (!ToyboxWindow()) // the window shows what the game reads, from the game itself
             m_portal.Start();
         return true;
@@ -599,6 +624,9 @@ namespace launcher_ui
         if (m_github != nullptr)
             SDL_DestroyTexture(m_github);
         m_github = nullptr;
+        if (m_discord != nullptr)
+            SDL_DestroyTexture(m_discord);
+        m_discord = nullptr;
         if (m_renderer != nullptr)
             SDL_DestroyRenderer(m_renderer);
         if (m_window != nullptr)
@@ -1676,6 +1704,7 @@ namespace launcher_ui
     void App::DrawHome()
     {
         constexpr const char* Project = "https://github.com/mflr0/Arkeyan-Launcher";
+        constexpr const char* Discord = "https://discord.gg/UMQY4SAS3F";
         const ImVec2 size = ImGui::GetIO().DisplaySize;
         ImDrawList* draw = ImGui::GetWindowDrawList();
         const ImVec2 origin = ImGui::GetCursorScreenPos();
@@ -1807,7 +1836,7 @@ namespace launcher_ui
             ui::Badge(later[i]->name, ui::Mix(ui::color::Surface, later[i]->accent, 0.35f), ui::color::Ink);
         }
 
-        // The project's links, bottom right: Report a bug, and the GitHub mark.
+        // The project's links, bottom right: Report a bug, the Discord mark and the GitHub mark.
         const float mark = ui::HeightOf(ui::Size::Normal);
         ui::ButtonOptions report;
         report.overArt = true;
@@ -1815,9 +1844,16 @@ namespace launcher_ui
         report.tooltip = Tr("Opens a new issue on GitHub");
         const float reportW = ui::ButtonWidth(Tr("Report a bug"), report);
         const ImVec2 iconAt(size.x - ui::space::XL - mark, size.y - legendH - ui::space::XL - mark);
-        ImGui::SetCursorScreenPos(ImVec2(iconAt.x - ui::space::S - reportW, iconAt.y));
+        const ImVec2 discordAt(iconAt.x - ui::space::S - mark, iconAt.y);
+        ImGui::SetCursorScreenPos(ImVec2(discordAt.x - ui::space::S - reportW, iconAt.y));
         if (ui::Button(Tr("Report a bug"), report))
             SDL_OpenURL((std::string(Project) + "/issues/new").c_str());
+        ImGui::SetCursorScreenPos(discordAt);
+        ui::IconButtonOptions discord;
+        discord.overArt = true;
+        discord.image = m_discord != nullptr ? Ref(m_discord) : ImTextureRef();
+        if (ui::IconButton("##discord", ui::Icon::External, Tr("Arkeyan Launcher on Discord"), discord))
+            SDL_OpenURL(Discord);
         ImGui::SetCursorScreenPos(iconAt);
         ui::IconButtonOptions github;
         github.overArt = true;

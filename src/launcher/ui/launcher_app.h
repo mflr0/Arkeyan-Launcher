@@ -688,6 +688,7 @@ namespace launcher_ui
         std::string m_updateDoneNote;    // the last answer of a manual check, shown in About
         float m_bannerH = 0;             // the height the banner takes at the top of the page, this frame
         SDL_Texture* m_github = nullptr;
+        SDL_Texture* m_discord = nullptr;
         bool m_dragOver = false;
 
         std::vector<SDL_JoystickID> m_gamepads;
