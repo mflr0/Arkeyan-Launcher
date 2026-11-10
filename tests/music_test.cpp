@@ -364,11 +364,30 @@ namespace
     }
 }
 
+namespace
+{
+    // The output: the default unless it is a portal's (fake device names), never a portal's.
+    void OutputChecks()
+    {
+        using gamemusic::ChooseOutput;
+        const std::vector<std::pair<uint32_t, std::string>> outputs = { { 2, "Speakers (Realtek(R) Audio)" },
+            { 4, "Speakers (Skylanders Portal)" }, { 6, "Headphones (USB Audio)" } };
+        MUSIC_EXPECT(gamemusic::IsPortalOutput("Speakers (Skylanders Portal)"));
+        MUSIC_EXPECT(gamemusic::IsPortalOutput("SPYRO PORTA"));
+        MUSIC_EXPECT(!gamemusic::IsPortalOutput("MacBook Pro Speakers"));
+        MUSIC_EXPECT(ChooseOutput("Speakers (Realtek(R) Audio)", outputs) == 2);
+        MUSIC_EXPECT(ChooseOutput("Speakers (Skylanders Portal)", outputs) == 2); // the portal became the default
+        MUSIC_EXPECT(ChooseOutput("Headphones (USB Audio)", outputs) == 6);
+        MUSIC_EXPECT(ChooseOutput("Speakers (Skylanders Portal)", { { 4, "Speakers (Skylanders Portal)" } }) == 0);
+    }
+}
+
 int MusicChecks(const std::filesystem::path& scratch)
 {
     g_failures = 0;
     ReaderChecks();
     MixerChecks();
+    OutputChecks();
     ExtractChecks(scratch);
     PlayerChecks(scratch);
     TransitionChecks(scratch);
