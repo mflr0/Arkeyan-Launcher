@@ -27,7 +27,8 @@ on your computer.
 - **Profiles**, each with its own Toy Box, saves, keys and achievements, and the games' **achievements** in the launcher.
 - **The launcher in eleven languages**: English, French, German, Spanish, Italian, Portuguese, Dutch, Swedish, Norwegian,
   Danish and Finnish.
-- **Each system's own graphics**: Direct3D 12 on Windows, Metal on macOS, Vulkan on Linux.
+- **Each system's own graphics**: Direct3D 12 on Windows (or Vulkan, a choice in each game's settings), Metal on macOS,
+  Vulkan on Linux.
 
 Coming later: online co-op, frame generation, custom texture packs, and SuperChargers Racing, Cloud Patrol and Lost
 Islands.
