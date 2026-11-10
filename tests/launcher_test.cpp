@@ -1364,7 +1364,9 @@ static void PortalChecks(const std::filesystem::path& scratch)
     EXPECT(both.devices.size() == 2 && both.devices[0].productId == 0x0150 && both.devices[1].productId == 0x1F17);
     EXPECT(!Merge(Scan{}, Scan{}).available);
 
-    // Linux: one folder per device with its ids as 4 hex digits; interfaces ("1-2:1.0") have none.
+    // Linux: one folder per device with its ids as 4 hex digits; interfaces ("1-2:1.0") have none. Not on Windows,
+    // where a folder name can't hold the interface's ':'.
+#if !defined(_WIN32)
     const std::filesystem::path sys = scratch / "portal-sysfs";
     std::filesystem::remove_all(sys);
     auto ids = [&](const char* folder, const char* vendor, const char* product) {
@@ -1385,6 +1387,7 @@ static void PortalChecks(const std::filesystem::path& scratch)
     EXPECT(listed.available && listed.devices.size() == 2 && foundXbox);
     EXPECT(!ListSysfsUsb((sys / "missing").string()).available);
     std::filesystem::remove_all(sys);
+#endif
 
     // Windows: device instance ids from the configuration manager.
     Device device;
