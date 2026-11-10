@@ -203,6 +203,9 @@ std::optional<InstallKit> FindInstallKit(const LauncherConfig& config, std::stri
         if (base == nullptr)
             return {};
         std::vector<std::filesystem::path> folders{ Path(base) };
+        // An AppImage's base path is its temporary mount: the kit sits beside the AppImage file itself.
+        if (const char* image = SDL_getenv("APPIMAGE"); image != nullptr && *image != 0)
+            folders.push_back(Path(image).parent_path());
         // A macOS app's base path is Skylauncher.app/Contents/Resources: the kit sits next to the app.
         std::filesystem::path bundle = folders[0].parent_path();
         if (bundle.filename().empty())

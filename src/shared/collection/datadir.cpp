@@ -172,6 +172,11 @@ namespace datadir
         if (program.empty())
             return {};
         fs::path folder = program.parent_path();
+#if defined(__linux__)
+        // An AppImage runs from a temporary mount: its own file, the one the player sees, is in APPIMAGE.
+        if (const char* image = std::getenv("APPIMAGE"); image != nullptr && *image != 0)
+            return fs::path(image).parent_path();
+#endif
         // <folder>/Launcher.app/Contents/MacOS/Launcher: beside the .app.
         if (folder.filename() == "MacOS" && folder.parent_path().filename() == "Contents" &&
             folder.parent_path().parent_path().extension() == ".app")
