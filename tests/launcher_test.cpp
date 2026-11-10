@@ -369,6 +369,17 @@ namespace
         EXPECT(fs::path(collection::Folder()) == folder);
         const collection::Catalogue& catalogue = collection::Catalogue::Get();
         EXPECT(catalogue.Games().size() == 6 && catalogue.Accepts("ssa", 14) && catalogue.FindGame("ssa")->seats.size() == 4);
+        // What Add a figure offers: Trap Team lists Dark Wildfire among Wildfire's versions; SuperChargers' racing villains
+        // and their vehicles work in SuperChargers and Imaginators only.
+        {
+            const collection::Toy* wildfire = catalogue.Find(458);
+            bool dark = false;
+            for (const collection::Variant* version : wildfire ? catalogue.VersionsFor("trapteam", *wildfire) : std::vector<const collection::Variant*>())
+                dark = dark || (version->id == 0x3402 && version->name == "Dark Wildfire");
+            EXPECT(dark);
+            EXPECT(catalogue.Find(3440) && catalogue.Find(3440)->category == collection::Category::Villain && catalogue.Accepts("superchargers", 3440) &&
+                   catalogue.Accepts("imaginators", 3470) && !catalogue.Accepts("trapteam", 3440));
+        }
 
         // Migration: copied, never moved; a second pass copies nothing.
         dump(legacy / "014 Gill Grunt.sky", 14);
