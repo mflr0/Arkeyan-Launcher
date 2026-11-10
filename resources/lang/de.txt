@@ -722,6 +722,8 @@ Show the collection folder	Sammlungsordner anzeigen
 Show the game	Spiel anzeigen
 Silver	Silber
 Skip intro movies	Intro-Videos überspringen
+Graphics API	Grafik-API
+Direct3D 12 by default; the game uses the other if it cannot start.	Standardmäßig Direct3D 12; startet sie nicht, nutzt das Spiel die andere.
 Skylander Info	Skylander-Info
 Skylander Profile	Skylander-Profil
 Skylander/Villain Stats	Skylander-/Schurken-Werte

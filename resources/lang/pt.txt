@@ -724,6 +724,8 @@ Show the collection folder	Mostrar a pasta da coleção
 Show the game	Mostrar o jogo
 Silver	Prateado
 Skip intro movies	Saltar filmes de introdução
+Graphics API	API gráfica
+Direct3D 12 by default; the game uses the other if it cannot start.	Direct3D 12 por predefinição; se não arrancar, o jogo usa a outra.
 Skylander Info	Info do Skylander
 Skylander Profile	Perfil do Skylander
 Skylander/Villain Stats	Estatísticas do Skylander/Vilão

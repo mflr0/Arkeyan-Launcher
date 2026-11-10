@@ -724,6 +724,8 @@ Show the collection folder	Vis Toy Box-samlingens mappe
 Show the game	Vis spillet
 Silver	Sølv
 Skip intro movies	Spring introfilm over
+Graphics API	Grafik-API
+Direct3D 12 by default; the game uses the other if it cannot start.	Direct3D 12 som standard; starter den ikke, bruger spillet den anden.
 Skylander Info	Skylander-info
 Skylander Profile	Skylander-profil
 Skylander/Villain Stats	Skylander-/skurkestatistik

@@ -2267,6 +2267,42 @@ static int RunChecks(int argc, char** argv)
         printf("Fallback page %s %s: %d failures\n", game->id, argv[4], g_failures);
         return g_failures == 0 ? 0 : 1;
     }
+    // The Video tab's graphics API row (Windows only): the real page, its write, the page captured. `gpu-backend-<game>.png`.
+    if (argc == 4 && std::string_view(argv[1]) == "--gpu-backend-page")
+    {
+        const std::filesystem::path root = std::filesystem::absolute(argv[2]);
+        std::filesystem::create_directories(root);
+        const GameInfo* game = FindGame(argv[3]);
+        if (game == nullptr) return 2;
+        auto set = [&](const char* key, const std::string& value) { TestSetEnv(key, value.c_str()); };
+        set("SDL_VIDEO_DRIVER", "offscreen");
+        set("SDL_AUDIO_DRIVER", "dummy");
+        set("SDL_AUDIO_DISK_OUTPUT_FILE", "/dev/null");
+        set("SKYLANDERS_DATA", (root / "data").string());
+        set("SKY_LAUNCHER_DATA", (root / "launcher").string());
+        set("SKY_COLLECTION", (root / "collection").string());
+        set("SKY_SAVE_DIR", (root / "save").string());
+        set("SKY_LOG", (root / "game.log").string());
+        set("SKY_LAUNCHER_NO_UPDATE_CHECK", "1");
+        set("SKY_LAUNCHER_LANGUAGE", "en");
+        set("SKY_LAUNCHER_SHOTS", (root / "shots").string());
+        set("SKY_LAUNCHER_TEST_GPU_BACKEND", "vulkan");
+        const std::string ini = (root / "launcher.ini").string();
+        set("SKY_LAUNCHER_INI", ini);
+        set("SKY_SETTINGS", ini);
+        LauncherConfig config;
+        config["launcher"]["experimental_superchargers"] = "1";
+        config[GameVideoSection(game->id)]["fps_limit"] = "30";
+        EXPECT(SaveLauncherConfig(ini, config));
+        launcher_ui::App app(*game, ini, config);
+        app.Run();
+        const LauncherConfig saved = LoadLauncherConfig(ini);
+        const std::string value = launcher_ui::SettingGet(saved, GameVideoSection(game->id), "gpu_backend", "none");
+        EXPECT(value == (launcher_ui::GpuBackendShown ? "vulkan" : "none")); // written where shown, never elsewhere
+        EXPECT(std::filesystem::exists(root / "shots" / (std::string("gpu-backend-") + game->id + ".png")));
+        printf("Graphics API page %s (%s): %d failures\n", game->id, launcher_ui::GpuBackendShown ? "shown" : "hidden", g_failures);
+        return g_failures == 0 ? 0 : 1;
+    }
     if (argc == 2 && std::string_view(argv[1]) == "--fake-game") return fake_game::Run();
     if (argc >= 2 && std::string_view(argv[1]) == "--export-portable") // the owner's proof: a real installed game exported
         return ExportPortableTool(argc, argv);
@@ -2570,6 +2606,19 @@ static int RunChecks(int argc, char** argv)
         {
             const std::string root = (scratch / "review-ui" / mode).string();
             const char* arguments[] = { argv[0], "--review-ui", root.c_str(), mode, nullptr };
+            SDL_Process* process = SDL_CreateProcess(arguments, false);
+            int code = -1;
+            EXPECT(process != nullptr);
+            if (process != nullptr)
+            {
+                EXPECT(SDL_WaitProcess(process, true, &code) && code == 0);
+                SDL_DestroyProcess(process);
+            }
+        }
+        // The graphics API row on the real Video tab, in a child (one ImGui context per process).
+        {
+            const std::string root = (scratch / "gpu-backend").string();
+            const char* arguments[] = { argv[0], "--gpu-backend-page", root.c_str(), "trapteam", nullptr };
             SDL_Process* process = SDL_CreateProcess(arguments, false);
             int code = -1;
             EXPECT(process != nullptr);

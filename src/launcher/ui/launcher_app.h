@@ -82,6 +82,14 @@ namespace launcher_ui
     // (docs/settings.md). Native AA renders at full size (FSR as anti-aliasing); Quality, the second, is the default.
     inline constexpr Choice FsrQualityChoices[] = { { "native", N_("Native AA") }, { "quality", N_("Quality") }, { "balanced", N_("Balanced") },
         { "performance", N_("Performance") }, { "ultra_performance", N_("Ultra Performance") } };
+    // [<game>.video] gpu_backend, Windows only (the other systems have one graphics API): Direct3D 12 by default, the game
+    // starts the other one when the chosen one cannot (docs/settings.md).
+    inline constexpr Choice GpuBackendChoices[] = { { "d3d12", "Direct3D 12" }, { "vulkan", "Vulkan" } };
+#if defined(_WIN32)
+    inline constexpr bool GpuBackendShown = true;
+#else
+    inline constexpr bool GpuBackendShown = false;
+#endif
     // [<game>.audio] speakers: auto is 5.1 when the output device has six channels or more.
     inline constexpr Choice SpeakerChoices[] = { { "auto", N_("Auto") }, { "stereo", N_("Stereo") }, { "5.1", "5.1" } };
     inline constexpr Choice PortalChoices[] = { { "auto", N_("Automatic detection") }, { "emulated", N_("Virtual (no portal needed)") },

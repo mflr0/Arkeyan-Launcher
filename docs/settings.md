@@ -57,6 +57,7 @@ launcher saves the file (a comment over a key that is removed goes with it).
 | `video` | `edge_smoothing` | `game`, `light`, `off` (not set: `light` from resolution scale 2, `game` at 1) | Swap Force and Trap Team only: the game's FXAA pass, which also softens texture detail. `game` leaves it, `light` filters only strong edges, `off` draws a plain copy (<game> settings > Video > Edge smoothing: Game, Gentle, None; the game's F3 menu writes it too) | yes |
 | `video` | `upscaler` | `off` (default), `fsr3` | AMD FidelityFX Super Resolution 3, every game: the 3D scene is drawn smaller and upscaled to the window; the HUD and menus stay at full size (<game> settings > Video > FSR 3, a switch; the game's F3 menu changes it too). Since 0.9.4 | yes |
 | `video` | `fsr_quality` | `native`, `quality` (default), `balanced`, `performance`, `ultra_performance` | FSR 3's preset, used while `upscaler=fsr3`: AMD's names, from the sharpest to the fastest (<game> settings > Video > FSR 3 quality: Native AA, Quality, Balanced, Performance, Ultra Performance, shown while FSR 3 is on; turned off, the preset is kept; the game's F3 menu changes it too). Native AA (0.9.4) renders the 3D scene at full size, FSR 3 as anti-aliasing only: frame generation without a smaller picture. Since 0.9.4 | yes |
+| `video` | `gpu_backend` | `d3d12` (default), `vulkan` | Windows only: the graphics API the game starts first; when it cannot start, the game starts the other and logs why (<game> settings > Video > Display > Graphics API: Direct3D 12, Vulkan; hidden on macOS and Linux; the game's F3 menu writes it too). Since 0.9.5 (before, Vulkan came first) | yes |
 | `video` | `fsr_frame_generation` | `off` (default), `on` | **0.9.4: greyed and off, "Coming later"; the games ignore the key** (it does not render well enough yet). FSR 3 frame generation: one generated frame between two real ones, so twice the frames shown for a little more input delay; used while `upscaler=fsr3` (<game> settings > Video > Frame generation, shown while FSR 3 is on, except on Windows, where the games cannot run it yet (`FrameGenerationOffered`); turned off, the choice is kept; the game's F3 menu changes it too and greys it with its reason where a game or backend cannot). Since 0.9.4 | yes |
 | `input` | `device` | `auto`, `keyboard`, `gamepad` | What the game listens to | yes |
 | `input` | `gamepad` | SDL GUID | The gamepad chosen when `device=gamepad` | yes |
@@ -88,7 +89,7 @@ Japanese/Japonais, Korean/Coréen, Chinese/Chinois); an unknown code is ignored,
 
 The runtime reads one `[video]` section, but the games do not have to share it. Each game keeps its own copy of the
 fourteen keys that belong to a game (`fullscreen`, `resolution_scale`, `fps_limit`, `skip_intro_movies`, `vsync`,
-`anisotropy`, `aspect`, `texture_packs`, `texture_dump`, `original_resolution`, `show_fps`, `edge_smoothing`, `upscaler`, `fsr_quality`, `fsr_frame_generation`) in **`[ssa.video]`**, **`[giants.video]`**, **`[swapforce.video]`**, **`[trapteam.video]`**, **`[superchargers.video]`** and **`[imaginators.video]`**:
+`anisotropy`, `aspect`, `texture_packs`, `texture_dump`, `original_resolution`, `show_fps`, `edge_smoothing`, `upscaler`, `fsr_quality`, `fsr_frame_generation`, `gpu_backend`) in **`[ssa.video]`**, **`[giants.video]`**, **`[swapforce.video]`**, **`[trapteam.video]`**, **`[superchargers.video]`** and **`[imaginators.video]`**:
 
 | Section | Key | Meaning |
 | --- | --- | --- |
@@ -269,3 +270,10 @@ all existing game caps. It is independent of display VSync.
 `ArkeyanLauncherTest --fps-fallback-page <isolated run folder> <game> <en|fr>` activates the actual page switch
 through ImGui navigation activation, checks the saved per-game value and captures the page in the run folder's `shots/`.
 Use the normal isolation variables, offscreen video, disk audio and update checks disabled.
+
+## Graphics API (Windows)
+Each game's Video tab, Display section, has **Graphics API** on Windows only: Direct3D 12 (the default) or Vulkan, written
+to `[<game>.video] gpu_backend` (`d3d12`, `vulkan`). The game starts that one first and the other when it cannot.
+`ArkeyanLauncherTest --gpu-backend-page <isolated run folder> <game>` (also run by `--no-disc`, in a child) draws the real
+Video tab: on Windows it writes `vulkan` through the row and checks the file; elsewhere the row is hidden and nothing is
+written. The page is captured as `shots/gpu-backend-<game>.png`.

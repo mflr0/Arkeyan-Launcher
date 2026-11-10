@@ -238,7 +238,7 @@ namespace
         config["video"]["resolution_scale"] = "3";
         StoreGameVideo(config, "ssa");
         SETTINGS_EXPECT(config["ssa.video"]["resolution_scale"] == "3" && config["giants.video"].count("resolution_scale") == 0);
-        SETTINGS_EXPECT(GameVideoSection("giants") == "giants.video" && GameVideoKeys().size() == 15);
+        SETTINGS_EXPECT(GameVideoSection("giants") == "giants.video" && GameVideoKeys().size() == 16);
 
         // A resolution scale the page does not offer (hand-edited) is shown as Auto and the game gets Auto too (issue #9, S-26).
         SETTINGS_EXPECT(ResolutionScaleOf("3") == 3 && ResolutionScaleOf("10") == 10 && ResolutionScaleOf("auto") == 0 && ResolutionScaleOf("") == 0);
@@ -278,6 +278,28 @@ namespace
         SETTINGS_EXPECT(config["trapteam.video"]["edge_smoothing"] == "light");
         ApplyGameVideo(config, "ssa");
         SETTINGS_EXPECT(config["video"].count("edge_smoothing") == 0 && config["ssa.video"].count("edge_smoothing") == 0);
+
+        // The graphics API (0.9.5, Windows only): [<game>.video] gpu_backend, Direct3D 12 by default, a key of the game's copy.
+        {
+            using namespace launcher_ui;
+            SETTINGS_EXPECT(std::size(GpuBackendChoices) == 2 && std::string_view(GpuBackendChoices[0].value) == "d3d12" &&
+                            std::string_view(GpuBackendChoices[1].value) == "vulkan");
+            SETTINGS_EXPECT(std::string_view(GpuBackendChoices[ChoiceIndex(GpuBackendChoices, "", 0)].value) == "d3d12");
+            SETTINGS_EXPECT(std::string_view(GpuBackendChoices[ChoiceIndex(GpuBackendChoices, "opengl", 0)].value) == "d3d12");
+#if defined(_WIN32)
+            SETTINGS_EXPECT(GpuBackendShown);
+#else
+            SETTINGS_EXPECT(!GpuBackendShown);
+#endif
+            const auto keys = GameVideoKeys();
+            SETTINGS_EXPECT(std::find(keys.begin(), keys.end(), std::string_view("gpu_backend")) != keys.end());
+            config["trapteam.video"]["gpu_backend"] = "vulkan";
+            ApplyGameVideo(config, "trapteam");
+            SETTINGS_EXPECT(config["video"]["gpu_backend"] == "vulkan");
+            ApplyGameVideo(config, "ssa");
+            SETTINGS_EXPECT(config["video"].count("gpu_backend") == 0 && config["ssa.video"].count("gpu_backend") == 0);
+            SETTINGS_EXPECT(config["trapteam.video"]["gpu_backend"] == "vulkan");
+        }
 
         // FSR 3 and the speakers (0.9.4), for every game: [<game>.video] upscaler, fsr_quality and fsr_frame_generation, [<game>.audio] speakers. The page
         // reads them as below (an unknown value shows the default), writes the game's sections, and the game reads them from the file.

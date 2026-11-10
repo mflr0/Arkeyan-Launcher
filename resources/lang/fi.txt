@@ -725,6 +725,8 @@ Show the collection folder	Näytä kokoelmakansio
 Show the game	Näytä peli
 Silver	Hopea
 Skip intro movies	Ohita aloitusvideot
+Graphics API	Grafiikkarajapinta
+Direct3D 12 by default; the game uses the other if it cannot start.	Oletuksena Direct3D 12; jos se ei käynnisty, peli käyttää toista.
 Skylander Info	Skylander-tiedot
 Skylander Profile	Skylander-profiili
 Skylander/Villain Stats	Skylander/pahis-tilastot
