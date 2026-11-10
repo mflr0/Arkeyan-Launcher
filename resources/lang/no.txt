@@ -799,7 +799,6 @@ The game tools are incomplete.	Spillverktøyene er ufullstendige.
 The game tools are missing a file: {}	Spillverktøyene mangler en fil: {}
 The game tools are repaired	Spillverktøyene er reparert
 The game uses the disc image instead.	Spillet bruker diskbildet i stedet.
-The game's last log, for a bug report.	Spillets siste logg, til en feilrapport.
 The game's volume (F3 in game).	Spillets volum (F3 i spillet).
 The install stops and can resume later.	Installasjonen stopper og kan fortsette senere.
 The installer couldn't start.	Installasjonsprogrammet kunne ikke starte.
@@ -1086,3 +1085,5 @@ The game is older: update it	Spillet er eldre: oppdater det
 The portal is full	Portalen er full
 Toy Box window	Toy Box-vindu
 Waiting for the game...	Venter på spillet...
+Last run: {}, {}	Sist spilt: {}, {}
+Last run: {}	Sist spilt: {}

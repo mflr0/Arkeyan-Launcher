@@ -437,18 +437,26 @@ void GameRunChecks(const std::filesystem::path &scratch) {
   SHELL_EXPECT(std::filesystem::exists(logs / "skylauncher-game.prev.log"));
   // A game built by an older kit, started outside the launcher, writes
   // SSARecomp.log: it is read in place.
-  std::ofstream(logs / runtime_names::LegacyLog) << "[settings] scale 1\n";
+  // Just played: the capture is the copy, under one heading.
   std::string text = GameLogText();
-  SHELL_EXPECT(text.find("===== SSARecomp.log =====") != std::string::npos &&
-               text.find("[settings] scale 1") != std::string::npos);
+  SHELL_EXPECT(text.starts_with("===== Game log: ") &&
+               text.find(", skylauncher-game.log =====\n") != std::string::npos &&
+               text.find("out line") != std::string::npos);
+  std::filesystem::last_write_time(
+      logs / CaptureLogName,
+      std::filesystem::file_time_type::clock::now() - std::chrono::hours(1));
+  std::ofstream(logs / runtime_names::LegacyLog) << "[settings] scale 1\n";
+  text = GameLogText();
+  SHELL_EXPECT(text.starts_with("===== Game log: Spyro's Adventure, last written ") &&
+               text.find(", SSARecomp.log =====\n[settings] scale 1") != std::string::npos);
   std::ofstream(logs / RuntimeLogName) << "[settings] scale 2\n";
   text = GameLogText();
-  SHELL_EXPECT(text.find("===== Arkeyan.log =====") != std::string::npos &&
-               text.find("[settings] scale 2") != std::string::npos);
+  SHELL_EXPECT(text.find(", Arkeyan.log =====\n[settings] scale 2") != std::string::npos);
   SHELL_EXPECT(text.find("SSARecomp.log") == std::string::npos &&
                std::filesystem::exists(logs / runtime_names::LegacyLog));
-  SHELL_EXPECT(text.find("===== skylauncher-game.log =====") !=
-               std::string::npos);
+  // One copy of a run: never the capture beside it.
+  SHELL_EXPECT(text.find("skylauncher-game.log") == std::string::npos &&
+               text.find("out line") == std::string::npos);
   PortalProbeResult probe = RunPortalProbe(script.string());
   SHELL_EXPECT(probe.ran && probe.portals.size() == 1 &&
                probe.portals[0].product == "Fake");
@@ -1238,10 +1246,16 @@ void ReportChecks(const std::filesystem::path &scratch) {
   SHELL_EXPECT(report.find("GPU: Apple M2") != std::string::npos);
   SHELL_EXPECT(report.find("===== launcher.ini =====") != std::string::npos);
   SHELL_EXPECT(report.find("===== migration.log =====") != std::string::npos);
-  SHELL_EXPECT(report.find("===== SSARecomp.log =====") != std::string::npos);
+  // One copy of the last run: the capture, written with the game's log (the
+  // same run), under one heading; then the run before.
+  SHELL_EXPECT(report.find("===== Game log: unknown game, last written ") !=
+                   std::string::npos &&
+               report.find(" (local time), skylauncher-game.log =====\nstarted\n") !=
+                   std::string::npos);
+  SHELL_EXPECT(report.find("===== SSARecomp.log =====") == std::string::npos &&
+               report.find("===== skylauncher-game.log =====") ==
+                   std::string::npos);
   SHELL_EXPECT(report.find("===== SSARecomp.prev.log =====") !=
-               std::string::npos);
-  SHELL_EXPECT(report.find("===== skylauncher-game.log =====") !=
                std::string::npos);
   SHELL_EXPECT(report.find("===== install.log =====") != std::string::npos);
   SHELL_EXPECT(report.find("===== install.prev.log =====") !=
@@ -1266,11 +1280,50 @@ void ReportChecks(const std::filesystem::path &scratch) {
     std::string fresh = launcher_report::BuildReport(current);
     SHELL_EXPECT(fresh.find("Game build: ArkeyanRuntime 0.7.3, build new\n") !=
                  std::string::npos);
-    SHELL_EXPECT(fresh.find("===== Arkeyan.log =====") != std::string::npos &&
-                 fresh.find("===== Arkeyan.prev.log =====") !=
-                     std::string::npos);
+    SHELL_EXPECT(fresh.find("===== Arkeyan.prev.log =====") !=
+                 std::string::npos);
     SHELL_EXPECT(fresh.find("===== SSARecomp.log =====") == std::string::npos &&
                  fresh.find("previous new run") != std::string::npos);
+    // A capture an hour older than the game's own log is another run: the
+    // game's log is the one quoted.
+    std::filesystem::last_write_time(
+        current.logFolder / "skylauncher-game.log",
+        std::filesystem::file_time_type::clock::now() - std::chrono::hours(1));
+    fresh = launcher_report::BuildReport(current);
+    SHELL_EXPECT(fresh.find(", Arkeyan.log =====\n[version] ArkeyanRuntime 0.7.3") !=
+                     std::string::npos &&
+                 fresh.find("\nstarted\n") == std::string::npos);
+  }
+  {
+    // The last run, for Copy game log and the report (issue #20): the newest
+    // log of any game, or the capture of the same run, which names its game.
+    const std::filesystem::path logs = scratch / "lastrun";
+    const auto now = std::filesystem::file_time_type::clock::now();
+    const std::filesystem::path capture = logs / "skylauncher-game.log",
+                                giants = logs / "Giants" / "Arkeyan.log",
+                                ssa = logs / "SSA" / "Arkeyan.log";
+    SHELL_EXPECT(NewestGameLog(capture, {{"ssa", ssa}}).file.empty());
+    WriteBytes(ssa, "[log] ssa\n");
+    WriteBytes(giants, "[log] giants\n");
+    WriteBytes(capture, "# runtime disc\n# game giants\n[log] giants\n");
+    std::filesystem::last_write_time(ssa, now - std::chrono::hours(2));
+    std::filesystem::last_write_time(giants, now - std::chrono::seconds(4));
+    std::filesystem::last_write_time(capture, now - std::chrono::hours(1));
+    GameLog last = NewestGameLog(capture, {{"ssa", ssa}, {"giants", giants}});
+    SHELL_EXPECT(last.file == giants && last.game == "giants");
+    std::filesystem::last_write_time(capture, now);
+    last = NewestGameLog(capture, {{"ssa", ssa}, {"giants", giants}});
+    SHELL_EXPECT(last.file == capture && last.game == "giants");
+    const std::string heading = GameLogHeading(last);
+    SHELL_EXPECT(heading.starts_with("Giants, last written 20") &&
+                 heading.ends_with(" (local time), skylauncher-game.log"));
+    // An older launcher's capture names no game: the game log of the same run
+    // does.
+    WriteBytes(capture, "# runtime disc\n[log] giants\n");
+    std::filesystem::last_write_time(capture, now);
+    SHELL_EXPECT(NewestGameLog(capture, {{"giants", giants}}).game == "giants");
+    std::filesystem::last_write_time(giants, now - std::chrono::hours(3));
+    SHELL_EXPECT(NewestGameLog(capture, {{"giants", giants}}).game.empty());
   }
   // Where the game stopped: the last fault block of the log, from this run's
   // log or else the previous run's, quoted once under its own heading and named

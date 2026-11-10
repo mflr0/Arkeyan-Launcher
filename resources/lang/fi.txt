@@ -799,7 +799,6 @@ The game tools are incomplete.	Pelityökalut ovat vajaat.
 The game tools are missing a file: {}	Pelityökaluista puuttuu tiedosto: {}
 The game tools are repaired	Pelityökalut korjattu
 The game uses the disc image instead.	Peli käyttää sen sijaan levykuvaa.
-The game's last log, for a bug report.	Pelin viimeisin loki virheilmoitusta varten.
 The game's volume (F3 in game).	Pelin äänenvoimakkuus (F3 pelissä).
 The install stops and can resume later.	Asennus pysähtyy, ja sitä voi jatkaa myöhemmin.
 The installer couldn't start.	Asennusohjelma ei käynnistynyt.
@@ -1086,3 +1085,5 @@ The game is older: update it	Peli on vanhempi: päivitä se
 The portal is full	Portaali on täynnä
 Toy Box window	Toy Box -ikkuna
 Waiting for the game...	Odotetaan peliä...
+Last run: {}, {}	Viimeksi pelattu: {}, {}
+Last run: {}	Viimeksi pelattu: {}

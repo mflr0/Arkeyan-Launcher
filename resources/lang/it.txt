@@ -798,7 +798,6 @@ The game tools are incomplete.	Gli strumenti di gioco sono incompleti.
 The game tools are missing a file: {}	Agli strumenti di gioco manca un file: {}
 The game tools are repaired	Gli strumenti di gioco sono stati riparati
 The game uses the disc image instead.	Il gioco usa invece l'immagine disco.
-The game's last log, for a bug report.	L'ultimo registro del gioco, per una segnalazione di bug.
 The game's volume (F3 in game).	Il volume del gioco (F3 nel gioco).
 The install stops and can resume later.	L'installazione si ferma e può riprendere più tardi.
 The installer couldn't start.	Impossibile avviare l'installer.
@@ -1085,3 +1084,5 @@ The game is older: update it	Il gioco è più vecchio: aggiornalo
 The portal is full	Il portale è pieno
 Toy Box window	Finestra Toy Box
 Waiting for the game...	In attesa del gioco...
+Last run: {}, {}	Ultima partita: {}, {}
+Last run: {}	Ultima partita: {}

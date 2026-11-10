@@ -1,4 +1,5 @@
 #pragma once
+#include "launcher/game_run.h"
 
 // "Report a problem" (docs/support.md): one text file with the logs, the settings and what the game runs on, cleaned
 // of the player's own details before it is shown, saved or copied. Nothing is uploaded.
@@ -44,6 +45,7 @@ namespace launcher_report
         std::filesystem::path runtimeFolder; // <data>/SSA: Arkeyan.log (SSARecomp.log from older kits), install.log, install-logs/
         std::filesystem::path logFolder;     // <data>/logs: skylauncher-game.log, migration.log
         std::filesystem::path settingsFile;  // <data>/launcher.ini
+        GameLog lastRun;                     // the last run's log (LastGameLog); empty: the newest in the two folders above
         Versions versions;
         std::string iso;
         std::string userName, computerName, homeFolder; // for the redaction

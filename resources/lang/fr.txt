@@ -388,7 +388,6 @@ Drag Arkeyan Launcher to Applications, replacing the old one.	Glissez Arkeyan La
 "System default" follows your system.	« Langue du système » suit votre système.
 Designed by dorydev, made by mflr0, UI/UX by Gumelia.	Conçu par dorydev, réalisé par mflr0, UI/UX par Gumelia.
 Games: XenonRecomp, XenosRecomp, plume, SDL 3, Dear ImGui, FFmpeg, parts of Xenia. Figure format learned from Dolphin and RPCS3.	Jeux : XenonRecomp, XenosRecomp, plume, SDL 3, Dear ImGui, FFmpeg, des parties de Xenia. Format des figurines appris de Dolphin et RPCS3.
-The game's last log, for a bug report.	Le dernier journal du jeu, pour un rapport de bug.
 The portal can't be opened: using the virtual portal.	Le portail ne s'ouvre pas : le portail virtuel est utilisé.
 The portal can't be opened: the game will wait.	Le portail ne s'ouvre pas : le jeu attendra.
 The portal test took too long and was stopped.	Le test du portail a duré trop longtemps et a été arrêté.
@@ -1115,3 +1114,5 @@ The game is older: update it	Le jeu est plus ancien : mettez-le à jour
 The portal is full	Le portail est plein
 Toy Box window	Fenêtre Toy Box
 Waiting for the game...	En attente du jeu...
+Last run: {}, {}	Dernière partie : {}, {}
+Last run: {}	Dernière partie : {}

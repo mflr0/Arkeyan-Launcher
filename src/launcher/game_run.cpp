@@ -1,5 +1,6 @@
 #include "launcher/game_run.h"
 #include "shared/runtime_names.h"
+#include "shared/collection/datadir.h"
 #include "launcher/env.h"
 #include "launcher/i18n.h"
 #include "launcher/game_install.h"
@@ -373,7 +374,7 @@ bool GameSession::Start(const std::string& game, const GameLaunch& launch, const
     SDL_IOStream* log = SDL_IOFromFile(Utf8(capture).c_str(), "ab");
     if (log != nullptr)
     {
-        const std::string head = fmt::format("# {} {}\n", launch.runtime, iso);
+        const std::string head = fmt::format("# {} {}\n# game {}\n", launch.runtime, iso, game);
         SDL_WriteIO(log, head.data(), head.size());
         SDL_FlushIO(log);
     }
@@ -512,13 +513,77 @@ std::string ReadLogTail(const std::filesystem::path& file, size_t maxBytes)
     return text;
 }
 
-std::string GameLogText(size_t maxBytesEach)
+namespace
 {
-    std::string text;
-    for (const auto& path : { runtime_names::ReadLog(RuntimeLogFolder()), GameLogFolder() / CaptureLogName })
-        if (std::string part = ReadLogTail(path, maxBytesEach); !part.empty())
-            text += fmt::format("===== {} =====\n{}\n", path.filename().string(), part);
-    return text;
+    std::time_t WrittenAt(const std::filesystem::path& file)
+    {
+        SDL_PathInfo info{};
+        if (!SDL_GetPathInfo(Utf8(file).c_str(), &info) || info.type != SDL_PATHTYPE_FILE)
+            return 0;
+        return std::time_t(info.modify_time / 1000000000);
+    }
+
+    // "# game <id>" in the capture's first lines (GameSession::Start writes it).
+    std::string CaptureGame(const std::filesystem::path& capture)
+    {
+        std::ifstream in(capture, std::ios::binary);
+        std::string line;
+        for (int i = 0; i < 3 && std::getline(in, line); i++)
+            if (line.starts_with("# game "))
+                return line.substr(7);
+        return {};
+    }
+}
+
+GameLog NewestGameLog(const std::filesystem::path& capture, const std::vector<std::pair<std::string, std::filesystem::path>>& own)
+{
+    GameLog newest;
+    for (const auto& [game, file] : own)
+        if (std::time_t written = WrittenAt(file); written != 0 && written > newest.written)
+            newest = { file, game, written };
+    if (std::time_t written = WrittenAt(capture); written != 0 && written + 10 >= newest.written)
+    {
+        std::string game = CaptureGame(capture);
+        if (game.empty() && !newest.file.empty() && newest.written <= written + 10 && written <= newest.written + 10)
+            game = newest.game; // an older launcher's capture of the same run
+        newest = { capture, game, written };
+    }
+    return newest;
+}
+
+GameLog LastGameLog()
+{
+    std::vector<std::pair<std::string, std::filesystem::path>> own;
+    if (const char* override = LauncherEnv("SKY_LAUNCHER_LOG_DIR"); override != nullptr && *override != 0) // tests
+        own.emplace_back(std::string(ActiveGame()), runtime_names::ReadLog(Path(override)));
+    else
+        for (const GameNames& names : g_gameNames)
+            own.emplace_back(names.id, runtime_names::ReadLog(LauncherDataFolder() / datadir::GameFolderName(names.id)));
+    return NewestGameLog(GameLogFolder() / CaptureLogName, own);
+}
+
+std::string GameLogHeading(const GameLog& log)
+{
+    char when[32] = "unknown time";
+    std::tm local{};
+#if defined(_WIN32)
+    const bool known = localtime_s(&local, &log.written) == 0;
+#else
+    const bool known = localtime_r(&log.written, &local) != nullptr;
+#endif
+    if (known)
+        std::strftime(when, sizeof(when), "%Y-%m-%d %H:%M:%S", &local);
+    const char* name = GameName(log.game, GameNameForm::Short);
+    return fmt::format("{}, last written {} (local time), {}", name != nullptr ? name : "unknown game", when, log.file.filename().string());
+}
+
+std::string GameLogText(size_t maxBytes)
+{
+    const GameLog log = LastGameLog();
+    std::string part = log.file.empty() ? std::string() : ReadLogTail(log.file, maxBytes);
+    if (part.empty())
+        return {};
+    return fmt::format("===== Game log: {} =====\n{}\n", GameLogHeading(log), part);
 }
 
 PortalProbeResult ParsePortalProbe(const std::string& output)

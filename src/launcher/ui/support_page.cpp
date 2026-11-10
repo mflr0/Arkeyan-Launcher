@@ -6,6 +6,7 @@
 #include "launcher/report.h"
 #include "launcher/ui/launcher_app.h"
 #include "launcher/game_names.h"
+#include "launcher/ui/components/format.h"
 #include "shared/collection/datadir.h"
 #include <fmt/format.h>
 #include <fstream>
@@ -182,8 +183,14 @@ namespace launcher_ui
     void App::DrawLogs()
     {
         const std::filesystem::path folder = GameLogFolder();
-        std::error_code error;
-        const bool any = std::filesystem::exists(runtime_names::ReadLog(RuntimeLogFolder()), error) || std::filesystem::exists(folder / CaptureLogName, error);
+        // Which run Copy game log carries, looked up again each second (a game may be writing it).
+        const uint64_t now = SDL_GetTicks();
+        if (now >= m_lastRunLookAt)
+        {
+            m_lastRun = LastGameLog();
+            m_lastRunLookAt = now + 1000;
+        }
+        const bool any = !m_lastRun.file.empty();
         if (!ui::BeginSettings("##support"))
             return;
         ui::SettingRow(Tr("Problem report"), Tr("Logs and settings, without your names, for a GitHub issue."));
@@ -191,7 +198,11 @@ namespace launcher_ui
         report.kind = ui::ButtonKind::Primary;
         if (ui::Button(Tr("Report a problem"), report))
             OpenProblemReport();
-        ui::SettingRow(Tr("Game log"), any ? Tr("The game's last log, for a bug report.") : Tr("No game log yet."));
+        const char* lastGame = GameName(m_lastRun.game, GameNameForm::Short);
+        const std::string lastRun = !any ? Tr("No game log yet.")
+            : lastGame != nullptr ? Tf("Last run: {}, {}", lastGame, ui::FormatWhen(m_lastRun.written, std::time(nullptr)))
+                                  : Tf("Last run: {}", ui::FormatWhen(m_lastRun.written, std::time(nullptr)));
+        ui::SettingRow(Tr("Game log"), lastRun.c_str());
         ui::ButtonOptions copy;
         copy.disabled = !any;
         if (ui::Button(Tr("Copy game log"), copy))

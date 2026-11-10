@@ -1,5 +1,6 @@
 #include "shared/runtime_names.h"
 #include "launcher/report.h"
+#include "launcher/game_run.h"
 #include "shared/collection/datadir.h"
 #include <SDL3/SDL.h>
 #include <algorithm>
@@ -342,9 +343,14 @@ std::string launcher_report::BuildReport(const Sources& sources)
 
     Section(report, "launcher.ini", sources.settingsFile);
     Section(report, "migration.log", sources.logFolder / "migration.log");
-    Section(report, runtime_names::ReadLog(sources.runtimeFolder).filename().string(), runtime_names::ReadLog(sources.runtimeFolder));
+    // One copy of the last run (the game's own log and the launcher's capture hold the same lines), then the run before.
+    const GameLog lastRun = !sources.lastRun.file.empty() ? sources.lastRun
+        : NewestGameLog(sources.logFolder / CaptureLogName, { { std::string(), runtime_names::ReadLog(sources.runtimeFolder) } });
+    if (lastRun.file.empty())
+        report += "===== Game log =====\n(empty or not found)\n\n";
+    else
+        Section(report, "Game log: " + GameLogHeading(lastRun), lastRun.file);
     Section(report, runtime_names::ReadLog(sources.runtimeFolder, true).filename().string(), runtime_names::ReadLog(sources.runtimeFolder, true));
-    Section(report, "skylauncher-game.log", sources.logFolder / "skylauncher-game.log");
     Section(report, "install.log", sources.runtimeFolder / "install.log");
     Section(report, "install.prev.log", sources.runtimeFolder / "install.prev.log");
 

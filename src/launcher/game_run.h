@@ -5,6 +5,7 @@
 // exit. Arkeyan.log, written by the runtime itself, sits in the same folder. "Test the portal" runs the runtime's --portal-probe.
 #include "launcher/launcher.h"
 #include <cstdint>
+#include <ctime>
 #include <filesystem>
 #include <functional>
 #include <optional>
@@ -110,8 +111,25 @@ private:
 
 // The last `maxBytes` of a file, from the start of a line; empty when missing.
 std::string ReadLogTail(const std::filesystem::path& file, size_t maxBytes = 256 * 1024);
-// What to send for a bug report: the runtime's log, then the capture, each under a heading; the tail of both.
-std::string GameLogText(size_t maxBytesEach = 192 * 1024);
+// A game run's log. The game's own Arkeyan.log and the launcher's capture of what it printed (skylauncher-game.log) hold the
+// same lines: a copy carries one of them, the newest, saying which game and when (issue #20: two copies of a run, and no way
+// to tell an old run from the one just played).
+struct GameLog
+{
+    std::filesystem::path file; // empty: no log yet
+    std::string game;           // its id ("giants"); empty when unknown
+    std::time_t written = 0;    // when it was last written
+};
+// The newest of the capture and the game logs given (each with its game's id); the capture wins within 10 s (the same run,
+// with its exit code). The capture names its game on its second line ("# game giants").
+GameLog NewestGameLog(const std::filesystem::path& capture,
+    const std::vector<std::pair<std::string, std::filesystem::path>>& own);
+// The capture and every game's Arkeyan.log in the launcher's data folder.
+GameLog LastGameLog();
+// "Giants, last written 2026-11-10 09:12:03 (local time), skylauncher-game.log".
+std::string GameLogHeading(const GameLog& log);
+// What to send for a bug report: the last run's log under its heading (the tail of it).
+std::string GameLogText(size_t maxBytes = 384 * 1024);
 
 // One portal found by `<runtime> --portal-probe`: a JSON object per line, then {"done":true,"count":N}.
 struct PortalProbeEntry

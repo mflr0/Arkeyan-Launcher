@@ -798,7 +798,6 @@ The game tools are incomplete.	De spelhulpmiddelen zijn niet compleet.
 The game tools are missing a file: {}	Bij de spelhulpmiddelen ontbreekt een bestand: {}
 The game tools are repaired	De spelhulpmiddelen zijn hersteld
 The game uses the disc image instead.	Het spel gebruikt in plaats daarvan het schijfimage.
-The game's last log, for a bug report.	De laatste log van het spel, voor een bugrapport.
 The game's volume (F3 in game).	Het volume van het spel (F3 in het spel).
 The install stops and can resume later.	De installatie stopt en kan later worden hervat.
 The installer couldn't start.	Het installatieprogramma kon niet starten.
@@ -1085,3 +1084,5 @@ The game is older: update it	Het spel is ouder: werk het bij
 The portal is full	De portal is vol
 Toy Box window	Toy Box-venster
 Waiting for the game...	Wachten op het spel...
+Last run: {}, {}	Laatst gespeeld: {}, {}
+Last run: {}	Laatst gespeeld: {}

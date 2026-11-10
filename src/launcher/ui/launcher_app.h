@@ -655,6 +655,8 @@ namespace launcher_ui
         gamemusic::Player m_music; // the shown game's menu theme, softly (game_music.h)
         std::string m_sessionIso;  // the disc image it was started with (the crash report names it)
         ProbeJob m_probe;
+        GameLog m_lastRun;           // Support: the run Copy game log carries (LastGameLog)
+        uint64_t m_lastRunLookAt = 0;
         launcher_portal::Watcher m_portal;
         bool m_reportOpen = false;      // "Report a problem" shown (support_page.cpp)
         std::string m_reportText;

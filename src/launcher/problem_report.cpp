@@ -54,6 +54,7 @@ launcher_report::Sources CurrentReportSources(const std::string& configPath, con
     launcher_report::Sources sources;
     sources.runtimeFolder = RuntimeLogFolder();
     sources.logFolder = GameLogFolder();
+    sources.lastRun = LastGameLog();
     sources.settingsFile = datadir::FromText(configPath);
     sources.iso = iso;
     std::string kit;
