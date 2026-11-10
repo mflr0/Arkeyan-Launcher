@@ -146,6 +146,9 @@ struct PortalProbeEntry
     // ("hid-write", "R: error: write failed (...); S: not tried").
     std::string write;
     std::vector<std::pair<std::string, std::string>> methods;
+    // What the device is: its interfaces and drivers ("interface 0 FF/5D/01: 81 interrupt 32 bytes, ...; kernel drivers:
+    // 1-3:1.0 xpad", "driver WinUSB"), for Copy.
+    std::string details;
 };
 struct PortalProbeResult
 {

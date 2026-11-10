@@ -621,6 +621,7 @@ PortalProbeResult ParsePortalProbe(const std::string& output)
                 entry.verdict = get("verdict");
                 entry.verdictReason = get("verdict_reason");
                 entry.write = get("write");
+                entry.details = get("details");
                 for (const auto& [name, value] : fields)
                     if (name.starts_with("methods."))
                         entry.methods.emplace_back(name.substr(8), value);
@@ -652,6 +653,15 @@ std::string PortalStatusText(const PortalProbeEntry& entry)
     };
     if (why.find("udev rule") != std::string::npos)
         return Tr("Linux needs the portal's udev rule: see the README.");
+    // Windows: what the driver bound to the portal means (the runtime's portal_usb.h, WindowsDriverProblem).
+    if (why.find("not Windows' own HID driver") != std::string::npos)
+        return Tr("This portal is on another driver (WinUSB, libusbK...). In Device Manager, uninstall the device and its driver, then plug the portal in again.");
+    if (why.find("which Windows does not have") != std::string::npos)
+        return Tr("Xbox portals need libusb-1.0, which Windows doesn't have.");
+    if (why.find("WinUSB, libusbK or libusb0 devices only") != std::string::npos)
+        return Tr("This Xbox portal's driver can't be used: it needs WinUSB.");
+    if (why.starts_with("no driver is installed"))
+        return Tr("Windows has no driver for this portal.");
     if (why.find("answer within 1 s") != std::string::npos)
         return Tr("The portal didn't answer the game within 1 second.");
     if (auto reason = inside("write failed"))
@@ -701,6 +711,8 @@ std::string PortalProbeText(const std::string& mode, const PortalProbeResult& re
         text += fmt::format("{} {}:{} \"{}\": {}, {}\n", entry.kind, entry.vid, entry.pid, entry.product, entry.opened ? "opened" : "not opened", entry.status);
         if (!entry.id.empty())
             text += fmt::format("  model: {} {}; Spyro's Adventure: {} ({})\n", entry.id, entry.model, entry.verdict, entry.verdictReason);
+        if (!entry.details.empty())
+            text += fmt::format("  device: {}\n", entry.details);
         for (const auto& [method, line] : entry.methods)
             text += fmt::format("  {}: {}\n", method, line);
         if (!entry.write.empty())

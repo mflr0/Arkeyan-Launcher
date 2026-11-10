@@ -1087,3 +1087,7 @@ Toy Box window	Toy Box-vindu
 Waiting for the game...	Venter på spillet...
 Last run: {}, {}	Sist spilt: {}, {}
 Last run: {}	Sist spilt: {}
+This portal is on another driver (WinUSB, libusbK...). In Device Manager, uninstall the device and its driver, then plug the portal in again.	Denne portalen bruker en annen driver (WinUSB, libusbK...). Avinstaller enheten og driveren i Enhetsbehandling, og koble til portalen igjen.
+Xbox portals need libusb-1.0, which Windows doesn't have.	Xbox-portaler trenger libusb-1.0, som Windows ikke har.
+This Xbox portal's driver can't be used: it needs WinUSB.	Driveren til denne Xbox-portalen fungerer ikke: den trenger WinUSB.
+Windows has no driver for this portal.	Windows har ingen driver for denne portalen.

@@ -1086,3 +1086,7 @@ Toy Box window	Finestra Toy Box
 Waiting for the game...	In attesa del gioco...
 Last run: {}, {}	Ultima partita: {}, {}
 Last run: {}	Ultima partita: {}
+This portal is on another driver (WinUSB, libusbK...). In Device Manager, uninstall the device and its driver, then plug the portal in again.	Questo portale usa un altro driver (WinUSB, libusbK...). In Gestione dispositivi disinstalla il dispositivo e il suo driver, poi ricollega il portale.
+Xbox portals need libusb-1.0, which Windows doesn't have.	I portali Xbox richiedono libusb-1.0, che Windows non ha.
+This Xbox portal's driver can't be used: it needs WinUSB.	Il driver di questo portale Xbox non va bene: serve WinUSB.
+Windows has no driver for this portal.	Windows non ha un driver per questo portale.

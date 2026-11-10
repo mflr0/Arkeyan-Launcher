@@ -334,7 +334,9 @@ void GameRunChecks(const std::filesystem::path &scratch) {
       "portal\",\"verdict\":\"works\",\"verdict_reason\":\"\"}\n"
       "{\"kind\":\"usb\",\"vid\":\"1430\",\"pid\":\"1f17\",\"product\":\"Xbox "
       "360 portal\",\"opened\":true,"
-      "\"status\":\"error: no 'R' answer within 1 s (nothing came back)\"}\n"
+      "\"status\":\"error: no 'R' answer within 1 s (nothing came back)\","
+      "\"details\":\"interface 0 FF/5D/01: 81 interrupt 32 bytes; kernel "
+      "drivers: 1-3:1.0 xpad\"}\n"
       "{\"done\":true,\"count\":4}\n");
   SHELL_EXPECT(real.ran && real.portals.size() == 4);
   if (real.portals.size() == 4) {
@@ -375,6 +377,9 @@ void GameRunChecks(const std::filesystem::path &scratch) {
                  std::string::npos);
     SHELL_EXPECT(copied.find("usb 1430:1f17 \"Xbox 360 portal\": opened, "
                              "error: no 'R' answer") != std::string::npos);
+    SHELL_EXPECT(copied.find("  device: interface 0 FF/5D/01: 81 interrupt 32 "
+                             "bytes; kernel drivers: 1-3:1.0 xpad\n") !=
+                 std::string::npos);
   }
 
   // Each reason in the launcher's words; an answer has none.
@@ -397,6 +402,21 @@ void GameRunChecks(const std::filesystem::path &scratch) {
   entry.status = "error: cannot claim interface (LIBUSB_ERROR_BUSY)";
   SHELL_EXPECT(PortalStatusText(entry) ==
                "Another program is using the portal: LIBUSB_ERROR_BUSY.");
+  // Windows: a portal another driver holds (issue #19), an Xbox portal
+  // without libusb.
+  entry.status = "error: it uses the WinUSB driver, not Windows' own HID "
+                 "driver, so Arkeyan cannot see it. ...";
+  SHELL_EXPECT(PortalStatusText(entry).starts_with(
+      "This portal is on another driver (WinUSB, libusbK...)."));
+  entry.status = "error: an Xbox portal (driver xusb22): Arkeyan reaches Xbox "
+                 "portals through libusb-1.0, which Windows does not have "
+                 "(SKY_LIBUSB)";
+  SHELL_EXPECT(PortalStatusText(entry) ==
+               "Xbox portals need libusb-1.0, which Windows doesn't have.");
+  entry.status = "error: no driver is installed for it (Device Manager shows "
+                 "it with a warning)";
+  SHELL_EXPECT(PortalStatusText(entry) ==
+               "Windows has no driver for this portal.");
   entry.status = "error: something new";
   SHELL_EXPECT(PortalStatusText(entry) == "something new");
   // A portal that answers wins; one that did not open says so.
