@@ -70,7 +70,7 @@ Every release is checked before it ships, on the six games:
 - An internet connection the first time: INSTALL downloads the game tools (about 30 to 40 MB) and the compiler.
 - **Linux:** an x86_64 PC with a Vulkan driver (Mesa or NVIDIA), about 6 GB free, and a distribution from 2022 or later
   (glibc 2.34+: Ubuntu 22.04+, Fedora, Arch; SteamOS on the Steam Deck should work but has not been tested yet). No compiler or root is needed: INSTALL
-  downloads zig (55 MB) as the compiler. A real portal needs udev rules once (Wii, Wii U, PlayStation and PC portals, then Xbox 360 and Xbox One portals), the only step that needs `sudo` (on
+  downloads zig (55 MB) as the compiler. A real portal needs udev rules once (Wii, Wii U, PlayStation and PC portals, then every Activision USB device: the Xbox 360 portal `1430:1F17` and the Xbox One portal `1430:09AA`), the only step that needs `sudo` (on
   the Steam Deck, set a password with `passwd` first):
 
   ```sh

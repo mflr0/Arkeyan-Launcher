@@ -1339,7 +1339,7 @@ static void PortalChecks(const std::filesystem::path& scratch)
     using namespace launcher_portal;
     EXPECT(ModelName(0x1430, 0x0150) == "Portal of Power");
     EXPECT(ModelName(0x1430, 0x1F17) == "Xbox 360 portal");
-    EXPECT(ModelName(0x24C6, 0xFA00) == "Xbox One portal");
+    EXPECT(ModelName(0x1430, 0x09AA) == "Xbox One portal" && ModelName(0x24C6, 0xFA00) == "Xbox 360 portal");
     EXPECT(ModelName(0x24C6, 0x5000).empty());
     EXPECT(ModelName(0x1430, 0x0ABC) == "Skylanders portal (1430:0ABC)");
     EXPECT(ModelName(0x045E, 0x0150).empty());
@@ -1358,7 +1358,7 @@ static void PortalChecks(const std::filesystem::path& scratch)
     // An Xbox portal is not a HID device: the USB list finds it while HID finds nothing (the issue's Linux player).
     Status xbox = MakeStatus(Merge(Scan{ true, {} }, Scan{ true, { { 0x1D6B, 0x0002 }, { 0x1430, 0x1F17 } } }));
     EXPECT(xbox.connected && xbox.Line() == "Portal: Xbox 360 portal");
-    Status xboxOne = MakeStatus(Merge(Scan{}, Scan{ true, { { 0x24C6, 0xFA00 } } }));
+    Status xboxOne = MakeStatus(Merge(Scan{}, Scan{ true, { { 0x1430, 0x09AA } } }));
     EXPECT(xboxOne.available && xboxOne.connected && xboxOne.Line() == "Portal: Xbox One portal");
     Scan both = Merge(Scan{ true, { { 0x1430, 0x0150 } } }, Scan{ true, { { 0x1430, 0x0150 }, { 0x1430, 0x1F17 } } });
     EXPECT(both.devices.size() == 2 && both.devices[0].productId == 0x0150 && both.devices[1].productId == 0x1F17);

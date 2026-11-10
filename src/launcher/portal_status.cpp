@@ -32,7 +32,9 @@ namespace launcher_portal
         constexpr Model Models[] = {
             { Activision, PortalOfPower, "Portal of Power" },
             { Activision, XboxPortal, "Xbox 360 portal" },
-            { XboxOneVendor, XboxOnePortal, "Xbox One portal" },
+            { Activision, XboxOnePortal, "Xbox One portal" },
+            { Activision, 0x09AB, "Xbox One portal" }, // Santroller's capture of another Xbox One portal
+            { OtherXboxVendor, OtherXboxPortal, "Xbox 360 portal" },
         };
 
         constexpr uint64_t ScanIntervalMs = 2000;

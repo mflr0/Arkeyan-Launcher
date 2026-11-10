@@ -18,8 +18,10 @@ namespace launcher_portal
     inline constexpr uint16_t Activision = 0x1430; // every Skylanders portal's vendor
     inline constexpr uint16_t PortalOfPower = 0x0150; // Wii, PS3, Wii U, PC, Mac
     inline constexpr uint16_t XboxPortal = 0x1F17; // Xbox 360, a vendor-specific USB device
-    inline constexpr uint16_t XboxOneVendor = 0x24C6;
-    inline constexpr uint16_t XboxOnePortal = 0xFA00; // Xbox One
+    inline constexpr uint16_t XboxOnePortal = 0x09AA; // Xbox One (Trap Team's), a GIP device; Windows: "Xbox Gaming Device"
+    // In Xenia's table of Xbox 360 portals; no portal seen here has had it.
+    inline constexpr uint16_t OtherXboxVendor = 0x24C6;
+    inline constexpr uint16_t OtherXboxPortal = 0xFA00;
 
     struct Device
     {

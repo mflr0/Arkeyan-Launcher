@@ -287,7 +287,7 @@ AppImage runs the downloaded Arkeyan-Builder directly. The game is built in the 
 keeps its output in `skylauncher-game.log`, as on the other systems. Arkeyan-Builder caches its compiler (zig) in the data folder's
 `toolchains/` (`~/.local/share/Skylanders/toolchains`).
 
-The real portal needs read and write access to its device node, which udev rules give the logged-in user: `/dev/hidraw*` for Wii, Wii U, PlayStation and PC portals, `/dev/bus/usb/*` for Xbox 360 and Xbox One portals (those also need libusb-1.0, the `libusb-1.0-0` package, which most desktops have):
+The real portal needs read and write access to its device node, which udev rules give the logged-in user: `/dev/hidraw*` for Wii, Wii U, PlayStation and PC portals, `/dev/bus/usb/*` for Xbox 360 and Xbox One portals (the rule takes every Activision device, `1430:1F17` and `1430:09AA` included; those also need libusb-1.0, the `libusb-1.0-0` package, which most desktops have):
 
 ```sh
 printf '%s\n' 'SUBSYSTEM=="hidraw", ATTRS{idVendor}=="1430", ATTRS{idProduct}=="0150", MODE="0660", TAG+="uaccess"' 'SUBSYSTEM=="usb", ATTRS{idVendor}=="1430", MODE="0660", TAG+="uaccess"' 'SUBSYSTEM=="usb", ATTRS{idVendor}=="24c6", ATTRS{idProduct}=="fa00", MODE="0660", TAG+="uaccess"' | sudo tee /etc/udev/rules.d/70-skylanders-portal.rules
