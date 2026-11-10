@@ -49,6 +49,15 @@ Finished a game, or played one on Windows or Linux? Please say so in an
 
 **Testers wanted**, above all on a real Windows or Linux PC (and the Steam Deck), and with a real Portal of Power.
 
+**Your portal can help.** Portals for the Wii, Wii U, PlayStation and PC all work the same way; the Xbox 360 and Xbox One
+ones differ from model to model, and not all of them are known yet. If the launcher doesn't find yours, or finds it but
+can't use it, please open an [issue](https://github.com/mflr0/Arkeyan-Launcher/issues) with:
+- the console and game it came with, and the model number under its base;
+- what Settings > Controls > Portal of Power > **Test** shows (press **Copy** and paste it);
+- on Windows, its **Hardware Ids** (Device Manager > the portal > Properties > Details); on Linux, the `lsusb` line.
+
+Known so far: `1430:0150` (Wii, Wii U, PlayStation, PC), `1430:1F17` (Xbox 360), `1430:09AA` (Xbox One, Trap Team).
+
 ## Tested
 
 Every release is checked before it ships, on the six games:
