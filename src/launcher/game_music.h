@@ -76,6 +76,12 @@ namespace gamemusic
 
     // The page's player: opens SDL audio at the first track it is given, nothing otherwise (a machine without a sound device
     // stays silent). Call Update() every frame from the UI thread.
+    // The output the music plays on: the default unless it is a portal's, never a portal's (a Traptanium portal with a
+    // speaker can be an audio device, and Windows makes it the default when it is plugged in). `outputs`: SDL's
+    // physical ids and names; 0 when every output is a portal's.
+    bool IsPortalOutput(const std::string& name);
+    uint32_t ChooseOutput(const std::string& defaultName, const std::vector<std::pair<uint32_t, std::string>>& outputs);
+
     class Player
     {
     public:
@@ -108,5 +114,8 @@ namespace gamemusic
         SDL_AudioStream* m_stream = nullptr;
         bool m_openFailed = false;
         bool m_paused = true;
+        uint32_t m_output = 0;     // the physical device the stream plays on
+        std::string m_defaultName; // the system's default when it was chosen
+        uint64_t m_nextCheck = 0;
     };
 }

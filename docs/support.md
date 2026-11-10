@@ -78,8 +78,8 @@ game using the portal is never disturbed), so the UI never waits:
   `/sys/bus/usb/devices/*/idVendor` and `idProduct`, macOS the IOKit registry (`IOUSBHostDevice`), Windows the
   configuration manager (`CM_Get_Device_ID_List`, the present `USB\VID_xxxx&PID_yyyy` ids; links `cfgmgr32`).
 
-A device on both lists counts once. Models: `1430:0150` Portal of Power, `1430:1F17` Xbox 360 portal, `24C6:FA00` Xbox One
-portal, any other Activision id "Skylanders portal (1430:XXXX)". If neither list can be read, nothing is shown. (Before
+A device on both lists counts once. Models: `1430:0150` Portal of Power, `1430:1F17` Xbox 360 portal, `1430:09AA` Xbox One
+portal (Trap Team's; Windows names it "Xbox Gaming Device"), `24C6:FA00` Xbox 360 portal (from Xenia's table; never seen here), any other Activision id "Skylanders portal (1430:XXXX)". If neither list can be read, nothing is shown. (Before
 0.9.5 only the HID list was read: an Xbox 360 portal the game used showed as "Virtual portal".) Checks: `PortalChecks` in
 `tests/launcher_test.cpp`: fake enumerators, a fake sysfs folder, Windows ids.
 

@@ -611,6 +611,8 @@ PortalProbeResult ParsePortalProbe(const std::string& output)
                     why.erase(0, 7);
                 result.notes.push_back(Tf("{} can't be used: {}", get("transport") == "usb" ? Tr("USB (Xbox) portals") : Tr("HID portals"), why));
             }
+            else if (!get("note").empty())
+                result.notes.push_back(get("note")); // what the system has that may be a portal (Windows)
             else if (get("done") == "true")
                 result.ran = true;
             else if (!get("kind").empty())

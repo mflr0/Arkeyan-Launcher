@@ -3,6 +3,7 @@
 #include "shared/collection/datadir.h"
 #include <SDL3/SDL.h>
 #include <algorithm>
+#include <cctype>
 #include <cmath>
 #include <cstring>
 #include <fstream>
@@ -301,15 +302,65 @@ namespace gamemusic
         }
     }
 
+    bool IsPortalOutput(const std::string& name)
+    {
+        std::string lower = name;
+        for (char& c : lower)
+            c = char(std::tolower(static_cast<unsigned char>(c)));
+        for (const char* word : { "portal", "skylander", "spyro", "traptanium" })
+            if (lower.find(word) != std::string::npos)
+                return true;
+        return false;
+    }
+
+    uint32_t ChooseOutput(const std::string& defaultName, const std::vector<std::pair<uint32_t, std::string>>& outputs)
+    {
+        if (!defaultName.empty() && !IsPortalOutput(defaultName))
+            for (const auto& [id, name] : outputs)
+                if (name == defaultName)
+                    return id;
+        for (const auto& [id, name] : outputs)
+            if (!IsPortalOutput(name))
+                return id;
+        return 0;
+    }
+
+    namespace
+    {
+        std::string DefaultOutputName()
+        {
+            const char* name = SDL_GetAudioDeviceName(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK);
+            return name != nullptr ? name : "";
+        }
+    }
+
     void Player::Open()
     {
         m_openFailed = true;
         if (!SDL_InitSubSystem(SDL_INIT_AUDIO))
             return;
-        const SDL_AudioSpec spec{ SDL_AUDIO_F32, 2, int(OutputRate) };
-        m_stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec, &Player::Callback, this);
-        m_openFailed = m_stream == nullptr;
+        // A physical device, never SDL's default: SDL moves a default-opened stream to a new default by itself, a portal too.
+        std::vector<std::pair<uint32_t, std::string>> outputs;
+        int count = 0;
+        if (SDL_AudioDeviceID* ids = SDL_GetAudioPlaybackDevices(&count))
+        {
+            for (int i = 0; i < count; i++)
+            {
+                const char* name = SDL_GetAudioDeviceName(ids[i]);
+                outputs.emplace_back(ids[i], name != nullptr ? name : "");
+            }
+            SDL_free(ids);
+        }
+        m_defaultName = DefaultOutputName();
+        if (outputs.empty()) // a driver that lists none: its default, unless that is a portal's
+            outputs.emplace_back(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, m_defaultName);
+        m_output = ChooseOutput(m_defaultName, outputs);
         m_paused = true;
+        if (m_output == 0)
+            return;
+        const SDL_AudioSpec spec{ SDL_AUDIO_F32, 2, int(OutputRate) };
+        m_stream = SDL_OpenAudioDeviceStream(m_output, &spec, &Player::Callback, this);
+        m_openFailed = m_stream == nullptr;
     }
 
     void Player::Update(const std::string& game, bool muted)
@@ -319,6 +370,17 @@ namespace gamemusic
             wanted = TrackOf(game).track;
         if (m_stream == nullptr && wanted != nullptr && !m_openFailed)
             Open();
+        // The default changed (a device plugged in, the system's settings): follow it, unless it is a portal's.
+        if (m_stream != nullptr && SDL_GetTicks() >= m_nextCheck)
+        {
+            m_nextCheck = SDL_GetTicks() + 1000;
+            if (DefaultOutputName() != m_defaultName)
+            {
+                SDL_DestroyAudioStream(m_stream);
+                m_stream = nullptr;
+                Open();
+            }
+        }
         if (m_stream == nullptr)
             return;
         bool silent;
