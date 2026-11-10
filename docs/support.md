@@ -13,8 +13,17 @@ In the "Skylanders" data folder (`%APPDATA%\Skylanders\` on Windows, `~/Library/
 | `logs/migration.log` | the first start after an update | what was moved from the older folders |
 
 Settings (the gear) > Support: **Report a problem** (one text file with the last logs, the crash location, the settings and the versions;
-see below), **Copy game log** (the end of `Arkeyan.log`, then of `skylauncher-game.log`, each under a heading) and
-**Open logs folder** (`logs/`). `SKY_LAUNCHER_LOG_DIR` replaces both log folders (tests).
+see below), **Copy game log** and **Open logs folder** (`logs/`). `SKY_LAUNCHER_LOG_DIR` replaces both log folders (tests).
+
+**The last run** (0.9.5, `LastGameLog`, `src/launcher/game_run.cpp`): `Arkeyan.log` and `skylauncher-game.log` hold the
+same lines, so a copy carries one of them: the newest of `logs/skylauncher-game.log` and every game's `Arkeyan.log`; the
+capture wins when both were written within 10 s (the same run, with its exit code). The capture names its game on its
+second line (`# game giants`, written when PLAY starts it). Copy game log puts the run under one heading,
+`===== Game log: Giants, last written 2026-11-10 09:12:03 (local time), skylauncher-game.log =====`; the Game log row
+says "Last run: Giants, Today 09:12" (looked up again every second). The game's own log starts with the run's start
+(`[log] <path>, started 2026-11-10 09:12:03 (local time)`). Why: a player pasted two copies of the same run and could not
+tell an old run from the one just played (issue #20). Tests: `tests/shell_test.cpp` (the capture, an older game log, the
+newest game of several, an older launcher's capture).
 
 ## Report a problem
 
@@ -31,8 +40,8 @@ a `===== name =====` heading:
 
 - `launcher.ini`;
 - `logs/migration.log`;
-- `SSA/Arkeyan.log` and `SSA/Arkeyan.prev.log` (or `SSARecomp.log`, from an older kit);
-- `logs/skylauncher-game.log`;
+- the last run's log, once (`Game log: <game>, last written <time>, <file>`, chosen as above), then
+  `Arkeyan.prev.log` (or `SSARecomp.prev.log`, from an older kit);
 - `SSA/install.log`, `SSA/install.prev.log` and every file in `SSA/install-logs/`.
 
 Missing files are named as empty or not found, never skipped silently. Before it is shown the text is redacted
