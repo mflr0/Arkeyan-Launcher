@@ -92,7 +92,7 @@ Xbox 360 discs only.
 | SuperChargers | Europe | English, German |
 | Imaginators | Europe | French, Dutch |
 
-Another edition is refused with a message. If you have one, click **Copy disc details** under that message and open a [New disc edition](https://github.com/mflr0/Arkeyan-Launcher/issues/new?template=new_disc_edition.yml) issue with them. Never attach the disc image or game files.
+Another edition whose game code is the same as a supported one (only the disc's header differs: another region, media ID or version) is accepted as that edition. Any other edition is refused with a message. If you have one, click **Find my edition** under that message: the game tools read your disc and copy a short report (its IDs, region, languages and fingerprints, and which addresses of the game they found in it). Open a [New disc edition](https://github.com/mflr0/Arkeyan-Launcher/issues/new?template=new_disc_edition.yml) issue and paste it. Never attach the disc image or game files.
 
 
 ## Get started

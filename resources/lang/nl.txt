@@ -343,6 +343,13 @@ This device has no portal interface.	Dit apparaat heeft geen portal-interface.
 Test result copied	Testresultaat gekopieerd
 Copy disc details	Schijfgegevens kopiëren
 Disc details copied	Schijfgegevens gekopieerd
+Find my edition	Mijn editie zoeken
+Finding your edition…	Je editie zoeken…
+Edition report copied	Editierapport gekopieerd
+Couldn't find the edition: {}	Editie niet gevonden: {}
+These game tools can't find editions: update them	Deze speltools vinden geen edities: werk ze bij
+Comparing the game code with the supported releases	Spelcode vergelijken met de ondersteunde releases
+Couldn't download the game tools	Kan de speltools niet downloaden
 Frame rate limit	Framerate-limiet
 Frees {}. Saves and settings are kept.	Maakt {} vrij. Savegames en instellingen blijven bewaard.
 Fullscreen	Volledig scherm

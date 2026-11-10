@@ -117,6 +117,7 @@ namespace
             }
         }
         kit.hdTextures = BuilderKnows(ssabuild, "--hd-textures");
+        kit.editionReport = BuilderKnows(ssabuild, "--edition-report");
         if (kit.games.empty())
             kit.games.push_back("ssa"); // before 0.5.0 a kit builds Spyro's Adventure only and says nothing
         kit.release = version;

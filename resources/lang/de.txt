@@ -341,6 +341,13 @@ This device has no portal interface.	Dieses Gerät hat keine Portal-Schnittstell
 Test result copied	Testergebnis kopiert
 Copy disc details	Disc-Details kopieren
 Disc details copied	Disc-Details kopiert
+Find my edition	Meine Edition finden
+Finding your edition…	Edition wird gesucht…
+Edition report copied	Editionsbericht kopiert
+Couldn't find the edition: {}	Edition nicht gefunden: {}
+These game tools can't find editions: update them	Diese Spielwerkzeuge finden keine Editionen: aktualisiere sie
+Comparing the game code with the supported releases	Spielcode wird mit den unterstützten Releases verglichen
+Couldn't download the game tools	Spielwerkzeuge konnten nicht geladen werden
 Frame rate limit	Bildratenlimit
 Frees {}. Saves and settings are kept.	Gibt {} frei. Spielstände und Einstellungen bleiben.
 Fullscreen	Vollbild

@@ -343,6 +343,13 @@ This device has no portal interface.	Denne enhed har ingen portalgrænseflade.
 Test result copied	Testresultat kopieret
 Copy disc details	Kopiér diskinfo
 Disc details copied	Diskinfo kopieret
+Find my edition	Find min udgave
+Finding your edition…	Leder efter din udgave…
+Edition report copied	Udgaverapport kopieret
+Couldn't find the edition: {}	Udgaven blev ikke fundet: {}
+These game tools can't find editions: update them	Disse spilværktøjer finder ikke udgaver: opdater dem
+Comparing the game code with the supported releases	Sammenligner spilkoden med de understøttede udgivelser
+Couldn't download the game tools	Kunne ikke hente spilværktøjerne
 Frame rate limit	Billedhastighedsgrænse
 Frees {}. Saves and settings are kept.	Frigør {}. Gemte spil og indstillinger beholdes.
 Fullscreen	Fuld skærm

@@ -28,6 +28,7 @@ struct InstallKit
     std::string tag;                // the release it was downloaded from (its kit/<tag>/ folder), "" for any other kit
     bool chosen = false;            // SKY_LAUNCHER_KIT or "[launcher] kit=": the player's own, never replaced by the launcher
     bool hdTextures = false;        // the builder knows --hd-textures (0.9.1 on): its file holds the option's name; an older kit does not
+    bool editionReport = false;     // the builder knows --edition-report (0.9.5 on): "Find my edition"
 
     bool Builds(std::string_view gameId) const;
     std::string GameVersion(std::string_view gameId) const; // "" when the kit does not say

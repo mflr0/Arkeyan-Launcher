@@ -343,6 +343,13 @@ This device has no portal interface.	Questo dispositivo non ha un'interfaccia po
 Test result copied	Risultato del test copiato
 Copy disc details	Copia dati del disco
 Disc details copied	Dati del disco copiati
+Find my edition	Trova la mia edizione
+Finding your edition…	Ricerca dell'edizione…
+Edition report copied	Rapporto sull'edizione copiato
+Couldn't find the edition: {}	Edizione non trovata: {}
+These game tools can't find editions: update them	Questi strumenti non trovano le edizioni: aggiornali
+Comparing the game code with the supported releases	Confronto del codice del gioco con le versioni supportate
+Couldn't download the game tools	Impossibile scaricare gli strumenti del gioco
 Frame rate limit	Limite di frame rate
 Frees {}. Saves and settings are kept.	Libera {}. Salvataggi e impostazioni restano.
 Fullscreen	Schermo intero
