@@ -49,6 +49,8 @@ jobs:
             if (labels.size) await github.rest.issues.addLabels({ ...context.repo, issue_number: issue.number, labels: [...labels] });
 
             // Bug and portal reports need a real game log or portal test: the launcher's copies start with known lines.
+            // The maintainers' own issues (plans, known problems) need no log.
+            if (['OWNER', 'MEMBER', 'COLLABORATOR'].includes(issue.author_association)) return;
             const isReport = issue.labels.some(l => ['bug', 'portal'].includes(l.name)) || /^(Bug|Portal): /.test(issue.title);
             if (!isReport) return;
             const log = answer('Game log');
