@@ -658,10 +658,14 @@ std::string PortalStatusText(const PortalProbeEntry& entry)
     // Windows: what the driver bound to the portal means (the runtime's portal_usb.h, WindowsDriverProblem).
     if (why.find("not Windows' own HID driver") != std::string::npos)
         return Tr("This portal is on another driver (WinUSB, libusbK...). In Device Manager, uninstall the device and its driver, then plug the portal in again.");
-    if (why.find("which Windows does not have") != std::string::npos)
+    if (why.find("which Windows does not have") != std::string::npos) // runtimes before 0.9.6
         return Tr("Xbox portals need libusb-1.0, which Windows doesn't have.");
-    if (why.find("WinUSB, libusbK or libusb0 devices only") != std::string::npos)
+    if (why.find("WinUSB, libusbK or libusb0 devices only") != std::string::npos || why.find("only libusb-1.0.dll opens") != std::string::npos)
         return Tr("This Xbox portal's driver can't be used: it needs WinUSB.");
+    if (why.find("WinUsb Device") != std::string::npos)
+        return Tr("This Xbox 360 portal needs Windows' WinUSB driver, set once: see the README.");
+    if (why.find("Windows handed the portal to no program") != std::string::npos)
+        return Tr("Windows didn't hand the Xbox One portal to the game.");
     if (why.starts_with("no driver is installed"))
         return Tr("Windows has no driver for this portal.");
     if (why.find("answer within 1 s") != std::string::npos)
@@ -713,8 +717,15 @@ std::string PortalProbeText(const std::string& mode, const PortalProbeResult& re
         text += fmt::format("{} {}:{} \"{}\": {}, {}\n", entry.kind, entry.vid, entry.pid, entry.product, entry.opened ? "opened" : "not opened", entry.status);
         if (!entry.id.empty())
             text += fmt::format("  model: {} {}; Spyro's Adventure: {} ({})\n", entry.id, entry.model, entry.verdict, entry.verdictReason);
-        if (!entry.details.empty())
-            text += fmt::format("  device: {}\n", entry.details);
+        // The runtime's details are "; "-separated: the device's interfaces and driver, then each step and packet.
+        for (size_t at = 0; at < entry.details.size();)
+        {
+            size_t end = entry.details.find("; ", at);
+            if (end == std::string::npos)
+                end = entry.details.size();
+            text += fmt::format("  {}{}\n", at == 0 ? "device: " : "", entry.details.substr(at, end - at));
+            at = end + 2;
+        }
         for (const auto& [method, line] : entry.methods)
             text += fmt::format("  {}: {}\n", method, line);
         if (!entry.write.empty())

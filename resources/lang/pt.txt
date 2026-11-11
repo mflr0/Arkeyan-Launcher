@@ -1100,3 +1100,5 @@ This portal is on another driver (WinUSB, libusbK...). In Device Manager, uninst
 Xbox portals need libusb-1.0, which Windows doesn't have.	Os portais de Xbox precisam de libusb-1.0, que o Windows não tem.
 This Xbox portal's driver can't be used: it needs WinUSB.	O driver deste portal de Xbox não serve: ele precisa de WinUSB.
 Windows has no driver for this portal.	O Windows não tem driver para este portal.
+This Xbox 360 portal needs Windows' WinUSB driver, set once: see the README.	Este portal de Xbox 360 precisa do driver WinUSB do Windows, configurado uma vez: veja o README.
+Windows didn't hand the Xbox One portal to the game.	O Windows não passou o portal de Xbox One para o jogo.

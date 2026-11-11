@@ -388,7 +388,7 @@ void GameRunChecks(const std::filesystem::path &scratch) {
     SHELL_EXPECT(copied.find("usb 1430:1f17 \"Xbox 360 portal\": opened, "
                              "error: no 'R' answer") != std::string::npos);
     SHELL_EXPECT(copied.find("  device: interface 0 FF/5D/01: 81 interrupt 32 "
-                             "bytes; kernel drivers: 1-3:1.0 xpad\n") !=
+                             "bytes\n  kernel drivers: 1-3:1.0 xpad\n") !=
                  std::string::npos);
   }
 
@@ -423,6 +423,37 @@ void GameRunChecks(const std::filesystem::path &scratch) {
                  "(SKY_LIBUSB)";
   SHELL_EXPECT(PortalStatusText(entry) ==
                "Xbox portals need libusb-1.0, which Windows doesn't have.");
+  // 0.9.6: Xbox 360 portals need WinUSB once; the Xbox One portal goes
+  // through Windows' own Xbox driver.
+  entry.status = "error: an Xbox 360 portal on the xusb22 driver, through "
+                 "which no program can send it commands. To use it, once, in "
+                 "Device Manager: ... WinUsb Device; then unplug the portal";
+  SHELL_EXPECT(PortalStatusText(entry) ==
+               "This Xbox 360 portal needs Windows' WinUSB driver, set once: "
+               "see the README.");
+  entry.status = "error: an Xbox 360 portal on the libusbK driver, which only "
+                 "libusb-1.0.dll opens (SKY_LIBUSB): use WinUSB instead, ...";
+  SHELL_EXPECT(PortalStatusText(entry) ==
+               "This Xbox portal's driver can't be used: it needs WinUSB.");
+  entry.status = "error: Windows handed the portal to no program within 3 s "
+                 "(Windows.Gaming.Input.Custom)";
+  SHELL_EXPECT(PortalStatusText(entry) ==
+               "Windows didn't hand the Xbox One portal to the game.");
+  {
+    // The Copy text: each step of the runtime's details on its own line.
+    PortalProbeResult steps;
+    steps.ran = true;
+    PortalProbeEntry xbox{"usb", "1430", "1f17", "Xbox 360 portal", true,
+                          "ok"};
+    xbox.details = "interface 0 FF/5D/01: 81 interrupt 32 bytes; start "
+                   "request C1 01 0100: zeros (20 bytes); out 1: 0B 14 52";
+    steps.portals.push_back(xbox);
+    const std::string copied = PortalProbeText("auto", steps);
+    SHELL_EXPECT(copied.find("  device: interface 0 FF/5D/01: 81 interrupt 32 "
+                             "bytes\n  start request C1 01 0100: zeros (20 "
+                             "bytes)\n  out 1: 0B 14 52\n") !=
+                 std::string::npos);
+  }
   entry.status = "error: no driver is installed for it (Device Manager shows "
                  "it with a warning)";
   SHELL_EXPECT(PortalStatusText(entry) ==

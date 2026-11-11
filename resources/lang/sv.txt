@@ -1101,3 +1101,5 @@ This portal is on another driver (WinUSB, libusbK...). In Device Manager, uninst
 Xbox portals need libusb-1.0, which Windows doesn't have.	Xbox-portaler behöver libusb-1.0, som Windows saknar.
 This Xbox portal's driver can't be used: it needs WinUSB.	Den här Xbox-portalens drivrutin fungerar inte: den behöver WinUSB.
 Windows has no driver for this portal.	Windows har ingen drivrutin för den här portalen.
+This Xbox 360 portal needs Windows' WinUSB driver, set once: see the README.	Den här Xbox 360-portalen behöver Windows WinUSB-drivrutin, vald en gång: se README.
+Windows didn't hand the Xbox One portal to the game.	Windows lämnade inte över Xbox One-portalen till spelet.

@@ -176,6 +176,12 @@ figure and the other a virtual one.
 To use a real portal (Wii, PlayStation, Xbox 360 or Xbox One), plug it in and choose it in Settings > Controls >
 Portal of Power. Then click **Test the portal**.
 
+**Xbox 360 portal on Windows:** Windows has no driver that lets a program talk to it, so it needs Windows' own WinUSB
+driver, once (nothing to download): in Device Manager, right-click the portal ("Spyro Portal", or an unknown device),
+**Update driver** > **Browse my computer for drivers** > **Let me pick from a list** > **Universal Serial Bus devices** >
+**WinUsb Device**, then unplug the portal and plug it in again. Zadig's WinUSB driver works the same way. The Xbox One
+portal needs nothing: the game reaches it through Windows' own Xbox driver.
+
 ## Settings
 
 - **Resolution scale:** Auto picks x1 on integrated graphics and x2 on dedicated cards. If the game is slow, use x1.
