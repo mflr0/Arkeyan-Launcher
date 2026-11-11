@@ -108,7 +108,7 @@ system's own reason left as it is. Then what the game will do given the mode (`P
 use it.", "The portal doesn't answer: ..." (opened, no answer), "The portal can't be opened: ..." (none opened), "No portal
 found: ...", each ending with "the game will wait" (mode real) or "using the virtual portal". **Copy** beside it puts the
 whole result on the clipboard (`PortalProbeText`): the launcher's version and the mode, each portal's line, its model,
-every method's line and the method the game writes with, the notes, the verdict. Each portal line of a newer runtime also
+every method's line and the method the game writes with, the notes, the verdict. A USB portal's `details` (the runtime's `; `-separated steps) are split: the interfaces and driver on the `device:` line, then each step and packet on its own line (0.9.6: an Xbox 360 portal's start request and first packets, an Xbox One portal's Windows route). Windows' Xbox portals (0.9.6): "This Xbox 360 portal needs Windows' WinUSB driver, set once: see the README." (the README's "Xbox 360 portal on Windows"), "Windows didn't hand the Xbox One portal to the game.". Each portal line of a newer runtime also
 carries `id`, `model`, `verdict` and `verdict_reason` (the portal's answer to the game's reset command: "Model: Spyro's
 Adventure portal (Xbox 360) (id 01 28)", then "Spyro's Adventure accepts this portal." or, in red, why the game would
 reject or warn about it; the contract is the runtime's `docs/portal_probe.md`). A runtime without `--portal-probe` exits
