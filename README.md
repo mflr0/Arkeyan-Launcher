@@ -1,5 +1,16 @@
 <p align="center"><img src="resources/icons/skylauncher.svg" width="128" alt="Arkeyan Launcher"></p>
 
+<p align="center">
+<a href="https://github.com/mflr0/Arkeyan-Launcher/releases/latest"><img alt="Release" src="https://img.shields.io/github/v/release/mflr0/Arkeyan-Launcher"></a>
+<a href="https://github.com/mflr0/Arkeyan-Launcher/releases"><img alt="Downloads" src="https://img.shields.io/github/downloads/mflr0/Arkeyan-Launcher/total"></a>
+<a href="https://github.com/mflr0/Arkeyan-Launcher/actions/workflows/build.yml"><img alt="Build" src="https://img.shields.io/github/actions/workflow/status/mflr0/Arkeyan-Launcher/build.yml?branch=main"></a>
+<a href="https://github.com/mflr0/Arkeyan-Launcher/issues"><img alt="Open issues" src="https://img.shields.io/github/issues/mflr0/Arkeyan-Launcher"></a>
+<a href="https://github.com/mflr0/Arkeyan-Launcher/milestone/1"><img alt="Next version" src="https://img.shields.io/github/milestones/progress-percent/mflr0/Arkeyan-Launcher/1?label=0.9.6"></a>
+<img alt="Platforms" src="https://img.shields.io/badge/platforms-Windows%20%7C%20macOS%20%7C%20Linux-blue">
+<a href="https://discord.gg/UMQY4SAS3F"><img alt="Discord" src="https://img.shields.io/badge/Discord-join-5865F2?logo=discord&logoColor=white"></a>
+<a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/mflr0/Arkeyan-Launcher"></a>
+</p>
+
 # Arkeyan Launcher: native Skylanders on PC, macOS and Linux
 
 **Play Skylanders natively on Windows PC, macOS and Linux.** A native PC port of the Xbox 360 Skylanders games, by static
@@ -274,8 +285,10 @@ and every design decision are the author's own; AI tools write the code from tha
 
 Designed by dorydev, made by mflr0, UI/UX by Gumelia.
 
-Thank you to everyone who opened an issue, sent logs and tested on their own hardware: jdalmanza, GummyWormWood,
-RGNTromYT, ssjwarriorx, GobGub and vientodelbosque, and the testers on Discord. Every report made the launcher better.
+To you who use Arkeyan Launcher and take the time to report a bug or suggest an idea: thank you, every report makes it
+better. Special thanks to those who opened issues, sent logs and tested on their own hardware: jdalmanza,
+GummyWormWood, RGNTromYT, ssjwarriorx, GobGub and vientodelbosque, and the testers on Discord. And thank you to
+everyone who contributes to the Arkeyan project.
 
 The ports are built with [XenonRecomp](https://github.com/hedge-dev/XenonRecomp) and
 [XenosRecomp](https://github.com/hedge-dev/XenosRecomp) (hedge-dev; [squidbus's fork](https://github.com/squidbus/XenosRecomp)),

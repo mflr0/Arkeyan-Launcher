@@ -7,7 +7,7 @@ body:
     attributes:
       value: |
         Thanks for reporting! A bug can only be fixed with the details below, **the log above all**: please fill in
-        every field. Never attach the disc image (ISO) or files from the game.
+        every field, **in English**. Never attach the disc image (ISO) or files from the game.
   - type: dropdown
     id: system
     attributes:
@@ -60,6 +60,22 @@ body:
         - Direct3D 12
         - Vulkan
         - Not on Windows
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: What it's about
+      multiple: true
+      options:
+        - Graphics (picture, display, fullscreen)
+        - Sound
+        - Install
+        - Portal of Power
+        - Figures and the Toy Box
+        - Controller, keyboard or mouse
+        - The launcher's screens
+        - Crash or freeze
     validations:
       required: true
   - type: textarea

@@ -1,0 +1,67 @@
+# Reads each new or edited issue: labels it from its form answers, and asks for the game log when it is missing.
+name: Issue triage
+on:
+  issues:
+    types: [opened, edited]
+  issue_comment:
+    types: [created]
+permissions:
+  issues: write
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            if (issue.pull_request) return;
+            // A comment from the reporter that carries the log clears needs-info.
+            if (context.eventName === 'issue_comment') {
+              const c = context.payload.comment;
+              const text = c.body || '';
+              const hasLog = /\[(version|system|gpu|portal|log)\]|===== |Arkeyan Launcher problem report|Portal test \(/.test(text) && text.length > 300;
+              if (c.user.login === issue.user.login && hasLog && issue.labels.some(l => l.name === 'needs-info'))
+                await github.rest.issues.removeLabel({ ...context.repo, issue_number: issue.number, name: 'needs-info' }).catch(() => {});
+              return;
+            }
+            const body = issue.body || '';
+            // A form answer: the text under "### <label>" up to the next heading.
+            const answer = (label) => {
+              const m = body.match(new RegExp('###\\s*' + label + '\\s*\\n([\\s\\S]*?)(?=\\n###\\s|$)'));
+              return m ? m[1].trim() : '';
+            };
+            const labels = new Set();
+            const system = answer('System');
+            if (/Windows/.test(system)) labels.add('windows');
+            if (/macOS/.test(system)) labels.add('macos');
+            if (/Steam Deck/.test(system)) labels.add('steam-deck');
+            if (/Linux/.test(system)) labels.add('linux');
+            const games = answer('Game');
+            const gameLabels = { "Spyro's Adventure": 'game:ssa', 'Giants': 'game:giants', 'Swap Force': 'game:swap-force',
+              'Trap Team': 'game:trap-team', 'SuperChargers': 'game:superchargers', 'Imaginators': 'game:imaginators',
+              'The launcher itself': 'launcher' };
+            for (const [name, label] of Object.entries(gameLabels)) if (games.includes(name)) labels.add(label);
+            const area = answer("What it's about");
+            const areaLabels = { 'Graphics': 'graphics', 'Sound': 'audio', 'Install': 'install', 'Portal of Power': 'portal',
+              'Figures and the Toy Box': 'collection', 'Controller, keyboard or mouse': 'controls', "The launcher's screens": 'launcher' };
+            for (const [name, label] of Object.entries(areaLabels)) if (area.includes(name)) labels.add(label);
+            if (labels.size) await github.rest.issues.addLabels({ ...context.repo, issue_number: issue.number, labels: [...labels] });
+
+            // Bug and portal reports need a real game log or portal test: the launcher's copies start with known lines.
+            const isReport = issue.labels.some(l => ['bug', 'portal'].includes(l.name)) || /^(Bug|Portal): /.test(issue.title);
+            if (!isReport) return;
+            const log = answer('Game log');
+            const looksLikeLog = /\[(version|system|gpu|portal|log)\]|===== |Arkeyan Launcher problem report|Portal test \(/.test(log) && log.length > 300;
+            const hasNeeds = issue.labels.some(l => l.name === 'needs-info');
+            if (looksLikeLog) {
+              if (hasNeeds) await github.rest.issues.removeLabel({ ...context.repo, issue_number: issue.number, name: 'needs-info' }).catch(() => {});
+              return;
+            }
+            if (hasNeeds) return;
+            await github.rest.issues.addLabels({ ...context.repo, issue_number: issue.number, labels: ['needs-info'] });
+            await github.rest.issues.createComment({ ...context.repo, issue_number: issue.number, body:
+              "This report needs the game's log to be looked at. Right after the problem, open the launcher's Settings > " +
+              "Support > **Copy game log** and paste it into the issue (edit it and fill in the Game log field). For a " +
+              "portal, also paste Settings > Controls > Portal of Power > **Test**, then **Copy**. Names and folders are " +
+              "removed for you. Thanks!" });
