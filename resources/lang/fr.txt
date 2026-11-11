@@ -332,6 +332,8 @@ Show in folder	Afficher dans le dossier
 Skip intro movies	Passer les vidéos d'intro
 Graphics API	API graphique
 Direct3D 12 by default; the game uses the other if it cannot start.	Direct3D 12 par défaut ; le jeu prend l'autre s'il ne peut pas démarrer.
+Direct3D 12 showed nothing: the game starts again with Vulkan	Direct3D 12 n'affichait rien : le jeu redémarre avec Vulkan
+Vulkan, since Direct3D 12 showed nothing on this PC.	Vulkan, car Direct3D 12 n'affichait rien sur ce PC.
 Skylanders, Spyro and Activision are trademarks of Activision Publishing, Inc. This project is not affiliated with or endorsed by Activision.	Skylanders, Spyro et Activision sont des marques d'Activision Publishing, Inc. Ce projet n'est ni affilié à Activision ni approuvé par Activision.
 Arkeyan Launcher couldn't find its own file.	Arkeyan Launcher n'a pas trouvé son propre fichier.
 Arkeyan Launcher is up to date.	Arkeyan Launcher est à jour.

@@ -1073,6 +1073,12 @@ namespace launcher_ui
             .running = !m_session.Running().empty(), .installing = AnyInstalling(),
             .launching = m_launchPending, .muted = !GameMusicOn() });
         m_progressAt = 0; // its play time and unlocks are read again
+        if (ended->restarted) // gpu_backend=vulkan is in the settings read above
+        {
+            m_sessionStart = now;
+            Toast(Tr("Direct3D 12 showed nothing: the game starts again with Vulkan"), ui::ToastKind::Info);
+            return;
+        }
         const GameInfo* game = FindGame(ended->game);
         if (!ended->ours || ended->stopped || ended->exitCode == 0 || game == nullptr)
             return;

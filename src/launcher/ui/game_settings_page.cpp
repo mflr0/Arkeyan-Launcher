@@ -170,8 +170,16 @@ namespace launcher_ui
 
             if (GpuBackendShown)
             {
-                ui::SettingRow(Tr("Graphics API"), Tr("Direct3D 12 by default; the game uses the other if it cannot start."));
-                SettingSelect("##gpubackend", video, "gpu_backend", GpuBackendChoices, 0);
+                // gpu_backend_note: the game switched itself to Vulkan when Direct3D 12 showed nothing (docs/settings.md).
+                const bool switched = SettingGet(m_config, video, "gpu_backend") == "vulkan" && !SettingGet(m_config, video, "gpu_backend_note").empty();
+                ui::SettingRow(Tr("Graphics API"), switched ? Tr("Vulkan, since Direct3D 12 showed nothing on this PC.")
+                                                            : Tr("Direct3D 12 by default; the game uses the other if it cannot start."));
+                if (SettingSelect("##gpubackend", video, "gpu_backend", GpuBackendChoices, 0) && SettingGet(m_config, video, "gpu_backend") != "vulkan")
+                {
+                    m_config[video].erase("gpu_backend_note");
+                    if (!SaveConfig())
+                        Toast(Tr("Couldn't save the settings"), ui::ToastKind::Error);
+                }
             }
             // Offscreen page check (SKY_LAUNCHER_TEST_GPU_BACKEND=<value>): the row's write where it is shown, then the page.
             if (!m_shots.empty())
