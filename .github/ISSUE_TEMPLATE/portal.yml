@@ -7,7 +7,7 @@ body:
     attributes:
       value: |
         Thanks for reporting! Portals differ from model to model, so these details are what lets a portal be supported.
-        Please fill in every field.
+        Please fill in every field, **in English**.
   - type: dropdown
     id: system
     attributes:

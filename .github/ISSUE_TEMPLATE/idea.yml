@@ -3,6 +3,9 @@ description: Something you'd like the launcher or the games to do.
 title: "Idea: "
 labels: ["enhancement"]
 body:
+  - type: markdown
+    attributes:
+      value: Please write **in English**.
   - type: textarea
     id: idea
     attributes:

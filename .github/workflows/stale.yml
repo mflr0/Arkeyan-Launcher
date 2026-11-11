@@ -1,0 +1,22 @@
+# Issues waiting for details from their reporter get a reminder after 15 days and close after 30; a reply reopens the talk.
+name: Waiting for details
+on:
+  schedule:
+    - cron: '30 6 * * *'
+  workflow_dispatch:
+permissions:
+  issues: write
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v9
+        with:
+          only-labels: needs-info
+          days-before-stale: 15
+          days-before-close: 15
+          days-before-pr-stale: -1
+          days-before-pr-close: -1
+          stale-issue-label: stale
+          stale-issue-message: "Still waiting for the details asked above (the game log above all). This issue closes in 15 days without them; you can reopen it any time."
+          close-issue-message: "Closed for now: no details came in 30 days. Reopen it with the game log whenever you can."

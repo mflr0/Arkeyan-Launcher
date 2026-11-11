@@ -1,3 +1,16 @@
+<p align="center"><img src="resources/icons/skylauncher.svg" width="128" alt="Arkeyan Launcher"></p>
+
+<p align="center">
+<a href="https://github.com/mflr0/Arkeyan-Launcher/releases/latest"><img alt="Release" src="https://img.shields.io/github/v/release/mflr0/Arkeyan-Launcher"></a>
+<a href="https://github.com/mflr0/Arkeyan-Launcher/releases"><img alt="Downloads" src="https://img.shields.io/github/downloads/mflr0/Arkeyan-Launcher/total"></a>
+<a href="https://github.com/mflr0/Arkeyan-Launcher/actions/workflows/build.yml"><img alt="Build" src="https://img.shields.io/github/actions/workflow/status/mflr0/Arkeyan-Launcher/build.yml?branch=main"></a>
+<a href="https://github.com/mflr0/Arkeyan-Launcher/issues"><img alt="Open issues" src="https://img.shields.io/github/issues/mflr0/Arkeyan-Launcher"></a>
+<a href="https://github.com/mflr0/Arkeyan-Launcher/milestone/1"><img alt="Next version" src="https://img.shields.io/github/milestones/progress-percent/mflr0/Arkeyan-Launcher/1?label=0.9.6"></a>
+<img alt="Platforms" src="https://img.shields.io/badge/platforms-Windows%20%7C%20macOS%20%7C%20Linux-blue">
+<a href="https://discord.gg/UMQY4SAS3F"><img alt="Discord" src="https://img.shields.io/badge/Discord-join-5865F2?logo=discord&logoColor=white"></a>
+<a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/mflr0/Arkeyan-Launcher"></a>
+</p>
+
 # Arkeyan Launcher: native Skylanders on PC, macOS and Linux
 
 **Play Skylanders natively on Windows PC, macOS and Linux.** A native PC port of the Xbox 360 Skylanders games, by static
@@ -37,17 +50,21 @@ Islands.
 
 | Game | Mac | Windows | Linux | Played so far |
 |---|---|---|---|---|
-| Spyro's Adventure | ✅ | ✅ | ⚠️ tested in a container only | 27 story levels and the Ruins played with a hero; bosses and Heroic Challenges not all confirmed |
-| Giants | ✅ | ⚠️ tested in Wine only | ⚠️ tested in a container only | Chapter 1, and 78 of its 91 levels in an automatic tour |
-| Swap Force | ✅ | ⚠️ tested in Wine only | ⚠️ tested in a container only | The tutorial, the first area of the story and the two-player arenas; 158 of 195 zones in an automatic tour |
-| Trap Team | ✅ | ⚠️ not tested yet | ⚠️ not tested yet | The tutorial, the first chapters and the Academy, a villain captured and kept in its trap; 53 of 56 levels in an automatic tour |
-| SuperChargers | ✅ | ⚠️ not tested yet | ⚠️ not tested yet | The opening and the Academy, a vehicle on the portal |
+| Spyro's Adventure | ✅ | ✅ | ✅ | 27 story levels and the Ruins played with a hero; bosses and Heroic Challenges not all confirmed |
+| Giants | ✅ | ⚠️ in Wine only | ✅ | Chapter 1, and 78 of its 91 levels in an automatic tour; a real portal on Linux |
+| Swap Force | ✅ | ✅ | ✅ | The tutorial, the first area of the story and the two-player arenas; 158 of 195 zones in an automatic tour |
+| Trap Team | ✅ | ✅ | ⚠️ not tested yet | The tutorial, the first chapters and the Academy, a villain captured and kept in its trap; 53 of 56 levels in an automatic tour |
+| SuperChargers | ✅ | ✅ | ✅ (Steam Deck, Desktop Mode) | The opening and the Academy, a vehicle on the portal |
 | Imaginators | ✅ | ⚠️ not tested yet | ⚠️ not tested yet | The opening and the hub |
+
+✅ means played on a real computer of that kind, by the author or by players. The Steam Deck works in Desktop Mode;
+Game Mode is being fixed for 0.9.6.
 
 Finished a game, or played one on Windows or Linux? Please say so in an
 [issue](https://github.com/mflr0/Arkeyan-Launcher/issues): it is how this table gets filled.
 
-**Testers wanted**, above all on a real Windows or Linux PC (and the Steam Deck), and with a real Portal of Power.
+**Testers wanted**, above all on Linux, on the Steam Deck, with Xbox portals, and with Imaginators on Windows. Join the
+[Discord](https://discord.gg/UMQY4SAS3F) to help test new versions before they ship.
 
 **Your portal can help.** Portals for the Wii, Wii U, PlayStation and PC all work the same way; the Xbox 360 and Xbox One
 ones differ from model to model, and not all of them are known yet. If the launcher doesn't find yours, or finds it but
@@ -70,6 +87,8 @@ Every release is checked before it ships, on the six games:
 - **Automatic level tours** that load every level of each game one by one.
 - **The code translator** is proved against its reference on all 4,294,967,296 possible PowerPC instruction words.
 - The Windows and Linux builds of Spyro's Adventure, Giants and Swap Force also run in Wine and in a container.
+- Before release, the author checks each version on a Mac, a Windows PC with an NVIDIA card and a Linux PC, with real
+  portals.
 
 ## What you need
 
@@ -78,7 +97,7 @@ Every release is checked before it ships, on the six games:
 - Apple Silicon Mac required (M1 or later).
 - An internet connection the first time: INSTALL downloads the game tools (about 30 to 40 MB) and the compiler.
 - **Linux:** an x86_64 PC with a Vulkan driver (Mesa or NVIDIA), about 6 GB free, and a distribution from 2022 or later
-  (glibc 2.34+: Ubuntu 22.04+, Fedora, Arch; SteamOS on the Steam Deck should work but has not been tested yet). No compiler or root is needed: INSTALL
+  (glibc 2.34+: Ubuntu 22.04+, Fedora, Arch; SteamOS on the Steam Deck works in Desktop Mode). No compiler or root is needed: INSTALL
   downloads zig (55 MB) as the compiler. A real portal needs udev rules once (Wii, Wii U, PlayStation and PC portals, then every Activision USB device: the Xbox 360 portal `1430:1F17` and the Xbox One portal `1430:09AA`), the only step that needs `sudo` (on
   the Steam Deck, set a password with `passwd` first):
 
@@ -98,9 +117,9 @@ Xbox 360 discs only.
 | Spyro's Adventure | USA, Europe | English, French, German, Spanish, Italian, Dutch, Swedish, Norwegian, Danish, Finnish |
 | Giants | USA, Europe | English, French, German, Spanish, Italian, Dutch, Portuguese, Swedish, Norwegian, Danish, Finnish |
 | Swap Force | USA, Australia, Europe | English, French, Spanish, Italian |
-| Trap Team | Europe | English, German, French, Dutch |
+| Trap Team | Europe, USA | English, German, French, Dutch |
 | SuperChargers | Europe | English, German |
-| Imaginators | Europe | French, Dutch |
+| Imaginators | Europe, USA | French, Dutch |
 
 Another edition whose game code is the same as a supported one (only the disc's header differs: another region, media ID or version) is accepted as that edition. Any other edition is refused with a message. If you have one, click **Find my edition** under that message: the game tools read your disc and copy a short report (its IDs, region, languages and fingerprints, and which addresses of the game they found in it). Open a [New disc edition](https://github.com/mflr0/Arkeyan-Launcher/issues/new?template=new_disc_edition.yml) issue and paste it. Never attach the disc image or game files.
 
@@ -239,13 +258,12 @@ The developer docs are in `docs/`: `launcher_ui.md` covers the screens and theme
 
 ## Known issues
 
-- On a real Windows PC only Spyro's Adventure has been played; Giants and Swap Force were run in Wine. On Linux those
-  three were run in a container, none on a real PC yet. Trap Team has been played on a Mac only.
-- Swap Force: not every mode has been played through yet.
+- Steam Deck: in Game Mode the game's picture may not appear; Desktop Mode works. Being fixed for 0.9.6.
+- Xbox 360 and Xbox One portals don't work on Windows yet, and the Xbox 360 portal doesn't answer on Linux yet: both
+  are being fixed for 0.9.6. Wii, Wii U, PlayStation and PC portals work everywhere.
 - Trap Team: Spy Rise looks almost black, its voices follow the text language, and LB is not offered as a key yet. A real
   Traptanium portal's speaker has not been tried yet.
 - The mouse does nothing in the games' own menus yet: use the keyboard or a controller there.
-- The 60 fps option is experimental.
 - The Mac app is not notarized, and Windows SmartScreen or Defender may warn about the launcher (see
   [Windows Defender alerts](#windows-defender-alerts)).
 
@@ -266,6 +284,11 @@ and every design decision are the author's own; AI tools write the code from tha
 ## Credits and license
 
 Designed by dorydev, made by mflr0, UI/UX by Gumelia.
+
+To you who use Arkeyan Launcher and take the time to report a bug or suggest an idea: thank you, every report makes it
+better. Special thanks to those who opened issues, sent logs and tested on their own hardware: jdalmanza,
+GummyWormWood, RGNTromYT, ssjwarriorx, GobGub and vientodelbosque, and the testers on Discord. And thank you to
+everyone who contributes to the Arkeyan project.
 
 The ports are built with [XenonRecomp](https://github.com/hedge-dev/XenonRecomp) and
 [XenosRecomp](https://github.com/hedge-dev/XenosRecomp) (hedge-dev; [squidbus's fork](https://github.com/squidbus/XenosRecomp)),
