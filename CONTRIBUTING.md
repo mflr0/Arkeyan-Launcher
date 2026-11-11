@@ -5,8 +5,9 @@ be merged. Questions: the [Discord](https://discord.gg/UMQY4SAS3F) or an [issue]
 
 ## What you can contribute
 - **The launcher**: code, bug fixes, tests, docs, and **translations** (`resources/lang/`).
-- **Not here yet**: the game ports themselves (the recompiler, the runtime, the kits) are not public for now. Problems
-  in a game are welcome as [issues](https://github.com/mflr0/Arkeyan-Launcher/issues/new/choose).
+- **The game ports** (the runtime, the builder, each game's port, the code and shader translators) are public in the
+  [arkeyan-forge](https://github.com/arkeyan-forge) organization, under the same rules. Problems in a game are reported
+  here, as [issues](https://github.com/mflr0/Arkeyan-Launcher/issues/new/choose), for every repository.
 - **Never**: anything from a game (disc images, game files, extracted pictures, sounds, text or code) and code copied or
   adapted from another project. Libraries are added only after an issue and the owner's agreement.
 
