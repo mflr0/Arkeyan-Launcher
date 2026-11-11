@@ -78,11 +78,25 @@ inline void GameControlChecks(const std::filesystem::path& scratch)
     ended = waitEnd(other);
     SHELL_EXPECT(ended && ended->stopped && ended->exitCode == 0 && fs::exists(root / "other.closed"));
 
+    // Direct3D 12 showed nothing (GameRestartExitCode): started again once, with Vulkan; a second such exit ends it.
+    SHELL_EXPECT(session.Start("ssa", launch("gpu", "gpu-restart"), "--fake-game", error));
+    ended = waitEnd(session);
+    SHELL_EXPECT(ended && ended->restarted && ended->ours && ended->exitCode == GameRestartExitCode && !ended->stopped);
+    SHELL_EXPECT(session.Running() == "ssa" && session.Ours());
+    ended = waitEnd(session);
+    SHELL_EXPECT(ended && !ended->restarted && ended->exitCode == GameRestartExitCode && session.Running().empty());
+    auto started = [&](int n) {
+        std::string restarts, backend;
+        std::ifstream(root / ("gpu." + std::to_string(n))) >> restarts >> backend;
+        return restarts + " " + backend;
+    };
+    SHELL_EXPECT(started(1) == "1 -" && started(2) == "1 vulkan" && !fs::exists(root / "gpu.3"));
+
     GameSession marked({ "ssa" }, [](const std::string&) { return true; }, windows);
     marked.Poll(SDL_GetTicks());
     queried = shown = 0;
     SHELL_EXPECT(marked.Running() == "ssa" && !marked.Ours() && marked.Pid() == 0);
     SHELL_EXPECT(!marked.Stop(SDL_GetTicks()) && !marked.Show() && !marked.CanShow() && queried == 0 && shown == 0);
     SDL_UnsetEnvironmentVariable(SDL_GetEnvironment(), "SKY_LAUNCHER_LOG_DIR");
-    printf("Game controls: clean stop, timeout, same-executable PID isolation, window capability and activation routing checked\n");
+    printf("Game controls: clean stop, timeout, same-executable PID isolation, window capability and activation routing, the one restart with Vulkan checked\n");
 }

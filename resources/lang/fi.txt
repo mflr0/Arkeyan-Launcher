@@ -735,6 +735,8 @@ Silver	Hopea
 Skip intro movies	Ohita aloitusvideot
 Graphics API	Grafiikkarajapinta
 Direct3D 12 by default; the game uses the other if it cannot start.	Oletuksena Direct3D 12; jos se ei käynnisty, peli käyttää toista.
+Direct3D 12 showed nothing: the game starts again with Vulkan	Direct3D 12 ei näyttänyt mitään: peli käynnistyy uudelleen Vulkanilla
+Vulkan, since Direct3D 12 showed nothing on this PC.	Vulkan, koska Direct3D 12 ei näyttänyt tällä PC:llä mitään.
 Skylander Info	Skylander-tiedot
 Skylander Profile	Skylander-profiili
 Skylander/Villain Stats	Skylander/pahis-tilastot

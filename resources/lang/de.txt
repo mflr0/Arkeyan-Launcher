@@ -732,6 +732,8 @@ Silver	Silber
 Skip intro movies	Intro-Videos überspringen
 Graphics API	Grafik-API
 Direct3D 12 by default; the game uses the other if it cannot start.	Standardmäßig Direct3D 12; startet sie nicht, nutzt das Spiel die andere.
+Direct3D 12 showed nothing: the game starts again with Vulkan	Direct3D 12 zeigte nichts: Das Spiel startet neu mit Vulkan
+Vulkan, since Direct3D 12 showed nothing on this PC.	Vulkan, da Direct3D 12 auf diesem PC nichts anzeigte.
 Skylander Info	Skylander-Info
 Skylander Profile	Skylander-Profil
 Skylander/Villain Stats	Skylander-/Schurken-Werte

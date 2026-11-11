@@ -366,6 +366,17 @@ bool GameSession::Start(const std::string& game, const GameLaunch& launch, const
         error = Tr("Couldn't start the game: the file is missing");
         return false;
     }
+    m_launch = launch;
+    m_iso = iso;
+    m_restarted = false;
+    // The game exits with GameRestartExitCode instead of starting a new copy of itself: this launcher starts it again.
+    m_launch.variables.emplace_back("SKY_LAUNCHER_RESTARTS", "1");
+    return Spawn(game, m_launch, iso, error);
+}
+
+bool GameSession::Spawn(const std::string& game, const GameLaunch& launch, const std::string& iso, std::string& error)
+{
+    std::error_code ignored;
     // The output goes straight into the file (the previous run's kept as .prev): nothing of the launcher stands between the
     // game and its log, and a launcher that is closed leaves the game running.
     const std::filesystem::path folder = GameLogFolder(), capture = folder / CaptureLogName;
@@ -483,6 +494,17 @@ std::optional<GameSession::Ended> GameSession::Poll(uint64_t nowMs)
         m_process = nullptr;
         m_nextLook = 0; // and the markers again at once
         fprintf(stderr, "launcher: %s stopped (exit code %d)\n", m_game.c_str(), exitCode);
+        // Direct3D 12 showed nothing: the game switched itself to Vulkan and is started again, once (never a loop).
+        if (exitCode == GameRestartExitCode && !m_stopping && !m_restarted)
+        {
+            m_restarted = true;
+            GameLaunch vulkan = m_launch;
+            vulkan.variables.emplace_back("SKY_GPU_BACKEND", "vulkan");
+            std::string error;
+            if (Spawn(m_game, vulkan, m_iso, error))
+                return Ended{ m_game, true, exitCode, false, true };
+            fprintf(stderr, "launcher: %s not started again: %s\n", m_game.c_str(), error.c_str());
+        }
         return Ended{ std::exchange(m_game, std::string()), true, exitCode, std::exchange(m_stopping, false) };
     }
     if (nowMs < m_nextLook)

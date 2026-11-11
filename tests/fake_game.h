@@ -23,6 +23,23 @@ namespace fake_game
     {
         const char* mode = std::getenv("SKY_FAKE_GAME_MODE");
         const bool stubborn = mode != nullptr && std::strcmp(mode, "stubborn") == 0;
+        // A game whose Direct3D 12 shows nothing: it exits with the restart code at every start, and writes what it was
+        // started with (<ready>.<n>: SKY_LAUNCHER_RESTARTS and SKY_GPU_BACKEND), so the check sees one restart only.
+        if (mode != nullptr && std::strcmp(mode, "gpu-restart") == 0)
+        {
+            const char* ready = std::getenv("SKY_FAKE_GAME_READY");
+            const char* restarts = std::getenv("SKY_LAUNCHER_RESTARTS");
+            const char* backend = std::getenv("SKY_GPU_BACKEND");
+            for (int n = 1; ready != nullptr && n < 10; n++)
+            {
+                const std::string file = std::string(ready) + "." + std::to_string(n);
+                if (std::ifstream(file))
+                    continue;
+                std::ofstream(file) << (restarts != nullptr ? restarts : "-") << ' ' << (backend != nullptr ? backend : "-");
+                break;
+            }
+            return 75;
+        }
 #if defined(_WIN32)
         WNDCLASSW type{};
         type.hInstance = GetModuleHandleW(nullptr);

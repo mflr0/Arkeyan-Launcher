@@ -735,6 +735,8 @@ Silver	Silver
 Skip intro movies	Hoppa över introfilmer
 Graphics API	Grafik-API
 Direct3D 12 by default; the game uses the other if it cannot start.	Direct3D 12 som standard; startar den inte använder spelet den andra.
+Direct3D 12 showed nothing: the game starts again with Vulkan	Direct3D 12 visade ingenting: spelet startar om med Vulkan
+Vulkan, since Direct3D 12 showed nothing on this PC.	Vulkan, eftersom Direct3D 12 inte visade något på den här datorn.
 Skylander Info	Skylander-info
 Skylander Profile	Skylander-profil
 Skylander/Villain Stats	Skylander/skurk-statistik

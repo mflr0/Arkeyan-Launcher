@@ -783,6 +783,12 @@ PLAY starts the game **beside the window, which stays open** (`GameSession`, `la
   (`docs/support.md`), so it runs on if the launcher is closed. The launcher watches the process (`SDL_WaitProcess`, every
   wake: at most 0.5 s) and goes back to normal when it exits; an unrequested non-zero exit code shows the crash dialog
   (`ShowGameStopped`, over the window).
+- **Started again with Vulkan** (Windows, 0.9.6): a game whose Direct3D 12 brings no picture to the screen writes
+  `gpu_backend = vulkan` and `gpu_backend_note` in its settings and exits with code 75 (`GameRestartExitCode`). The session
+  starts it again once, with `SKY_GPU_BACKEND=vulkan` (the game gets `SKY_LAUNCHER_RESTARTS=1` so it leaves the restart to
+  the launcher), reports `Ended::restarted` and a toast ("Direct3D 12 showed nothing: the game starts again with Vulkan");
+  a second exit 75 ends the session as any exit does. The first run's log is `skylauncher-game.prev.log`. The Graphics API
+  row then reads "Vulkan, since Direct3D 12 showed nothing on this PC."; choosing Direct3D 12 there clears the note.
 - **Found running**: a game this launcher did not start (one left running when the launcher was closed and opened again, or one
   started by hand) is seen by the marker each game keeps while it runs (`<saves>-backup/game.lock` with its process id:
   `save_backup.h`, `GameRunning`, which drops a crashed game's marker), looked at every second; its end is seen the same way.
@@ -795,7 +801,7 @@ PLAY starts the game **beside the window, which stays open** (`GameSession`, `la
 - PLAY returning the choice instead (the window closing, `main()` running the game and waiting) is what `RunLauncherWindow`
   does without `LauncherOptions::startGames`: the test windows and `SKY_LAUNCHER_TEST_PLAY`.
 - Tests: `GameSessionChecks` (`tests/shell_test.cpp`: start, a double click and another game refused, exit codes, a marker
-  found and gone, a game started by hand a moment ago, a launcher restarted while its game runs) and `RunningChecks`
+  found and gone, a game started by hand a moment ago, a launcher restarted while its game runs), `GameControlChecks` (`tests/game_session_checks.h`: the one restart with Vulkan) and `RunningChecks`
   (`tests/launcher_test.cpp`, the window with `SKY_LAUNCHER_TEST_RUNNING`: shots `running-1-game`, `running-2-other`,
   `running-3-ended`).
 
