@@ -294,6 +294,11 @@ container.
 Everything here is made for this project: the launcher, the kits and the ports. The reverse engineering, the architecture
 and every design decision are the author's own; AI tools write the code from that design and run the tests.
 
+## Contributing
+
+Pull requests are welcome: read [CONTRIBUTING.md](CONTRIBUTING.md) first (what to send, the branch to target, the
+checks). Security problems: [SECURITY.md](SECURITY.md).
+
 ## Credits and license
 
 Designed by dorydev, made by mflr0, UI/UX by Gumelia.

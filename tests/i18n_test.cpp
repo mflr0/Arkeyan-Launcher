@@ -256,6 +256,10 @@ namespace
             if (translation.empty())
                 Fail(name + ": empty translation: " + english.substr(0, 60));
         }
+        // SKY_LAUNCHER_TEST_I18N_MISSING_OK=1 (pull requests in CI): a missing string is a warning; the other languages
+        // are filled before a release (CONTRIBUTING.md), and every other check still fails.
+        const char* missingOk = skyenv::Get("SKY_LAUNCHER_TEST_I18N_MISSING_OK");
+        const bool warnMissing = missingOk != nullptr && std::string(missingOk) == "1";
         int missing = 0;
         for (const std::string& key : keys)
         {
@@ -263,7 +267,12 @@ namespace
             if (it == entries.end())
             {
                 if (missing++ < MaxListed)
-                    Fail(name + ": missing: " + key.substr(0, 80));
+                {
+                    if (warnMissing)
+                        fprintf(stderr, "warning: %s: missing: %s\n", name.c_str(), key.substr(0, 80).c_str());
+                    else
+                        Fail(name + ": missing: " + key.substr(0, 80));
+                }
                 continue;
             }
             // French: a no-break space before : ? ! % (the file's own rule), never a plain space.

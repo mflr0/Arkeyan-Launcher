@@ -18,11 +18,30 @@ concurrency:
 
 env:
   VERSION: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || '' }}
+  # A pull request may add English text without its translations (CONTRIBUTING.md): missing ones are warnings there.
+  SKY_LAUNCHER_TEST_I18N_MISSING_OK: ${{ github.event_name == 'pull_request' && '1' || '0' }}
 
 permissions:
   contents: read
 
 jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+      - name: Format (.clang-format)
+        run: |
+          pip install --quiet clang-format==23.1.4
+          tools/check_format.sh
+      - name: Pull request title and sign-off
+        if: github.event_name == 'pull_request'
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: tools/check_pull_request.sh
   windows:
     runs-on: windows-latest
     steps:
