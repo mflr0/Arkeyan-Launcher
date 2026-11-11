@@ -52,10 +52,22 @@ namespace ui
             const bool row = SameRow(seen, from);
             switch (dir)
             {
-            case NavDir::Down: if (!row && MidY(b) > MidY(s) && MidY(seen) > MidY(from)) ahead.push_back(&b); break;
-            case NavDir::Up: if (!row && MidY(b) < MidY(s) && MidY(seen) < MidY(from)) ahead.push_back(&b); break;
-            case NavDir::Right: if (MidX(b) > MidX(s) && MidX(seen) > MidX(from) && OverlapX(b, s) <= 0) ahead.push_back(&b); break;
-            case NavDir::Left: if (MidX(b) < MidX(s) && MidX(seen) < MidX(from) && OverlapX(b, s) <= 0) ahead.push_back(&b); break;
+            case NavDir::Down:
+                if (!row && MidY(b) > MidY(s) && MidY(seen) > MidY(from))
+                    ahead.push_back(&b);
+                break;
+            case NavDir::Up:
+                if (!row && MidY(b) < MidY(s) && MidY(seen) < MidY(from))
+                    ahead.push_back(&b);
+                break;
+            case NavDir::Right:
+                if (MidX(b) > MidX(s) && MidX(seen) > MidX(from) && OverlapX(b, s) <= 0)
+                    ahead.push_back(&b);
+                break;
+            case NavDir::Left:
+                if (MidX(b) < MidX(s) && MidX(seen) < MidX(from) && OverlapX(b, s) <= 0)
+                    ahead.push_back(&b);
+                break;
             }
         }
         // The source's own list scrolls on first: when it has stops hidden that way, the others wait.
@@ -68,7 +80,8 @@ namespace ui
             default: return b.x0 < b.clipX0 - 0.5f;
             }
         };
-        if (std::any_of(ahead.begin(), ahead.end(), [&](const NavBox* b) { return b->window == s.window && hidden(*b); }))
+        if (std::any_of(
+                ahead.begin(), ahead.end(), [&](const NavBox* b) { return b->window == s.window && hidden(*b); }))
             std::erase_if(ahead, [&](const NavBox* b) { return b->window != s.window; });
         auto remembered = [](const std::vector<const NavBox*>& set) {
             const NavBox* best = nullptr;
@@ -84,7 +97,8 @@ namespace ui
             float bestScore = FLT_MAX;
             for (const NavBox* b : ahead)
             {
-                const float score = SameRow(Seen(*b), Seen(s)) ? GapX(*b, s) : 1e6f + std::abs(MidY(*b) - MidY(s)) * 100 + GapX(*b, s);
+                const float score =
+                    SameRow(Seen(*b), Seen(s)) ? GapX(*b, s) : 1e6f + std::abs(MidY(*b) - MidY(s)) * 100 + GapX(*b, s);
                 if (score < bestScore)
                 {
                     bestScore = score;
@@ -111,7 +125,8 @@ namespace ui
         };
         // The column kept: the nearest of the stops straight that way when there are some (a field over a list beside it goes
         // to the field's own column, not to the list's nearer row), else the nearest of all.
-        const bool straight = std::any_of(ahead.begin(), ahead.end(), [&](const NavBox* b) { return OverlapX(*b, s) > 0; });
+        const bool straight =
+            std::any_of(ahead.begin(), ahead.end(), [&](const NavBox* b) { return OverlapX(*b, s) > 0; });
         const NavBox* nearest = nullptr;
         for (const NavBox* b : ahead)
             if ((!straight || OverlapX(*b, s) > 0) && (nearest == nullptr || closer(*b, *nearest)))
@@ -125,7 +140,8 @@ namespace ui
                     under.push_back(b);
             }
         auto first = [](const std::vector<const NavBox*>& set) {
-            return *std::min_element(set.begin(), set.end(), [](const NavBox* a, const NavBox* b) { return a->x0 < b->x0; });
+            return *std::min_element(
+                set.begin(), set.end(), [](const NavBox* a, const NavBox* b) { return a->x0 < b->x0; });
         };
         // The column kept: the one stop under (or over) the source.
         if (under.size() == 1)
@@ -160,7 +176,8 @@ namespace ui
         uint32_t g_target = 0;
         int g_column = -1;
         uint32_t g_join = 0; // NavJoin's window, 0: none
-        std::vector<Hint> g_hints, g_shownHints; // this frame's pad actions, last frame's (the legend is drawn before some)
+        std::vector<Hint> g_hints,
+            g_shownHints; // this frame's pad actions, last frame's (the legend is drawn before some)
 
         uint32_t CurrentRoot()
         {
@@ -215,9 +232,11 @@ namespace ui
         if (g.NavId != 0 && g.NavCursorVisible)
             g_seen[g.NavId] = g_frame;
         // A move by the arrows, the D-pad or the stick (not Tab, not a page or edge jump, not the focus API's).
-        constexpr ImGuiNavMoveFlags Other = ImGuiNavMoveFlags_IsTabbing | ImGuiNavMoveFlags_FocusApi | ImGuiNavMoveFlags_IsPageMove |
-            ImGuiNavMoveFlags_ScrollToEdgeY | ImGuiNavMoveFlags_Forwarded;
-        if (!g.NavMoveSubmitted || (g.NavMoveFlags & Other) != 0 || g.NavMoveDir < ImGuiDir_Left || g.NavMoveDir > ImGuiDir_Down)
+        constexpr ImGuiNavMoveFlags Other = ImGuiNavMoveFlags_IsTabbing | ImGuiNavMoveFlags_FocusApi |
+                                            ImGuiNavMoveFlags_IsPageMove | ImGuiNavMoveFlags_ScrollToEdgeY |
+                                            ImGuiNavMoveFlags_Forwarded;
+        if (!g.NavMoveSubmitted || (g.NavMoveFlags & Other) != 0 || g.NavMoveDir < ImGuiDir_Left ||
+            g.NavMoveDir > ImGuiDir_Down)
             return;
         bool known = false;
         for (NavBox& box : g_previous)
@@ -269,7 +288,8 @@ namespace ui
             ImRect shown = rect;
             shown.ClipWithFull(clip);
             const bool visible = (g.LastItemData.StatusFlags & ImGuiItemStatusFlags_Visible) != 0;
-            Ctx().testStops->push_back({ id, box.root, visible ? shown.Min : rect.Min, visible ? shown.Max : rect.Max, visible });
+            Ctx().testStops->push_back(
+                { id, box.root, visible ? shown.Min : rect.Min, visible ? shown.Max : rect.Max, visible });
         }
     }
 
@@ -288,7 +308,8 @@ namespace ui
         g_hints.push_back({ button, label, key != nullptr ? key : "", CurrentRoot() });
         if (!HasInput())
             return false;
-        return ImGui::IsKeyPressed(PadKey(button), false) || (keyboard != ImGuiKey_None && ImGui::IsKeyPressed(ImGuiKey(keyboard), false));
+        return ImGui::IsKeyPressed(PadKey(button), false) ||
+               (keyboard != ImGuiKey_None && ImGui::IsKeyPressed(ImGuiKey(keyboard), false));
     }
 
     void PageLegend(const char* back, float width, bool pages)

@@ -79,10 +79,7 @@ namespace launcher_portal
         return status;
     }
 
-    Status Query(const Enumerator& enumerate)
-    {
-        return MakeStatus(enumerate());
-    }
+    Status Query(const Enumerator& enumerate) { return MakeStatus(enumerate()); }
 
     Scan EnumerateHid()
     {
@@ -168,7 +165,8 @@ namespace launcher_portal
 #elif defined(__APPLE__)
         Scan scan;
         io_iterator_t iterator = 0;
-        if (IOServiceGetMatchingServices(MACH_PORT_NULL, IOServiceMatching("IOUSBHostDevice"), &iterator) != KERN_SUCCESS)
+        if (IOServiceGetMatchingServices(MACH_PORT_NULL, IOServiceMatching("IOUSBHostDevice"), &iterator) !=
+            KERN_SUCCESS)
             return scan;
         scan.available = true;
         while (io_object_t service = IOIteratorNext(iterator))

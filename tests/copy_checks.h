@@ -9,12 +9,15 @@ inline void SyntheticCopyChecks(const std::filesystem::path& scratch)
     const fs::path root = scratch / "synthetic-copy";
     fs::create_directories(root);
     auto remember = [](const char* key) -> std::optional<std::string> {
-        if (const char* value = skyenv::Get(key)) return std::string(value);
+        if (const char* value = skyenv::Get(key))
+            return std::string(value);
         return {};
     };
     auto restore = [](const char* key, const std::optional<std::string>& value) {
-        if (value) TestSetEnv(key, value->c_str());
-        else TestUnsetEnv(key);
+        if (value)
+            TestSetEnv(key, value->c_str());
+        else
+            TestUnsetEnv(key);
     };
     const auto previousData = remember("SKYLANDERS_DATA");
     const auto previousLauncher = remember("SKY_LAUNCHER_DATA");
@@ -30,9 +33,11 @@ inline void SyntheticCopyChecks(const std::filesystem::path& scratch)
     EXPECT(!job.Running() && !job.Done() && job.Fraction() == 0 && job.Bytes() == 0 && job.Total() == 0);
     auto finish = [&] {
         const uint64_t deadline = SDL_GetTicks() + 5000;
-        while (!job.Done() && SDL_GetTicks() < deadline) SDL_Delay(5);
+        while (!job.Done() && SDL_GetTicks() < deadline)
+            SDL_Delay(5);
         EXPECT(job.Running() && job.Done());
-        if (!job.Done()) job.Cancel();
+        if (!job.Done())
+            job.Cancel();
         auto result = job.Collect();
         EXPECT(!job.Running() && !job.Done());
         return result;
@@ -62,14 +67,16 @@ inline void SyntheticCopyChecks(const std::filesystem::path& scratch)
     };
     EXPECT(copiedBytes() == payload);
     pick = PickGameSource(game, "");
-    EXPECT(pick.copied && pick.path == datadir::Text(folder) && pick.copy.state == gamedata::State::Complete && pick.copy.xexSha256 == "synthetic-hash");
+    EXPECT(pick.copied && pick.path == datadir::Text(folder) && pick.copy.state == gamedata::State::Complete &&
+           pick.copy.xexSha256 == "synthetic-hash");
     EXPECT(!PickGameSource(*FindGame("giants"), image.string()).copied);
 
     fs::resize_file(folder / "payload.bin", 1);
     pick = PickGameSource(game, image.string());
     EXPECT(!pick.copied && pick.path == image.string() && pick.copy.state == gamedata::State::Damaged);
     job.Start(game, image.string(), "synthetic-hash");
-    EXPECT(finish().outcome == Outcome::Done && gamedata::Inspect(folder).state == gamedata::State::Complete && copiedBytes() == payload);
+    EXPECT(finish().outcome == Outcome::Done && gamedata::Inspect(folder).state == gamedata::State::Complete &&
+           copiedBytes() == payload);
     job.Start(game, (root / "missing.iso").string(), "synthetic-hash");
     result = finish();
     EXPECT(result.outcome == Outcome::Failed && result.error == "couldn't open the disc image");
@@ -78,5 +85,6 @@ inline void SyntheticCopyChecks(const std::filesystem::path& scratch)
     restore("SKYLANDERS_DATA", previousData);
     restore("SKY_LAUNCHER_DATA", previousLauncher);
     restore("SKY_LAUNCHER_COPY_FREE_BYTES", previousSpace);
-    printf("Synthetic copy: worker reuse, cancellation/resume, source fallback, repair, space and failure messages checked\n");
+    printf("Synthetic copy: worker reuse, cancellation/resume, source fallback, repair, space and failure messages "
+           "checked\n");
 }

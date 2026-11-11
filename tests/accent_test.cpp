@@ -26,8 +26,15 @@ namespace
 
     int g_failures = 0;
 
-#define ACCENT_EXPECT(condition) \
-    do { if (!(condition)) { printf("FAIL %s line %d: %s\n", __FILE__, __LINE__, #condition); g_failures++; } } while (0)
+#define ACCENT_EXPECT(condition)                                                                                       \
+    do                                                                                                                 \
+    {                                                                                                                  \
+        if (!(condition))                                                                                              \
+        {                                                                                                              \
+            printf("FAIL %s line %d: %s\n", __FILE__, __LINE__, #condition);                                           \
+            g_failures++;                                                                                              \
+        }                                                                                                              \
+    } while (0)
 
     std::string Slurp(const fs::path& file)
     {
@@ -118,7 +125,8 @@ namespace
         const fs::path portrait = datadir::Game("ssa") / "portraits" / "toys" / "014.png";
         ACCENT_EXPECT(Spit(portrait, "picture bytes"));
         std::vector<uint8_t> bytes;
-        ACCENT_EXPECT(launcher_ui::ReadWholeFile(datadir::Text(portrait), bytes) && std::string(bytes.begin(), bytes.end()) == "picture bytes");
+        ACCENT_EXPECT(launcher_ui::ReadWholeFile(datadir::Text(portrait), bytes) &&
+                      std::string(bytes.begin(), bytes.end()) == "picture bytes");
         printf("Accented portraits folder: a picture read\n");
     }
 
@@ -139,15 +147,18 @@ namespace
     void InstallFolderChecks(const fs::path& scratch)
     {
         const fs::path install = GameInstallFolder({});
-        ACCENT_EXPECT(Spit(install / "install.log", "log bytes") && Slurp(install / "install.log") == "log bytes" && Lists(install, "install.log"));
+        ACCENT_EXPECT(Spit(install / "install.log", "log bytes") && Slurp(install / "install.log") == "log bytes" &&
+                      Lists(install, "install.log"));
         // The kit zip: made where the name is plain, put in the kits folder, unpacked there.
         const fs::path plain = scratch / "plain-zip" / "kit.zip";
         std::error_code error;
         fs::create_directories(plain.parent_path(), error);
         fs::remove(plain, error);
-        const std::string files[][2] = { { "kit/Arkeyan-Builder", "kit bytes" }, { "kit/Arkeyan-Builder.exe", "kit bytes" }, { "kit/kit.txt", "build=b1\n" } };
+        const std::string files[][2] = { { "kit/Arkeyan-Builder", "kit bytes" },
+            { "kit/Arkeyan-Builder.exe", "kit bytes" }, { "kit/kit.txt", "build=b1\n" } };
         for (const auto& file : files)
-            ACCENT_EXPECT(mz_zip_add_mem_to_archive_file_in_place(plain.string().c_str(), file[0].c_str(), file[1].data(), file[1].size(), nullptr, 0, 6));
+            ACCENT_EXPECT(mz_zip_add_mem_to_archive_file_in_place(
+                plain.string().c_str(), file[0].c_str(), file[1].data(), file[1].size(), nullptr, 0, 6));
         const fs::path kits = DownloadedKitsFolder();
         fs::create_directories(kits / ".download", error);
         fs::copy_file(plain, kits / ".download" / "kit.zip", fs::copy_options::overwrite_existing, error);
@@ -175,7 +186,8 @@ namespace
             ACCENT_EXPECT(Slurp(folder / "out" / "kit" / "kit.txt") == "build=b1\n");
             // The files keep the date they have in the zip: the same kit unpacked twice is the same kit.
             ACCENT_EXPECT(ExtractZip(folder / "kit.zip", folder / "again", why));
-            ACCENT_EXPECT(fs::last_write_time(folder / "out" / "kit" / "kit.txt", error) == fs::last_write_time(folder / "again" / "kit" / "kit.txt", error));
+            ACCENT_EXPECT(fs::last_write_time(folder / "out" / "kit" / "kit.txt", error) ==
+                          fs::last_write_time(folder / "again" / "kit" / "kit.txt", error));
             // curl writes where it is told (-o), in that folder: from a plain address, a local file.
             HttpResult got = HttpDownload(TestFileUrl(plain), folder / "downloaded.zip");
             ACCENT_EXPECT(got.ok && Slurp(folder / "downloaded.zip") == Slurp(plain));
@@ -193,7 +205,8 @@ int AccentChecks(const fs::path& scratch)
     const fs::path root = scratch / "accents" / fs::path(u8"données-é");
     fs::remove_all(scratch / "accents");
     fs::create_directories(root);
-    for (const char* name : { "SKYLANDERS_DATA", "SKY_COLLECTION", "SKY_FIGURES", "SKY_LAUNCHER_DATA", "SKY_LAUNCHER_INI", "SKY_SAVE_DIR", "SKY_MIGRATE_FROM" })
+    for (const char* name : { "SKYLANDERS_DATA", "SKY_COLLECTION", "SKY_FIGURES", "SKY_LAUNCHER_DATA",
+             "SKY_LAUNCHER_INI", "SKY_SAVE_DIR", "SKY_MIGRATE_FROM" })
         Clear(name);
     TestSetEnv("SKY_LAUNCHER_NO_UPDATE_CHECK", "1");
 #ifdef _WIN32

@@ -56,8 +56,8 @@ namespace launcher_ui
 
     // Edit stats' Save: the figure as it is `now` (a game may have played it since the editor opened on `base`), with
     // only the fields the player changed (`edited`, and the nickname from `baseNickname` to `nickname`).
-    figures::FigureStats MergeEditedStats(const figures::FigureStats& now, const figures::FigureStats& base, const figures::FigureStats& edited,
-        const std::string& baseNickname, const std::string& nickname);
+    figures::FigureStats MergeEditedStats(const figures::FigureStats& now, const figures::FigureStats& base,
+        const figures::FigureStats& edited, const std::string& baseNickname, const std::string& nickname);
 
     // Re-read immediately before saving; an unreadable or damaged figure is never rebuilt from the editor's old copy.
     bool SaveEditedStats(const std::string& path, const figures::FigureStats& base, const figures::FigureStats& edited,
@@ -72,23 +72,28 @@ namespace launcher_ui
         int element = -1;      // a collection::Element
         std::string game;      // the game that reads the toy ("giants": Works in)
         int category = -1;     // a collection::Category
-        std::string text;      // the smart search (collection::SearchMatches): names, elements, games, types, versions, levels
+        std::string
+            text; // the smart search (collection::SearchMatches): names, elements, games, types, versions, levels
         collection::Sort sort = collection::Sort::Recent;
-        int seat = -1;         // choosing for this seat of the model's game: only what goes there and the game reads
+        int seat = -1; // choosing for this seat of the model's game: only what goes there and the game reads
     };
 
     class CollectionModel
     {
     public:
         std::vector<collection::Figure> figures; // List(): every dump of the collection
-        std::string gameId = "ssa";               // the game whose seats, views and sections are shown
-        std::vector<std::string> seats;           // per seat of Game()
+        std::string gameId = "ssa"; // the game whose seats, views and sections are shown
+        std::vector<std::string> seats; // per seat of Game()
         // The Toy Box window (docs/toybox_window.md): the running game's seats come over its link (`live`), and every
         // change of a seat is sent to the game, which puts the figure on its portal at once and sends its seats back.
         toyboxlinkclient::Client* live = nullptr;
-        std::vector<toyboxlink::Seat> liveSeats; // per seat of Game(): a virtual figure, a real toy (read only), nothing
+        std::vector<toyboxlink::Seat>
+            liveSeats; // per seat of Game(): a virtual figure, a real toy (read only), nothing
         bool Live() const { return live != nullptr; }
-        bool RealSeat(size_t seat) const { return seat < liveSeats.size() && liveSeats[seat].kind == toyboxlink::Seat::Kind::Real; }
+        bool RealSeat(size_t seat) const
+        {
+            return seat < liveSeats.size() && liveSeats[seat].kind == toyboxlink::Seat::Kind::Real;
+        }
 
         const collection::Game* Game() const;
         void Load();
@@ -122,7 +127,8 @@ namespace launcher_ui
         // favorites); incompatible figures keep their normal place, unknown toys follow the shelf. Choosing for a seat
         // leaves out incompatible figures. The untouched starters the game made on its own
         // are left out unless seated; `hidden` (optional) counts them.
-        std::vector<collection::Section> Shelf(const ShelfFilter& filter, std::vector<collection::Figure>& shown, int* hidden = nullptr) const;
+        std::vector<collection::Section> Shelf(
+            const ShelfFilter& filter, std::vector<collection::Figure>& shown, int* hidden = nullptr) const;
 
     private:
         std::string Signature() const;

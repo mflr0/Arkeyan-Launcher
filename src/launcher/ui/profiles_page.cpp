@@ -17,8 +17,8 @@ namespace launcher_ui
     namespace
     {
         // The variables a profile sets (profiles::Environment): kept as the launcher found them, put back for the first profile.
-        constexpr const char* ProfileVariables[] = { "SKY_PROFILE_DIR", "SKY_COLLECTION", "SKY_PLAYER_NAME", "SKY_PLAYER_XUID",
-            "SKY_PLAYER_PICTURE", "SKY_PLAYER2_NAME", "SKY_PLAYER2_XUID", "SKY_PLAYER2_PICTURE" };
+        constexpr const char* ProfileVariables[] = { "SKY_PROFILE_DIR", "SKY_COLLECTION", "SKY_PLAYER_NAME",
+            "SKY_PLAYER_XUID", "SKY_PLAYER_PICTURE", "SKY_PLAYER2_NAME", "SKY_PLAYER2_XUID", "SKY_PLAYER2_PICTURE" };
     }
 
     void App::LoadProfiles()
@@ -28,7 +28,8 @@ namespace launcher_ui
             const char* value = skyenv::Get(name);
             m_profileEnv.emplace_back(name, value != nullptr ? std::optional<std::string>(value) : std::nullopt);
         }
-        m_profiles = profiles::Load({}); // the first profile unnamed until its player names it: "Player 1" in the shown language
+        m_profiles =
+            profiles::Load({}); // the first profile unnamed until its player names it: "Player 1" in the shown language
         UseProfileEnvironment();
         if (!m_profiles.Active().First())
             m_config = ProfileConfig();
@@ -161,8 +162,9 @@ namespace launcher_ui
                 found = m_avatars.emplace(path, LoadArt(m_renderer, path, false)).first;
             if (found->second)
             {
-                draw->AddImageRounded(ImTextureRef(ImTextureID(found->second.texture)), ImVec2(center.x - radius, center.y - radius),
-                    ImVec2(center.x + radius, center.y + radius), found->second.uv0, found->second.uv1, IM_COL32_WHITE, radius);
+                draw->AddImageRounded(ImTextureRef(ImTextureID(found->second.texture)),
+                    ImVec2(center.x - radius, center.y - radius), ImVec2(center.x + radius, center.y + radius),
+                    found->second.uv0, found->second.uv1, IM_COL32_WHITE, radius);
                 return;
             }
         }
@@ -172,7 +174,8 @@ namespace launcher_ui
         const float size = radius * 0.8f;
         ImGui::PushFont(ui::Ctx().fonts.title, size);
         const ImVec2 extent = ImGui::CalcTextSize(initials.c_str());
-        draw->AddText(ImVec2(center.x - extent.x / 2, center.y - extent.y / 2), ui::Col(ui::InkOn(color, 0x14141A)), initials.c_str());
+        draw->AddText(ImVec2(center.x - extent.x / 2, center.y - extent.y / 2), ui::Col(ui::InkOn(color, 0x14141A)),
+            initials.c_str());
         ImGui::PopFont();
     }
 
@@ -199,7 +202,8 @@ namespace launcher_ui
         {
             const bool running = !m_session.Running().empty();
             for (const profiles::Profile& profile : m_profiles.profiles)
-                if (ui::MenuItem((ProfileName(profile) + "##" + profile.id).c_str(), { ui::Icon::None, profile.id == m_profiles.active, false, running }))
+                if (ui::MenuItem((ProfileName(profile) + "##" + profile.id).c_str(),
+                        { ui::Icon::None, profile.id == m_profiles.active, false, running }))
                     SwitchProfile(profile.id);
             if (running)
                 ui::MenuItem(Tr("Quit the game to change profile"), { ui::Icon::None, false, false, true });
@@ -229,7 +233,8 @@ namespace launcher_ui
                 if (stbi_uc* pixels = stbi_load(from.c_str(), &w, &h, &channels, 4))
                 {
                     image.width = w, image.height = h;
-                    image.rgba.assign(reinterpret_cast<const uint32_t*>(pixels), reinterpret_cast<const uint32_t*>(pixels) + size_t(w) * size_t(h));
+                    image.rgba.assign(reinterpret_cast<const uint32_t*>(pixels),
+                        reinterpret_cast<const uint32_t*>(pixels) + size_t(w) * size_t(h));
                     stbi_image_free(pixels);
                 }
             }
@@ -239,7 +244,8 @@ namespace launcher_ui
             collection::Image square{ side, side, std::vector<uint32_t>(size_t(side) * size_t(side)) };
             const int x0 = (image.width - side) / 2, y0 = (image.height - side) / 2;
             for (int y = 0; y < side; y++)
-                std::copy_n(image.rgba.begin() + size_t(y0 + y) * image.width + x0, side, square.rgba.begin() + size_t(y) * side);
+                std::copy_n(image.rgba.begin() + size_t(y0 + y) * image.width + x0, side,
+                    square.rgba.begin() + size_t(y) * side);
             std::error_code error;
             std::filesystem::create_directories(to.parent_path(), error);
             return collection::SavePng(collection::Resize(square, 256, 256), datadir::Text(to));
@@ -248,18 +254,26 @@ namespace launcher_ui
         std::string ChoosePicture(SDL_Window* window)
         {
             static const SDL_DialogFileFilter filters[] = { { "Image (PNG, JPEG)", "png;jpg;jpeg" } };
-            struct Result { std::atomic<bool> done{ false }; std::string path; };
+            struct Result
+            {
+                std::atomic<bool> done{ false };
+                std::string path;
+            };
             Result result;
             SDL_PropertiesID properties = SDL_CreateProperties();
-            SDL_SetPointerProperty(properties, SDL_PROP_FILE_DIALOG_FILTERS_POINTER, const_cast<SDL_DialogFileFilter*>(filters));
+            SDL_SetPointerProperty(
+                properties, SDL_PROP_FILE_DIALOG_FILTERS_POINTER, const_cast<SDL_DialogFileFilter*>(filters));
             SDL_SetNumberProperty(properties, SDL_PROP_FILE_DIALOG_NFILTERS_NUMBER, 1);
             SDL_SetPointerProperty(properties, SDL_PROP_FILE_DIALOG_WINDOW_POINTER, window);
-            SDL_ShowFileDialogWithProperties(SDL_FILEDIALOG_OPENFILE, [](void* userdata, const char* const* files, int) {
-                auto* r = static_cast<Result*>(userdata);
-                if (files != nullptr && files[0] != nullptr)
-                    r->path = files[0];
-                r->done = true;
-            }, &result, properties);
+            SDL_ShowFileDialogWithProperties(
+                SDL_FILEDIALOG_OPENFILE,
+                [](void* userdata, const char* const* files, int) {
+                    auto* r = static_cast<Result*>(userdata);
+                    if (files != nullptr && files[0] != nullptr)
+                        r->path = files[0];
+                    r->done = true;
+                },
+                &result, properties);
             SDL_DestroyProperties(properties);
             while (!result.done)
             {
@@ -292,7 +306,8 @@ namespace launcher_ui
             return;
         const profiles::Profile* existing = m_profiles.Find(editor.id);
         bool open = true;
-        if (!ui::BeginModal("##profileeditor", existing != nullptr ? Tr("Edit profile") : Tr("New profile"), &open, ui::ModalSize::Medium))
+        if (!ui::BeginModal("##profileeditor", existing != nullptr ? Tr("Edit profile") : Tr("New profile"), &open,
+                ui::ModalSize::Medium))
         {
             editor.open = open;
             return;
@@ -314,8 +329,9 @@ namespace launcher_ui
             if (found == m_avatars.end())
                 found = m_avatars.emplace(editor.picture, LoadArt(m_renderer, editor.picture, false)).first;
             if (found->second)
-                draw->AddImageRounded(ImTextureRef(ImTextureID(found->second.texture)), ImVec2(center.x - big / 2, center.y - big / 2),
-                    ImVec2(center.x + big / 2, center.y + big / 2), found->second.uv0, found->second.uv1, IM_COL32_WHITE, big / 2);
+                draw->AddImageRounded(ImTextureRef(ImTextureID(found->second.texture)),
+                    ImVec2(center.x - big / 2, center.y - big / 2), ImVec2(center.x + big / 2, center.y + big / 2),
+                    found->second.uv0, found->second.uv1, IM_COL32_WHITE, big / 2);
         }
         else
             DrawAvatar(draw, center, big / 2, preview);
@@ -363,11 +379,13 @@ namespace launcher_ui
         ImGui::EndGroup();
         ImGui::SetCursorScreenPos(ImVec2(at.x, std::max(ImGui::GetCursorScreenPos().y, at.y + big + 8) + ui::space::M));
         const bool named = !preview.name.empty();
-        const ui::ModalResult result = ui::ModalActions(&open, named ? (existing != nullptr ? Tr("Save") : Tr("Create the profile")) : nullptr, Tr("Cancel"));
+        const ui::ModalResult result = ui::ModalActions(
+            &open, named ? (existing != nullptr ? Tr("Save") : Tr("Create the profile")) : nullptr, Tr("Cancel"));
         ui::EndModal();
         if (result == ui::ModalResult::Confirm && named)
         {
-            profiles::Profile* profile = existing != nullptr ? m_profiles.Find(editor.id) : &profiles::Add(m_profiles, preview.name, editor.color);
+            profiles::Profile* profile = existing != nullptr ? m_profiles.Find(editor.id)
+                                                             : &profiles::Add(m_profiles, preview.name, editor.color);
             profile->name = preview.name;
             profile->color = editor.color;
             std::error_code error;
@@ -406,13 +424,18 @@ namespace launcher_ui
                 const ImVec2 at = ImGui::GetCursorScreenPos();
                 const float avatar = 40;
                 ImGui::Dummy(ImVec2(avatar, avatar));
-                DrawAvatar(ImGui::GetWindowDrawList(), ImVec2(at.x + avatar / 2, at.y + avatar / 2), avatar / 2, profile);
+                DrawAvatar(
+                    ImGui::GetWindowDrawList(), ImVec2(at.x + avatar / 2, at.y + avatar / 2), avatar / 2, profile);
                 ImGui::SameLine(0, ui::space::M);
                 ImGui::BeginGroup();
                 const bool active = profile.id == m_profiles.active;
-                ui::Text(ui::TextStyle::Body, (active ? Tf("{} (active)", ProfileName(profile)) : ProfileName(profile)).c_str(), ui::color::Ink, 0, true);
+                ui::Text(ui::TextStyle::Body,
+                    (active ? Tf("{} (active)", ProfileName(profile)) : ProfileName(profile)).c_str(), ui::color::Ink,
+                    0, true);
                 const GameInfo* last = profile.lastGame.empty() ? nullptr : FindGame(profile.lastGame);
-                ui::Text(ui::TextStyle::Caption, last != nullptr ? Tf("Last played: {}", GameName(last->id, GameNameForm::Short)).c_str() : Tr("Not played yet"),
+                ui::Text(ui::TextStyle::Caption,
+                    last != nullptr ? Tf("Last played: {}", GameName(last->id, GameNameForm::Short)).c_str()
+                                    : Tr("Not played yet"),
                     ui::color::InkSoft);
                 ImGui::EndGroup();
                 ImGui::SameLine();
@@ -436,14 +459,16 @@ namespace launcher_ui
         {
             bool open = true;
             const std::string body = Tf("{}'s Toy Box, saves and keys go to the profiles' trash.", ProfileName(*gone));
-            const ui::ModalResult result = ui::ConfirmDialog("##removeprofile", Tf("Remove {}?", ProfileName(*gone)).c_str(), body.c_str(),
-                Tr("Remove"), Tr("Cancel"), &open, ui::ModalKind::Danger);
+            const ui::ModalResult result =
+                ui::ConfirmDialog("##removeprofile", Tf("Remove {}?", ProfileName(*gone)).c_str(), body.c_str(),
+                    Tr("Remove"), Tr("Cancel"), &open, ui::ModalKind::Danger);
             if (result == ui::ModalResult::Confirm)
             {
                 const std::string id = m_profileToRemove;
                 const bool wasActive = id == m_profiles.active;
                 if (wasActive)
-                    SwitchProfile(m_profiles.profiles.front().id == id ? m_profiles.profiles[1].id : m_profiles.profiles.front().id);
+                    SwitchProfile(m_profiles.profiles.front().id == id ? m_profiles.profiles[1].id
+                                                                       : m_profiles.profiles.front().id);
                 if (!profiles::Remove(m_profiles, id, profiles::Folder() / ".trash") || !profiles::Save(m_profiles))
                     Toast(Tr("Couldn't remove the profile"), ui::ToastKind::Error);
             }
@@ -486,9 +511,7 @@ namespace launcher_ui
             m_tab = SettingsTab::Profiles;
             m_testShot = "profiles-05-settings";
             break;
-        default:
-            m_running = false;
-            return;
+        default: m_running = false; return;
         }
         m_testAt = now + 500;
     }

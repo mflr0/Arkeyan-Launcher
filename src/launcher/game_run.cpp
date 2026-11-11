@@ -63,16 +63,18 @@ namespace
 
     // Reads the process's output until it ends, handing every chunk to `sink`; returns the exit code (-1 if unknown).
     // `timeoutMs` > 0 kills it after that long (the exit code is then -1 and `timedOut` is set).
-    template<class Sink>
+    template <class Sink>
     int Drain(SDL_Process* process, Sink&& sink, uint32_t timeoutMs, bool* timedOut)
     {
-        SDL_IOStream* output = static_cast<SDL_IOStream*>(SDL_GetPointerProperty(SDL_GetProcessProperties(process), SDL_PROP_PROCESS_STDOUT_POINTER, nullptr));
+        SDL_IOStream* output = static_cast<SDL_IOStream*>(
+            SDL_GetPointerProperty(SDL_GetProcessProperties(process), SDL_PROP_PROCESS_STDOUT_POINTER, nullptr));
         int exitCode = -1;
         bool exited = false;
         uint64_t start = SDL_GetTicks(), exitedAt = 0;
 #if defined(_WIN32)
         // SDL doesn't report the exit code of a background process: read it from a handle of our own.
-        HANDLE handle = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, DWORD(SDL_GetNumberProperty(SDL_GetProcessProperties(process), SDL_PROP_PROCESS_PID_NUMBER, 0)));
+        HANDLE handle = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE,
+            DWORD(SDL_GetNumberProperty(SDL_GetProcessProperties(process), SDL_PROP_PROCESS_PID_NUMBER, 0)));
 #endif
         char buffer[8192];
         for (;;)
@@ -97,7 +99,8 @@ namespace
                 sink(buffer, read);
                 continue;
             }
-            if (exited && (output == nullptr || SDL_GetIOStatus(output) == SDL_IO_STATUS_EOF || SDL_GetIOStatus(output) == SDL_IO_STATUS_ERROR))
+            if (exited && (output == nullptr || SDL_GetIOStatus(output) == SDL_IO_STATUS_EOF ||
+                              SDL_GetIOStatus(output) == SDL_IO_STATUS_ERROR))
                 break;
             SDL_Delay(15);
         }
@@ -122,7 +125,10 @@ namespace
         size_t i = line.find('{');
         if (i == std::string::npos)
             return false;
-        auto skip = [&] { while (i < line.size() && (line[i] == ' ' || line[i] == '\t' || line[i] == '\r')) i++; };
+        auto skip = [&] {
+            while (i < line.size() && (line[i] == ' ' || line[i] == '\t' || line[i] == '\r'))
+                i++;
+        };
         auto string = [&](std::string& out) {
             if (i >= line.size() || line[i] != '"')
                 return false;
@@ -217,7 +223,8 @@ std::filesystem::path RuntimeLogFolder()
     return GameInstallFolder({});
 }
 
-GameRunResult RunGame(const std::string& runtime, const std::string& iso, const std::vector<std::string>& extraArguments)
+GameRunResult RunGame(
+    const std::string& runtime, const std::string& iso, const std::vector<std::string>& extraArguments)
 {
     GameRunResult result;
     std::filesystem::path folder = GameLogFolder();
@@ -243,13 +250,20 @@ GameRunResult RunGame(const std::string& runtime, const std::string& iso, const 
     result.started = true;
     std::ofstream log(capture, std::ios::binary | std::ios::trunc);
     log << "# " << runtime << " " << iso << "\n";
-    result.exitCode = Drain(process, [&](const char* data, size_t size) { log.write(data, std::streamsize(size)); log.flush(); }, 0, nullptr);
+    result.exitCode = Drain(
+        process,
+        [&](const char* data, size_t size) {
+            log.write(data, std::streamsize(size));
+            log.flush();
+        },
+        0, nullptr);
     log << "\n# exit code " << result.exitCode << "\n";
     SDL_DestroyProcess(process);
     return result;
 }
 
-std::string GameLanguageToPass(std::string saved, const std::vector<std::string>& held, bool firstHeld, std::string_view launcherLanguage)
+std::string GameLanguageToPass(
+    std::string saved, const std::vector<std::string>& held, bool firstHeld, std::string_view launcherLanguage)
 {
     if (saved.empty() && std::find(held.begin(), held.end(), launcherLanguage) != held.end())
         saved = std::string(launcherLanguage);
@@ -258,7 +272,8 @@ std::string GameLanguageToPass(std::string saved, const std::vector<std::string>
     return firstHeld ? held.front() : std::string();
 }
 
-GameLaunch PrepareGameLaunch(const GameInfo& game, LauncherConfig& config, const std::string& configPath, const std::string& installed)
+GameLaunch PrepareGameLaunch(
+    const GameInfo& game, LauncherConfig& config, const std::string& configPath, const std::string& installed)
 {
     GameLaunch launch;
     launch.runtime = FindRuntime(game, config, true);
@@ -266,7 +281,8 @@ GameLaunch PrepareGameLaunch(const GameInfo& game, LauncherConfig& config, const
         launch.runtime = !installed.empty() ? installed : FindRuntime(game, config);
     if (launch.runtime.empty())
     {
-        launch.error = Tf("The game ({}) wasn't found next to Arkeyan Launcher.\n\nPut it in the same folder.", game.runtime);
+        launch.error =
+            Tf("The game ({}) wasn't found next to Arkeyan Launcher.\n\nPut it in the same folder.", game.runtime);
         return launch;
     }
     // The video settings of this game are what the runtime reads from [video] (game_settings.h), and its keys from [input].
@@ -299,8 +315,10 @@ GameLaunch PrepareGameLaunch(const GameInfo& game, LauncherConfig& config, const
     // follow the text, which is what the Language tab shows then. Nothing known about the disc: passed as saved.
     // Nothing chosen: the launcher's own language when the disc holds it (the Language tab shows that too), else the game's.
     const art::DiscLanguages onDisc = StoredDiscLanguages(config, game.id);
-    auto passLanguage = [&](const char* variable, const char* key, const std::vector<std::string>& held, bool firstHeld) {
-        if (std::string value = GameLanguageToPass(setting(game.id, key), held, firstHeld, i18n::Current()); !value.empty())
+    auto passLanguage = [&](const char* variable, const char* key, const std::vector<std::string>& held,
+                            bool firstHeld) {
+        if (std::string value = GameLanguageToPass(setting(game.id, key), held, firstHeld, i18n::Current());
+            !value.empty())
             launch.variables.emplace_back(variable, value);
     };
     passLanguage("SKY_LANGUAGE", "language", onDisc.text, true);
@@ -323,10 +341,13 @@ GameSession::GameSession(std::vector<std::string> games, Marker marker, WindowCo
 {
     if (!m_marker)
         m_marker = [](const std::string& game) { return GameIsRunning(FoldersOf(game)); };
-    if (!m_windows.available) m_windows.available = game_window::Available;
-    if (!m_windows.show) m_windows.show = game_window::Show;
+    if (!m_windows.available)
+        m_windows.available = game_window::Available;
+    if (!m_windows.show)
+        m_windows.show = game_window::Show;
 #if defined(_WIN32)
-    if (!m_windows.close) m_windows.close = game_window::Close;
+    if (!m_windows.close)
+        m_windows.close = game_window::Close;
 #endif
 }
 
@@ -425,21 +446,27 @@ bool GameSession::Spawn(const std::string& game, const GameLaunch& launch, const
     m_forceAt = 0;
 #if defined(_WIN32)
     // SDL doesn't report the exit code of a background process: read it from a handle of our own.
-    m_handle = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION | SYNCHRONIZE, FALSE, DWORD(SDL_GetNumberProperty(SDL_GetProcessProperties(process), SDL_PROP_PROCESS_PID_NUMBER, 0)));
+    m_handle = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION | SYNCHRONIZE, FALSE,
+        DWORD(SDL_GetNumberProperty(SDL_GetProcessProperties(process), SDL_PROP_PROCESS_PID_NUMBER, 0)));
 #endif
-    fprintf(stderr, "launcher: %s started (process %lld)\n", game.c_str(), (long long)SDL_GetNumberProperty(SDL_GetProcessProperties(process), SDL_PROP_PROCESS_PID_NUMBER, 0));
+    fprintf(stderr, "launcher: %s started (process %lld)\n", game.c_str(),
+        (long long)SDL_GetNumberProperty(SDL_GetProcessProperties(process), SDL_PROP_PROCESS_PID_NUMBER, 0));
     return true;
 }
 
 uint32_t GameSession::Pid() const
 {
-    return m_process == nullptr ? 0 : uint32_t(SDL_GetNumberProperty(SDL_GetProcessProperties(m_process), SDL_PROP_PROCESS_PID_NUMBER, 0));
+    return m_process == nullptr
+               ? 0
+               : uint32_t(SDL_GetNumberProperty(SDL_GetProcessProperties(m_process), SDL_PROP_PROCESS_PID_NUMBER, 0));
 }
 
 bool GameSession::Stop(uint64_t nowMs)
 {
-    if (!Ours() || Pid() == 0) return false;
-    if (m_stopping) return true; // repeated presses never postpone the timeout
+    if (!Ours() || Pid() == 0)
+        return false;
+    if (m_stopping)
+        return true; // repeated presses never postpone the timeout
     if (m_windows.close)
         m_windows.close(Pid()); // WM_CLOSE; a missing or unresponsive window still gets the timeout
     else
@@ -449,15 +476,9 @@ bool GameSession::Stop(uint64_t nowMs)
     return true;
 }
 
-bool GameSession::CanShow() const
-{
-    return Ours() && Pid() != 0 && !m_stopping && m_windows.available(Pid());
-}
+bool GameSession::CanShow() const { return Ours() && Pid() != 0 && !m_stopping && m_windows.available(Pid()); }
 
-bool GameSession::Show()
-{
-    return CanShow() && m_windows.show(Pid());
-}
+bool GameSession::Show() { return CanShow() && m_windows.show(Pid()); }
 
 std::optional<GameSession::Ended> GameSession::Poll(uint64_t nowMs)
 {
@@ -557,7 +578,8 @@ namespace
     }
 }
 
-GameLog NewestGameLog(const std::filesystem::path& capture, const std::vector<std::pair<std::string, std::filesystem::path>>& own)
+GameLog NewestGameLog(
+    const std::filesystem::path& capture, const std::vector<std::pair<std::string, std::filesystem::path>>& own)
 {
     GameLog newest;
     for (const auto& [game, file] : own)
@@ -580,7 +602,8 @@ GameLog LastGameLog()
         own.emplace_back(std::string(ActiveGame()), runtime_names::ReadLog(Path(override)));
     else
         for (const GameNames& names : g_gameNames)
-            own.emplace_back(names.id, runtime_names::ReadLog(LauncherDataFolder() / datadir::GameFolderName(names.id)));
+            own.emplace_back(
+                names.id, runtime_names::ReadLog(LauncherDataFolder() / datadir::GameFolderName(names.id)));
     return NewestGameLog(GameLogFolder() / CaptureLogName, own);
 }
 
@@ -596,7 +619,8 @@ std::string GameLogHeading(const GameLog& log)
     if (known)
         std::strftime(when, sizeof(when), "%Y-%m-%d %H:%M:%S", &local);
     const char* name = GameName(log.game, GameNameForm::Short);
-    return fmt::format("{}, last written {} (local time), {}", name != nullptr ? name : "unknown game", when, log.file.filename().string());
+    return fmt::format("{}, last written {} (local time), {}", name != nullptr ? name : "unknown game", when,
+        log.file.filename().string());
 }
 
 std::string GameLogText(size_t maxBytes)
@@ -636,11 +660,13 @@ PortalProbeResult ParsePortalProbe(const std::string& output)
                 if (get("transport") == "usb" && why.find("libusb") != std::string::npos)
                 {
 #ifdef __linux__
-                    result.notes.push_back(Tr("Xbox portals need libusb-1.0: install your system's libusb-1.0 package, then test again."));
+                    result.notes.push_back(
+                        Tr("Xbox portals need libusb-1.0: install your system's libusb-1.0 package, then test again."));
 #endif
                 }
                 else
-                    result.notes.push_back(Tf("{} can't be used: {}", get("transport") == "usb" ? Tr("USB (Xbox) portals") : Tr("HID portals"), why));
+                    result.notes.push_back(Tf("{} can't be used: {}",
+                        get("transport") == "usb" ? Tr("USB (Xbox) portals") : Tr("HID portals"), why));
             }
             else if (!get("note").empty())
                 result.notes.push_back(get("note")); // what the system has that may be a portal (Windows)
@@ -648,7 +674,8 @@ PortalProbeResult ParsePortalProbe(const std::string& output)
                 result.ran = true;
             else if (!get("kind").empty())
             {
-                PortalProbeEntry entry{ get("kind"), get("vid"), get("pid"), get("product"), get("opened") == "true", get("status") };
+                PortalProbeEntry entry{ get("kind"), get("vid"), get("pid"), get("product"), get("opened") == "true",
+                    get("status") };
                 entry.id = get("id");
                 entry.model = get("model");
                 entry.verdict = get("verdict");
@@ -707,7 +734,9 @@ std::string PortalStatusText(const PortalProbeEntry& entry)
         if (!why.starts_with(what))
             return std::nullopt;
         size_t open = why.find('(', strlen(what)), close = why.rfind(')');
-        return open != std::string::npos && close != std::string::npos && close > open ? why.substr(open + 1, close - open - 1) : std::string();
+        return open != std::string::npos && close != std::string::npos && close > open
+                   ? why.substr(open + 1, close - open - 1)
+                   : std::string();
     };
     if (why.find("udev rule") != std::string::npos)
         return Tr("Linux needs the portal's udev rule: see the README.");
@@ -715,20 +744,29 @@ std::string PortalStatusText(const PortalProbeEntry& entry)
     if (std::string driver, inf; DriverRemoval(why, driver, inf))
     {
         // A driver a tool such as Zadig installed (libusb0, libusbK): the way back, step by step.
-        std::string text = Tf("This portal is on the {} driver, which a tool such as Zadig installed and the game can't use. To give it back to Windows:", driver);
-        text += "\n" + std::string(Tr("1. In Device Manager, right-click the portal, choose Uninstall device, tick \"Attempt to remove the driver for this device\", then Uninstall."));
+        std::string text = Tf("This portal is on the {} driver, which a tool such as Zadig installed and the game "
+                              "can't use. To give it back to Windows:",
+            driver);
+        text += "\n" + std::string(Tr("1. In Device Manager, right-click the portal, choose Uninstall device, tick "
+                                      "\"Attempt to remove the driver for this device\", then Uninstall."));
         text += "\n" + std::string(Tr("2. Unplug the portal and plug it in again."));
-        text += "\n" + Tf("3. If it's back on {}: open a Command Prompt as administrator, run these two commands, then plug the portal in again:", driver);
+        text += "\n" + Tf("3. If it's back on {}: open a Command Prompt as administrator, run these two commands, then "
+                          "plug the portal in again:",
+                           driver);
         text += "\n    pnputil /enum-drivers\n    pnputil /delete-driver " + inf + " /uninstall /force";
         if (!inf.starts_with("oem") || inf == "oemNN.inf")
-            text += "\n" + Tf("In the first command's list, find the {} driver's oemNN.inf and put its name in the second.", driver);
+            text +=
+                "\n" + Tf("In the first command's list, find the {} driver's oemNN.inf and put its name in the second.",
+                           driver);
         return text + "\n" + Tr("Or choose WinUSB for it in Zadig: the game uses it there.");
     }
     if (why.find("not Windows' own HID driver") != std::string::npos) // runtimes before 0.9.6
-        return Tr("This portal is on another driver (WinUSB, libusbK...). In Device Manager, uninstall the device and its driver, then plug the portal in again.");
+        return Tr("This portal is on another driver (WinUSB, libusbK...). In Device Manager, uninstall the device and "
+                  "its driver, then plug the portal in again.");
     if (why.find("which Windows does not have") != std::string::npos) // runtimes before 0.9.6
         return Tr("Xbox portals need libusb-1.0, which Windows doesn't have.");
-    if (why.find("WinUSB, libusbK or libusb0 devices only") != std::string::npos || why.find("only libusb-1.0.dll opens") != std::string::npos) // before 0.9.6
+    if (why.find("WinUSB, libusbK or libusb0 devices only") != std::string::npos ||
+        why.find("only libusb-1.0.dll opens") != std::string::npos) // before 0.9.6
         return Tr("This Xbox portal's driver can't be used: it needs WinUSB.");
     if (why.find("WinUsb Device") != std::string::npos)
         return Tr("This Xbox 360 portal needs Windows' WinUSB driver, set once: see the README.");
@@ -767,10 +805,13 @@ std::string PortalVerdict(const std::string& mode, const PortalProbeResult& resu
     if (answered)
         return Tr("Real portal: the game will use it.");
     if (result.portals.empty())
-        return mode == "real" ? Tr("No portal found: the game will wait for one.") : Tr("No portal found: using the virtual portal.");
+        return mode == "real" ? Tr("No portal found: the game will wait for one.")
+                              : Tr("No portal found: using the virtual portal.");
     if (opened)
-        return mode == "real" ? Tr("The portal doesn't answer: the game will wait.") : Tr("The portal doesn't answer: using the virtual portal.");
-    return mode == "real" ? Tr("The portal can't be opened: the game will wait.") : Tr("The portal can't be opened: using the virtual portal.");
+        return mode == "real" ? Tr("The portal doesn't answer: the game will wait.")
+                              : Tr("The portal doesn't answer: using the virtual portal.");
+    return mode == "real" ? Tr("The portal can't be opened: the game will wait.")
+                          : Tr("The portal can't be opened: using the virtual portal.");
 }
 
 std::string PortalProbeText(const std::string& mode, const PortalProbeResult& result)
@@ -782,9 +823,11 @@ std::string PortalProbeText(const std::string& mode, const PortalProbeResult& re
         text += "no portal found\n";
     for (const PortalProbeEntry& entry : result.portals)
     {
-        text += fmt::format("{} {}:{} \"{}\": {}, {}\n", entry.kind, entry.vid, entry.pid, entry.product, entry.opened ? "opened" : "not opened", entry.status);
+        text += fmt::format("{} {}:{} \"{}\": {}, {}\n", entry.kind, entry.vid, entry.pid, entry.product,
+            entry.opened ? "opened" : "not opened", entry.status);
         if (!entry.id.empty())
-            text += fmt::format("  model: {} {}; Spyro's Adventure: {} ({})\n", entry.id, entry.model, entry.verdict, entry.verdictReason);
+            text += fmt::format("  model: {} {}; Spyro's Adventure: {} ({})\n", entry.id, entry.model, entry.verdict,
+                entry.verdictReason);
         // The runtime's details are "; "-separated: the device's interfaces and driver, then each step and packet.
         for (size_t at = 0; at < entry.details.size();)
         {
@@ -821,8 +864,8 @@ PortalProbeResult RunPortalProbe(const std::string& runtime, uint32_t timeoutMs)
     SDL_DestroyProcess(process);
     result = ParsePortalProbe(output);
     if (!result.ran)
-        result.error = timedOut ? Tr("The portal test took too long and was stopped.")
-            : code == 2 ? Tr("This version of the game doesn't have the portal test yet. Update the game.")
-                        : Tr("The game didn't finish the portal test.");
+        result.error = timedOut    ? Tr("The portal test took too long and was stopped.")
+                       : code == 2 ? Tr("This version of the game doesn't have the portal test yet. Update the game.")
+                                   : Tr("The game didn't finish the portal test.");
     return result;
 }

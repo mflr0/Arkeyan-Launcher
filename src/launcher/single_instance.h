@@ -42,7 +42,12 @@ namespace single_instance
     // What a second start asks of the running launcher: come to the front, or that and play a game as its PLAY would.
     struct Request
     {
-        enum class Kind { None, Focus, Play };
+        enum class Kind
+        {
+            None,
+            Focus,
+            Play
+        };
         Kind kind = Kind::None;
         std::string game; // Play: a game id of the game table (FindGame)
     };

@@ -33,17 +33,15 @@ namespace
     }
 
     // Alphanumeric or underscore: a name may not start or end inside one of these.
-    bool WordChar(char c)
-    {
-        return std::isalnum(static_cast<unsigned char>(c)) != 0 || c == '_';
-    }
+    bool WordChar(char c) { return std::isalnum(static_cast<unsigned char>(c)) != 0 || c == '_'; }
 
     bool MatchesAt(const std::string& text, size_t at, const std::string& needle)
     {
         if (at + needle.size() > text.size())
             return false;
         for (size_t i = 0; i < needle.size(); i++)
-            if (std::tolower(static_cast<unsigned char>(text[at + i])) != std::tolower(static_cast<unsigned char>(needle[i])))
+            if (std::tolower(static_cast<unsigned char>(text[at + i])) !=
+                std::tolower(static_cast<unsigned char>(needle[i])))
                 return false;
         return true;
     }
@@ -250,8 +248,8 @@ std::string launcher_report::Redact(const std::string& text, const Identity& ide
     if (!identity.userName.empty())
         AddRule(rules, identity.userName, "<user>");
     // The longest match first, so a full path is replaced before the name it ends with.
-    std::stable_sort(rules.begin(), rules.end(),
-        [](const Rule& a, const Rule& b) { return a.needle.size() > b.needle.size(); });
+    std::stable_sort(
+        rules.begin(), rules.end(), [](const Rule& a, const Rule& b) { return a.needle.size() > b.needle.size(); });
 
     std::string out;
     out.reserve(text.size());
@@ -296,8 +294,8 @@ launcher_report::Identity launcher_report::CurrentIdentity(const std::string& is
     return identity;
 }
 
-launcher_report::Versions launcher_report::ReadVersions(const std::string& launcherVersion, const std::string& kitVersion,
-    const fs::path& runtimeFolder)
+launcher_report::Versions launcher_report::ReadVersions(
+    const std::string& launcherVersion, const std::string& kitVersion, const fs::path& runtimeFolder)
 {
     Versions versions;
     versions.launcher = launcherVersion;
@@ -339,25 +337,30 @@ std::string launcher_report::BuildReport(const Sources& sources)
         crashFrom = "the previous run";
     }
     report += crash.empty() ? "Last crash: none in the logs\n\n" : "Last crash: yes (" + crashFrom + "), see below\n\n";
-    report += crash.empty() ? "===== last crash =====\n(no crash in the logs)\n\n" : "===== last crash (" + crashFrom + ") =====\n" + crash + "\n\n";
+    report += crash.empty() ? "===== last crash =====\n(no crash in the logs)\n\n"
+                            : "===== last crash (" + crashFrom + ") =====\n" + crash + "\n\n";
 
     Section(report, "launcher.ini", sources.settingsFile);
     Section(report, "migration.log", sources.logFolder / "migration.log");
     // One copy of the last run (the game's own log and the launcher's capture hold the same lines), then the run before.
-    const GameLog lastRun = !sources.lastRun.file.empty() ? sources.lastRun
-        : NewestGameLog(sources.logFolder / CaptureLogName, { { std::string(), runtime_names::ReadLog(sources.runtimeFolder) } });
+    const GameLog lastRun = !sources.lastRun.file.empty()
+                                ? sources.lastRun
+                                : NewestGameLog(sources.logFolder / CaptureLogName,
+                                      { { std::string(), runtime_names::ReadLog(sources.runtimeFolder) } });
     if (lastRun.file.empty())
         report += "===== Game log =====\n(empty or not found)\n\n";
     else
         Section(report, "Game log: " + GameLogHeading(lastRun), lastRun.file);
-    Section(report, runtime_names::ReadLog(sources.runtimeFolder, true).filename().string(), runtime_names::ReadLog(sources.runtimeFolder, true));
+    Section(report, runtime_names::ReadLog(sources.runtimeFolder, true).filename().string(),
+        runtime_names::ReadLog(sources.runtimeFolder, true));
     Section(report, "install.log", sources.runtimeFolder / "install.log");
     Section(report, "install.prev.log", sources.runtimeFolder / "install.prev.log");
 
     // The step logs Arkeyan-Builder kept after a successful install.
     std::vector<fs::path> kept;
     std::error_code error;
-    for (fs::directory_iterator it(sources.runtimeFolder / "install-logs", error), end; !error && it != end; it.increment(error))
+    for (fs::directory_iterator it(sources.runtimeFolder / "install-logs", error), end; !error && it != end;
+        it.increment(error))
         if (it->is_regular_file(error))
             kept.push_back(it->path());
     std::sort(kept.begin(), kept.end());
@@ -385,7 +388,8 @@ std::string launcher_report::CrashDetails(const std::string& log)
     return at == std::string::npos ? std::string() : log.substr(at);
 }
 
-fs::path launcher_report::SaveToFirstFolder(const std::string& text, const std::string& name, const std::vector<fs::path>& folders)
+fs::path launcher_report::SaveToFirstFolder(
+    const std::string& text, const std::string& name, const std::vector<fs::path>& folders)
 {
     for (const fs::path& folder : folders)
     {
@@ -403,7 +407,4 @@ fs::path launcher_report::SaveToFirstFolder(const std::string& text, const std::
     return {};
 }
 
-std::string launcher_report::FileName()
-{
-    return "ArkeyanLauncher-report-" + FileStamp() + ".txt";
-}
+std::string launcher_report::FileName() { return "ArkeyanLauncher-report-" + FileStamp() + ".txt"; }

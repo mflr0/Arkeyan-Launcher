@@ -37,7 +37,8 @@ namespace launcher_ui
         if (other == nullptr || m_s->disc != DiscState::Failed)
             return;
         GameSlot& target = SlotFor(*other);
-        if (target.installer.Running() || target.kitDownload.Running() || target.copyJob.Running() || target.disc == DiscState::Verifying)
+        if (target.installer.Running() || target.kitDownload.Running() || target.copyJob.Running() ||
+            target.disc == DiscState::Verifying)
         {
             Toast(Tf("{} is busy: try again when it is done", other->name), ui::ToastKind::Error);
             return;
@@ -118,7 +119,8 @@ namespace launcher_ui
         const bool canCopy = ready && !Installing();
         auto primary = [](bool disabled) {
             ui::ButtonOptions options;
-            options.kind = disabled ? ui::ButtonKind::Secondary : ui::ButtonKind::Primary; // one Primary in view: the disc's, until then
+            options.kind = disabled ? ui::ButtonKind::Secondary
+                                    : ui::ButtonKind::Primary; // one Primary in view: the disc's, until then
             options.disabled = disabled;
             return options;
         };
@@ -132,7 +134,8 @@ namespace launcher_ui
         auto showFolder = [&](const std::filesystem::path& folder) {
             ui::ButtonOptions options;
             options.icon = ui::Icon::Folder;
-            const std::string label = std::string(Tr("Show in folder")) + "##gamedata"; // the disc image's has the same words, on the same tab
+            const std::string label = std::string(Tr("Show in folder")) +
+                                      "##gamedata"; // the disc image's has the same words, on the same tab
             if (ui::Button(label.c_str(), options))
                 if (!OpenFolder(folder))
                     Toast(Tr("Couldn't open the folder"), ui::ToastKind::Error);
@@ -141,7 +144,8 @@ namespace launcher_ui
         if (m_s->copyJob.Running())
         {
             const uint64_t total = m_s->copyJob.Total();
-            note(total == 0 ? Tr("Copying...") : Tf("Copying: {} of {}", ui::FormatSize(m_s->copyJob.Bytes()), ui::FormatSize(total)));
+            note(total == 0 ? Tr("Copying...")
+                            : Tf("Copying: {} of {}", ui::FormatSize(m_s->copyJob.Bytes()), ui::FormatSize(total)));
             ui::ProgressBar(m_s->copyJob.Fraction(), -1, true);
             ImGui::Dummy(ImVec2(0, ui::space::XXS));
             if (ui::Button(Tr("Stop"), { .icon = ui::Icon::Stop }))
@@ -153,8 +157,10 @@ namespace launcher_ui
         switch (copy.state)
         {
         case gamedata::State::Complete:
-            ui::StatusPill(ui::Status::Success, (copy.files == 1 ? Tf("Copied: {}, 1 file", ui::FormatSize(copy.total))
-                                                                 : Tf("Copied: {}, {} files", ui::FormatSize(copy.total), copy.files)).c_str());
+            ui::StatusPill(ui::Status::Success,
+                (copy.files == 1 ? Tf("Copied: {}, 1 file", ui::FormatSize(copy.total))
+                                 : Tf("Copied: {}, {} files", ui::FormatSize(copy.total), copy.files))
+                    .c_str());
             ImGui::Dummy(ImVec2(0, ui::space::XXS));
             showFolder(gamedata::Folder(m_s->game.id));
             ImGui::SameLine(0, ui::space::S);
@@ -163,7 +169,8 @@ namespace launcher_ui
             note(Tr("No disc image needed."));
             break;
         case gamedata::State::Partial:
-            ui::StatusPill(ui::Status::Warning, Tf("Interrupted: {} of {} copied", ui::FormatSize(copy.present), ui::FormatSize(copy.total)).c_str());
+            ui::StatusPill(ui::Status::Warning,
+                Tf("Interrupted: {} of {} copied", ui::FormatSize(copy.present), ui::FormatSize(copy.total)).c_str());
             ImGui::Dummy(ImVec2(0, ui::space::XXS));
             if (ui::Button(Tr("Carry on copying"), primary(!canCopy)))
                 StartCopy();
@@ -190,8 +197,9 @@ namespace launcher_ui
             ImGui::SameLine(0, ui::space::S);
             showFolder(gamedata::Folder(m_s->game.id).parent_path());
             note(!ready ? Tr("Choose the disc image first.")
-                : m_s->discSize > 0 ? Tf("Copies the disc's files ({}). No image needed after.", ui::FormatSize(m_s->discSize))
-                                    : Tr("Copies the disc's files. No image needed after."));
+                 : m_s->discSize > 0
+                     ? Tf("Copies the disc's files ({}). No image needed after.", ui::FormatSize(m_s->discSize))
+                     : Tr("Copies the disc's files. No image needed after."));
             break;
         }
         if (!m_s->copyMessage.empty())
@@ -233,9 +241,13 @@ namespace launcher_ui
             m_testShot = fmt::format("{:02}-{}", m_testStep, name);
             m_testAt = now + wait;
         };
-        auto busy = [&](GameSlot& slot) { return slot.disc == DiscState::Verifying || slot.copyJob.Running() || slot.installer.Running(); };
+        auto busy = [&](GameSlot& slot) {
+            return slot.disc == DiscState::Verifying || slot.copyJob.Running() || slot.installer.Running();
+        };
         const std::string folder = datadir::Text(gamedata::Folder("ssa"));
-        const std::string giantsIso = LauncherEnv("SKY_LAUNCHER_TEST_COPY_GIANTS_ISO") != nullptr ? LauncherEnv("SKY_LAUNCHER_TEST_COPY_GIANTS_ISO") : "";
+        const std::string giantsIso = LauncherEnv("SKY_LAUNCHER_TEST_COPY_GIANTS_ISO") != nullptr
+                                          ? LauncherEnv("SKY_LAUNCHER_TEST_COPY_GIANTS_ISO")
+                                          : "";
         if (m_testBegan == 0)
             m_testBegan = now;
         if (now - m_testBegan > 120000)
@@ -256,7 +268,9 @@ namespace launcher_ui
             }
             if (busy(g))
                 return;
-            expect(g.disc == DiscState::Failed && g.check.status == GameSourceStatus::WrongGame && g.check.otherGame == "ssa", "the check names the other game");
+            expect(g.disc == DiscState::Failed && g.check.status == GameSourceStatus::WrongGame &&
+                       g.check.otherGame == "ssa",
+                "the check names the other game");
             expect(SlotStatus(&g).state == SlotState::DiscWrong, "Wrong disc");
             m_testStep++;
             break;
@@ -266,15 +280,18 @@ namespace launcher_ui
             break;
         case 2: // the button: SSA gets the disc, Giants forgets it
             UseDiscForOtherGame();
-            expect(m_s == &a && m_page == Page::Play && a.disc == DiscState::Verifying, "the window went to SSA and checks the disc");
-            expect(g.disc == DiscState::None && SettingGet(m_config, "giants", "iso").empty() && SlotStatus(&g).state == SlotState::NoDisc,
+            expect(m_s == &a && m_page == Page::Play && a.disc == DiscState::Verifying,
+                "the window went to SSA and checks the disc");
+            expect(g.disc == DiscState::None && SettingGet(m_config, "giants", "iso").empty() &&
+                       SlotStatus(&g).state == SlotState::NoDisc,
                 "Giants has no disc any more");
             m_testStep++;
             break;
         case 3:
             if (busy(a))
                 return;
-            expect(a.disc == DiscState::Ready && !a.fromCopy && SettingGet(m_config, "ssa", "iso") == m_testPath, "SSA has the disc");
+            expect(a.disc == DiscState::Ready && !a.fromCopy && SettingGet(m_config, "ssa", "iso") == m_testPath,
+                "SSA has the disc");
             expect(SlotStatus(&a).state == SlotState::ReadyToInstall, "ready to install");
             // Not enough space: said, nothing copied.
             env("SKY_LAUNCHER_COPY_FREE_BYTES", "1000");
@@ -286,7 +303,9 @@ namespace launcher_ui
             if (a.copyJob.Running())
                 return;
             env("SKY_LAUNCHER_COPY_FREE_BYTES", nullptr);
-            expect(a.copyMessage.rfind("Not enough space", 0) == 0 && a.copy.state == gamedata::State::None && !a.fromCopy, "not enough space is said");
+            expect(
+                a.copyMessage.rfind("Not enough space", 0) == 0 && a.copy.state == gamedata::State::None && !a.fromCopy,
+                "not enough space is said");
             expect(!std::filesystem::exists(std::filesystem::path(folder) / "default.xex"), "nothing was copied");
             m_testStep++;
             break;
@@ -298,12 +317,12 @@ namespace launcher_ui
         case 6:
             if (a.copyJob.Running())
                 return;
-            expect(a.copy.state == gamedata::State::Partial && !a.fromCopy && SlotStatus(&a).state == SlotState::ReadyToInstall, "interrupted: partial, the disc image still plays");
+            expect(a.copy.state == gamedata::State::Partial && !a.fromCopy &&
+                       SlotStatus(&a).state == SlotState::ReadyToInstall,
+                "interrupted: partial, the disc image still plays");
             m_testStep++;
             break;
-        case 7:
-            shoot("interrupted", GameTab::Disc);
-            break;
+        case 7: shoot("interrupted", GameTab::Disc); break;
         case 8: // carried on
             StartCopy();
             m_testStep++;
@@ -311,13 +330,14 @@ namespace launcher_ui
         case 9:
             if (a.copyJob.Running() || a.disc == DiscState::Verifying)
                 return;
-            expect(a.copy.state == gamedata::State::Complete && a.fromCopy && a.discPath == folder && a.disc == DiscState::Ready, "copied: the game plays from it");
-            expect(a.discSize == a.copy.total && a.check.xexSha256 == ssa.releases[0].defaultXexSha256, "verified from the copy");
+            expect(a.copy.state == gamedata::State::Complete && a.fromCopy && a.discPath == folder &&
+                       a.disc == DiscState::Ready,
+                "copied: the game plays from it");
+            expect(a.discSize == a.copy.total && a.check.xexSha256 == ssa.releases[0].defaultXexSha256,
+                "verified from the copy");
             m_testStep++;
             break;
-        case 10:
-            shoot("copied", GameTab::Disc);
-            break;
+        case 10: shoot("copied", GameTab::Disc); break;
         case 11: // no disc image at all (a launcher start with the image gone): still ready, from the copy
             m_config["ssa"].erase("iso");
             a.started = false;
@@ -328,7 +348,8 @@ namespace launcher_ui
         case 12:
             if (busy(a))
                 return;
-            expect(a.disc == DiscState::Ready && a.fromCopy && SettingGet(m_config, "ssa", "iso").empty(), "ready with no disc image");
+            expect(a.disc == DiscState::Ready && a.fromCopy && SettingGet(m_config, "ssa", "iso").empty(),
+                "ready with no disc image");
             expect(SlotStatus(&a).state == SlotState::ReadyToInstall, "to install");
             StartInstall(); // the build reads the copy
             expect(Installing(), "installing from the copy");
@@ -337,11 +358,14 @@ namespace launcher_ui
         case 13:
             if (AnyInstalling() || a.installView)
                 return;
-            expect(!a.installed.runtime.empty() && SlotStatus(&a).state == SlotState::Ready && std::string(SlotStatus(&a).text) == "Ready to play" &&
-                std::string(SlotStatus(&a).button) == "PLAY", "Ready to play without the disc image");
+            expect(!a.installed.runtime.empty() && SlotStatus(&a).state == SlotState::Ready &&
+                       std::string(SlotStatus(&a).text) == "Ready to play" &&
+                       std::string(SlotStatus(&a).button) == "PLAY",
+                "Ready to play without the disc image");
             m_page = Page::Play;
             PlayNow();
-            expect(!m_running && a.chosen == folder && a.chosenRuntime == a.installed.runtime, "PLAY runs the game on the copy");
+            expect(!m_running && a.chosen == folder && a.chosenRuntime == a.installed.runtime,
+                "PLAY runs the game on the copy");
             m_running = true;
             m_testStep++;
             break;
@@ -352,8 +376,11 @@ namespace launcher_ui
         case 15: // a file goes missing: PLAY notices, and with no disc image the state says so
             std::filesystem::remove(std::filesystem::path(folder) / "default.xex");
             PlayNow();
-            expect(m_running && a.disc == DiscState::Failed && !a.fromCopy && a.copy.state == gamedata::State::Damaged, "damaged copy, no disc image");
-            expect(SlotStatus(&a).state == SlotState::DataDamaged && std::string(SlotStatus(&a).text) == "Game data damaged", "Game data damaged");
+            expect(m_running && a.disc == DiscState::Failed && !a.fromCopy && a.copy.state == gamedata::State::Damaged,
+                "damaged copy, no disc image");
+            expect(SlotStatus(&a).state == SlotState::DataDamaged &&
+                       std::string(SlotStatus(&a).text) == "Game data damaged",
+                "Game data damaged");
             m_testStep++;
             break;
         case 16:
@@ -369,12 +396,12 @@ namespace launcher_ui
         case 18:
             if (busy(a))
                 return;
-            expect(a.disc == DiscState::Ready && !a.fromCopy && a.discPath == m_testPath && SlotStatus(&a).text == "Ready to play", "falls back to the disc image");
+            expect(a.disc == DiscState::Ready && !a.fromCopy && a.discPath == m_testPath &&
+                       SlotStatus(&a).text == "Ready to play",
+                "falls back to the disc image");
             m_testStep++;
             break;
-        case 19:
-            shoot("damaged-fallback", GameTab::Disc);
-            break;
+        case 19: shoot("damaged-fallback", GameTab::Disc); break;
         case 20: // repaired
             StartCopy();
             m_testStep++;
@@ -390,7 +417,8 @@ namespace launcher_ui
             if (busy(a))
                 return;
             expect(a.copy.state == gamedata::State::None && !a.fromCopy && !std::filesystem::exists(folder), "removed");
-            expect(a.disc == DiscState::Ready && a.discPath == m_testPath && SlotStatus(&a).text == "Ready to play", "back on the disc image");
+            expect(a.disc == DiscState::Ready && a.discPath == m_testPath && SlotStatus(&a).text == "Ready to play",
+                "back on the disc image");
             m_testStep++;
             break;
         case 23: // Giants: its own folder and copy
@@ -415,16 +443,16 @@ namespace launcher_ui
         {
             if (busy(g))
                 return;
-            expect(g.copy.state == gamedata::State::Complete && g.fromCopy && g.discPath == datadir::Text(gamedata::Folder("giants")), "Giants plays from its own copy");
+            expect(g.copy.state == gamedata::State::Complete && g.fromCopy &&
+                       g.discPath == datadir::Text(gamedata::Folder("giants")),
+                "Giants plays from its own copy");
             expect(a.copy.state == gamedata::State::None, "SSA's copy is its own");
             std::string error;
             gamedata::Remove(gamedata::Folder("giants"), error);
             m_testStep++;
             break;
         }
-        default:
-            m_running = false;
-            break;
+        default: m_running = false; break;
         }
     }
 }

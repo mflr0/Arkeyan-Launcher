@@ -15,9 +15,11 @@ struct GameKey
 {
     const char* action; // the runtime's name: key_<action> in [input]
     const char* label;  // English, as the game words it (translated where it is shown)
-    const char* pad;    // the Xbox 360 pad's button the key stands for (shown in brackets for the pad in use: PadButtonName)
+    const char*
+        pad;    // the Xbox 360 pad's button the key stands for (shown in brackets for the pad in use: PadButtonName)
     SDL_Scancode fallback; // the game's default key (a physical place: W is Z on an AZERTY keyboard)
-    const char* mouse = nullptr; // its mouse button once the game's mouse is on ("Mouse Left": attack 1, "Mouse Right": attack 2)
+    const char* mouse =
+        nullptr; // its mouse button once the game's mouse is on ("Mouse Left": attack 1, "Mouse Right": attack 2)
 };
 
 // The rows of a game's Keyboard tab, in display order (empty for a game this launcher does not know).
@@ -35,7 +37,14 @@ std::string KeyDisplayName(const std::string& sdlName);
 std::string CapturedKeyName(SDL_Scancode scancode);
 
 // The pad families the button names follow (the game's glyphs do the same: docs/settings.md, "Keyboard actions").
-enum class PadFamily { Xbox360, XboxOne, PlayStation, PlayStation3, Nintendo };
+enum class PadFamily
+{
+    Xbox360,
+    XboxOne,
+    PlayStation,
+    PlayStation3,
+    Nintendo
+};
 PadFamily PadFamilyOf(SDL_GamepadType type);
 // The family to name buttons for: a fixed [input] glyphs style wins (xbox360, xboxone, playstation, nintendo; "xbox"
 // keeps an Xbox One pad's names, else the 360's), else the pad's (`seen`: the chosen pad, or the last one seen).
@@ -43,7 +52,8 @@ PadFamily PadFamilyFor(std::string_view glyphs, PadFamily seen);
 // The button a key stands for, named as that family's pad prints it, in the player's language where it is a word
 // (PlayStation's shapes, the sticks, the touchpad): "A" on a 360 pad, "Cross" on a PS5, "B" on a Switch (its south).
 std::string PadButtonName(const GameKey& key, PadFamily family);
-std::string PadButtonName(std::string_view xbox360Name, PadFamily family); // the same, from the 360's name ("RB", "D-pad up")
+std::string PadButtonName(
+    std::string_view xbox360Name, PadFamily family); // the same, from the 360's name ("RB", "D-pad up")
 // True when another row of the same game has the same key.
 bool GameKeyConflict(const LauncherConfig& config, std::string_view gameId, const GameKey& key);
 // Back to the game's defaults: its copy loses every key it had.

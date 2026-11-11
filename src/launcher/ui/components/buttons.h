@@ -13,7 +13,12 @@ namespace ui
         Danger,    // deletes, resets or overwrites: always with hold, or inside a danger dialog
         Ghost,     // a quiet action in a toolbar or a row: no fill until pointed at
     };
-    enum class Size { Small, Normal, Large }; // height::Small, height::Normal, height::Large
+    enum class Size
+    {
+        Small,
+        Normal,
+        Large
+    }; // height::Small, height::Normal, height::Large
 
     struct ButtonOptions
     {
@@ -24,8 +29,8 @@ namespace ui
         float width = 0;            // 0: the label's; > 0: at least this; < 0: the available width
         bool disabled = false;
         bool loading = false;       // a spinner in place of the icon; not pressable meanwhile
-        bool hold = false;          // acts once held for a second (HoldConfirm); a timer icon and "Hold to confirm" say so
-        bool overArt = false;       // on the game's art or the band: the band's darker greys (Secondary and Ghost)
+        bool hold = false; // acts once held for a second (HoldConfirm); a timer icon and "Hold to confirm" say so
+        bool overArt = false; // on the game's art or the band: the band's darker greys (Secondary and Ghost)
         const char* tooltip = nullptr; // also the hint of a hold button (default "Hold to confirm")
     };
 
@@ -40,7 +45,7 @@ namespace ui
         Icon icon = Icon::None;
         Icon trailing = Icon::None;
         const char* prefix = nullptr; // words before the icon, a dot between ("12 h 34", then "· trophy 6/38")
-        unsigned iconColor = 0;       // the icon in a state's colour (ColorOf); 0: the label's ink
+        unsigned iconColor = 0; // the icon in a state's colour (ColorOf); 0: the label's ink
         bool selected = false; // the accent fill: a pill that stands for a mode that is on
         bool disabled = false;
         bool overArt = false;
@@ -58,7 +63,7 @@ namespace ui
         bool selected = false;
         bool disabled = false;
         bool overArt = false;
-        ImTextureRef image;       // a picture in place of the icon (a brand's mark), tinted with the ink
+        ImTextureRef image; // a picture in place of the icon (a brand's mark), tinted with the ink
     };
     bool IconButton(const char* id, Icon icon, const char* tooltip, const IconButtonOptions& options = {});
 
@@ -80,18 +85,23 @@ namespace ui
     {
         const char* label = "";
         bool enabled = true;
-        float progress = -1;         // 0..1 while busy (checking the disc, installing): the percentage replaces "..."
-        bool indeterminate = false;  // busy with no known end: a sweep instead of the percentage
+        float progress = -1; // 0..1 while busy (checking the disc, installing): the percentage replaces "..."
+        bool indeterminate = false; // busy with no known end: a sweep instead of the percentage
         const LauncherTheme::GameStyle* style = nullptr; // the game's colours (StyleOf); the launcher's blue when null
         const char* gearTooltip = nullptr; // "Spyro's Adventure settings"
-        bool takeFocus = false;      // the main half takes the keyboard and pad focus this frame
-        bool showFocus = false;      // and shows its ring
-        bool separated = false;     // hero: a quiet settings button, space::S after the main action
+        bool takeFocus = false; // the main half takes the keyboard and pad focus this frame
+        bool showFocus = false; // and shows its ring
+        bool separated = false; // hero: a quiet settings button, space::S after the main action
         Icon icon = Icon::None;
-        bool danger = false;        // the running game's stop action
+        bool danger = false; // the running game's stop action
         float width = height::MainWidth;
     };
-    enum class MainActionHit { None, Main, Settings };
+    enum class MainActionHit
+    {
+        None,
+        Main,
+        Settings
+    };
     struct MainActionResult
     {
         MainActionHit hit = MainActionHit::None;

@@ -25,39 +25,50 @@ namespace game_window
 #if defined(_WIN32)
     inline HWND Find(uint32_t pid, bool visibleOnly = true)
     {
-        struct Search { DWORD pid; HWND window; bool visibleOnly; } search{ DWORD(pid), nullptr, visibleOnly };
-        EnumWindows([](HWND window, LPARAM data) -> BOOL {
-            auto& search = *reinterpret_cast<Search*>(data);
-            DWORD owner = 0;
-            GetWindowThreadProcessId(window, &owner);
-            if (owner == search.pid && (!search.visibleOnly || (IsWindowVisible(window) && GetWindow(window, GW_OWNER) == nullptr)))
-            {
-                search.window = window;
-                return FALSE;
-            }
-            return TRUE;
-        }, reinterpret_cast<LPARAM>(&search));
+        struct Search
+        {
+            DWORD pid;
+            HWND window;
+            bool visibleOnly;
+        } search{ DWORD(pid), nullptr, visibleOnly };
+        EnumWindows(
+            [](HWND window, LPARAM data) -> BOOL {
+                auto& search = *reinterpret_cast<Search*>(data);
+                DWORD owner = 0;
+                GetWindowThreadProcessId(window, &owner);
+                if (owner == search.pid &&
+                    (!search.visibleOnly || (IsWindowVisible(window) && GetWindow(window, GW_OWNER) == nullptr)))
+                {
+                    search.window = window;
+                    return FALSE;
+                }
+                return TRUE;
+            },
+            reinterpret_cast<LPARAM>(&search));
         return search.window;
     }
     inline bool Available(uint32_t pid) { return Find(pid) != nullptr; }
     inline bool Show(uint32_t pid)
     {
         HWND window = Find(pid);
-        if (window == nullptr) return false;
+        if (window == nullptr)
+            return false;
         ShowWindowAsync(window, IsIconic(window) ? SW_RESTORE : SW_SHOW);
         return SetForegroundWindow(window) != 0;
     }
     inline bool Close(uint32_t pid)
     {
         HWND window = Find(pid);
-        if (window == nullptr) window = Find(pid, false);
+        if (window == nullptr)
+            window = Find(pid, false);
         return window != nullptr && PostMessageW(window, WM_CLOSE, 0, 0) != 0;
     }
 #elif defined(__APPLE__)
     inline id Application(uint32_t pid)
     {
         return reinterpret_cast<id (*)(id, SEL, int)>(objc_msgSend)(
-            reinterpret_cast<id>(objc_getClass("NSRunningApplication")), sel_registerName("runningApplicationWithProcessIdentifier:"), int(pid));
+            reinterpret_cast<id>(objc_getClass("NSRunningApplication")),
+            sel_registerName("runningApplicationWithProcessIdentifier:"), int(pid));
     }
     inline bool Available(uint32_t pid)
     {
@@ -71,10 +82,16 @@ namespace game_window
                 auto window = static_cast<CFDictionaryRef>(CFArrayGetValueAtIndex(windows, i));
                 int owner = 0, layer = -1;
                 auto number = static_cast<CFNumberRef>(CFDictionaryGetValue(window, kCGWindowOwnerPID));
-                if (number != nullptr) CFNumberGetValue(number, kCFNumberIntType, &owner);
+                if (number != nullptr)
+                    CFNumberGetValue(number, kCFNumberIntType, &owner);
                 number = static_cast<CFNumberRef>(CFDictionaryGetValue(window, kCGWindowLayer));
-                if (number != nullptr) CFNumberGetValue(number, kCFNumberIntType, &layer);
-                if (owner == int(pid) && layer == 0) { found = true; break; }
+                if (number != nullptr)
+                    CFNumberGetValue(number, kCFNumberIntType, &layer);
+                if (owner == int(pid) && layer == 0)
+                {
+                    found = true;
+                    break;
+                }
             }
             CFRelease(windows);
         }
@@ -83,10 +100,12 @@ namespace game_window
     inline bool Show(uint32_t pid)
     {
         id app = Application(pid);
-        if (app == nil) return false;
+        if (app == nil)
+            return false;
         reinterpret_cast<BOOL (*)(id, SEL)>(objc_msgSend)(app, sel_registerName("unhide"));
         // NSApplicationActivateAllWindows | NSApplicationActivateIgnoringOtherApps.
-        return reinterpret_cast<BOOL (*)(id, SEL, unsigned long)>(objc_msgSend)(app, sel_registerName("activateWithOptions:"), 3);
+        return reinterpret_cast<BOOL (*)(id, SEL, unsigned long)>(objc_msgSend)(
+            app, sel_registerName("activateWithOptions:"), 3);
     }
 #elif defined(LAUNCHER_X11_WINDOW_CONTROL)
     // Load Xlib only on X11. Wayland deliberately offers no cross-process window activation API.
@@ -109,13 +128,19 @@ namespace game_window
         X11()
         {
             const char* driver = SDL_GetCurrentVideoDriver();
-            if (library == nullptr || driver == nullptr || std::strcmp(driver, "x11") != 0) return;
+            if (library == nullptr || driver == nullptr || std::strcmp(driver, "x11") != 0)
+                return;
 #define WINDOW_LOAD(member, name) member = reinterpret_cast<decltype(member)>(SDL_LoadFunction(library, name))
-            WINDOW_LOAD(open, "XOpenDisplay"); WINDOW_LOAD(close, "XCloseDisplay");
-            WINDOW_LOAD(rootOf, "XDefaultRootWindow"); WINDOW_LOAD(atomOf, "XInternAtom");
-            WINDOW_LOAD(property, "XGetWindowProperty"); WINDOW_LOAD(freeData, "XFree");
-            WINDOW_LOAD(send, "XSendEvent"); WINDOW_LOAD(flush, "XFlush");
-            WINDOW_LOAD(sync, "XSync"); WINDOW_LOAD(setErrorHandler, "XSetErrorHandler");
+            WINDOW_LOAD(open, "XOpenDisplay");
+            WINDOW_LOAD(close, "XCloseDisplay");
+            WINDOW_LOAD(rootOf, "XDefaultRootWindow");
+            WINDOW_LOAD(atomOf, "XInternAtom");
+            WINDOW_LOAD(property, "XGetWindowProperty");
+            WINDOW_LOAD(freeData, "XFree");
+            WINDOW_LOAD(send, "XSendEvent");
+            WINDOW_LOAD(flush, "XFlush");
+            WINDOW_LOAD(sync, "XSync");
+            WINDOW_LOAD(setErrorHandler, "XSetErrorHandler");
 #undef WINDOW_LOAD
             if (open && close && rootOf && atomOf && property && freeData && send && flush && sync && setErrorHandler)
                 display = open(nullptr);
@@ -134,7 +159,8 @@ namespace game_window
                 close(display);
                 setErrorHandler(previousErrorHandler);
             }
-            if (library) SDL_UnloadObject(library);
+            if (library)
+                SDL_UnloadObject(library);
         }
         std::vector<unsigned long> Read(Window window, const char* name, Atom type)
         {
@@ -143,32 +169,42 @@ namespace game_window
             unsigned long count = 0, remaining = 0;
             unsigned char* bytes = nullptr;
             std::vector<unsigned long> values;
-            if (property(display, window, atomOf(display, name, False), 0, 65536, False, type,
-                &actual, &format, &count, &remaining, &bytes) == Success && actual == type && format == 32 && bytes != nullptr)
+            if (property(display, window, atomOf(display, name, False), 0, 65536, False, type, &actual, &format, &count,
+                    &remaining, &bytes) == Success &&
+                actual == type && format == 32 && bytes != nullptr)
                 values.assign(reinterpret_cast<unsigned long*>(bytes), reinterpret_cast<unsigned long*>(bytes) + count);
-            if (bytes != nullptr) freeData(bytes);
+            if (bytes != nullptr)
+                freeData(bytes);
             return values;
         }
         Window Find(uint32_t pid)
         {
-            if (display == nullptr) return 0;
+            if (display == nullptr)
+                return 0;
             const Atom active = atomOf(display, "_NET_ACTIVE_WINDOW", False);
             const auto supported = Read(root, "_NET_SUPPORTED", XA_ATOM);
-            if (std::find(supported.begin(), supported.end(), active) == supported.end()) return 0;
+            if (std::find(supported.begin(), supported.end(), active) == supported.end())
+                return 0;
             for (Window window : Read(root, "_NET_CLIENT_LIST", XA_WINDOW))
             {
                 const auto owner = Read(window, "_NET_WM_PID", XA_CARDINAL);
-                if (owner.size() == 1 && owner.front() == pid) return window;
+                if (owner.size() == 1 && owner.front() == pid)
+                    return window;
             }
             return 0;
         }
     };
-    inline bool Available(uint32_t pid) { X11 x; return x.Find(pid) != 0; }
+    inline bool Available(uint32_t pid)
+    {
+        X11 x;
+        return x.Find(pid) != 0;
+    }
     inline bool Show(uint32_t pid)
     {
         X11 x;
         Window window = x.Find(pid);
-        if (window == 0) return false;
+        if (window == 0)
+            return false;
         XEvent event{};
         event.xclient.type = ClientMessage;
         event.xclient.display = x.display;

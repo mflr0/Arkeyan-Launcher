@@ -35,7 +35,8 @@ namespace gamemusic
     // missing or was decoded by a different kit build. A kit that cannot (an older one, a game without a theme) is remembered by its `kitVersion` in
     // menu_music.none, so it is asked once, not at every start. True when the file exists afterwards. Blocks (~1 s): run it on
     // the disc check's thread.
-    bool Extract(const std::string& game, const std::string& image, const std::filesystem::path& skyBuild, const std::string& kitVersion);
+    bool Extract(const std::string& game, const std::string& image, const std::filesystem::path& skyBuild,
+        const std::string& kitVersion);
 
     // The fading mixer, apart from any device so that it can be checked: Play() makes `track` the one heard (fading in from
     // nothing, the others out, over FadeSeconds); Play(null) fades all out; Mute() fades everything out whatever is played.
@@ -94,7 +95,9 @@ namespace gamemusic
         void Update(const std::string& game, bool muted);
         void Update(const Playback& state)
         {
-            Update(state.gamePage && !state.running && !state.installing && !state.launching ? state.game : std::string(), state.muted);
+            Update(
+                state.gamePage && !state.running && !state.installing && !state.launching ? state.game : std::string(),
+                state.muted);
         }
         bool HasTrack(const std::string& game); // the game's file is there (read on first ask)
         Mixer& MixerForTest() { return *m_mixer; }
@@ -105,7 +108,13 @@ namespace gamemusic
     private:
         void Open();
         static void Callback(void* user, SDL_AudioStream* stream, int additional, int total);
-        struct Loaded { std::shared_ptr<const Track> track; std::filesystem::path file; std::filesystem::file_time_type modified{}; uint64_t looked = 0; };
+        struct Loaded
+        {
+            std::shared_ptr<const Track> track;
+            std::filesystem::path file;
+            std::filesystem::file_time_type modified{};
+            uint64_t looked = 0;
+        };
         std::vector<std::pair<std::string, Loaded>> m_tracks;
         Loaded& TrackOf(const std::string& game);
         std::unique_ptr<Mixer> m_mixer;

@@ -26,10 +26,11 @@ namespace LauncherTheme
     // The band under the game art, one step lighter than the sidebar; its buttons sit a step darker than the band, lighten
     // under the mouse and darken when pressed. Every shade keeps the sidebar's hue (blue a little above red and green).
     inline constexpr unsigned BottomBar = 0x3A3A44, BottomBarTop = 0x42424D; // a light gradient, top to bottom
-    inline constexpr unsigned BottomBarRaised = 0x2C2C34, BottomBarRaisedHover = 0x34343E, BottomBarRaisedActive = 0x26262C;
+    inline constexpr unsigned BottomBarRaised = 0x2C2C34, BottomBarRaisedHover = 0x34343E,
+                              BottomBarRaisedActive = 0x26262C;
     inline constexpr unsigned BottomBarBorder = 0x50505E;
     inline constexpr unsigned BottomBarInk = 0xF2F2F2;
-    inline constexpr unsigned BadgeInk = 0x15171C;     // initials on the coloured game badges
+    inline constexpr unsigned BadgeInk = 0x15171C; // initials on the coloured game badges
     // Surfaces (settings cards, fields, buttons, menus): the sidebar's neutral greys, each with its hover and pressed shade.
     inline constexpr unsigned Panel = 0x26262C;
     inline constexpr unsigned PanelRaised = 0x3A3A42, PanelRaisedHover = 0x47474F, PanelRaisedActive = 0x55555E;
@@ -39,15 +40,16 @@ namespace LauncherTheme
 
     inline constexpr unsigned Text = 0xF4F4F6;
     inline constexpr unsigned TextSecondary = 0xD0D0D8;
-    inline constexpr unsigned TextDim = 0xB8B8C4; // was 0x9C9CA8: 4.1:1 on the raised greys, now 4.5:1 or more (docs/launcher_ui.md, Legibility)
+    inline constexpr unsigned TextDim =
+        0xB8B8C4; // was 0x9C9CA8: 4.1:1 on the raised greys, now 4.5:1 or more (docs/launcher_ui.md, Legibility)
 
     // One accent everywhere, the blue of the main button (close to the Skylanders logo's sky blue): selections,
     // toggles, sliders, focus. The only other accent is the orange bar marking the selected row of the sidebar.
     inline constexpr unsigned Accent = 0x6BBAFF;
     inline constexpr unsigned AccentHover = 0x8ECBFF;
     inline constexpr unsigned AccentDark = 0x2F86E0; // bevel under accent buttons, lines marking a selection
-    inline constexpr unsigned AccentInk = 0x0A1B33;  // text on the accent
-    inline constexpr unsigned Play = Accent;         // the main button (CHOOSE ISO / PLAY)
+    inline constexpr unsigned AccentInk = 0x0A1B33; // text on the accent
+    inline constexpr unsigned Play = Accent; // the main button (CHOOSE ISO / PLAY)
     inline constexpr unsigned PlayDark = AccentDark;
     inline constexpr unsigned PlayInk = AccentInk;
     inline constexpr unsigned SidebarBar = 0xF08A12; // orange, the sidebar's selected row only
@@ -55,7 +57,8 @@ namespace LauncherTheme
     inline constexpr unsigned Ok = 0x48D17A;
 
     // Element colours: air, earth, fire, water, magic, tech, life, undead.
-    inline constexpr unsigned Elements[8] = { 0x3E9FD8, 0x9A6233, 0xE0531F, 0x1F74D1, 0x8E44C9, 0xD08A00, 0x3E9B3F, 0x5E5A86 };
+    inline constexpr unsigned Elements[8] = { 0x3E9FD8, 0x9A6233, 0xE0531F, 0x1F74D1, 0x8E44C9, 0xD08A00, 0x3E9B3F,
+        0x5E5A86 };
 
     // Sizes in points (the window scales them to the display's pixel density).
     inline constexpr float WindowW = 1080, WindowH = 720, WindowMinW = 1024, WindowMinH = 680;
@@ -63,14 +66,17 @@ namespace LauncherTheme
     inline constexpr float SidebarW = 270;
     inline constexpr float Pad = 24;
     inline constexpr float Radius = 14, RadiusSmall = 10, RadiusLarge = 22;
-    inline constexpr float PlayButtonW = 300, PlayButtonH = 64, PlayGearW = 64; // the action button: its main half, height, gear half
+    inline constexpr float PlayButtonW = 300, PlayButtonH = 64,
+                           PlayGearW = 64; // the action button: its main half, height, gear half
     inline constexpr float BottomBarH = 150; // the band with the main button, under the game art
-    inline constexpr float TabUnderlineH = 3, TabGap = 34; // settings tabs: the line under the selected one, the space between them
-    inline constexpr float ControllerW = 190, ControllerGap = 40; // the controller picker, and its space before the main button
+    inline constexpr float TabUnderlineH = 3,
+                           TabGap = 34; // settings tabs: the line under the selected one, the space between them
+    inline constexpr float ControllerW = 190,
+                           ControllerGap = 40; // the controller picker, and its space before the main button
 
     // Fonts: Outfit for text, Bungee for titles and buttons (both SIL OFL 1.1, resources/fonts).
     inline constexpr float TextSize = 17, SmallSize = 14, TitleSize = 22, HeadlineSize = 34, HeroSize = 48;
-    inline constexpr float CaptionSize = 12;  // the smallest text there is, at 1x
+    inline constexpr float CaptionSize = 12; // the smallest text there is, at 1x
     inline constexpr int BolderPasses = 2;
 
     // Each game's own colours, for what belongs to the game on its page: the action button (docs/launcher_ui.md, "Each
@@ -78,22 +84,26 @@ namespace LauncherTheme
     // Giants' gold to orange, Swap Force's lime to green, Trap Team's title red.
     struct GameStyle
     {
-        unsigned top, bottom;  // the logo's colours, top to bottom (the button's gradient is drawn between them)
-        unsigned outline;      // its dark ink: the label and the gear when white wouldn't read on the fill
-        unsigned glow;         // the Home card under the pointer
+        unsigned top, bottom; // the logo's colours, top to bottom (the button's gradient is drawn between them)
+        unsigned outline; // its dark ink: the label and the gear when white wouldn't read on the fill
+        unsigned glow; // the Home card under the pointer
     };
     inline constexpr GameStyle SpyrosAdventureStyle = { 0x7CC8FF, 0x2C7FD8, 0x0C2A5C, 0x6BBAFF };
     inline constexpr GameStyle GiantsStyle = { 0xFFD23C, 0xF06A10, 0x3A1404, 0xFFB43A };
     inline constexpr GameStyle SwapForceStyle = { 0xD9EC45, 0x6FB42E, 0x0F2E22, 0xBFE04A };
-    inline constexpr GameStyle TrapTeamStyle = { 0xE1001B, 0x941018, 0x5A0808, 0xDE0018 }; // the title's red: its letters, shade and darkest tone
-    inline constexpr GameStyle SuperChargersStyle = { 0xF09800, 0xE01010, 0x081020, 0xF07008 }; // the title's letters, orange to red; its navy outline
-    inline constexpr GameStyle ImaginatorsStyle = { 0x60A8D8, 0x0070A0, 0x0A1A3A, 0x58A8D8 }; // the title's blue letters, light to deep; dark navy ink
+    inline constexpr GameStyle TrapTeamStyle = { 0xE1001B, 0x941018, 0x5A0808,
+        0xDE0018 }; // the title's red: its letters, shade and darkest tone
+    inline constexpr GameStyle SuperChargersStyle = { 0xF09800, 0xE01010, 0x081020,
+        0xF07008 }; // the title's letters, orange to red; its navy outline
+    inline constexpr GameStyle ImaginatorsStyle = { 0x60A8D8, 0x0070A0, 0x0A1A3A,
+        0x58A8D8 }; // the title's blue letters, light to deep; dark navy ink
     // The game's style by catalogue id; the launcher's own blue for a game without one.
     const GameStyle& StyleOf(const char* game);
 
     // The game page: how the logo arrives (once per visit, docs/launcher_ui.md), its shadow, the backdrop's shading.
     inline constexpr float LogoDropMs = 300, LogoDropDistance = 44;
-    inline constexpr unsigned BackdropTopShade = 120, BackdropBottomShade = 235; // alpha of SkyTop over the game's painting
+    inline constexpr unsigned BackdropTopShade = 120,
+                              BackdropBottomShade = 235; // alpha of SkyTop over the game's painting
     inline constexpr int BackdropArtW = 1024; // the painting's width as a texture (Giants' is 1600 px)
     inline constexpr float ArtDim = 0.25f; // alpha of Scrim over every game's painting (the game page, Home's cards)
     // The sidebar's game rows: the logo's box on the left, the name and status beside it.

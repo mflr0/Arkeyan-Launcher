@@ -30,10 +30,12 @@ struct IntegrityFinding
 // The files an install wrote into `gameFolder` for the game `runtime` (Arkeyan-Builder's @done path): the runtime, or
 // its whole .app on macOS, and next to it the fonts, the notices, game_icon.* and game.desktop. Relative, '/' separated.
 // Empty when the runtime is not inside the folder.
-std::vector<std::string> InstalledGameFiles(const std::filesystem::path& gameFolder, const std::filesystem::path& runtime);
+std::vector<std::string> InstalledGameFiles(
+    const std::filesystem::path& gameFolder, const std::filesystem::path& runtime);
 
 // Writes the game folder's files.sha256 when an install ends; false (and `error`) when it can't.
-bool WriteInstalledGameList(const std::filesystem::path& gameFolder, const std::filesystem::path& runtime, std::string& error);
+bool WriteInstalledGameList(
+    const std::filesystem::path& gameFolder, const std::filesystem::path& runtime, std::string& error);
 
 // Checks one folder now (the kit before an install starts); empty `problems` when it is fine or has no list.
 IntegrityFinding CheckFolder(const IntegrityTarget& target, const std::atomic<bool>* cancel = nullptr);

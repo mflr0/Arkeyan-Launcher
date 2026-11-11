@@ -54,9 +54,12 @@ namespace
     bool PngSize(const std::vector<uint8_t>& png, uint32_t& width, uint32_t& height)
     {
         static const uint8_t Signature[8] = { 0x89, 'P', 'N', 'G', '\r', '\n', 0x1A, '\n' };
-        if (png.size() < 24 || !std::equal(Signature, Signature + 8, png.begin()) || !std::equal(png.begin() + 12, png.begin() + 16, "IHDR"))
+        if (png.size() < 24 || !std::equal(Signature, Signature + 8, png.begin()) ||
+            !std::equal(png.begin() + 12, png.begin() + 16, "IHDR"))
             return false;
-        auto be = [&](size_t at) { return uint32_t(png[at]) << 24 | uint32_t(png[at + 1]) << 16 | uint32_t(png[at + 2]) << 8 | png[at + 3]; };
+        auto be = [&](size_t at) {
+            return uint32_t(png[at]) << 24 | uint32_t(png[at + 1]) << 16 | uint32_t(png[at + 2]) << 8 | png[at + 3];
+        };
         width = be(16);
         height = be(20);
         return width > 0 && height > 0;
@@ -103,7 +106,9 @@ std::string ShortcutFileName(std::string_view gameName)
     {
         if (c == ':')
             continue;
-        name += std::string_view("\\/*?\"<>|").find(c) != std::string_view::npos || static_cast<unsigned char>(c) < 32 ? ' ' : c;
+        name += std::string_view("\\/*?\"<>|").find(c) != std::string_view::npos || static_cast<unsigned char>(c) < 32
+                    ? ' '
+                    : c;
     }
     // Words separated by one space, none at the ends or a dot at the end (Windows).
     std::string out;
@@ -144,25 +149,32 @@ std::string DesktopExecQuote(std::string_view text)
 
 std::string MacLaunchScript(const fs::path& launcher, std::string_view gameId)
 {
-    return "#!/bin/sh\n# Opens Arkeyan Launcher on this game and starts it. Made by Arkeyan Launcher (Game settings).\nexec " +
-        ShellQuote(datadir::Text(launcher)) + " " + ShortcutArguments(gameId) + "\n";
+    return "#!/bin/sh\n# Opens Arkeyan Launcher on this game and starts it. Made by Arkeyan Launcher (Game "
+           "settings).\nexec " +
+           ShellQuote(datadir::Text(launcher)) + " " + ShortcutArguments(gameId) + "\n";
 }
 
 std::string MacInfoPlist(std::string_view gameName, std::string_view gameId, bool icon)
 {
     std::string name = XmlEscape(ShortcutFileName(gameName));
     return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-           "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n"
+           "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" "
+           "\"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n"
            "<plist version=\"1.0\">\n<dict>\n"
-           "\t<key>CFBundleName</key>\n\t<string>" + name + "</string>\n"
-           "\t<key>CFBundleDisplayName</key>\n\t<string>" + name + "</string>\n"
-           "\t<key>CFBundleIdentifier</key>\n\t<string>io.github.mflr0.skylauncher.shortcut." + XmlEscape(gameId) + "</string>\n"
+           "\t<key>CFBundleName</key>\n\t<string>" +
+           name +
+           "</string>\n"
+           "\t<key>CFBundleDisplayName</key>\n\t<string>" +
+           name +
+           "</string>\n"
+           "\t<key>CFBundleIdentifier</key>\n\t<string>io.github.mflr0.skylauncher.shortcut." +
+           XmlEscape(gameId) +
+           "</string>\n"
            "\t<key>CFBundleExecutable</key>\n\t<string>launch</string>\n"
            "\t<key>CFBundlePackageType</key>\n\t<string>APPL</string>\n"
            "\t<key>CFBundleShortVersionString</key>\n\t<string>1.0</string>\n"
            "\t<key>CFBundleVersion</key>\n\t<string>1</string>\n" +
-           (icon ? "\t<key>CFBundleIconFile</key>\n\t<string>icon</string>\n" : std::string()) +
-           "</dict>\n</plist>\n";
+           (icon ? "\t<key>CFBundleIconFile</key>\n\t<string>icon</string>\n" : std::string()) + "</dict>\n</plist>\n";
 }
 
 std::vector<uint8_t> MacIcns(const std::vector<uint8_t>& png)
@@ -170,8 +182,14 @@ std::vector<uint8_t> MacIcns(const std::vector<uint8_t>& png)
     uint32_t width = 0, height = 0;
     if (!PngSize(png, width, height) || width != height)
         return {};
-    const char* type = width == 16 ? "icp4" : width == 32 ? "icp5" : width == 64 ? "icp6" : width == 128 ? "ic07" : width == 256 ? "ic08" :
-        width == 512 ? "ic09" : width == 1024 ? "ic10" : nullptr;
+    const char* type = width == 16     ? "icp4"
+                       : width == 32   ? "icp5"
+                       : width == 64   ? "icp6"
+                       : width == 128  ? "ic07"
+                       : width == 256  ? "ic08"
+                       : width == 512  ? "ic09"
+                       : width == 1024 ? "ic10"
+                                       : nullptr;
     if (type == nullptr)
         return {};
     std::vector<uint8_t> out = { 'i', 'c', 'n', 's' };
@@ -182,7 +200,8 @@ std::vector<uint8_t> MacIcns(const std::vector<uint8_t>& png)
     return out;
 }
 
-std::string LinuxDesktopEntry(std::string_view gameName, const fs::path& launcher, std::string_view gameId, const fs::path& icon)
+std::string LinuxDesktopEntry(
+    std::string_view gameName, const fs::path& launcher, std::string_view gameId, const fs::path& icon)
 {
     std::string text = "[Desktop Entry]\nType=Application\nVersion=1.0\nName=" + ShortcutFileName(gameName) +
                        "\nComment=" + Tf("Play {} with Arkeyan Launcher", gameName) +
@@ -303,8 +322,10 @@ ShortcutResult WriteMacApp(const ShortcutSpec& spec)
         const fs::path script = app / "Contents" / "MacOS" / "launch";
         std::ifstream in(script, std::ios::binary);
         const std::string text(std::istreambuf_iterator<char>(in), {});
-        if (fs::is_symlink(fs::symlink_status(app, error)) || text.find(ShortcutArguments(spec.gameId)) == std::string::npos ||
-            (text.find("Made by Arkeyan Launcher") == std::string::npos && text.find("Made by Skylauncher") == std::string::npos))
+        if (fs::is_symlink(fs::symlink_status(app, error)) ||
+            text.find(ShortcutArguments(spec.gameId)) == std::string::npos ||
+            (text.find("Made by Arkeyan Launcher") == std::string::npos &&
+                text.find("Made by Skylauncher") == std::string::npos))
             return Fail(Tr("Couldn't create the shortcut"));
     }
     fs::remove_all(app, error);
@@ -316,10 +337,12 @@ ShortcutResult WriteMacApp(const ShortcutSpec& spec)
     if (icns.empty())
         icns = MacIcns(spec.iconPng);
     bool ok = WriteText(app / "Contents" / "Info.plist", MacInfoPlist(spec.gameName, spec.gameId, !icns.empty())) &&
-        WriteText(app / "Contents" / "MacOS" / "launch", MacLaunchScript(spec.launcher, spec.gameId)) &&
-        (icns.empty() || WriteBytes(app / "Contents" / "Resources" / "icon.icns", icns.data(), icns.size()));
-    fs::permissions(app / "Contents" / "MacOS" / "launch", fs::perms::owner_all | fs::perms::group_read | fs::perms::group_exec |
-        fs::perms::others_read | fs::perms::others_exec, error);
+              WriteText(app / "Contents" / "MacOS" / "launch", MacLaunchScript(spec.launcher, spec.gameId)) &&
+              (icns.empty() || WriteBytes(app / "Contents" / "Resources" / "icon.icns", icns.data(), icns.size()));
+    fs::permissions(app / "Contents" / "MacOS" / "launch",
+        fs::perms::owner_all | fs::perms::group_read | fs::perms::group_exec | fs::perms::others_read |
+            fs::perms::others_exec,
+        error);
     if (!ok)
         return Fail(Tr("Couldn't create the shortcut"));
     fs::last_write_time(app, fs::file_time_type::clock::now(), error); // the Finder looks at the icon again
@@ -343,7 +366,10 @@ ShortcutResult WriteLinuxDesktop(const ShortcutSpec& spec)
     if (!WriteText(file, LinuxDesktopEntry(spec.gameName, spec.launcher, spec.gameId, icon)))
         return Fail(Tr("Couldn't create the shortcut"));
     // Desktops launch a .desktop file only when it is executable.
-    fs::permissions(file, fs::perms::owner_all | fs::perms::group_read | fs::perms::group_exec | fs::perms::others_read | fs::perms::others_exec, error);
+    fs::permissions(file,
+        fs::perms::owner_all | fs::perms::group_read | fs::perms::group_exec | fs::perms::others_read |
+            fs::perms::others_exec,
+        error);
     ShortcutResult result;
     result.ok = true;
     result.file = file;
@@ -364,7 +390,8 @@ namespace
 
         HRESULT init = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
         IShellLinkW* link = nullptr;
-        bool ok = SUCCEEDED(CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER, IID_IShellLinkW, reinterpret_cast<void**>(&link)));
+        bool ok = SUCCEEDED(CoCreateInstance(
+            CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER, IID_IShellLinkW, reinterpret_cast<void**>(&link)));
         if (ok)
         {
             std::string arguments = ShortcutArguments(spec.gameId); // ASCII
@@ -416,7 +443,8 @@ namespace
     }
 }
 
-int RefreshShortcuts(const fs::path& folder, const std::vector<std::pair<std::string, std::string>>& games, const fs::path& launcher)
+int RefreshShortcuts(
+    const fs::path& folder, const std::vector<std::pair<std::string, std::string>>& games, const fs::path& launcher)
 {
     if (folder.empty() || launcher.empty())
         return 0;
@@ -426,7 +454,9 @@ int RefreshShortcuts(const fs::path& folder, const std::vector<std::pair<std::st
     {
         const std::string arguments = ShortcutArguments(id);
         // Ours: it starts this game the way the launcher writes it. Old: it still says Skylauncher.
-        auto old = [&](const std::string& text) { return text.find(arguments) != std::string::npos && text.find("Skylauncher") != std::string::npos; };
+        auto old = [&](const std::string& text) {
+            return text.find(arguments) != std::string::npos && text.find("Skylauncher") != std::string::npos;
+        };
         // macOS: the script of the small app.
         fs::path script = folder / (ShortcutFileName(name) + ".app") / "Contents" / "MacOS" / "launch";
         if (fs::is_regular_file(script, error) && !fs::is_symlink(script, error))
@@ -443,8 +473,9 @@ int RefreshShortcuts(const fs::path& folder, const std::vector<std::pair<std::st
         if (fs::is_regular_file(desktop, error) && !fs::is_symlink(desktop, error))
         {
             std::string text = ReadText(desktop);
-            std::string fresh = LinuxDesktopEntry(DesktopValue(text, "Name").empty() ? name : DesktopValue(text, "Name"), launcher, id,
-                datadir::FromText(DesktopValue(text, "Icon")));
+            std::string fresh =
+                LinuxDesktopEntry(DesktopValue(text, "Name").empty() ? name : DesktopValue(text, "Name"), launcher, id,
+                    datadir::FromText(DesktopValue(text, "Icon")));
             if (old(text) && text != fresh && WriteText(desktop, fresh))
                 rewritten++;
         }

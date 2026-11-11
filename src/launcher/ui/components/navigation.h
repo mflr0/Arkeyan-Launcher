@@ -13,7 +13,13 @@
 namespace ui
 {
     // ---- The model, on plain boxes (tests/navigation_test.cpp). ----
-    enum class NavDir { Left, Right, Up, Down };
+    enum class NavDir
+    {
+        Left,
+        Right,
+        Up,
+        Down
+    };
     struct NavBox
     {
         uint32_t id = 0;
@@ -21,10 +27,11 @@ namespace ui
         // What its window shows (a scrolling list's visible part): a stop scrolled out of it is that way from the list's edge,
         // so a move from outside the list (a dialog's buttons under it) never goes into its hidden part.
         float clipX0 = -1e9f, clipY0 = -1e9f, clipX1 = 1e9f, clipY1 = 1e9f;
-        uint32_t window = 0;  // its own window (a scrolling list): one with stops hidden that way scrolls on before the focus leaves it
-        uint32_t root = 0;    // its top window (a page, a dialog, a menu): a move stays in it
-        int column = -1;      // a page's own column (NavColumn), -1: none
-        uint64_t seen = 0;    // when it last had the focus (0: never): a row's remembered position
+        uint32_t window =
+            0; // its own window (a scrolling list): one with stops hidden that way scrolls on before the focus leaves it
+        uint32_t root = 0; // its top window (a page, a dialog, a menu): a move stays in it
+        int column = -1; // a page's own column (NavColumn), -1: none
+        uint64_t seen = 0; // when it last had the focus (0: never): a row's remembered position
     };
     // Where a move from `from` goes, 0 for nowhere (the focus stays). Up / Down go to the nearest row beyond that has a stop
     // straight that way (else the nearest row), in the same column (NavColumn) when the page has columns: the stop under the

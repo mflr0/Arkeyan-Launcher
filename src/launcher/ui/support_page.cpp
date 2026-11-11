@@ -34,7 +34,8 @@ namespace launcher_ui
         }
         if (files[0] == nullptr) // cancelled
             return;
-        std::ofstream out(datadir::FromText(files[0]), std::ios::binary | std::ios::trunc); // UTF-8: accents in a Windows user name
+        std::ofstream out(
+            datadir::FromText(files[0]), std::ios::binary | std::ios::trunc); // UTF-8: accents in a Windows user name
         out.write(text->data(), std::streamsize(text->size()));
         out.close();
         if (out)
@@ -74,10 +75,14 @@ namespace launcher_ui
 
         if (!ui::BeginModal("##problemreport", Tr("Report a problem"), &m_reportOpen, ui::ModalSize::Large))
             return;
-        ui::Text(ui::TextStyle::Caption, Tr("Anonymous: your names are removed. Save it, then add it to a GitHub issue."), ui::color::Dim);
+        ui::Text(ui::TextStyle::Caption,
+            Tr("Anonymous: your names are removed. Save it, then add it to a GitHub issue."), ui::color::Dim);
         // The room under the text is the title, the line above and the actions (Normal high); the rest is the report.
-        const float room = ImGui::GetIO().DisplaySize.y - 2 * ui::space::XL - 3 * ui::height::Large - ui::ModalLegendHeight();
-        ui::BeginCard("##reporttext", ImVec2(0, std::clamp(room, 3.0f * ui::height::Large, 8.0f * ui::height::Large - ui::ModalLegendHeight())), { .inset = true, .padding = ui::space::M });
+        const float room =
+            ImGui::GetIO().DisplaySize.y - 2 * ui::space::XL - 3 * ui::height::Large - ui::ModalLegendHeight();
+        ui::BeginCard("##reporttext",
+            ImVec2(0, std::clamp(room, 3.0f * ui::height::Large, 8.0f * ui::height::Large - ui::ModalLegendHeight())),
+            { .inset = true, .padding = ui::space::M });
         ImGui::SetScrollX(0.0f);
         ImGui::PushFont(m_monoFont, ui::type::Caption); // logs keep the monospaced font (null: the text font)
         ImGui::PushTextWrapPos(0);
@@ -89,7 +94,8 @@ namespace launcher_ui
         // Save as... and Copy stay at the left of the same row.
         ui::ModalResult result = ui::ModalActions(&m_reportOpen, Tr("Save to Desktop"), Tr("Close"));
         const float afterY = ImGui::GetCursorPosY();
-        ImGui::SetCursorScreenPos(ImVec2(ImGui::GetWindowPos().x + ImGui::GetCursorStartPos().x, ImGui::GetItemRectMin().y)); // on the actions' row
+        ImGui::SetCursorScreenPos(ImVec2(
+            ImGui::GetWindowPos().x + ImGui::GetCursorStartPos().x, ImGui::GetItemRectMin().y)); // on the actions' row
         if (ui::Button(Tr("Save as...")))
         {
             std::filesystem::path folder = GameLogFolder();
@@ -122,7 +128,9 @@ namespace launcher_ui
     {
         const std::string runtime = !m_s->installed.runtime.empty() ? m_s->installed.runtime : m_s->ownRuntime;
         const bool testing = !m_probe.done;
-        ui::SettingRow(Tr("Test the portal"), runtime.empty() ? Tr("Install the game first.") : !m_probe.ran ? Tr("Plug in the portal, then test it.") : nullptr);
+        ui::SettingRow(Tr("Test the portal"), runtime.empty() ? Tr("Install the game first.")
+                                              : !m_probe.ran  ? Tr("Plug in the portal, then test it.")
+                                                              : nullptr);
         ui::ButtonOptions options;
         options.loading = testing;
         options.disabled = runtime.empty();
@@ -146,22 +154,35 @@ namespace launcher_ui
         const char* spyro = GameName("ssa");
         for (const PortalProbeEntry& entry : result.portals)
         {
-            std::string name = entry.product.empty() ? std::string(entry.kind == "usb" ? Tr("Xbox portal") : Tr("Portal")) : entry.product;
+            std::string name = entry.product.empty()
+                                   ? std::string(entry.kind == "usb" ? Tr("Xbox portal") : Tr("Portal"))
+                                   : entry.product;
             const std::string problem = PortalStatusText(entry);
-            const ui::Status pill = !entry.opened ? ui::Status::Error : problem.empty() ? ui::Status::Success : ui::Status::Warning;
-            ui::StatusPill(pill, !entry.opened ? Tr("Found, can't be opened") : problem.empty() ? Tr("Found") : Tr("Found, not answering"));
+            const ui::Status pill = !entry.opened     ? ui::Status::Error
+                                    : problem.empty() ? ui::Status::Success
+                                                      : ui::Status::Warning;
+            ui::StatusPill(pill, !entry.opened     ? Tr("Found, can't be opened")
+                                 : problem.empty() ? Tr("Found")
+                                                   : Tr("Found, not answering"));
             ImGui::SameLine(0, ui::space::XS);
             ImGui::AlignTextToFramePadding();
-            ui::Text(ui::TextStyle::Body, fmt::format("{} ({} {}:{})", name, entry.kind == "usb" ? "USB" : "HID", entry.vid, entry.pid).c_str(), ui::color::Ink, -1);
+            ui::Text(ui::TextStyle::Body,
+                fmt::format("{} ({} {}:{})", name, entry.kind == "usb" ? "USB" : "HID", entry.vid, entry.pid).c_str(),
+                ui::color::Ink, -1);
             if (!entry.model.empty())
             {
                 // The model from the id the portal answered to the game's reset, and what the game thinks of it.
-                ui::Text(ui::TextStyle::Caption, Tf("Model: {} (id {})", entry.model, entry.id).c_str(), ui::color::Dim);
+                ui::Text(
+                    ui::TextStyle::Caption, Tf("Model: {} (id {})", entry.model, entry.id).c_str(), ui::color::Dim);
                 if (entry.verdict == "works")
                     ui::Text(ui::TextStyle::Caption, Tf("{} accepts this portal.", spyro).c_str(), ui::color::InkSoft);
                 else if (entry.verdict == "warns" || entry.verdict == "rejected")
-                    ui::Text(ui::TextStyle::Caption, (entry.verdict == "rejected" ? Tf("{} rejects this portal: {}.", spyro, entry.verdictReason)
-                                                           : Tf("{} warns about this portal: {}.", spyro, entry.verdictReason)).c_str(), ui::color::InkSoft);
+                    ui::Text(ui::TextStyle::Caption,
+                        (entry.verdict == "rejected"
+                                ? Tf("{} rejects this portal: {}.", spyro, entry.verdictReason)
+                                : Tf("{} warns about this portal: {}.", spyro, entry.verdictReason))
+                            .c_str(),
+                        ui::color::InkSoft);
             }
             if (!problem.empty())
                 ui::Text(ui::TextStyle::Caption, problem.c_str(), ui::color::Dim);
@@ -209,9 +230,11 @@ namespace launcher_ui
         if (ui::Button(Tr("Report a problem"), report))
             OpenProblemReport();
         const char* lastGame = GameName(m_lastRun.game, GameNameForm::Short);
-        const std::string lastRun = !any ? Tr("No game log yet.")
-            : lastGame != nullptr ? Tf("Last run: {}, {}", lastGame, ui::FormatWhen(m_lastRun.written, std::time(nullptr)))
-                                  : Tf("Last run: {}", ui::FormatWhen(m_lastRun.written, std::time(nullptr)));
+        const std::string lastRun =
+            !any ? Tr("No game log yet.")
+            : lastGame != nullptr
+                ? Tf("Last run: {}, {}", lastGame, ui::FormatWhen(m_lastRun.written, std::time(nullptr)))
+                : Tf("Last run: {}", ui::FormatWhen(m_lastRun.written, std::time(nullptr)));
         ui::SettingRow(Tr("Game log"), lastRun.c_str());
         ui::ButtonOptions copy;
         copy.disabled = !any;

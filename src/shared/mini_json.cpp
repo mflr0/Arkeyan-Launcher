@@ -17,8 +17,13 @@ namespace
                 error = std::string(message) + " at byte " + std::to_string(at);
             return false;
         }
-        void Space() { while (at < text.size() && (text[at] == ' ' || text[at] == '\t' || text[at] == '\r' || text[at] == '\n')) at++; }
-        bool Literal(const char* word) {
+        void Space()
+        {
+            while (at < text.size() && (text[at] == ' ' || text[at] == '\t' || text[at] == '\r' || text[at] == '\n'))
+                at++;
+        }
+        bool Literal(const char* word)
+        {
             size_t n = std::char_traits<char>::length(word);
             if (text.substr(at, n) != word)
                 return false;
@@ -27,10 +32,26 @@ namespace
         }
         static void Utf8(std::string& out, unsigned code)
         {
-            if (code < 0x80) out += char(code);
-            else if (code < 0x800) { out += char(0xC0 | code >> 6); out += char(0x80 | (code & 0x3F)); }
-            else if (code < 0x10000) { out += char(0xE0 | code >> 12); out += char(0x80 | (code >> 6 & 0x3F)); out += char(0x80 | (code & 0x3F)); }
-            else { out += char(0xF0 | code >> 18); out += char(0x80 | (code >> 12 & 0x3F)); out += char(0x80 | (code >> 6 & 0x3F)); out += char(0x80 | (code & 0x3F)); }
+            if (code < 0x80)
+                out += char(code);
+            else if (code < 0x800)
+            {
+                out += char(0xC0 | code >> 6);
+                out += char(0x80 | (code & 0x3F));
+            }
+            else if (code < 0x10000)
+            {
+                out += char(0xE0 | code >> 12);
+                out += char(0x80 | (code >> 6 & 0x3F));
+                out += char(0x80 | (code & 0x3F));
+            }
+            else
+            {
+                out += char(0xF0 | code >> 18);
+                out += char(0x80 | (code >> 12 & 0x3F));
+                out += char(0x80 | (code >> 6 & 0x3F));
+                out += char(0x80 | (code & 0x3F));
+            }
         }
         bool Hex4(unsigned& code)
         {
@@ -40,7 +61,10 @@ namespace
             for (int i = 0; i < 4; i++, at++)
             {
                 char c = text[at];
-                unsigned d = c >= '0' && c <= '9' ? c - '0' : c >= 'a' && c <= 'f' ? c - 'a' + 10 : c >= 'A' && c <= 'F' ? c - 'A' + 10 : 16;
+                unsigned d = c >= '0' && c <= '9'   ? c - '0'
+                             : c >= 'a' && c <= 'f' ? c - 'a' + 10
+                             : c >= 'A' && c <= 'F' ? c - 'A' + 10
+                                                    : 16;
                 if (d == 16)
                     return Fail("bad \\u escape");
                 code = code * 16 + d;
@@ -160,13 +184,24 @@ namespace
                 out.type = JsonValue::Type::String;
                 return String(out.string);
             }
-            if (Literal("true")) { out.type = JsonValue::Type::Bool; out.boolean = true; return true; }
-            if (Literal("false")) { out.type = JsonValue::Type::Bool; return true; }
-            if (Literal("null")) return true;
+            if (Literal("true"))
+            {
+                out.type = JsonValue::Type::Bool;
+                out.boolean = true;
+                return true;
+            }
+            if (Literal("false"))
+            {
+                out.type = JsonValue::Type::Bool;
+                return true;
+            }
+            if (Literal("null"))
+                return true;
             if (c == '-' || (c >= '0' && c <= '9'))
             {
                 std::string number;
-                while (at < text.size() && (text[at] == '-' || text[at] == '+' || text[at] == '.' || text[at] == 'e' || text[at] == 'E' || (text[at] >= '0' && text[at] <= '9')))
+                while (at < text.size() && (text[at] == '-' || text[at] == '+' || text[at] == '.' || text[at] == 'e' ||
+                                               text[at] == 'E' || (text[at] >= '0' && text[at] <= '9')))
                     number += text[at++];
                 out.type = JsonValue::Type::Number;
                 out.number = std::strtod(number.c_str(), nullptr);

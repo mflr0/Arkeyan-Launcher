@@ -96,14 +96,16 @@ namespace launcher_ui
             for (int y = 0; y < rgba->h; y++)
                 for (int x = 0; x < rgba->w; x++)
                     if (pixels[size_t(y) * rgba->pitch + size_t(x) * 4 + 3] > 8)
-                        left = std::min(left, x), right = std::max(right, x + 1), top = std::min(top, y), bottom = std::max(bottom, y + 1);
+                        left = std::min(left, x), right = std::max(right, x + 1), top = std::min(top, y),
+                        bottom = std::max(bottom, y + 1);
             if (left >= right || top >= bottom)
                 left = 0, top = 0, right = rgba->w, bottom = rgba->h;
         }
         int width = right - left, height = bottom - top;
         int outWidth = maxWidth > 0 && width > maxWidth ? maxWidth : width;
         int outHeight = std::max(1, int(std::lround(double(height) * outWidth / width)));
-        std::vector<uint8_t> out = Shrink(pixels + size_t(top) * rgba->pitch + size_t(left) * 4, rgba->pitch, width, height, outWidth, outHeight);
+        std::vector<uint8_t> out = Shrink(
+            pixels + size_t(top) * rgba->pitch + size_t(left) * 4, rgba->pitch, width, height, outWidth, outHeight);
         SDL_DestroySurface(rgba);
         art.texture = LoadRgba(renderer, out, outWidth, outHeight);
         art.aspect = float(width) / float(height);
@@ -115,7 +117,8 @@ namespace launcher_ui
 #if defined(__APPLE__)
         // System Settings > Accessibility > Display > Reduce motion.
         bool reduce = false;
-        if (CFPropertyListRef value = CFPreferencesCopyAppValue(CFSTR("reduceMotion"), CFSTR("com.apple.universalaccess")))
+        if (CFPropertyListRef value =
+                CFPreferencesCopyAppValue(CFSTR("reduceMotion"), CFSTR("com.apple.universalaccess")))
         {
             reduce = CFGetTypeID(value) == CFBooleanGetTypeID() && CFBooleanGetValue(static_cast<CFBooleanRef>(value));
             CFRelease(value);
@@ -150,12 +153,14 @@ namespace launcher_ui
         std::string name = art::PickScene(cached, last, std::random_device{}());
         // The screenshot tests show a given scene (SKY_LAUNCHER_TEST_SCENE), else the manifest's first: the hero checks
         // compare the painting with the plain page, which a dark scene would not pass.
-        if (const char* forced = LauncherEnv("SKY_LAUNCHER_TEST_SCENE"); forced != nullptr && !art::CachedScene(game, forced).empty())
+        if (const char* forced = LauncherEnv("SKY_LAUNCHER_TEST_SCENE");
+            forced != nullptr && !art::CachedScene(game, forced).empty())
             name = forced;
         else if (m_testHero && !cached.empty())
             name = cached.front();
         if (name.empty())
-            return LauncherAssets::Cached(game, LauncherAssets::Role::HeroBackground).path; // the disc's scenes are not read yet
+            return LauncherAssets::Cached(game, LauncherAssets::Role::HeroBackground)
+                .path; // the disc's scenes are not read yet
         m_scene[game] = name;
         if (name != last)
             Set(game, "last_scene", name);
@@ -173,10 +178,7 @@ namespace launcher_ui
         return accent;
     }
 
-    bool App::GameMusicOn() const
-    {
-        return SettingGet(m_config, "launcher", "game_music", "1") != "0";
-    }
+    bool App::GameMusicOn() const { return SettingGet(m_config, "launcher", "game_music", "1") != "0"; }
 
     const ArtTexture* App::CachedArt(const char* game, LauncherAssets::Role role, int maxWidth)
     {
@@ -185,9 +187,14 @@ namespace launcher_ui
         if (found == m_cachedArt.end())
         {
             LauncherAssets::Asset asset = role == LauncherAssets::Role::HeroBackground
-                ? LauncherAssets::Asset{ SceneOf(game), true } : LauncherAssets::Cached(game, role);
+                                              ? LauncherAssets::Asset{ SceneOf(game), true }
+                                              : LauncherAssets::Cached(game, role);
             asset.valid = asset.valid && !asset.path.empty();
-            found = m_cachedArt.emplace(key, asset.valid ? LoadArt(m_renderer, asset.path, role == LauncherAssets::Role::Logo, maxWidth) : ArtTexture{}).first;
+            found = m_cachedArt
+                        .emplace(key,
+                            asset.valid ? LoadArt(m_renderer, asset.path, role == LauncherAssets::Role::Logo, maxWidth)
+                                        : ArtTexture{})
+                        .first;
         }
         return found->second ? &found->second : nullptr;
     }
@@ -237,7 +244,8 @@ namespace launcher_ui
             // A soft shadow under it: a few darkened copies, further and fainter.
             float step = std::max(1.5f, height * 0.012f);
             for (int i = 3; i >= 1; i--)
-                draw->AddImage(Ref(logo.texture), ImVec2(min.x, min.y + step * i * 1.6f), ImVec2(max.x, max.y + step * i * 1.6f), logo.uv0, logo.uv1,
+                draw->AddImage(Ref(logo.texture), ImVec2(min.x, min.y + step * i * 1.6f),
+                    ImVec2(max.x, max.y + step * i * 1.6f), logo.uv0, logo.uv1,
                     IM_COL32(4, 8, 30, int(alpha * (110 - 28 * i))));
         }
         draw->AddImage(Ref(logo.texture), min, max, logo.uv0, logo.uv1, IM_COL32(255, 255, 255, int(alpha * 255)));
@@ -258,7 +266,8 @@ namespace launcher_ui
         ImGui::Dummy(ImVec2(0, ui::space::M));
         const char* titles[] = { Tr("Choose your disc"), Tr("Install"), Tr("Play") };
         const std::string install = Tf("About {} min, {} GB", InstallMinutesFor(m_s->game.id), InstallGigabytes);
-        const char* notes[] = { Tr("Your own copy, as an .iso"), install.c_str(), Tr("Controller, keyboard, real or virtual portal") };
+        const char* notes[] = { Tr("Your own copy, as an .iso"), install.c_str(),
+            Tr("Controller, keyboard, real or virtual portal") };
         for (int i = 0; i < 3; i++)
             ui::GuideStep(i + 1, titles[i], notes[i], ImGui::GetContentRegionAvail().x, i == 0);
         ui::EndCard();
@@ -283,15 +292,23 @@ namespace launcher_ui
         if (list.current >= 0)
         {
             const std::string& id = list.rows[size_t(list.current)].id;
-            current = id == "kit" || id == "toolchain" || id == "disc" ? 0 : id == "recompile" ? 1 : id == "shaders" ? 2 : 3;
+            current = id == "kit" || id == "toolchain" || id == "disc" ? 0
+                      : id == "recompile"                              ? 1
+                      : id == "shaders"                                ? 2
+                                                                       : 3;
         }
         for (int i = 0; i < 4; i++)
         {
-            if (i > 0) ImGui::SameLine(0, ui::space::XS);
-            ui::StatusPill(i < current ? ui::Status::Success : i == current ? ui::Status::Busy : ui::Status::Neutral, steps[i]);
+            if (i > 0)
+                ImGui::SameLine(0, ui::space::XS);
+            ui::StatusPill(i < current    ? ui::Status::Success
+                           : i == current ? ui::Status::Busy
+                                          : ui::Status::Neutral,
+                steps[i]);
         }
         const ui::ButtonOptions cancel{ .size = ui::Size::Small };
-        ImGui::SetCursorScreenPos(ImVec2(at.x + width - ui::ButtonWidth(Tr("Cancel"), cancel), at.y + 2 * ui::height::Normal));
+        ImGui::SetCursorScreenPos(
+            ImVec2(at.x + width - ui::ButtonWidth(Tr("Cancel"), cancel), at.y + 2 * ui::height::Normal));
         if (ui::Button(Tr("Cancel"), cancel))
         {
             m_s->installer.Cancel();
@@ -302,7 +319,8 @@ namespace launcher_ui
         if (ui::Button(Tr("Show details"), { .kind = ui::ButtonKind::Ghost, .size = ui::Size::Small }))
             m_s->installLog = true;
         ImGui::SameLine();
-        if (ui::IconButton("##hero-install-settings", ui::Icon::Gear, Tr("Game settings"), { .size = ui::Size::Small, .overArt = true }))
+        if (ui::IconButton("##hero-install-settings", ui::Icon::Gear, Tr("Game settings"),
+                { .size = ui::Size::Small, .overArt = true }))
             GoTo(Page::GameSettings);
     }
 
@@ -313,11 +331,13 @@ namespace launcher_ui
         {
             m_page = Page::Play;
             m_focusTo = FocusTo::Page;
-            if (!m_testDrop.empty()) StartVerify(m_testDrop);
+            if (!m_testDrop.empty())
+                StartVerify(m_testDrop);
             m_testHeroState = 0;
             return;
         }
-        if (m_s->disc == DiscState::Verifying) return;
+        if (m_s->disc == DiscState::Verifying)
+            return;
         // The Ready fixture represents a completed build, including its usual setup hint rules.
         m_s->installed.runtime = "test-built";
         m_s->installed.gameVersion = "99.0.0";
@@ -334,12 +354,13 @@ namespace launcher_ui
         const ArtTexture* logo = m_s->logo ? &m_s->logo : CachedArt(m_s->game.id, LauncherAssets::Role::Logo, 0);
         if (!m_testHeroNoArt && (background == nullptr || logo == nullptr))
         {
-            fprintf(stderr, "FAIL hero %s-art: disc logo or background unavailable; fallback rendered\n", states[m_testHeroState]);
+            fprintf(stderr, "FAIL hero %s-art: disc logo or background unavailable; fallback rendered\n",
+                states[m_testHeroState]);
             m_testFailures++;
         }
         m_testHeroProgress.state = InstallProgress::State::Running;
-        m_testHeroProgress.steps = { { "toolchain", "", now - 4000, now - 3000 }, { "disc", "", now - 3000, now - 2000 },
-            { "recompile", "", now - 2000, 0 } };
+        m_testHeroProgress.steps = { { "toolchain", "", now - 4000, now - 3000 },
+            { "disc", "", now - 3000, now - 2000 }, { "recompile", "", now - 2000, 0 } };
         m_testHeroProgress.done = 42;
         m_testHeroProgress.total = 100;
         m_page = Page::Play;
@@ -384,7 +405,8 @@ namespace launcher_ui
         const uint32_t focused = ImGui::GetCurrentContext()->NavId;
         if (std::find(m_heroNavSeen.begin(), m_heroNavSeen.end(), focused) == m_heroNavSeen.end())
             m_heroNavSeen.push_back(focused);
-        const ImGuiKey keys[] = { ImGuiKey_GamepadDpadDown, ImGuiKey_GamepadDpadRight, ImGuiKey_GamepadDpadUp, ImGuiKey_GamepadDpadLeft };
+        const ImGuiKey keys[] = { ImGuiKey_GamepadDpadDown, ImGuiKey_GamepadDpadRight, ImGuiKey_GamepadDpadUp,
+            ImGuiKey_GamepadDpadLeft };
         ImGuiIO& io = ImGui::GetIO();
         if (m_heroNavPhase == 1)
         {
@@ -394,17 +416,19 @@ namespace launcher_ui
         }
         if (m_heroNavPhase == 2)
         {
-            m_heroNavEdges[{m_heroNavFrom, m_heroNavDirection}] = focused;
+            m_heroNavEdges[{ m_heroNavFrom, m_heroNavDirection }] = focused;
             m_heroNavPhase = 0;
         }
         auto unexplored = [&](uint32_t id) {
             for (int i = 0; i < 4; i++)
-                if (!m_heroNavEdges.contains({id, i})) return i;
+                if (!m_heroNavEdges.contains({ id, i }))
+                    return i;
             return -1;
         };
         int missing = 0;
         for (uint32_t id : m_heroNavExpected)
-            if (std::find(m_heroNavSeen.begin(), m_heroNavSeen.end(), id) == m_heroNavSeen.end()) missing++;
+            if (std::find(m_heroNavSeen.begin(), m_heroNavSeen.end(), id) == m_heroNavSeen.end())
+                missing++;
         int direction = 0;
         if (pad && missing > 0)
         {
@@ -412,8 +436,8 @@ namespace launcher_ui
             if (direction < 0)
             {
                 // Follow known directional moves to a control with an unexplored neighbour.
-                std::vector<std::pair<uint32_t, int>> queue{ {focused, -1} };
-                std::vector<uint32_t> seen{focused};
+                std::vector<std::pair<uint32_t, int>> queue{ { focused, -1 } };
+                std::vector<uint32_t> seen{ focused };
                 for (size_t at = 0; at < queue.size() && direction < 0; at++)
                 {
                     const auto [id, first] = queue[at];
@@ -424,12 +448,14 @@ namespace launcher_ui
                     }
                     for (int i = 0; i < 4; i++)
                     {
-                        const auto edge = m_heroNavEdges.find({id, i});
-                        if (edge == m_heroNavEdges.end()) continue;
+                        const auto edge = m_heroNavEdges.find({ id, i });
+                        if (edge == m_heroNavEdges.end())
+                            continue;
                         const uint32_t to = edge->second;
-                        if (std::find(seen.begin(), seen.end(), to) != seen.end()) continue;
+                        if (std::find(seen.begin(), seen.end(), to) != seen.end())
+                            continue;
                         seen.push_back(to);
-                        queue.push_back({to, first < 0 ? i : first});
+                        queue.push_back({ to, first < 0 ? i : first });
                     }
                 }
             }
@@ -447,7 +473,8 @@ namespace launcher_ui
                 m_testFailures++;
                 if (pad)
                     for (const auto& [move, target] : m_heroNavEdges)
-                        fprintf(stderr, "hero navigation edge: %s / %d -> %s\n", ui::Ctx().testNavigationLabels[move.first].c_str(), move.second,
+                        fprintf(stderr, "hero navigation edge: %s / %d -> %s\n",
+                            ui::Ctx().testNavigationLabels[move.first].c_str(), move.second,
                             ui::Ctx().testNavigationLabels[target].c_str());
             }
             m_heroNavCase++;
@@ -479,18 +506,22 @@ namespace launcher_ui
                 m_focusTo = FocusTo::None;
             }
             ImDrawList* draw = ImGui::GetWindowDrawList();
-            const unsigned fill = state.pressed ? ui::color::DangerFillPressed
-                : state.hovered || state.focused ? ui::color::DangerFillHover : ui::color::DangerFill;
+            const unsigned fill = state.pressed                    ? ui::color::DangerFillPressed
+                                  : state.hovered || state.focused ? ui::color::DangerFillHover
+                                                                   : ui::color::DangerFill;
             draw->AddRectFilled(at, end, ui::Col(fill, ui::DisabledAlpha), ui::radius::Control);
             draw->AddRect(at, end, ui::Col(ui::color::Danger), ui::radius::Control, 0, ui::stroke::Edge);
             const float lead = ui::icon::Normal + ui::space::S;
-            const float fontSize = ui::FitSize(ui::Ctx().fonts.title, ui::type::Title, action.label, action.width - 2 * ui::space::M - lead);
+            const float fontSize = ui::FitSize(
+                ui::Ctx().fonts.title, ui::type::Title, action.label, action.width - 2 * ui::space::M - lead);
             ImGui::PushFont(ui::Ctx().fonts.title, fontSize);
             const float textW = ImGui::CalcTextSize(action.label).x;
             const float x = m_testMainAt.x - (lead + textW) / 2;
             const float mid = m_testMainAt.y + (state.pressed ? ui::stroke::Hairline : 0);
-            ui::DrawIcon(draw, action.icon, ImVec2(x + ui::icon::Normal / 2, mid), ui::icon::Normal, ui::Col(ui::color::Danger));
-            ui::DrawText(draw, ImVec2(x + lead, mid - ui::CapMiddle(ui::TextStyle::Title, false, fontSize)), ui::Col(ui::color::Danger), action.label);
+            ui::DrawIcon(
+                draw, action.icon, ImVec2(x + ui::icon::Normal / 2, mid), ui::icon::Normal, ui::Col(ui::color::Danger));
+            ui::DrawText(draw, ImVec2(x + lead, mid - ui::CapMiddle(ui::TextStyle::Title, false, fontSize)),
+                ui::Col(ui::color::Danger), action.label);
             ImGui::PopFont();
             ui::FocusRingIf(state, ui::radius::Control);
             ImGui::EndDisabled();
@@ -517,7 +548,8 @@ namespace launcher_ui
         ui::MainActionResult result = ui::MainAction(options);
         m_testMainAt = result.mainCentre;
         m_testGearAt = result.gearCentre;
-        return result.hit == ui::MainActionHit::Main ? MainActionHit::Main
-            : result.hit == ui::MainActionHit::Settings ? MainActionHit::Settings : MainActionHit::None;
+        return result.hit == ui::MainActionHit::Main       ? MainActionHit::Main
+               : result.hit == ui::MainActionHit::Settings ? MainActionHit::Settings
+                                                           : MainActionHit::None;
     }
 }

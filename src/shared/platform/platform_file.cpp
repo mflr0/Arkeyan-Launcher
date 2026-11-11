@@ -35,27 +35,18 @@ int64_t PlatformReadFile(PlatformFile file, void* buffer, uint32_t size, uint64_
     return read;
 }
 
-void PlatformCloseFile(PlatformFile file)
-{
-    CloseHandle(reinterpret_cast<HANDLE>(file));
-}
+void PlatformCloseFile(PlatformFile file) { CloseHandle(reinterpret_cast<HANDLE>(file)); }
 
 #else
 #include <fcntl.h>
 #include <unistd.h>
 
-PlatformFile PlatformOpenFile(const char* path)
-{
-    return open(path, O_RDONLY);
-}
+PlatformFile PlatformOpenFile(const char* path) { return open(path, O_RDONLY); }
 
 int64_t PlatformReadFile(PlatformFile file, void* buffer, uint32_t size, uint64_t offset)
 {
     return pread(int(file), buffer, size, off_t(offset));
 }
 
-void PlatformCloseFile(PlatformFile file)
-{
-    close(int(file));
-}
+void PlatformCloseFile(PlatformFile file) { close(int(file)); }
 #endif

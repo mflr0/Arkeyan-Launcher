@@ -25,10 +25,10 @@ struct GameRelease
 
 struct GameInfo
 {
-    const char* id;             // settings file section
-    const char* name;           // display name
+    const char* id; // settings file section
+    const char* name; // display name
     std::span<const GameRelease> releases;
-    const char* runtime;        // current executable filename
+    const char* runtime; // current executable filename
     const char* legacyRuntime = nullptr; // accepted for existing installs
 };
 
@@ -43,12 +43,12 @@ enum class GameSourceStatus
     Ok,
     NotFound,
     Unreadable,
-    Folder,         // extracted game folder: the disc reader only reads images for now
-    NotXboxDisc,    // no XDVDFS volume, or the image is cut short before it
+    Folder, // extracted game folder: the disc reader only reads images for now
+    NotXboxDisc, // no XDVDFS volume, or the image is cut short before it
     NotXbox360Game, // XDVDFS volume without default.xex (original Xbox or data disc)
-    Damaged,        // default.xex missing bytes or not an XEX2 executable
-    WrongGame,      // another title ID
-    WrongVersion,   // this title, but a default.xex no runtime was recompiled from
+    Damaged, // default.xex missing bytes or not an XEX2 executable
+    WrongGame, // another title ID
+    WrongVersion, // this title, but a default.xex no runtime was recompiled from
 };
 
 struct GameSourceCheck
@@ -56,7 +56,8 @@ struct GameSourceCheck
     GameSourceStatus status{};
     std::string message; // why the source can't be used, for the player
     std::string xexSha256; // the verified default.xex (Ok only): which installed game belongs to this disc
-    std::string otherGame; // WrongGame, when the disc is another supported game: its id ("This disc is Spyro's Adventure")
+    std::string
+        otherGame; // WrongGame, when the disc is another supported game: its id ("This disc is Spyro's Adventure")
     art::DiscLanguages languages; // the text and voice languages the disc holds (Ok only; empty lists: not known)
     // WrongVersion: what "Copy disc details" puts on the clipboard for a "New disc edition" issue (the game, its ids,
     // region and languages, default.xex's size and SHA-256, the image's size, the launcher's version; nothing else).

@@ -25,23 +25,31 @@ namespace
         { "link", N_("Linking the game"), { 1, 1, 1, 1, 4 } },
         { "movies", N_("Adding the movie shaders"), { 1, 5, 23, 5, 12 } },
         { "finish", N_("Finishing"), { 1, 6, 1, 1, 12 } },
-        { "hdtextures", N_("Making the HD textures"), { 20, 20, 20, 20, 20 } }, // only when asked for (Game settings > Video > Use HD textures): about 2 to 3 minutes
+        { "hdtextures", N_("Making the HD textures"),
+            { 20, 20, 20, 20,
+                20 } }, // only when asked for (Game settings > Video > Use HD textures): about 2 to 3 minutes
     };
     constexpr float UnknownWeight = 4;
 }
 
 InstallChecklist MakeInstallChecklist(const InstallProgress& progress, uint64_t now, std::string_view game)
 {
-    const size_t column = game == "ssa" ? 0 : game == "giants" ? 1 : game == "swapforce" ? 2 : game == "trapteam" ? 3 : 4; // SuperChargers: "other" until measured
+    const size_t column = game == "ssa"         ? 0
+                          : game == "giants"    ? 1
+                          : game == "swapforce" ? 2
+                          : game == "trapteam"  ? 3
+                                                : 4; // SuperChargers: "other" until measured
     InstallChecklist list;
     std::vector<float> weights;
-    bool downloadedKit = std::any_of(progress.steps.begin(), progress.steps.end(), [](const InstallProgress::Step& step) { return step.id == "kit"; });
+    bool downloadedKit = std::any_of(progress.steps.begin(), progress.steps.end(),
+        [](const InstallProgress::Step& step) { return step.id == "kit"; });
     for (const KnownStep& step : KnownSteps)
     {
         if (!downloadedKit && std::string_view(step.id) == "kit")
             continue;
         if (!progress.hdTextures && std::string_view(step.id) == "hdtextures" &&
-            std::none_of(progress.steps.begin(), progress.steps.end(), [](const InstallProgress::Step& s) { return s.id == "hdtextures"; }))
+            std::none_of(progress.steps.begin(), progress.steps.end(),
+                [](const InstallProgress::Step& s) { return s.id == "hdtextures"; }))
             continue;
         list.rows.push_back({ step.id, Tr(step.title) });
         weights.push_back(step.weight[column]);
@@ -58,7 +66,8 @@ InstallChecklist MakeInstallChecklist(const InstallProgress& progress, uint64_t 
     int last = -1, lastStepRow = -1;
     for (const InstallProgress::Step& step : progress.steps)
     {
-        int row = afterMovies && (step.id == "shaders" || step.id == "compile" || step.id == "link") ? rowOf("finish") : rowOf(step.id);
+        int row = afterMovies && (step.id == "shaders" || step.id == "compile" || step.id == "link") ? rowOf("finish")
+                                                                                                     : rowOf(step.id);
         if (step.id == "movies")
             afterMovies = true;
         if (row < 0)
@@ -89,9 +98,9 @@ InstallChecklist MakeInstallChecklist(const InstallProgress& progress, uint64_t 
         int row = lastStepRow;
         list.current = row;
         InstallChecklist::Row& r = list.rows[size_t(row)];
-        r.state = progress.state == State::Running ? InstallChecklist::RowState::Running
-            : progress.state == State::Failed ? InstallChecklist::RowState::Failed
-                                              : InstallChecklist::RowState::Stopped;
+        r.state = progress.state == State::Running  ? InstallChecklist::RowState::Running
+                  : progress.state == State::Failed ? InstallChecklist::RowState::Failed
+                                                    : InstallChecklist::RowState::Stopped;
         if (progress.total > 0)
         {
             r.done = std::min(progress.done, progress.total);
@@ -121,7 +130,9 @@ InstallChecklist MakeInstallChecklist(const InstallProgress& progress, uint64_t 
 
     if (!progress.steps.empty() && progress.steps.front().startedAt != 0)
     {
-        uint64_t end = progress.state == State::Running ? now : std::max(progress.steps.back().endedAt, progress.steps.back().startedAt);
+        uint64_t end = progress.state == State::Running
+                           ? now
+                           : std::max(progress.steps.back().endedAt, progress.steps.back().startedAt);
         list.elapsedMs = end > progress.steps.front().startedAt ? end - progress.steps.front().startedAt : 0;
     }
 
@@ -138,7 +149,8 @@ InstallChecklist MakeInstallChecklist(const InstallProgress& progress, uint64_t 
             float currentLeft = float(r.ms) / fraction * (1 - fraction);
             double measuredMs = double(r.ms), measuredWeight = double(weights[size_t(list.current)]) * fraction;
             for (size_t i = 0; i < size_t(list.current); i++)
-                if (list.rows[i].state == InstallChecklist::RowState::Done && list.rows[i].timed && list.rows[i].ms >= 3000 && list.rows[i].id != "disc")
+                if (list.rows[i].state == InstallChecklist::RowState::Done && list.rows[i].timed &&
+                    list.rows[i].ms >= 3000 && list.rows[i].id != "disc")
                 {
                     measuredMs += double(list.rows[i].ms);
                     measuredWeight += weights[i];

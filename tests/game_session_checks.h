@@ -12,7 +12,8 @@ inline void GameControlChecks(const std::filesystem::path& scratch)
     runtime += ".exe";
 #endif
     auto launch = [&](const char* name, const char* mode) {
-        return GameLaunch{ runtime.string(), { { "SKY_FAKE_GAME_MODE", mode }, { "SKY_FAKE_GAME_READY", (root / name).string() } }, {} };
+        return GameLaunch{ runtime.string(),
+            { { "SKY_FAKE_GAME_MODE", mode }, { "SKY_FAKE_GAME_READY", (root / name).string() } }, {} };
     };
     auto ready = [&](const char* name, GameSession& session) {
         uint32_t pid = 0;
@@ -20,21 +21,29 @@ inline void GameControlChecks(const std::filesystem::path& scratch)
         while (SDL_GetTicks() - start < 5000)
         {
             std::ifstream(root / name) >> pid;
-            if (pid != 0) break;
+            if (pid != 0)
+                break;
             SDL_Delay(10);
         }
         SHELL_EXPECT(pid != 0 && pid == session.Pid());
     };
     auto waitEnd = [](GameSession& session) {
         for (uint64_t start = SDL_GetTicks(); SDL_GetTicks() - start < 8000; SDL_Delay(10))
-            if (auto ended = session.Poll(SDL_GetTicks())) return ended;
+            if (auto ended = session.Poll(SDL_GetTicks()))
+                return ended;
         return std::optional<GameSession::Ended>();
     };
     bool available = true;
     uint32_t queried = 0, shown = 0;
     GameSession::WindowControl windows;
-    windows.available = [&](uint32_t pid) { queried = pid; return available; };
-    windows.show = [&](uint32_t pid) { shown = pid; return true; };
+    windows.available = [&](uint32_t pid) {
+        queried = pid;
+        return available;
+    };
+    windows.show = [&](uint32_t pid) {
+        shown = pid;
+        return true;
+    };
     GameSession session({ "ssa" }, [](const std::string&) { return false; }, windows);
     GameSession other({ "ssa" }, [](const std::string&) { return false; });
     std::string error;
@@ -98,5 +107,6 @@ inline void GameControlChecks(const std::filesystem::path& scratch)
     SHELL_EXPECT(marked.Running() == "ssa" && !marked.Ours() && marked.Pid() == 0);
     SHELL_EXPECT(!marked.Stop(SDL_GetTicks()) && !marked.Show() && !marked.CanShow() && queried == 0 && shown == 0);
     SDL_UnsetEnvironmentVariable(SDL_GetEnvironment(), "SKY_LAUNCHER_LOG_DIR");
-    printf("Game controls: clean stop, timeout, same-executable PID isolation, window capability and activation routing, the one restart with Vulkan checked\n");
+    printf("Game controls: clean stop, timeout, same-executable PID isolation, window capability and activation "
+           "routing, the one restart with Vulkan checked\n");
 }

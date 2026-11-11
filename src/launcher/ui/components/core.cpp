@@ -44,8 +44,9 @@ namespace ui
         {
             state.hovered = ImGui::IsItemHovered();
             // Pressed: held by the keyboard or the pad, or by the mouse while still over it (leaving it cancels a click).
-            state.pressed = ImGui::IsItemActive() &&
-                (!ImGui::IsMouseDown(ImGuiMouseButton_Left) || ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem));
+            state.pressed =
+                ImGui::IsItemActive() && (!ImGui::IsMouseDown(ImGuiMouseButton_Left) ||
+                                             ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem));
         }
         state.focused = ImGui::IsItemFocused() && ImGui::GetIO().NavVisible;
         if (g_previewOn)
@@ -150,7 +151,8 @@ namespace ui
         while (!shown.empty() && ImGui::CalcTextSize(shown.c_str()).x + dots > width)
         {
             shown.pop_back();
-            while (!shown.empty() && (static_cast<unsigned char>(shown.back()) & 0xC0) == 0x80) // a whole UTF-8 character
+            while (
+                !shown.empty() && (static_cast<unsigned char>(shown.back()) & 0xC0) == 0x80) // a whole UTF-8 character
                 shown.pop_back();
             if (!shown.empty() && (static_cast<unsigned char>(shown.back()) & 0xC0) == 0xC0)
                 shown.pop_back();
@@ -179,11 +181,17 @@ namespace ui
         return channel(16) | channel(8) | channel(0);
     }
 
-    unsigned Lift(unsigned rgb, float amount) { return amount >= 0 ? Mix(rgb, 0xFFFFFF, amount) : Mix(rgb, 0x000000, -amount); }
+    unsigned Lift(unsigned rgb, float amount)
+    {
+        return amount >= 0 ? Mix(rgb, 0xFFFFFF, amount) : Mix(rgb, 0x000000, -amount);
+    }
 
     float Luminance(unsigned rgb)
     {
-        auto linear = [](unsigned c) { float v = float(c) / 255.0f; return v <= 0.04045f ? v / 12.92f : std::pow((v + 0.055f) / 1.055f, 2.4f); };
+        auto linear = [](unsigned c) {
+            float v = float(c) / 255.0f;
+            return v <= 0.04045f ? v / 12.92f : std::pow((v + 0.055f) / 1.055f, 2.4f);
+        };
         return 0.2126f * linear(rgb >> 16 & 0xFF) + 0.7152f * linear(rgb >> 8 & 0xFF) + 0.0722f * linear(rgb & 0xFF);
     }
 
@@ -228,12 +236,14 @@ namespace ui
         for (int i = Layers; i >= 1; i--)
         {
             float grow = spread * float(i) / Layers;
-            draw->AddRectFilled(ImVec2(min.x - grow, min.y - grow + offsetY), ImVec2(max.x + grow, max.y + grow + offsetY),
+            draw->AddRectFilled(ImVec2(min.x - grow, min.y - grow + offsetY),
+                ImVec2(max.x + grow, max.y + grow + offsetY),
                 ImGui::GetColorU32(IM_COL32(0, 0, 0, int(alpha * 255 / Layers))), rounding + grow);
         }
     }
 
-    void GradientRect(ImDrawList* draw, ImVec2 min, ImVec2 max, ImU32 top, ImU32 bottom, float rounding, ImDrawFlags flags)
+    void GradientRect(
+        ImDrawList* draw, ImVec2 min, ImVec2 max, ImU32 top, ImU32 bottom, float rounding, ImDrawFlags flags)
     {
         // ImGui draws the shape; its vertices are then coloured by height, alpha included. The anti-aliased fringe's
         // vertices keep their transparency (else the edges come out hard and half a pixel wider).
@@ -244,9 +254,10 @@ namespace ui
         for (int i = first; i < draw->VtxBuffer.Size; i++)
         {
             ImDrawVert& vertex = draw->VtxBuffer[i];
-            float t = std::clamp((vertex.pos.y - min.y) / height, 0.0f, 1.0f), coverage = float(vertex.col >> IM_COL32_A_SHIFT & 0xFF) / 255;
-            vertex.col = ImGui::ColorConvertFloat4ToU32(ImVec4(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t, a.z + (b.z - a.z) * t,
-                (a.w + (b.w - a.w) * t) * coverage));
+            float t = std::clamp((vertex.pos.y - min.y) / height, 0.0f, 1.0f),
+                  coverage = float(vertex.col >> IM_COL32_A_SHIFT & 0xFF) / 255;
+            vertex.col = ImGui::ColorConvertFloat4ToU32(ImVec4(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t,
+                a.z + (b.z - a.z) * t, (a.w + (b.w - a.w) * t) * coverage));
         }
     }
 
@@ -360,7 +371,8 @@ namespace ui
         // Lucide's loader (a ring, three quarters drawn) as a path, not the icon font's glyph: a glyph's ink sits off its
         // quad's middle, so a rotated glyph wobbled about a point that is not the ring's centre. Its proportions on the
         // 24-unit grid: radius 9 (its stroke drawn a little heavier, as the font's). Still when motion is reduced.
-        const float radius = size * 9.0f / 24.0f, thickness = std::max(1.5f, size * 2.5f / 24.0f); // as thick as the icon font's strokes
+        const float radius = size * 9.0f / 24.0f,
+                    thickness = std::max(1.5f, size * 2.5f / 24.0f); // as thick as the icon font's strokes
         const float start = Phase(motion::Spin) * Tau;
         draw->PathArcTo(centre, radius, start, start + Tau * 0.75f, 0);
         draw->PathStroke(color, ImDrawFlags_None, thickness);
@@ -384,12 +396,15 @@ namespace ui
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, pad);
         ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, radius::Control);
         ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, elevation::Raised.border);
-        ImGui::PushStyleColor(ImGuiCol_WindowBg, LauncherTheme::Rgb(elevation::Raised.fill, elevation::Raised.fillAlpha));
+        ImGui::PushStyleColor(
+            ImGuiCol_WindowBg, LauncherTheme::Rgb(elevation::Raised.fill, elevation::Raised.fillAlpha));
         ImGui::PushStyleColor(ImGuiCol_Border, LauncherTheme::Rgb(color::Hairline));
         char name[24];
         std::snprintf(name, sizeof name, "##bubble%d", g_bubbles++);
-        ImGui::Begin(name, nullptr, ImGuiWindowFlags_Tooltip | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoNav |
-            ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_AlwaysAutoResize);
+        ImGui::Begin(name, nullptr,
+            ImGuiWindowFlags_Tooltip | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs |
+                ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoSavedSettings |
+                ImGuiWindowFlags_AlwaysAutoResize);
         PushText(TextStyle::Caption);
         ImGui::PushTextWrapPos(ImGui::GetCursorPosX() + MaxWidth);
         ImGui::PushStyleColor(ImGuiCol_Text, LauncherTheme::Rgb(color::Ink));
@@ -404,6 +419,7 @@ namespace ui
 
     bool WantsTooltip(const State& state)
     {
-        return state.focused || (state.hovered && (state.preview || ImGui::IsItemHovered(ImGuiHoveredFlags_ForTooltip)));
+        return state.focused ||
+               (state.hovered && (state.preview || ImGui::IsItemHovered(ImGuiHoveredFlags_ForTooltip)));
     }
 }

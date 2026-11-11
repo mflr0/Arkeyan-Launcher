@@ -61,7 +61,8 @@ GameProgress BuildProgress(const achievements::List& list, const std::vector<pro
             }
         // The game's own text for a locked one; a hidden one keeps its name to itself until it is unlocked.
         row.name = info.hidden && !row.unlocked ? Tr("Hidden achievement") : info.name;
-        row.description = row.unlocked || info.lockedDescription.empty() ? info.unlockedDescription : info.lockedDescription;
+        row.description =
+            row.unlocked || info.lockedDescription.empty() ? info.unlockedDescription : info.lockedDescription;
         if (!imageFolder.empty() && info.imageId != 0)
         {
             std::filesystem::path image = achievements::CachedImage(imageFolder, info.imageId);

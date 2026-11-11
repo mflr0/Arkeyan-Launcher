@@ -288,7 +288,8 @@ namespace launcher_ui
             return false;
         const collection::Game* game = collection::Catalogue::Get().FindGame(m_toybox);
         std::error_code error;
-        return game != nullptr && !fs::exists(datadir::FromText(toyboxlinkclient::LinkFileBeside(SessionFile(*game))), error);
+        return game != nullptr &&
+               !fs::exists(datadir::FromText(toyboxlinkclient::LinkFileBeside(SessionFile(*game))), error);
     }
 
     void App::DrawToyboxPage()

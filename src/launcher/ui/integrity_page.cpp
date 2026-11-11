@@ -50,11 +50,14 @@ namespace launcher_ui
         {
             m_integrityPolled = true;
             IntegrityCheck::Report report = m_integrity.Snapshot();
-            fprintf(stderr, "launcher: file check: %zu files, %zu read (%.0f MB) in %.2f s, %zu with a problem\n", report.files,
-                report.hashed, double(report.hashedBytes) / (1 << 20), report.seconds, report.findings.size());
+            fprintf(stderr, "launcher: file check: %zu files, %zu read (%.0f MB) in %.2f s, %zu with a problem\n",
+                report.files, report.hashed, double(report.hashedBytes) / (1 << 20), report.seconds,
+                report.findings.size());
             m_findings = std::move(report.findings);
             m_integrityOpen = !m_findings.empty();
-            if (!m_kitRepaired.empty() && std::none_of(m_findings.begin(), m_findings.end(), [&](const IntegrityFinding& finding) { return SameFolder(finding.folder, m_kitRepaired); }))
+            if (!m_kitRepaired.empty() &&
+                std::none_of(m_findings.begin(), m_findings.end(),
+                    [&](const IntegrityFinding& finding) { return SameFolder(finding.folder, m_kitRepaired); }))
                 Toast(Tr("The game tools are repaired"), ui::ToastKind::Success);
             m_kitRepaired.clear();
         }
@@ -75,7 +78,8 @@ namespace launcher_ui
 
     void App::ShowFinding(IntegrityFinding finding)
     {
-        std::erase_if(m_findings, [&](const IntegrityFinding& other) { return SameFolder(other.folder, finding.folder); });
+        std::erase_if(
+            m_findings, [&](const IntegrityFinding& other) { return SameFolder(other.folder, finding.folder); });
         m_findings.insert(m_findings.begin(), std::move(finding));
         m_integrityOpen = true;
     }
@@ -110,10 +114,11 @@ namespace launcher_ui
                 if (SameFolder(checked.ssabuild.parent_path(), finding.folder))
                     kit = &checked;
             // The release it came from: its kit/<tag>/ folder, else its kit.txt, else the launcher's own.
-            const std::string tag = kit != nullptr && !kit->tag.empty() ? kit->tag
-                : kit != nullptr && !kit->release.empty()                ? "v" + kit->release
-                                                                          : "v" + LauncherVersion();
-            m_kitRepair.Start(SettingGet(m_config, "update", "kit_repo", "mflr0/Arkeyan-Launcher"), tag, DownloadedKitsFolder(), finding.folder);
+            const std::string tag = kit != nullptr && !kit->tag.empty()       ? kit->tag
+                                    : kit != nullptr && !kit->release.empty() ? "v" + kit->release
+                                                                              : "v" + LauncherVersion();
+            m_kitRepair.Start(SettingGet(m_config, "update", "kit_repo", "mflr0/Arkeyan-Launcher"), tag,
+                DownloadedKitsFolder(), finding.folder);
             m_kitRepairPolled = false;
             Toast(Tr("Downloading the game tools again"), ui::ToastKind::Info);
             return;
@@ -126,8 +131,9 @@ namespace launcher_ui
         {
             SelectGame(*game);
             m_page = Page::Play;
-            Toast(slot.disc == DiscState::Verifying ? std::string(Tr("The disc is still being checked: try again in a moment"))
-                                                    : Tf("Repair needs the disc of {}", GameName(game->id, GameNameForm::Short)),
+            Toast(slot.disc == DiscState::Verifying
+                      ? std::string(Tr("The disc is still being checked: try again in a moment"))
+                      : Tf("Repair needs the disc of {}", GameName(game->id, GameNameForm::Short)),
                 ui::ToastKind::Error);
             return;
         }
@@ -157,15 +163,17 @@ namespace launcher_ui
         const filelist::Problem& first = finding.problems.front();
         const bool missing = first.kind == filelist::Problem::Kind::Missing;
         const std::string name = isKit ? std::string() : std::string(GameName(finding.id));
-        std::string what = isKit ? (missing ? Tf("The game tools are missing a file: {}", first.path) : Tf("A file of the game tools was changed: {}", first.path))
-                                 : (missing ? Tf("{0} is missing a file: {1}", name, first.path) : Tf("A file of {0} was changed: {1}", name, first.path));
+        std::string what = isKit ? (missing ? Tf("The game tools are missing a file: {}", first.path)
+                                            : Tf("A file of the game tools was changed: {}", first.path))
+                                 : (missing ? Tf("{0} is missing a file: {1}", name, first.path)
+                                            : Tf("A file of {0} was changed: {1}", name, first.path));
         if (finding.problems.size() == 2)
             what += " " + std::string(Tr("And 1 other file."));
         else if (finding.problems.size() > 2)
             what += " " + Tf("And {} other files.", finding.problems.size() - 1);
-        const std::string how = chosen ? Tr("These are your own game tools: restore the file, or set them up again.")
-            : isKit                    ? Tr("Repair downloads the game tools again.")
-                                       : Tr("Repair builds the game again from your disc.");
+        const std::string how = chosen  ? Tr("These are your own game tools: restore the file, or set them up again.")
+                                : isKit ? Tr("Repair downloads the game tools again.")
+                                        : Tr("Repair builds the game again from your disc.");
 
         bool open = true, repaired = false;
         if (ui::BeginModal("##integrity", Tr("Files missing or changed"), &open, ui::ModalSize::Medium))
@@ -173,7 +181,8 @@ namespace launcher_ui
             ui::Text(ui::TextStyle::Body, what.c_str(), ui::color::Ink, 0, true);
             ImGui::Dummy(ImVec2(0, ui::space::XS));
             ui::Text(ui::TextStyle::Body,
-                Tr("An antivirus often does this: it may have put the file in quarantine. Restore it from the antivirus's quarantine, or add an exclusion for this folder:"),
+                Tr("An antivirus often does this: it may have put the file in quarantine. Restore it from the "
+                   "antivirus's quarantine, or add an exclusion for this folder:"),
                 ui::color::InkSoft);
             ui::Text(ui::TextStyle::Body, datadir::Text(finding.folder.lexically_normal()).c_str(), ui::color::Ink);
             ImGui::Dummy(ImVec2(0, ui::space::XS));
@@ -182,7 +191,8 @@ namespace launcher_ui
             // The folder at the left of the actions' row.
             const float actionsY = ImGui::GetItemRectMin().y, afterY = ImGui::GetCursorPosY();
             ImGui::SetCursorScreenPos(ImVec2(ImGui::GetWindowPos().x + ImGui::GetCursorStartPos().x, actionsY));
-            if (ui::Button(Tr("Open the folder"), { .kind = ui::ButtonKind::Ghost, .icon = ui::Icon::External }) && !OpenFolder(finding.folder))
+            if (ui::Button(Tr("Open the folder"), { .kind = ui::ButtonKind::Ghost, .icon = ui::Icon::External }) &&
+                !OpenFolder(finding.folder))
                 Toast(Tr("Couldn't open the folder"), ui::ToastKind::Error);
             ImGui::SetCursorPosY(afterY);
             ImGui::Dummy(ImVec2(0, 0));
@@ -215,7 +225,8 @@ namespace launcher_ui
         auto expect = [&](bool ok, const char* what) {
             if (!ok)
             {
-                fprintf(stderr, "FAIL integrity step %d: %s (line \"%s\", %zu findings)\n", m_testStep, what, SlotStatus(&slot).text.c_str(), m_findings.size());
+                fprintf(stderr, "FAIL integrity step %d: %s (line \"%s\", %zu findings)\n", m_testStep, what,
+                    SlotStatus(&slot).text.c_str(), m_findings.size());
                 m_testFailures++;
             }
         };
@@ -261,14 +272,16 @@ namespace launcher_ui
             if (slot.disc == DiscState::Verifying || checking())
                 return;
             expect(slot.disc == DiscState::Ready, "the disc is ready");
-            expect(m_integrityOpen && m_findings.size() == 1 && has("kit", Kind::Missing, builder), "the check at start names the kit's missing file");
+            expect(m_integrityOpen && m_findings.size() == 1 && has("kit", Kind::Missing, builder),
+                "the check at start names the kit's missing file");
             shoot("integrity-kit");
             break;
         case 1: // closed; INSTALL: blocked, the same file named again
             m_findings.clear();
             m_integrityOpen = false;
             StartInstall();
-            expect(!slot.installer.Running() && !slot.kitDownload.Running() && !slot.installView, "INSTALL does not start with a damaged kit");
+            expect(!slot.installer.Running() && !slot.kitDownload.Running() && !slot.installView,
+                "INSTALL does not start with a damaged kit");
             expect(m_integrityOpen && has("kit", Kind::Missing, builder), "and names the file instead");
             m_testStep++;
             break;
@@ -286,7 +299,8 @@ namespace launcher_ui
             if (m_kitRepair.Running() || !m_kitRepairPolled || checking())
                 return;
             expect(m_findings.empty() && !m_integrityOpen, "nothing is wrong any more");
-            expect(slot.kit && slot.kit->version == "kit-repaired" && slot.kit->tag.empty(), "the release's kit is unpacked over the damaged one, in its place");
+            expect(slot.kit && slot.kit->version == "kit-repaired" && slot.kit->tag.empty(),
+                "the release's kit is unpacked over the damaged one, in its place");
             StartInstall();
             expect(slot.installer.Running(), "INSTALL starts");
             m_testStep++;
@@ -309,7 +323,8 @@ namespace launcher_ui
             if (checking())
                 return;
             const std::string name = datadir::Text(datadir::FromText(slot.installed.runtime).filename());
-            expect(m_integrityOpen && m_findings.size() == 1 && has("ssa", Kind::Changed, name), "the next check names the changed game file");
+            expect(m_integrityOpen && m_findings.size() == 1 && has("ssa", Kind::Changed, name),
+                "the next check names the changed game file");
             shoot("integrity-game");
             break;
         }

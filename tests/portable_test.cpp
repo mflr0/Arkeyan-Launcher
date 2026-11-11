@@ -17,8 +17,15 @@ namespace
 {
     int g_failures = 0;
 
-#define EXPECT(condition) \
-    do { if (!(condition)) { fprintf(stderr, "FAIL portable_test line %d: %s\n", __LINE__, #condition); g_failures++; } } while (0)
+#define EXPECT(condition)                                                                                              \
+    do                                                                                                                 \
+    {                                                                                                                  \
+        if (!(condition))                                                                                              \
+        {                                                                                                              \
+            fprintf(stderr, "FAIL portable_test line %d: %s\n", __LINE__, #condition);                                 \
+            g_failures++;                                                                                              \
+        }                                                                                                              \
+    } while (0)
 
     namespace fs = std::filesystem;
 
@@ -89,7 +96,10 @@ int PortableChecks(const fs::path& scratch)
     EXPECT(spec.info.exported.size() == 15 && spec.info.exported[8] == '-');
 
     uint64_t lastDone = 0, lastTotal = 0;
-    PortableResult result = ExportPortable(spec, nullptr, [&](uint64_t done, uint64_t total) { lastDone = done; lastTotal = total; });
+    PortableResult result = ExportPortable(spec, nullptr, [&](uint64_t done, uint64_t total) {
+        lastDone = done;
+        lastTotal = total;
+    });
     EXPECT(result.outcome == PortableResult::Outcome::Done);
     EXPECT(result.path == spec.folder / (spec.name + PortableExtension()) && fs::exists(result.path));
     EXPECT(lastTotal != 0 && lastDone == lastTotal);
@@ -104,8 +114,8 @@ int PortableChecks(const fs::path& scratch)
     std::vector<portable::Entry> entries;
     std::string error;
     EXPECT(portable::ReadIndex(pack, entries, &error));
-    for (const char* name : { "game/default.xex", "game/media/big.arc", "game/media/empty.txt", "portable.txt", "keys.ini", "icon.png",
-             "collection/Spyro.sky", "collection/collection.json" })
+    for (const char* name : { "game/default.xex", "game/media/big.arc", "game/media/empty.txt", "portable.txt",
+             "keys.ini", "icon.png", "collection/Spyro.sky", "collection/collection.json" })
         EXPECT(portable::Find(entries, name) != nullptr);
     EXPECT(portable::Find(entries, "collection/Spyro.sky.lock") == nullptr);
     EXPECT(portable::Find(entries, "game/media/big.arc")->size == (5u << 20));
@@ -127,7 +137,8 @@ int PortableChecks(const fs::path& scratch)
     small.freeBytes = 1000;
     small.folder = root / "out-small";
     result = ExportPortable(small);
-    EXPECT(result.outcome == PortableResult::Outcome::NotEnoughSpace && result.needed > (5u << 20) && result.available == 1000);
+    EXPECT(result.outcome == PortableResult::Outcome::NotEnoughSpace && result.needed > (5u << 20) &&
+           result.available == 1000);
     EXPECT(!PortableFailureText(result).empty() && !fs::exists(small.folder / (small.name + PortableExtension())));
 
     // Cancelled: nothing is left.
@@ -160,7 +171,8 @@ int ExportPortableTool(int argc, char** argv)
 {
     if (argc < 5)
     {
-        fprintf(stderr, "usage: ArkeyanLauncherTest --export-portable <disc> <game executable> <folder> [<collection>] [<launcher.ini>]\n");
+        fprintf(stderr, "usage: ArkeyanLauncherTest --export-portable <disc> <game executable> <folder> [<collection>] "
+                        "[<launcher.ini>]\n");
         return 2;
     }
     LauncherConfig config = argc > 6 ? LoadLauncherConfig(argv[6]) : LauncherConfig();
@@ -174,16 +186,19 @@ int ExportPortableTool(int argc, char** argv)
     if (argc > 5)
         spec.collection = datadir::FromText(argv[5]);
     spec.keys = PortableKeys(config, spec.gameId);
-    spec.info = { spec.gameId, SDL_getenv("SKY_PORTABLE_VERSION") != nullptr ? SDL_getenv("SKY_PORTABLE_VERSION") : "", "", "", PortableStamp() };
+    spec.info = { spec.gameId, SDL_getenv("SKY_PORTABLE_VERSION") != nullptr ? SDL_getenv("SKY_PORTABLE_VERSION") : "",
+        "", "", PortableStamp() };
     spec.name = PortableName(spec.gameId);
     const auto start = std::chrono::steady_clock::now();
     PortableResult result = ExportPortable(spec);
-    const long long seconds = (long long)std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - start).count();
+    const long long seconds =
+        (long long)std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - start).count();
     if (result.outcome != PortableResult::Outcome::Done)
     {
         fprintf(stderr, "export failed: %s\n", PortableFailureText(result).c_str());
         return 1;
     }
-    printf("exported %s: %llu bytes in %lld s\n", datadir::Text(result.path).c_str(), (unsigned long long)result.bytes, seconds);
+    printf("exported %s: %llu bytes in %lld s\n", datadir::Text(result.path).c_str(), (unsigned long long)result.bytes,
+        seconds);
     return 0;
 }

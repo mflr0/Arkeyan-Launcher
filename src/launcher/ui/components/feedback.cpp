@@ -26,7 +26,10 @@ namespace ui
     namespace
     {
         // Light or dark ink, whichever reads better on `fill`.
-        unsigned BestInk(unsigned fill) { return Contrast(0xFFFFFF, fill) >= Contrast(color::OnAccent, fill) ? 0xFFFFFF : color::OnAccent; }
+        unsigned BestInk(unsigned fill)
+        {
+            return Contrast(0xFFFFFF, fill) >= Contrast(color::OnAccent, fill) ? 0xFFFFFF : color::OnAccent;
+        }
         bool VeryDark(unsigned rgb) { return Luminance(rgb) < 0.03f; }
     }
 
@@ -77,7 +80,8 @@ namespace ui
         if (sort)
         {
             draw->AddRectFilled(min, max, Col(lit ? color::InsetHover : color::Inset), rounding);
-            draw->AddRect(ImVec2(min.x + 0.5f, min.y + 0.5f), ImVec2(max.x - 0.5f, max.y - 0.5f), Col(color::Edge), rounding, 0, stroke::Hairline);
+            draw->AddRect(ImVec2(min.x + 0.5f, min.y + 0.5f), ImVec2(max.x - 0.5f, max.y - 0.5f), Col(color::Edge),
+                rounding, 0, stroke::Hairline);
         }
         else if (on)
         {
@@ -88,13 +92,15 @@ namespace ui
         else
         {
             draw->AddRectFilled(min, max, Col(lit ? color::RaisedHover : color::Raised, 0.92f), rounding);
-            draw->AddRect(ImVec2(min.x + 0.5f, min.y + 0.5f), ImVec2(max.x - 0.5f, max.y - 0.5f), Col(color::Hairline), rounding, 0, stroke::Hairline);
+            draw->AddRect(ImVec2(min.x + 0.5f, min.y + 0.5f), ImVec2(max.x - 0.5f, max.y - 0.5f), Col(color::Hairline),
+                rounding, 0, stroke::Hairline);
         }
         float x = min.x + space::S;
         const float mid = std::round((min.y + max.y) / 2) + (state.pressed ? 1.0f : 0.0f);
         if (lead)
         {
-            DrawIcon(draw, sort ? (options.direction < 0 ? Icon::ArrowDown : Icon::ArrowUp) : Icon::Check, ImVec2(x + icon / 2, mid), icon, Col(ink));
+            DrawIcon(draw, sort ? (options.direction < 0 ? Icon::ArrowDown : Icon::ArrowUp) : Icon::Check,
+                ImVec2(x + icon / 2, mid), icon, Col(ink));
             x += icon + space::XS;
         }
         PushText(TextStyle::Body, on);
@@ -151,16 +157,21 @@ namespace ui
         // [XS] icon [XXS] text [XS + 2]: the icon's own margin (Lucide's 2 of 24) evens the ends.
         const float iconSize = icon::Small, h = PillHeight;
         const float textW = TextSize(TextStyle::Caption, text, nullptr, true).x;
-        const ImVec2 min = ImGui::GetCursorScreenPos(), max(min.x + std::ceil(space::XS + iconSize + space::XXS + textW + space::XS + 2), min.y + h);
+        const ImVec2 min = ImGui::GetCursorScreenPos(),
+                     max(min.x + std::ceil(space::XS + iconSize + space::XXS + textW + space::XS + 2), min.y + h);
         ImGui::Dummy(ImVec2(max.x - min.x, h));
         ImDrawList* draw = ImGui::GetWindowDrawList();
         const unsigned tone = ColorOf(status);
         const float mid = min.y + h / 2;
         draw->AddRectFilled(min, max, Col(Mix(color::Surface, tone, 0.16f)), h / 2);
-        draw->AddRect(ImVec2(min.x + 0.5f, min.y + 0.5f), ImVec2(max.x - 0.5f, max.y - 0.5f), Col(tone, 0.5f), h / 2, 0, stroke::Hairline);
-        DrawStatusIcon(draw, status, icon != Icon::None ? icon : IconOf(status), ImVec2(min.x + space::XS + iconSize / 2, mid), iconSize);
+        draw->AddRect(ImVec2(min.x + 0.5f, min.y + 0.5f), ImVec2(max.x - 0.5f, max.y - 0.5f), Col(tone, 0.5f), h / 2, 0,
+            stroke::Hairline);
+        DrawStatusIcon(draw, status, icon != Icon::None ? icon : IconOf(status),
+            ImVec2(min.x + space::XS + iconSize / 2, mid), iconSize);
         PushText(TextStyle::Caption, true);
-        DrawText(draw, ImVec2(min.x + space::XS + iconSize + space::XXS, std::round(mid - CapMiddle(TextStyle::Caption, true))), Col(color::Ink), text);
+        DrawText(draw,
+            ImVec2(min.x + space::XS + iconSize + space::XXS, std::round(mid - CapMiddle(TextStyle::Caption, true))),
+            Col(color::Ink), text);
         PopText();
     }
 
@@ -187,7 +198,8 @@ namespace ui
         // The track; returns its rectangle.
         void Track(ImVec2 min, ImVec2 max)
         {
-            ImGui::GetWindowDrawList()->AddRectFilled(min, max, Col(color::Dim, 0.35f), BarH / 2); // light: the bar's end shows on dark art
+            ImGui::GetWindowDrawList()->AddRectFilled(
+                min, max, Col(color::Dim, 0.35f), BarH / 2); // light: the bar's end shows on dark art
         }
     }
 
@@ -197,15 +209,18 @@ namespace ui
         const float label = showPercent ? TextSize(TextStyle::Caption, FormatPercent(1.0f).c_str()).x + space::S : 0;
         const float w = (width < 0 ? ImGui::GetContentRegionAvail().x : width) - label;
         const float h = showPercent ? type::Caption * 1.3f : BarH;
-        const ImVec2 at = ImGui::GetCursorScreenPos(), min(at.x, std::round(at.y + (h - BarH) / 2)), max(at.x + w, min.y + BarH);
+        const ImVec2 at = ImGui::GetCursorScreenPos(), min(at.x, std::round(at.y + (h - BarH) / 2)),
+                     max(at.x + w, min.y + BarH);
         ImGui::Dummy(ImVec2(w + label, h));
         Track(min, max);
         if (fraction > 0) // a whole cap at both ends, even when nearly empty
-            ImGui::GetWindowDrawList()->AddRectFilled(min, ImVec2(min.x + std::max(w * std::min(fraction, 1.0f), BarH), max.y), Col(color::AccentFill), BarH / 2);
+            ImGui::GetWindowDrawList()->AddRectFilled(min,
+                ImVec2(min.x + std::max(w * std::min(fraction, 1.0f), BarH), max.y), Col(color::AccentFill), BarH / 2);
         if (showPercent)
         {
             PushText(TextStyle::Caption);
-            DrawText(ImGui::GetWindowDrawList(), ImVec2(at.x + w + space::S, at.y + (h - ImGui::GetFontSize()) / 2), Col(color::InkSoft), percent.c_str());
+            DrawText(ImGui::GetWindowDrawList(), ImVec2(at.x + w + space::S, at.y + (h - ImGui::GetFontSize()) / 2),
+                Col(color::InkSoft), percent.c_str());
             PopText();
         }
     }
@@ -221,7 +236,8 @@ namespace ui
         {
             // Still: short dashes along the whole track, which no one reads as a percentage.
             for (float x = min.x; x + BarH < max.x; x += 3 * BarH)
-                draw->AddRectFilled(ImVec2(x, min.y), ImVec2(x + 1.5f * BarH, max.y), Col(color::AccentFill, 0.7f), BarH / 2);
+                draw->AddRectFilled(
+                    ImVec2(x, min.y), ImVec2(x + 1.5f * BarH, max.y), Col(color::AccentFill, 0.7f), BarH / 2);
             return;
         }
         const float band = w * 0.3f, from = min.x - band + (w + band) * Phase(motion::Spin * 2);
@@ -296,12 +312,15 @@ namespace ui
         {
             const Item& item = m_items[i];
             const bool error = item.kind == ToastKind::Error;
-            const unsigned tone = error ? color::Danger : item.kind == ToastKind::Success ? color::Success : color::Info;
+            const unsigned tone = error                             ? color::Danger
+                                  : item.kind == ToastKind::Success ? color::Success
+                                                                    : color::Info;
             const ImVec2 text = ImGui::CalcTextSize(item.text.c_str(), nullptr, false, maxTextWidth);
             const float width = padX + icon + space::S + text.x + padX + (error ? cross : 0.0f);
             const float heightNeeded = std::max(text.y, error ? cross : 0.0f) + 2 * padY;
             // Whole points, so the ring covers whole pixels at 1x and 2x.
-            const ImVec2 min(std::round(display.x - space::L - width), std::round(bottom - heightNeeded)), max(std::round(display.x - space::L), std::round(bottom));
+            const ImVec2 min(std::round(display.x - space::L - width), std::round(bottom - heightNeeded)),
+                max(std::round(display.x - space::L), std::round(bottom));
             // A window of its own, so a click closes the message and does not reach what is under it.
             ImGui::SetNextWindowPos(min);
             ImGui::SetNextWindowSize(ImVec2(max.x - min.x, max.y - min.y));
@@ -313,8 +332,9 @@ namespace ui
             ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
             ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
             ImGui::PushStyleColor(ImGuiCol_NavCursor, 0);
-            const ImGuiWindowFlags flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoSavedSettings |
-                ImGuiWindowFlags_NoScrollbar | (error ? 0 : ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav);
+            const ImGuiWindowFlags flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground |
+                                           ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoScrollbar |
+                                           (error ? 0 : ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav);
             ImGui::Begin(fmt::format("##toast{}", i).c_str(), nullptr, flags);
             if (Hit("##close", ImVec2(max.x - min.x, max.y - min.y)))
             {
@@ -322,11 +342,13 @@ namespace ui
                 closedByNav = navigating && !ImGui::IsMouseReleased(ImGuiMouseButton_Left);
             }
             const bool hovered = ImGui::IsItemHovered();
-            const bool focused = error && ((ImGui::IsWindowFocused() && navigating) || (m_previewFocus && &item == newestError));
+            const bool focused =
+                error && ((ImGui::IsWindowFocused() && navigating) || (m_previewFocus && &item == newestError));
             if (focused)
             {
                 m_focused = true;
-                if (ImGui::IsKeyPressed(ImGuiKey_Escape, false) || ImGui::IsKeyPressed(ImGuiKey_GamepadFaceRight, false))
+                if (ImGui::IsKeyPressed(ImGuiKey_Escape, false) ||
+                    ImGui::IsKeyPressed(ImGuiKey_GamepadFaceRight, false))
                 {
                     closed = int(i);
                     closedByNav = true;
@@ -336,27 +358,35 @@ namespace ui
             ImGui::PopStyleColor();
             ImGui::PopStyleVar(2);
 
-            draw->AddRectFilled(min, max, LauncherTheme::Rgb(elevation::Raised.fill, elevation::Raised.fillAlpha), radius::Card);
+            draw->AddRectFilled(
+                min, max, LauncherTheme::Rgb(elevation::Raised.fill, elevation::Raised.fillAlpha), radius::Card);
             // AddRect puts the line's centre half a point in: a 2-point ring then runs between whole points only from 1 point in.
-            draw->AddRect(ImVec2(min.x + 1, min.y + 1), ImVec2(max.x - 1, max.y - 1), LauncherTheme::Rgb(tone, 200), radius::Card - 1, 0, 2.0f);
+            draw->AddRect(ImVec2(min.x + 1, min.y + 1), ImVec2(max.x - 1, max.y - 1), LauncherTheme::Rgb(tone, 200),
+                radius::Card - 1, 0, 2.0f);
             const float mid = (min.y + max.y) / 2, textTop = std::round(mid - text.y / 2);
-            DrawIcon(draw, error ? Icon::Error : item.kind == ToastKind::Success ? Icon::Check : Icon::Info,
-                ImVec2(min.x + padX + icon / 2, std::round(textTop + ImGui::GetFontSize() / 2)), icon, LauncherTheme::Rgb(tone));
+            DrawIcon(draw,
+                error                             ? Icon::Error
+                : item.kind == ToastKind::Success ? Icon::Check
+                                                  : Icon::Info,
+                ImVec2(min.x + padX + icon / 2, std::round(textTop + ImGui::GetFontSize() / 2)), icon,
+                LauncherTheme::Rgb(tone));
             draw->AddText(ImGui::GetFont(), ImGui::GetFontSize(), ImVec2(min.x + padX + icon + space::S, textTop),
                 LauncherTheme::Rgb(color::Ink), item.text.c_str(), nullptr, maxTextWidth);
             if (error) // the cross, or with the keyboard / pad focus the key that closes it
             {
                 const ImVec2 centre(max.x - padX / 2 - cross / 2, mid);
                 if (focused)
-                    DrawKeyCap(draw, ImVec2(centre.x - 12, centre.y), PadButton::South, Ctx().glyphs == Glyphs::Keyboard ? Glyphs::Xbox : Ctx().glyphs);
+                    DrawKeyCap(draw, ImVec2(centre.x - 12, centre.y), PadButton::South,
+                        Ctx().glyphs == Glyphs::Keyboard ? Glyphs::Xbox : Ctx().glyphs);
                 else
-                    DrawIcon(draw, Icon::Cross, centre, icon::Small, LauncherTheme::Rgb(hovered ? color::Ink : color::Dim));
+                    DrawIcon(
+                        draw, Icon::Cross, centre, icon::Small, LauncherTheme::Rgb(hovered ? color::Ink : color::Dim));
             }
             if (focused)
             {
                 const float out = focus::Offset + focus::Width / 2;
-                draw->AddRect(ImVec2(min.x - out, min.y - out), ImVec2(max.x + out, max.y + out), LauncherTheme::Rgb(Ctx().accent),
-                    radius::Card + out, 0, focus::Width);
+                draw->AddRect(ImVec2(min.x - out, min.y - out), ImVec2(max.x + out, max.y + out),
+                    LauncherTheme::Rgb(Ctx().accent), radius::Card + out, 0, focus::Width);
             }
             bottom = min.y - space::XS;
         }
@@ -371,7 +401,8 @@ namespace ui
     const char* PadButtonLabel(PadButton button, Glyphs glyphs)
     {
         static const char* const Xbox[] = { "A", "B", "X", "Y", "LB", "RB", "Menu", "View", "LT", "RT" };
-        static const char* const PlayStation[] = { "Cross", "Circle", "Square", "Triangle", "L1", "R1", "Options", "Share", "L2", "R2" };
+        static const char* const PlayStation[] = { "Cross", "Circle", "Square", "Triangle", "L1", "R1", "Options",
+            "Share", "L2", "R2" };
         static const char* const Nintendo[] = { "B", "A", "Y", "X", "L", "R", "+", "-", "ZL", "ZR" };
         const int i = int(button);
         switch (glyphs)
@@ -401,11 +432,15 @@ namespace ui
             const float w = CapWidth(text, round);
             const ImVec2 min(at.x, std::round(at.y - CapH / 2)), max(min.x + w, min.y + CapH);
             const float rounding = round ? CapH / 2 : radius::Control * 0.6f;
-            draw->AddRectFilled(ImVec2(min.x, min.y + 2), ImVec2(max.x, max.y + 2), Col(0x000000, 0.35f), rounding); // its depth
+            draw->AddRectFilled(
+                ImVec2(min.x, min.y + 2), ImVec2(max.x, max.y + 2), Col(0x000000, 0.35f), rounding); // its depth
             draw->AddRectFilled(min, max, Col(color::Raised), rounding);
-            draw->AddRect(ImVec2(min.x + 0.5f, min.y + 0.5f), ImVec2(max.x - 0.5f, max.y - 0.5f), Col(color::Edge), rounding, 0, stroke::Hairline);
+            draw->AddRect(ImVec2(min.x + 0.5f, min.y + 0.5f), ImVec2(max.x - 0.5f, max.y - 0.5f), Col(color::Edge),
+                rounding, 0, stroke::Hairline);
             if (text[0] != 0)
-                DrawText(draw, ImVec2(std::round((min.x + max.x - textSize.x) / 2), std::round((min.y + max.y - textSize.y) / 2)), Col(color::Ink), text);
+                DrawText(draw,
+                    ImVec2(std::round((min.x + max.x - textSize.x) / 2), std::round((min.y + max.y - textSize.y) / 2)),
+                    Col(color::Ink), text);
             PopText();
             return ImVec2(w, CapH);
         }
@@ -419,13 +454,17 @@ namespace ui
         // PlayStation's face buttons are shapes: Lucide's, in the cap.
         ImVec2 size = DrawCapBox(draw, at, "", true);
         static const Icon Shapes[] = { Icon::Cross, Icon::Circle, Icon::Square, Icon::Triangle };
-        DrawIcon(draw, Shapes[int(button)], ImVec2(at.x + CapH / 2, std::round(at.y - CapH / 2) + CapH / 2), icon::Small, Col(color::Ink));
+        DrawIcon(draw, Shapes[int(button)], ImVec2(at.x + CapH / 2, std::round(at.y - CapH / 2) + CapH / 2),
+            icon::Small, Col(color::Ink));
         return size;
     }
 
     ImVec2 DrawKeyCap(ImDrawList* draw, ImVec2 at, const char* key) { return DrawCapBox(draw, at, key, false); }
 
-    float KeyCapWidth(PadButton button, Glyphs glyphs) { return CapWidth(PadButtonLabel(button, glyphs), button <= PadButton::North); }
+    float KeyCapWidth(PadButton button, Glyphs glyphs)
+    {
+        return CapWidth(PadButtonLabel(button, glyphs), button <= PadButton::North);
+    }
     float KeyCapWidth(const char* key) { return CapWidth(key, false); }
     float KeyCapHeight() { return CapH; }
 
@@ -479,9 +518,11 @@ namespace ui
         {
             if (keyboard && hint.key == nullptr)
                 continue;
-            float cap = keyboard ? DrawKeyCap(draw, ImVec2(x, mid), hint.key).x : DrawKeyCap(draw, ImVec2(x, mid), hint.button, glyphs).x;
+            float cap = keyboard ? DrawKeyCap(draw, ImVec2(x, mid), hint.key).x
+                                 : DrawKeyCap(draw, ImVec2(x, mid), hint.button, glyphs).x;
             if (hint.withNext && !keyboard)
-                cap += space::XXS + DrawKeyCap(draw, ImVec2(x + cap + space::XXS, mid), PadButton(int(hint.button) + 1), glyphs).x;
+                cap += space::XXS +
+                       DrawKeyCap(draw, ImVec2(x + cap + space::XXS, mid), PadButton(int(hint.button) + 1), glyphs).x;
             x += cap + space::XS;
             DrawText(draw, ImVec2(x, mid - ImGui::GetFontSize() / 2), Col(color::InkSoft), hint.label);
             x += ImGui::CalcTextSize(hint.label).x + gap;

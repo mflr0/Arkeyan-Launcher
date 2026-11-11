@@ -10,7 +10,15 @@
 
 struct JsonValue
 {
-    enum class Type { Null, Bool, Number, String, Array, Object };
+    enum class Type
+    {
+        Null,
+        Bool,
+        Number,
+        String,
+        Array,
+        Object
+    };
     Type type = Type::Null;
     bool boolean = false;
     double number = 0;

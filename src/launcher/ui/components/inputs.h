@@ -16,11 +16,17 @@ namespace ui
         bool focusSelected = false; // the selected tab takes the keyboard and pad focus this frame
         bool showFocus = false;     // and shows its ring
     };
-    enum class TabChange { None, Click, Bumper }; // Bumper: by LT / RT
+    enum class TabChange
+    {
+        None,
+        Click,
+        Bumper
+    }; // Bumper: by LT / RT
     TabChange Tabs(const char* id, std::span<const char* const> labels, int* current, const TabsOptions& options = {});
 
     // Two to four exclusive choices side by side, in one track (a short list that fits: "30 / 60", "Grid / List").
-    bool Segmented(const char* id, std::span<const char* const> labels, int* current, float width = 0, bool disabled = false);
+    bool Segmented(
+        const char* id, std::span<const char* const> labels, int* current, float width = 0, bool disabled = false);
 
     // A closed box with the chosen value and a chevron; its list opens under it. Between BeginSelect (true while open) and
     // EndSelect, one SelectOption per choice: the chosen one has a check.

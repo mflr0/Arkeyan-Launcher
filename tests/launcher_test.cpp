@@ -56,8 +56,15 @@ namespace
 {
     int g_failures = 0;
 
-#define EXPECT(condition) \
-    do { if (!(condition)) { fprintf(stderr, "FAIL line %d: %s\n", __LINE__, #condition); g_failures++; } } while (0)
+#define EXPECT(condition)                                                                                              \
+    do                                                                                                                 \
+    {                                                                                                                  \
+        if (!(condition))                                                                                              \
+        {                                                                                                              \
+            fprintf(stderr, "FAIL line %d: %s\n", __LINE__, #condition);                                               \
+            g_failures++;                                                                                              \
+        }                                                                                                              \
+    } while (0)
 
     const char* StatusName(GameSourceStatus status)
     {
@@ -86,8 +93,20 @@ namespace
         return check.status;
     }
 
-    void Put32LE(uint8_t* p, uint32_t v) { p[0] = uint8_t(v); p[1] = uint8_t(v >> 8); p[2] = uint8_t(v >> 16); p[3] = uint8_t(v >> 24); }
-    void Put32BE(uint8_t* p, uint32_t v) { p[0] = uint8_t(v >> 24); p[1] = uint8_t(v >> 16); p[2] = uint8_t(v >> 8); p[3] = uint8_t(v); }
+    void Put32LE(uint8_t* p, uint32_t v)
+    {
+        p[0] = uint8_t(v);
+        p[1] = uint8_t(v >> 8);
+        p[2] = uint8_t(v >> 16);
+        p[3] = uint8_t(v >> 24);
+    }
+    void Put32BE(uint8_t* p, uint32_t v)
+    {
+        p[0] = uint8_t(v >> 24);
+        p[1] = uint8_t(v >> 16);
+        p[2] = uint8_t(v >> 8);
+        p[3] = uint8_t(v);
+    }
 
     void WriteFile(const std::filesystem::path& path, const std::vector<uint8_t>& data)
     {
@@ -95,7 +114,8 @@ namespace
     }
 
     // Minimal XDVDFS image (plain layout: volume descriptor at sector 32) whose root holds one file.
-    void WriteDiscImage(const std::filesystem::path& path, const std::string& name, const std::vector<uint8_t>& file, uint32_t extraDeclaredSize = 0)
+    void WriteDiscImage(const std::filesystem::path& path, const std::string& name, const std::vector<uint8_t>& file,
+        uint32_t extraDeclaredSize = 0)
     {
         constexpr uint32_t Sector = 2048;
         std::vector<uint8_t> image(34 * Sector + file.size());
@@ -157,14 +177,17 @@ namespace
         progress.Apply("@step compile Compiling the game", 200);
         progress.Apply("warning: not an event", 210);
         progress.Apply("@error compile failed\r", 300);
-        EXPECT(progress.steps.size() == 2 && progress.steps[0].id == "disc" && progress.steps[0].title == "Reading the disc");
-        EXPECT(progress.steps[0].startedAt == 100 && progress.steps[0].endedAt == 200 && progress.steps[1].endedAt == 0);
+        EXPECT(progress.steps.size() == 2 && progress.steps[0].id == "disc" &&
+               progress.steps[0].title == "Reading the disc");
+        EXPECT(
+            progress.steps[0].startedAt == 100 && progress.steps[0].endedAt == 200 && progress.steps[1].endedAt == 0);
         EXPECT(progress.done == 0 && progress.total == 0); // reset by the new step
         EXPECT(progress.error == "compile failed");
         EXPECT(progress.log.size() == 5);
         progress.Apply("@progress 7 9", 310);
         progress.Apply("@done /games/x/SSARecomp.exe", 400);
-        EXPECT(progress.done == 7 && progress.total == 9 && progress.runtime == "/games/x/SSARecomp.exe" && progress.steps[1].endedAt == 400);
+        EXPECT(progress.done == 7 && progress.total == 9 && progress.runtime == "/games/x/SSARecomp.exe" &&
+               progress.steps[1].endedAt == 400);
 
         LauncherConfig config;
         RecordInstalledGame(config, "abc", (scratch / "missing").string(), "1");
@@ -193,23 +216,30 @@ namespace
         };
         SDL_SetEnvironmentVariable(SDL_GetEnvironment(), "FAKE_ARKEYAN_BUILDER_DELAY", "0", true);
         InstallProgress failed = run("shaders");
-        EXPECT(failed.state == InstallProgress::State::Failed && failed.error.find("didn't compile") != std::string::npos);
+        EXPECT(
+            failed.state == InstallProgress::State::Failed && failed.error.find("didn't compile") != std::string::npos);
         EXPECT(failed.steps.size() == 4 && failed.runtime.empty());
         // The housekeeping after a successful build: the work folder goes (arkeyan-work, or ssabuild-work left by a kit up to
         // 0.7.2), its logs stay, the log before is kept.
         std::filesystem::create_directories(scratch / "game" / "ssabuild-work" / "obj");
-        { std::ofstream(scratch / "game" / "ssabuild-work" / "obj" / "big.o") << "object"; }
+        {
+            std::ofstream(scratch / "game" / "ssabuild-work" / "obj" / "big.o") << "object";
+        }
         std::filesystem::create_directories(scratch / "game" / "arkeyan-work" / "logs");
-        { std::ofstream(scratch / "game" / "arkeyan-work" / "logs" / "link.log") << "link ok"; }
+        {
+            std::ofstream(scratch / "game" / "arkeyan-work" / "logs" / "link.log") << "link ok";
+        }
         InstallProgress done = run(nullptr);
-        EXPECT(!std::filesystem::exists(scratch / "game" / "ssabuild-work") && !std::filesystem::exists(scratch / "game" / "arkeyan-work"));
+        EXPECT(!std::filesystem::exists(scratch / "game" / "ssabuild-work") &&
+               !std::filesystem::exists(scratch / "game" / "arkeyan-work"));
         EXPECT(std::filesystem::exists(scratch / "game" / "install.prev.log"));
         EXPECT(std::filesystem::exists(scratch / "game" / "install-logs" / "link.log"));
         EXPECT(done.state == InstallProgress::State::Done && done.steps.size() == 10);
         EXPECT(std::filesystem::path(done.runtime).filename().string().starts_with("SSARecomp"));
         EXPECT(std::filesystem::exists(scratch / "game" / "install.log"));
         // A game built by this launcher is marked; one without the mark is an older build (kit 0.3.0 or before).
-        EXPECT(std::filesystem::exists(scratch / "game" / "layout.txt") && !IsOlderLayoutBuild(done.runtime, scratch / "game"));
+        EXPECT(std::filesystem::exists(scratch / "game" / "layout.txt") &&
+               !IsOlderLayoutBuild(done.runtime, scratch / "game"));
         std::filesystem::remove(scratch / "game" / "layout.txt");
         EXPECT(IsOlderLayoutBuild(done.runtime, scratch / "game"));
         EXPECT(!IsOlderLayoutBuild(scratch / "elsewhere" / "SSARecomp", scratch / "game")); // the player's own runtime
@@ -237,9 +267,12 @@ namespace
             std::ofstream(data / "toolchains" / "llvm-mingw-x.zip") << "zip";
             std::ofstream(data / "toolchains" / "other.zip") << "not extracted";
             CleanAfterInstall(data / "SSA", data / "kit" / "v0.3.0");
-            EXPECT(!fs::exists(data / "kit" / "v0.2.0") && fs::exists(data / "kit" / "v0.3.0") && fs::exists(data / "kit" / "v0.10.0"));
-            EXPECT(fs::exists(data / "kit" / "notes") && fs::exists(data / "kit" / ".download")); // not release tags: kept
-            EXPECT(!fs::exists(data / "toolchains" / "llvm-mingw-x.zip") && fs::exists(data / "toolchains" / "other.zip"));
+            EXPECT(!fs::exists(data / "kit" / "v0.2.0") && fs::exists(data / "kit" / "v0.3.0") &&
+                   fs::exists(data / "kit" / "v0.10.0"));
+            EXPECT(
+                fs::exists(data / "kit" / "notes") && fs::exists(data / "kit" / ".download")); // not release tags: kept
+            EXPECT(
+                !fs::exists(data / "toolchains" / "llvm-mingw-x.zip") && fs::exists(data / "toolchains" / "other.zip"));
             // A kit that is not a downloaded one (next to the launcher) leaves them all alone.
             CleanAfterInstall(data / "SSA", scratch / "elsewhere" / "v9.0.0");
             EXPECT(fs::exists(data / "kit" / "v0.3.0") && fs::exists(data / "kit" / "v0.10.0"));
@@ -266,7 +299,8 @@ namespace
         namespace fs = std::filesystem;
         std::map<std::string, std::string> saved;
         for (const char* name : { "SKYLANDERS_DATA", "SKY_PORTRAITS", "SSA_PORTRAITS" })
-            if (const char* value = getenv(name)) saved[name] = value;
+            if (const char* value = getenv(name))
+                saved[name] = value;
         TestSetEnv("SKYLANDERS_DATA", (scratch / "picture-data").string().c_str());
         TestUnsetEnv("SKY_PORTRAITS");
         TestUnsetEnv("SSA_PORTRAITS");
@@ -316,7 +350,8 @@ namespace
             fs::remove(darkWhole);
             std::string whole = write("trapteam", "2004_8192_blastzone", 0xFFFF0000u);
             fs::remove(lower);
-            EXPECT(same(collection::HalfPicturePath(*bottom), whole) && same(collection::PortraitPath("ssa", *bottom), whole));
+            EXPECT(same(collection::HalfPicturePath(*bottom), whole) &&
+                   same(collection::PortraitPath("ssa", *bottom), whole));
             EXPECT(collection::SwapperPicture(*top, 0, *bottom, 0).Empty());
             fs::remove(upper);
             lower = write("swapforce", "artworks/fireknightlegs_wii_material", 0xFF00FF00u);
@@ -329,14 +364,16 @@ namespace
             {
                 bool fromDisc = true;
                 auto icon = collection::Portrait("ssa", toy, collection::VariantKind::Base, 64, 0, &fromDisc);
-                EXPECT(!fromDisc && !icon.Empty() && std::any_of(icon.rgba.begin(), icon.rgba.end(),
-                    [](uint32_t pixel) { return pixel >> 24; }));
+                EXPECT(!fromDisc && !icon.Empty() &&
+                       std::any_of(icon.rgba.begin(), icon.rgba.end(), [](uint32_t pixel) { return pixel >> 24; }));
                 EXPECT(!figures::GenerateIcon(toy, collection::VariantKind::Base, 64).empty());
             }
         }
         for (const char* name : { "SKYLANDERS_DATA", "SKY_PORTRAITS", "SSA_PORTRAITS" })
-            if (auto it = saved.find(name); it != saved.end()) TestSetEnv(name, it->second.c_str());
-            else TestUnsetEnv(name);
+            if (auto it = saved.find(name); it != saved.end())
+                TestSetEnv(name, it->second.c_str());
+            else
+                TestUnsetEnv(name);
     }
 
     // The collection: ArkeyanRuntime's library (src/shared/collection) and the launcher's model over it, in a scratch folder
@@ -368,17 +405,20 @@ namespace
 
         EXPECT(fs::path(collection::Folder()) == folder);
         const collection::Catalogue& catalogue = collection::Catalogue::Get();
-        EXPECT(catalogue.Games().size() == 6 && catalogue.Accepts("ssa", 14) && catalogue.FindGame("ssa")->seats.size() == 4);
+        EXPECT(catalogue.Games().size() == 6 && catalogue.Accepts("ssa", 14) &&
+               catalogue.FindGame("ssa")->seats.size() == 4);
         // What Add a figure offers: Trap Team lists Dark Wildfire among Wildfire's versions; SuperChargers' racing villains
         // and their vehicles work in SuperChargers and Imaginators only.
         {
             const collection::Toy* wildfire = catalogue.Find(458);
             bool dark = false;
-            for (const collection::Variant* version : wildfire ? catalogue.VersionsFor("trapteam", *wildfire) : std::vector<const collection::Variant*>())
+            for (const collection::Variant* version :
+                wildfire ? catalogue.VersionsFor("trapteam", *wildfire) : std::vector<const collection::Variant*>())
                 dark = dark || (version->id == 0x3402 && version->name == "Dark Wildfire");
             EXPECT(dark);
-            EXPECT(catalogue.Find(3440) && catalogue.Find(3440)->category == collection::Category::Villain && catalogue.Accepts("superchargers", 3440) &&
-                   catalogue.Accepts("imaginators", 3470) && !catalogue.Accepts("trapteam", 3440));
+            EXPECT(catalogue.Find(3440) && catalogue.Find(3440)->category == collection::Category::Villain &&
+                   catalogue.Accepts("superchargers", 3440) && catalogue.Accepts("imaginators", 3470) &&
+                   !catalogue.Accepts("trapteam", 3440));
         }
 
         // Migration: copied, never moved; a second pass copies nothing.
@@ -395,26 +435,29 @@ namespace
         // A figure: stats, level, the nickname, backups, restore.
         std::string gill = collection::PathOf("014 Gill Grunt.sky");
         collection::Figure figure;
-        EXPECT(collection::Read(gill, figure) && figure.toy != nullptr && figure.toy->name == "Gill Grunt" && figure.state == figures::AreaState::Blank);
+        EXPECT(collection::Read(gill, figure) && figure.toy != nullptr && figure.toy->name == "Gill Grunt" &&
+               figure.state == figures::AreaState::Blank);
         EXPECT(collection::UntouchedStarter(figure));
         figure.stats.experience = 2500;
         figure.stats.gold = 1234;
         figures::SetNicknameUtf8(figure.stats, "Splash");
         std::string error;
         EXPECT(collection::WriteStats(gill, figure.stats, &error));
-        EXPECT(collection::Read(gill, figure) && figure.state == figures::AreaState::Valid && figure.level == 3 && figure.stats.gold == 1234 &&
-            figures::NicknameUtf8(figure.stats) == "Splash");
+        EXPECT(collection::Read(gill, figure) && figure.state == figures::AreaState::Valid && figure.level == 3 &&
+               figure.stats.gold == 1234 && figures::NicknameUtf8(figure.stats) == "Splash");
         EXPECT(!collection::Backups(gill).empty());
         std::string backup = collection::Backup(gill);
         EXPECT(!backup.empty() && collection::Backups(gill).size() >= 2);
         figure.stats.gold = 9;
         EXPECT(collection::WriteStats(gill, figure.stats));
         EXPECT(collection::Restore(gill, backup) && collection::Read(gill, figure) && figure.stats.gold == 1234);
-        EXPECT(collection::ResetToNew(gill) && collection::Read(gill, figure) && figure.state == figures::AreaState::Blank);
+        EXPECT(collection::ResetToNew(gill) && collection::Read(gill, figure) &&
+               figure.state == figures::AreaState::Blank);
 
         // The folder's other jobs: label, favorite, duplicate, trash, import.
         EXPECT(collection::SetLabel(gill, "Splash's") && collection::SetFavourite(gill, true));
-        EXPECT(collection::Read(gill, figure) && figure.label == "Splash's" && figure.favourite && figure.DisplayName() == "Splash's");
+        EXPECT(collection::Read(gill, figure) && figure.label == "Splash's" && figure.favourite &&
+               figure.DisplayName() == "Splash's");
         std::string copy = collection::Duplicate(gill);
         EXPECT(!copy.empty() && fs::exists(copy));
         EXPECT(collection::Delete(copy) && !fs::exists(copy) && collection::Trash().size() == 1);
@@ -434,7 +477,8 @@ namespace
         EXPECT(collection::SetFavourite(spyro, true)); // metadata is not the dump
         if (otherPid > 0)
         {
-            std::ofstream(spyro + ".lock") << fmt::format("{{ \"game\": \"ssa\", \"pid\": {}, \"since\": \"2026-10-24T10:15:00Z\" }}", otherPid);
+            std::ofstream(spyro + ".lock")
+                << fmt::format("{{ \"game\": \"ssa\", \"pid\": {}, \"since\": \"2026-10-24T10:15:00Z\" }}", otherPid);
             EXPECT(collection::GetLock(spyro).Busy() && collection::GetLock(spyro).game == "ssa");
             EXPECT(!collection::WriteStats(spyro, spyroFigure.stats, &error) && !error.empty());
             EXPECT(!collection::Delete(spyro));
@@ -448,12 +492,15 @@ namespace
         const collection::Game& ssa = *catalogue.FindGame("ssa");
         std::string anvil = collection::PathOf("200 Anvil Rain.sky");
         std::string session = launcher_ui::SessionFile(ssa);
-        EXPECT(fs::path(session) == save / "portal.txt"); // as paths: the override joins with "/", which Windows reads the same
+        EXPECT(fs::path(session) ==
+               save / "portal.txt"); // as paths: the override joins with "/", which Windows reads the same
         EXPECT(launcher_ui::WriteSeats(ssa, session, { gill, "", anvil, "" }));
         std::vector<std::string> seats = launcher_ui::ReadSeats(ssa, session);
         EXPECT(seats.size() == 4 && seats[0] == gill && seats[1].empty() && seats[2] == anvil && seats[3].empty());
         // The game numbers slots by hardware, not seats: a figure goes to the first seat that takes it.
-        { std::ofstream(session) << "5 " << spyro << "\n7 " << anvil << "\n"; }
+        {
+            std::ofstream(session) << "5 " << spyro << "\n7 " << anvil << "\n";
+        }
         seats = launcher_ui::ReadSeats(ssa, session);
         EXPECT(seats[0] == spyro && seats[2] == anvil);
         EXPECT(launcher_ui::ShortGameName("ssa") == "Spyro's Adventure");
@@ -468,11 +515,13 @@ namespace
         EXPECT(model.SetSeat(2, anvil) && model.seats[2] == anvil && model.seats[0] == spyro);
         std::vector<std::string> names(4);
         std::vector<collection::PortalEntry> overview = collection::PortalOverview(ssa, model.seats, names);
-        EXPECT(overview.size() == 2 && overview[0].tag == "P1" && overview[1].tag == "Item" && overview[1].name == "200 Anvil Rain.sky");
+        EXPECT(overview.size() == 2 && overview[0].tag == "P1" && overview[1].tag == "Item" &&
+               overview[1].name == "200 Anvil Rain.sky");
         EXPECT(collection::PortalOverviewLine(overview, "none") == "P1 016 Spyro.sky \xC2\xB7 Item 200 Anvil Rain.sky");
         EXPECT(model.SetSeat(2, "") && model.seats[2].empty() && launcher_ui::ReadSeats(ssa, session)[2].empty());
         EXPECT(model.seats[0] == spyro && launcher_ui::ReadSeats(ssa, session)[0] == spyro);
-        EXPECT(model.SetSeat(0, "") && model.OnPortal().empty() && collection::PortalOverviewLine(collection::PortalOverview(ssa, model.seats, names), "none") == "none");
+        EXPECT(model.SetSeat(0, "") && model.OnPortal().empty() &&
+               collection::PortalOverviewLine(collection::PortalOverview(ssa, model.seats, names), "none") == "none");
         EXPECT(launcher_ui::ReadSeats(ssa, session) == std::vector<std::string>(4)); // the file names nothing
         EXPECT(model.SetSeat(0, spyro) && model.SetSeat(2, anvil)); // as before, for the checks below
         // A failed write leaves both the on-disk seats and the displayed seats intact.
@@ -480,11 +529,14 @@ namespace
             const auto beforeSeats = model.seats;
             const auto beforeFile = bytesOf(session);
             fs::create_directories(session + ".tmp");
-            { std::ofstream(fs::path(session + ".tmp") / "keep") << "blocked"; }
+            {
+                std::ofstream(fs::path(session + ".tmp") / "keep") << "blocked";
+            }
             const auto blocker = bytesOf(fs::path(session + ".tmp") / "keep");
             bool seated = true;
             EXPECT(WithBlockedFileWrite(session, [&] { seated = model.SetSeat(1, gill); }));
-            EXPECT(!seated && model.seats == beforeSeats && bytesOf(session) == beforeFile && NoAtomicTemporary(session));
+            EXPECT(
+                !seated && model.seats == beforeSeats && bytesOf(session) == beforeFile && NoAtomicTemporary(session));
             EXPECT(model.SetSeat(1, gill) && launcher_ui::ReadSeats(ssa, session)[1] == gill);
             EXPECT(bytesOf(fs::path(session + ".tmp") / "keep") == blocker);
             fs::remove_all(session + ".tmp");
@@ -527,13 +579,16 @@ namespace
         }
         // Edit stats' gold: digits only, never above the game's limit (issue #9).
         EXPECT(launcher_ui::GoldFromText("1234") == 1234 && launcher_ui::GoldFromText("99999999") == figures::MaxGold &&
-            launcher_ui::GoldFromText("") == 0 && launcher_ui::GoldFromText("5+5") == 5 && launcher_ui::GoldFromText("abc") == 0 &&
-            launcher_ui::GoldFromText("-7") == 0 && launcher_ui::GoldFromText("65000") == 65000 && launcher_ui::GoldFromText("65001") == figures::MaxGold);
+               launcher_ui::GoldFromText("") == 0 && launcher_ui::GoldFromText("5+5") == 5 &&
+               launcher_ui::GoldFromText("abc") == 0 && launcher_ui::GoldFromText("-7") == 0 &&
+               launcher_ui::GoldFromText("65000") == 65000 && launcher_ui::GoldFromText("65001") == figures::MaxGold);
         // A seat line spelled another way still names the figure: "//" or backslashes, the same file twice (issue #9).
         {
             std::string folderPath = collection::Folder();
             std::string odd = folderPath + "//" + std::filesystem::path(gill).filename().string();
-            { std::ofstream(session) << "0 " << odd << "\n1 " << gill << "\n2 " << anvil << "\n"; }
+            {
+                std::ofstream(session) << "0 " << odd << "\n1 " << gill << "\n2 " << anvil << "\n";
+            }
             seats = launcher_ui::ReadSeats(ssa, session);
             EXPECT(seats[0] == gill && seats[1].empty() && seats[2] == anvil); // once, in the collection's spelling
             model.Load();
@@ -542,7 +597,8 @@ namespace
             std::string twin = collection::PathOf("901 Gill Twin.sky");
             std::filesystem::copy_file(gill, twin, std::filesystem::copy_options::overwrite_existing);
             model.Load();
-            EXPECT(model.SetSeat(0, gill) && model.SetSeat(1, twin) && model.seats[0].empty() && model.seats[1] == twin);
+            EXPECT(
+                model.SetSeat(0, gill) && model.SetSeat(1, twin) && model.seats[0].empty() && model.seats[1] == twin);
             EXPECT(!std::filesystem::exists(session + ".tmp"));
             EXPECT(model.SetSeat(1, "") && model.SetSeat(0, spyro) && model.SetSeat(2, anvil));
             std::filesystem::remove(twin);
@@ -562,14 +618,16 @@ namespace
             // Block only the portal replacement: deleting the dump and updating its index must remain possible.
             fs::rename(session, session + ".kept");
             fs::create_directory(session);
-            { std::ofstream(fs::path(session) / "keep") << "keep"; }
+            {
+                std::ofstream(fs::path(session) / "keep") << "keep";
+            }
             const auto beforeIndex = bytesOf(folder / "collection.json");
             const auto beforeTrash = collection::Trash().size();
             std::string why;
             EXPECT(!model.Delete(spyro, &why) && why == i18n::Tr("Couldn't write the seats for the next start") &&
-                fs::exists(spyro) && model.seats == before && bytesOf(session + ".kept") == beforeFile);
+                   fs::exists(spyro) && model.seats == before && bytesOf(session + ".kept") == beforeFile);
             EXPECT(fs::exists(fs::path(session) / "keep") && bytesOf(folder / "collection.json") == beforeIndex &&
-                collection::Trash().size() == beforeTrash);
+                   collection::Trash().size() == beforeTrash);
             fs::remove_all(session);
             fs::rename(session + ".kept", session);
             EXPECT(bytesOf(session) == beforeFile);
@@ -591,7 +649,9 @@ namespace
         {
             const auto before = model.seats;
             const std::string missing = collection::PathOf("missing.sky");
-            { std::ofstream(session) << "0 " << missing << "\n"; }
+            {
+                std::ofstream(session) << "0 " << missing << "\n";
+            }
             model.Load();
             EXPECT(model.seats[0] == missing && model.Find(missing) == nullptr);
             EXPECT(model.SetSeat(0, "") && launcher_ui::ReadSeats(ssa, session)[0].empty());
@@ -603,7 +663,9 @@ namespace
             const auto before = model.seats;
             const std::string unknown = collection::Create(65500);
             EXPECT(!unknown.empty());
-            { std::ofstream(session) << "0 " << unknown << "\n"; }
+            {
+                std::ofstream(session) << "0 " << unknown << "\n";
+            }
             model.Load();
             EXPECT(model.seats[0] == unknown && model.Find(unknown) != nullptr);
             EXPECT(!model.SetSeat(1, unknown));
@@ -618,7 +680,9 @@ namespace
             const auto before = model.seats;
             const fs::path link = scratch / "figure-link.sky";
             fs::create_symlink(gill, link);
-            { std::ofstream(session) << "0 " << link.string() << "\n"; }
+            {
+                std::ofstream(session) << "0 " << link.string() << "\n";
+            }
             model.Load();
             EXPECT(model.seats[0] == gill && model.Find(link.string()) == model.Find(gill));
             EXPECT(model.SetSeat(1, link.string()) && model.seats[0].empty() && model.seats[1] == gill);
@@ -635,7 +699,8 @@ namespace
             // A live process that is not the game (a number taken over after a crash) holds nothing: the seats stay editable, and
             // Manage can clear the lock (issue #9, S-05). When the game's own marker says it runs, the seats are read-only.
             EXPECT(model.Poll(2000000, 0) && model.RunningGame().empty() && model.CanEditSeats());
-            EXPECT(model.LeftoverLocks() == std::vector<std::string>{ spyro } && model.SetSeat(1, gill) && model.SetSeat(1, ""));
+            EXPECT(model.LeftoverLocks() == std::vector<std::string>{ spyro } && model.SetSeat(1, gill) &&
+                   model.SetSeat(1, ""));
             savebackup::SetGameRunning(true, save);
             EXPECT(model.RunningGame() == "ssa" && !model.CanEditSeats() && model.LeftoverLocks().empty());
             savebackup::SetGameRunning(false, save);
@@ -666,7 +731,8 @@ namespace
                     paths.insert(shown[i].path);
             }
             EXPECT(!shelf.empty() && shelf[0].kind == collection::Section::Kind::Shelf && hidden >= 0);
-            EXPECT(total == shown.size() && paths.size() == shown.size() && shown.size() + size_t(hidden) == model.figures.size());
+            EXPECT(total == shown.size() && paths.size() == shown.size() &&
+                   shown.size() + size_t(hidden) == model.figures.size());
             EXPECT(!shelf[0].items.empty() && shown[shelf[0].items[0]].favourite);
             launcher_ui::ShelfFilter forItem;
             forItem.seat = 2; // Magic item
@@ -675,28 +741,39 @@ namespace
             launcher_ui::ShelfFilter forPlayer;
             forPlayer.seat = 0;
             model.Shelf(forPlayer, shown);
-            EXPECT(!shown.empty() && std::all_of(shown.begin(), shown.end(), [](const collection::Figure& f) { return collection::HasProgress(f); }));
+            EXPECT(!shown.empty() && std::all_of(shown.begin(), shown.end(),
+                                         [](const collection::Figure& f) { return collection::HasProgress(f); }));
             launcher_ui::ShelfFilter water;
             water.element = int(collection::Element::Water);
             model.Shelf(water, shown);
-            EXPECT(std::any_of(shown.begin(), shown.end(), [&](const collection::Figure& f) { return f.path == gill; }) &&
-                std::all_of(shown.begin(), shown.end(), [](const collection::Figure& f) { return f.toy != nullptr && f.toy->element == collection::Element::Water; }));
+            EXPECT(std::any_of(shown.begin(), shown.end(), [&](const collection::Figure& f) {
+                return f.path == gill;
+            }) && std::all_of(shown.begin(), shown.end(), [](const collection::Figure& f) {
+                return f.toy != nullptr && f.toy->element == collection::Element::Water;
+            }));
             launcher_ui::ShelfFilter text;
             text.text = "  SPLASH ";
             model.Shelf(text, shown);
-            EXPECT(std::any_of(shown.begin(), shown.end(), [&](const collection::Figure& f) { return f.path == gill; }) &&
-                std::none_of(shown.begin(), shown.end(), [&](const collection::Figure& f) { return f.path == spyro || f.path == anvil; }));
+            EXPECT(
+                std::any_of(shown.begin(), shown.end(), [&](const collection::Figure& f) { return f.path == gill; }) &&
+                std::none_of(shown.begin(), shown.end(),
+                    [&](const collection::Figure& f) { return f.path == spyro || f.path == anvil; }));
             // The smart search (collection::SearchMatches): elements and toy types in both languages, a typo, a level, the sort.
-            auto has = [&](const std::string& query, const std::string& path, collection::Sort sort = collection::Sort::Recent) {
+            auto has = [&](const std::string& query, const std::string& path,
+                           collection::Sort sort = collection::Sort::Recent) {
                 launcher_ui::ShelfFilter filter;
                 filter.text = query;
                 filter.sort = sort;
                 model.Shelf(filter, shown);
-                return std::any_of(shown.begin(), shown.end(), [&](const collection::Figure& f) { return f.path == path; });
+                return std::any_of(
+                    shown.begin(), shown.end(), [&](const collection::Figure& f) { return f.path == path; });
             };
-            EXPECT(has("water", gill) && has("eau", gill) && has("EAU", gill) && !has("fire", gill) && !has("feu", gill));
-            EXPECT(has("level 10", gill) && has("niveau 10", gill) && !has("niveau 9", gill) && has("niveau 10 eau", gill) && !has("niveau 10 feu", gill));
-            EXPECT(has("objet", anvil) && has("item", anvil) && !has("objet", gill) && has("spyro", gill) && has("splsh", gill)); // a typo in a 5-letter word
+            EXPECT(
+                has("water", gill) && has("eau", gill) && has("EAU", gill) && !has("fire", gill) && !has("feu", gill));
+            EXPECT(has("level 10", gill) && has("niveau 10", gill) && !has("niveau 9", gill) &&
+                   has("niveau 10 eau", gill) && !has("niveau 10 feu", gill));
+            EXPECT(has("objet", anvil) && has("item", anvil) && !has("objet", gill) && has("spyro", gill) &&
+                   has("splsh", gill)); // a typo in a 5-letter word
             EXPECT(has("ssa", gill) && !has("giants", gill));
             {
                 launcher_ui::ShelfFilter byName;
@@ -716,11 +793,13 @@ namespace
             later.game = "giants";
             model.Shelf(later, shown);
             EXPECT(everything > 0 && shown.size() == everything);
-            EXPECT(collection::LevelText(*model.Find(gill), "ssa") == "Level 10" && collection::LevelText(*model.Find(anvil), "ssa").empty());
+            EXPECT(collection::LevelText(*model.Find(gill), "ssa") == "Level 10" &&
+                   collection::LevelText(*model.Find(anvil), "ssa").empty());
             // Giants starts with prepared seats too, and every game of the table has its portal file.
-            EXPECT(!launcher_ui::SessionFile(*catalogue.FindGame("giants")).empty() && fs::path(launcher_ui::SessionFile(*catalogue.FindGame("swapforce"))) == save / "portal.txt" &&
-                fs::path(launcher_ui::SessionFile(*catalogue.FindGame("superchargers"))) == save / "portal.txt" &&
-                fs::path(launcher_ui::SessionFile(*catalogue.FindGame("imaginators"))) == save / "portal.txt");
+            EXPECT(!launcher_ui::SessionFile(*catalogue.FindGame("giants")).empty() &&
+                   fs::path(launcher_ui::SessionFile(*catalogue.FindGame("swapforce"))) == save / "portal.txt" &&
+                   fs::path(launcher_ui::SessionFile(*catalogue.FindGame("superchargers"))) == save / "portal.txt" &&
+                   fs::path(launcher_ui::SessionFile(*catalogue.FindGame("imaginators"))) == save / "portal.txt");
             // Trap Team is the launcher's id for the game, and it reads the toys of the games before it (Gill Grunt).
             EXPECT(catalogue.FindGame("trapteam") != nullptr && catalogue.Accepts("trapteam", 14));
         }
@@ -732,7 +811,8 @@ namespace
             for (const std::string game : { "ssa", "giants", "swapforce", "trapteam", "superchargers", "imaginators" })
                 for (const collection::Toy& toy : catalogue.Toys())
                     if (toy.game == game && (toy.category == collection::Category::Core ||
-                        toy.category == collection::Category::SuperCharger || toy.category == collection::Category::Sensei))
+                                                toy.category == collection::Category::SuperCharger ||
+                                                toy.category == collection::Category::Sensei))
                     {
                         collection::Figure f;
                         f.toy = &toy;
@@ -783,27 +863,31 @@ namespace
             launcher_ui::ShelfFilter filter;
             filter.game = "trapteam";
             mixed.Shelf(filter, shown);
-            EXPECT(shown.size() == 4 && std::none_of(shown.begin(), shown.end(), [&](const auto& f) { return mixed.Incompatible(f); }));
+            EXPECT(shown.size() == 4 &&
+                   std::none_of(shown.begin(), shown.end(), [&](const auto& f) { return mixed.Incompatible(f); }));
             filter.game.clear();
             filter.seat = 0;
             mixed.Shelf(filter, shown);
             EXPECT(shown.size() == 4);
             mixed.gameId = "imaginators";
-            EXPECT(std::none_of(mixed.figures.begin(), mixed.figures.end(), [&](const auto& f) { return mixed.Incompatible(f); }));
+            EXPECT(std::none_of(
+                mixed.figures.begin(), mixed.figures.end(), [&](const auto& f) { return mixed.Incompatible(f); }));
             mixed.gameId = "ssa";
             EXPECT(mixed.Incompatible(mixed.figures[1]) && !mixed.Incompatible(mixed.figures[0]));
             // Refusing a later figure must leave the current seats and portal.txt unchanged.
             mixed.seats = model.seats;
             const auto seatsBefore = mixed.seats;
             const auto sessionBefore = bytesOf(session);
-            EXPECT(!mixed.SetSeat(0, mixed.figures[1].path) && mixed.seats == seatsBefore && bytesOf(session) == sessionBefore);
+            EXPECT(!mixed.SetSeat(0, mixed.figures[1].path) && mixed.seats == seatsBefore &&
+                   bytesOf(session) == sessionBefore);
             collection::Figure unknown;
             EXPECT(!mixed.Incompatible(unknown));
         }
 
         // The launcher's own earlier state moves over: favorites and "starts on the portal", by name.
         fs::remove(session);
-        std::vector<std::string> moved = launcher_ui::MoveLauncherSettings(ssa, legacy.string(), { "016 Spyro.sky" }, { "200 Anvil Rain.sky", "014 Gill Grunt.sky", "new:5" });
+        std::vector<std::string> moved = launcher_ui::MoveLauncherSettings(
+            ssa, legacy.string(), { "016 Spyro.sky" }, { "200 Anvil Rain.sky", "014 Gill Grunt.sky", "new:5" });
         EXPECT(moved.size() == 4 && moved[0] == gill && moved[2] == anvil);
         EXPECT(launcher_ui::WriteSeats(ssa, session, { spyro, "", "", "" }));
         const auto existingSession = bytesOf(session);
@@ -818,7 +902,9 @@ namespace
             collection::Figure opened;
             EXPECT(collection::Read(path, opened));
             const std::string broken = "not a figure";
-            { std::ofstream(path, std::ios::binary) << broken; }
+            {
+                std::ofstream(path, std::ios::binary) << broken;
+            }
             auto edited = opened.stats;
             edited.gold = 5;
             std::string why;
@@ -832,7 +918,9 @@ namespace
         {
             fs::path custom = folder / "catalogue.json";
             const std::string bad = "{\"toys\":[";
-            { std::ofstream(custom) << bad; }
+            {
+                std::ofstream(custom) << bad;
+            }
             EXPECT(!launcher_ui::NameUnknownToy(3502, "Mystery", collection::Category::Core, "ssa"));
             std::ifstream input(custom);
             EXPECT(std::string(std::istreambuf_iterator<char>(input), {}) == bad);
@@ -849,7 +937,8 @@ namespace
             EXPECT(collection::Json::Parse(std::string(std::istreambuf_iterator<char>(input), {}), custom, why));
             EXPECT(custom["toys"].Items().size() == 2);
             EXPECT(custom["toys"].Items().back()["name"].AsString() == "Unknown item");
-            EXPECT(custom["toys"].Items().back()["category"].AsString() == collection::CategoryId(collection::Category::MagicItem));
+            EXPECT(custom["toys"].Items().back()["category"].AsString() ==
+                   collection::CategoryId(collection::Category::MagicItem));
             EXPECT(!fs::exists(folder / "catalogue.json.tmp"));
         }
         EXPECT(!launcher_ui::NameUnknownToy(3504, "  ", collection::Category::Core, "ssa"));
@@ -863,7 +952,8 @@ namespace
         // Magic items, adventure packs and sidekicks carry the family's mark (the Toy Box's): a light centre on the shape.
         for (uint16_t type : { uint16_t(200), uint16_t(300) })
         {
-            std::vector<uint8_t> marked = figures::GenerateIcon(catalogue.Find(type), collection::VariantKind::Base, 64);
+            std::vector<uint8_t> marked =
+                figures::GenerateIcon(catalogue.Find(type), collection::VariantKind::Base, 64);
             const uint8_t* centre = &marked[(size_t(type == 200 ? 36 : 32) * 64 + 32) * 4];
             EXPECT(centre[0] > 200 && centre[1] > 200 && centre[2] > 200);
         }
@@ -879,7 +969,8 @@ namespace
         EXPECT(model.Delete(victim, &why) && why.empty());
         EXPECT(!fs::exists(victim) && model.Find(victim) == nullptr && model.figures.size() == listed - 1);
         EXPECT(model.SeatOf(victim) < 0 && launcher_ui::ReadSeats(ssa, session)[1].empty());
-        EXPECT(collection::Trash().size() == trashed + 1 && fs::exists(folder / "trash" / collection::Trash().front().id));
+        EXPECT(
+            collection::Trash().size() == trashed + 1 && fs::exists(folder / "trash" / collection::Trash().front().id));
         std::vector<char> indexBytes = bytesOf(folder / "collection.json");
         std::string indexText(indexBytes.begin(), indexBytes.end());
         EXPECT(indexText.find("Doomed") != std::string::npos && indexText.find("\"figures\"") != std::string::npos);
@@ -889,30 +980,40 @@ namespace
         EXPECT(!back.empty() && collection::Read(back, gone) && gone.label == "Doomed" && gone.favourite);
         // A bad collection.json: refused once, with the reason, and the figure stays where it is.
         std::vector<char> goodIndex = bytesOf(folder / "collection.json");
-        { std::ofstream(folder / "collection.json", std::ios::binary) << "{ \"format\": 1, \"figures\": {"; }
+        {
+            std::ofstream(folder / "collection.json", std::ios::binary) << "{ \"format\": 1, \"figures\": {";
+        }
         trashed = collection::Trash().size();
         why.clear();
         EXPECT(!model.Delete(back, &why) && !why.empty() && fs::exists(back) && collection::Trash().size() == trashed);
-        { std::ofstream(folder / "collection.json", std::ios::binary).write(goodIndex.data(), std::streamsize(goodIndex.size())); }
+        {
+            std::ofstream(folder / "collection.json", std::ios::binary)
+                .write(goodIndex.data(), std::streamsize(goodIndex.size()));
+        }
         EXPECT(model.Delete(back, &why) && !fs::exists(back));
 
         // Swap Force: a swapper is one card, one seat, two portal slots (src/shared/collection "Swappers", docs/collection_ui.md).
         {
             const collection::Game& sf = *catalogue.FindGame("swapforce");
-            EXPECT(sf.seats.size() == 4 && launcher_ui::SeatFirstSlot(sf, 0) == 0 && launcher_ui::SeatFirstSlot(sf, 1) == 2 &&
-                launcher_ui::SeatFirstSlot(sf, 2) == 4 && launcher_ui::SeatFirstSlot(sf, 3) == 5);
-            EXPECT(launcher_ui::SlotSeat(sf, 1) == 0 && launcher_ui::SlotSeat(sf, 3) == 1 && launcher_ui::SlotSeat(sf, 4) == 2 && launcher_ui::SlotSeat(sf, 5) == 3);
-            EXPECT(launcher_ui::SeatFirstSlot(ssa, 3) == 3 && launcher_ui::SlotSeat(ssa, 2) == 2); // the other games: one slot per seat
-            collection::SwapperPaths doom = collection::CreateSwapper(2003, 1003), blast = collection::CreateSwapper(2004, 1004);
+            EXPECT(sf.seats.size() == 4 && launcher_ui::SeatFirstSlot(sf, 0) == 0 &&
+                   launcher_ui::SeatFirstSlot(sf, 1) == 2 && launcher_ui::SeatFirstSlot(sf, 2) == 4 &&
+                   launcher_ui::SeatFirstSlot(sf, 3) == 5);
+            EXPECT(launcher_ui::SlotSeat(sf, 1) == 0 && launcher_ui::SlotSeat(sf, 3) == 1 &&
+                   launcher_ui::SlotSeat(sf, 4) == 2 && launcher_ui::SlotSeat(sf, 5) == 3);
+            EXPECT(launcher_ui::SeatFirstSlot(ssa, 3) == 3 &&
+                   launcher_ui::SlotSeat(ssa, 2) == 2); // the other games: one slot per seat
+            collection::SwapperPaths doom = collection::CreateSwapper(2003, 1003),
+                                     blast = collection::CreateSwapper(2004, 1004);
             EXPECT(!doom.top.empty() && !doom.bottom.empty() && !blast.top.empty() && !blast.bottom.empty());
             collection::Figure top, bottom;
-            EXPECT(collection::Read(doom.top, top) && collection::Read(doom.bottom, bottom) && top.IsSwapTop() && bottom.IsSwapBottom() &&
-                top.partner == bottom.file && bottom.partner == top.file);
+            EXPECT(collection::Read(doom.top, top) && collection::Read(doom.bottom, bottom) && top.IsSwapTop() &&
+                   bottom.IsSwapBottom() && top.partner == bottom.file && bottom.partner == top.file);
             // A version of a swapper (Add a figure's "Dark Blast Zone"): both halves of that version, linked.
             collection::SwapperPaths dark = collection::CreateSwapper(2004, 1004, 0x2402, 0x2402);
             collection::Figure darkTop, darkBottom;
-            EXPECT(!dark.top.empty() && collection::Read(dark.top, darkTop) && collection::Read(dark.bottom, darkBottom) &&
-                darkTop.variant == 0x2402 && darkBottom.variant == 0x2402 && darkTop.partner == darkBottom.file);
+            EXPECT(!dark.top.empty() && collection::Read(dark.top, darkTop) &&
+                   collection::Read(dark.bottom, darkBottom) && darkTop.variant == 0x2402 &&
+                   darkBottom.variant == 0x2402 && darkTop.partner == darkBottom.file);
             EXPECT(collection::Delete(dark.top) && collection::Delete(dark.bottom));
             std::string lone = collection::Create(1007), item, adventure;
             for (const collection::Toy& toy : catalogue.Toys())
@@ -945,11 +1046,13 @@ namespace
             launcher_ui::ShelfFilter search;
             search.text = "doom";
             std::vector<collection::Card> found = cardsOf(search);
-            EXPECT(found.size() == 1 && found[0].Swapper() && found[0].first->path == doom.top && found[0].second->path == doom.bottom);
+            EXPECT(found.size() == 1 && found[0].Swapper() && found[0].first->path == doom.top &&
+                   found[0].second->path == doom.bottom);
             launcher_ui::ShelfFilter bottomsOnly; // the type of one half only: the card still comes with both
             bottomsOnly.category = int(collection::Category::SwapBottom);
             found = cardsOf(bottomsOnly);
-            EXPECT(std::any_of(found.begin(), found.end(), [&](const collection::Card& c) { return c.Swapper() && c.first->path == doom.top; }));
+            EXPECT(std::any_of(found.begin(), found.end(),
+                [&](const collection::Card& c) { return c.Swapper() && c.first->path == doom.top; }));
             EXPECT(collection::CardName(collection::CardOf(swap.figures, 0)).size() > 0);
 
             // Put on a seat: the top's path is the seat, the file has both tags (player 1: slots 0 and 1, player 2: 2 and 3).
@@ -961,10 +1064,13 @@ namespace
                     out.push_back(line);
                 return out;
             };
-            EXPECT(swap.SetSeat(0, doom.top) && swap.SetSeat(1, blast.top) && swap.SetSeat(2, item) && swap.SetSeat(3, adventure));
-            EXPECT((lines() == std::vector<std::string>{ "0 " + doom.top, "1 " + doom.bottom, "2 " + blast.top, "3 " + blast.bottom, "4 " + item, "5 " + adventure }));
+            EXPECT(swap.SetSeat(0, doom.top) && swap.SetSeat(1, blast.top) && swap.SetSeat(2, item) &&
+                   swap.SetSeat(3, adventure));
+            EXPECT((lines() == std::vector<std::string>{ "0 " + doom.top, "1 " + doom.bottom, "2 " + blast.top,
+                                   "3 " + blast.bottom, "4 " + item, "5 " + adventure }));
             std::vector<std::string> seats = launcher_ui::ReadSeats(sf, session);
-            EXPECT((seats == std::vector<std::string>{ doom.top, blast.top, item, adventure })); // a bottom is no seat of its own
+            EXPECT((seats == std::vector<std::string>{
+                                 doom.top, blast.top, item, adventure })); // a bottom is no seat of its own
             swap.Load();
             EXPECT(swap.SeatOf(doom.top) == 0 && swap.SeatOf(doom.bottom) < 0 && swap.OnPortal().size() == 4);
             // A half on its own sits in the first slot of its seat; a file in the game's own order comes back as it was written.
@@ -972,34 +1078,44 @@ namespace
             EXPECT(launcher_ui::ReadSeats(sf, session)[0] == lone);
             EXPECT(swap.SetSeat(0, doom.top) && launcher_ui::ReadSeats(sf, session)[0] == doom.top);
             // Bottom first in the file, the order the game itself writes them in: still one seat.
-            { std::ofstream(session) << "1 " << doom.bottom << "\n0 " << doom.top << "\n"; }
+            {
+                std::ofstream(session) << "1 " << doom.bottom << "\n0 " << doom.top << "\n";
+            }
             seats = launcher_ui::ReadSeats(sf, session);
             EXPECT(seats[0] == doom.top && seats[1].empty());
             EXPECT(swap.SetSeat(0, doom.top));
 
             // Change the bottom: the card keeps the top and takes the other swapper's bottom; that one gets the old half back.
             std::string error2;
-            EXPECT(collection::ChangeHalf(doom.top, blast.bottom, &error2) && collection::Read(doom.top, top) && top.partner == fs::path(blast.bottom).filename().string());
+            EXPECT(collection::ChangeHalf(doom.top, blast.bottom, &error2) && collection::Read(doom.top, top) &&
+                   top.partner == fs::path(blast.bottom).filename().string());
             EXPECT(collection::Read(doom.bottom, bottom) && bottom.partner == fs::path(blast.top).filename().string());
             // The seat is still the top's, its portal file is written again for the new bottom (the page does it after a change).
             swap.Load();
             EXPECT(swap.SeatOf(doom.top) == 0 && swap.SetSeat(0, doom.top) && lines()[1] == "1 " + blast.bottom);
-            EXPECT(collection::CardName(collection::CardOf(swap.figures, size_t(std::find_if(swap.figures.begin(), swap.figures.end(),
-                [&](const collection::Figure& f) { return f.path == doom.top; }) - swap.figures.begin()))) == "Doom Zone"); // a top and a bottom of two swappers: named as the game does
+            EXPECT(collection::CardName(collection::CardOf(
+                       swap.figures, size_t(std::find_if(swap.figures.begin(), swap.figures.end(),
+                                                [&](const collection::Figure& f) { return f.path == doom.top; }) -
+                                            swap.figures.begin()))) ==
+                   "Doom Zone"); // a top and a bottom of two swappers: named as the game does
 
             // Delete: both halves go, the seat empties; the trash holds two, and both come back.
             size_t listedBefore = swap.figures.size(), trashBefore = collection::Trash().size();
-            EXPECT(swap.DeleteCard(doom.top, &error2) && swap.Find(doom.top) == nullptr && swap.Find(blast.bottom) == nullptr);
-            EXPECT(swap.figures.size() == listedBefore - 2 && collection::Trash().size() == trashBefore + 2 && swap.SeatOf(doom.top) < 0);
+            EXPECT(swap.DeleteCard(doom.top, &error2) && swap.Find(doom.top) == nullptr &&
+                   swap.Find(blast.bottom) == nullptr);
+            EXPECT(swap.figures.size() == listedBefore - 2 && collection::Trash().size() == trashBefore + 2 &&
+                   swap.SeatOf(doom.top) < 0);
             EXPECT(launcher_ui::ReadSeats(sf, session)[0].empty() && lines().size() == 4);
             std::vector<collection::TrashEntry> trash = collection::Trash();
             int undeleted = 0;
             for (const collection::TrashEntry& entry : trash)
-                if (entry.file == fs::path(doom.top).filename().string() || entry.file == fs::path(blast.bottom).filename().string())
+                if (entry.file == fs::path(doom.top).filename().string() ||
+                    entry.file == fs::path(blast.bottom).filename().string())
                     undeleted += !collection::Undelete(entry.id).empty();
             EXPECT(undeleted == 2);
             swap.Load();
-            EXPECT(swap.figures.size() == listedBefore && swap.Find(doom.top) != nullptr && swap.Find(blast.bottom) != nullptr);
+            EXPECT(swap.figures.size() == listedBefore && swap.Find(doom.top) != nullptr &&
+                   swap.Find(blast.bottom) != nullptr);
             // Deleting a half on its own deletes only it.
             EXPECT(swap.Delete(lone, &error2) && swap.Find(lone) == nullptr && swap.Find(blast.top) != nullptr);
         }
@@ -1033,7 +1149,8 @@ static void SweepChecks(const std::filesystem::path& scratch)
         EXPECT(!first.empty() && collection::Read(first, figure));
         figure.stats.gold = 77;
         EXPECT(collection::WriteStats(first, figure.stats) && collection::Backups(first).size() == 1);
-        const std::string oldBackup = collection::Backups(first).empty() ? std::string("none") : collection::Backups(first).front();
+        const std::string oldBackup =
+            collection::Backups(first).empty() ? std::string("none") : collection::Backups(first).front();
         EXPECT(collection::Delete(first) && !fs::exists(folder / "backups" / "950 Sweep A.sky"));
         const std::string second = collection::Create(14, 0, "950 Sweep A.sky"); // the freed name, another figure
         EXPECT(second == first && collection::Backups(second).empty());
@@ -1047,7 +1164,9 @@ static void SweepChecks(const std::filesystem::path& scratch)
         fs::create_directories(folder / "backups" / "950 Sweep B.sky");
         std::error_code copied;
         fs::copy_file(trashed, folder / "backups" / "950 Sweep B.sky" / "2026-01-01T000000Z.sky", copied);
-        EXPECT(collection::Backups(other).empty() && !collection::Restore(other, (folder / "backups" / "950 Sweep B.sky" / "2026-01-01T000000Z.sky").string(), &error));
+        EXPECT(collection::Backups(other).empty() &&
+               !collection::Restore(
+                   other, (folder / "backups" / "950 Sweep B.sky" / "2026-01-01T000000Z.sky").string(), &error));
         // Undelete brings the backups back, and Restore from them works; Delete for good takes them away.
         const std::string renamed = collection::Undelete(id); // its name is taken by `second`: it comes back as "(2)"
         EXPECT(!renamed.empty() && renamed != first && collection::Backups(renamed).size() == 1);
@@ -1076,7 +1195,8 @@ static void SweepChecks(const std::filesystem::path& scratch)
         put(folder / "backups" / "951 Moved.sky" / "orphan.sky", "x"); // a stray file in the target's folder
         EXPECT(collection::Rename(a, "951 Moved", &error));
         const std::string moved = collection::PathOf("951 Moved.sky");
-        EXPECT(fs::exists(moved) && !fs::exists(a) && collection::Backups(moved).size() == 1 && !fs::exists(folder / "backups" / "951 Rename.sky"));
+        EXPECT(fs::exists(moved) && !fs::exists(a) && collection::Backups(moved).size() == 1 &&
+               !fs::exists(folder / "backups" / "951 Rename.sky"));
         // A name differing in case only (the same file on a case-insensitive disk).
         EXPECT(collection::Rename(moved, "951 MOVED.sky", &error));
         bool listed = false;
@@ -1086,7 +1206,8 @@ static void SweepChecks(const std::filesystem::path& scratch)
         // Names no file system or Windows accepts: reserved, trailing dot, over-long.
         const std::string current = collection::PathOf("951 MOVED.sky");
         EXPECT(collection::Rename(current, "CON", &error) && fs::exists(collection::PathOf("_CON.sky")));
-        EXPECT(collection::Rename(collection::PathOf("_CON.sky"), "dotted. ", &error) && fs::exists(collection::PathOf("dotted.sky")));
+        EXPECT(collection::Rename(collection::PathOf("_CON.sky"), "dotted. ", &error) &&
+               fs::exists(collection::PathOf("dotted.sky")));
         EXPECT(collection::Rename(collection::PathOf("dotted.sky"), std::string(300, 'n'), &error));
         std::string longName;
         for (const auto& entry : fs::directory_iterator(folder))
@@ -1104,14 +1225,17 @@ static void SweepChecks(const std::filesystem::path& scratch)
         const std::string a = collection::Create(14, 0, "952 Order.sky");
         const std::string dump = bytesOf(a);
         fs::create_directories(folder / "backups" / "952 Order.sky");
-        for (const char* name : { "2026-10-24T101500Z.sky", "2026-10-24T101500Z-2.sky", "2026-10-24T101500Z-10.sky", "2026-10-24T101459Z-3.sky" })
+        for (const char* name : { "2026-10-24T101500Z.sky", "2026-10-24T101500Z-2.sky", "2026-10-24T101500Z-10.sky",
+                 "2026-10-24T101459Z-3.sky" })
             put(folder / "backups" / "952 Order.sky" / name, dump);
         std::vector<std::string> names;
         for (const std::string& backup : collection::Backups(a))
             names.push_back(fs::path(backup).filename().string());
-        EXPECT((names == std::vector<std::string>{ "2026-10-24T101500Z-10.sky", "2026-10-24T101500Z-2.sky", "2026-10-24T101500Z.sky", "2026-10-24T101459Z-3.sky" }));
-        EXPECT(collection::PruneBackups(a, 2) == 2 && fs::exists(folder / "backups" / "952 Order.sky" / "2026-10-24T101500Z-10.sky") &&
-            !fs::exists(folder / "backups" / "952 Order.sky" / "2026-10-24T101500Z.sky"));
+        EXPECT((names == std::vector<std::string>{ "2026-10-24T101500Z-10.sky", "2026-10-24T101500Z-2.sky",
+                             "2026-10-24T101500Z.sky", "2026-10-24T101459Z-3.sky" }));
+        EXPECT(collection::PruneBackups(a, 2) == 2 &&
+               fs::exists(folder / "backups" / "952 Order.sky" / "2026-10-24T101500Z-10.sky") &&
+               !fs::exists(folder / "backups" / "952 Order.sky" / "2026-10-24T101500Z.sky"));
         fs::remove_all(folder / "backups");
         EXPECT(collection::Delete(a));
         for (const collection::TrashEntry& entry : collection::Trash())
@@ -1158,7 +1282,8 @@ static void SweepChecks(const std::filesystem::path& scratch)
         put(ok, bytes + "tool data");
         EXPECT(collection::Import({ big.string() }).invalid == 1 && collection::Import({ big.string() }).added == 0);
         collection::ImportReport report = collection::Import({ ok.string() });
-        EXPECT(report.added == 1 && !report.paths.empty() && bytesOf(report.paths.front()) == bytes + "tool data" && NoAtomicTemporary(report.paths.front()));
+        EXPECT(report.added == 1 && !report.paths.empty() && bytesOf(report.paths.front()) == bytes + "tool data" &&
+               NoAtomicTemporary(report.paths.front()));
         if (report.paths.empty())
             report.paths.push_back(collection::PathOf("missing.sky"));
 #ifndef _WIN32
@@ -1176,7 +1301,8 @@ static void SweepChecks(const std::filesystem::path& scratch)
         collection::ImportReport failed = collection::Import({ second.string() });
         setrlimit(RLIMIT_FSIZE, &previous);
         std::signal(SIGXFSZ, oldHandler);
-        EXPECT(failed.added == 0 && failed.invalid == 1 && collection::List().size() == listed && NoAtomicTemporary(collection::PathOf("second.sky")));
+        EXPECT(failed.added == 0 && failed.invalid == 1 && collection::List().size() == listed &&
+               NoAtomicTemporary(collection::PathOf("second.sky")));
         EXPECT(!fs::exists(collection::PathOf("second.sky")));
 #endif
         EXPECT(collection::Delete(report.paths.front()));
@@ -1212,8 +1338,10 @@ static void SweepChecks(const std::filesystem::path& scratch)
         fs::create_directories(out);
         put(out / "955 Export.sky", "someone else's file");
         EXPECT(collection::Export({ a }, out.string()) == 1);
-        EXPECT(bytesOf(out / "955 Export.sky") == "someone else's file" && bytesOf(out / "955 Export (2).sky") == bytesOf(a));
-        EXPECT(collection::Export({ a }, out.string()) == 1 && !fs::exists(out / "955 Export (3).sky")); // the same bytes are not copied again
+        EXPECT(bytesOf(out / "955 Export.sky") == "someone else's file" &&
+               bytesOf(out / "955 Export (2).sky") == bytesOf(a));
+        EXPECT(collection::Export({ a }, out.string()) == 1 &&
+               !fs::exists(out / "955 Export (3).sky")); // the same bytes are not copied again
         EXPECT(collection::Delete(a));
         for (const collection::TrashEntry& entry : collection::Trash())
             collection::DeleteForGood(entry.id);
@@ -1222,17 +1350,21 @@ static void SweepChecks(const std::filesystem::path& scratch)
     // S-16 / S-17: nicknames are well-formed text, labels are trimmed and bounded.
     {
         figures::FigureStats stats;
-        figures::SetNicknameUtf8(stats, "\xC0\xAF" "ab");              // an overlong form
+        figures::SetNicknameUtf8(stats, "\xC0\xAF"
+                                        "ab"); // an overlong form
         EXPECT(figures::NicknameUtf8(stats) == "ab");
-        figures::SetNicknameUtf8(stats, "\xED\xA0\x80x");              // a lone surrogate
+        figures::SetNicknameUtf8(stats, "\xED\xA0\x80x"); // a lone surrogate
         EXPECT(figures::NicknameUtf8(stats) == "x");
-        figures::SetNicknameUtf8(stats, "a\x01\x1F\x7F" "b\xC2\x85" "c");  // controls, C1 included
+        figures::SetNicknameUtf8(stats, "a\x01\x1F\x7F"
+                                        "b\xC2\x85"
+                                        "c"); // controls, C1 included
         EXPECT(figures::NicknameUtf8(stats) == "abc");
-        figures::SetNicknameUtf8(stats, "\xF0\x9F\x98\x80z\xFF" "q");  // a character outside the plane the fonts have, a stray byte
+        figures::SetNicknameUtf8(stats, "\xF0\x9F\x98\x80z\xFF"
+                                        "q"); // a character outside the plane the fonts have, a stray byte
         EXPECT(figures::NicknameUtf8(stats) == "?zq");
-        figures::SetNicknameUtf8(stats, "\xC3\xA9\xE2\x82\xAC");     // e acute, euro sign
+        figures::SetNicknameUtf8(stats, "\xC3\xA9\xE2\x82\xAC"); // e acute, euro sign
         EXPECT(figures::NicknameUtf8(stats) == "\xC3\xA9\xE2\x82\xAC");
-        stats.nickname = { u'o', char16_t(0xD83D), u'k', 0, u'z' };    // half a pair is not text; a zero ends it
+        stats.nickname = { u'o', char16_t(0xD83D), u'k', 0, u'z' }; // half a pair is not text; a zero ends it
         EXPECT(figures::NicknameUtf8(stats) == "o?k");
         std::string sixteen;
         for (int i = 0; i < 20; i++)
@@ -1241,13 +1373,15 @@ static void SweepChecks(const std::filesystem::path& scratch)
         EXPECT(stats.nickname.size() == 16);
 
         EXPECT(collection::CleanLabel("   ").empty() && collection::CleanLabel("  Hi\tthere \n") == "Hi there");
-        EXPECT(collection::CleanLabel("a\x01" "b\x7F") == "ab");
+        EXPECT(collection::CleanLabel("a\x01"
+                                      "b\x7F") == "ab");
         std::string wide;
         for (int i = 0; i < 40; i++)
             wide += "\xC3\xA9"; // 80 bytes
         const std::string cut = collection::CleanLabel(wide);
         EXPECT(cut.size() == collection::MaxLabelBytes && cut.size() % 2 == 0 && cut.substr(0, 2) == "\xC3\xA9");
-        const std::string odd = collection::CleanLabel(std::string(63, 'a') + "\xC3\xA9"); // the last character would cross the limit
+        const std::string odd =
+            collection::CleanLabel(std::string(63, 'a') + "\xC3\xA9"); // the last character would cross the limit
         EXPECT(odd.size() == 63);
         const std::string a = collection::Create(14, 0, "956 Label.sky");
         EXPECT(collection::SetLabel(a, "  Splashy  "));
@@ -1310,7 +1444,8 @@ static void SweepChecks(const std::filesystem::path& scratch)
                 pid_t child = fork();
                 if (child == 0)
                 {
-                    while (!fs::exists(go)) {}
+                    while (!fs::exists(go))
+                    {}
                     char won = collection::Lock(a, "race") ? '1' : '0';
                     (void)!write(pipes[1], &won, 1);
                     sleep(3);
@@ -1318,7 +1453,9 @@ static void SweepChecks(const std::filesystem::path& scratch)
                 }
                 children.push_back(child);
             }
-            { std::ofstream(go) << "go"; }
+            {
+                std::ofstream(go) << "go";
+            }
             int winners = 0;
             for (int i = 0; i < 16; i++)
             {
@@ -1341,7 +1478,8 @@ static void SweepChecks(const std::filesystem::path& scratch)
         for (const collection::TrashEntry& entry : collection::Trash())
             collection::DeleteForGood(entry.id);
     }
-    printf("Collection sweep: backups, atomic writes, names, import, export, labels, nicknames, tidy and locks checked\n");
+    printf(
+        "Collection sweep: backups, atomic writes, names, import, export, labels, nicknames, tidy and locks checked\n");
 }
 
 // The portal status: the VID:PID table, the status logic with fake enumerators, and the USB lists (a fake sysfs, Windows ids).
@@ -1402,8 +1540,10 @@ static void PortalChecks(const std::filesystem::path& scratch)
 
     // Windows: device instance ids from the configuration manager.
     Device device;
-    EXPECT(ParseWindowsUsbId("USB\\VID_1430&PID_1F17\\5&2B6A1E9&0&3", device) && device.vendorId == 0x1430 && device.productId == 0x1F17);
-    EXPECT(ParseWindowsUsbId("usb\\vid_24c6&pid_fa00&mi_00\\7&1", device) && device.vendorId == 0x24C6 && device.productId == 0xFA00);
+    EXPECT(ParseWindowsUsbId("USB\\VID_1430&PID_1F17\\5&2B6A1E9&0&3", device) && device.vendorId == 0x1430 &&
+           device.productId == 0x1F17);
+    EXPECT(ParseWindowsUsbId("usb\\vid_24c6&pid_fa00&mi_00\\7&1", device) && device.vendorId == 0x24C6 &&
+           device.productId == 0xFA00);
     EXPECT(!ParseWindowsUsbId("HID\\VID_1430&PID_0150\\1", device));
     EXPECT(!ParseWindowsUsbId("USB\\VID_14&PID_0150", device));
     EXPECT(!ParseWindowsUsbId("USB\\ROOT_HUB30\\4&1", device));
@@ -1532,27 +1672,33 @@ void EditChecks()
     EXPECT(MergeEditedStats(now, base, edited, "Splash", "Splash").upgrades == 0x0004);
     // Giants' Wow Pow: the Edit sheet's bit 10 goes to the figure's own place (FigureStats::wowPow), not the field.
     edited = base;
-    collection::StoreEditorBits(uint16_t(collection::EditorBits(edited.upgrades, edited.wowPow) | 1 << collection::UpgradeWowPowBit),
+    collection::StoreEditorBits(
+        uint16_t(collection::EditorBits(edited.upgrades, edited.wowPow) | 1 << collection::UpgradeWowPowBit),
         edited.upgrades, edited.wowPow);
     saved = MergeEditedStats(now, base, edited, "Splash", "Splash");
     EXPECT(saved.wowPow == 1 && saved.upgrades == now.upgrades);
 
     EXPECT(GameUpdateSummary({}) == "Arkeyan Launcher is up to date.");
-    EXPECT(GameUpdateSummary({ "Skylanders: Giants" }) == "Arkeyan Launcher is up to date. An update is available for Skylanders: Giants.");
-    EXPECT(GameUpdateSummary({ "Skylanders: Giants", "Skylanders: Swap Force" }) == "Arkeyan Launcher is up to date. 2 game updates available.");
+    EXPECT(GameUpdateSummary({ "Skylanders: Giants" }) ==
+           "Arkeyan Launcher is up to date. An update is available for Skylanders: Giants.");
+    EXPECT(GameUpdateSummary({ "Skylanders: Giants", "Skylanders: Swap Force" }) ==
+           "Arkeyan Launcher is up to date. 2 game updates available.");
     i18n::SetLanguage("fr");
-    EXPECT(GameUpdateSummary({ "Skylanders: Giants" }) == "Arkeyan Launcher est à jour. Une mise à jour est disponible pour Skylanders: Giants.");
-    EXPECT(GameUpdateSummary({ "Skylanders: Giants", "Skylanders: Swap Force" }) == "Arkeyan Launcher est à jour. 2 mises à jour de jeux disponibles.");
+    EXPECT(GameUpdateSummary({ "Skylanders: Giants" }) ==
+           "Arkeyan Launcher est à jour. Une mise à jour est disponible pour Skylanders: Giants.");
+    EXPECT(GameUpdateSummary({ "Skylanders: Giants", "Skylanders: Swap Force" }) ==
+           "Arkeyan Launcher est à jour. 2 mises à jour de jeux disponibles.");
     i18n::SetLanguage("en");
 
     using launcher_ui::Trimmed;
-    EXPECT(Trimmed("   ").empty() && Trimmed("").empty() && Trimmed("\t Splash's  ") == "Splash's" && Trimmed("A b") == "A b");
+    EXPECT(Trimmed("   ").empty() && Trimmed("").empty() && Trimmed("\t Splash's  ") == "Splash's" &&
+           Trimmed("A b") == "A b");
     printf("Edit stats and names: merge and trim checked\n");
 }
 
 int ShellChecks(const std::filesystem::path& scratch); // tests/shell_test.cpp
-void MakeKitRelease(const std::filesystem::path& folder, const std::vector<std::string>& tags, const std::filesystem::path& kitFolder,
-    const std::string& gamesLine = {}); // tests/shell_test.cpp
+void MakeKitRelease(const std::filesystem::path& folder, const std::vector<std::string>& tags,
+    const std::filesystem::path& kitFolder, const std::string& gamesLine = {}); // tests/shell_test.cpp
 int SettingsChecks(const std::filesystem::path& scratch); // tests/settings_test.cpp
 int I18nChecks(); // tests/i18n_test.cpp
 int UninstallChecks(const std::filesystem::path& scratch); // tests/uninstall_test.cpp
@@ -1562,19 +1708,22 @@ int AccentChecks(const std::filesystem::path& scratch); // tests/accent_test.cpp
 int AccentChecksInChild(const char* executable, const std::filesystem::path& scratch);
 int MusicChecks(const std::filesystem::path& scratch); // tests/music_test.cpp
 int ProfilesChecks(const std::filesystem::path& scratch); // tests/profiles_test.cpp
-int CopyChecks(const std::filesystem::path& scratch, const std::string& ssaIso, const std::string& giantsIso); // tests/copy_test.cpp
+int CopyChecks(const std::filesystem::path& scratch, const std::string& ssaIso,
+    const std::string& giantsIso); // tests/copy_test.cpp
 int PortableChecks(const std::filesystem::path& scratch); // tests/portable_test.cpp
 int VfsChecks(const std::filesystem::path& scratch); // tests/vfs_test.cpp
-int LuxImageChecks();                                           // tests/lux_images_test.cpp
+int LuxImageChecks(); // tests/lux_images_test.cpp
 int SingleInstanceChecks(const std::filesystem::path& scratch); // tests/single_instance_test.cpp
-int ToyboxLinkChecks(const std::filesystem::path& scratch);     // tests/toybox_link_test.cpp
-int ExportPortableTool(int argc, char** argv);         // tests/portable_test.cpp
+int ToyboxLinkChecks(const std::filesystem::path& scratch); // tests/toybox_link_test.cpp
+int ExportPortableTool(int argc, char** argv); // tests/portable_test.cpp
 
 // The launcher window switching games in place (App::TestSwitchScript, in an offscreen window): both discs checked, a
 // build of each made by the fake kit, the state of each kept across switches, PLAY returning the shown game's runtime.
 static void SwitchChecks(const std::filesystem::path& scratch, const std::string& ssaIso, const std::string& giantsIso)
 {
-    auto set = [](const char* name, const std::string& value) { SDL_SetEnvironmentVariable(SDL_GetEnvironment(), name, value.c_str(), true); };
+    auto set = [](const char* name, const std::string& value) {
+        SDL_SetEnvironmentVariable(SDL_GetEnvironment(), name, value.c_str(), true);
+    };
     std::filesystem::create_directories(scratch / "shots");
     set("SDL_VIDEO_DRIVER", "offscreen");
     set("SDL_AUDIO_DRIVER", "dummy");
@@ -1592,7 +1741,8 @@ static void SwitchChecks(const std::filesystem::path& scratch, const std::string
     config["launcher"]["kit"] = SKYLAUNCHER_FAKE_KIT;
     config["ssa"]["iso"] = ssaIso;
     config["giants"]["iso"] = giantsIso;
-    config["launcher"]["game_music"] = "0"; // a menu theme fading out holds PLAY for a moment: the script checks it at once
+    config["launcher"]["game_music"] =
+        "0"; // a menu theme fading out holds PLAY for a moment: the script checks it at once
     launcher_ui::App app(*FindGame("ssa"), ini, config);
     std::string chosen = app.Run();
     EXPECT(app.TestFailures() == 0);
@@ -1606,7 +1756,9 @@ static void SwitchChecks(const std::filesystem::path& scratch, const std::string
 // installing, updating at 0, 50 and 100 %, ready, update available, failed, with a screenshot of each in <scratch>/sidebar-shots.
 static void SidebarChecks(const std::filesystem::path& scratch, const std::string& ssaIso, const std::string& giantsIso)
 {
-    auto set = [](const char* name, const std::string& value) { SDL_SetEnvironmentVariable(SDL_GetEnvironment(), name, value.c_str(), true); };
+    auto set = [](const char* name, const std::string& value) {
+        SDL_SetEnvironmentVariable(SDL_GetEnvironment(), name, value.c_str(), true);
+    };
     std::filesystem::create_directories(scratch / "sidebar-shots");
     set("SDL_VIDEO_DRIVER", "offscreen");
     set("SDL_AUDIO_DRIVER", "dummy");
@@ -1649,12 +1801,14 @@ static void InstalledFilesChecks(const std::filesystem::path& scratch)
         fs::create_directories((game / path).parent_path());
         std::ofstream(game / path) << path;
     };
-    for (const char* path : { "Game.app/Contents/MacOS/Game", "Game.app/Contents/Info.plist", "Game.app/Contents/Resources/fonts/a.ttf",
-             "game_icon.png", "fonts/b.ttf", "THIRD_PARTY_NOTICES.md", "settings.ini", "saves/slot1.sav", "Arkeyan.log", "Other" })
+    for (const char* path : { "Game.app/Contents/MacOS/Game", "Game.app/Contents/Info.plist",
+             "Game.app/Contents/Resources/fonts/a.ttf", "game_icon.png", "fonts/b.ttf", "THIRD_PARTY_NOTICES.md",
+             "settings.ini", "saves/slot1.sav", "Arkeyan.log", "Other" })
         put(path);
     std::vector<std::string> files = InstalledGameFiles(game, game / "Game.app" / "Contents" / "MacOS" / "Game");
-    EXPECT((files == std::vector<std::string>{ "Game.app/Contents/Info.plist", "Game.app/Contents/MacOS/Game", "Game.app/Contents/Resources/fonts/a.ttf",
-                         "THIRD_PARTY_NOTICES.md", "fonts/b.ttf", "game_icon.png" }));
+    EXPECT((files == std::vector<std::string>{ "Game.app/Contents/Info.plist", "Game.app/Contents/MacOS/Game",
+                         "Game.app/Contents/Resources/fonts/a.ttf", "THIRD_PARTY_NOTICES.md", "fonts/b.ttf",
+                         "game_icon.png" }));
     files = InstalledGameFiles(game, game / "Other");
     EXPECT(files.size() == 4 && files[0] == "Other");
     EXPECT(InstalledGameFiles(game, scratch / "elsewhere" / "Game").empty());
@@ -1663,30 +1817,36 @@ static void InstalledFilesChecks(const std::filesystem::path& scratch)
     fs::remove(game / "fonts" / "b.ttf");
     std::ofstream(game / "settings.ini") << "changed by the player";
     std::vector<filelist::Problem> problems = CheckFolder({ "ssa", game }).problems;
-    EXPECT(problems.size() == 1 && problems[0].path == "fonts/b.ttf" && problems[0].kind == filelist::Problem::Kind::Missing);
+    EXPECT(problems.size() == 1 && problems[0].path == "fonts/b.ttf" &&
+           problems[0].kind == filelist::Problem::Kind::Missing);
     fs::remove_all(game);
 }
 
 static void KitFlowChecks(const std::filesystem::path& scratch, const std::string& ssaIso, const std::string& giantsIso)
 {
     InstalledFilesChecks(scratch);
-    auto set = [](const char* name, const std::string& value) { SDL_SetEnvironmentVariable(SDL_GetEnvironment(), name, value.c_str(), true); };
+    auto set = [](const char* name, const std::string& value) {
+        SDL_SetEnvironmentVariable(SDL_GetEnvironment(), name, value.c_str(), true);
+    };
     namespace fs = std::filesystem;
     fs::path newKit = scratch / "kitflow" / "kit-new";
     fs::remove_all(scratch / "kitflow");
     fs::create_directories(newKit.parent_path());
     fs::copy(SKYLAUNCHER_FAKE_KIT, newKit, fs::copy_options::recursive);
     SemVer next = ParseSemVer(LauncherVersion());
-    std::string nextTag = "v" + std::to_string(next.major) + "." + std::to_string(next.minor) + "." + std::to_string(next.patch + 1);
+    std::string nextTag =
+        "v" + std::to_string(next.major) + "." + std::to_string(next.minor) + "." + std::to_string(next.patch + 1);
     std::string nextVersion = nextTag.substr(1);
-    std::ofstream(newKit / "kit.txt") << "version=0.5.0\nbuild=kit-new\ngames=ssa,giants\ngame_version.ssa=0.9.0\ngame_version.giants=0.8.0\n";
+    std::ofstream(newKit / "kit.txt")
+        << "version=0.5.0\nbuild=kit-new\ngames=ssa,giants\ngame_version.ssa=0.9.0\ngame_version.giants=0.8.0\n";
     MakeKitRelease(scratch / "kitflow" / "release", { "v" + LauncherVersion(), nextTag }, newKit);
     // A release that bumps Giants only: its kit says Giants 0.8.1, its notes say so, and Spyro's Adventure stays at 0.9.0.
     fs::path newerKit = scratch / "kitflow" / "kit-newer";
     fs::copy(SKYLAUNCHER_FAKE_KIT, newerKit, fs::copy_options::recursive);
-    std::ofstream(newerKit / "kit.txt") << "version=" << nextVersion << "\nbuild=kit-new\ngames=ssa,giants\ngame_version.ssa=0.9.0\ngame_version.giants=0.8.1\n";
-    MakeKitRelease(scratch / "kitflow" / "release-updates", { nextTag }, newerKit,
-        "ssa=0.9.0 giants=0.8.1");
+    std::ofstream(newerKit / "kit.txt")
+        << "version=" << nextVersion
+        << "\nbuild=kit-new\ngames=ssa,giants\ngame_version.ssa=0.9.0\ngame_version.giants=0.8.1\n";
+    MakeKitRelease(scratch / "kitflow" / "release-updates", { nextTag }, newerKit, "ssa=0.9.0 giants=0.8.1");
     // The file check: the launcher's own release carries a whole kit with its list; the one at hand lost a listed file.
     auto listKit = [](const fs::path& kit, const std::string& kitText) {
         std::ofstream(kit / "kit.txt") << kitText;
@@ -1701,14 +1861,19 @@ static void KitFlowChecks(const std::filesystem::path& scratch, const std::strin
     };
     fs::path repairedKit = scratch / "kitflow" / "kit-repaired";
     fs::copy(SKYLAUNCHER_FAKE_KIT, repairedKit, fs::copy_options::recursive);
-    const std::string ownKitText = "version=" + LauncherVersion() + "\nbuild=kit-repaired\ngames=ssa,giants\ngame_version.ssa=0.9.0\n";
+    const std::string ownKitText =
+        "version=" + LauncherVersion() + "\nbuild=kit-repaired\ngames=ssa,giants\ngame_version.ssa=0.9.0\n";
     listKit(repairedKit, ownKitText);
     MakeKitRelease(scratch / "kitflow" / "release-integrity", { "v" + LauncherVersion() }, repairedKit);
 
-    struct Case { const char* mode; const char* kitText; };
+    struct Case
+    {
+        const char* mode;
+        const char* kitText;
+    };
     const Case cases[] = {
-        { "old", "version=0.3.1\nbuild=old\n" },                       // a kit from before this launcher: SSA only
-        { "giants", "version=9.0.0\nbuild=old\ngames=ssa\n" },         // recent enough, but it cannot build Giants
+        { "old", "version=0.3.1\nbuild=old\n" }, // a kit from before this launcher: SSA only
+        { "giants", "version=9.0.0\nbuild=old\ngames=ssa\n" }, // recent enough, but it cannot build Giants
         // The kit at hand is the launcher's own release, with Spyro's Adventure 0.9.0 and Giants 0.8.0: both games are built from it.
         { "updates", nullptr },
         { "offline", nullptr },
@@ -1722,12 +1887,16 @@ static void KitFlowChecks(const std::filesystem::path& scratch, const std::strin
         fs::create_directories(root / "shots");
         fs::create_directories(root / "base");
         fs::copy(SKYLAUNCHER_FAKE_KIT, root / "base" / "ssa-kit-test", fs::copy_options::recursive);
-        std::ofstream(root / "base" / "ssa-kit-test" / "kit.txt") << (test.kitText != nullptr ? std::string(test.kitText)
-            : "version=" + LauncherVersion() + "\nbuild=at-hand\ngames=ssa,giants\ngame_version.ssa=0.9.0\ngame_version.giants=0.8.0\n");
+        std::ofstream(root / "base" / "ssa-kit-test" / "kit.txt")
+            << (test.kitText != nullptr
+                       ? std::string(test.kitText)
+                       : "version=" + LauncherVersion() +
+                             "\nbuild=at-hand\ngames=ssa,giants\ngame_version.ssa=0.9.0\ngame_version.giants=0.8.0\n");
         const bool integrity = std::string_view(test.mode) == "integrity";
         if (integrity) // a kit of the launcher's release, with its list, that an antivirus took the builder from
         {
-            listKit(root / "base" / "ssa-kit-test", "version=" + LauncherVersion() + "\nbuild=at-hand\ngames=ssa,giants\ngame_version.ssa=0.9.0\n");
+            listKit(root / "base" / "ssa-kit-test",
+                "version=" + LauncherVersion() + "\nbuild=at-hand\ngames=ssa,giants\ngame_version.ssa=0.9.0\n");
             for (const auto& entry : fs::directory_iterator(root / "base" / "ssa-kit-test"))
                 if (entry.path().filename().string().starts_with("Arkeyan-Builder"))
                     fs::remove(entry.path());
@@ -1740,7 +1909,12 @@ static void KitFlowChecks(const std::filesystem::path& scratch, const std::strin
         set("SKY_LAUNCHER_NO_UPDATE_CHECK", "1");
         set("SKY_LAUNCHER_BASE_PATH", (root / "base").string());
         bool updates = std::string_view(test.mode) == "updates", offline = std::string_view(test.mode) == "offline";
-        set("SKY_LAUNCHER_UPDATE_URL", TestFileUrl(scratch / "kitflow" / (updates ? "release-updates" : offline ? "no-release" : integrity ? "release-integrity" : "release") / "latest.json"));
+        set("SKY_LAUNCHER_UPDATE_URL", TestFileUrl(scratch / "kitflow" /
+                                                   (updates        ? "release-updates"
+                                                       : offline   ? "no-release"
+                                                       : integrity ? "release-integrity"
+                                                                   : "release") /
+                                                   "latest.json"));
         set("FAKE_ARKEYAN_BUILDER_DELAY", "0.01");
         SDL_UnsetEnvironmentVariable(SDL_GetEnvironment(), "FAKE_ARKEYAN_BUILDER_FAIL");
         SDL_UnsetEnvironmentVariable(SDL_GetEnvironment(), "SKY_LAUNCHER_KIT");
@@ -1774,10 +1948,13 @@ static void SeatXChecks(const std::filesystem::path& scratch)
     std::filesystem::path root = scratch / "seatx";
     std::filesystem::create_directories(root / "shots");
     std::filesystem::create_directories(root / "home");
-    std::string command = "env -u SKY_MIGRATE_FROM -u SKY_FIGURES -u SKY_SETTINGS -u SSA_MIGRATE_FROM -u SSA_FIGURES -u SSA_SETTINGS SDL_VIDEO_DRIVER=offscreen SDL_AUDIO_DRIVER=dummy HOME='" + (root / "home").string() +
-        "' SKYLANDERS_DATA='" + (root / "data").string() + "' SKY_LAUNCHER_DATA='" + (root / "launcher").string() +
-        "' SKY_COLLECTION='" + (root / "collection").string() + "' SKY_SAVE_DIR='" + (root / "saves").string() +
-        "' SKY_LAUNCHER_INI='" + (root / "x.ini").string() + "' SKY_LAUNCHER_NO_UPDATE_CHECK=1 SKY_LAUNCHER_SHOTS='" + (root / "shots").string() +
+    std::string command =
+        "env -u SKY_MIGRATE_FROM -u SKY_FIGURES -u SKY_SETTINGS -u SSA_MIGRATE_FROM -u SSA_FIGURES -u SSA_SETTINGS "
+        "SDL_VIDEO_DRIVER=offscreen SDL_AUDIO_DRIVER=dummy HOME='" +
+        (root / "home").string() + "' SKYLANDERS_DATA='" + (root / "data").string() + "' SKY_LAUNCHER_DATA='" +
+        (root / "launcher").string() + "' SKY_COLLECTION='" + (root / "collection").string() + "' SKY_SAVE_DIR='" +
+        (root / "saves").string() + "' SKY_LAUNCHER_INI='" + (root / "x.ini").string() +
+        "' SKY_LAUNCHER_NO_UPDATE_CHECK=1 SKY_LAUNCHER_SHOTS='" + (root / "shots").string() +
         "' SKY_LAUNCHER_TEST_SEATX=1 '" + SKYLAUNCHER_TEST_EXE + "' > '" + (root / "out.txt").string() + "' 2>&1";
     EXPECT(std::system(command.c_str()) == 0);
     std::ifstream in(root / "out.txt");
@@ -1806,11 +1983,15 @@ static void NavChecks(const std::filesystem::path& scratch, const std::string& i
     std::string quoted; // the disc's path in single quotes: its own quotes ("Spyro's Adventure") closed and escaped
     for (char c : iso)
         quoted += c == '\'' ? std::string("'\\''") : std::string(1, c);
-    std::string command = "env -u SKY_MIGRATE_FROM -u SKY_FIGURES -u SKY_SETTINGS -u SSA_MIGRATE_FROM -u SSA_FIGURES -u SSA_SETTINGS SDL_VIDEO_DRIVER=offscreen SDL_AUDIO_DRIVER=dummy HOME='" + (root / "home").string() +
-        "' SKYLANDERS_DATA='" + (root / "data").string() + "' SKY_LAUNCHER_DATA='" + (root / "launcher").string() +
-        "' SKY_COLLECTION='" + (root / "collection").string() + "' SKY_SAVE_DIR='" + (root / "saves").string() +
-        "' SKY_LAUNCHER_INI='" + (root / "x.ini").string() + "' SKY_LAUNCHER_NO_UPDATE_CHECK=1 SKY_LAUNCHER_SHOTS='" + (root / "shots").string() +
-        "' SKY_LAUNCHER_TEST_DROP='" + quoted + "' SKY_LAUNCHER_TEST_NAV=1 '" + SKYLAUNCHER_TEST_EXE + "' > '" + (root / "out.txt").string() + "' 2>&1";
+    std::string command = "env -u SKY_MIGRATE_FROM -u SKY_FIGURES -u SKY_SETTINGS -u SSA_MIGRATE_FROM -u SSA_FIGURES "
+                          "-u SSA_SETTINGS SDL_VIDEO_DRIVER=offscreen SDL_AUDIO_DRIVER=dummy HOME='" +
+                          (root / "home").string() + "' SKYLANDERS_DATA='" + (root / "data").string() +
+                          "' SKY_LAUNCHER_DATA='" + (root / "launcher").string() + "' SKY_COLLECTION='" +
+                          (root / "collection").string() + "' SKY_SAVE_DIR='" + (root / "saves").string() +
+                          "' SKY_LAUNCHER_INI='" + (root / "x.ini").string() +
+                          "' SKY_LAUNCHER_NO_UPDATE_CHECK=1 SKY_LAUNCHER_SHOTS='" + (root / "shots").string() +
+                          "' SKY_LAUNCHER_TEST_DROP='" + quoted + "' SKY_LAUNCHER_TEST_NAV=1 '" + SKYLAUNCHER_TEST_EXE +
+                          "' > '" + (root / "out.txt").string() + "' 2>&1";
     EXPECT(std::system(command.c_str()) == 0);
     std::ifstream in(root / "out.txt");
     std::string line;
@@ -1844,14 +2025,19 @@ static void LoopingDiscStartChecks(const std::filesystem::path& scratch)
         std::ofstream ini(root / "x.ini");
         ini << "[launcher]\ngame=ssa\n[ssa]\niso=" << (root / "loop.iso").string() << "\n";
     }
-    std::string command = "env -u SKY_MIGRATE_FROM -u SKY_FIGURES -u SKY_SETTINGS -u SSA_MIGRATE_FROM -u SSA_FIGURES -u SSA_SETTINGS SDL_VIDEO_DRIVER=offscreen SDL_AUDIO_DRIVER=dummy HOME='" +
-        (root / "home").string() + "' SKYLANDERS_DATA='" + (root / "data").string() + "' SKY_LAUNCHER_DATA='" + (root / "launcher").string() +
-        "' SKY_COLLECTION='" + (root / "collection").string() + "' SKY_SAVE_DIR='" + (root / "saves").string() + "' SKY_LAUNCHER_INI='" +
-        (root / "x.ini").string() + "' SKY_LAUNCHER_NO_UPDATE_CHECK=1 SKY_LAUNCHER_SHOTS='" + (root / "shots").string() +
-        "' SKY_LAUNCHER_TEST_EXPERIMENTAL=ssa perl -e 'alarm 120; exec @ARGV' '" + SKYLAUNCHER_TEST_EXE + "' > '" + (root / "out.txt").string() + "' 2>&1";
+    std::string command = "env -u SKY_MIGRATE_FROM -u SKY_FIGURES -u SKY_SETTINGS -u SSA_MIGRATE_FROM -u SSA_FIGURES "
+                          "-u SSA_SETTINGS SDL_VIDEO_DRIVER=offscreen SDL_AUDIO_DRIVER=dummy HOME='" +
+                          (root / "home").string() + "' SKYLANDERS_DATA='" + (root / "data").string() +
+                          "' SKY_LAUNCHER_DATA='" + (root / "launcher").string() + "' SKY_COLLECTION='" +
+                          (root / "collection").string() + "' SKY_SAVE_DIR='" + (root / "saves").string() +
+                          "' SKY_LAUNCHER_INI='" + (root / "x.ini").string() +
+                          "' SKY_LAUNCHER_NO_UPDATE_CHECK=1 SKY_LAUNCHER_SHOTS='" + (root / "shots").string() +
+                          "' SKY_LAUNCHER_TEST_EXPERIMENTAL=ssa perl -e 'alarm 120; exec @ARGV' '" +
+                          SKYLAUNCHER_TEST_EXE + "' > '" + (root / "out.txt").string() + "' 2>&1";
     EXPECT(std::system(command.c_str()) == 0); // not killed for its memory, not stopped by the alarm
     std::error_code error;
-    EXPECT(std::filesystem::exists(root / "shots" / "ssa-02-page.png", error)); // the game's page was drawn, with the disc refused
+    EXPECT(std::filesystem::exists(
+        root / "shots" / "ssa-02-page.png", error)); // the game's page was drawn, with the disc refused
     printf("Looping disc image registered: the launcher starts and refuses it\n");
 #else
     (void)scratch;
@@ -1866,12 +2052,15 @@ static void PadWalkChecks(const std::filesystem::path& scratch, const std::strin
     std::string quoted;
     for (char c : iso)
         quoted += c == '\'' ? std::string("'\\''") : std::string(1, c);
-    std::string command = "env -u SKY_MIGRATE_FROM -u SKY_FIGURES -u SKY_SETTINGS -u SSA_MIGRATE_FROM -u SSA_FIGURES -u SSA_SETTINGS SDL_VIDEO_DRIVER=offscreen SDL_AUDIO_DRIVER=dummy HOME='" + (root / "home").string() +
-        "' SKYLANDERS_DATA='" + (root / "data").string() + "' SKY_LAUNCHER_DATA='" + (root / "launcher").string() +
-        "' SKY_COLLECTION='" + (root / "collection").string() + "' SKY_SAVE_DIR='" + (root / "saves").string() +
-        "' SKY_LAUNCHER_INI='" + (root / "x.ini").string() + "' SKY_LAUNCHER_NO_UPDATE_CHECK=1 SKY_LAUNCHER_SHOTS='" + (root / "shots").string() +
-        (iso.empty() ? std::string("'") : "' SKY_LAUNCHER_TEST_DROP='" + quoted + "'") + " SKY_LAUNCHER_TEST_PADWALK=quick '" + SKYLAUNCHER_TEST_EXE +
-        "' > '" + (root / "out.txt").string() + "' 2>&1";
+    std::string command =
+        "env -u SKY_MIGRATE_FROM -u SKY_FIGURES -u SKY_SETTINGS -u SSA_MIGRATE_FROM -u SSA_FIGURES -u SSA_SETTINGS "
+        "SDL_VIDEO_DRIVER=offscreen SDL_AUDIO_DRIVER=dummy HOME='" +
+        (root / "home").string() + "' SKYLANDERS_DATA='" + (root / "data").string() + "' SKY_LAUNCHER_DATA='" +
+        (root / "launcher").string() + "' SKY_COLLECTION='" + (root / "collection").string() + "' SKY_SAVE_DIR='" +
+        (root / "saves").string() + "' SKY_LAUNCHER_INI='" + (root / "x.ini").string() +
+        "' SKY_LAUNCHER_NO_UPDATE_CHECK=1 SKY_LAUNCHER_SHOTS='" + (root / "shots").string() +
+        (iso.empty() ? std::string("'") : "' SKY_LAUNCHER_TEST_DROP='" + quoted + "'") +
+        " SKY_LAUNCHER_TEST_PADWALK=quick '" + SKYLAUNCHER_TEST_EXE + "' > '" + (root / "out.txt").string() + "' 2>&1";
     EXPECT(std::system(command.c_str()) == 0);
     std::ifstream in(root / "out.txt");
     std::string line;
@@ -1903,12 +2092,16 @@ static void RunningChecks(const std::filesystem::path& scratch, const std::strin
     std::string quoted;
     for (char c : iso)
         quoted += c == '\'' ? std::string("'\\''") : std::string(1, c);
-    std::string command = "env -u SKY_MIGRATE_FROM -u SKY_FIGURES -u SKY_SETTINGS -u SSA_MIGRATE_FROM -u SSA_FIGURES -u SSA_SETTINGS SDL_VIDEO_DRIVER=offscreen SDL_AUDIO_DRIVER=dummy HOME='" + (root / "home").string() +
-        "' SKYLANDERS_DATA='" + (root / "data").string() + "' SKY_LAUNCHER_DATA='" + (root / "launcher").string() +
-        "' SKY_COLLECTION='" + (root / "collection").string() + "' SKY_SAVE_DIR='" + (root / "saves").string() +
-        "' SKY_LAUNCHER_LOG_DIR='" + (root / "logs").string() + "' SKY_LAUNCHER_RUNTIME='" + game.string() +
-        "' SKY_LAUNCHER_INI='" + (root / "x.ini").string() + "' SKY_LAUNCHER_NO_UPDATE_CHECK=1 SKY_LAUNCHER_SHOTS='" + (root / "shots").string() +
-        "' SKY_LAUNCHER_TEST_DROP='" + quoted + "' SKY_LAUNCHER_TEST_RUNNING=1 '" + SKYLAUNCHER_TEST_EXE + "' > '" + (root / "out.txt").string() + "' 2>&1";
+    std::string command = "env -u SKY_MIGRATE_FROM -u SKY_FIGURES -u SKY_SETTINGS -u SSA_MIGRATE_FROM -u SSA_FIGURES "
+                          "-u SSA_SETTINGS SDL_VIDEO_DRIVER=offscreen SDL_AUDIO_DRIVER=dummy HOME='" +
+                          (root / "home").string() + "' SKYLANDERS_DATA='" + (root / "data").string() +
+                          "' SKY_LAUNCHER_DATA='" + (root / "launcher").string() + "' SKY_COLLECTION='" +
+                          (root / "collection").string() + "' SKY_SAVE_DIR='" + (root / "saves").string() +
+                          "' SKY_LAUNCHER_LOG_DIR='" + (root / "logs").string() + "' SKY_LAUNCHER_RUNTIME='" +
+                          game.string() + "' SKY_LAUNCHER_INI='" + (root / "x.ini").string() +
+                          "' SKY_LAUNCHER_NO_UPDATE_CHECK=1 SKY_LAUNCHER_SHOTS='" + (root / "shots").string() +
+                          "' SKY_LAUNCHER_TEST_DROP='" + quoted + "' SKY_LAUNCHER_TEST_RUNNING=1 '" +
+                          SKYLAUNCHER_TEST_EXE + "' > '" + (root / "out.txt").string() + "' 2>&1";
     EXPECT(std::system(command.c_str()) == 0);
     std::ifstream in(root / "out.txt");
     std::string line;
@@ -1951,7 +2144,8 @@ static void SceneChecks(const std::filesystem::path& scratch)
         art::Image onBlack;
         onBlack.width = 4, onBlack.height = 3;
         onBlack.rgba.assign(12, 0xFF000000);
-        onBlack.rgba[1 * 4 + 1] = 0xFF004080; // R 0x80, G 0x40, B 0: alpha 0x80 less the haze (0x62), straight R 0xFF, G 0x80
+        onBlack.rgba[1 * 4 + 1] =
+            0xFF004080; // R 0x80, G 0x40, B 0: alpha 0x80 less the haze (0x62), straight R 0xFF, G 0x80
         onBlack.rgba[1 * 4 + 2] = 0xFFFFFFFF;
         onBlack.rgba[2 * 4 + 3] = 0xFF000008; // too faint to keep the frame wider
         art::Image light = art::LightOnBlack(onBlack);
@@ -1966,14 +2160,15 @@ static void SceneChecks(const std::filesystem::path& scratch)
         for (uint32_t y = 0; y < burst.height; y++)
             for (uint32_t x = 0; x < burst.width; x++)
             {
-                const bool title = x >= 80 && x < 120 && y >= 40 && y < 60, plate = x >= 60 && x < 140 && y >= 25 && y < 75;
+                const bool title = x >= 80 && x < 120 && y >= 40 && y < 60,
+                           plate = x >= 60 && x < 140 && y >= 25 && y < 75;
                 const bool ray = x < 60 && (y == 50 || y == 51);
                 burst.rgba.push_back(title ? 0xFF801008 : plate || ray ? 0xFFFFFFFF : 0xFF000000);
             }
         const art::Image cut = art::TitleCut(burst);
         EXPECT(cut.width > 40 && cut.width < 100 && cut.height > 20 && cut.height < 100);
         EXPECT(!cut.rgba.empty() && cut.rgba[size_t(cut.height / 2) * cut.width + cut.width / 2] == 0xFF801008 &&
-            cut.rgba[0] >> 24 < 0x10);
+               cut.rgba[0] >> 24 < 0x10);
         EXPECT(art::TitleCut(art::Image{ 2, 1, { 0xFF000000, 0xFF000000 } }).rgba.empty());
     }
     {
@@ -1983,24 +2178,26 @@ static void SceneChecks(const std::filesystem::path& scratch)
         std::vector<uint8_t> package(First + 5 * Block);
         memcpy(package.data(), "PIRS", 4);
         package[0x342] = 0xAD, package[0x343] = 0x0E; // the header's size, 0xAD0E: the data at 0xB000
-        package[0x37B] = 1, package[0x37C] = 1;     // one table per level; the file table: 1 block, at block 0
+        package[0x37B] = 1, package[0x37C] = 1; // one table per level; the file table: 1 block, at block 0
         auto block = [&](uint32_t b) { return package.data() + First + (b + 1) * Block; };
         auto entry = [&](int i, const char* name, uint8_t flags, uint32_t start, uint32_t blocks, uint32_t size) {
             uint8_t* e = block(0) + i * 0x40;
             memcpy(e, name, strlen(name));
             e[0x28] = uint8_t(flags | strlen(name)), e[0x29] = uint8_t(blocks), e[0x2F] = uint8_t(start);
-            e[0x34] = uint8_t(size >> 24), e[0x35] = uint8_t(size >> 16), e[0x36] = uint8_t(size >> 8), e[0x37] = uint8_t(size);
+            e[0x34] = uint8_t(size >> 24), e[0x35] = uint8_t(size >> 16), e[0x36] = uint8_t(size >> 8),
+            e[0x37] = uint8_t(size);
         };
         entry(0, "a.txt", 0x40, 1, 1, 5);
         entry(1, "b.bin", 0, 3, 2, uint32_t(Block + 3));
         memcpy(block(1), "hello", 5);
         memset(block(3), 'x', Block), memcpy(block(2), "end", 3);
         uint8_t* hash = package.data() + First;
-        hash[3 * 0x18 + 0x17] = 2;                                                    // block 3, then block 2
+        hash[3 * 0x18 + 0x17] = 2; // block 3, then block 2
         hash[2 * 0x18 + 0x15] = hash[2 * 0x18 + 0x16] = hash[2 * 0x18 + 0x17] = 0xFF; // the end
         const std::vector<uint8_t> a = art::StfsFile(package, "A.TXT"), b = art::StfsFile(package, "b.bin");
         EXPECT(std::string(a.begin(), a.end()) == "hello");
-        EXPECT(b.size() == Block + 3 && b[0] == 'x' && b[Block - 1] == 'x' && std::string(b.end() - 3, b.end()) == "end");
+        EXPECT(
+            b.size() == Block + 3 && b[0] == 'x' && b[Block - 1] == 'x' && std::string(b.end() - 3, b.end()) == "end");
         EXPECT(art::StfsFile(package, "c.bin").empty() && art::StfsFile(std::vector<uint8_t>(0x400), "a.txt").empty());
     }
     EXPECT(art::PickScene({ "a" }, "a", 3) == "a"); // the only one is kept
@@ -2015,12 +2212,14 @@ static void SceneChecks(const std::filesystem::path& scratch)
         again = again || next == "b";
     }
     EXPECT(seen.size() == 3 && !again && seenWithLast == std::set<std::string>({ "a", "c" })); // never the last run's
-    EXPECT(art::PickScene(three, "gone", 1) != "" && art::PickScene({ "a", "b" }, "a", 0) == "b" && art::PickScene({ "a", "b" }, "a", 9) == "b");
+    EXPECT(art::PickScene(three, "gone", 1) != "" && art::PickScene({ "a", "b" }, "a", 0) == "b" &&
+           art::PickScene({ "a", "b" }, "a", 9) == "b");
     // Nothing cached before a disc was read: no scene file, and the reader asks for the disc.
     const char* dataBefore = getenv("SKYLANDERS_DATA");
     std::string saved = dataBefore != nullptr ? dataBefore : "";
     TestSetEnv("SKYLANDERS_DATA", (scratch / "scenes-data").string().c_str());
-    EXPECT(art::CachedScene("ssa", art::SceneNames("ssa").front()).empty() && !art::ScenesRead("ssa") && art::ScenesRead("nothing"));
+    EXPECT(art::CachedScene("ssa", art::SceneNames("ssa").front()).empty() && !art::ScenesRead("ssa") &&
+           art::ScenesRead("nothing"));
     if (saved.empty())
         TestUnsetEnv("SKYLANDERS_DATA");
     else
@@ -2032,33 +2231,53 @@ int AchievementChecks()
     int before = g_failures;
     achievements::List list;
     list.items.resize(3);
-    list.items[0].id = 1; list.items[0].name = "First"; list.items[0].unlockedDescription = "Did it"; list.items[0].lockedDescription = "Do it";
+    list.items[0].id = 1;
+    list.items[0].name = "First";
+    list.items[0].unlockedDescription = "Did it";
+    list.items[0].lockedDescription = "Do it";
     list.items[0].gamerscore = 10;
-    list.items[1].id = 2; list.items[1].name = "Secret name"; list.items[1].unlockedDescription = "It was this"; list.items[1].lockedDescription = "???";
-    list.items[1].gamerscore = 20; list.items[1].hidden = true;
-    list.items[2].id = 3; list.items[2].name = "Third"; list.items[2].unlockedDescription = "Did the third"; list.items[2].gamerscore = 30; // no locked text
+    list.items[1].id = 2;
+    list.items[1].name = "Secret name";
+    list.items[1].unlockedDescription = "It was this";
+    list.items[1].lockedDescription = "???";
+    list.items[1].gamerscore = 20;
+    list.items[1].hidden = true;
+    list.items[2].id = 3;
+    list.items[2].name = "Third";
+    list.items[2].unlockedDescription = "Did the third";
+    list.items[2].gamerscore = 30; // no locked text
     GameProgress locked = BuildProgress(list, {}, {});
-    EXPECT(locked.hasList && locked.rows.size() == 3 && locked.unlocked == 0 && locked.gamerscore == 0 && locked.totalGamerscore == 60);
+    EXPECT(locked.hasList && locked.rows.size() == 3 && locked.unlocked == 0 && locked.gamerscore == 0 &&
+           locked.totalGamerscore == 60);
     EXPECT(locked.rows[0].name == "First" && locked.rows[0].description == "Do it");
-    EXPECT(locked.rows[1].name == "Hidden achievement" && locked.rows[1].description == "???"); // shown as the game shows it
-    EXPECT(locked.rows[2].description == "Did the third");                                     // nothing else to show
+    EXPECT(locked.rows[1].name == "Hidden achievement" &&
+           locked.rows[1].description == "???"); // shown as the game shows it
+    EXPECT(locked.rows[2].description == "Did the third"); // nothing else to show
     GameProgress done = BuildProgress(list, { { 2, 5000 }, { 3, 6000 }, { 99, 7000 } }, {});
     EXPECT(done.unlocked == 2 && done.gamerscore == 50 && done.rows[1].unlocked && done.rows[1].time == 5000);
     EXPECT(done.rows[1].name == "Secret name" && done.rows[1].description == "It was this" && !done.rows[0].unlocked);
     EXPECT(!BuildProgress({}, {}, {}).hasList);
 
     std::tm noon{};
-    noon.tm_year = 126; noon.tm_mon = 9; noon.tm_mday = 28; noon.tm_hour = 12; noon.tm_isdst = -1; // 2026-10-28 12:00 local
+    noon.tm_year = 126;
+    noon.tm_mon = 9;
+    noon.tm_mday = 28;
+    noon.tm_hour = 12;
+    noon.tm_isdst = -1; // 2026-10-28 12:00 local
     int64_t now = int64_t(std::mktime(&noon));
-    EXPECT(FormatPlayTime(0) == "less than a minute" && FormatPlayTime(59) == "less than a minute" && FormatPlayTime(60) == "1 min");
-    EXPECT(FormatPlayTime(34 * 60 + 59) == "34 min" && FormatPlayTime(3600) == "1 h 00" && FormatPlayTime(12 * 3600 + 34 * 60) == "12 h 34");
+    EXPECT(FormatPlayTime(0) == "less than a minute" && FormatPlayTime(59) == "less than a minute" &&
+           FormatPlayTime(60) == "1 min");
+    EXPECT(FormatPlayTime(34 * 60 + 59) == "34 min" && FormatPlayTime(3600) == "1 h 00" &&
+           FormatPlayTime(12 * 3600 + 34 * 60) == "12 h 34");
     EXPECT(FormatLastPlayed(now - 3600, now) == "today" && FormatLastPlayed(now - 86400, now) == "yesterday");
-    EXPECT(FormatLastPlayed(now - 3 * 86400, now) == "3 days ago" && FormatLastPlayed(now - 40 * 86400, now) == "2026-09-18");
+    EXPECT(FormatLastPlayed(now - 3 * 86400, now) == "3 days ago" &&
+           FormatLastPlayed(now - 40 * 86400, now) == "2026-09-18");
     EXPECT(FormatDate(now) == "2026-10-28");
     EXPECT(PlayTimeLine({}, now).empty());
     EXPECT(PlayTimeLine({ 12 * 3600 + 34 * 60, now - 60, 3 }, now) == "Play time: 12 h 34 \xC2\xB7 Last played: today");
     i18n::SetLanguage("fr");
-    EXPECT(PlayTimeLine({ 90, now - 86400, 1 }, now) == "Temps de jeu\xC2\xA0: 1 min \xC2\xB7 Derni\xC3\xA8re partie\xC2\xA0: hier");
+    EXPECT(PlayTimeLine({ 90, now - 86400, 1 }, now) ==
+           "Temps de jeu\xC2\xA0: 1 min \xC2\xB7 Derni\xC3\xA8re partie\xC2\xA0: hier");
     i18n::SetLanguage("en");
     printf("Achievements and play time: rows, hidden ones and the play time line checked\n");
     return g_failures - before;
@@ -2078,16 +2297,15 @@ static void InstallCardChecks(const std::filesystem::path& scratch)
         const fs::path root = scratch / "install-card" / language / size;
         fs::create_directories(root / "home");
         const fs::path shots = root / "shots";
-        SDL_Environment* environment = CreateGameEnvironment({
-            { "HOME", (root / "home").string() }, { "CFFIXED_USER_HOME", (root / "home").string() },
-            { "SDL_VIDEO_DRIVER", "offscreen" }, { "SDL_AUDIO_DRIVER", "dummy" },
-            { "SKYLANDERS_DATA", (root / "data").string() }, { "SKY_LAUNCHER_DATA", (root / "launcher").string() },
-            { "SKY_COLLECTION", (root / "collection").string() }, { "SKY_SAVE_DIR", (root / "save").string() },
-            { "SKY_LAUNCHER_INI", (root / "launcher.ini").string() }, { "SKY_SETTINGS", (root / "settings.ini").string() },
-            { "SKY_LAUNCHER_NO_UPDATE_CHECK", "1" }, { "SKY_LAUNCHER_SHOTS", shots.string() },
-            { "SKY_LAUNCHER_LANGUAGE", language }, { "SKY_LAUNCHER_TEST_SIZE", size },
-            { "SKY_LAUNCHER_TEST_INSTALL", "layout" }, { "SKY_LAUNCHER_TEST_DROP", "" }
-        });
+        SDL_Environment* environment = CreateGameEnvironment({ { "HOME", (root / "home").string() },
+            { "CFFIXED_USER_HOME", (root / "home").string() }, { "SDL_VIDEO_DRIVER", "offscreen" },
+            { "SDL_AUDIO_DRIVER", "dummy" }, { "SKYLANDERS_DATA", (root / "data").string() },
+            { "SKY_LAUNCHER_DATA", (root / "launcher").string() }, { "SKY_COLLECTION", (root / "collection").string() },
+            { "SKY_SAVE_DIR", (root / "save").string() }, { "SKY_LAUNCHER_INI", (root / "launcher.ini").string() },
+            { "SKY_SETTINGS", (root / "settings.ini").string() }, { "SKY_LAUNCHER_NO_UPDATE_CHECK", "1" },
+            { "SKY_LAUNCHER_SHOTS", shots.string() }, { "SKY_LAUNCHER_LANGUAGE", language },
+            { "SKY_LAUNCHER_TEST_SIZE", size }, { "SKY_LAUNCHER_TEST_INSTALL", "layout" },
+            { "SKY_LAUNCHER_TEST_DROP", "" } });
         SDL_IOStream* log = SDL_IOFromFile((root / "output.log").string().c_str(), "wb");
         const char* arguments[] = { SKYLAUNCHER_TEST_EXE, nullptr };
         SDL_PropertiesID properties = SDL_CreateProperties();
@@ -2106,38 +2324,44 @@ static void InstallCardChecks(const std::filesystem::path& scratch)
         {
             for (uint64_t start = SDL_GetTicks(); SDL_GetTicks() - start < timeoutMs && !ended; SDL_Delay(20))
                 ended = SDL_WaitProcess(process, false, &exitCode);
-            if (!ended) { SDL_KillProcess(process, true); SDL_WaitProcess(process, true, &exitCode); }
+            if (!ended)
+            {
+                SDL_KillProcess(process, true);
+                SDL_WaitProcess(process, true, &exitCode);
+            }
             SDL_DestroyProcess(process);
         }
-        if (log != nullptr) SDL_CloseIO(log);
+        if (log != nullptr)
+            SDL_CloseIO(log);
         EXPECT(ended && exitCode == 0);
         const std::string output = ReadLogTail(root / "output.log");
-        if (output.find("FAIL") != std::string::npos) fprintf(stderr, "%s\n", output.c_str());
+        if (output.find("FAIL") != std::string::npos)
+            fprintf(stderr, "%s\n", output.c_str());
         EXPECT(output.find("FAIL") == std::string::npos);
         auto anchors = [&](const char* state) {
             const std::string prefix = std::string("install anchors: ") + state + " ";
             const size_t start = output.find(prefix);
             EXPECT(start != std::string::npos);
-            if (start == std::string::npos) return std::string();
+            if (start == std::string::npos)
+                return std::string();
             const size_t begin = start + prefix.size();
             return output.substr(begin, output.find('\n', begin) - begin);
         };
         const std::string normal = anchors("control-game");
         for (const char* state : { "11-installing", "12-install-checklist", "13-install-details", "14-install-failed",
-                                  "17-install-interrupted", "18-first-interrupted", "19-failed-details",
-                                  "20-interrupted-details", "21-tools", "22-starting", "23-finished", "24-start-failed",
-                                  "25-long-log", "control-update" })
+                 "17-install-interrupted", "18-first-interrupted", "19-failed-details", "20-interrupted-details",
+                 "21-tools", "22-starting", "23-finished", "24-start-failed", "25-long-log", "control-update" })
         {
             const std::string actual = anchors(state);
             if (actual != normal)
-                fprintf(stderr, "FAIL install anchors: %s (%s, %s)\n  normal: %s\n  actual: %s\n",
-                    state, language, size, normal.c_str(), actual.c_str());
+                fprintf(stderr, "FAIL install anchors: %s (%s, %s)\n  normal: %s\n  actual: %s\n", state, language,
+                    size, normal.c_str(), actual.c_str());
             EXPECT(!normal.empty() && actual == normal);
         }
         EXPECT(output.find("install play: ready without updating") != std::string::npos);
         EXPECT(fs::exists(shots / "26-play-without-update.png"));
         for (const char* state : { "14-install-failed", "17-install-interrupted", "18-first-interrupted",
-                                 "19-failed-details", "20-interrupted-details", "25-long-log" })
+                 "19-failed-details", "20-interrupted-details", "25-long-log" })
         {
             EXPECT(fs::exists(shots / (std::string(state) + ".png")));
             EXPECT(output.find(std::string("install actions fit: ") + state) != std::string::npos);
@@ -2146,22 +2370,25 @@ static void InstallCardChecks(const std::filesystem::path& scratch)
     };
     std::vector<std::future<int>> pending;
     for (const char* language : { "en", "fr" })
-    for (const char* size : { "1024x680", "1080x720", "1600x1000" })
-    {
-        pending.push_back(std::async(std::launch::async, scenario, language, size));
-#if defined(_WIN32)
-        const size_t atOnce = 1; // a second window started beside the first reports nothing there
-#else
-        const size_t atOnce = 2;
-#endif
-        if (pending.size() == atOnce)
+        for (const char* size : { "1024x680", "1080x720", "1600x1000" })
         {
-            for (auto& result : pending) g_failures += result.get();
-            pending.clear();
+            pending.push_back(std::async(std::launch::async, scenario, language, size));
+#if defined(_WIN32)
+            const size_t atOnce = 1; // a second window started beside the first reports nothing there
+#else
+            const size_t atOnce = 2;
+#endif
+            if (pending.size() == atOnce)
+            {
+                for (auto& result : pending)
+                    g_failures += result.get();
+                pending.clear();
+            }
         }
-    }
-    for (auto& result : pending) g_failures += result.get();
-    printf("Install card: actions fit; device pills and portal panel keep their game-page rectangles in both languages at three sizes\n");
+    for (auto& result : pending)
+        g_failures += result.get();
+    printf("Install card: actions fit; device pills and portal panel keep their game-page rectangles in both languages "
+           "at three sizes\n");
 }
 
 static void SourceFailureChecks(const std::filesystem::path& scratch)
@@ -2193,21 +2420,28 @@ static void SourceFailureChecks(const std::filesystem::path& scratch)
         // image's size and the launcher's version; no path, no file name.
         std::vector<uint8_t> xex = FakeXex(0x415608AB, 0x12345678, 0x00000100);
         xex.resize(0x300);
-        Put32BE(&xex[0x10], 0x100);           // the security info
+        Put32BE(&xex[0x10], 0x100); // the security info
         Put32BE(&xex[0x100 + 0x178], 0x00FF0000); // its region: Europe and Australia
         const std::filesystem::path image = scratch / "other_edition.iso";
         WriteDiscImage(image, "default.xex", xex);
         GameSourceCheck check = CheckGameSource(image.string(), *FindGame("ssa"));
         EXPECT(check.status == GameSourceStatus::WrongVersion);
-        const std::string expected = "Arkeyan Launcher " + LauncherVersion() + ": a disc edition it doesn't know\n"
-            "Game: " + std::string(FindGame("ssa")->name) + "\nTitle ID: 415608AB\nMedia ID: 12345678\nVersion: 0.0.1.0\n"
-            "Region: 00FF0000 (Europe and Australia)\nLanguages: not known\n"
-            "default.xex: 768 bytes, SHA-256 " + Sha256Hex(xex) + "\nLoaded image: not readable\n"
-            "Disc image: " + std::to_string(std::filesystem::file_size(image)) + " bytes\n";
+        const std::string expected = "Arkeyan Launcher " + LauncherVersion() +
+                                     ": a disc edition it doesn't know\n"
+                                     "Game: " +
+                                     std::string(FindGame("ssa")->name) +
+                                     "\nTitle ID: 415608AB\nMedia ID: 12345678\nVersion: 0.0.1.0\n"
+                                     "Region: 00FF0000 (Europe and Australia)\nLanguages: not known\n"
+                                     "default.xex: 768 bytes, SHA-256 " +
+                                     Sha256Hex(xex) +
+                                     "\nLoaded image: not readable\n"
+                                     "Disc image: " +
+                                     std::to_string(std::filesystem::file_size(image)) + " bytes\n";
         EXPECT(check.discDetails == expected);
         if (check.discDetails != expected)
             fprintf(stderr, "disc details:\n%s", check.discDetails.c_str());
-        EXPECT(check.discDetails.find("other_edition") == std::string::npos && check.discDetails.find(scratch.string()) == std::string::npos);
+        EXPECT(check.discDetails.find("other_edition") == std::string::npos &&
+               check.discDetails.find(scratch.string()) == std::string::npos);
         // No security info: the region is not known; a supported disc has no details.
         GameSourceCheck plain = CheckGameSource((scratch / "other_region.iso").string(), *FindGame("ssa"));
         EXPECT(plain.discDetails.find("Region: not known\n") != std::string::npos);
@@ -2222,8 +2456,8 @@ static void SourceFailureChecks(const std::filesystem::path& scratch)
         EXPECT(kit && kit->editionReport);
         const std::string image = (scratch / "other_region.iso").string();
         EditionReport report = kit ? RunEditionReport(kit->ssabuild, image) : EditionReport{};
-        EXPECT(report.ok && report.text.starts_with("Edition report (") && report.text.ends_with("supported release\n") &&
-               report.text.find('@') == std::string::npos);
+        EXPECT(report.ok && report.text.starts_with("Edition report (") &&
+               report.text.ends_with("supported release\n") && report.text.find('@') == std::string::npos);
         TestSetEnv("FAKE_ARKEYAN_BUILDER_FAIL", "edition");
         report = kit ? RunEditionReport(kit->ssabuild, image) : EditionReport{};
         TestUnsetEnv("FAKE_ARKEYAN_BUILDER_FAIL");
@@ -2232,7 +2466,6 @@ static void SourceFailureChecks(const std::filesystem::path& scratch)
         EXPECT(!report.ok && !report.text.empty());
         printf("Find my edition: the kit's report, its error, a missing builder\n");
     }
-
 }
 
 #include "launcher_control_checks.h"
@@ -2246,7 +2479,8 @@ static void SourceFailureChecks(const std::filesystem::path& scratch)
 
 static int RunChecks(int argc, char** argv)
 {
-    if (argc == 2 && std::string_view(argv[1]) == "--portal-probe" && std::getenv("SKY_FAKE_PROBE_CLOSED_OUTPUT") != nullptr)
+    if (argc == 2 && std::string_view(argv[1]) == "--portal-probe" &&
+        std::getenv("SKY_FAKE_PROBE_CLOSED_OUTPUT") != nullptr)
     {
         std::fclose(stdout);
         std::fclose(stderr);
@@ -2268,7 +2502,8 @@ static int RunChecks(int argc, char** argv)
         const std::filesystem::path root = std::filesystem::absolute(argv[2]);
         std::filesystem::create_directories(root);
         const GameInfo* game = FindGame(argv[3]);
-        if (game == nullptr) return 2;
+        if (game == nullptr)
+            return 2;
         auto set = [&](const char* key, const std::string& value) { TestSetEnv(key, value.c_str()); };
         set("SDL_VIDEO_DRIVER", "offscreen");
         set("SDL_AUDIO_DRIVER", "dummy");
@@ -2306,7 +2541,8 @@ static int RunChecks(int argc, char** argv)
         const std::filesystem::path root = std::filesystem::absolute(argv[2]);
         std::filesystem::create_directories(root);
         const GameInfo* game = FindGame(argv[3]);
-        if (game == nullptr) return 2;
+        if (game == nullptr)
+            return 2;
         auto set = [&](const char* key, const std::string& value) { TestSetEnv(key, value.c_str()); };
         set("SDL_VIDEO_DRIVER", "offscreen");
         set("SDL_AUDIO_DRIVER", "dummy");
@@ -2333,13 +2569,17 @@ static int RunChecks(int argc, char** argv)
         const std::string value = launcher_ui::SettingGet(saved, GameVideoSection(game->id), "gpu_backend", "none");
         EXPECT(value == (launcher_ui::GpuBackendShown ? "vulkan" : "none")); // written where shown, never elsewhere
         EXPECT(std::filesystem::exists(root / "shots" / (std::string("gpu-backend-") + game->id + ".png")));
-        printf("Graphics API page %s (%s): %d failures\n", game->id, launcher_ui::GpuBackendShown ? "shown" : "hidden", g_failures);
+        printf("Graphics API page %s (%s): %d failures\n", game->id, launcher_ui::GpuBackendShown ? "shown" : "hidden",
+            g_failures);
         return g_failures == 0 ? 0 : 1;
     }
-    if (argc == 2 && std::string_view(argv[1]) == "--fake-game") return fake_game::Run();
-    if (argc >= 2 && std::string_view(argv[1]) == "--export-portable") // the owner's proof: a real installed game exported
+    if (argc == 2 && std::string_view(argv[1]) == "--fake-game")
+        return fake_game::Run();
+    if (argc >= 2 &&
+        std::string_view(argv[1]) == "--export-portable") // the owner's proof: a real installed game exported
         return ExportPortableTool(argc, argv);
-    if (argc >= 3 && std::string_view(argv[1]) == "--accents") // started by the run below: the accented folder checks alone
+    if (argc >= 3 &&
+        std::string_view(argv[1]) == "--accents") // started by the run below: the accented folder checks alone
         return AccentChecks(std::filesystem::path(argv[2])) == 0 ? 0 : 1;
     // --no-disc <scratch dir>: only the checks that need no disc image (what CI runs).
     const bool noDisc = argc >= 3 && std::string_view(argv[1]) == "--no-disc";
@@ -2352,7 +2592,8 @@ static int RunChecks(int argc, char** argv)
     // The text the windows are checked against is English, whatever language the computer is in (SKY_LAUNCHER_TEST_LANGUAGE=fr
     // only takes screenshots in another language: the text checks then fail).
     const char* testLanguage = skyenv::Get("SKY_LAUNCHER_TEST_LANGUAGE");
-    SDL_SetEnvironmentVariable(SDL_GetEnvironment(), "SKY_LAUNCHER_LANGUAGE", testLanguage != nullptr && *testLanguage != 0 ? testLanguage : "en", true);
+    SDL_SetEnvironmentVariable(SDL_GetEnvironment(), "SKY_LAUNCHER_LANGUAGE",
+        testLanguage != nullptr && *testLanguage != 0 ? testLanguage : "en", true);
     std::filesystem::path iso = noDisc ? std::filesystem::path() : std::filesystem::path(argv[1]);
     std::filesystem::path scratch = std::filesystem::path(argv[2]) / "launcher_test";
     std::filesystem::remove_all(scratch);
@@ -2445,8 +2686,7 @@ static int RunChecks(int argc, char** argv)
     }
     const GameInfo& game = *FindGame("ssa");
     using Clock = std::chrono::steady_clock;
-    auto milliseconds = [](Clock::time_point start)
-    {
+    auto milliseconds = [](Clock::time_point start) {
         return (long long)std::chrono::duration_cast<std::chrono::milliseconds>(Clock::now() - start).count();
     };
 
@@ -2455,7 +2695,8 @@ static int RunChecks(int argc, char** argv)
         int failures = I18nChecks();
         return failures == 0 ? 0 : 1;
     }
-    if (skyenv::Get("SKY_LAUNCHER_TEST_NAVIGATION_ONLY") != nullptr) // only the navigation model and the pad walk (quick to rerun)
+    if (skyenv::Get("SKY_LAUNCHER_TEST_NAVIGATION_ONLY") !=
+        nullptr) // only the navigation model and the pad walk (quick to rerun)
     {
         int failures = NavigationChecks();
         PadWalkChecks(scratch, noDisc ? std::string() : iso.string());
@@ -2497,13 +2738,15 @@ static int RunChecks(int argc, char** argv)
     }
     if (skyenv::Get("SKY_LAUNCHER_TEST_COPY_ONLY") != nullptr) // only "Copy the game data" (quick to rerun)
     {
-        int failures = CopyChecks(scratch, iso.string(), skyenv::Get("SKY_LAUNCHER_TEST_GIANTS_ISO") != nullptr ? skyenv::Get("SKY_LAUNCHER_TEST_GIANTS_ISO") : "");
+        int failures = CopyChecks(scratch, iso.string(),
+            skyenv::Get("SKY_LAUNCHER_TEST_GIANTS_ISO") != nullptr ? skyenv::Get("SKY_LAUNCHER_TEST_GIANTS_ISO") : "");
         printf("%d failures\n", failures);
         return failures == 0 ? 0 : 1;
     }
     if (skyenv::Get("SKY_LAUNCHER_TEST_KIT_ONLY") != nullptr) // only "The kit follows the launcher" (quick to rerun)
     {
-        KitFlowChecks(scratch, iso.string(), skyenv::Get("SKY_LAUNCHER_TEST_GIANTS_ISO") != nullptr ? skyenv::Get("SKY_LAUNCHER_TEST_GIANTS_ISO") : "");
+        KitFlowChecks(scratch, iso.string(),
+            skyenv::Get("SKY_LAUNCHER_TEST_GIANTS_ISO") != nullptr ? skyenv::Get("SKY_LAUNCHER_TEST_GIANTS_ISO") : "");
         printf("%d failures\n", g_failures);
         return g_failures == 0 ? 0 : 1;
     }
@@ -2533,7 +2776,8 @@ static int RunChecks(int argc, char** argv)
 #if !defined(_WIN32)
     PadWalkChecks(scratch, noDisc ? std::string() : iso.string());
 #else
-    printf("Pad walk: not run on Windows (its child launcher is started through a POSIX shell); macOS and Linux run it\n");
+    printf(
+        "Pad walk: not run on Windows (its child launcher is started through a POSIX shell); macOS and Linux run it\n");
 #endif
     g_failures += SettingsChecks(scratch / "settings");
     g_failures += UninstallChecks(scratch);
@@ -2553,10 +2797,13 @@ static int RunChecks(int argc, char** argv)
     SceneChecks(scratch);
 
     // FIPS 180-4 examples, covering one- and two-block padding.
-    auto sha256 = [](std::string_view text) { return Sha256Hex({ reinterpret_cast<const uint8_t*>(text.data()), text.size() }); };
+    auto sha256 = [](std::string_view text) {
+        return Sha256Hex({ reinterpret_cast<const uint8_t*>(text.data()), text.size() });
+    };
     EXPECT(sha256("") == "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
     EXPECT(sha256("abc") == "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
-    EXPECT(sha256("abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq") == "248d6a61d20638b8e5c026930c3e6039a33ce45964ff2167f6ecedd419db06c1");
+    EXPECT(sha256("abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq") ==
+           "248d6a61d20638b8e5c026930c3e6039a33ce45964ff2167f6ecedd419db06c1");
     EXPECT(sha256(std::string(1000000, 'a')) == "cdc76e5c9914fb9281a1c7e284d73e67f1809a48a497200e046d39ccc7112cd0");
 
     printf("Game table: %zu game(s); \"ssa\" = %s, %zu release(s)\n", g_games.size(), game.name, game.releases.size());
@@ -2568,26 +2815,32 @@ static int RunChecks(int argc, char** argv)
     EXPECT(swapForce != nullptr && std::string(swapForce->runtime) == "Skylanders Swap Force" &&
            swapForce->releases.size() == 2 && swapForce->releases[0].titleId == 0x415608E9 &&
            std::string(swapForce->releases[0].defaultXexSha256).size() == 64);
-    EXPECT(std::string(LauncherTheme::StyleOf("swapforce").top == LauncherTheme::SwapForceStyle.top ? "own" : "launcher") == "own" &&
-        LauncherTheme::StyleOf("swapforce").top != LauncherTheme::StyleOf("giants").top);
-    EXPECT(giants != nullptr && giants->releases[0].titleId == 0x415608DA && std::string(giants->releases[0].defaultXexSha256).size() == 64);
+    EXPECT(std::string(
+               LauncherTheme::StyleOf("swapforce").top == LauncherTheme::SwapForceStyle.top ? "own" : "launcher") ==
+               "own" &&
+           LauncherTheme::StyleOf("swapforce").top != LauncherTheme::StyleOf("giants").top);
+    EXPECT(giants != nullptr && giants->releases[0].titleId == 0x415608DA &&
+           std::string(giants->releases[0].defaultXexSha256).size() == 64);
 
     const GameInfo* trapTeam = FindGame("trapteam");
     EXPECT(trapTeam != nullptr && std::string(trapTeam->runtime) == "Skylanders Trap Team" &&
            trapTeam->releases.size() == 2);
     EXPECT(std::string(trapTeam->name) == "Skylanders: Trap Team" &&
-        std::string(trapTeam->releases[0].defaultXexSha256) == "f1d2373e4507e21cc371e6f22d02e909602a1b5bc4704896c3c099cc64002a35" &&
-        trapTeam->releases[1].mediaId == 0x3AF0B6AF);
+           std::string(trapTeam->releases[0].defaultXexSha256) ==
+               "f1d2373e4507e21cc371e6f22d02e909602a1b5bc4704896c3c099cc64002a35" &&
+           trapTeam->releases[1].mediaId == 0x3AF0B6AF);
     const GameInfo* superChargers = FindGame("superchargers");
     EXPECT(superChargers != nullptr && std::string(superChargers->runtime) == "Skylanders SuperChargers" &&
            std::string(superChargers->name) == "Skylanders: SuperChargers" && superChargers->releases.size() == 1 &&
            superChargers->releases[0].titleId == 0x4156091F &&
-           std::string(superChargers->releases[0].defaultXexSha256) == "02ff6672d460c9aaa54e69d584af67a7138c6c93cde5e04b0da4284207be7c61");
+           std::string(superChargers->releases[0].defaultXexSha256) ==
+               "02ff6672d460c9aaa54e69d584af67a7138c6c93cde5e04b0da4284207be7c61");
     const GameInfo* imaginators = FindGame("imaginators");
     EXPECT(imaginators != nullptr && std::string(imaginators->runtime) == "Skylanders Imaginators" &&
            std::string(imaginators->name) == "Skylanders: Imaginators" && imaginators->releases.size() == 1 &&
            imaginators->releases[0].titleId == 0x41560930 && imaginators->releases[0].mediaId == 0x0133F901 &&
-           std::string(imaginators->releases[0].defaultXexSha256) == "1c6d7e05ef6d30ba0b86ff3a810ba115bef3050998254471230cd8c07641d0ac");
+           std::string(imaginators->releases[0].defaultXexSha256) ==
+               "1c6d7e05ef6d30ba0b86ff3a810ba115bef3050998254471230cd8c07641d0ac");
     // Every game of the table is shown, and only those; the old SuperChargers switch, on or off, changes nothing.
     LauncherConfig shown;
     auto countEnabled = [](const LauncherConfig& config) {
@@ -2609,10 +2862,12 @@ static int RunChecks(int argc, char** argv)
         const LauncherConfig loaded = LoadLauncherConfig(oldIni);
         EXPECT(countEnabled(loaded) == 6 && FindEnabledGame("superchargers", loaded) == superChargers);
     }
-    EXPECT(datadir::GameFolderName("superchargers") == "SuperChargers" && datadir::GameFolderName("imaginators") == "Imaginators");
+    EXPECT(datadir::GameFolderName("superchargers") == "SuperChargers" &&
+           datadir::GameFolderName("imaginators") == "Imaginators");
     EXPECT(LauncherTheme::StyleOf("superchargers").top == LauncherTheme::SuperChargersStyle.top &&
            LauncherTheme::StyleOf("imaginators").top == LauncherTheme::ImaginatorsStyle.top);
-    EXPECT(!GameKeys("imaginators").empty() && !GameKeys("superchargers").empty()); // each its own list (settings_test.cpp)
+    EXPECT(!GameKeys("imaginators").empty() &&
+           !GameKeys("superchargers").empty()); // each its own list (settings_test.cpp)
     EXPECT(LauncherTheme::StyleOf("trapteam").top == LauncherTheme::TrapTeamStyle.top);
     EXPECT(datadir::GameFolderName("trapteam") == "TrapTeam");
 
@@ -2622,7 +2877,8 @@ static int RunChecks(int argc, char** argv)
         for (const char* id : { "ssa", "giants", "swapforce", "trapteam" })
         {
             const std::string section = GameVideoSection(id);
-            EXPECT(launcher_ui::ParseBool(launcher_ui::SettingGet(fallback, section.c_str(), "fps_auto_fallback", "1")));
+            EXPECT(
+                launcher_ui::ParseBool(launcher_ui::SettingGet(fallback, section.c_str(), "fps_auto_fallback", "1")));
             fallback[section]["fps_limit"] = "60";
             fallback[section]["fps_auto_fallback"] = "0";
         }
@@ -2662,7 +2918,9 @@ static int RunChecks(int argc, char** argv)
             }
         }
         std::filesystem::remove_all(scratch);
-        printf(g_failures == 0 ? "All launcher checks passed (no disc image)\n" : "%d launcher check(s) failed (no disc image)\n", g_failures);
+        printf(g_failures == 0 ? "All launcher checks passed (no disc image)\n"
+                               : "%d launcher check(s) failed (no disc image)\n",
+            g_failures);
         return g_failures == 0 ? 0 : 1;
     }
     printf("Player's disc image:\n");
@@ -2671,36 +2929,46 @@ static int RunChecks(int argc, char** argv)
     EXPECT(CheckGameSource(iso.string(), game).xexSha256 == game.releases[0].defaultXexSha256);
     {
         art::DiscLanguages held = CheckGameSource(iso.string(), game).languages;
-        printf("Spyro's Adventure languages: text %s, voices %s\n", art::JoinLanguages(held.text).c_str(), art::JoinLanguages(held.voice).c_str());
+        printf("Spyro's Adventure languages: text %s, voices %s\n", art::JoinLanguages(held.text).c_str(),
+            art::JoinLanguages(held.voice).c_str());
         EXPECT(held.text.size() == 10 && held.voice.size() == 10);
     }
-    if (const char* europeIso = skyenv::Get("SKY_LAUNCHER_TEST_SWAPFORCE_EU_ISO"); europeIso != nullptr && FindGame("swapforce") != nullptr)
+    if (const char* europeIso = skyenv::Get("SKY_LAUNCHER_TEST_SWAPFORCE_EU_ISO");
+        europeIso != nullptr && FindGame("swapforce") != nullptr)
     {
         GameSourceCheck europe = CheckGameSource(europeIso, *FindGame("swapforce"));
-        printf("Swap Force (Europe) languages: text %s, voices %s\n", art::JoinLanguages(europe.languages.text).c_str(), art::JoinLanguages(europe.languages.voice).c_str());
-        EXPECT(europe.status == GameSourceStatus::Ok && art::JoinLanguages(europe.languages.text) == "es,it" && art::JoinLanguages(europe.languages.voice) == "es,it");
+        printf("Swap Force (Europe) languages: text %s, voices %s\n", art::JoinLanguages(europe.languages.text).c_str(),
+            art::JoinLanguages(europe.languages.voice).c_str());
+        EXPECT(europe.status == GameSourceStatus::Ok && art::JoinLanguages(europe.languages.text) == "es,it" &&
+               art::JoinLanguages(europe.languages.voice) == "es,it");
     }
     // A Trap Team disc (SKY_LAUNCHER_TEST_TRAPTEAM_ISO) and the languages it holds (SKY_LAUNCHER_TEST_TRAPTEAM_LANGUAGES, "fr,nl"):
     // the text and the voices, read from the entries of its archives.
-    if (const char* trapIso = skyenv::Get("SKY_LAUNCHER_TEST_TRAPTEAM_ISO"); trapIso != nullptr && FindGame("trapteam") != nullptr)
+    if (const char* trapIso = skyenv::Get("SKY_LAUNCHER_TEST_TRAPTEAM_ISO");
+        trapIso != nullptr && FindGame("trapteam") != nullptr)
     {
         GameSourceCheck trap = CheckGameSource(trapIso, *FindGame("trapteam"));
-        printf("Trap Team languages: text %s, voices %s\n", art::JoinLanguages(trap.languages.text).c_str(), art::JoinLanguages(trap.languages.voice).c_str());
+        printf("Trap Team languages: text %s, voices %s\n", art::JoinLanguages(trap.languages.text).c_str(),
+            art::JoinLanguages(trap.languages.voice).c_str());
         const char* expected = skyenv::Get("SKY_LAUNCHER_TEST_TRAPTEAM_LANGUAGES");
-        EXPECT(trap.status == GameSourceStatus::Ok && expected != nullptr && art::JoinLanguages(trap.languages.text) == expected &&
+        EXPECT(trap.status == GameSourceStatus::Ok && expected != nullptr &&
+               art::JoinLanguages(trap.languages.text) == expected &&
                art::JoinLanguages(trap.languages.voice) == expected);
     }
     // SuperChargers' European disc (SKY_LAUNCHER_TEST_SUPERCHARGERS_ISO) holds English and German, Imaginators' French and Dutch
     // one (SKY_LAUNCHER_TEST_IMAGINATORS_ISO) French and Dutch: archives/<name>_<code>.pak, text and voices.
-    for (const auto& [variable, id, expected] : { std::tuple{ "SKY_LAUNCHER_TEST_SUPERCHARGERS_ISO", "superchargers", "en,de" },
-             std::tuple{ "SKY_LAUNCHER_TEST_IMAGINATORS_ISO", "imaginators", "fr,nl" } })
+    for (const auto& [variable, id, expected] :
+        { std::tuple{ "SKY_LAUNCHER_TEST_SUPERCHARGERS_ISO", "superchargers", "en,de" },
+            std::tuple{ "SKY_LAUNCHER_TEST_IMAGINATORS_ISO", "imaginators", "fr,nl" } })
         if (const char* later = skyenv::Get(variable))
         {
             GameSourceCheck check = CheckGameSource(later, *FindGame(id));
             printf("%s: %s, text %s, voices %s\n", id, check.message.empty() ? "verified" : check.message.c_str(),
                 art::JoinLanguages(check.languages.text).c_str(), art::JoinLanguages(check.languages.voice).c_str());
-            EXPECT(check.status == GameSourceStatus::Ok && check.xexSha256 == FindGame(id)->releases[0].defaultXexSha256 &&
-                   art::JoinLanguages(check.languages.text) == expected && art::JoinLanguages(check.languages.voice) == expected);
+            EXPECT(check.status == GameSourceStatus::Ok &&
+                   check.xexSha256 == FindGame(id)->releases[0].defaultXexSha256 &&
+                   art::JoinLanguages(check.languages.text) == expected &&
+                   art::JoinLanguages(check.languages.voice) == expected);
         }
     printf("  verified in %lld ms\n", milliseconds(start));
 
@@ -2709,7 +2977,9 @@ static int RunChecks(int argc, char** argv)
         DiscFileSystem source;
         EXPECT(source.Open(iso.string().c_str()));
         std::vector<uint8_t> xex = source.ReadAll("default.xex");
-        auto be32 = [&](size_t at) { return uint32_t(xex[at]) << 24 | uint32_t(xex[at + 1]) << 16 | uint32_t(xex[at + 2]) << 8 | xex[at + 3]; };
+        auto be32 = [&](size_t at) {
+            return uint32_t(xex[at]) << 24 | uint32_t(xex[at + 1]) << 16 | uint32_t(xex[at + 2]) << 8 | xex[at + 3];
+        };
         size_t info = 0;
         for (uint32_t i = 0; i < be32(0x14); i++)
             if (be32(0x18 + i * 8) == 0x00040006)
@@ -2721,12 +2991,14 @@ static int RunChecks(int argc, char** argv)
         const std::filesystem::path edition = scratch / "header_only_edition.iso";
         WriteDiscImage(edition, "default.xex", xex);
         GameSourceCheck accepted = CheckGameSource(edition.string(), game);
-        EXPECT(accepted.status == GameSourceStatus::Ok && accepted.xexSha256 == Sha256Hex(xex) && accepted.languages.text.empty());
+        EXPECT(accepted.status == GameSourceStatus::Ok && accepted.xexSha256 == Sha256Hex(xex) &&
+               accepted.languages.text.empty());
         // The same header over other code (one byte of its data changed): refused, its details say the code differs.
         xex[be32(0x08) + (xex.size() - be32(0x08)) / 2] ^= 0x5A;
         WriteDiscImage(edition, "default.xex", xex);
         GameSourceCheck refused = CheckGameSource(edition.string(), game);
-        EXPECT(refused.status == GameSourceStatus::WrongVersion && refused.discDetails.find("Loaded image: ") != std::string::npos);
+        EXPECT(refused.status == GameSourceStatus::WrongVersion &&
+               refused.discDetails.find("Loaded image: ") != std::string::npos);
         std::filesystem::remove(edition);
         printf("A header-only edition is accepted; other code is refused\n");
     }
@@ -2742,7 +3014,9 @@ static int RunChecks(int argc, char** argv)
     EXPECT(isPng);
     if (isPng)
     {
-        auto be32 = [&](size_t offset) { return uint32_t(png[offset]) << 24 | png[offset + 1] << 16 | png[offset + 2] << 8 | png[offset + 3]; };
+        auto be32 = [&](size_t offset) {
+            return uint32_t(png[offset]) << 24 | png[offset + 1] << 16 | png[offset + 2] << 8 | png[offset + 3];
+        };
         printf("  XDBF title name \"%s\", icon PNG %ux%u (%zu bytes), read in %lld ms (kept in memory only)\n",
             metadata.name.c_str(), be32(16), be32(20), png.size(), milliseconds(start));
     }
@@ -2759,10 +3033,13 @@ static int RunChecks(int argc, char** argv)
         long long first = milliseconds(began);
         art::Extraction found = art::Extract(id, art::ReadFrom(gameDisc), {}, art::Portraits);
         printf("  %s: logo %s, background %s, title icon %s, %d portraits, read in %lld ms\n", id,
-            provider.Get(LauncherAssets::Role::Logo).valid ? "yes" : "NO", provider.Get(LauncherAssets::Role::HeroBackground).valid ? "yes" : "NO",
+            provider.Get(LauncherAssets::Role::Logo).valid ? "yes" : "NO",
+            provider.Get(LauncherAssets::Role::HeroBackground).valid ? "yes" : "NO",
             provider.Get(LauncherAssets::Role::TitleIcon).valid ? "yes" : "NO", found.portraits, first);
-        EXPECT(provider.Get(LauncherAssets::Role::Logo).valid && provider.Get(LauncherAssets::Role::HeroBackground).valid);
-        EXPECT(provider.Get(LauncherAssets::Role::TitleIcon).valid && LauncherAssets::Cached(id, LauncherAssets::Role::Logo).valid);
+        EXPECT(
+            provider.Get(LauncherAssets::Role::Logo).valid && provider.Get(LauncherAssets::Role::HeroBackground).valid);
+        EXPECT(provider.Get(LauncherAssets::Role::TitleIcon).valid &&
+               LauncherAssets::Cached(id, LauncherAssets::Role::Logo).valid);
         EXPECT(found.portraits >= minimumPortraits);
         // The scenes of the launcher's backgrounds: every one of the manifest's is on the disc, read once.
         auto scenesBegan = Clock::now();
@@ -2770,7 +3047,8 @@ static int RunChecks(int argc, char** argv)
         size_t cachedScenes = 0;
         for (const std::string& name : art::SceneNames(id))
             cachedScenes += !art::CachedScene(id, name).empty();
-        printf("  %s: %zu of %zu scenes, read in %lld ms\n", id, cachedScenes, art::SceneNames(id).size(), milliseconds(scenesBegan));
+        printf("  %s: %zu of %zu scenes, read in %lld ms\n", id, cachedScenes, art::SceneNames(id).size(),
+            milliseconds(scenesBegan));
         EXPECT(cachedScenes == art::SceneNames(id).size() && art::ScenesRead(id));
         // The achievements the disc check caches (game_progress.h), then what the game recorded: its own data folder, not SKY_SAVE_DIR.
         {
@@ -2779,20 +3057,27 @@ static int RunChecks(int argc, char** argv)
             TestUnsetEnv("SKY_SAVE_DIR");
             std::filesystem::path cache = AchievementCacheFolder(id);
             std::vector<uint8_t> xex = gameDisc.ReadAll("default.xex");
-            EXPECT(!cache.empty() && !achievements::CacheIsCurrent(cache, "k") && achievements::WriteCache(cache, "k", xex) && achievements::CacheIsCurrent(cache, "k"));
+            EXPECT(!cache.empty() && !achievements::CacheIsCurrent(cache, "k") &&
+                   achievements::WriteCache(cache, "k", xex) && achievements::CacheIsCurrent(cache, "k"));
             GameProgress fresh = ReadGameProgress(id, "en");
-            size_t pictures = std::count_if(fresh.rows.begin(), fresh.rows.end(), [](const AchievementRow& row) { return !row.image.empty(); });
-            printf("  %s: %zu achievements, gamerscore %u, %zu pictures\n", id, fresh.rows.size(), fresh.totalGamerscore, pictures);
-            EXPECT(fresh.hasList && fresh.rows.size() == achievementCount && fresh.totalGamerscore == 1000 && fresh.unlocked == 0 && pictures == achievementCount);
+            size_t pictures = std::count_if(
+                fresh.rows.begin(), fresh.rows.end(), [](const AchievementRow& row) { return !row.image.empty(); });
+            printf("  %s: %zu achievements, gamerscore %u, %zu pictures\n", id, fresh.rows.size(),
+                fresh.totalGamerscore, pictures);
+            EXPECT(fresh.hasList && fresh.rows.size() == achievementCount && fresh.totalGamerscore == 1000 &&
+                   fresh.unlocked == 0 && pictures == achievementCount);
             EXPECT(fresh.play.totalSeconds == 0 && PlayTimeLine(fresh.play, 0).empty());
             if (fresh.rows.size() >= 3)
             {
                 std::filesystem::path folder = progress::Folder(id);
-                EXPECT(progress::WriteUnlock(folder, fresh.rows[0].id, 1000) && progress::WriteUnlock(folder, fresh.rows[2].id, 2000));
+                EXPECT(progress::WriteUnlock(folder, fresh.rows[0].id, 1000) &&
+                       progress::WriteUnlock(folder, fresh.rows[2].id, 2000));
                 EXPECT(progress::WritePlayTime(folder, { 3700, 5000, 2 }));
                 GameProgress played = ReadGameProgress(id, "en");
-                EXPECT(played.unlocked == 2 && played.rows[0].unlocked && played.rows[0].time == 1000 && !played.rows[1].unlocked && played.rows[2].unlocked);
-                EXPECT(played.gamerscore == fresh.rows[0].gamerscore + fresh.rows[2].gamerscore && played.play.totalSeconds == 3700 && played.play.sessions == 2);
+                EXPECT(played.unlocked == 2 && played.rows[0].unlocked && played.rows[0].time == 1000 &&
+                       !played.rows[1].unlocked && played.rows[2].unlocked);
+                EXPECT(played.gamerscore == fresh.rows[0].gamerscore + fresh.rows[2].gamerscore &&
+                       played.play.totalSeconds == 3700 && played.play.sessions == 2);
                 EXPECT(played.rows[0].description == fresh.rows[0].description || !played.rows[0].description.empty());
                 GameProgress french = ReadGameProgress(id, "fr");
                 size_t differ = 0;
@@ -2809,7 +3094,8 @@ static int RunChecks(int argc, char** argv)
         collection::UpgradeTable spyro = collection::Upgrades(*collection::Catalogue::Get().Find(16), id, "fr");
         printf("  %s: upgrades from the disc %s, Spyro's first: %s\n", id, spyro.fromDisc ? "yes" : "NO",
             spyro.upgrades.empty() ? "-" : spyro.upgrades[0].name.c_str());
-        EXPECT(spyro.fromDisc && spyro.upgrades.size() >= 11 && spyro.upgrades[0].bit == collection::UpgradePathChosenBit + 2);
+        EXPECT(spyro.fromDisc && spyro.upgrades.size() >= 11 &&
+               spyro.upgrades[0].bit == collection::UpgradePathChosenBit + 2);
         // The disc's other languages are kept too: the launcher asks in its own (German differs from English and French).
         std::string english = collection::Upgrades(*collection::Catalogue::Get().Find(16), id, "en").upgrades[0].name;
         for (const char* language : { "de", "es", "it", "nl", "sv", "no", "da", "fi", "pt" })
@@ -2817,7 +3103,8 @@ static int RunChecks(int argc, char** argv)
             if (std::string_view(language) == "pt" && std::string_view(id) != "giants")
                 continue; // Giants' disc is the one with Portuguese
             collection::UpgradeTable other = collection::Upgrades(*collection::Catalogue::Get().Find(16), id, language);
-            printf("  %s: upgrades in %s: %s\n", id, language, other.upgrades.empty() ? "-" : other.upgrades[0].name.c_str());
+            printf("  %s: upgrades in %s: %s\n", id, language,
+                other.upgrades.empty() ? "-" : other.upgrades[0].name.c_str());
             EXPECT(!other.upgrades.empty() && other.upgrades[0].name != english);
         }
     };
@@ -2846,7 +3133,8 @@ static int RunChecks(int argc, char** argv)
         // Swap Force's own toys have cached art here.
         const collection::Toy* doomTop = collection::Catalogue::Get().Find(2003);
         EXPECT(doomTop != nullptr && !collection::PortraitPath("swapforce", *doomTop).empty());
-        EXPECT(std::filesystem::exists(scratch / "art-data" / "SwapForce" / "portraits")); // the data folder is SwapForce/
+        EXPECT(
+            std::filesystem::exists(scratch / "art-data" / "SwapForce" / "portraits")); // the data folder is SwapForce/
     }
     if (const char* imaginatorsIso = skyenv::Get("SKY_LAUNCHER_TEST_IMAGINATORS_ISO"); imaginatorsIso != nullptr)
     {
@@ -2860,7 +3148,8 @@ static int RunChecks(int argc, char** argv)
         for (uint32_t y = logo.height * 2 / 5; y < logo.height * 9 / 10; y++)
             for (uint32_t x = logo.width * 3 / 20; x < logo.width * 17 / 20; x++)
                 band++, solid += (logo.rgba[size_t(y) * logo.width + x] >> 24) == 0xFF;
-        printf("  imaginators: logo %ux%u, %zu of %zu pixels of the words' band opaque\n", logo.width, logo.height, solid, band);
+        printf("  imaginators: logo %ux%u, %zu of %zu pixels of the words' band opaque\n", logo.width, logo.height,
+            solid, band);
         EXPECT(band > 0 && solid * 100 >= band * 98);
     }
     if (dataBefore.empty())
@@ -2888,19 +3177,22 @@ static int RunChecks(int argc, char** argv)
         EXPECT(own.status == GameSourceStatus::Ok && own.xexSha256 == giants->releases[0].defaultXexSha256);
         EXPECT(CheckGameSource(giantsIso, game).status == GameSourceStatus::WrongGame);
         EXPECT(CheckGameSource(iso.string(), *giants).status == GameSourceStatus::WrongGame);
-        printf("Giants languages: text %s, voices %s\n", art::JoinLanguages(own.languages.text).c_str(), art::JoinLanguages(own.languages.voice).c_str());
+        printf("Giants languages: text %s, voices %s\n", art::JoinLanguages(own.languages.text).c_str(),
+            art::JoinLanguages(own.languages.voice).c_str());
         EXPECT(own.languages.text.size() == 12 && own.languages.voice.size() == 12);
         printf("Switching games in the window:\n");
         SwitchChecks(scratch, iso.string(), giantsIso);
         printf("The sidebar line through an install and an update:\n");
         SidebarChecks(scratch, iso.string(), giantsIso);
     }
-    if (const char* swapIso = skyenv::Get("SKY_LAUNCHER_TEST_SWAPFORCE_ISO"); swapIso != nullptr && swapForce != nullptr)
+    if (const char* swapIso = skyenv::Get("SKY_LAUNCHER_TEST_SWAPFORCE_ISO");
+        swapIso != nullptr && swapForce != nullptr)
     {
         printf("Swap Force disc image:\n");
         GameSourceCheck own = CheckGameSource(swapIso, *swapForce);
         EXPECT(own.status == GameSourceStatus::Ok && own.xexSha256 == swapForce->releases[0].defaultXexSha256);
-        printf("Swap Force (USA) languages: text %s, voices %s\n", art::JoinLanguages(own.languages.text).c_str(), art::JoinLanguages(own.languages.voice).c_str());
+        printf("Swap Force (USA) languages: text %s, voices %s\n", art::JoinLanguages(own.languages.text).c_str(),
+            art::JoinLanguages(own.languages.voice).c_str());
         EXPECT(art::JoinLanguages(own.languages.text) == "en,fr" && art::JoinLanguages(own.languages.voice) == "en,fr");
         EXPECT(CheckGameSource(swapIso, game).status == GameSourceStatus::WrongGame);
         if (giants != nullptr)
@@ -2911,9 +3203,11 @@ static int RunChecks(int argc, char** argv)
         printf("  accepted by its own game, refused by the others\n");
     }
     printf("The kit follows the launcher:\n");
-    KitFlowChecks(scratch, iso.string(), skyenv::Get("SKY_LAUNCHER_TEST_GIANTS_ISO") != nullptr ? skyenv::Get("SKY_LAUNCHER_TEST_GIANTS_ISO") : "");
+    KitFlowChecks(scratch, iso.string(),
+        skyenv::Get("SKY_LAUNCHER_TEST_GIANTS_ISO") != nullptr ? skyenv::Get("SKY_LAUNCHER_TEST_GIANTS_ISO") : "");
     printf("Copy the game data:\n");
-    g_failures += CopyChecks(scratch, iso.string(), skyenv::Get("SKY_LAUNCHER_TEST_GIANTS_ISO") != nullptr ? skyenv::Get("SKY_LAUNCHER_TEST_GIANTS_ISO") : "");
+    g_failures += CopyChecks(scratch, iso.string(),
+        skyenv::Get("SKY_LAUNCHER_TEST_GIANTS_ISO") != nullptr ? skyenv::Get("SKY_LAUNCHER_TEST_GIANTS_ISO") : "");
     printf("The seats' X in the window:\n");
     SeatXChecks(scratch);
     NavChecks(scratch, iso.string());
@@ -2956,15 +3250,18 @@ static int RunChecks(int argc, char** argv)
     const GameInfo& giantsGame = *FindGame("giants");
     EXPECT(LauncherVoiceLabel(helperConfig, giantsGame) == "English");
     helperConfig["giants"]["language"] = "es-419";
-    EXPECT(LauncherLanguageLabel(helperConfig, giantsGame) == "Español (Latinoamérica)" && LauncherVoiceLabel(helperConfig, giantsGame) == "Español (Latinoamérica)");
+    EXPECT(LauncherLanguageLabel(helperConfig, giantsGame) == "Español (Latinoamérica)" &&
+           LauncherVoiceLabel(helperConfig, giantsGame) == "Español (Latinoamérica)");
     helperConfig["giants"]["voice_language"] = "pt";
     EXPECT(LauncherVoiceLabel(helperConfig, giantsGame) == "Português");
     helperConfig["giants"]["language"].clear();
     helperConfig["giants"]["voice_language"].clear();
     const char* const giantsCodes[] = { "en", "fr", "de", "es", "es-419", "it", "nl", "pt", "sv", "no", "da", "fi" };
-    EXPECT(std::size(launcher_ui::GiantsLanguageChoices) == std::size(giantsCodes) && std::size(launcher_ui::GiantsVoiceChoices) == std::size(giantsCodes) + 1);
+    EXPECT(std::size(launcher_ui::GiantsLanguageChoices) == std::size(giantsCodes) &&
+           std::size(launcher_ui::GiantsVoiceChoices) == std::size(giantsCodes) + 1);
     for (size_t i = 0; i < std::size(giantsCodes); i++)
-        EXPECT(std::string(launcher_ui::GiantsLanguageChoices[i].value) == giantsCodes[i] && std::string(launcher_ui::GiantsVoiceChoices[i + 1].value) == giantsCodes[i]);
+        EXPECT(std::string(launcher_ui::GiantsLanguageChoices[i].value) == giantsCodes[i] &&
+               std::string(launcher_ui::GiantsVoiceChoices[i + 1].value) == giantsCodes[i]);
     EXPECT(std::string(launcher_ui::GiantsVoiceChoices[0].value).empty());
 
     EXPECT(!LauncherFullscreen(helperConfig));
@@ -3009,13 +3306,17 @@ static int RunChecks(int argc, char** argv)
     std::ifstream saved(settings);
     printf("%s", std::string(std::istreambuf_iterator<char>(saved), {}).c_str());
 
-    std::string handEdited = "# comment\r\n  [ ssa ]  \r\n\r\n iso = /a b/c.iso \r\n; other\r\nnot a pair\r\n[empty]\r\n";
+    std::string handEdited =
+        "# comment\r\n  [ ssa ]  \r\n\r\n iso = /a b/c.iso \r\n; other\r\nnot a pair\r\n[empty]\r\n";
     WriteFile(scratch / "edited.ini", { handEdited.begin(), handEdited.end() });
     LauncherConfig edited = LoadLauncherConfig((scratch / "edited.ini").string());
     EXPECT(edited.size() == 1 && edited["ssa"].size() == 1 && edited["ssa"]["iso"] == "/a b/c.iso");
     EXPECT(LoadLauncherConfig((scratch / "missing.ini").string()).empty());
-    { std::ofstream((scratch / "bom.ini").string(), std::ios::binary) << "\xEF\xBB\xBF[launcher]\nlanguage=fr\n"; }
-    EXPECT(LoadLauncherConfig((scratch / "bom.ini").string())["launcher"]["language"] == "fr"); // a byte order mark hides nothing
+    {
+        std::ofstream((scratch / "bom.ini").string(), std::ios::binary) << "\xEF\xBB\xBF[launcher]\nlanguage=fr\n";
+    }
+    EXPECT(LoadLauncherConfig((scratch / "bom.ini").string())["launcher"]["language"] ==
+           "fr"); // a byte order mark hides nothing
 
     LauncherConfig video;
     video["video"]["aspect"] = "16:9";
@@ -3023,9 +3324,11 @@ static int RunChecks(int argc, char** argv)
     video["video"]["texture_dump"] = "1";
     EXPECT(SaveLauncherConfig(settings.string(), video));
     LauncherConfig videoBack = LoadLauncherConfig(settings.string());
-    EXPECT(videoBack["video"]["aspect"] == "16:9" && videoBack["video"]["texture_packs"] == "0" && videoBack["video"]["texture_dump"] == "1");
+    EXPECT(videoBack["video"]["aspect"] == "16:9" && videoBack["video"]["texture_packs"] == "0" &&
+           videoBack["video"]["texture_dump"] == "1");
 
-    if (skyenv::Get("SKY_LAUNCHER_TEST_KEEP") == nullptr) std::filesystem::remove_all(scratch);
+    if (skyenv::Get("SKY_LAUNCHER_TEST_KEEP") == nullptr)
+        std::filesystem::remove_all(scratch);
     printf(g_failures == 0 ? "All launcher checks passed\n" : "%d launcher check(s) failed\n", g_failures);
     return g_failures == 0 ? 0 : 1;
 }

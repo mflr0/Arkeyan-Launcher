@@ -10,7 +10,14 @@
 
 struct InstallChecklist
 {
-    enum class RowState { Waiting, Running, Done, Failed, Stopped };
+    enum class RowState
+    {
+        Waiting,
+        Running,
+        Done,
+        Failed,
+        Stopped
+    };
     struct Row
     {
         std::string id, title;

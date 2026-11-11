@@ -50,12 +50,14 @@ namespace launcher_ui
         std::vector<std::string> ChooseFigureFiles(SDL_Window* window)
         {
             static std::string filterName;
-            filterName = Tr("Figure dumps (.sky, .bin, .dmp)"); // the dialog is asynchronous: the text must outlive this call
+            filterName =
+                Tr("Figure dumps (.sky, .bin, .dmp)"); // the dialog is asynchronous: the text must outlive this call
             static SDL_DialogFileFilter filters[1];
             filters[0] = { filterName.c_str(), "sky;bin;dmp" };
             DialogResult result;
             SDL_PropertiesID properties = SDL_CreateProperties();
-            SDL_SetPointerProperty(properties, SDL_PROP_FILE_DIALOG_FILTERS_POINTER, const_cast<SDL_DialogFileFilter*>(filters));
+            SDL_SetPointerProperty(
+                properties, SDL_PROP_FILE_DIALOG_FILTERS_POINTER, const_cast<SDL_DialogFileFilter*>(filters));
             SDL_SetNumberProperty(properties, SDL_PROP_FILE_DIALOG_NFILTERS_NUMBER, 1);
             SDL_SetStringProperty(properties, SDL_PROP_FILE_DIALOG_TITLE_STRING, Tr("Import figures"));
             SDL_SetBooleanProperty(properties, SDL_PROP_FILE_DIALOG_MANY_BOOLEAN, true);
@@ -85,7 +87,9 @@ namespace launcher_ui
         if (folder.empty())
             return;
         int count = collection::Export(paths, folder);
-        Toast(count == 1 ? Tf("Exported {} figure to {}", count, folder) : Tf("Exported {} figures to {}", count, folder), ui::ToastKind::Success);
+        Toast(
+            count == 1 ? Tf("Exported {} figure to {}", count, folder) : Tf("Exported {} figures to {}", count, folder),
+            ui::ToastKind::Success);
     }
 
     // "Export first" before uninstalling: every figure of the collection, to a folder the player picks.
@@ -98,21 +102,25 @@ namespace launcher_ui
         for (const Figure& figure : collection::List())
             paths.push_back(figure.path);
         int count = collection::Export(paths, folder);
-        Toast(count == 1 ? Tf("Exported {} figure to {}", count, folder) : Tf("Exported {} figures to {}", count, folder));
+        Toast(count == 1 ? Tf("Exported {} figure to {}", count, folder)
+                         : Tf("Exported {} figures to {}", count, folder));
     }
 
     void CollectionPage::DrawManage()
     {
         RefreshDisk();
-        size_t unknown = std::count_if(m_model.figures.begin(), m_model.figures.end(), [](const Figure& f) { return f.toy == nullptr; });
-        const std::string tabs[] = { Tf("Trash · {}", m_trash.size()), Tr("Backups"), Tr("Import and export"), Tf("Unknown toys · {}", unknown),
-            Tf("Tidy · {}", m_starters) };
+        size_t unknown = std::count_if(
+            m_model.figures.begin(), m_model.figures.end(), [](const Figure& f) { return f.toy == nullptr; });
+        const std::string tabs[] = { Tf("Trash · {}", m_trash.size()), Tr("Backups"), Tr("Import and export"),
+            Tf("Unknown toys · {}", unknown), Tf("Tidy · {}", m_starters) };
         const char* labels[] = { tabs[0].c_str(), tabs[1].c_str(), tabs[2].c_str(), tabs[3].c_str(), tabs[4].c_str() };
         ui::TabsOptions options;
         options.focusSelected = m_manageFresh;
         m_manageFresh = false;
         ui::Tabs("##managetabs", labels, &m_manageTab, options);
-        ui::BeginRoomyChild("##managebody", ImVec2(0, OverlayBody(3 * ui::height::Main, 3 * ui::height::Main, 6 * ui::height::Main)), ImGuiChildFlags_NavFlattened, ImGuiWindowFlags_NoBackground);
+        ui::BeginRoomyChild("##managebody",
+            ImVec2(0, OverlayBody(3 * ui::height::Main, 3 * ui::height::Main, 6 * ui::height::Main)),
+            ImGuiChildFlags_NavFlattened, ImGuiWindowFlags_NoBackground);
         ImGui::SetScrollX(0.0f);
         switch (m_manageTab)
         {
@@ -140,19 +148,22 @@ namespace launcher_ui
         forGood.hold = true;
         forGood.icon = ui::Icon::Trash;
         forGood.tooltip = Tr(strings::DeleteForGoodHint);
-        const float buttons = ui::ButtonWidth(Tr("Put back")) + ui::space::XS + ui::ButtonWidth(Tr(strings::DeleteForGood), forGood);
+        const float buttons =
+            ui::ButtonWidth(Tr("Put back")) + ui::space::XS + ui::ButtonWidth(Tr(strings::DeleteForGood), forGood);
         if (!ui::BeginSettings("##trash", buttons)) // the two buttons on one line, in every language
             return;
         for (size_t i = 0; i < trash.size(); i++)
         {
             const collection::TrashEntry& entry = trash[i];
             ImGui::PushID(entry.id.c_str());
-            ui::SettingRow(names[i].c_str(), Tf("{} · {}", When(entry.deleted), entry.reason == "tidy" ? Tr("tidied") : Tr("deleted")).c_str());
+            ui::SettingRow(names[i].c_str(),
+                Tf("{} · {}", When(entry.deleted), entry.reason == "tidy" ? Tr("tidied") : Tr("deleted")).c_str());
             ui::AlignRight(buttons);
             if (ui::Button(Tr("Put back")))
             {
                 const bool failed = collection::Undelete(entry.id).empty();
-                Toast(failed ? Tr("Couldn't put it back") : Tr("Put back: ") + names[i], failed ? ui::ToastKind::Error : ui::ToastKind::Success);
+                Toast(failed ? Tr("Couldn't put it back") : Tr("Put back: ") + names[i],
+                    failed ? ui::ToastKind::Error : ui::ToastKind::Success);
                 Reload();
             }
             ImGui::SameLine(0, ui::space::XS);
@@ -180,7 +191,8 @@ namespace launcher_ui
                 continue;
             any = true;
             const bool open = m_backupsOf == figure.path;
-            const std::string count = backups.size() == 1 ? Tf("{} backup", backups.size()) : Tf("{} backups", backups.size());
+            const std::string count =
+                backups.size() == 1 ? Tf("{} backup", backups.size()) : Tf("{} backups", backups.size());
             ui::ListRowOptions options;
             options.trailing = count.c_str();
             options.selected = open;
@@ -208,12 +220,14 @@ namespace launcher_ui
                     restore.hold = true;
                     restore.disabled = !Writable(figure);
                     restore.tooltip = Tr("Hold to put this copy back.");
-                    ui::AlignRight(ui::ButtonWidth(Tr("Restore"), restore) + ui::space::S - ui::space::XXS); // the rows' trailing edge
+                    ui::AlignRight(ui::ButtonWidth(Tr("Restore"), restore) + ui::space::S -
+                                   ui::space::XXS); // the rows' trailing edge
                     if (ui::Button(Tr("Restore"), restore))
                     {
                         std::string error;
                         const bool done = collection::Restore(figure.path, backup.path, &error);
-                        Toast(done ? Tr("Backup restored") : Tr("Couldn't restore it: ") + error, !done ? ui::ToastKind::Error : ui::ToastKind::Success);
+                        Toast(done ? Tr("Backup restored") : Tr("Couldn't restore it: ") + error,
+                            !done ? ui::ToastKind::Error : ui::ToastKind::Success);
                         reload = true; // keep the figures and their paths alive until this list has finished drawing
                     }
                     ImGui::PopID();
@@ -241,7 +255,8 @@ namespace launcher_ui
         ui::ButtonOptions folder;
         folder.icon = ui::Icon::Folder;
         if (ui::Button(Tr("Import a folder..."), folder))
-            if (std::string chosen = ChooseFolder(m_app.m_window, Tr("Import the figures of a folder")); !chosen.empty())
+            if (std::string chosen = ChooseFolder(m_app.m_window, Tr("Import the figures of a folder"));
+                !chosen.empty())
                 Import({ chosen });
         ImGui::Dummy(ImVec2(0, ui::space::S));
         ui::ButtonOptions exportAll;
@@ -257,7 +272,10 @@ namespace launcher_ui
         if (ui::Button(Tr("Show in folder"), folder))
         {
             SDL_CreateDirectory(collection::Folder().c_str());
-            { std::string path = collection::Folder(); OpenFolder(std::filesystem::path(std::u8string(path.begin(), path.end()))); }
+            {
+                std::string path = collection::Folder();
+                OpenFolder(std::filesystem::path(std::u8string(path.begin(), path.end())));
+            }
         }
         ImGui::Dummy(ImVec2(0, ui::space::XS));
         ui::Text(ui::TextStyle::Caption, collection::Folder().c_str(), ui::color::Dim);
@@ -275,7 +293,8 @@ namespace launcher_ui
                     continue;
                 any = true;
                 ImGui::PushID(figure.path.c_str());
-                ui::SettingRow(Tf("Unknown toy {} (variant {:04X})", figure.type, figure.variant).c_str(), figure.file.c_str());
+                ui::SettingRow(
+                    Tf("Unknown toy {} (variant {:04X})", figure.type, figure.variant).c_str(), figure.file.c_str());
                 if (m_unknownType == figure.type)
                 {
                     ui::TextFieldOptions field;
@@ -284,11 +303,15 @@ namespace launcher_ui
                     ui::SettingRow(Tr("Type"));
                     ui::SelectOptions type;
                     type.width = ui::height::SettingControl - ui::ButtonWidth(Tr("Save")) - ui::space::XS;
-                    if (ui::BeginSelect("##unknowntype", m_unknownCategory < 0 ? Tr("Choose a type") : CategoryLabel(collection::Category(m_unknownCategory)).c_str(), type))
+                    if (ui::BeginSelect("##unknowntype",
+                            m_unknownCategory < 0 ? Tr("Choose a type")
+                                                  : CategoryLabel(collection::Category(m_unknownCategory)).c_str(),
+                            type))
                     {
                         for (int i = 0; i < int(collection::Category::Count); i++)
                             if (collection::Category(i) != collection::Category::Villain &&
-                                ui::SelectOption(CategoryLabel(collection::Category(i)).c_str(), m_unknownCategory == i))
+                                ui::SelectOption(
+                                    CategoryLabel(collection::Category(i)).c_str(), m_unknownCategory == i))
                                 m_unknownCategory = i;
                         ui::EndSelect();
                     }
@@ -298,8 +321,10 @@ namespace launcher_ui
                     save.disabled = Trimmed(m_unknownName).empty() || m_unknownCategory < 0;
                     if (ui::Button(Tr("Save"), save))
                     {
-                        const bool named = NameUnknownToy(figure.type, m_unknownName, collection::Category(m_unknownCategory), m_model.gameId);
-                        Toast(named ? Tr("Named: shown at the next start") : Tr("Couldn't save the name"), !named ? ui::ToastKind::Error : ui::ToastKind::Success);
+                        const bool named = NameUnknownToy(
+                            figure.type, m_unknownName, collection::Category(m_unknownCategory), m_model.gameId);
+                        Toast(named ? Tr("Named: shown at the next start") : Tr("Couldn't save the name"),
+                            !named ? ui::ToastKind::Error : ui::ToastKind::Success);
                         m_unknownType = 0xFFFF;
                         m_unknownName[0] = 0;
                     }
@@ -331,7 +356,8 @@ namespace launcher_ui
         if (ui::Button(Tf("Move {} to the trash", m_starters).c_str(), tidy))
         {
             int moved = m_model.Tidy();
-            Toast(moved == 1 ? Tf("{} figure moved to the trash", moved) : Tf("{} figures moved to the trash", moved), ui::ToastKind::Success);
+            Toast(moved == 1 ? Tf("{} figure moved to the trash", moved) : Tf("{} figures moved to the trash", moved),
+                ui::ToastKind::Success);
             Reload();
         }
         // A lock a live process holds, but not the game it names (its number reused after a crash): every seat would stay read-only.
@@ -339,7 +365,8 @@ namespace launcher_ui
         if (!leftover.empty())
         {
             ImGui::Dummy(ImVec2(0, ui::space::M));
-            ui::Text(ui::TextStyle::Body, Tr("Some figures are marked as in use, but their game is not running."), ui::color::InkSoft);
+            ui::Text(ui::TextStyle::Body, Tr("Some figures are marked as in use, but their game is not running."),
+                ui::color::InkSoft);
             ImGui::Dummy(ImVec2(0, ui::space::XS));
             ui::ButtonOptions release;
             release.kind = ui::ButtonKind::Danger;
@@ -359,20 +386,20 @@ namespace launcher_ui
     namespace
     {
         // Screens, in order (the step is the index).
-        constexpr const char* Shots[] = { "20-collection", "21-choose-player-1", "22-choose-magic-item", "23-filter-water", "24-figure-sheet",
-            "25-figure-details", "26-figure-delete", "27-edit", "28-add-a-figure", "29-add-later-game", "30-manage-trash", "31-manage-backups",
-            "32-live-portal", "33-after-delete", "34-giants-portal", "35-giants-figure", "36-giants-edit", "37-add-lightcore", "38-no-match",
-            "39-choose-empty", "40-add-search-version", "41-giants-variant-sheet", "42-swapforce-portal", "43-swapper-sheet",
-            "44-change-the-bottom", "45-swapforce-choose-player-1", "46-add-versions", "47-search-element", "48-search-level",
-            "49-search-typo", "50-filters-panel", "51-filters-tags", "52-sort-name", "53-all-swappers", "54-mixed-swapper-sheet",
-            "55-add-swapper-versions", "56-add-no-match", "57-manage-menu", "58-figure-menu", "59-put-on-menu", "60-focus-card", "61-focus-seat",
-            "62-trap-sheet", "63-trap-edit", "collection-bottom", "64-trapteam-greyed", "65-unknown-type", "66-unknown-named", "67-missing-figure", "68-seat-restored" };
+        constexpr const char* Shots[] = { "20-collection", "21-choose-player-1", "22-choose-magic-item",
+            "23-filter-water", "24-figure-sheet", "25-figure-details", "26-figure-delete", "27-edit", "28-add-a-figure",
+            "29-add-later-game", "30-manage-trash", "31-manage-backups", "32-live-portal", "33-after-delete",
+            "34-giants-portal", "35-giants-figure", "36-giants-edit", "37-add-lightcore", "38-no-match",
+            "39-choose-empty", "40-add-search-version", "41-giants-variant-sheet", "42-swapforce-portal",
+            "43-swapper-sheet", "44-change-the-bottom", "45-swapforce-choose-player-1", "46-add-versions",
+            "47-search-element", "48-search-level", "49-search-typo", "50-filters-panel", "51-filters-tags",
+            "52-sort-name", "53-all-swappers", "54-mixed-swapper-sheet", "55-add-swapper-versions", "56-add-no-match",
+            "57-manage-menu", "58-figure-menu", "59-put-on-menu", "60-focus-card", "61-focus-seat", "62-trap-sheet",
+            "63-trap-edit", "collection-bottom", "64-trapteam-greyed", "65-unknown-type", "66-unknown-named",
+            "67-missing-figure", "68-seat-restored" };
     }
 
-    const char* CollectionPage::TestShotName(int step)
-    {
-        return Shots[std::clamp(step, 0, int(std::size(Shots)) - 1)];
-    }
+    const char* CollectionPage::TestShotName(int step) { return Shots[std::clamp(step, 0, int(std::size(Shots)) - 1)]; }
 
     bool CollectionPage::TestPad()
     {
@@ -380,10 +407,7 @@ namespace launcher_ui
         return mode != nullptr && std::string_view(mode) == "pad";
     }
 
-    int CollectionPage::TestShotCount()
-    {
-        return int(std::size(Shots));
-    }
+    int CollectionPage::TestShotCount() { return int(std::size(Shots)); }
 
     // Figures in the scratch collection only: SKY_COLLECTION must name it (and SKY_SAVE_DIR the seats' folder).
     void CollectionPage::Seed()
@@ -416,7 +440,8 @@ namespace launcher_ui
         std::string sidekick = make(505, 0, 0, 0, "");
         std::string dark = make(28, 0, 0, 0, "");
         make(14, 0, 700, 90, ""); // a second Gill Grunt: "owned x2"
-        std::string doomed = make(12, 0, 0, 0, ""), doomed2 = make(10, 0, 0, 0, ""); // two in the trash: one hold button each
+        std::string doomed = make(12, 0, 0, 0, ""),
+                    doomed2 = make(10, 0, 0, 0, ""); // two in the trash: one hold button each
         collection::SetLabel(gill, "Splash's");
         {
             Figure bought; // Gill Grunt: the first path chosen, two of its upgrades and two basic ones bought
@@ -439,7 +464,8 @@ namespace launcher_ui
             }
         // Swap Force: two swappers (one played to level 7) and a bottom on its own, shown as cards of their own game.
         {
-            collection::SwapperPaths doom = collection::CreateSwapper(2003, 1003), night = collection::CreateSwapper(2012, 1004);
+            collection::SwapperPaths doom = collection::CreateSwapper(2003, 1003),
+                                     night = collection::CreateSwapper(2012, 1004);
             Figure played;
             if (!doom.top.empty() && collection::Read(doom.top, played))
             {
@@ -455,7 +481,8 @@ namespace launcher_ui
             {
                 for (uint16_t i = 0; i < 16; i++)
                     collection::CreateSwapper(2000 + i, 1000 + i);
-                for (auto [top, bottom] : { std::pair<uint16_t, uint16_t>{ 2010, 1000 }, { 2000, 1015 }, { 2007, 1002 }, { 2004, 1001 } })
+                for (auto [top, bottom] :
+                    { std::pair<uint16_t, uint16_t>{ 2010, 1000 }, { 2000, 1015 }, { 2007, 1002 }, { 2004, 1001 } })
                     collection::CreateSwapper(top, bottom);
             }
         }
@@ -479,14 +506,19 @@ namespace launcher_ui
             for (const collection::Variant& variant : toy->variants)
                 if (variant.kind == collection::VariantKind::Series && !variant.sameTag)
                 {
-                    std::string series = make(9, variant.id, 12000, 3100, ""); // played: its level and "last played" agree
+                    std::string series =
+                        make(9, variant.id, 12000, 3100, ""); // played: its level and "last played" agree
                     if (!series.empty())
                         collection::Touch(series, "giants");
                     break;
                 }
         collection::Delete(doomed);
         collection::Delete(doomed2);
-        (void)chop; (void)item; (void)pack; (void)sidekick; (void)dark;
+        (void)chop;
+        (void)item;
+        (void)pack;
+        (void)sidekick;
+        (void)dark;
         if (skyenv::Get("SKY_SAVE_DIR") != nullptr)
             if (const collection::Game* game = m_model.Game())
                 WriteSeats(*game, SessionFile(*game), { gill, spyro, item, pack });
@@ -557,7 +589,8 @@ namespace launcher_ui
         case 11:
             m_overlay = Overlay::Manage;
             m_manageTab = 1;
-            for (const Figure& figure : m_model.figures) // the first one with copies: its Restore buttons show with no scrolling
+            for (const Figure& figure :
+                m_model.figures) // the first one with copies: its Restore buttons show with no scrolling
                 if (!Backups(figure.path).empty())
                 {
                     m_backupsOf = figure.path;
@@ -569,10 +602,12 @@ namespace launcher_ui
 #ifndef _WIN32
             // A game holds the figures of the seats: a lock of a live process other than this one.
             for (const std::string& seat : m_model.seats)
-                if (!seat.empty() && skyenv::Get("SKY_COLLECTION") != nullptr && LauncherEnv("SKY_LAUNCHER_TEST_FAKE_LOCKS") != nullptr)
+                if (!seat.empty() && skyenv::Get("SKY_COLLECTION") != nullptr &&
+                    LauncherEnv("SKY_LAUNCHER_TEST_FAKE_LOCKS") != nullptr)
                 {
                     std::ofstream lock(seat + ".lock");
-                    lock << fmt::format("{{ \"game\": \"ssa\", \"pid\": {}, \"since\": \"2026-10-24T10:15:00Z\" }}\n", (long long)getppid());
+                    lock << fmt::format("{{ \"game\": \"ssa\", \"pid\": {}, \"since\": \"2026-10-24T10:15:00Z\" }}\n",
+                        (long long)getppid());
                 }
             Reload();
 #endif
@@ -800,7 +835,8 @@ namespace launcher_ui
             for (const collection::Game& game : collection::Catalogue::Get().Games())
                 for (const collection::Toy& toy : collection::Catalogue::Get().Toys())
                     if (toy.game == game.id && (toy.category == collection::Category::Core ||
-                        toy.category == collection::Category::SuperCharger || toy.category == collection::Category::Sensei))
+                                                   toy.category == collection::Category::SuperCharger ||
+                                                   toy.category == collection::Category::Sensei))
                     {
                         collection::Create(toy.type);
                         break;
@@ -813,12 +849,11 @@ namespace launcher_ui
             WriteSeats(*m_model.Game(), SessionFile(*m_model.Game()), m_model.seats);
             Reload();
             break;
-        case 49:
-            m_model.SetSeat(1, figureOf(16));
-            break;
+        case 49: m_model.SetSeat(1, figureOf(16)); break;
         case 46:
         case 47:
-            if (std::none_of(m_model.figures.begin(), m_model.figures.end(), [](const Figure& f) { return f.type == 65500; }))
+            if (std::none_of(
+                    m_model.figures.begin(), m_model.figures.end(), [](const Figure& f) { return f.type == 65500; }))
                 collection::Create(65500);
             Reload();
             m_overlay = Overlay::Manage;

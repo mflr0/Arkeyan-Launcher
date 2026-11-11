@@ -10,12 +10,13 @@
 
 // Fail a real write without depending on the writer's choice of temporary name. Keep reads available so callers can
 // still validate figures and the old file. Restore the process state before the caller reports any failed checks.
-template<class Action>
+template <class Action>
 bool WithBlockedFileWrite(const std::filesystem::path& target, Action action)
 {
 #if defined(_WIN32)
     // Sharing reads but not deletion prevents atomic replacement of the existing target.
-    HANDLE file = CreateFileW(target.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+    HANDLE file = CreateFileW(
+        target.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
     if (file == INVALID_HANDLE_VALUE)
         return false;
     action();

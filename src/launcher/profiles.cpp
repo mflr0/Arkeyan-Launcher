@@ -35,7 +35,11 @@ namespace profiles
         size_t SequenceLength(const std::string& text, size_t at)
         {
             const unsigned char lead = static_cast<unsigned char>(text[at]);
-            const size_t length = lead < 0x80 ? 1 : (lead >> 5) == 6 ? 2 : (lead >> 4) == 14 ? 3 : (lead >> 3) == 30 ? 4 : 0;
+            const size_t length = lead < 0x80         ? 1
+                                  : (lead >> 5) == 6  ? 2
+                                  : (lead >> 4) == 14 ? 3
+                                  : (lead >> 3) == 30 ? 4
+                                                      : 0;
             if (length == 0 || at + length > text.size())
                 return 0;
             for (size_t i = 1; i < length; i++)
@@ -47,8 +51,7 @@ namespace profiles
         // The accented letters French writes, upper and lower case, in UTF-8: what the games' fonts draw besides ASCII.
         bool FrenchLetter(std::string_view sequence)
         {
-            static constexpr std::string_view Letters =
-                "àâäçéèêëîïôöùûüÿœæÀÂÄÇÉÈÊËÎÏÔÖÙÛÜŸŒÆ";
+            static constexpr std::string_view Letters = "àâäçéèêëîïôöùûüÿœæÀÂÄÇÉÈÊËÎÏÔÖÙÛÜŸŒÆ";
             for (size_t at = 0; at < Letters.size();)
             {
                 const size_t length = (static_cast<unsigned char>(Letters[at]) >> 5) == 6 ? 2 : 1;
@@ -229,7 +232,8 @@ namespace profiles
             const std::string_view sequence(name.data() + at, length);
             at += length;
             const char c = sequence[0];
-            const bool ascii = length == 1 && (std::isalnum(static_cast<unsigned char>(c)) || c == '-' || c == '_' || c == '.' || c == '\'');
+            const bool ascii = length == 1 && (std::isalnum(static_cast<unsigned char>(c)) || c == '-' || c == '_' ||
+                                                  c == '.' || c == '\'');
             if (length == 1 && (c == ' ' || c == '\t'))
             {
                 if (!clean.empty() && clean.back() != ' ')
@@ -269,7 +273,8 @@ namespace profiles
             letters = { all[0], all[1] };
         std::string initials;
         for (const std::string& letter : letters)
-            initials += letter.size() == 1 ? std::string(1, char(std::toupper(static_cast<unsigned char>(letter[0])))) : letter;
+            initials +=
+                letter.size() == 1 ? std::string(1, char(std::toupper(static_cast<unsigned char>(letter[0])))) : letter;
         return initials;
     }
 

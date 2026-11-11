@@ -23,8 +23,15 @@ namespace
 {
     int g_failures = 0;
 
-#define EXPECT(condition) \
-    do { if (!(condition)) { fprintf(stderr, "FAIL copy_test line %d: %s\n", __LINE__, #condition); g_failures++; } } while (0)
+#define EXPECT(condition)                                                                                              \
+    do                                                                                                                 \
+    {                                                                                                                  \
+        if (!(condition))                                                                                              \
+        {                                                                                                              \
+            fprintf(stderr, "FAIL copy_test line %d: %s\n", __LINE__, #condition);                                     \
+            g_failures++;                                                                                              \
+        }                                                                                                              \
+    } while (0)
 
     namespace fs = std::filesystem;
 
@@ -48,11 +55,19 @@ namespace
         fs::path base = fs::weakly_canonical(scratch, error), inner = fs::weakly_canonical(path, error);
         bool inside = !error && std::mismatch(base.begin(), base.end(), inner.begin(), inner.end()).first == base.end();
         if (!inside)
-            fprintf(stderr, "FAIL copy_test: %s is not under the scratch folder: set SKYLANDERS_DATA before the checks\n", path.string().c_str());
+            fprintf(stderr,
+                "FAIL copy_test: %s is not under the scratch folder: set SKYLANDERS_DATA before the checks\n",
+                path.string().c_str());
         return inside;
     }
 
-    void Put32LE(uint8_t* p, uint32_t v) { p[0] = uint8_t(v); p[1] = uint8_t(v >> 8); p[2] = uint8_t(v >> 16); p[3] = uint8_t(v >> 24); }
+    void Put32LE(uint8_t* p, uint32_t v)
+    {
+        p[0] = uint8_t(v);
+        p[1] = uint8_t(v >> 8);
+        p[2] = uint8_t(v >> 16);
+        p[3] = uint8_t(v >> 24);
+    }
 
     // A minimal XDVDFS image (plain layout) whose root holds one file: the real default.xex makes it pass the disc check.
     void WriteStandInDisc(const fs::path& path, const std::vector<uint8_t>& xex)
@@ -69,11 +84,13 @@ namespace
         entry[13] = 11;
         memcpy(entry + 14, "default.xex", 11);
         memcpy(&image[34 * Sector], xex.data(), xex.size());
-        std::ofstream(path, std::ios::binary).write(reinterpret_cast<const char*>(image.data()), std::streamsize(image.size()));
+        std::ofstream(path, std::ios::binary)
+            .write(reinterpret_cast<const char*>(image.data()), std::streamsize(image.size()));
     }
 
     // default.xex and the `extra` smallest other files of a real disc: a copy that is quick and still a game for the disc check.
-    gamedata::Source SubsetOf(DiscFileSystem& disc, size_t extra, const std::string& xexSha256, std::map<std::string, int>& reads)
+    gamedata::Source SubsetOf(
+        DiscFileSystem& disc, size_t extra, const std::string& xexSha256, std::map<std::string, int>& reads)
     {
         std::vector<std::pair<std::string, const DiscFileSystem::Entry*>> others;
         gamedata::Source source;
@@ -85,10 +102,12 @@ namespace
             else
                 others.emplace_back(path, entry);
         }
-        std::sort(others.begin(), others.end(), [](const auto& a, const auto& b) { return a.second->size < b.second->size; });
+        std::sort(
+            others.begin(), others.end(), [](const auto& a, const auto& b) { return a.second->size < b.second->size; });
         for (size_t i = 0; i < others.size() && i < extra; i++)
             source.files.push_back({ others[i].first, others[i].second->size });
-        source.read = [&disc, &reads](const gamedata::SourceFile& file, uint64_t position, void* buffer, size_t size) -> size_t {
+        source.read = [&disc, &reads](
+                          const gamedata::SourceFile& file, uint64_t position, void* buffer, size_t size) -> size_t {
             if (position == 0)
                 reads[file.path]++;
             const DiscFileSystem::Entry* entry = disc.Find(file.path);
@@ -133,7 +152,8 @@ namespace
         // Happy path.
         EXPECT(gamedata::Copy(source, folder).outcome == Outcome::Done);
         gamedata::Status status = gamedata::Inspect(folder);
-        EXPECT(status.state == State::Complete && status.files == source.files.size() && status.xexSha256 == ssa.releases[0].defaultXexSha256);
+        EXPECT(status.state == State::Complete && status.files == source.files.size() &&
+               status.xexSha256 == ssa.releases[0].defaultXexSha256);
         GameSourceCheck check = CheckGameSource(datadir::Text(folder), ssa);
         EXPECT(check.status == GameSourceStatus::Ok && check.xexSha256 == ssa.releases[0].defaultXexSha256);
         DiscFileSystem copy;
@@ -148,7 +168,8 @@ namespace
             GameSourceCheck other = CheckGameSource(datadir::Text(folder), *giants);
             EXPECT(other.status == GameSourceStatus::WrongGame && other.otherGame == "ssa");
         }
-        EXPECT(CheckGameSource(datadir::Text(scratch / "data"), ssa).status == GameSourceStatus::Folder); // any other folder is not a game
+        EXPECT(CheckGameSource(datadir::Text(scratch / "data"), ssa).status ==
+               GameSourceStatus::Folder); // any other folder is not a game
 
         // Fallback: a missing file, a file of another size: Damaged, and the disc image is what is used.
         std::string victim;
@@ -187,7 +208,8 @@ namespace
         std::atomic<bool> cancel{ false };
         std::map<std::string, int> started;
         gamedata::Source interrupted = source;
-        interrupted.read = [&](const gamedata::SourceFile& file, uint64_t position, void* buffer, size_t size) -> size_t {
+        interrupted.read = [&](const gamedata::SourceFile& file, uint64_t position, void* buffer,
+                               size_t size) -> size_t {
             if (position == 0 && started[file.path]++ == 0 && started.size() == 3)
                 cancel = true;
             return source.read(file, position, buffer, size);
@@ -198,7 +220,8 @@ namespace
         status = gamedata::Inspect(folder);
         EXPECT(status.state == State::Partial && status.present > 0 && status.missing > 0);
         pick = PickGameSource(ssa, ssaIso);
-        EXPECT(!pick.copied && pick.path == ssaIso && pick.copy.state == State::Partial); // until it is finished, the disc image
+        EXPECT(!pick.copied && pick.path == ssaIso &&
+               pick.copy.state == State::Partial); // until it is finished, the disc image
         reads.clear();
         cancel = false;
         EXPECT(gamedata::Copy(source, folder, stoppable).outcome == Outcome::Done);
@@ -233,9 +256,11 @@ namespace
         UnsetEnv("FAKE_ARKEYAN_BUILDER_FAIL");
         UnsetEnv("FAKE_ARKEYAN_BUILDER_HOLD");
         // The other window checks leave their switches set (the first script that matches runs): only this one may be.
-        for (const char* other : { "SWITCH", "SIDEBAR", "INSTALL", "UPDATE", "NAV", "COLLECTION", "SEATX", "BUTTONS", "DROP" })
+        for (const char* other :
+            { "SWITCH", "SIDEBAR", "INSTALL", "UPDATE", "NAV", "COLLECTION", "SEATX", "BUTTONS", "DROP" })
             UnsetEnv((std::string("SKY_LAUNCHER_TEST_") + other).c_str());
-        if (!UnderScratch(scratch, gamedata::Folder("ssa")) || !UnderScratch(scratch, datadir::Root()) || !UnderScratch(scratch, LauncherDataFolder()))
+        if (!UnderScratch(scratch, gamedata::Folder("ssa")) || !UnderScratch(scratch, datadir::Root()) ||
+            !UnderScratch(scratch, LauncherDataFolder()))
         {
             g_failures++;
             return;
@@ -249,13 +274,15 @@ namespace
         LauncherConfig config;
         config["launcher"]["kit"] = SKYLAUNCHER_FAKE_KIT;
         config["giants"]["iso"] = standIn.string(); // the wrong disc for Giants
-        config["launcher"]["game_music"] = "0"; // a menu theme fading out holds PLAY for a moment: the script checks it at once
+        config["launcher"]["game_music"] =
+            "0"; // a menu theme fading out holds PLAY for a moment: the script checks it at once
         {
             launcher_ui::App app(*FindGame("ssa"), ini, config);
             app.Run();
             EXPECT(app.TestFailures() == 0);
         }
-        EXPECT(config["ssa"]["iso"] == standIn.string() && config["giants"]["iso"] == giantsIso); // SSA got the disc Giants was given
+        EXPECT(config["ssa"]["iso"] == standIn.string() &&
+               config["giants"]["iso"] == giantsIso); // SSA got the disc Giants was given
         UnsetEnv("SKY_LAUNCHER_TEST_COPY");
         UnsetEnv("SKY_LAUNCHER_TEST_COPY_GIANTS_ISO");
         SetActiveGame("ssa");
@@ -269,7 +296,8 @@ static void RealCopyChecks(const std::string& ssaIso, const std::string& giantsI
 {
     fs::path data = datadir::Root();
     printf("Real copies into %s\n", data.string().c_str());
-    for (auto [id, image] : { std::pair<const char*, std::string>{ "ssa", ssaIso }, std::pair<const char*, std::string>{ "giants", giantsIso } })
+    for (auto [id, image] : { std::pair<const char*, std::string>{ "ssa", ssaIso },
+             std::pair<const char*, std::string>{ "giants", giantsIso } })
     {
         if (image.empty())
             continue;
@@ -289,8 +317,10 @@ static void RealCopyChecks(const std::string& ssaIso, const std::string& giantsI
         EXPECT(result.outcome == gamedata::CopyResult::Outcome::Done);
         gamedata::Status status = gamedata::Inspect(gamedata::Folder(id));
         GameSourceCheck copy = CheckGameSource(datadir::Text(gamedata::Folder(id)), game);
-        EXPECT(status.state == gamedata::State::Complete && copy.status == GameSourceStatus::Ok && copy.xexSha256 == disc.xexSha256);
-        printf("  %s: %zu files, %.2f GB copied and verified in %.0f s\n", id, status.files, double(status.total) / 1e9, double(SDL_GetTicks() - began) / 1000.0);
+        EXPECT(status.state == gamedata::State::Complete && copy.status == GameSourceStatus::Ok &&
+               copy.xexSha256 == disc.xexSha256);
+        printf("  %s: %zu files, %.2f GB copied and verified in %.0f s\n", id, status.files, double(status.total) / 1e9,
+            double(SDL_GetTicks() - began) / 1000.0);
     }
 }
 

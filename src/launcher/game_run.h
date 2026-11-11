@@ -34,7 +34,8 @@ struct GameRunResult
 
 // Starts `runtime` with the disc image and waits until it exits. Its stdout and stderr go to skylauncher-game.log (the
 // previous one is kept as skylauncher-game.prev.log). `extraArguments` follow the disc image.
-GameRunResult RunGame(const std::string& runtime, const std::string& iso, const std::vector<std::string>& extraArguments = {});
+GameRunResult RunGame(
+    const std::string& runtime, const std::string& iso, const std::vector<std::string>& extraArguments = {});
 
 // What PLAY starts: the runtime, and the variables it gets on top of the launcher's own environment (each under all its names:
 // launcher.h, CreateGameEnvironment).
@@ -47,10 +48,12 @@ struct GameLaunch
 // Puts the game's own video settings and keys into [video] and [input] and saves the settings file, then finds the runtime
 // (SKY_LAUNCHER_RUNTIME, else `installed`: the game the launcher built, else the player's own) and the variables: the portal,
 // the languages the disc holds, an older build's folders (docs/settings.md).
-GameLaunch PrepareGameLaunch(const GameInfo& game, LauncherConfig& config, const std::string& configPath, const std::string& installed);
+GameLaunch PrepareGameLaunch(
+    const GameInfo& game, LauncherConfig& config, const std::string& configPath, const std::string& installed);
 // The language code a game is started in, for its text (firstHeld) or its voices: the one saved, else the launcher's own
 // when the disc holds it; one the disc lacks becomes the disc's first (text) or nothing (voices). Empty: the game's default.
-std::string GameLanguageToPass(std::string saved, const std::vector<std::string>& held, bool firstHeld, std::string_view launcherLanguage);
+std::string GameLanguageToPass(
+    std::string saved, const std::vector<std::string>& held, bool firstHeld, std::string_view launcherLanguage);
 
 // The game's exit code when Direct3D 12 showed nothing on this PC (Windows): it wrote gpu_backend=vulkan and asks to be
 // started again; GameSession does it once, with SKY_GPU_BACKEND=vulkan (docs/launcher_ui.md, "A game running").
@@ -88,7 +91,8 @@ public:
         bool ours = false; // started here: its exit code is known
         int exitCode = 0;
         bool stopped = false; // requested here: do not report a forced stop as a crash
-        bool restarted = false; // it asked to start again with Vulkan (GameRestartExitCode): started again, still running
+        bool restarted =
+            false; // it asked to start again with Vulkan (GameRestartExitCode): started again, still running
     };
     // Sees the game's exit, and the markers (`nowMs`: SDL_GetTicks). The game that stopped since the last call, if any.
     std::optional<Ended> Poll(uint64_t nowMs);
@@ -131,8 +135,8 @@ struct GameLog
 };
 // The newest of the capture and the game logs given (each with its game's id); the capture wins within 10 s (the same run,
 // with its exit code). The capture names its game on its second line ("# game giants").
-GameLog NewestGameLog(const std::filesystem::path& capture,
-    const std::vector<std::pair<std::string, std::filesystem::path>>& own);
+GameLog NewestGameLog(
+    const std::filesystem::path& capture, const std::vector<std::pair<std::string, std::filesystem::path>>& own);
 // The capture and every game's Arkeyan.log in the launcher's data folder.
 GameLog LastGameLog();
 // "Giants, last written 2026-11-10 09:12:03 (local time), skylauncher-game.log".
@@ -161,10 +165,11 @@ struct PortalProbeEntry
 };
 struct PortalProbeResult
 {
-    bool ran = false;    // the runtime started and printed its final line
-    std::string error;   // when it didn't
+    bool ran = false; // the runtime started and printed its final line
+    std::string error; // when it didn't
     std::vector<PortalProbeEntry> portals;
-    std::vector<std::string> notes; // transports that can't be used at all here ("USB portals can't be used: libusb-1.0 not found")
+    std::vector<std::string>
+        notes; // transports that can't be used at all here ("USB portals can't be used: libusb-1.0 not found")
 };
 // Parses the probe's output (the part tests and the UI share).
 PortalProbeResult ParsePortalProbe(const std::string& output);

@@ -16,8 +16,15 @@ namespace
 {
     int g_failures = 0;
 
-#define MUSIC_EXPECT(condition) \
-    do { if (!(condition)) { fprintf(stderr, "FAIL %s line %d: %s\n", __FILE__, __LINE__, #condition); g_failures++; } } while (0)
+#define MUSIC_EXPECT(condition)                                                                                        \
+    do                                                                                                                 \
+    {                                                                                                                  \
+        if (!(condition))                                                                                              \
+        {                                                                                                              \
+            fprintf(stderr, "FAIL %s line %d: %s\n", __FILE__, __LINE__, #condition);                                  \
+            g_failures++;                                                                                              \
+        }                                                                                                              \
+    } while (0)
 
     // SKYLANDERS_DATA for a check, the old value back after.
     struct DataFolder
@@ -39,26 +46,54 @@ namespace
         }
     };
 
-    void Put32(std::vector<uint8_t>& out, uint32_t v) { for (int i = 0; i < 4; i++) out.push_back(uint8_t(v >> (8 * i))); }
-    void Put16(std::vector<uint8_t>& out, uint16_t v) { out.push_back(uint8_t(v)); out.push_back(uint8_t(v >> 8)); }
+    void Put32(std::vector<uint8_t>& out, uint32_t v)
+    {
+        for (int i = 0; i < 4; i++)
+            out.push_back(uint8_t(v >> (8 * i)));
+    }
+    void Put16(std::vector<uint8_t>& out, uint16_t v)
+    {
+        out.push_back(uint8_t(v));
+        out.push_back(uint8_t(v >> 8));
+    }
 
     // A 16-bit WAV of `frames` frames at `rate`, every sample `value`, with a loop [start, end) when end > 0.
-    std::vector<uint8_t> Wav(uint32_t rate, uint32_t channels, uint32_t frames, int16_t value, uint32_t loopStart = 0, uint32_t loopEnd = 0)
+    std::vector<uint8_t> Wav(
+        uint32_t rate, uint32_t channels, uint32_t frames, int16_t value, uint32_t loopStart = 0, uint32_t loopEnd = 0)
     {
         std::vector<uint8_t> f;
         auto tag = [&](const char* t) { f.insert(f.end(), t, t + 4); };
         const uint32_t data = frames * channels * 2, smpl = loopEnd > 0 ? 8 + 60 : 0;
-        tag("RIFF"); Put32(f, 4 + 24 + smpl + 8 + data); tag("WAVE");
-        tag("fmt "); Put32(f, 16); Put16(f, 1); Put16(f, uint16_t(channels)); Put32(f, rate); Put32(f, rate * channels * 2);
-        Put16(f, uint16_t(channels * 2)); Put16(f, 16);
+        tag("RIFF");
+        Put32(f, 4 + 24 + smpl + 8 + data);
+        tag("WAVE");
+        tag("fmt ");
+        Put32(f, 16);
+        Put16(f, 1);
+        Put16(f, uint16_t(channels));
+        Put32(f, rate);
+        Put32(f, rate * channels * 2);
+        Put16(f, uint16_t(channels * 2));
+        Put16(f, 16);
         if (loopEnd > 0)
         {
-            tag("smpl"); Put32(f, 60);
-            for (int i = 0; i < 7; i++) Put32(f, 0);
-            Put32(f, 1); Put32(f, 0); Put32(f, 0); Put32(f, 0); Put32(f, loopStart); Put32(f, loopEnd - 1); Put32(f, 0); Put32(f, 0);
+            tag("smpl");
+            Put32(f, 60);
+            for (int i = 0; i < 7; i++)
+                Put32(f, 0);
+            Put32(f, 1);
+            Put32(f, 0);
+            Put32(f, 0);
+            Put32(f, 0);
+            Put32(f, loopStart);
+            Put32(f, loopEnd - 1);
+            Put32(f, 0);
+            Put32(f, 0);
         }
-        tag("data"); Put32(f, data);
-        for (uint32_t i = 0; i < frames * channels; i++) Put16(f, uint16_t(value));
+        tag("data");
+        Put32(f, data);
+        for (uint32_t i = 0; i < frames * channels; i++)
+            Put16(f, uint16_t(value));
         return f;
     }
 
@@ -96,10 +131,12 @@ namespace
     void ReaderChecks()
     {
         auto mono = gamemusic::ParseWav(Wav(22050, 1, 100, 7));
-        MUSIC_EXPECT(mono && mono->rate == 22050 && mono->Frames() == 100 && mono->samples[0] == 7 && mono->samples[1] == 7);
+        MUSIC_EXPECT(
+            mono && mono->rate == 22050 && mono->Frames() == 100 && mono->samples[0] == 7 && mono->samples[1] == 7);
         MUSIC_EXPECT(mono && mono->loopStart == 0 && mono->loopEnd == 100); // no loop chunk: the whole file
         auto looped = gamemusic::ParseWav(Wav(44100, 2, 1000, -3, 200, 900));
-        MUSIC_EXPECT(looped && looped->Frames() == 1000 && looped->samples[1999] == -3 && looped->loopStart == 200 && looped->loopEnd == 900);
+        MUSIC_EXPECT(looped && looped->Frames() == 1000 && looped->samples[1999] == -3 && looped->loopStart == 200 &&
+                     looped->loopEnd == 900);
         auto outside = gamemusic::ParseWav(Wav(44100, 2, 1000, 1, 200, 1200)); // a loop past the end: ignored
         MUSIC_EXPECT(outside && outside->loopStart == 0 && outside->loopEnd == 1000);
         MUSIC_EXPECT(gamemusic::ParseWav({}) == nullptr);
@@ -190,7 +227,7 @@ namespace
                 high = std::max(high, v);
             }
             MUSIC_EXPECT(low >= 99.f && high <= 200.f); // never before the loop start, never past its end
-            MUSIC_EXPECT(high > 190.f);                 // and it did wrap around within 2000 frames
+            MUSIC_EXPECT(high > 190.f); // and it did wrap around within 2000 frames
         }
     }
 
@@ -202,12 +239,13 @@ namespace
         DataFolder dataFolder(data);
         const std::filesystem::path fake = std::filesystem::path(SKYLAUNCHER_FAKE_KIT) / "Arkeyan-Builder"
 #if defined(_WIN32)
-            ".exe"
+                                                                                         ".exe"
 #endif
             ;
         const std::string game = "ssa", disc = (scratch / "no-disc.iso").string();
         const std::filesystem::path file = gamemusic::File(game);
-        MUSIC_EXPECT(!file.empty() && file.filename() == "menu_music.wav" && file.parent_path().filename() == "launcher-cache");
+        MUSIC_EXPECT(
+            !file.empty() && file.filename() == "menu_music.wav" && file.parent_path().filename() == "launcher-cache");
         MUSIC_EXPECT(!gamemusic::Extract(game, disc, {}, "1")); // no kit: nothing, and nothing remembered
         MUSIC_EXPECT(!std::filesystem::exists(file.parent_path() / "menu_music.none"));
         MUSIC_EXPECT(gamemusic::Extract(game, disc, fake, "1") && std::filesystem::is_regular_file(file));
@@ -227,17 +265,24 @@ namespace
             MUSIC_EXPECT(key == "2:2");
         }
         SDL_unsetenv_unsafe("FAKE_ARKEYAN_BUILDER_NO_MUSIC");
-        MUSIC_EXPECT(!gamemusic::Extract(game, disc, fake, "2") && !std::filesystem::exists(file)); // same kit: not asked
-        MUSIC_EXPECT(gamemusic::Extract(game, disc, fake, "3") && std::filesystem::is_regular_file(file)); // a newer kit: asked
+        MUSIC_EXPECT(
+            !gamemusic::Extract(game, disc, fake, "2") && !std::filesystem::exists(file)); // same kit: not asked
+        MUSIC_EXPECT(
+            gamemusic::Extract(game, disc, fake, "3") && std::filesystem::is_regular_file(file)); // a newer kit: asked
         MUSIC_EXPECT(gamemusic::Extract(game, disc, {}, "3")); // there: kept, no kit needed
-        auto cachedRate = [&] { auto cached = gamemusic::ReadWav(file); return cached ? cached->rate : 0; };
+        auto cachedRate = [&] {
+            auto cached = gamemusic::ReadWav(file);
+            return cached ? cached->rate : 0;
+        };
         // Old caches without provenance are refreshed, and later kit builds replace them atomically.
         std::filesystem::remove(file.parent_path() / "menu_music.kit");
         auto old = Wav(22050, 1, 100, 1);
-        std::ofstream(file, std::ios::binary | std::ios::trunc).write(reinterpret_cast<const char*>(old.data()), old.size());
+        std::ofstream(file, std::ios::binary | std::ios::trunc)
+            .write(reinterpret_cast<const char*>(old.data()), old.size());
         MUSIC_EXPECT(gamemusic::Extract(game, disc, fake, "3"));
         MUSIC_EXPECT(cachedRate() == 8000);
-        std::ofstream(file, std::ios::binary | std::ios::trunc).write(reinterpret_cast<const char*>(old.data()), old.size());
+        std::ofstream(file, std::ios::binary | std::ios::trunc)
+            .write(reinterpret_cast<const char*>(old.data()), old.size());
         MUSIC_EXPECT(gamemusic::Extract(game, disc, fake, "4"));
         MUSIC_EXPECT(cachedRate() == 8000);
         SDL_setenv_unsafe("FAKE_ARKEYAN_BUILDER_NO_MUSIC", "1", 1);
@@ -285,32 +330,50 @@ namespace
         // Home, Collection and Settings all carry gamePage=false.
         for (int page = 0; page < 3; page++)
         {
-            state.gamePage = false; settle();
+            state.gamePage = false;
+            settle();
             MUSIC_EXPECT(player.FadeComplete() && player.GainForTest("giants") == 0);
-            state.gamePage = true; settle();
+            state.gamePage = true;
+            settle();
             MUSIC_EXPECT(player.GainForTest("giants") > gamemusic::Volume * 0.95f);
         }
-        state.launching = true; settle();
+        state.launching = true;
+        settle();
         MUSIC_EXPECT(player.FadeComplete()); // only now may the process start
-        state.launching = false; state.running = true; settle();
+        state.launching = false;
+        state.running = true;
+        settle();
         MUSIC_EXPECT(player.FadeComplete());
-        state.running = false; settle(); // normal exit
+        state.running = false;
+        settle(); // normal exit
         MUSIC_EXPECT(player.GainForTest("giants") > gamemusic::Volume * 0.95f);
-        state.running = true; settle();
-        state.running = false; state.muted = true; settle(); // crash while muted
+        state.running = true;
+        settle();
+        state.running = false;
+        state.muted = true;
+        settle(); // crash while muted
         MUSIC_EXPECT(player.FadeComplete());
-        state.muted = false; settle();
+        state.muted = false;
+        settle();
         MUSIC_EXPECT(player.GainForTest("giants") > gamemusic::Volume * 0.95f);
-        state.running = true; settle();
-        state.running = false; settle(); // crash while its page is visible
+        state.running = true;
+        settle();
+        state.running = false;
+        settle(); // crash while its page is visible
         MUSIC_EXPECT(player.GainForTest("giants") > gamemusic::Volume * 0.95f);
-        state.installing = true; settle();
+        state.installing = true;
+        settle();
         MUSIC_EXPECT(player.FadeComplete());
-        state.installing = false; state.game = "swapforce"; settle();
+        state.installing = false;
+        state.game = "swapforce";
+        settle();
         MUSIC_EXPECT(player.GainForTest("swapforce") > gamemusic::Volume * 0.95f);
-        state.game = "trapteam"; settle();
-        MUSIC_EXPECT(player.GainForTest("swapforce") == 0 && player.GainForTest("trapteam") > gamemusic::Volume * 0.95f);
-        state.game = "unavailable"; settle();
+        state.game = "trapteam";
+        settle();
+        MUSIC_EXPECT(
+            player.GainForTest("swapforce") == 0 && player.GainForTest("trapteam") > gamemusic::Volume * 0.95f);
+        state.game = "unavailable";
+        settle();
         MUSIC_EXPECT(player.FadeComplete() && player.GainForTest("trapteam") == 0);
         std::filesystem::remove(gamemusic::File("ssa"));
         gamemusic::Player missing;
@@ -340,7 +403,8 @@ namespace
             const std::filesystem::path file = gamemusic::File("ssa");
             std::filesystem::create_directories(file.parent_path());
             const std::vector<uint8_t> wav = Wav(48000, 2, 96000, 8000);
-            std::ofstream(file, std::ios::binary).write(reinterpret_cast<const char*>(wav.data()), std::streamsize(wav.size()));
+            std::ofstream(file, std::ios::binary)
+                .write(reinterpret_cast<const char*>(wav.data()), std::streamsize(wav.size()));
             // The file appears (the disc check made it): found within a second, without a restart.
             const auto start = std::chrono::steady_clock::now();
             while (!player.HasTrack("ssa") && std::chrono::steady_clock::now() - start < std::chrono::seconds(3))
@@ -355,7 +419,8 @@ namespace
             std::ofstream(file, std::ios::binary | std::ios::trunc) << "not a WAV";
             SDL_Delay(1100);
             MUSIC_EXPECT(!player.HasTrack("ssa")); // the existing cached track was replaced
-            std::ofstream(file, std::ios::binary | std::ios::trunc).write(reinterpret_cast<const char*>(wav.data()), wav.size());
+            std::ofstream(file, std::ios::binary | std::ios::trunc)
+                .write(reinterpret_cast<const char*>(wav.data()), wav.size());
             SDL_Delay(1100);
             MUSIC_EXPECT(player.HasTrack("ssa")); // refreshed music is read without restarting
             player.Update("", false); // another page: out

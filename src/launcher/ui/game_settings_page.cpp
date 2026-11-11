@@ -42,7 +42,10 @@ namespace launcher_ui
         }
 
         // "12.3 GB" for what a button would free, nothing for less than a megabyte of noise.
-        std::string Freed(uint64_t bytes) { return bytes == 0 ? std::string(Tr("nothing yet")) : ui::FormatSize(bytes); }
+        std::string Freed(uint64_t bytes)
+        {
+            return bytes == 0 ? std::string(Tr("nothing yet")) : ui::FormatSize(bytes);
+        }
 
         // A save backup's folder name ("YYYYMMDD-HHMMSS", local time) as the time it was made.
         std::time_t StampTime(const std::string& stamp)
@@ -51,7 +54,8 @@ namespace launcher_ui
             int year = 0, month = 0, day = 0, hour = 0, minute = 0;
             if (std::sscanf(stamp.c_str(), "%4d%2d%2d-%2d%2d", &year, &month, &day, &hour, &minute) != 5)
                 return 0;
-            when.tm_year = year - 1900, when.tm_mon = month - 1, when.tm_mday = day, when.tm_hour = hour, when.tm_min = minute;
+            when.tm_year = year - 1900, when.tm_mon = month - 1, when.tm_mday = day, when.tm_hour = hour,
+            when.tm_min = minute;
             when.tm_isdst = -1;
             return std::mktime(&when);
         }
@@ -73,7 +77,8 @@ namespace launcher_ui
         const char* title = GameName(m_s->game.id, GameNameForm::Full);
         BeginSettingsPage("##gamesettingscolumn", title != nullptr ? title : m_s->game.name, true);
 
-        static const char* const Tabs[] = { N_("Video"), N_("Keyboard"), N_("Controller"), N_("Sound"), N_("Language"), N_("Disc"), N_("Saves"), N_("Game") };
+        static const char* const Tabs[] = { N_("Video"), N_("Keyboard"), N_("Controller"), N_("Sound"), N_("Language"),
+            N_("Disc"), N_("Saves"), N_("Game") };
         int tab = int(m_gameTab);
         DrawTabBar(Tabs, int(std::size(Tabs)), &tab);
         m_gameTab = GameTab(tab);
@@ -128,8 +133,8 @@ namespace launcher_ui
             const std::string fpsLimit = SettingGet(m_config, video, "fps_limit", DefaultFrameRate(m_s->game.id));
             if (std::string_view(fpsChoices[size_t(ChoiceIndex(fpsChoices, fpsLimit, fpsDefault))].value) == "60")
             {
-                ui::SettingRow(Tr("Drop to 30 FPS when needed"),
-                    Tr("Off: your rate stays, even if the picture stutters."));
+                ui::SettingRow(
+                    Tr("Drop to 30 FPS when needed"), Tr("Off: your rate stays, even if the picture stutters."));
                 // Unset, the game chooses from its GPU at its next start and writes it (on for integrated and Apple
                 // GPUs, off for discrete ones); until then the page shows the likelier choice.
 #if defined(__APPLE__)
@@ -171,10 +176,13 @@ namespace launcher_ui
             if (GpuBackendShown)
             {
                 // gpu_backend_note: the game switched itself to Vulkan when Direct3D 12 showed nothing (docs/settings.md).
-                const bool switched = SettingGet(m_config, video, "gpu_backend") == "vulkan" && !SettingGet(m_config, video, "gpu_backend_note").empty();
-                ui::SettingRow(Tr("Graphics API"), switched ? Tr("Vulkan, since Direct3D 12 showed nothing on this PC.")
-                                                            : Tr("Direct3D 12 by default; the game uses the other if it cannot start."));
-                if (SettingSelect("##gpubackend", video, "gpu_backend", GpuBackendChoices, 0) && SettingGet(m_config, video, "gpu_backend") != "vulkan")
+                const bool switched = SettingGet(m_config, video, "gpu_backend") == "vulkan" &&
+                                      !SettingGet(m_config, video, "gpu_backend_note").empty();
+                ui::SettingRow(Tr("Graphics API"),
+                    switched ? Tr("Vulkan, since Direct3D 12 showed nothing on this PC.")
+                             : Tr("Direct3D 12 by default; the game uses the other if it cannot start."));
+                if (SettingSelect("##gpubackend", video, "gpu_backend", GpuBackendChoices, 0) &&
+                    SettingGet(m_config, video, "gpu_backend") != "vulkan")
                 {
                     m_config[video].erase("gpu_backend_note");
                     if (!SaveConfig())
@@ -225,7 +233,9 @@ namespace launcher_ui
                 // it renders as it should (0.9.4): the game ignores fsr_frame_generation meanwhile, its F3 row says the same.
                 if (FrameGenerationOffered(m_s->game.id))
                 {
-                    const std::string hint = std::string(Tr("Doubles the frames shown; a little more input delay (F3 in game).")) + "\n" + Tr("Coming later");
+                    const std::string hint =
+                        std::string(Tr("Doubles the frames shown; a little more input delay (F3 in game).")) + "\n" +
+                        Tr("Coming later");
                     ui::SettingRow(Tr("Frame generation"), hint.c_str());
                     bool frameGeneration = false;
                     ui::Toggle("##framegen", &frameGeneration, true);
@@ -246,7 +256,8 @@ namespace launcher_ui
             if (m_s->game.id == std::string_view("swapforce") || m_s->game.id == std::string_view("trapteam"))
             {
                 ui::SettingRow(Tr("Edge smoothing"), Tr("FXAA also softens texture detail; Gentle keeps more of it."));
-                SettingSelect("##edgesmoothing", video, "edge_smoothing", EdgeSmoothingChoices, ResolutionScaleOf(SettingGet(m_config, video, "resolution_scale")) == 1 ? 0 : 1);
+                SettingSelect("##edgesmoothing", video, "edge_smoothing", EdgeSmoothingChoices,
+                    ResolutionScaleOf(SettingGet(m_config, video, "resolution_scale")) == 1 ? 0 : 1);
             }
 
             ui::EndSettings();
@@ -317,7 +328,8 @@ namespace launcher_ui
         };
         // What the key is for, in words: the right stick's directions are named by the stick (their rows say "Same").
         auto purpose = [&](const GameKey& action) {
-            return std::string_view(action.action).starts_with("right_") ? PadButtonName(action, family) : std::string(Tr(action.label));
+            return std::string_view(action.action).starts_with("right_") ? PadButtonName(action, family)
+                                                                         : std::string(Tr(action.label));
         };
         auto keyCap = [&](const GameKey& action) {
             const std::string key = KeyDisplayName(GameKeyName(m_config, game, action));
@@ -339,8 +351,10 @@ namespace launcher_ui
         };
 
         // What to do, or what is awaited.
-        ui::Text(ui::TextStyle::Body, m_capturing != nullptr ? Tf("Press a key for \"{}\" (Escape cancels)", purpose(*m_capturing)).c_str()
-                                                              : Tr("Choose a key to change it."), m_capturing != nullptr ? ui::color::Ink : ui::color::Dim);
+        ui::Text(ui::TextStyle::Body,
+            m_capturing != nullptr ? Tf("Press a key for \"{}\" (Escape cancels)", purpose(*m_capturing)).c_str()
+                                   : Tr("Choose a key to change it."),
+            m_capturing != nullptr ? ui::color::Ink : ui::color::Dim);
         ImGui::Dummy(ImVec2(0, ui::space::XS));
 
         // The crosses, side by side: a title (the action, the stick after it), then up over down, left and right beside it.
@@ -350,10 +364,14 @@ namespace launcher_ui
             const GameKey *up, *left, *down, *right;
         };
         std::vector<Cross> crosses;
-        if (const GameKey* up = find("left_up"); up != nullptr && find("left_down") && find("left_left") && find("left_right"))
-            crosses.push_back({ Tr("Movement"), "(" + PadButtonName(*up, family) + ")", up, find("left_left"), find("left_down"), find("left_right") });
-        if (const GameKey* up = find("right_up"); up != nullptr && find("right_down") && find("right_left") && find("right_right"))
-            crosses.push_back({ Tr(up->label), "(" + std::string(Tr("R stick")) + ")", up, find("right_left"), find("right_down"), find("right_right") });
+        if (const GameKey* up = find("left_up");
+            up != nullptr && find("left_down") && find("left_left") && find("left_right"))
+            crosses.push_back({ Tr("Movement"), "(" + PadButtonName(*up, family) + ")", up, find("left_left"),
+                find("left_down"), find("left_right") });
+        if (const GameKey* up = find("right_up");
+            up != nullptr && find("right_down") && find("right_left") && find("right_right"))
+            crosses.push_back({ Tr(up->label), "(" + std::string(Tr("R stick")) + ")", up, find("right_left"),
+                find("right_down"), find("right_right") });
         const ImVec2 origin = ImGui::GetCursorScreenPos();
         const float columnW = ImGui::GetContentRegionAvail().x / 2;
         const float crossH = ui::type::Body + ui::space::S + 2 * ui::height::Normal + ui::space::XS;
@@ -367,11 +385,15 @@ namespace launcher_ui
             const float titleEnd = x + ImGui::CalcTextSize(cross.title.c_str()).x;
             ui::PopText();
             ui::PushText(ui::TextStyle::Caption);
-            ui::DrawText(draw, ImVec2(titleEnd + ui::space::XS, origin.y + ui::Baseline(ui::TextStyle::Body, true) - ui::Baseline(ui::TextStyle::Caption)),
+            ui::DrawText(draw,
+                ImVec2(titleEnd + ui::space::XS,
+                    origin.y + ui::Baseline(ui::TextStyle::Body, true) - ui::Baseline(ui::TextStyle::Caption)),
                 ui::Col(ui::color::Dim), cross.note.c_str());
             ui::PopText();
-            const float wL = capWidth(cross.left), wD = capWidth(cross.down), wR = capWidth(cross.right), wU = capWidth(cross.up);
-            const float top = origin.y + ui::type::Body + ui::space::S, below = top + ui::height::Normal + ui::space::XS;
+            const float wL = capWidth(cross.left), wD = capWidth(cross.down), wR = capWidth(cross.right),
+                        wU = capWidth(cross.up);
+            const float top = origin.y + ui::type::Body + ui::space::S,
+                        below = top + ui::height::Normal + ui::space::XS;
             // The keys' row starts on the title's edge; the top key over the middle one.
             const float middle = x + wL + ui::space::XS + wD / 2;
             ImGui::SetCursorScreenPos(ImVec2(std::round(middle - wU / 2), top));
@@ -387,7 +409,8 @@ namespace launcher_ui
         {
             // A hairline (M below the keys) parts them from the list, like the list's rows from each other.
             const float line = origin.y + crossH + ui::space::M;
-            draw->AddLine(ImVec2(origin.x, line + 0.5f), ImVec2(origin.x + ImGui::GetContentRegionAvail().x, line + 0.5f),
+            draw->AddLine(ImVec2(origin.x, line + 0.5f),
+                ImVec2(origin.x + ImGui::GetContentRegionAvail().x, line + 0.5f),
                 ui::Col(ui::color::Hairline, 110.0f / 255), ui::stroke::Hairline);
             ImGui::SetCursorScreenPos(ImVec2(origin.x, line + ui::stroke::Hairline));
         }
@@ -424,15 +447,17 @@ namespace launcher_ui
             if (on)
                 for (const GameKey& action : keys)
                 {
-                    ui::SettingRow(purpose(action).c_str(), nullptr, ("(" + PadButtonName(action, family) + ")").c_str());
+                    ui::SettingRow(
+                        purpose(action).c_str(), nullptr, ("(" + PadButtonName(action, family) + ")").c_str());
                     const std::string stored = GameMouseName(m_config, game, action);
                     const std::string shown = m_mouseCapturing == &action ? std::string(Tr("Click or turn the wheel"))
-                                              : stored.empty()              ? std::string("\xE2\x80\x94")
-                                                                            : MouseDisplayName(stored);
+                                              : stored.empty()            ? std::string("\xE2\x80\x94")
+                                                                          : MouseDisplayName(stored);
                     ui::KeyButtonOptions options;
                     options.capturing = m_mouseCapturing == &action;
                     options.tooltip = Tr("Click, then press a mouse button or turn the wheel (Escape cancels).");
-                    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - ui::KeyButtonWidth(shown.c_str(), options));
+                    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x -
+                                         ui::KeyButtonWidth(shown.c_str(), options));
                     ImGui::PushID(action.action);
                     if (ui::KeyButton("##mousekey", shown.c_str(), options))
                     {
@@ -484,7 +509,9 @@ namespace launcher_ui
                 const std::string name = PadButtonLabel(button, family);
                 ui::SettingRow(name.c_str(), nullptr, note.empty() ? nullptr : note.c_str());
                 const int target = PadTarget(m_config, game, button);
-                const std::string preview = target == button ? std::string(Tr("Default")) : target < 0 ? std::string(Tr("Nothing")) : describe(target);
+                const std::string preview = target == button ? std::string(Tr("Default"))
+                                            : target < 0     ? std::string(Tr("Nothing"))
+                                                             : describe(target);
                 ImGui::PushID(button);
                 if (ui::BeginSelect("##job", preview.c_str()))
                 {
@@ -492,7 +519,8 @@ namespace launcher_ui
                     if (ui::SelectOption(Tr("Default"), target == button))
                         chosen = button;
                     for (int other = 0; other < PadButtonTotal; other++)
-                        if (other != button && ui::SelectOption((describe(other) + "##" + std::to_string(other)).c_str(), target == other))
+                        if (other != button &&
+                            ui::SelectOption((describe(other) + "##" + std::to_string(other)).c_str(), target == other))
                             chosen = other;
                     if (ui::SelectOption(Tr("Nothing"), target < 0))
                         chosen = -1;
@@ -539,7 +567,9 @@ namespace launcher_ui
         ui::SettingRow(Tr(together ? strings::GameLanguage : strings::GameText),
             Tr(together ? strings::GameLanguageHint : strings::GameTextHint));
         // Nothing chosen: the launcher's own language when the disc holds it, as the game is then started in it (game_run.cpp).
-        auto fallback = [](const std::vector<Choice>& choices) { return std::max(0, ChoiceIndex(choices, i18n::Current(), 0)); };
+        auto fallback = [](const std::vector<Choice>& choices) {
+            return std::max(0, ChoiceIndex(choices, i18n::Current(), 0));
+        };
         const std::vector<Choice> text = GameLanguageChoices(m_config, m_s->game.id, false);
         SettingSelect("##text", m_s->game.id, "language", text, fallback(text));
         if (!together)
@@ -585,24 +615,22 @@ namespace launcher_ui
         }
         else
         {
-            ui::Text(ui::TextStyle::Body, m_s->discPath.empty() ? Tr("None chosen yet.") : filename(m_s->discPath).c_str());
+            ui::Text(
+                ui::TextStyle::Body, m_s->discPath.empty() ? Tr("None chosen yet.") : filename(m_s->discPath).c_str());
             const GameInfo* other = nullptr;
             switch (m_s->disc)
             {
             case DiscState::Ready:
                 ui::StatusPill(ui::Status::Success, Tf("Verified, {}", ui::FormatSize(m_s->discSize)).c_str());
                 break;
-            case DiscState::Verifying:
-                ui::StatusPill(ui::Status::Busy, (m_s->verify.Stage() + "...").c_str());
-                break;
+            case DiscState::Verifying: ui::StatusPill(ui::Status::Busy, (m_s->verify.Stage() + "...").c_str()); break;
             case DiscState::Failed:
                 ui::StatusPill(ui::Status::Error, SlotStatus(m_s).text.c_str());
                 ui::Text(ui::TextStyle::Body, m_s->check.message.c_str(), ui::color::InkSoft);
                 if (m_s->check.status == GameSourceStatus::WrongGame)
                     other = FindEnabledGame(m_s->check.otherGame, m_config);
                 break;
-            case DiscState::None:
-                break;
+            case DiscState::None: break;
             }
             ImGui::Dummy(ImVec2(0, ui::space::XXS));
             const bool busy = Installing() || m_s->disc == DiscState::Verifying || m_s->copyJob.Running();
@@ -616,7 +644,9 @@ namespace launcher_ui
                 ImGui::SameLine(0, ui::space::S);
             }
             ui::ButtonOptions choose;
-            choose.kind = other != nullptr || !m_s->discPath.empty() ? ui::ButtonKind::Secondary : ui::ButtonKind::Primary; // Primary: the disc to choose
+            choose.kind = other != nullptr || !m_s->discPath.empty()
+                              ? ui::ButtonKind::Secondary
+                              : ui::ButtonKind::Primary; // Primary: the disc to choose
             choose.disabled = busy;
             if (ui::Button(m_s->discPath.empty() ? Tr("Choose...") : Tr("Change..."), choose))
                 Browse();
@@ -631,7 +661,8 @@ namespace launcher_ui
             folder.disabled = busy || m_s->discPath.empty();
             if (ui::Button(Tr("Show in folder"), folder))
             {
-                std::filesystem::path parent = std::filesystem::path(std::u8string(m_s->discPath.begin(), m_s->discPath.end())).parent_path();
+                std::filesystem::path parent =
+                    std::filesystem::path(std::u8string(m_s->discPath.begin(), m_s->discPath.end())).parent_path();
                 if (!OpenFolder(parent))
                     Toast(Tr("Couldn't open the folder"), ui::ToastKind::Error);
             }
@@ -666,8 +697,11 @@ namespace launcher_ui
     {
         if (!m_s->saveBackupsLoaded)
             RefreshSaveBackups();
-        const bool running = savebackup::GameRunning(savebackup::Root(m_s->game.id)) || m_session.Running() == m_s->game.id;
-        ui::SectionHeader(Tr("Save backups"), running ? Tr("The game is running: quit it to restore a backup.") : Tr("Earlier versions of your saves."), false);
+        const bool running =
+            savebackup::GameRunning(savebackup::Root(m_s->game.id)) || m_session.Running() == m_s->game.id;
+        ui::SectionHeader(Tr("Save backups"),
+            running ? Tr("The game is running: quit it to restore a backup.") : Tr("Earlier versions of your saves."),
+            false);
         ui::ButtonOptions folder;
         folder.icon = ui::Icon::Folder;
         if (ui::Button(Tr("Show in folder"), folder))
@@ -691,15 +725,19 @@ namespace launcher_ui
         restore.hold = true;
         restore.disabled = running;
         restore.tooltip = Tr(strings::RestoreSavesHint);
-        const float rowHeight = ui::height::Large + ui::space::XXS + ImGui::GetStyle().ItemSpacing.y; // a row and the gap after it
-        ui::BeginRoomyChild("##savebackuplist", ImVec2(0, std::min(5 * rowHeight, rowHeight * float(m_s->saveBackups.size()))), ImGuiChildFlags_NavFlattened);
+        const float rowHeight =
+            ui::height::Large + ui::space::XXS + ImGui::GetStyle().ItemSpacing.y; // a row and the gap after it
+        ui::BeginRoomyChild("##savebackuplist",
+            ImVec2(0, std::min(5 * rowHeight, rowHeight * float(m_s->saveBackups.size()))),
+            ImGuiChildFlags_NavFlattened);
         const float buttonWidth = ui::ButtonWidth(Tr(strings::RestoreSaves), restore);
         for (const savebackup::Entry& backup : m_s->saveBackups)
         {
             ImGui::PushID(backup.stamp.c_str());
             const float top = ImGui::GetCursorPosY();
             const std::string when = BackupWhen(backup.stamp), size = ui::FormatSize(backup.bytes);
-            const std::string files = backup.files == 1 ? std::string(Tr("One file")) : Tf("{} files", ui::FormatNumber(backup.files));
+            const std::string files =
+                backup.files == 1 ? std::string(Tr("One file")) : Tf("{} files", ui::FormatNumber(backup.files));
             ui::ListRowOptions row;
             row.subtitle = files.c_str();
             row.trailing = size.c_str();
@@ -727,7 +765,8 @@ namespace launcher_ui
     void App::RunDataAction(const DataResult& result, const char* done) // `done`: an English string, translated here
     {
         m_s->saveBackupsLoaded = m_s->dataSizesLoaded = false;
-        Toast(result.ok ? Tf("{}: {} freed", Tr(done), ui::FormatSize(result.freed)) : result.error, result.ok ? ui::ToastKind::Success : ui::ToastKind::Error);
+        Toast(result.ok ? Tf("{}: {} freed", Tr(done), ui::FormatSize(result.freed)) : result.error,
+            result.ok ? ui::ToastKind::Success : ui::ToastKind::Error);
     }
 
     void App::RunUninstall(const DataResult& result)
@@ -774,13 +813,17 @@ namespace launcher_ui
                 StartPortableExport(datadir::FromText(std::exchange(g_portableFolder, std::string())));
         }
         const bool built = !m_s->installed.runtime.empty(), ready = built && m_s->disc == DiscState::Ready;
-        ui::SectionHeader(Tr("Portable copy"), !built ? Tr("Install the game first.") : !ready ? Tr("Choose the disc image first.")
-                                                      : Tr("The game in one file: it plays without the launcher or the disc image."));
+        ui::SectionHeader(Tr("Portable copy"),
+            !built   ? Tr("Install the game first.")
+            : !ready ? Tr("Choose the disc image first.")
+                     : Tr("The game in one file: it plays without the launcher or the disc image."));
         auto note = [](const std::string& text) { ui::Text(ui::TextStyle::Caption, text.c_str(), ui::color::Dim); };
         if (m_s->portableJob.Running())
         {
             const uint64_t total = m_s->portableJob.Total();
-            note(total == 0 ? Tr("Exporting...") : Tf("Exporting: {} of {}", ui::FormatSize(m_s->portableJob.Bytes()), ui::FormatSize(total)));
+            note(total == 0
+                     ? Tr("Exporting...")
+                     : Tf("Exporting: {} of {}", ui::FormatSize(m_s->portableJob.Bytes()), ui::FormatSize(total)));
             ui::ProgressBar(m_s->portableJob.Fraction(), -1, true);
             ImGui::Dummy(ImVec2(0, ui::space::XXS));
             if (ui::Button(Tr("Stop"), { .icon = ui::Icon::Stop }))
@@ -806,13 +849,20 @@ namespace launcher_ui
         // What the copy is, before anything is written: only for a game that is installed and has its disc (not "Up to 0 bytes").
         if (!ready)
             m_portableAsk = false;
-        if (m_portableAsk && ui::BeginModal("##portable", Tr("Export a portable copy"), &m_portableAsk, ui::ModalSize::Medium))
+        if (m_portableAsk &&
+            ui::BeginModal("##portable", Tr("Export a portable copy"), &m_portableAsk, ui::ModalSize::Medium))
         {
-            ui::Text(ui::TextStyle::Body, Tr("This copy holds your game. It is for your personal use only: do not share it."), ui::color::Ink);
+            ui::Text(ui::TextStyle::Body,
+                Tr("This copy holds your game. It is for your personal use only: do not share it."), ui::color::Ink);
             ImGui::Dummy(ImVec2(0, ui::space::XS));
             const uint64_t size = m_s->fromCopy ? m_s->copy.total : m_s->discSize;
-            ui::Text(ui::TextStyle::Caption, Tf("It plays on {} without the launcher or the disc image, with the same saves and settings as the installed game. "
-                "It never updates: to update it, export it again. Up to {}.", SystemName(), ui::FormatSize(size)).c_str(), ui::color::Dim);
+            ui::Text(ui::TextStyle::Caption,
+                Tf("It plays on {} without the launcher or the disc image, with the same saves and settings as the "
+                   "installed game. "
+                   "It never updates: to update it, export it again. Up to {}.",
+                    SystemName(), ui::FormatSize(size))
+                    .c_str(),
+                ui::color::Dim);
             if (ui::ModalActions(&m_portableAsk, Tr("Choose a folder..."), Tr("Cancel")) == ui::ModalResult::Confirm)
             {
                 m_portableAsk = false;
@@ -830,7 +880,8 @@ namespace launcher_ui
 
     void App::StartPortableExport(const std::filesystem::path& folder)
     {
-        if (m_s->installed.runtime.empty() || m_s->disc != DiscState::Ready || Installing() || m_s->portableJob.Running())
+        if (m_s->installed.runtime.empty() || m_s->disc != DiscState::Ready || Installing() ||
+            m_s->portableJob.Running())
             return;
         PortableSpec spec;
         spec.gameId = m_s->game.id;
@@ -838,10 +889,12 @@ namespace launcher_ui
         spec.source = m_s->discPath;
         spec.collection = datadir::FromText(m_s->collection->Folder());
         spec.keys = PortableKeys(m_config, m_s->game.id);
-        spec.info = { m_s->game.id, m_s->installed.gameVersion, m_s->installed.kitVersion, m_s->check.xexSha256, PortableStamp() };
+        spec.info = { m_s->game.id, m_s->installed.gameVersion, m_s->installed.kitVersion, m_s->check.xexSha256,
+            PortableStamp() };
         spec.folder = folder;
         spec.name = PortableName(m_s->game.id);
-        if (const char* free = LauncherEnv("SKY_LAUNCHER_COPY_FREE_BYTES")) // tests: the room to assume, as for the copy
+        if (const char* free =
+                LauncherEnv("SKY_LAUNCHER_COPY_FREE_BYTES")) // tests: the room to assume, as for the copy
             spec.freeBytes = std::strtoll(free, nullptr, 10);
         m_s->portablePath.clear();
         m_s->portableMessage.clear();
@@ -880,7 +933,8 @@ namespace launcher_ui
             spec.iconPng = m_s->meta.iconPng;
         spec.folder = DesktopFolder();
         ShortcutResult result = CreateDesktopShortcut(spec);
-        Toast(result.ok ? Tr("Shortcut added to the Desktop") : result.error, result.ok ? ui::ToastKind::Success : ui::ToastKind::Error);
+        Toast(result.ok ? Tr("Shortcut added to the Desktop") : result.error,
+            result.ok ? ui::ToastKind::Success : ui::ToastKind::Error);
     }
 
     void App::DrawGameTab()
@@ -888,7 +942,8 @@ namespace launcher_ui
         if (!m_s->dataSizesLoaded)
             RefreshDataSizes();
         const GameFolders folders = FoldersOf(m_s->game.id);
-        const bool busy = Installing() || m_s->hdJob.Running() || m_s->portableJob.Running(), running = GameIsRunning(folders) || m_session.Running() == m_s->game.id;
+        const bool busy = Installing() || m_s->hdJob.Running() || m_s->portableJob.Running(),
+                   running = GameIsRunning(folders) || m_session.Running() == m_s->game.id;
         auto hold = [](const char* tooltip, bool disabled = false) {
             ui::ButtonOptions options;
             options.kind = ui::ButtonKind::Danger;
@@ -916,7 +971,8 @@ namespace launcher_ui
             }
         }
 
-        ui::SectionHeader(Tr("Desktop shortcut"), m_s->disc != DiscState::Ready ? Tr("Choose the disc image first.") : nullptr, lockedNightmare);
+        ui::SectionHeader(Tr("Desktop shortcut"),
+            m_s->disc != DiscState::Ready ? Tr("Choose the disc image first.") : nullptr, lockedNightmare);
         ui::ButtonOptions shortcut;
         shortcut.disabled = m_s->disc != DiscState::Ready;
         if (ui::Button(Tr("Create"), shortcut))
@@ -942,25 +998,36 @@ namespace launcher_ui
             OpenFolder(std::filesystem::path(std::u8string(figures.begin(), figures.end())));
         }
 
-        ui::SectionHeader(Tr("Game"), !m_s->installed.runtime.empty() ? Tr("Built for this disc.") : Tr("Not built yet."));
-        if (ui::Button(Tr(strings::Reinstall), hold(Tr(strings::ReinstallHint), busy || running || m_s->installed.runtime.empty())) && !Installing())
+        ui::SectionHeader(
+            Tr("Game"), !m_s->installed.runtime.empty() ? Tr("Built for this disc.") : Tr("Not built yet."));
+        if (ui::Button(Tr(strings::Reinstall),
+                hold(Tr(strings::ReinstallHint), busy || running || m_s->installed.runtime.empty())) &&
+            !Installing())
             StartInstall();
 
         const uint64_t caches = m_s->dataSizes.caches, saves = m_s->dataSizes.saves;
         const bool built = !m_s->installed.runtime.empty();
-        std::string cleanHelp = caches != 0 && saves != 0 ? Tf("Clearing caches frees {}; deleting saves and data frees {} more.", Freed(caches), Freed(saves))
+        std::string cleanHelp =
+            caches != 0 && saves != 0
+                ? Tf("Clearing caches frees {}; deleting saves and data frees {} more.", Freed(caches), Freed(saves))
             : caches != 0 ? Tf("Clearing caches frees {}.", Freed(caches))
             : saves != 0  ? Tf("Deleting saves and data frees {}.", Freed(saves))
                           : std::string();
-        ui::SectionHeader(Tr("Clean up"), running ? Tr("The game is running: quit it first.") : cleanHelp.empty() ? nullptr : cleanHelp.c_str());
-        if (ui::Button(Tr("Clear caches"), hold(Tr(strings::ClearCachesHint), busy || running || !built || caches == 0)))
+        ui::SectionHeader(Tr("Clean up"), running             ? Tr("The game is running: quit it first.")
+                                          : cleanHelp.empty() ? nullptr
+                                                              : cleanHelp.c_str());
+        if (ui::Button(
+                Tr("Clear caches"), hold(Tr(strings::ClearCachesHint), busy || running || !built || caches == 0)))
             RunDataAction(ClearGameCaches(folders), N_("Caches cleared"));
         ImGui::SameLine(0, ui::space::S);
-        if (ui::Button(Tr(strings::DeleteData), hold(Tr(strings::DeleteDataHint), busy || running || !built || saves == 0)))
+        if (ui::Button(
+                Tr(strings::DeleteData), hold(Tr(strings::DeleteDataHint), busy || running || !built || saves == 0)))
             RunDataAction(DeleteGameData(folders), N_("Saves and data deleted"));
 
-        ui::SectionHeader(Tr("Uninstall"), Tf("Frees {}. Saves and settings are kept.", Freed(m_s->dataSizes.installed)).c_str());
-        if (ui::Button(Tr(strings::Uninstall), hold(Tr(strings::UninstallHint), busy || running || m_s->installed.runtime.empty())))
+        ui::SectionHeader(
+            Tr("Uninstall"), Tf("Frees {}. Saves and settings are kept.", Freed(m_s->dataSizes.installed)).c_str());
+        if (ui::Button(Tr(strings::Uninstall),
+                hold(Tr(strings::UninstallHint), busy || running || m_s->installed.runtime.empty())))
             RunUninstall(UninstallGame(folders, m_config));
     }
 }

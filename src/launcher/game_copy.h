@@ -16,7 +16,7 @@ struct GameSourcePick
 {
     std::string path;         // the copy's folder, or `iso` (empty when there is neither)
     bool copied = false;      // `path` is the copy
-    gamedata::Status copy;    // what the copy is: Damaged and Partial are fallbacks to the disc image, said to the player
+    gamedata::Status copy; // what the copy is: Damaged and Partial are fallbacks to the disc image, said to the player
 };
 GameSourcePick PickGameSource(const GameInfo& game, const std::string& iso);
 
@@ -24,11 +24,16 @@ GameSourcePick PickGameSource(const GameInfo& game, const std::string& iso);
 class GameCopyJob
 {
 public:
-    ~GameCopyJob() { Cancel(); Join(); }
+    ~GameCopyJob()
+    {
+        Cancel();
+        Join();
+    }
     // Started and not yet collected (it may have finished: Done).
     bool Running() const { return m_started; }
     bool Done() const { return m_done; }
-    void Start(const GameInfo& game, const std::string& image, const std::string& xexSha256, bool cancelAtOnce = false /* tests */);
+    void Start(const GameInfo& game, const std::string& image, const std::string& xexSha256,
+        bool cancelAtOnce = false /* tests */);
     // Stops between two chunks; the files copied so far stay and a later Start resumes.
     void Cancel() { m_cancel = true; }
     float Fraction() const;
@@ -38,7 +43,11 @@ public:
     gamedata::CopyResult Collect();
 
 private:
-    void Join() { if (m_thread.joinable()) m_thread.join(); }
+    void Join()
+    {
+        if (m_thread.joinable())
+            m_thread.join();
+    }
 
     std::thread m_thread;
     std::atomic<bool> m_started{ false }, m_done{ false }, m_cancel{ false };

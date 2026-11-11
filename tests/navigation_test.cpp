@@ -8,8 +8,15 @@ namespace
 {
     int g_failures = 0;
 
-#define NAV_EXPECT(condition) \
-    do { if (!(condition)) { fprintf(stderr, "FAIL %s line %d: %s\n", __FILE__, __LINE__, #condition); g_failures++; } } while (0)
+#define NAV_EXPECT(condition)                                                                                          \
+    do                                                                                                                 \
+    {                                                                                                                  \
+        if (!(condition))                                                                                              \
+        {                                                                                                              \
+            fprintf(stderr, "FAIL %s line %d: %s\n", __FILE__, __LINE__, #condition);                                  \
+            g_failures++;                                                                                              \
+        }                                                                                                              \
+    } while (0)
 
     using ui::NavBox;
     using ui::NavDir;
@@ -58,12 +65,14 @@ int NavigationChecks()
         NAV_EXPECT(Pick(grid, 20, NavDir::Left) == 0); // the row's first: no wrap
         NAV_EXPECT(Pick(grid, 13, NavDir::Right) == 0);
         // The last row shorter: down from a column it lacks goes to its nearest card.
-        std::vector<NavBox> ragged = { Box(1, 0, 0, 100, 140), Box(2, 110, 0, 100, 140), Box(3, 220, 0, 100, 140), Box(4, 0, 150, 100, 140) };
+        std::vector<NavBox> ragged = { Box(1, 0, 0, 100, 140), Box(2, 110, 0, 100, 140), Box(3, 220, 0, 100, 140),
+            Box(4, 0, 150, 100, 140) };
         NAV_EXPECT(Pick(ragged, 3, NavDir::Down) == 4);
     }
     // A wide field over a row of buttons: the row's first, then the one it had last.
     {
-        std::vector<NavBox> boxes = { Box(1, 0, 0, 600, 40), Box(2, 0, 60, 120, 40), Box(3, 140, 60, 120, 40), Box(4, 280, 60, 120, 40) };
+        std::vector<NavBox> boxes = { Box(1, 0, 0, 600, 40), Box(2, 0, 60, 120, 40), Box(3, 140, 60, 120, 40),
+            Box(4, 280, 60, 120, 40) };
         NAV_EXPECT(Pick(boxes, 1, NavDir::Down) == 2);
         boxes[2].seen = 5; // the focus was on the second button, then went up
         NAV_EXPECT(Pick(boxes, 1, NavDir::Down) == 3);
@@ -71,7 +80,8 @@ int NavigationChecks()
     }
     // Tabs over a card: up from a control under no tab goes to the tab the row had last (the selected one).
     {
-        std::vector<NavBox> boxes = { Box(1, 0, 0, 80, 40), Box(2, 120, 0, 80, 40), Box(3, 240, 0, 80, 40), Box(4, 500, 80, 200, 40) };
+        std::vector<NavBox> boxes = { Box(1, 0, 0, 80, 40), Box(2, 120, 0, 80, 40), Box(3, 240, 0, 80, 40),
+            Box(4, 500, 80, 200, 40) };
         NAV_EXPECT(Pick(boxes, 4, NavDir::Up) == 3); // never seen: the nearest across
         boxes[1].seen = 7;
         NAV_EXPECT(Pick(boxes, 4, NavDir::Up) == 2);
@@ -81,7 +91,8 @@ int NavigationChecks()
     // A Back button raised onto the title's line, the tabs under the title at the left: down keeps Back's column (the wide
     // row under the tabs), the tabs are not under it; with a tab under it, that tab.
     {
-        std::vector<NavBox> boxes = { Box(1, 600, 0, 90, 40), Box(2, 0, 70, 80, 40), Box(3, 120, 70, 80, 40), Box(4, 0, 140, 700, 40) };
+        std::vector<NavBox> boxes = { Box(1, 600, 0, 90, 40), Box(2, 0, 70, 80, 40), Box(3, 120, 70, 80, 40),
+            Box(4, 0, 140, 700, 40) };
         NAV_EXPECT(Pick(boxes, 1, NavDir::Down) == 4);
         NAV_EXPECT(Pick(boxes, 2, NavDir::Up) == 1);
         boxes.push_back(Box(5, 580, 70, 60, 40));
@@ -98,8 +109,8 @@ int NavigationChecks()
     // The game page: its actions (column 0) and its portal (column 1); up and down stay in their column even when the other
     // one's stop is nearer, left and right cross over.
     {
-        std::vector<NavBox> boxes = { Box(1, 0, 300, 300, 60, 0), Box(2, 0, 380, 140, 32, 0), Box(3, 400, 320, 200, 60, 1),
-            Box(4, 400, 390, 200, 60, 1), Box(5, 0, 460, 140, 32, 0) };
+        std::vector<NavBox> boxes = { Box(1, 0, 300, 300, 60, 0), Box(2, 0, 380, 140, 32, 0),
+            Box(3, 400, 320, 200, 60, 1), Box(4, 400, 390, 200, 60, 1), Box(5, 0, 460, 140, 32, 0) };
         NAV_EXPECT(Pick(boxes, 1, NavDir::Down) == 2);
         NAV_EXPECT(Pick(boxes, 2, NavDir::Down) == 5);
         NAV_EXPECT(Pick(boxes, 3, NavDir::Down) == 4);
@@ -109,16 +120,16 @@ int NavigationChecks()
     }
     // A dialog over the page: a move never leaves the window it starts in.
     {
-        std::vector<NavBox> boxes = { Box(1, 0, 0, 200, 40, -1, 1), Box(2, 0, 60, 200, 40, -1, 2), Box(3, 0, 120, 200, 40, -1, 1),
-            Box(4, 220, 0, 100, 40, -1, 2) };
+        std::vector<NavBox> boxes = { Box(1, 0, 0, 200, 40, -1, 1), Box(2, 0, 60, 200, 40, -1, 2),
+            Box(3, 0, 120, 200, 40, -1, 1), Box(4, 220, 0, 100, 40, -1, 2) };
         NAV_EXPECT(Pick(boxes, 1, NavDir::Down) == 3);
         NAV_EXPECT(Pick(boxes, 1, NavDir::Right) == 0);
         NAV_EXPECT(Pick(boxes, 2, NavDir::Up) == 4);
     }
     // A side panel: right from a list row goes to the panel's stop nearest in height.
     {
-        std::vector<NavBox> boxes = { Box(1, 0, 0, 400, 50), Box(2, 0, 60, 400, 50), Box(3, 0, 120, 400, 50), Box(4, 450, 10, 200, 40),
-            Box(5, 450, 110, 200, 40) };
+        std::vector<NavBox> boxes = { Box(1, 0, 0, 400, 50), Box(2, 0, 60, 400, 50), Box(3, 0, 120, 400, 50),
+            Box(4, 450, 10, 200, 40), Box(5, 450, 110, 200, 40) };
         NAV_EXPECT(Pick(boxes, 3, NavDir::Right) == 5);
         NAV_EXPECT(Pick(boxes, 1, NavDir::Right) == 4);
         NAV_EXPECT(Pick(boxes, 5, NavDir::Left) == 3);
@@ -127,8 +138,8 @@ int NavigationChecks()
     // A dialog's scrolling body (its visible part 0..300) over its buttons (320): down from the buttons never goes into the
     // body's hidden part; in the body, down from its last shown row goes on into it (the body scrolls).
     {
-        std::vector<NavBox> boxes = { Box(1, 0, 200, 300, 40), Box(2, 0, 260, 300, 40), Box(3, 0, 340, 300, 40), Box(4, 0, 400, 300, 40),
-            Box(5, 400, 320, 100, 40) };
+        std::vector<NavBox> boxes = { Box(1, 0, 200, 300, 40), Box(2, 0, 260, 300, 40), Box(3, 0, 340, 300, 40),
+            Box(4, 0, 400, 300, 40), Box(5, 400, 320, 100, 40) };
         for (size_t i = 0; i < 4; i++)
         {
             boxes[i].clipY0 = 0;

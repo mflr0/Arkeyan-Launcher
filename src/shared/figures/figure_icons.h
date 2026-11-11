@@ -25,17 +25,18 @@ namespace figures
         float outlineWidth = 0.035f;       // fraction of the icon size
         float shade = 0.35f;               // how much darker the bottom of the fill is than its top
         // Badge colours of the variant kinds that have their own; the others take the catalogue's (VariantKindRgb).
-        uint32_t legendary = 0xFF4AD5FF;   // gold
+        uint32_t legendary = 0xFF4AD5FF; // gold
         uint32_t darkEdition = 0xFF40242E; // deep purple
-        uint32_t crystal = 0xC0F5E8B0;     // translucent ice
-        uint32_t glow = 0xFF6BFF9B;        // glow-in-the-dark green
-        uint32_t metallic = 0xFFD6CDC8;    // silver
-        uint32_t lightCore = 0xFFA8F4FF;   // pale yellow
+        uint32_t crystal = 0xC0F5E8B0; // translucent ice
+        uint32_t glow = 0xFF6BFF9B; // glow-in-the-dark green
+        uint32_t metallic = 0xFFD6CDC8; // silver
+        uint32_t lightCore = 0xFFA8F4FF; // pale yellow
     };
 
     // The badge colour of a variant kind (ABGR), 0 for the plain toy.
     uint32_t VariantBadgeColor(collection::VariantKind kind, const IconStyle& style = {});
 
     // RGBA pixels (R first), `size` x `size`, transparent around the shape. `toy` null: an unknown toy.
-    std::vector<uint8_t> GenerateIcon(const collection::Toy* toy, collection::VariantKind kind, int size, const IconStyle& style = {});
+    std::vector<uint8_t> GenerateIcon(
+        const collection::Toy* toy, collection::VariantKind kind, int size, const IconStyle& style = {});
 }

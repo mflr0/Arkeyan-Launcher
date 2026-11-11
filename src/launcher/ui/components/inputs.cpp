@@ -70,7 +70,9 @@ namespace ui
             if (end != label)
             {
                 PushText(TextStyle::Body);
-                DrawText(ImGui::GetWindowDrawList(), ImVec2(item.min.x + height::Mark + space::S, item.min.y + (height::Small - ImGui::GetFontSize()) / 2),
+                DrawText(ImGui::GetWindowDrawList(),
+                    ImVec2(
+                        item.min.x + height::Mark + space::S, item.min.y + (height::Small - ImGui::GetFontSize()) / 2),
                     Col(color::Ink), label, end);
                 PopText();
             }
@@ -84,7 +86,9 @@ namespace ui
         const int count = int(labels.size());
         if (options.bumpers && HasInput()) // a dialog's own tabs too (Manage), not a page's under a dialog
         {
-            int step = ImGui::IsKeyPressed(ImGuiKey_GamepadL2, false) ? -1 : ImGui::IsKeyPressed(ImGuiKey_GamepadR2, false) ? 1 : 0;
+            int step = ImGui::IsKeyPressed(ImGuiKey_GamepadL2, false)   ? -1
+                       : ImGui::IsKeyPressed(ImGuiKey_GamepadR2, false) ? 1
+                                                                        : 0;
             if (step != 0 && std::clamp(*current + step, 0, count - 1) != *current)
             {
                 *current = std::clamp(*current + step, 0, count - 1);
@@ -105,7 +109,8 @@ namespace ui
         ImVec2 start = ImGui::GetCursorScreenPos();
         if (caps)
         {
-            ImVec2 cap = DrawKeyCap(draw, ImVec2(start.x, start.y + (rowH - stroke::Selection) / 2), PadButton::LeftTrigger, Ctx().glyphs);
+            ImVec2 cap = DrawKeyCap(
+                draw, ImVec2(start.x, start.y + (rowH - stroke::Selection) / 2), PadButton::LeftTrigger, Ctx().glyphs);
             ImGui::SetCursorScreenPos(ImVec2(start.x + cap.x + space::M, start.y));
         }
         PushText(TextStyle::Label);
@@ -129,18 +134,22 @@ namespace ui
             ImVec2 textAt(at.x, at.y + (rowH - stroke::Selection - text.y) / 2);
             DrawText(draw, textAt, Col(ink), label);
             if (active)
-                draw->AddRectFilled(ImVec2(at.x, at.y + rowH - stroke::Selection), ImVec2(at.x + text.x, at.y + rowH), Col(color::AccentFillPressed));
+                draw->AddRectFilled(ImVec2(at.x, at.y + rowH - stroke::Selection), ImVec2(at.x + text.x, at.y + rowH),
+                    Col(color::AccentFillPressed));
             else if (state.hovered)
-                draw->AddRectFilled(ImVec2(at.x, at.y + rowH - 1), ImVec2(at.x + text.x, at.y + rowH), Col(color::Hairline));
+                draw->AddRectFilled(
+                    ImVec2(at.x, at.y + rowH - 1), ImVec2(at.x + text.x, at.y + rowH), Col(color::Hairline));
             if (state.focused) // the label's row with S of air at its sides: the ring is not drawn on the letters
-                FocusRing(ImVec2(at.x - space::S, at.y), ImVec2(at.x + text.x + space::S, at.y + rowH), radius::Control);
+                FocusRing(
+                    ImVec2(at.x - space::S, at.y), ImVec2(at.x + text.x + space::S, at.y + rowH), radius::Control);
             ImGui::SameLine(0, space::XL);
         }
         PopText();
         if (caps)
         {
             ImVec2 at = ImGui::GetCursorScreenPos();
-            DrawKeyCap(draw, ImVec2(at.x - space::XL + space::M, at.y + (rowH - stroke::Selection) / 2), PadButton::RightTrigger, Ctx().glyphs);
+            DrawKeyCap(draw, ImVec2(at.x - space::XL + space::M, at.y + (rowH - stroke::Selection) / 2),
+                PadButton::RightTrigger, Ctx().glyphs);
         }
         ImGui::NewLine();
         ImGui::PopID();
@@ -163,7 +172,8 @@ namespace ui
         ImGui::PushID(id);
         ImGui::BeginDisabled(disabled);
         draw->AddRectFilled(min, max, Col(color::Inset), radius::Control);
-        draw->AddRect(ImVec2(min.x + 0.5f, min.y + 0.5f), ImVec2(max.x - 0.5f, max.y - 0.5f), Col(color::Hairline), radius::Control);
+        draw->AddRect(ImVec2(min.x + 0.5f, min.y + 0.5f), ImVec2(max.x - 0.5f, max.y - 0.5f), Col(color::Hairline),
+            radius::Control);
         bool changed = false;
         PushText(TextStyle::Body, true);
         for (int i = 0; i < count; i++)
@@ -178,12 +188,18 @@ namespace ui
             State state = ItemState(disabled);
             const bool on = *current == i;
             if (on)
-                draw->AddRectFilled(a, b, Col(state.pressed ? color::AccentFillPressed : state.hovered ? color::AccentFillHover : color::AccentFill), radius::Control - inset);
+                draw->AddRectFilled(a, b,
+                    Col(state.pressed   ? color::AccentFillPressed
+                        : state.hovered ? color::AccentFillHover
+                                        : color::AccentFill),
+                    radius::Control - inset);
             else if (state.hovered || state.pressed)
-                draw->AddRectFilled(a, b, Col(state.pressed ? color::InsetActive : color::InsetHover), radius::Control - inset);
+                draw->AddRectFilled(
+                    a, b, Col(state.pressed ? color::InsetActive : color::InsetHover), radius::Control - inset);
             const std::string shown = Ellipsize(labels[i], segment - 2 * space::XS);
             ImVec2 text = ImGui::CalcTextSize(shown.c_str());
-            DrawText(draw, ImVec2(std::round((a.x + b.x - text.x) / 2), std::round((a.y + b.y - text.y) / 2)), Col(on ? color::OnAccent : color::InkSoft), shown.c_str());
+            DrawText(draw, ImVec2(std::round((a.x + b.x - text.x) / 2), std::round((a.y + b.y - text.y) / 2)),
+                Col(on ? color::OnAccent : color::InkSoft), shown.c_str());
             FocusRingIf(state, radius::Control - inset);
         }
         PopText();
@@ -213,14 +229,17 @@ namespace ui
         PushField();
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(space::XS, space::XS));
         ImGui::PushStyleVar(ImGuiStyleVar_PopupBorderSize, elevation::Raised.border);
-        ImGui::PushStyleColor(ImGuiCol_PopupBg, LauncherTheme::Rgb(elevation::Raised.fill, elevation::Raised.fillAlpha));
+        ImGui::PushStyleColor(
+            ImGuiCol_PopupBg, LauncherTheme::Rgb(elevation::Raised.fill, elevation::Raised.fillAlpha));
         const ImVec2 min = ImGui::GetCursorScreenPos(), max(min.x + width, min.y + height::Normal);
         ImGui::SetNextItemWidth(width);
         if (options.disabled)
             ImGui::BeginDisabled();
         // The value cut with "..." before the chevron, never under it.
-        const std::string shown = Ellipsize(preview, width - ImGui::GetStyle().FramePadding.x - space::XS - icon::Small - space::S);
-        const bool open = ImGui::BeginCombo(id, shown.c_str(), ImGuiComboFlags_NoArrowButton | ImGuiComboFlags_HeightLarge);
+        const std::string shown =
+            Ellipsize(preview, width - ImGui::GetStyle().FramePadding.x - space::XS - icon::Small - space::S);
+        const bool open =
+            ImGui::BeginCombo(id, shown.c_str(), ImGuiComboFlags_NoArrowButton | ImGuiComboFlags_HeightLarge);
         if (options.disabled)
             ImGui::EndDisabled();
         if (!open)
@@ -229,7 +248,8 @@ namespace ui
             State state = ItemState(options.disabled);
             if (options.disabled)
                 ImGui::BeginDisabled();
-            DrawIcon(draw, Icon::ChevronDown, ImVec2(max.x - space::S - icon::Small / 2, (min.y + max.y) / 2), icon::Small, Col(color::InkSoft));
+            DrawIcon(draw, Icon::ChevronDown, ImVec2(max.x - space::S - icon::Small / 2, (min.y + max.y) / 2),
+                icon::Small, Col(color::InkSoft));
             if (options.disabled)
                 ImGui::EndDisabled();
             FocusRingIf(state, radius::Control);
@@ -238,8 +258,10 @@ namespace ui
             PopField();
             return false;
         }
-        draw->AddRect(ImVec2(min.x + 0.5f, min.y + 0.5f), ImVec2(max.x - 0.5f, max.y - 0.5f), Col(Ctx().accent), radius::Control, 0, stroke::Edge);
-        DrawIcon(draw, Icon::ChevronUp, ImVec2(max.x - space::S - icon::Small / 2, (min.y + max.y) / 2), icon::Small, Col(color::Ink));
+        draw->AddRect(ImVec2(min.x + 0.5f, min.y + 0.5f), ImVec2(max.x - 0.5f, max.y - 0.5f), Col(Ctx().accent),
+            radius::Control, 0, stroke::Edge);
+        DrawIcon(draw, Icon::ChevronUp, ImVec2(max.x - space::S - icon::Small / 2, (min.y + max.y) / 2), icon::Small,
+            Col(color::Ink));
         // The list's rows: height::Small, text centred on them, a little air between them.
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, space::XXS / 2));
         ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0, 0.5f));
@@ -259,19 +281,26 @@ namespace ui
         ImGui::PushStyleColor(ImGuiCol_HeaderHovered, 0);
         ImGui::PushStyleColor(ImGuiCol_HeaderActive, 0);
         const std::string id = std::string("##") + label; // the text is drawn below, inside the highlight's margin
-        const bool pressed = ImGui::Selectable(id.c_str(), selected, disabled ? ImGuiSelectableFlags_Disabled : 0, ImVec2(0, height::Small));
+        const bool pressed = ImGui::Selectable(
+            id.c_str(), selected, disabled ? ImGuiSelectableFlags_Disabled : 0, ImVec2(0, height::Small));
         ImGui::PopStyleColor(3);
         if (selected && ImGui::IsWindowAppearing())
             ImGui::SetItemDefaultFocus();
         State state = ItemState(disabled);
         ImVec2 min = ImGui::GetItemRectMin(), max = ImGui::GetItemRectMax();
         const float mid = std::round((min.y + max.y) / 2);
-        DrawText(draw, ImVec2(min.x + space::S, std::round(mid - CapMiddle(TextStyle::Body))), Col(disabled ? color::Dim : color::Ink), label, LabelEnd(label));
+        DrawText(draw, ImVec2(min.x + space::S, std::round(mid - CapMiddle(TextStyle::Body))),
+            Col(disabled ? color::Dim : color::Ink), label, LabelEnd(label));
         if (selected)
-            DrawIcon(draw, Icon::Check, ImVec2(max.x - space::S - icon::Small / 2, mid), icon::Small, Col(Ctx().accent));
+            DrawIcon(
+                draw, Icon::Check, ImVec2(max.x - space::S - icon::Small / 2, mid), icon::Small, Col(Ctx().accent));
         draw->ChannelsSetCurrent(0);
         if (selected || state.hovered || state.pressed)
-            draw->AddRectFilled(min, max, Col(state.pressed ? color::RaisedPressed : state.hovered ? color::RaisedHover : color::InsetActive), radius::Control);
+            draw->AddRectFilled(min, max,
+                Col(state.pressed   ? color::RaisedPressed
+                    : state.hovered ? color::RaisedHover
+                                    : color::InsetActive),
+                radius::Control);
         draw->ChannelsMerge();
         return pressed;
     }
@@ -303,14 +332,21 @@ namespace ui
         const float t = Ease(ImGui::GetItemID(), *value ? 1.0f : 0.0f);
         const bool on = *value, lit = state.hovered || state.pressed;
         ImDrawList* draw = ImGui::GetWindowDrawList();
-        draw->AddRectFilled(min, max, Col(on ? (lit ? color::AccentFillHover : color::AccentFill) : lit ? color::InsetHover : color::Inset), h / 2);
-        draw->AddRect(ImVec2(min.x + 0.5f, min.y + 0.5f), ImVec2(max.x - 0.5f, max.y - 0.5f), Col(on ? color::AccentFillPressed : color::Edge), h / 2, 0, stroke::Edge);
+        draw->AddRectFilled(min, max,
+            Col(on    ? (lit ? color::AccentFillHover : color::AccentFill)
+                : lit ? color::InsetHover
+                      : color::Inset),
+            h / 2);
+        draw->AddRect(ImVec2(min.x + 0.5f, min.y + 0.5f), ImVec2(max.x - 0.5f, max.y - 0.5f),
+            Col(on ? color::AccentFillPressed : color::Edge), h / 2, 0, stroke::Edge);
         const float knobR = h / 2 - space::XXS - 1, left = min.x + h / 2, right = max.x - h / 2;
-        draw->AddCircleFilled(ImVec2(left + (right - left) * t, min.y + h / 2), knobR * (state.pressed ? 1.12f : 1.0f), Col(on ? color::OnAccent : color::InkSoft), 24);
+        draw->AddCircleFilled(ImVec2(left + (right - left) * t, min.y + h / 2), knobR * (state.pressed ? 1.12f : 1.0f),
+            Col(on ? color::OnAccent : color::InkSoft), 24);
         if (end != label)
         {
             PushText(TextStyle::Body);
-            DrawText(draw, ImVec2(max.x + space::S, min.y + (h - ImGui::GetFontSize()) / 2), Col(color::Ink), label, end);
+            DrawText(
+                draw, ImVec2(max.x + space::S, min.y + (h - ImGui::GetFontSize()) / 2), Col(color::Ink), label, end);
             PopText();
         }
         ImGui::EndDisabled();
@@ -337,7 +373,8 @@ namespace ui
         else
         {
             draw->AddRectFilled(a, b, Col(lit ? color::InsetHover : color::Inset), r);
-            draw->AddRect(ImVec2(a.x + 0.5f, a.y + 0.5f), ImVec2(b.x - 0.5f, b.y - 0.5f), Col(lit ? color::Ink : color::Edge), r, 0, stroke::Edge);
+            draw->AddRect(ImVec2(a.x + 0.5f, a.y + 0.5f), ImVec2(b.x - 0.5f, b.y - 0.5f),
+                Col(lit ? color::Ink : color::Edge), r, 0, stroke::Edge);
         }
         ImGui::EndDisabled();
         if (item.state.focused)
@@ -354,8 +391,11 @@ namespace ui
         const bool lit = item.state.hovered || item.state.pressed;
         ImDrawList* draw = ImGui::GetWindowDrawList();
         draw->AddCircleFilled(centre, r, Col(lit ? color::InsetHover : color::Inset), 24);
-        draw->AddCircle(centre, r - 0.75f, Col(selected ? (lit ? color::AccentFillHover : color::AccentFill) : lit ? color::Ink : color::Edge), 24,
-            selected ? 2 * stroke::Edge : stroke::Edge);
+        draw->AddCircle(centre, r - 0.75f,
+            Col(selected ? (lit ? color::AccentFillHover : color::AccentFill)
+                : lit    ? color::Ink
+                         : color::Edge),
+            24, selected ? 2 * stroke::Edge : stroke::Edge);
         if (selected)
             draw->AddCircleFilled(centre, r * 0.45f, Col(lit ? color::AccentFillHover : color::AccentFill), 20);
         ImGui::EndDisabled();
@@ -379,13 +419,16 @@ namespace ui
         const float left = at.x + knob + 2, right = at.x + width - knob - 2;
         if (ImGui::IsItemActive() && ImGui::IsMouseDown(ImGuiMouseButton_Left))
         {
-            int next = min + int(std::lround(std::clamp((ImGui::GetIO().MousePos.x - left) / (right - left), 0.0f, 1.0f) * float(max - min)));
+            int next =
+                min + int(std::lround(std::clamp((ImGui::GetIO().MousePos.x - left) / (right - left), 0.0f, 1.0f) *
+                                      float(max - min)));
             changed = next != *value;
             *value = next;
         }
         else if (ImGui::IsItemFocused() && !options.disabled)
         {
-            int step = (ImGui::IsKeyPressed(ImGuiKey_RightArrow) || ImGui::IsKeyPressed(ImGuiKey_GamepadDpadRight) ? 1 : 0) -
+            int step =
+                (ImGui::IsKeyPressed(ImGuiKey_RightArrow) || ImGui::IsKeyPressed(ImGuiKey_GamepadDpadRight) ? 1 : 0) -
                 (ImGui::IsKeyPressed(ImGuiKey_LeftArrow) || ImGui::IsKeyPressed(ImGuiKey_GamepadDpadLeft) ? 1 : 0);
             if (step != 0 && std::clamp(*value + step, min, max) != *value)
             {
@@ -393,18 +436,24 @@ namespace ui
                 changed = true;
             }
         }
-        const float t = max > min ? float(*value - min) / float(max - min) : 0.0f, x = left + (right - left) * t, mid = at.y + h / 2;
+        const float t = max > min ? float(*value - min) / float(max - min) : 0.0f, x = left + (right - left) * t,
+                    mid = at.y + h / 2;
         ImDrawList* draw = ImGui::GetWindowDrawList();
-        draw->AddRectFilled(ImVec2(at.x, mid - track / 2), ImVec2(at.x + width, mid + track / 2), Col(color::Inset), track / 2);
-        draw->AddRect(ImVec2(at.x, mid - track / 2), ImVec2(at.x + width, mid + track / 2), Col(color::Edge), track / 2);
-        draw->AddRectFilled(ImVec2(at.x, mid - track / 2), ImVec2(x, mid + track / 2), Col(color::AccentFill), track / 2);
+        draw->AddRectFilled(
+            ImVec2(at.x, mid - track / 2), ImVec2(at.x + width, mid + track / 2), Col(color::Inset), track / 2);
+        draw->AddRect(
+            ImVec2(at.x, mid - track / 2), ImVec2(at.x + width, mid + track / 2), Col(color::Edge), track / 2);
+        draw->AddRectFilled(
+            ImVec2(at.x, mid - track / 2), ImVec2(x, mid + track / 2), Col(color::AccentFill), track / 2);
         const bool lit = state.hovered || state.pressed;
-        draw->AddCircleFilled(ImVec2(x, mid), knob * (state.pressed ? 1.1f : 1.0f), Col(lit ? color::AccentFillHover : color::AccentFill), 24);
+        draw->AddCircleFilled(ImVec2(x, mid), knob * (state.pressed ? 1.1f : 1.0f),
+            Col(lit ? color::AccentFillHover : color::AccentFill), 24);
         draw->AddCircle(ImVec2(x, mid), knob, Col(color::AccentFillPressed), 24, stroke::Hairline);
         if (options.showValue)
         {
             const std::string shown = fmt::format("{}", *value);
-            DrawText(draw, ImVec2(at.x + width + space::S, mid - ImGui::GetFontSize() / 2), Col(color::InkSoft), shown.c_str());
+            DrawText(draw, ImVec2(at.x + width + space::S, mid - ImGui::GetFontSize() / 2), Col(color::InkSoft),
+                shown.c_str());
         }
         ImGui::EndDisabled();
         PopText();
@@ -422,7 +471,8 @@ namespace ui
     namespace
     {
         // The field's look around ImGui's input: its edge in the accent while it is being edited, the ring with the focus.
-        bool Field(const char* id, char* buffer, size_t size, const TextFieldOptions& options, float padLeft, ImVec2& min, ImVec2& max)
+        bool Field(const char* id, char* buffer, size_t size, const TextFieldOptions& options, float padLeft,
+            ImVec2& min, ImVec2& max)
         {
             const float width = options.width < 0 ? ImGui::GetContentRegionAvail().x : options.width;
             PushField(padLeft);
@@ -430,14 +480,15 @@ namespace ui
             max = ImVec2(min.x + width, min.y + height::Normal);
             ImGui::SetNextItemWidth(width);
             ImGui::BeginDisabled(options.disabled);
-            bool changed = options.hint != nullptr
-                ? ImGui::InputTextWithHint(id, options.hint, buffer, size, options.flags, options.callback)
-                : ImGui::InputText(id, buffer, size, options.flags, options.callback);
+            bool changed =
+                options.hint != nullptr
+                    ? ImGui::InputTextWithHint(id, options.hint, buffer, size, options.flags, options.callback)
+                    : ImGui::InputText(id, buffer, size, options.flags, options.callback);
             NavItem();
             State state = ItemState(options.disabled);
             if (ImGui::IsItemActive() || state.pressed) // being edited (the gallery shows it as pressed)
-                ImGui::GetWindowDrawList()->AddRect(ImVec2(min.x + 0.5f, min.y + 0.5f), ImVec2(max.x - 0.5f, max.y - 0.5f), Col(Ctx().accent),
-                    radius::Control, 0, stroke::Edge);
+                ImGui::GetWindowDrawList()->AddRect(ImVec2(min.x + 0.5f, min.y + 0.5f),
+                    ImVec2(max.x - 0.5f, max.y - 0.5f), Col(Ctx().accent), radius::Control, 0, stroke::Edge);
             ImGui::EndDisabled();
             PopField();
             if (!ImGui::IsItemActive() && !state.pressed)
@@ -465,10 +516,12 @@ namespace ui
         ImVec2 min, max;
         bool changed = Field(id, buffer, size, options, space::M + Glass + space::XS, min, max);
         ImVec2 after = ImGui::GetCursorScreenPos();
-        DrawIcon(ImGui::GetWindowDrawList(), Icon::Search, ImVec2(min.x + space::M + Glass / 2, (min.y + max.y) / 2), Glass, Col(color::Dim));
+        DrawIcon(ImGui::GetWindowDrawList(), Icon::Search, ImVec2(min.x + space::M + Glass / 2, (min.y + max.y) / 2),
+            Glass, Col(color::Dim));
         if (clearable)
         {
-            ImGui::SetCursorScreenPos(ImVec2(max.x - height::Small - space::XXS, min.y + (height::Normal - height::Small) / 2));
+            ImGui::SetCursorScreenPos(
+                ImVec2(max.x - height::Small - space::XXS, min.y + (height::Normal - height::Small) / 2));
             ImGui::PushID(id);
             if (IconButton("##clear", Icon::Cross, nullptr, { ButtonKind::Ghost, Size::Small }))
             {

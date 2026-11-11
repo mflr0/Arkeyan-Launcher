@@ -12,23 +12,36 @@ namespace ui
     void DrawEmptySeat(ImDrawList* draw, ImVec2 at, float size);
     // ---- Badge: a word on a card (Legendary, Series 2, P1), not pressable. Its ink is chosen for contrast when 0. ----
     ImVec2 BadgeSize(const char* text);
-    ImVec2 DrawBadge(ImDrawList* draw, ImVec2 at, const char* text, unsigned fill, unsigned ink = 0); // returns its size
+    ImVec2 DrawBadge(
+        ImDrawList* draw, ImVec2 at, const char* text, unsigned fill, unsigned ink = 0); // returns its size
     void Badge(const char* text, unsigned fill, unsigned ink = 0); // at the cursor, as an item
 
     // ---- Chip: a filter that is on or off (a check when on), or the sort order (an arrow; never removable, never a filter). ----
-    enum class ChipKind { Filter, Sort };
+    enum class ChipKind
+    {
+        Filter,
+        Sort
+    };
     struct ChipOptions
     {
         ChipKind kind = ChipKind::Filter;
         bool selected = false; // a filter that is on
-        unsigned color = 0;    // a filter's fill when on (an element's colour); 0: the accent
-        int direction = 1;     // a sort: 1 ascending (arrow up), -1 descending
+        unsigned color = 0; // a filter's fill when on (an element's colour); 0: the accent
+        int direction = 1; // a sort: 1 ascending (arrow up), -1 descending
         bool disabled = false;
     };
     bool Chip(const char* label, const ChipOptions& options = {});
 
     // ---- Status: a state in a word and a shape, never a colour alone. ----
-    enum class Status { Neutral, Info, Success, Warning, Error, Busy };
+    enum class Status
+    {
+        Neutral,
+        Info,
+        Success,
+        Warning,
+        Error,
+        Busy
+    };
     unsigned ColorOf(Status status);
     Icon IconOf(Status status); // Busy: a spinner is drawn instead
     // The shape alone, `size` points, in the status's colour: its icon (IconOf), or `icon` (a state's own: a disc, an update);
@@ -38,7 +51,8 @@ namespace ui
     // The icon and the text in a tinted pill, PillHeight high (`icon`: the state's own, else the status's).
     inline constexpr float PillHeight = 24;
     void StatusPill(Status status, const char* text, Icon icon = Icon::None);
-    void StatusLine(Status status, const char* text, float width = -1, Icon icon = Icon::None); // `icon`: as StatusPill's
+    void StatusLine(
+        Status status, const char* text, float width = -1, Icon icon = Icon::None); // `icon`: as StatusPill's
 
     // ---- Progress. ----
     // A determinate bar (`fraction` 0..1) with its percentage after it when `showPercent`.
@@ -49,7 +63,12 @@ namespace ui
 
     // ---- Toasts: short messages at the bottom right, newest at the bottom. Info and Success go by themselves; an Error stays
     // until it is closed: a click, or the keyboard and pad (it takes the focus when they are in use; A, B, Enter, Escape). ----
-    enum class ToastKind { Info, Success, Error };
+    enum class ToastKind
+    {
+        Info,
+        Success,
+        Error
+    };
     class Toasts
     {
     public:
@@ -68,7 +87,7 @@ namespace ui
         // one with the keyboard or the pad (the caller puts the focus back on its page).
         bool Draw(float bottomInset, float maxTextWidth = 420);
         bool HasFocus() const { return m_focused; } // it answers B / Escape this frame
-        int NextWakeMs(uint64_t now) const;         // until the next one goes by itself, -1 for none
+        int NextWakeMs(uint64_t now) const; // until the next one goes by itself, -1 for none
         void PreviewFocus(bool on) { m_previewFocus = on; } // the gallery: the newest error drawn with the focus
 
     private:
@@ -81,7 +100,19 @@ namespace ui
 
     // ---- Key caps and the pad legend. ----
     // A pad button by its place (South is A on Xbox, Cross on PlayStation, B on Nintendo).
-    enum class PadButton { South, East, West, North, LeftBumper, RightBumper, Start, Back, LeftTrigger, RightTrigger };
+    enum class PadButton
+    {
+        South,
+        East,
+        West,
+        North,
+        LeftBumper,
+        RightBumper,
+        Start,
+        Back,
+        LeftTrigger,
+        RightTrigger
+    };
     const char* PadButtonLabel(PadButton button, Glyphs glyphs);
     // A pad button's cap (`glyphs` != Keyboard) or a keyboard key's (`key`: "Enter", "Esc", "F6"), drawn at `at` (its left
     // edge, its vertical centre); returns its size.
@@ -96,7 +127,7 @@ namespace ui
     struct PadHint
     {
         PadButton button;
-        const char* key;   // the keyboard's key for it ("Enter"); nullptr: not shown on the keyboard
+        const char* key; // the keyboard's key for it ("Enter"); nullptr: not shown on the keyboard
         const char* label; // what it does ("Select", "Back"), translated
         bool withNext = false; // the next button's cap too: LB RB, LT RT
     };

@@ -8,8 +8,6 @@
 #include <cstdlib>
 #include <fmt/format.h>
 
-
-
 GameSourcePick PickGameSource(const GameInfo& game, const std::string& iso)
 {
     GameSourcePick pick;
@@ -50,13 +48,17 @@ void GameCopyJob::Start(const GameInfo& game, const std::string& image, const st
         source.xexSha256 = xexSha256;
         for (const auto& [path, entry] : disc.Files())
             source.files.push_back({ path, entry->size });
-        source.read = [&disc](const gamedata::SourceFile& file, uint64_t position, void* buffer, size_t size) -> size_t {
+        source.read = [&disc](
+                          const gamedata::SourceFile& file, uint64_t position, void* buffer, size_t size) -> size_t {
             const DiscFileSystem::Entry* entry = disc.Find(file.path);
             return entry == nullptr ? 0 : disc.Read(*entry, position, buffer, uint32_t(size));
         };
         gamedata::CopyOptions options;
         options.cancel = &m_cancel;
-        options.progress = [this](uint64_t done, uint64_t total) { m_total = total; m_bytes = done; };
+        options.progress = [this](uint64_t done, uint64_t total) {
+            m_total = total;
+            m_bytes = done;
+        };
         if (const char* free = LauncherEnv("SKY_LAUNCHER_COPY_FREE_BYTES")) // tests: the room to assume
             options.freeBytes = std::strtoll(free, nullptr, 10);
         m_result = gamedata::Copy(source, gamedata::Folder(id), options);

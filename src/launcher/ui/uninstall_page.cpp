@@ -48,14 +48,19 @@ namespace launcher_ui
             case Why::Link: return Tf("{} is a link: it stays.", NameOf(left));
             case Why::Outside:
             case Why::Unsafe:
-                return left.group == Group::Launcher ? std::string(Tr("Arkeyan Launcher can't remove itself from here: delete it by hand."))
-                                                     : Tf("{} is outside Arkeyan Launcher's folders: it stays.", NameOf(left));
+                return left.group == Group::Launcher
+                           ? std::string(Tr("Arkeyan Launcher can't remove itself from here: delete it by hand."))
+                           : Tf("{} is outside Arkeyan Launcher's folders: it stays.", NameOf(left));
             case Why::DiscImage: return Tf("{} is a disc image: it stays.", NameOf(left));
             case Why::InUse: return Tr("A game is running: quit it first.");
             case Why::NotRemoved: return Tf("{} couldn't be removed.", NameOf(left));
-            case Why::Unfit: return left.group == Group::Launcher ? std::string(Tr("Arkeyan Launcher can't remove itself from here: delete it by hand."))
-                                                                    : Tf("{} couldn't be removed.", NameOf(left));
-            case Why::Kept: return left.group == Group::OldFolders ? Tr("Kept: Xbox signing keys") : Tr("Other files in the figures folder stay.");
+            case Why::Unfit:
+                return left.group == Group::Launcher
+                           ? std::string(Tr("Arkeyan Launcher can't remove itself from here: delete it by hand."))
+                           : Tf("{} couldn't be removed.", NameOf(left));
+            case Why::Kept:
+                return left.group == Group::OldFolders ? Tr("Kept: Xbox signing keys")
+                                                       : Tr("Other files in the figures folder stay.");
             }
             return {};
         }
@@ -65,7 +70,8 @@ namespace launcher_ui
     void App::DrawUninstallSection()
     {
         const bool busy = AnyInstalling() || AnyVerifying();
-        ui::SectionHeader(Tr("Remove Arkeyan Launcher"), busy ? Tr("Wait for the game to finish.") : Tr("Your disc images are never touched."));
+        ui::SectionHeader(Tr("Remove Arkeyan Launcher"),
+            busy ? Tr("Wait for the game to finish.") : Tr("Your disc images are never touched."));
         ui::ButtonOptions options;
         options.kind = ui::ButtonKind::Danger; // red, as the dialog's own button: it removes everything
         options.icon = ui::Icon::Trash;
@@ -90,10 +96,12 @@ namespace launcher_ui
         m_un.result = uninstall::RunUninstall(m_un.plan, m_un.env, m_un.tick);
         const uninstall::LauncherRemoval removal = uninstall::PlanLauncherRemoval(m_un.env);
         // The launcher itself, once it has quit: only after everything else, and only when nothing refused the rest.
-        const bool interrupted = std::any_of(m_un.result.left.begin(), m_un.result.left.end(), [](const uninstall::Left& left) { return left.why == Why::InUse || left.why == Why::Unsafe; });
+        const bool interrupted = std::any_of(m_un.result.left.begin(), m_un.result.left.end(),
+            [](const uninstall::Left& left) { return left.why == Why::InUse || left.why == Why::Unsafe; });
         if (!interrupted && removal.ok)
         {
-            m_un.launcherScheduled = uninstall::StartScheduled(uninstall::ScheduleCommand(m_un.env.os, removal, uninstall::ProcessId()));
+            m_un.launcherScheduled =
+                uninstall::StartScheduled(uninstall::ScheduleCommand(m_un.env.os, removal, uninstall::ProcessId()));
             if (!m_un.launcherScheduled)
                 m_un.result.left.push_back({ Why::NotRemoved, Group::Launcher, m_un.env.launcherSelf, {} });
         }
@@ -134,7 +142,9 @@ namespace launcher_ui
                     lines.push_back(text);
             // A launcher that could not be removed was said once, by the plan or by the run.
             lines.erase(std::unique(lines.begin(), lines.end()), lines.end());
-            ui::SectionHeader(interrupted ? Tr("Nothing was removed") : lines.empty() ? Tr("Everything is removed") : Tr("Removed, except"),
+            ui::SectionHeader(interrupted     ? Tr("Nothing was removed")
+                              : lines.empty() ? Tr("Everything is removed")
+                                              : Tr("Removed, except"),
                 interrupted ? nullptr : Tf("{} freed.", ui::FormatSize(result.freed)).c_str(), false);
             const size_t shown = std::min<size_t>(lines.size(), 8);
             for (size_t i = 0; i < shown; i++)
@@ -142,7 +152,8 @@ namespace launcher_ui
             if (lines.size() > shown)
                 note(Tf("and {} more", lines.size() - shown));
             if (m_un.launcherScheduled)
-                note(m_un.env.os == uninstall::Os::MacOS ? Tr("Arkeyan Launcher goes to the Trash when you quit.") : Tr("Arkeyan Launcher deletes itself when you quit."));
+                note(m_un.env.os == uninstall::Os::MacOS ? Tr("Arkeyan Launcher goes to the Trash when you quit.")
+                                                         : Tr("Arkeyan Launcher deletes itself when you quit."));
             ImGui::Dummy(ImVec2(0, ui::space::S));
             if (interrupted)
             {
@@ -181,7 +192,8 @@ namespace launcher_ui
                 any = true;
             }
         }
-        for (Group group : { Group::GameData, Group::Tools, Group::Caches, Group::OldFolders, Group::Settings, Group::Shortcuts, Group::Launcher })
+        for (Group group : { Group::GameData, Group::Tools, Group::Caches, Group::OldFolders, Group::Settings,
+                 Group::Shortcuts, Group::Launcher })
             if (plan.Has(group))
             {
                 row(GroupName(group), ui::FormatSize(plan.Bytes(group)));
@@ -201,7 +213,8 @@ namespace launcher_ui
                 ExportFiguresFirst();
         }
         note(mine == 0 ? Tr("No saves or figures yet.")
-                       : Tf("Saves {}, figures {}.", ui::FormatSize(plan.Bytes(Group::Saves)), ui::FormatSize(plan.Bytes(Group::Figures))));
+                       : Tf("Saves {}, figures {}.", ui::FormatSize(plan.Bytes(Group::Saves)),
+                             ui::FormatSize(plan.Bytes(Group::Figures))));
         ImGui::Dummy(ImVec2(0, ui::space::XS));
         row(Tr("Total"), ui::FormatSize(plan.Total(m_un.tick)));
 
@@ -211,7 +224,8 @@ namespace launcher_ui
                 note(text);
 
         ImGui::Dummy(ImVec2(0, ui::space::S));
-        const bool blocked = plan.refused || !plan.running.empty() || plan.figuresInUse || AnyInstalling() || AnyVerifying();
+        const bool blocked =
+            plan.refused || !plan.running.empty() || plan.figuresInUse || AnyInstalling() || AnyVerifying();
         if (!plan.running.empty())
             note(Tf("{} is running: quit it first.", plan.running.front()), ui::color::Danger);
         else if (plan.figuresInUse)
@@ -228,14 +242,16 @@ namespace launcher_ui
         remove.icon = ui::Icon::Trash;
         remove.disabled = blocked;
         remove.tooltip = Tr(HoldHint);
-        const float actions = ui::ButtonWidth(Tr("Cancel"), cancel) + ui::space::S + ui::ButtonWidth(Tr("Uninstall everything"), remove);
+        const float actions =
+            ui::ButtonWidth(Tr("Cancel"), cancel) + ui::space::S + ui::ButtonWidth(Tr("Uninstall everything"), remove);
         ImGui::SetCursorPosX(ImGui::GetCursorPosX() + std::max(0.0f, ImGui::GetContentRegionAvail().x - actions));
         if (ui::Button(Tr("Cancel"), cancel))
             m_un = {};
         else
         {
             ImGui::SameLine(0, ui::space::S);
-            ui::Ctx().testHeld = m_testHoldAt != 0 ? m_un.holdId : 0; // the screenshot test holds the uninstall button down
+            ui::Ctx().testHeld =
+                m_testHoldAt != 0 ? m_un.holdId : 0; // the screenshot test holds the uninstall button down
             if (ui::Button(Tr("Uninstall everything"), remove))
                 RunUninstallEverything();
             m_un.holdId = ImGui::GetItemID();
@@ -279,9 +295,7 @@ namespace launcher_ui
                 m_testAt = now + 500;
             }
             break;
-        default:
-            m_running = false;
-            break;
+        default: m_running = false; break;
         }
     }
 }

@@ -11,7 +11,8 @@ namespace launcher_ui
 {
     namespace
     {
-        constexpr float Picture = ui::height::Large - 2 * ui::space::XXS; // an achievement's picture, as a list row's image
+        constexpr float Picture =
+            ui::height::Large - 2 * ui::space::XXS; // an achievement's picture, as a list row's image
         constexpr double RefreshMs = 1500;
     }
 
@@ -46,13 +47,16 @@ namespace launcher_ui
         RefreshProgress();
         const GameProgress& progress = m_progress;
         const char* title = GameName(m_s->game.id, GameNameForm::Full);
-        BeginSettingsPage("##achievementscolumn", title != nullptr ? title : m_s->game.name, true, true); // the D-pad scrolls the list
+        BeginSettingsPage("##achievementscolumn", title != nullptr ? title : m_s->game.name, true,
+            true); // the D-pad scrolls the list
         if (!ImGui::IsAnyItemActive())
         {
             const float step = ui::height::Large;
-            if (ImGui::IsKeyPressed(ImGuiKey_DownArrow) || ImGui::IsKeyPressed(ImGuiKey_GamepadDpadDown) || ImGui::IsKeyPressed(ImGuiKey_GamepadLStickDown))
+            if (ImGui::IsKeyPressed(ImGuiKey_DownArrow) || ImGui::IsKeyPressed(ImGuiKey_GamepadDpadDown) ||
+                ImGui::IsKeyPressed(ImGuiKey_GamepadLStickDown))
                 ImGui::SetScrollY(ImGui::GetScrollY() + step);
-            if (ImGui::IsKeyPressed(ImGuiKey_UpArrow) || ImGui::IsKeyPressed(ImGuiKey_GamepadDpadUp) || ImGui::IsKeyPressed(ImGuiKey_GamepadLStickUp))
+            if (ImGui::IsKeyPressed(ImGuiKey_UpArrow) || ImGui::IsKeyPressed(ImGuiKey_GamepadDpadUp) ||
+                ImGui::IsKeyPressed(ImGuiKey_GamepadLStickUp))
                 ImGui::SetScrollY(ImGui::GetScrollY() - step);
         }
         BeginCard("##achievements", ImVec2(0, 0), ImGuiChildFlags_AutoResizeY);
@@ -63,10 +67,14 @@ namespace launcher_ui
             EndSettingsPage();
             return;
         }
-        ui::SectionHeader(Tr("Achievements"), Tf("{} of {} unlocked · {} of {} G", progress.unlocked, progress.rows.size(), progress.gamerscore,
-            progress.totalGamerscore).c_str(), false);
+        ui::SectionHeader(Tr("Achievements"),
+            Tf("{} of {} unlocked · {} of {} G", progress.unlocked, progress.rows.size(), progress.gamerscore,
+                progress.totalGamerscore)
+                .c_str(),
+            false);
         ImGui::Dummy(ImVec2(0, ui::space::XXS));
-        ui::ProgressBar(progress.totalGamerscore > 0 ? float(progress.gamerscore) / float(progress.totalGamerscore) : 0.0f);
+        ui::ProgressBar(
+            progress.totalGamerscore > 0 ? float(progress.gamerscore) / float(progress.totalGamerscore) : 0.0f);
         if (std::string line = PlayTimeLine(progress.play, int64_t(std::time(nullptr))); !line.empty())
             ui::Text(ui::TextStyle::Caption, line.c_str(), ui::color::InkSoft);
         ImGui::Dummy(ImVec2(0, ui::space::XS));
@@ -78,26 +86,33 @@ namespace launcher_ui
         for (size_t i = 0; i < progress.rows.size(); i++)
         {
             const AchievementRow& row = progress.rows[i];
-            const float descriptionH = ui::TextSize(ui::TextStyle::Caption, row.description.c_str(), nullptr, false, textW).y;
+            const float descriptionH =
+                ui::TextSize(ui::TextStyle::Caption, row.description.c_str(), nullptr, false, textW).y;
             const float blockH = ui::type::Body + ui::space::XXS + descriptionH;
             const float rowH = std::max(Picture, blockH) + 2 * ui::space::S;
             const ImVec2 at = ImGui::GetCursorScreenPos();
             ImGui::Dummy(ImVec2(cardWidth, rowH));
             if (i > 0)
-                draw->AddLine(ImVec2(at.x, at.y + 0.5f), ImVec2(at.x + cardWidth, at.y + 0.5f), ui::Col(ui::color::Hairline, 110.0f / 255), ui::stroke::Hairline);
+                draw->AddLine(ImVec2(at.x, at.y + 0.5f), ImVec2(at.x + cardWidth, at.y + 0.5f),
+                    ui::Col(ui::color::Hairline, 110.0f / 255), ui::stroke::Hairline);
 
             // The picture (a locked one dimmed) and the text, each centred on the row.
-            const float pictureTop = std::round(at.y + (rowH - Picture) / 2), top = std::round(at.y + (rowH - blockH) / 2);
+            const float pictureTop = std::round(at.y + (rowH - Picture) / 2),
+                        top = std::round(at.y + (rowH - blockH) / 2);
             if (const ArtTexture* icon = AchievementIcon(row.image))
-                draw->AddImageRounded(Ref(icon->texture), ImVec2(at.x, pictureTop), ImVec2(at.x + Picture, pictureTop + Picture), icon->uv0, icon->uv1,
+                draw->AddImageRounded(Ref(icon->texture), ImVec2(at.x, pictureTop),
+                    ImVec2(at.x + Picture, pictureTop + Picture), icon->uv0, icon->uv1,
                     row.unlocked ? IM_COL32_WHITE : IM_COL32(90, 90, 98, 255), ui::radius::Control);
             else
-                draw->AddRectFilled(ImVec2(at.x, pictureTop), ImVec2(at.x + Picture, pictureTop + Picture), ui::Col(ui::color::Inset), ui::radius::Control);
+                draw->AddRectFilled(ImVec2(at.x, pictureTop), ImVec2(at.x + Picture, pictureTop + Picture),
+                    ui::Col(ui::color::Inset), ui::radius::Control);
             ui::PushText(ui::TextStyle::Body, true);
-            ui::DrawText(draw, ImVec2(at.x + textX, top), ui::Col(row.unlocked ? ui::color::Ink : ui::color::Dim), row.name.c_str());
+            ui::DrawText(draw, ImVec2(at.x + textX, top), ui::Col(row.unlocked ? ui::color::Ink : ui::color::Dim),
+                row.name.c_str());
             ui::PopText();
             ui::PushText(ui::TextStyle::Caption);
-            draw->AddText(ImGui::GetFont(), ImGui::GetFontSize(), ImVec2(at.x + textX, top + ui::type::Body + ui::space::XXS),
+            draw->AddText(ImGui::GetFont(), ImGui::GetFontSize(),
+                ImVec2(at.x + textX, top + ui::type::Body + ui::space::XXS),
                 ui::Col(row.unlocked ? ui::color::InkSoft : ui::color::Dim), row.description.c_str(), nullptr, textW);
             ui::PopText();
 
@@ -105,14 +120,18 @@ namespace launcher_ui
             const std::string score = fmt::format("{} G", row.gamerscore);
             const float right = at.x + cardWidth, baseline = top + ui::Baseline(ui::TextStyle::Body, true);
             ui::PushText(ui::TextStyle::Body, true);
-            ui::DrawText(draw, ImVec2(right - ImGui::CalcTextSize(score.c_str()).x, baseline - ui::Baseline(ui::TextStyle::Body, true)),
+            ui::DrawText(draw,
+                ImVec2(
+                    right - ImGui::CalcTextSize(score.c_str()).x, baseline - ui::Baseline(ui::TextStyle::Body, true)),
                 ui::Col(row.unlocked ? ui::color::AccentFill : ui::color::Dim), score.c_str());
             ui::PopText();
             if (row.unlocked && row.time > 0)
             {
                 const std::string day = ui::FormatDate(row.time);
                 ui::PushText(ui::TextStyle::Caption);
-                ui::DrawText(draw, ImVec2(right - ImGui::CalcTextSize(day.c_str()).x, top + ui::type::Body + ui::space::XXS), ui::Col(ui::color::InkSoft), day.c_str());
+                ui::DrawText(draw,
+                    ImVec2(right - ImGui::CalcTextSize(day.c_str()).x, top + ui::type::Body + ui::space::XXS),
+                    ui::Col(ui::color::InkSoft), day.c_str());
                 ui::PopText();
             }
         }

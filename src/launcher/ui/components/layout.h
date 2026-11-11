@@ -28,7 +28,8 @@ namespace ui
     // content on every side and its padding puts the content back where the cursor was, so a focus ring, a hover box or a
     // border at the content's edge is never cut. `size` is the content's: > 0 that size, <= 0 the room left less |size|
     // (BeginChild's rule). The layout after it is a plain child's of that size (SameLine beside it, the next line under it). ----
-    void BeginRoomyChild(const char* id, ImVec2 size, ImGuiChildFlags flags = 0, ImGuiWindowFlags windowFlags = 0, float bleed = focus::Reach);
+    void BeginRoomyChild(const char* id, ImVec2 size, ImGuiChildFlags flags = 0, ImGuiWindowFlags windowFlags = 0,
+        float bleed = focus::Reach);
     void EndRoomyChild();
 
     // ---- ListRow: one row of a list, the whole row pressable. Its title, a subtitle under it (the row is then
@@ -49,14 +50,14 @@ namespace ui
         const char* note = nullptr;     // a small word at the end of the subtitle's line (a version)
         const Status* status = nullptr; // the subtitle's state: its icon before it, in its colour
         Icon statusIcon = Icon::None;   // that icon when the state has its own (a disc, an update), else the status's
-        float leadWidth = 0;            // the leading column's width (the icon or the image centred in it): one per list
-        float progress = -1;            // 0..1: a thin bar along the row's foot (an install running)
-        unsigned progressColor = 0;     // its fill; 0: the accent
-        bool dim = false;               // the title in the dim ink (a game not out yet)
+        float leadWidth = 0; // the leading column's width (the icon or the image centred in it): one per list
+        float progress = -1; // 0..1: a thin bar along the row's foot (an install running)
+        unsigned progressColor = 0; // its fill; 0: the accent
+        bool dim = false; // the title in the dim ink (a game not out yet)
         TextStyle titleStyle = TextStyle::Body, subtitleStyle = TextStyle::Caption;
         float minHeight = 0;
         float exactHeight = 0; // > 0: the row is this tall even with a subtitle (a list that must fit a fixed box)
-        unsigned selectedColor = 0;     // the selected row's bar; 0: the sidebar's orange (a game's row: the game's colour)
+        unsigned selectedColor = 0; // the selected row's bar; 0: the sidebar's orange (a game's row: the game's colour)
     };
     bool ListRow(const char* title, const ListRowOptions& options = {});
 
@@ -64,7 +65,8 @@ namespace ui
     // column on the right (height::SettingControl wide), rows at least height::Large high with a hairline between them.
     // Between BeginSettings (false: draw nothing) and EndSettings, one SettingRow per setting, then its control; the label is
     // drawn once the control is, centred on it (`note`: a small word after the label, on its baseline: a pad's button). ----
-    bool BeginSettings(const char* id, float controlWidth = height::SettingControl); // wider for a row of buttons that needs it
+    bool BeginSettings(
+        const char* id, float controlWidth = height::SettingControl); // wider for a row of buttons that needs it
     void SettingRow(const char* label, const char* hint = nullptr, const char* note = nullptr);
     void EndSettings();
     // Moves the cursor so that a control (or a group) `width` wide ends at the available room's right edge: a settings row's
@@ -76,9 +78,23 @@ namespace ui
 
     // ---- Modal: the one dialog shell. A scrim, a centred panel (Small 480, Medium 680, Large 880 points wide, at most the
     // window), the title and a close cross on top, the body, then the actions at the bottom right. B / Escape closes it. ----
-    enum class ModalSize { Small, Medium, Large };
-    enum class ModalKind { Normal, Danger }; // Danger: the confirm button is red and the focus starts on Cancel
-    enum class ModalResult { None, Confirm, Cancel };
+    enum class ModalSize
+    {
+        Small,
+        Medium,
+        Large
+    };
+    enum class ModalKind
+    {
+        Normal,
+        Danger
+    }; // Danger: the confirm button is red and the focus starts on Cancel
+    enum class ModalResult
+    {
+        None,
+        Confirm,
+        Cancel
+    };
     // True while it is open (`*open`); then draw the body, ModalActions, and EndModal.
     bool BeginModal(const char* id, const char* title, bool* open, ModalSize size = ModalSize::Medium);
     // The footer: Cancel (secondary) then the confirm button (primary, or danger), right-aligned. `confirm` null: only Cancel
@@ -88,8 +104,8 @@ namespace ui
     ModalResult ModalActions(bool* open, const char* confirm, const char* cancel, ModalKind kind = ModalKind::Normal);
     void EndModal();
     // A whole confirmation: title, one sentence, the two buttons.
-    ModalResult ConfirmDialog(const char* id, const char* title, const char* body, const char* confirm, const char* cancel, bool* open,
-        ModalKind kind = ModalKind::Normal);
+    ModalResult ConfirmDialog(const char* id, const char* title, const char* body, const char* confirm,
+        const char* cancel, bool* open, ModalKind kind = ModalKind::Normal);
 
     // ---- Menu: a popover under the item that opens it, with its rows. ----
     // After the item that opens it: the menu opens under that item, its left edge on the item's; `above`: above it (an item

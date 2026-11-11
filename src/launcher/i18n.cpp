@@ -21,7 +21,9 @@ namespace i18n
             std::vector<Language> languages{ { "en", "English" } };
             std::string current = "en";
             using Table = std::unordered_map<std::string, std::string>;
-            std::atomic<const Table*> table{ nullptr }; // the current language's entries; Tr is also called from worker threads
+            std::atomic<const Table*> table{
+                nullptr
+            }; // the current language's entries; Tr is also called from worker threads
             std::unordered_map<std::string, Table> tables; // never changed once built, so the pointer above stays valid
         };
 
@@ -33,7 +35,8 @@ namespace i18n
                 {
                     const EmbeddedLanguage& file = g_embeddedLanguages[i];
                     Catalog catalog;
-                    if (!ParseCatalog(std::string_view(reinterpret_cast<const char*>(file.data), file.size), catalog) || catalog.code.empty())
+                    if (!ParseCatalog(std::string_view(reinterpret_cast<const char*>(file.data), file.size), catalog) ||
+                        catalog.code.empty())
                         continue;
                     state.languages.push_back({ catalog.code, catalog.name.empty() ? catalog.code : catalog.name });
                     auto& table = state.tables[catalog.code];
