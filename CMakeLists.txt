@@ -3,7 +3,7 @@ project(ArkeyanLauncher LANGUAGES C CXX)
 if(WIN32)
     enable_language(RC) # the exe's icon, manifest and version (resources/windows/skylauncher.rc.in)
 endif()
-set(LAUNCHER_VERSION "0.9.5" CACHE STRING "Version shown in the app bundle")
+set(LAUNCHER_VERSION "0.9.6" CACHE STRING "Version shown in the app bundle")
 # SKYLAUNCHER_VERSION is the name before 0.6.0: still accepted.
 if(SKYLAUNCHER_VERSION)
     set(LAUNCHER_VERSION "${SKYLAUNCHER_VERSION}")
