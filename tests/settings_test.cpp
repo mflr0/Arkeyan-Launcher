@@ -177,7 +177,7 @@ namespace
         SETTINGS_EXPECT(config["ssa.video"]["fps_limit"] == "60" && config["giants.video"]["vsync"] == "0");
         SETTINGS_EXPECT(config["ssa.video"].count("custom") == 0);
 
-        // Trap Team has its own controls: LT is its tag team, RB an attack like B, and LB (which fires nothing) is not among them.
+        // Trap Team has its own controls: LT is its tag team, RB an attack like B, LB one like Y (issue #51).
         bool tagTeam = false, rightBumper = false, leftBumper = false;
         for (const GameKey& key : GameKeys("trapteam"))
         {
@@ -185,9 +185,10 @@ namespace
                                      std::string_view(key.label) == "Switch Skylander / Villain");
             rightBumper =
                 rightBumper || (std::string_view(key.action) == "rb" && std::string_view(key.label) == "Attack 2");
-            leftBumper = leftBumper || std::string_view(key.action) == "lb";
+            leftBumper =
+                leftBumper || (std::string_view(key.action) == "lb" && std::string_view(key.label) == "Attack 3");
         }
-        SETTINGS_EXPECT(tagTeam && rightBumper && !leftBumper);
+        SETTINGS_EXPECT(tagTeam && rightBumper && leftBumper);
 
         // Every game's list: unique actions, one row per pad button, SuperChargers' driving on the triggers.
         for (const char* game : { "ssa", "giants", "swapforce", "trapteam", "superchargers", "imaginators" })
