@@ -182,6 +182,13 @@ driver, once (nothing to download): in Device Manager, right-click the portal ("
 **WinUsb Device**, then unplug the portal and plug it in again. Zadig's WinUSB driver works the same way. The Xbox One
 portal needs nothing: the game reaches it through Windows' own Xbox driver.
 
+**A Wii, PlayStation or PC portal moved to another driver (Zadig) on Windows:** on WinUSB, the game uses it as it is. On
+libusbK or libusb0, **Test the portal** shows the way back: in Device Manager, right-click the portal, **Uninstall device**,
+tick **Attempt to remove the driver for this device**, then unplug the portal and plug it in again. If Windows puts that
+driver back, open a Command Prompt as administrator and run `pnputil /enum-drivers`, then
+`pnputil /delete-driver oemNN.inf /uninstall /force` with the driver's `oemNN.inf` (the Test names it, and **Copy
+commands** copies both), then plug the portal in again.
+
 ## Settings
 
 - **Resolution scale:** Auto picks x1 on integrated graphics and x2 on dedicated cards. If the game is slow, use x1.

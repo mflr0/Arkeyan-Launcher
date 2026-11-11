@@ -1132,3 +1132,12 @@ This Xbox portal's driver can't be used: it needs WinUSB.	Le pilote de ce portai
 Windows has no driver for this portal.	Windows n'a pas de pilote pour ce portail.
 This Xbox 360 portal needs Windows' WinUSB driver, set once: see the README.	Ce portail Xbox 360 a besoin du pilote WinUSB de Windows, à choisir une fois : voir le README.
 Windows didn't hand the Xbox One portal to the game.	Windows n'a pas confié le portail Xbox One au jeu.
+Xbox portals need libusb-1.0: install your system's libusb-1.0 package, then test again.	Les portails Xbox ont besoin de libusb-1.0 : installez le paquet libusb-1.0 de votre système, puis refaites le test.
+This portal is on the {} driver, which a tool such as Zadig installed and the game can't use. To give it back to Windows:	Ce portail est sur le pilote {}, installé par un outil comme Zadig, que le jeu ne peut pas utiliser. Pour le rendre à Windows :
+1. In Device Manager, right-click the portal, choose Uninstall device, tick "Attempt to remove the driver for this device", then Uninstall.	1. Dans le Gestionnaire de périphériques, faites un clic droit sur le portail, choisissez Désinstaller l'appareil, cochez « Tenter de supprimer le pilote de ce périphérique », puis Désinstaller.
+2. Unplug the portal and plug it in again.	2. Débranchez le portail, puis rebranchez-le.
+3. If it's back on {}: open a Command Prompt as administrator, run these two commands, then plug the portal in again:	3. S'il revient sur {} : ouvrez une Invite de commandes en tant qu'administrateur, lancez ces deux commandes, puis rebranchez le portail :
+In the first command's list, find the {} driver's oemNN.inf and put its name in the second.	Dans la liste de la première commande, trouvez le oemNN.inf du pilote {} et mettez son nom dans la seconde.
+Or choose WinUSB for it in Zadig: the game uses it there.	Ou choisissez WinUSB pour lui dans Zadig : le jeu l'utilise alors.
+Copy commands	Copier les commandes
+Commands copied	Commandes copiées

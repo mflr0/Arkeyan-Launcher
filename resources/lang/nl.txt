@@ -1102,3 +1102,12 @@ This Xbox portal's driver can't be used: it needs WinUSB.	Het stuurprogramma van
 Windows has no driver for this portal.	Windows heeft geen stuurprogramma voor dit portaal.
 This Xbox 360 portal needs Windows' WinUSB driver, set once: see the README.	Dit Xbox 360-portaal heeft het WinUSB-stuurprogramma van Windows nodig, één keer ingesteld: zie de README.
 Windows didn't hand the Xbox One portal to the game.	Windows heeft het Xbox One-portaal niet aan het spel doorgegeven.
+Xbox portals need libusb-1.0: install your system's libusb-1.0 package, then test again.	Xbox-portalen hebben libusb-1.0 nodig: installeer het pakket libusb-1.0 van je systeem en test daarna opnieuw.
+This portal is on the {} driver, which a tool such as Zadig installed and the game can't use. To give it back to Windows:	Dit portaal gebruikt het stuurprogramma {}, dat een tool zoals Zadig heeft geïnstalleerd en dat het spel niet kan gebruiken. Zo geef je het terug aan Windows:
+1. In Device Manager, right-click the portal, choose Uninstall device, tick "Attempt to remove the driver for this device", then Uninstall.	1. Klik in Apparaatbeheer met rechts op het portaal, kies Apparaat verwijderen, vink "Proberen het stuurprogramma voor dit apparaat te verwijderen" aan en klik op Verwijderen.
+2. Unplug the portal and plug it in again.	2. Koppel het portaal los en sluit het opnieuw aan.
+3. If it's back on {}: open a Command Prompt as administrator, run these two commands, then plug the portal in again:	3. Staat het weer op {}: open een Opdrachtprompt als administrator, voer deze twee opdrachten uit en sluit het portaal daarna opnieuw aan:
+In the first command's list, find the {} driver's oemNN.inf and put its name in the second.	Zoek in de lijst van de eerste opdracht het oemNN.inf van het stuurprogramma {} en zet die naam in de tweede.
+Or choose WinUSB for it in Zadig: the game uses it there.	Of kies er in Zadig WinUSB voor: dan gebruikt het spel het.
+Copy commands	Opdrachten kopiëren
+Commands copied	Opdrachten gekopieerd

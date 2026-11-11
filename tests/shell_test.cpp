@@ -244,10 +244,24 @@ void GameRunChecks(const std::filesystem::path &scratch) {
   PortalProbeResult transport = ParsePortalProbe(
       "{\"transport\":\"usb\",\"available\":false,\"status\":\"error: "
       "libusb-1.0 not found\"}\n{\"done\":true,\"count\":0}\n");
+  // libusb in the player's words on Linux; never on Windows or macOS (WinUSB,
+  // Windows' Xbox driver, IOKit), whatever the runtime's age.
+#ifdef __linux__
   SHELL_EXPECT(transport.ran && transport.portals.empty() &&
                transport.notes.size() == 1 &&
-               transport.notes[0].find("libusb-1.0 not found") !=
-                   std::string::npos);
+               transport.notes[0] ==
+                   "Xbox portals need libusb-1.0: install your system's "
+                   "libusb-1.0 package, then test again.");
+#else
+  SHELL_EXPECT(transport.ran && transport.portals.empty() &&
+               transport.notes.empty());
+#endif
+  PortalProbeResult other = ParsePortalProbe(
+      "{\"transport\":\"usb\",\"available\":false,\"status\":\"error: "
+      "winusb.dll could not be loaded\"}\n{\"done\":true,\"count\":0}\n");
+  SHELL_EXPECT(other.notes.size() == 1 &&
+               other.notes[0] == "USB (Xbox) portals can't be used: winusb.dll "
+                                 "could not be loaded");
   // The game's lines about the devices that may be a portal (Windows), shown as
   // they come, after the portals.
   PortalProbeResult noted = ParsePortalProbe(
@@ -439,6 +453,72 @@ void GameRunChecks(const std::filesystem::path &scratch) {
                  "(Windows.Gaming.Input.Custom)";
   SHELL_EXPECT(PortalStatusText(entry) ==
                "Windows didn't hand the Xbox One portal to the game.");
+  {
+    // 0.9.6: a HID portal a tool moved to libusb0 (it came back after an
+    // uninstall): the way back as steps, the package's commands to copy.
+    PortalProbeEntry moved{"usb", "1430", "0150", "Portal of Power", false, ""};
+    moved.status =
+        "error: it uses the libusb0 driver, which a tool such as Zadig "
+        "installed and Arkeyan cannot open (it reads this portal through "
+        "Windows' HID driver, or WinUSB). To give it back to Windows: 1. in "
+        "Device Manager, right-click the portal, Uninstall device, tick "
+        "\"Attempt to remove the driver for this device\", Uninstall; 2. unplug "
+        "the portal and plug it in again; 3. if it is back on libusb0: in a "
+        "Command Prompt run as administrator, pnputil /enum-drivers (the "
+        "driver is oem42.inf), then pnputil /delete-driver oem42.inf "
+        "/uninstall /force, and plug the portal in again (or choose WinUSB "
+        "for it in Zadig: Arkeyan uses it there)";
+    const std::string steps = PortalStatusText(moved);
+    SHELL_EXPECT(steps.starts_with(
+        "This portal is on the libusb0 driver, which a tool such as Zadig "
+        "installed and the game can't use. To give it back to Windows:\n1. In "
+        "Device Manager, right-click the portal, choose Uninstall device, tick "
+        "\"Attempt to remove the driver for this device\", then Uninstall.\n2. "
+        "Unplug the portal and plug it in again.\n3. If it's back on libusb0: "));
+    SHELL_EXPECT(steps.find("\n    pnputil /enum-drivers\n    pnputil "
+                            "/delete-driver oem42.inf /uninstall /force\n") !=
+                 std::string::npos);
+    SHELL_EXPECT(steps.find("oemNN") == std::string::npos &&
+                 steps.ends_with("Or choose WinUSB for it in Zadig: the game "
+                                 "uses it there."));
+    SHELL_EXPECT(PortalDriverCommands(moved) ==
+                 "pnputil /enum-drivers\r\npnputil /delete-driver oem42.inf "
+                 "/uninstall /force\r\n");
+    // The package's name unknown: the player finds it in the first list.
+    moved.status = "error: an Xbox One portal on the libusbK driver, which "
+                   "Arkeyan cannot open. To give it back to Windows' own Xbox "
+                   "driver: 1. ...; 3. ... pnputil /enum-drivers (find the "
+                   "libusbK driver's oemNN.inf), then pnputil /delete-driver "
+                   "oemNN.inf /uninstall /force, and plug the portal in again";
+    SHELL_EXPECT(PortalStatusText(moved).find(
+                     "In the first command's list, find the libusbK driver's "
+                     "oemNN.inf and put its name in the second.") !=
+                 std::string::npos);
+    SHELL_EXPECT(PortalDriverCommands(moved).find("delete-driver oemNN.inf") !=
+                 std::string::npos);
+    // Other reasons have no commands; none of the texts names SKY_LIBUSB.
+    SHELL_EXPECT(PortalDriverCommands(entry).empty());
+    moved.status = "error: an Xbox 360 portal on the libusbK driver, which "
+                   "Arkeyan cannot open (it opens WinUSB devices): use WinUSB "
+                   "instead, once, in Device Manager: ... WinUsb Device; then";
+    SHELL_EXPECT(PortalStatusText(moved) ==
+                     "This Xbox 360 portal needs Windows' WinUSB driver, set "
+                     "once: see the README." &&
+                 PortalDriverCommands(moved).empty());
+    // A HID portal on WinUSB answers through it: no problem, the game uses it.
+    PortalProbeResult winusb = ParsePortalProbe(
+        "{\"kind\":\"hid\",\"vid\":\"1430\",\"pid\":\"0150\",\"product\":"
+        "\"Portal of Power\",\"opened\":true,\"status\":\"ok\",\"write\":"
+        "\"usb-control\",\"methods\":{\"usb-control\":\"R: ok, 'R' 01 28 in 9 "
+        "ms; S: ok, 'S' 00 in 3 ms\"},\"details\":\"driver WinUSB, interface "
+        "0, reports from endpoint 81\"}\n{\"done\":true,\"count\":1}\n");
+    bool good = false;
+    SHELL_EXPECT(winusb.portals.size() == 1 &&
+                 PortalStatusText(winusb.portals[0]).empty() &&
+                 PortalVerdict("auto", winusb, good) ==
+                     "Real portal: the game will use it." &&
+                 good);
+  }
   {
     // The Copy text: each step of the runtime's details on its own line.
     PortalProbeResult steps;

@@ -1103,3 +1103,12 @@ This Xbox portal's driver can't be used: it needs WinUSB.	Den här Xbox-portalen
 Windows has no driver for this portal.	Windows har ingen drivrutin för den här portalen.
 This Xbox 360 portal needs Windows' WinUSB driver, set once: see the README.	Den här Xbox 360-portalen behöver Windows WinUSB-drivrutin, vald en gång: se README.
 Windows didn't hand the Xbox One portal to the game.	Windows lämnade inte över Xbox One-portalen till spelet.
+Xbox portals need libusb-1.0: install your system's libusb-1.0 package, then test again.	Xbox-portaler behöver libusb-1.0: installera systemets paket libusb-1.0 och testa sedan igen.
+This portal is on the {} driver, which a tool such as Zadig installed and the game can't use. To give it back to Windows:	Den här portalen använder drivrutinen {}, som ett verktyg som Zadig installerade och som spelet inte kan använda. Så här ger du tillbaka den till Windows:
+1. In Device Manager, right-click the portal, choose Uninstall device, tick "Attempt to remove the driver for this device", then Uninstall.	1. Högerklicka på portalen i Enhetshanteraren, välj Avinstallera enhet, kryssa i "Försök att ta bort drivrutinen för den här enheten" och klicka på Avinstallera.
+2. Unplug the portal and plug it in again.	2. Koppla från portalen och anslut den igen.
+3. If it's back on {}: open a Command Prompt as administrator, run these two commands, then plug the portal in again:	3. Om den är tillbaka på {}: öppna Kommandotolken som administratör, kör de här två kommandona och anslut sedan portalen igen:
+In the first command's list, find the {} driver's oemNN.inf and put its name in the second.	Leta upp oemNN.inf för drivrutinen {} i listan från det första kommandot och sätt in dess namn i det andra.
+Or choose WinUSB for it in Zadig: the game uses it there.	Eller välj WinUSB för den i Zadig: då använder spelet den.
+Copy commands	Kopiera kommandon
+Commands copied	Kommandon kopierade
