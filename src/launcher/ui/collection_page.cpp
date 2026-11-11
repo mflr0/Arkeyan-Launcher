@@ -1158,10 +1158,15 @@ namespace launcher_ui
             }
         }
         ImGui::SetCursorScreenPos(ImVec2(line.x, line.y + ui::height::Normal + ui::space::S));
+        // Choosing another game above reloads the seats at once: the game read before may have more of them (Trap Team
+        // and SuperChargers have 5, Giants 3), so read it again and never go past the seats loaded (issue #45).
+        game = m_model.Game();
         if (game == nullptr)
             return;
 
-        const size_t count = game->seats.size();
+        const size_t count = std::min(game->seats.size(), m_model.seats.size());
+        if (count == 0)
+            return;
         const float w = std::floor((width - SeatGap * float(count - 1)) / float(count));
         const ImVec2 row = ImGui::GetCursorScreenPos();
         m_navSeat = m_hoverSeat = -1;
