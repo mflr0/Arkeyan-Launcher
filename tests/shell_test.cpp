@@ -1425,8 +1425,11 @@ void MakeKitRelease(const std::filesystem::path& folder, const std::vector<std::
     }
 }
 
+int PortalTextChecks(); // tests/portal_text_test.cpp
+
 int ShellChecks(const std::filesystem::path& scratch)
 {
+    g_shellFailures += PortalTextChecks();
     {
         TestSetEnv("FAKE_ARKEYAN_BUILDER_CLOSE_OUTPUT", "1");
         GameInstaller installer;

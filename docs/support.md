@@ -115,5 +115,25 @@ reject or warn about it; the contract is the runtime's `docs/portal_probe.md`). 
 with code 2: "This version of the game doesn't have the portal test yet". Parser, words and tests: `ParsePortalProbe`,
 `PortalStatusText`, `PortalVerdict`, `PortalProbeText`, `tests/shell_test.cpp`.
 
+The copied model line adds parentheses only when `verdict_reason` is nonempty: for example,
+`model: <id> <model>; Spyro's Adventure: works`, or `Spyro's Adventure: warns (<reason>)`.
+The write line reads `the game writes with output-report` (or `hid-write` / `usb-control`). The launcher owns the parsed
+strings. If a runtime supplies a damaged selected-method label, Copy uses the intact method name only when exactly one
+method answered both commands successfully and the portal is opened with status `ok`; otherwise it omits that line.
+This protects the copied text; it does not repair the runtime that supplied the damaged label.
+When output-report answered both commands and the HID portal's status is `ok`, a Windows HID write diagnostic with
+`ERROR_IO_PENDING` (`0x3E5`) followed by `S: not tried` reads `hid-write: not needed (output-report works)`.
+Other errors remain visible, including pending writes without a successful output-report probe. This changes the report
+only, never the game's writes. The per-portal formatter is `PortalProbeEntryText` in `src/launcher/portal_probe_text.cpp`;
+`tests/portal_text_test.cpp` checks its exact lines with synthetic strings and no device or process, as part of the shell
+checks or separately with the `ArkeyanPortalTextTest` target. With a C++20 compiler, the same test can also run without
+the launcher dependencies:
+
+```sh
+c++ -std=c++20 -Isrc -DPORTAL_TEXT_TEST_STANDALONE tests/portal_text_test.cpp \
+    src/launcher/portal_probe_text.cpp -o portal-text-test
+./portal-text-test
+```
+
 Portal mode is `[portal] mode` = `auto`, `emulated` (Virtual) or `real`; the launcher passes it as `SKY_PORTAL`. Older
 `hid` and `usb` values still work and show as "Real portal".
