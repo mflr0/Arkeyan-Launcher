@@ -1143,3 +1143,4 @@ In the first command's list, find the {} driver's oemNN.inf and put its name in 
 Or choose WinUSB for it in Zadig: the game uses it there.	Ou choisissez WinUSB pour lui dans Zadig : le jeu l'utilise alors.
 Copy commands	Copier les commandes
 Commands copied	Commandes copiées
+Tabs	Onglets

@@ -102,7 +102,8 @@ namespace ui
     // The room EndModal's pad legend takes under the actions (0 while the keyboard is in use): a dialog sized to the window keeps it free.
     float ModalLegendHeight();
     ModalResult ModalActions(bool* open, const char* confirm, const char* cancel, ModalKind kind = ModalKind::Normal);
-    void EndModal();
+    // `back` overrides the cancellation label (for a step inside a dialog); otherwise ModalActions supplies it.
+    void EndModal(const char* back = nullptr);
     // A whole confirmation: title, one sentence, the two buttons.
     ModalResult ConfirmDialog(const char* id, const char* title, const char* body, const char* confirm,
         const char* cancel, bool* open, ModalKind kind = ModalKind::Normal);

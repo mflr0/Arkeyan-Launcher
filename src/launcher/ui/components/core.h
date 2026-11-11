@@ -55,6 +55,13 @@ namespace ui
         }; // shown: not scrolled out of its window
         std::vector<TestStop>* testStops =
             nullptr; // the pad walk: every enabled stop drawn, its top window's ID and its rectangle
+        struct TestHint
+        {
+            int button;
+            std::string label;
+            bool withNext;
+        };
+        std::map<uint32_t, std::vector<TestHint>> testLegendHints;
         std::vector<uint32_t>* testLegends = nullptr; // the pad walk: the top windows a pad legend was drawn in
     };
     Context& Ctx();

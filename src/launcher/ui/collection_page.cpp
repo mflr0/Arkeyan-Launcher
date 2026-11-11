@@ -797,11 +797,11 @@ namespace launcher_ui
                 TakeOff(*static_cast<const size_t*>(payload->Data));
             ImGui::EndDragDropTarget();
         }
+        HandleShortcuts();
         if (pad)
             ui::PageLegend(Tr("Back"), width, true); // with the page's pad actions (HandleShortcuts)
         ImGui::EndChild();
 
-        HandleShortcuts();
         DrawOverlay();
     }
 

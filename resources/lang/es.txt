@@ -102,6 +102,7 @@ Auto: 5.1 when the device has six channels.	Auto: 5.1 si el dispositivo tiene se
 Automatic	Automático
 Automatic detection	Detección automática
 Back	Atrás
+Tabs	Pestañas
 Back side button	Botón lateral trasero
 Back up now	Copiar ahora
 Backed up	Copia hecha

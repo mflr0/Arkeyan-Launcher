@@ -102,6 +102,7 @@ Auto: 5.1 when the device has six channels.	Auto: 5.1, når enheden har seks kan
 Automatic	Automatisk
 Automatic detection	Automatisk registrering
 Back	Tilbage
+Tabs	Faner
 Back side button	Sideknap bagud
 Back up now	Tag backup nu
 Backed up	Backup taget

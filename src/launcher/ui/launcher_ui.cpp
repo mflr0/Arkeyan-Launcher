@@ -2008,6 +2008,12 @@ namespace launcher_ui
         const bool verifying = state.state == SlotState::Checking;
         const bool install = ready && NeedsInstall();
         const bool update = ready && !install && UpdateAvailable();
+        if ((installing || m_s->installView) &&
+            ui::PadAction(ui::PadButton::West, m_s->installLog ? Tr("Hide details") : Tr("Show details")))
+        {
+            m_s->installLog = !m_s->installLog;
+            RequestFocus(FocusTo::Page);
+        }
         const bool detailed = m_s->installView && (!installing || m_s->installLog);
         const float panelH = panelW < ui::hero::PanelWidth ? ui::hero::CompactPanelHeight : ui::hero::PanelHeight;
 
@@ -2856,8 +2862,8 @@ namespace launcher_ui
             SDL_RenderPresent(m_renderer);
             return;
         }
-        if (!m_backTaken &&
-            (ImGui::IsKeyPressed(ImGuiKey_Escape, false) || ImGui::IsKeyPressed(ImGuiKey_GamepadFaceRight, false)))
+        if (!m_backTaken && (ImGui::IsKeyPressed(ImGuiKey_Escape, false) ||
+                                (!m_bannerTakesBack && ImGui::IsKeyPressed(ImGuiKey_GamepadFaceRight, false))))
             Back();
         if (!m_pagesTaken &&
             (ImGui::IsKeyPressed(ImGuiKey_GamepadL1, false) || ImGui::IsKeyPressed(ImGuiKey_GamepadR1, false)))
@@ -2867,6 +2873,7 @@ namespace launcher_ui
             m_walk.frameStops.clear();
             m_walk.items.clear();
             m_walk.frameLegends.clear();
+            ui::Ctx().testLegendHints.clear();
             ui::Ctx().testLegends = &m_walk.frameLegends;
             ui::Ctx().testStops = &m_walk.frameStops;
             ui::Ctx().testNavigationItems = &m_walk.items; // and their labels
@@ -2880,6 +2887,7 @@ namespace launcher_ui
 
             ImVec2 size = ImGui::GetIO().DisplaySize;
             m_bannerH = BannerHeight(); // an update on offer, or being installed: a band above the page
+            m_bannerTakesBack = false;
             if (m_bannerH > 0)
                 DrawUpdateBanner(m_bannerH);
             ImGui::SetNextWindowPos(ImVec2(SidebarW, m_bannerH));

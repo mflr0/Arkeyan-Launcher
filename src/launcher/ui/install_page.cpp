@@ -770,6 +770,8 @@ namespace launcher_ui
             const Action& action = actions[i];
             ImGui::SetCursorScreenPos(ImVec2(left + action.offset.x, buttonsAt.y + action.offset.y));
             const bool hit = ui::Button(action.label, action.options);
+            if (!action.options.disabled)
+                TakeFocus(FocusTo::Page);
             const ImVec2 min = ImGui::GetItemRectMin(), max = ImGui::GetItemRectMax();
             if (min.x < left || max.x > left + width ||
                 max.y > at.y + std::min(size.y, ImGui::GetWindowHeight()) - ui::space::L)

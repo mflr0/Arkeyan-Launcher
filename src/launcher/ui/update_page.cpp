@@ -98,7 +98,7 @@ namespace launcher_ui
         bool offer = state.launcherNewer && !m_updateLater;
         bool shown = progress || state.restartNeeded || (state.phase == Phase::Failed && !state.error.empty()) ||
                      offer || (state.phase == Phase::Done && !state.note.empty());
-        return shown ? BannerH : 0;
+        return shown ? BannerH + (ui::Ctx().glyphs != ui::Glyphs::Keyboard ? ui::height::Normal : 0) : 0;
     }
 
     void App::DrawUpdateBanner(float height)
@@ -184,7 +184,8 @@ namespace launcher_ui
             buttonsW += ui::ButtonWidth(button.label, optionsOf(button)) + ui::space::S;
         const float contentW = display.x - SidebarW - 2 * ui::space::L;
         const float textW = contentW - buttonsW - ui::space::M;
-        const float middle = (height - ui::stroke::Selection) / 2;
+        const float legendH = ui::Ctx().glyphs != ui::Glyphs::Keyboard ? ui::height::Normal : 0;
+        const float middle = (height - legendH - ui::stroke::Selection) / 2;
         ImGui::SetCursorPos(ImVec2(ui::space::L, std::round(middle - ui::SizeOf(ui::TextStyle::Body) / 2)));
         std::string shown = ui::Ellipsize(text.c_str(),
             progress ? std::min(textW, ui::TextSize(ui::TextStyle::Body, text.c_str(), nullptr, true).x) : textW);
@@ -220,6 +221,34 @@ namespace launcher_ui
             x += ui::ButtonWidth(button.label, options) + ui::space::S;
         }
         ui::NavJoin(nullptr);
+        const int backAction = state.restartNeeded                 ? None
+                               : state.phase == Phase::Downloading ? Cancel
+                               : state.phase == Phase::Failed || (state.phase == Phase::Done && !state.note.empty())
+                                   ? Dismiss
+                               : !progress && state.launcherNewer && !m_updateLater ? Later
+                                                                                    : None;
+        const char* back = backAction == Cancel    ? Tr("Cancel")
+                           : backAction == Later   ? Tr("Later")
+                           : backAction == Dismiss ? Tr("Close")
+                                                   : Tr("Back");
+        if (backAction != None)
+        {
+            const bool pressedBack = ui::PadAction(ui::PadButton::East, back);
+            m_bannerTakesBack = ui::HasInput() && ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
+            if (m_bannerTakesBack && pressedBack)
+                pressed = backAction;
+        }
+        if (legendH > 0)
+        {
+            ImGui::SetCursorPos(ImVec2(ui::space::L, height - legendH));
+            ui::PageLegend(back, contentW, false, !buttons.empty());
+        }
+        // A banner that loses its controls must not strand the focus in a window with no stops.
+        if (pressed != None || (buttons.empty() && ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows)))
+        {
+            RequestFocus(FocusTo::Page);
+            m_bannerTakesBack = false;
+        }
         ImGui::End();
         ImGui::PopStyleVar();
         ImGui::PopStyleColor();

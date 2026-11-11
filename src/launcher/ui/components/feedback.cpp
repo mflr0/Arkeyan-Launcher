@@ -486,7 +486,14 @@ namespace ui
     {
         const float h = height::Normal, w = width < 0 ? ImGui::GetContentRegionAvail().x : width;
         if (Ctx().testLegends != nullptr)
-            Ctx().testLegends->push_back(ImGui::GetCurrentWindow()->RootWindow->ID);
+        {
+            const uint32_t root = ImGui::GetCurrentWindow()->RootWindow->ID;
+            Ctx().testLegends->push_back(root);
+            auto& entries = Ctx().testLegendHints[root];
+            entries.clear();
+            for (const PadHint& hint : hints)
+                entries.push_back({ int(hint.button), hint.label, hint.withNext });
+        }
         const ImVec2 min = ImGui::GetCursorScreenPos(), max(min.x + w, min.y + h);
         ImGui::Dummy(ImVec2(w, h));
         ImDrawList* draw = ImGui::GetWindowDrawList();

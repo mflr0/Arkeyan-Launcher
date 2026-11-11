@@ -428,6 +428,7 @@ namespace ui
             return std::min(wanted, ImGui::GetIO().DisplaySize.x - 2 * space::XL);
         }
         constexpr int ModalVars = 4, ModalColors = 3;
+        std::vector<std::string> g_modalBack;
     }
 
     bool BeginModal(const char* id, const char* title, bool* open, ModalSize size)
@@ -470,6 +471,7 @@ namespace ui
             return false;
         }
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(space::S, space::S));
+        g_modalBack.emplace_back(Tr("Close"));
         // The title, and the cross at the top right.
         const float cross = height::Normal, top = ImGui::GetCursorPosY();
         ImGui::PushTextWrapPos(ImGui::GetContentRegionAvail().x - cross - space::S + ImGui::GetCursorPosX());
@@ -501,6 +503,7 @@ namespace ui
 
     ModalResult ModalActions(bool* open, const char* confirm, const char* cancel, ModalKind kind)
     {
+        g_modalBack.back() = cancel;
         ModalResult result = ModalResult::None;
         ImGui::Dummy(ImVec2(0, space::XS));
         ButtonOptions cancelOptions;
@@ -534,7 +537,7 @@ namespace ui
         return Ctx().glyphs == Glyphs::Keyboard ? 0.0f : height::Normal + space::XS + 2 * space::S;
     } // the legend, its gap, and the two item spacings round it
 
-    void EndModal()
+    void EndModal(const char* back)
     {
         // While a pad is in use the dialog says what its buttons are (A presses the focused one, B closes it); one under a
         // question it asks (the sheet under "Move to the trash?") leaves the legend to that one.
@@ -545,11 +548,12 @@ namespace ui
         {
             ImGui::Dummy(ImVec2(0, space::XS));
             if (top)
-                PageLegend(Tr("Close")); // with the dialog's own pad actions
+                PageLegend(back != nullptr ? back : g_modalBack.back().c_str());
             else
                 ImGui::Dummy(
                     ImVec2(0, height::Normal)); // its room kept: the dialog doesn't change size under the question
         }
+        g_modalBack.pop_back();
         ImGui::PopStyleVar();
         ImGui::EndPopup();
     }

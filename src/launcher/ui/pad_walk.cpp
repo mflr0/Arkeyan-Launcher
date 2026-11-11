@@ -503,6 +503,26 @@ namespace launcher_ui
             if (!name.starts_with("05-") && !name.starts_with("36-") &&
                 std::find(w.frameLegends.begin(), w.frameLegends.end(), w.root) == w.frameLegends.end())
                 fail("no pad legend");
+            if (!name.starts_with("05-") && !name.starts_with("36-"))
+            {
+                const auto& hints = ui::Ctx().testLegendHints[w.root];
+                const auto has = [&](ui::PadButton button, const char* label = nullptr) {
+                    return std::any_of(hints.begin(), hints.end(), [&](const ui::Context::TestHint& hint) {
+                        return hint.button == int(button) && (label == nullptr || hint.label == label);
+                    });
+                };
+                if (!has(ui::PadButton::South, Tr("Select")) || !has(ui::PadButton::East))
+                    fail("the legend must include Select and the current back action");
+                const bool tabs = m_page == Page::Settings || m_page == Page::GameSettings;
+                const bool modal = ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopupId | ImGuiPopupFlags_AnyPopupLevel);
+                const bool pairedTabs = std::any_of(hints.begin(), hints.end(), [](const ui::Context::TestHint& hint) {
+                    return hint.button == int(ui::PadButton::LeftTrigger) && hint.label == Tr("Tabs") && hint.withNext;
+                });
+                if (tabs && !modal && !pairedTabs)
+                    fail("a settings legend must contain LT RT Tabs");
+                if (modal && !has(ui::PadButton::LeftTrigger) && hints.size() != 2)
+                    fail("a dialog without tabs must only name Select and its back action");
+            }
             w.phase = 2;
             return;
         }
@@ -604,7 +624,17 @@ namespace launcher_ui
                 }
             w.phase = 2;
             return;
-        case 5: // B
+        case 5: // LT / RT tab shortcuts, then B
+            if ((m_page == Page::Settings || m_page == Page::GameSettings) &&
+                !ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopupId | ImGuiPopupFlags_AnyPopupLevel))
+            {
+                w.indexAt = m_page == Page::Settings ? int(m_tab) : int(m_gameTab);
+                const int count = m_page == Page::Settings ? 5 : 8;
+                w.stepDir = w.indexAt == count - 1 ? -1 : 1;
+                press(w.stepDir > 0 ? ImGuiKey_GamepadR2 : ImGuiKey_GamepadL2);
+                w.phase = 11;
+                return;
+            }
             press(ImGuiKey_GamepadFaceRight);
             w.phase = 6;
             return;
@@ -721,6 +751,31 @@ namespace launcher_ui
             w.phase = 0;
             return;
         }
+        case 11:
+            io.AddKeyEvent(w.release, false);
+            w.wait = 4;
+            w.phase = 12;
+            return;
+        case 12:
+        {
+            const int tab = m_page == Page::Settings ? int(m_tab) : int(m_gameTab);
+            if (m_page != w.pageAt || tab != w.indexAt + w.stepDir)
+                fail("LT / RT must change the settings tab without changing page");
+            press(w.stepDir > 0 ? ImGuiKey_GamepadL2 : ImGuiKey_GamepadR2);
+            w.phase = 13;
+            return;
+        }
+        case 13:
+            io.AddKeyEvent(w.release, false);
+            w.wait = 4;
+            w.phase = 14;
+            return;
+        case 14:
+            if (m_page != w.pageAt || (m_page == Page::Settings ? int(m_tab) : int(m_gameTab)) != w.indexAt)
+                fail("the opposite trigger must restore the original settings tab");
+            press(ImGuiKey_GamepadFaceRight);
+            w.phase = 6;
+            return;
         default: return;
         }
     }
