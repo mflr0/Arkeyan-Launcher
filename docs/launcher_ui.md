@@ -361,7 +361,7 @@ portal names prominent and empty seats as tall as occupied ones, without changin
 | | |
 |---|---|
 | When | KeyCap: a key or a pad button named in the window. PadLegend: the bottom hint bar of a page (A Open, B Back...), shown while a pad is in use. |
-| API | `ui::KeyCap(PadButton::{South, East, West, North, LeftBumper, RightBumper, Start, Back, LeftTrigger, RightTrigger}, glyphs)`, `ui::KeyCap("F6")`, `ui::DrawKeyCap`, `ui::PadButtonLabel`; `ui::PadLegend(hints, glyphs, width)` with `PadHint{button, key, label, withNext}` (`key` nullptr: not shown on the keyboard; `withNext`: the next button's cap too, LB RB). A page's legend is `ui::PageLegend` ("Navigation model"): Home and the game page, the Collection, the foot of every settings page (`BeginPageColumn(..., legend)`, under the scrolling column), and the foot of every dialog (`EndModal`). |
+| API | `ui::KeyCap(PadButton::{South, East, West, North, LeftBumper, RightBumper, Start, Back, LeftTrigger, RightTrigger}, glyphs)`, `ui::KeyCap("F6")`, `ui::DrawKeyCap`, `ui::PadButtonLabel`; `ui::PadLegend(hints, glyphs, width)` with `PadHint{button, key, label, withNext}` (`key` nullptr: not shown on the keyboard; `withNext`: the next button's cap too, LB RB). A page's legend is `ui::PageLegend` ("Navigation model"): Home and the game page, the Collection, the foot of every settings page (`BeginPageColumn(..., legend)`, under the scrolling column), and the foot of every dialog (`EndModal`). The install card uses the game page's footer; the update banner has its own footer. |
 | States | The pad's family: Xbox letters (LB, RB, LT, RT, Menu, View), PlayStation shapes (L1, R1, L2, R2, Options, Share), Nintendo letters by place (B at the bottom, A at the right; L, R, ZL, ZR); the keyboard's keys translated ("Entrée", "Échap"). |
 
 ## Consistency
@@ -920,10 +920,12 @@ always animates (`docs/settings.md`).
 ## Navigation model
 The pad and the arrow keys have one model, in the components (`components/navigation.{h,cpp}`), so every page, tab, dialog
 and menu behaves the same way, the in-game Toy Box's:
-- **LB / RB: the main page** before or after, in the sidebar's order: Home, each game, Collection, Settings (`App::StepMainPage`;
-  a game's settings and achievements count as its page; no wrap at the ends). Not while a dialog, a menu or a field has the input.
-- **LT / RT: the page's own pages**: a settings screen's tabs and Manage's (`ui::Tabs`, their key caps at the row's ends), the
-  seat the collection chooses for. The tabs are stops too: the D-pad reaches them and A selects one.
+- **LT / RT: tabs where present**, including every launcher settings tab, every game settings tab and Manage's tabs
+  (`ui::Tabs`, their key caps at the row's ends). They stay at the ends without wrapping and never switch the underlying
+  page. The tabs are stops too: the D-pad reaches them and A selects one. Menus, active fields and deeper dialogs answer first.
+- **LB / RB: the main page** before or after, in the sidebar's order: Home, each game, Collection,
+  Settings (`App::StepMainPage`; achievements count as the game's page; no wrap at the ends).
+- **LT / RT in the Collection** choose the seat before or after. Settings and dialog tabs use LT / RT too.
 - **The D-pad and the left stick move spatially** (`ui::NavPick`, on the stops drawn the frame before). Up and down keep the
   column: they go to the nearest row that way with a stop straight over or under the source (else the nearest row), then to the
   stop under the source when only one is (a grid keeps its column), else the one that row last had the focus on (rows
@@ -947,20 +949,51 @@ and menu behaves the same way, the in-game Toy Box's:
   its window has the input (no dialog or menu over it, no field being typed in): a hint never shows without its action, nor an
   action without its hint. The game page: Y Game settings (not while the game runs). The collection: X Take it off (a seat with
   a figure) or Figure sheet (a card), Y Search, LT / RT Other seat.
-- **The legend** (`ui::PageLegend(back, width, pages)`): LB RB Pages on a main page, the window's pad actions, A Select, then B
-  Back (Close in a dialog). At the foot of Home and the game page (edge to edge), of the settings pages and the collection
-  (under their column) and of every dialog (`ui::EndModal`; a dialog under a question it asks leaves the legend to it), while
-  a pad is in use. A menu shows its rows only. A legend too long for its band (French, a narrow window) tightens its gaps.
-- **Proof**: `tests/navigation_test.cpp` (the model on plain boxes), and the pad walk (`SKY_LAUNCHER_TEST_PADWALK=1`,
+- **The legend** (`ui::PageLegend(back, width, pages, select)`): the current window's actions, A Select and its B action.
+  LB RB Pages appears on main views without tabs; LT RT Tabs is added on tabbed views. Actions come from the
+  current frame, scoped to their top window: a tab or page change cannot inherit the previous view's shortcuts.
+  At the foot of Home and the game page (edge to edge), every settings page and the Collection (under their scrolling
+  column), and every dialog (`ui::EndModal`; a dialog under a question leaves the legend to that question), while a pad
+  is in use. The install card shares the game page's footer; the update banner has its own footer above the page.
+  `ModalActions` supplies the actual cancellation label; an inner dialog step can override it with Back. A menu shows
+  its rows only. An actionless progress banner omits A Select. A legend too long for its band tightens its gaps.
+- **Proof**: `tests/navigation_test.cpp` (focus order and legend entries on plain values, in
+  `components/navigation_model.{h,cpp}`), and the pad walk (`SKY_LAUNCHER_TEST_PADWALK=1`,
   `pad_walk.cpp`; "Screenshot test"): every page, tab and dialog shot as a pad player sees it, then walked with the D-pad alone,
   every stop's four moves tried (a list of over 100 stops, Add a figure's catalogue, until every stop is reached). It fails on a
   stop never reached, a move out of reading order (its own check, on the page as it was when the move was made: up and down
   must reach the nearest shown stop of the source's column, left and right the nearest of its row), two stops sharing an ID, a
-  view without a legend; then on B not going back one step, and on the main pages on LB and RB not opening the page before and
-  after. `ArkeyanLauncherTest` runs it quick (`PadWalkChecks`: each view until every stop is reached, the catalogue for 300
-  moves), with no disc in `--no-disc`.
+  view without a legend or with incorrect entries; then on B not going back one step, on settings views on LB / RB not
+  changing and restoring the tab, and on main views without tabs on LB / RB not opening the page before and after.
+  `ArkeyanLauncherTest` runs it quick (`PadWalkChecks`: each view until every stop is reached, the catalogue for 300 moves),
+  with no disc in `--no-disc`.
   It also checks, on arrival or at the end of a view, that Manage's focus is on the tab it opened on (`33-`), that the portable copy's
   dialog is closed for a game not installed (`49-`) and that no figure's tip shows under the pad's focus (`25-`).
+
+The footer uses the selected Button glyphs family in every view (Xbox, PlayStation or Nintendo). The keyboard keeps
+its existing layout and shortcuts; pad-only legends and extra banner height are absent when no pad is in use.
+
+| View | Legend while a pad is in use |
+|---|---|
+| Home | LB RB Pages, A Select, B Back (to the sidebar). |
+| Game page | LB RB Pages, Y Game settings when no game is running, A Select, B Back. |
+| Install card and compact installation progress | The game-page legend plus X Show details / Hide details. A selects the enabled Retry, Resume, Copy log, Logs, details or Cancel control. Opening a detailed card focuses its first enabled footer action. |
+| Settings: Controls, Launcher, Support, About, Profiles | LB RB Tabs, A Select, B Back. B closes the uninstall list before leaving Settings. The profile editor's ten color choices use the shared focus ring and navigation stops. |
+| Game settings: Video, Keyboard, Controller, Sound, Language, Disc, Saves, Game | LB RB Tabs, A Select, B Back to the game page. |
+| Achievements | LB RB Pages, A Select, B Back to the game page. |
+| Collection | LB RB Pages, the available X action, Y Search, LT RT Other seat when seats exist, A Select, B Back. |
+| Figure sheet, Add a figure | A Select, B Close; Edit and Change the top/bottom use B Back for their inner step. |
+| Manage | LB RB Tabs, A Select, B Close. |
+| Confirmations, profile editor and portable export question | A Select, B Cancel (or the question's actual cancellation label). Destructive confirmations keep the safe default focus. |
+| Crash/problem report, release notes and file-integrity dialog | A Select, B Close. Save, copy, release-page and repair actions are reachable controls selected with A. |
+| Quit during installation and Defender notice | A Select, B Keep installing or B Not now, respectively. |
+| Update banner: offer, downloading, failed, done | A Select when buttons exist; B Later, Cancel or Close respectively. B acts on the banner only while it has focus. |
+| Update banner: checking/installing or restart required | B Back; A Select appears only when a button exists (Restart now). |
+
+compiler is needed. This covers settings rows and tabs, profile colors, wrapped install actions, modal isolation,
+scrolling, both game-page columns reaching the update banner, and page-specific legend entries. `tools/check_format.sh`
+checks formatting. With a separately built launcher, the existing pad walk also checks the drawn stops, legend entries,
+B and tab bumper behavior; it requires a window and is separate from the standalone model checks.
 
 ## Interaction rules
 - **Focus.** Every control takes the keyboard and pad focus and shows it: the components draw the one ring (`ui::FocusRing`,
@@ -969,8 +1002,8 @@ and menu behaves the same way, the in-game Toy Box's:
   hand call `App::FocusRing`, which draws the same ring. The page's columns are `ImGuiChildFlags_NavFlattened`.
 - **Pad and keyboard** ("Navigation model"). The sidebar and the page are separate windows: B / Escape on Home moves the focus
   to the sidebar's current row; A on a row opens its page with the focus on its first control (`App::GoTo`, `TakeFocus`).
-  LB / RB change the main page, LT / RT the tab (`App::DrawTabBar`) and the seat the collection chooses for. The
-  launcher starts with the focus in the sidebar. The ARKEYAN LAUNCHER title is not a stop (it is Home's link for the pointer):
+  LB / RB change the tab (`App::DrawTabBar`, Manage) where present, otherwise the main page; LT / RT change the seat the
+  Collection chooses for. The launcher starts with the focus in the sidebar. The ARKEYAN LAUNCHER title is not a stop (it is Home's link for the pointer):
   Home is the start page, and its games are the sidebar's rows.
 - **Hold to confirm.** What deletes or overwrites is a red button held for a second (`App::HoldButton`, the state in
   `hold_confirm.h`): Reset and Delete (Figure page), Delete for good (trash), Mark as not in use (a stale lock), Restore

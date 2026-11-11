@@ -133,7 +133,7 @@ namespace launcher_ui
                 ui::Col(ui::color::Scrim, float(ui::elevation::ScrimAlpha) / 255.0f));
             draw->PopClipRect();
         }
-        ui::EndModal();
+        ui::EndModal(m_editing || !m_changeKeep.empty() ? Tr("Back") : Tr("Close"));
         if (!open && m_overlay != Overlay::None) // the cross, B or Escape
         {
             m_overlay = Overlay::None;

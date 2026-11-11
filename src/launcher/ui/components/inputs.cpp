@@ -1,5 +1,6 @@
 // Controls that choose or enter a value (inputs.h).
 #include "launcher/ui/components/inputs.h"
+#include "launcher/i18n.h"
 #include "launcher/ui/components/buttons.h"
 #include "launcher/ui/components/feedback.h"
 #include "launcher/ui/components/navigation.h"
@@ -84,11 +85,14 @@ namespace ui
     {
         TabChange change = TabChange::None;
         const int count = int(labels.size());
-        if (options.bumpers && HasInput()) // a dialog's own tabs too (Manage), not a page's under a dialog
+        if (count == 0)
+            return change;
+        if (options.bumpers && count > 1)
         {
-            int step = ImGui::IsKeyPressed(ImGuiKey_GamepadL2, false)   ? -1
-                       : ImGui::IsKeyPressed(ImGuiKey_GamepadR2, false) ? 1
-                                                                        : 0;
+            // LT / RT change tab; LB / RB stay the main pages' (launcher_ui.cpp).
+            const bool before = PadAction(PadButton::LeftTrigger, Tr("Tabs"));
+            const bool after = PadAction(PadButton::RightTrigger, Tr("Tabs"));
+            const int step = before ? -1 : after ? 1 : 0;
             if (step != 0 && std::clamp(*current + step, 0, count - 1) != *current)
             {
                 *current = std::clamp(*current + step, 0, count - 1);
@@ -104,13 +108,13 @@ namespace ui
         memory->SetInt(lastId, *current);
         const bool followFocus = last != *current;
         ImDrawList* draw = ImGui::GetWindowDrawList();
-        const bool caps = options.bumpers && Ctx().glyphs != Glyphs::Keyboard;
+        const bool caps = options.bumpers && count > 1 && Ctx().glyphs != Glyphs::Keyboard;
         const float rowH = height::Normal;
         ImVec2 start = ImGui::GetCursorScreenPos();
         if (caps)
         {
             ImVec2 cap = DrawKeyCap(
-                draw, ImVec2(start.x, start.y + (rowH - stroke::Selection) / 2), PadButton::LeftTrigger, Ctx().glyphs);
+                draw, ImVec2(start.x, start.y + (rowH - stroke::Selection) / 2), PadButton::LeftBumper, Ctx().glyphs);
             ImGui::SetCursorScreenPos(ImVec2(start.x + cap.x + space::M, start.y));
         }
         PushText(TextStyle::Label);
@@ -149,7 +153,7 @@ namespace ui
         {
             ImVec2 at = ImGui::GetCursorScreenPos();
             DrawKeyCap(draw, ImVec2(at.x - space::XL + space::M, at.y + (rowH - stroke::Selection) / 2),
-                PadButton::RightTrigger, Ctx().glyphs);
+                PadButton::RightBumper, Ctx().glyphs);
         }
         ImGui::NewLine();
         ImGui::PopID();

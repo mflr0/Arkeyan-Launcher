@@ -552,6 +552,7 @@ namespace launcher_ui
         void DrawUpdates(); // update_page.cpp: check for updates, and the automatic check; in Settings > Launcher
         void StartUpdateCheck(bool manual);
         void PollUpdates();
+        bool m_bannerTakesBack = false; // a focused update banner answers B before its page
         float BannerHeight();
         void DrawUpdateBanner(float height);
         void DrawWhatsNew();
@@ -578,8 +579,8 @@ namespace launcher_ui
         void TestGalleryScript(uint64_t now);
 
         // Pages and focus (docs/launcher_ui.md, "Navigation model"). The sidebar and the page are separate windows, which the
-        // D-pad doesn't cross: LB / RB change the main page, B goes back one step (to Home, then on Home to the sidebar), A on
-        // a sidebar row moves the focus into its page.
+        // D-pad doesn't cross: LB / RB change tabs where present, otherwise the main page. B goes back one step (to Home,
+        // then on Home to the sidebar); A on a sidebar row moves the focus into its page.
         void GoTo(Page page);
         void Back();
         void StepMainPage(int step); // LB -1, RB +1

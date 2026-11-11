@@ -103,6 +103,7 @@ Auto: 5.1 when the device has six channels.	Auto: 5.1 når enheten har seks kana
 Automatic	Automatisk
 Automatic detection	Automatisk gjenkjenning
 Back	Tilbake
+Tabs	Faner
 Back side button	Bakre sideknapp
 Back up now	Ta sikkerhetskopi nå
 Backed up	Sikkerhetskopiert

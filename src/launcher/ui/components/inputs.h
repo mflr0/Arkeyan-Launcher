@@ -8,11 +8,11 @@
 
 namespace ui
 {
-    // A row of words, the selected one bold with an accent line under it. LT / RT (the pad's triggers) change tab, and their
-    // key caps show at the row's ends while a pad is in use (LB / RB change the main page).
+    // A row of words, the selected one bold with an accent line under it. LB / RB (the pad's bumpers) change tab, and their
+    // key caps show at the row's ends while a pad is in use.
     struct TabsOptions
     {
-        bool bumpers = true;       // LT / RT change tab
+        bool bumpers = true;       // LB / RB change tab
         bool focusSelected = false; // the selected tab takes the keyboard and pad focus this frame
         bool showFocus = false;     // and shows its ring
     };
@@ -21,7 +21,7 @@ namespace ui
         None,
         Click,
         Bumper
-    }; // Bumper: by LT / RT
+    }; // Bumper: by LB / RB
     TabChange Tabs(const char* id, std::span<const char* const> labels, int* current, const TabsOptions& options = {});
 
     // Two to four exclusive choices side by side, in one track (a short list that fits: "30 / 60", "Grid / List").

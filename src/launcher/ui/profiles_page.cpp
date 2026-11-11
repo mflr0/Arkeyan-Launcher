@@ -368,8 +368,9 @@ namespace launcher_ui
                 ImGui::SameLine(0, ui::space::XS);
             ImGui::PushID(color);
             const ImVec2 dot = ImGui::GetCursorScreenPos();
-            if (ImGui::InvisibleButton("##colour", ImVec2(24, 24), ImGuiButtonFlags_EnableNav))
+            if (ui::Hit("##colour", ImVec2(24, 24)))
                 editor.color = color;
+            ui::FocusRingIf(ui::ItemState(), ui::radius::Control);
             const ImVec2 c(dot.x + 12, dot.y + 12);
             draw->AddCircleFilled(c, 10, ui::Col(collection::ElementRgb(collection::Element(color))));
             if (editor.color == color)

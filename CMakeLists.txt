@@ -138,6 +138,7 @@ add_library(ArkeyanLauncherCore STATIC
     src/launcher/ui/components/layout.cpp
     src/launcher/ui/components/feedback.cpp
     src/launcher/ui/components/format.cpp
+    src/launcher/ui/components/navigation_model.cpp
     src/launcher/ui/components/navigation.cpp
     src/launcher/ui/gallery.cpp
     src/launcher/ui/achievements_page.cpp

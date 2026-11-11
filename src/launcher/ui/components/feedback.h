@@ -3,6 +3,7 @@
 // What tells the player something: Badge, Chip (filter and sort), StatusPill, ProgressBar, IndeterminateBar, Spinner, Toasts,
 // KeyCap and PadLegend.
 #include "launcher/ui/components/core.h"
+#include "launcher/ui/components/navigation_model.h"
 #include <span>
 #include <string>
 #include <vector>
@@ -99,20 +100,6 @@ namespace ui
     };
 
     // ---- Key caps and the pad legend. ----
-    // A pad button by its place (South is A on Xbox, Cross on PlayStation, B on Nintendo).
-    enum class PadButton
-    {
-        South,
-        East,
-        West,
-        North,
-        LeftBumper,
-        RightBumper,
-        Start,
-        Back,
-        LeftTrigger,
-        RightTrigger
-    };
     const char* PadButtonLabel(PadButton button, Glyphs glyphs);
     // A pad button's cap (`glyphs` != Keyboard) or a keyboard key's (`key`: "Enter", "Esc", "F6"), drawn at `at` (its left
     // edge, its vertical centre); returns its size.
@@ -124,13 +111,6 @@ namespace ui
     void KeyCap(PadButton button, Glyphs glyphs); // at the cursor, as an item
     void KeyCap(const char* key);
 
-    struct PadHint
-    {
-        PadButton button;
-        const char* key; // the keyboard's key for it ("Enter"); nullptr: not shown on the keyboard
-        const char* label; // what it does ("Select", "Back"), translated
-        bool withNext = false; // the next button's cap too: LB RB, LT RT
-    };
     // The bottom hint bar (height::Normal, the available width): each hint's cap and its word, in the glyphs in use.
     void PadLegend(std::span<const PadHint> hints, Glyphs glyphs, float width = -1);
 }

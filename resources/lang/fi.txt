@@ -103,6 +103,7 @@ Auto: 5.1 when the device has six channels.	Auto: 5.1, kun laitteessa on kuusi k
 Automatic	Automaattinen
 Automatic detection	Automaattinen tunnistus
 Back	Takaisin
+Tabs	Välilehdet
 Back side button	Takasivupainike
 Back up now	Varmuuskopioi nyt
 Backed up	Varmuuskopioitu

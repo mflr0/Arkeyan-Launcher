@@ -102,6 +102,7 @@ Auto: 5.1 when the device has six channels.	Auto: 5.1 se il dispositivo ha sei c
 Automatic	Automatico
 Automatic detection	Rilevamento automatico
 Back	Indietro
+Tabs	Schede
 Back side button	Laterale indietro
 Back up now	Esegui backup
 Backed up	Backup eseguito

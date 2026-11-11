@@ -1,7 +1,9 @@
 // ArkeyanLauncherTest's checks for the navigation model (launcher/ui/components/navigation.h, NavPick): where the D-pad goes
 // from a stop, on plain boxes. Called from launcher_test.cpp's main; returns the number of failures.
-#include "launcher/ui/components/navigation.h"
+#include "launcher/ui/components/navigation_model.h"
 #include <cstdio>
+#include <string_view>
+#include <array>
 #include <vector>
 
 namespace
@@ -166,6 +168,122 @@ int NavigationChecks()
         NAV_EXPECT(Pick(boxes, 1, NavDir::Down) == 2);
         NAV_EXPECT(Pick(boxes, 1, NavDir::Right) == 0);
         NAV_EXPECT(Pick(boxes, 5, NavDir::Up) == 4); // in the shelf, up scrolls it back
+    }
+    // Settings and game settings: every tab has the same navigation contract, with a back control only on game settings.
+    for (const bool game : { false, true })
+    {
+        const int tabs = game ? 8 : 5;
+        std::vector<NavBox> boxes;
+        if (game)
+            boxes.push_back(Box(90, 760, 0, 90, 40));
+        for (int i = 0; i < tabs; i++)
+            boxes.push_back(Box(uint32_t(i + 1), float(i) * 95, 70, 80, 40));
+        boxes.push_back(Box(100, 600, 140, 240, 40)); // select, switch or button in the settings control column
+        boxes.push_back(Box(101, 600, 210, 240, 40));
+        boxes.push_back(Box(102, 680, 280, 160, 40)); // a narrower hold or reset button
+        for (int i = 0; i < tabs; i++)
+        {
+            NAV_EXPECT(Pick(boxes, uint32_t(i + 1), NavDir::Down) == 100);
+            if (i + 1 < tabs)
+                NAV_EXPECT(Pick(boxes, uint32_t(i + 1), NavDir::Right) == uint32_t(i + 2));
+        }
+        NAV_EXPECT(Pick(boxes, 100, NavDir::Down) == 101);
+        NAV_EXPECT(Pick(boxes, 101, NavDir::Down) == 102);
+        NAV_EXPECT(Pick(boxes, 102, NavDir::Up) == 101);
+        NAV_EXPECT(Pick(boxes, 102, NavDir::Down) == 0);
+    }
+    // The profile editor's ten colour controls must be in the shared row between its fields and footer.
+    {
+        std::vector<NavBox> boxes = { Box(1, 200, 0, 300, 40), Box(2, 200, 60, 180, 40), Box(20, 450, 160, 100, 40),
+            Box(21, 570, 160, 120, 40) };
+        for (uint32_t i = 0; i < 10; i++)
+            boxes.push_back(Box(3 + i, 200 + float(i) * 32, 120, 24, 24));
+        NAV_EXPECT(Pick(boxes, 2, NavDir::Down) == 3);
+        for (uint32_t i = 3; i < 12; i++)
+            NAV_EXPECT(Pick(boxes, i, NavDir::Right) == i + 1);
+        NAV_EXPECT(Pick(boxes, 12, NavDir::Down) == 20);
+        NAV_EXPECT(Pick(boxes, 20, NavDir::Right) == 21);
+    }
+    // The update banner joins both game-page columns, even though the banner itself has no column.
+    {
+        std::vector<NavBox> boxes = { Box(1, 400, 0, 100, 40), Box(2, 520, 0, 100, 40), Box(3, 640, 0, 100, 40),
+            Box(4, 0, 100, 300, 60, 0), Box(5, 400, 100, 300, 60, 1) };
+        boxes[0].window = boxes[1].window = boxes[2].window = 2;
+        NAV_EXPECT(Pick(boxes, 4, NavDir::Up) == 1);
+        NAV_EXPECT(Pick(boxes, 5, NavDir::Up) == 1);
+        NAV_EXPECT(Pick(boxes, 1, NavDir::Right) == 2);
+        NAV_EXPECT(Pick(boxes, 2, NavDir::Right) == 3);
+        NAV_EXPECT(Pick(boxes, 3, NavDir::Down) == 5);
+    }
+    // Install actions wrap to another row on narrow cards; no disabled Retry stop is supplied while stopping.
+    {
+        std::vector<NavBox> boxes = { Box(1, 0, 0, 100, 40), Box(2, 120, 0, 120, 40), Box(3, 0, 60, 100, 40),
+            Box(4, 120, 60, 180, 40) };
+        NAV_EXPECT(Pick(boxes, 1, NavDir::Right) == 2);
+        NAV_EXPECT(Pick(boxes, 2, NavDir::Down) == 4);
+        NAV_EXPECT(Pick(boxes, 4, NavDir::Left) == 3);
+        NAV_EXPECT(Pick(boxes, 3, NavDir::Up) == 1);
+        boxes.erase(boxes.begin());
+        NAV_EXPECT(Pick(boxes, 3, NavDir::Up) == 2);
+    }
+    using ui::PadButton;
+    using ui::PadHint;
+    const auto legend = [](std::span<const PadHint> actions, const char* back, bool pages, bool select = true) {
+        return ui::LegendHints(actions, back, pages, select);
+    };
+    const auto entry = [](const PadHint& hint, PadButton button, const char* label, bool paired = false) {
+        return hint.button == button && hint.label == std::string_view(label) && hint.withNext == paired;
+    };
+    // A settings view: LB RB Pages, LT RT Tabs; no stale Collection or game-page actions remain.
+    {
+        const std::array<PadHint, 2> actions = { PadHint{ PadButton::LeftTrigger, nullptr, "Tabs" },
+            PadHint{ PadButton::RightTrigger, nullptr, "Tabs" } };
+        const auto hints = legend(actions, "Back", true);
+        NAV_EXPECT(hints.size() == 4);
+        NAV_EXPECT(entry(hints[0], PadButton::LeftBumper, "Pages", true));
+        NAV_EXPECT(entry(hints[1], PadButton::LeftTrigger, "Tabs", true));
+        NAV_EXPECT(entry(hints[2], PadButton::South, "Select"));
+        NAV_EXPECT(entry(hints[3], PadButton::East, "Back"));
+    }
+    // Confirmation, crash/report, release notes, integrity, portable export and quit use their real cancellation label.
+    for (const char* cancel : { "Cancel", "Close", "Not now", "Keep installing" })
+    {
+        const auto hints = legend({}, cancel, false);
+        NAV_EXPECT(hints.size() == 2);
+        NAV_EXPECT(entry(hints[0], PadButton::South, "Select"));
+        NAV_EXPECT(entry(hints[1], PadButton::East, cancel));
+    }
+    // The install card shares its game page's footer; its only extra shortcut toggles details.
+    for (const char* details : { "Show details", "Hide details" })
+    {
+        const std::array<PadHint, 2> actions = { PadHint{ PadButton::West, nullptr, details },
+            PadHint{ PadButton::North, nullptr, "Game settings" } };
+        const auto hints = legend(actions, "Back", true);
+        NAV_EXPECT(hints.size() == 5);
+        NAV_EXPECT(entry(hints[0], PadButton::LeftBumper, "Pages", true));
+        NAV_EXPECT(entry(hints[1], PadButton::West, details));
+        NAV_EXPECT(entry(hints[2], PadButton::North, "Game settings"));
+    }
+    // A banner's B action replaces generic Back; progress without actions never promises A Select.
+    for (const char* back : { "Later", "Cancel", "Close" })
+    {
+        const std::array<PadHint, 1> actions = { PadHint{ PadButton::East, nullptr, back } };
+        const auto hints = legend(actions, "Back", false);
+        NAV_EXPECT(hints.size() == 2);
+        NAV_EXPECT(entry(hints[0], PadButton::South, "Select"));
+        NAV_EXPECT(entry(hints[1], PadButton::East, back));
+    }
+    {
+        const auto hints = legend({}, "Back", false, false);
+        NAV_EXPECT(hints.size() == 1);
+        NAV_EXPECT(entry(hints[0], PadButton::East, "Back"));
+        NAV_EXPECT(legend({}, nullptr, false, false).empty());
+        const std::array<PadHint, 2> actions = { PadHint{ PadButton::LeftTrigger, "PgUp", "Other seat" },
+            PadHint{ PadButton::RightTrigger, nullptr, "Other seat" } };
+        const auto seats = legend(actions, "Back", true);
+        NAV_EXPECT(seats.size() == 4);
+        NAV_EXPECT(entry(seats[1], PadButton::LeftTrigger, "Other seat", true));
+        NAV_EXPECT(legend({}, "Back", true).size() == 3); // no actions inherited from the preceding frame
     }
     printf("Navigation model: %d failures\n", g_failures);
     return g_failures;

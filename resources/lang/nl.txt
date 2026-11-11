@@ -102,6 +102,7 @@ Auto: 5.1 when the device has six channels.	Auto: 5.1 als het apparaat zes kanal
 Automatic	Automatisch
 Automatic detection	Automatische detectie
 Back	Terug
+Tabs	Tabbladen
 Back side button	Zijknop achter
 Back up now	Nu back-uppen
 Backed up	Back-up gemaakt
