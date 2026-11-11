@@ -53,8 +53,10 @@ jobs:
             if (!isReport) return;
             const log = answer('Game log');
             const looksLikeLog = /\[(version|system|gpu|portal|log)\]|===== |Arkeyan Launcher problem report|Portal test \(/.test(log) && log.length > 300;
+            // A log too long for the field comes as an attached file.
+            const attached = /github\.com\/user-attachments\/files\/\d+\/[^)\s]*\.(txt|log|zip)/i.test(body);
             const hasNeeds = issue.labels.some(l => l.name === 'needs-info');
-            if (looksLikeLog) {
+            if (looksLikeLog || attached) {
               if (hasNeeds) await github.rest.issues.removeLabel({ ...context.repo, issue_number: issue.number, name: 'needs-info' }).catch(() => {});
               return;
             }
