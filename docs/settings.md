@@ -42,7 +42,7 @@ launcher saves the file (a comment over a key that is removed goes with it).
 | `launcher` | `frame_rates` | `1` | Written once by `MigrateFrameRates`: older versions ran `fps_limit` 0, 120, 144 and 240 as 60, so a file without this key has them changed to 60 in `[video]` and `[<game>.video]` at the first load; a choice made afterwards stays | no |
 | `launcher` | `frame_rates_cap` | `1` | Written once by `MigrateFrameRates` (0.9.4, which offers 30 and 60 only): `fps_limit` 0, 120, 144, 240 and `display` become 60 in `[video]` and `[<game>.video]` | no |
 | `launcher` | `defender_notice` | `1` | Written once the Windows Defender notice has been shown (Windows only; before the first install, game update or launcher update; `src/launcher/ui/defender_notice.cpp`): it is not shown again | no |
-| `<game>.video` | `fps_auto_fallback` | `1` (default), `0` | Allow the automatic 60-to-30 FPS drop when frames miss their blank. Off keeps the chosen limit even if the picture stutters, without a drop notice. Read directly from the game's section | yes |
+| `<game>.video` | `fps_auto_fallback` | `1`, `0`; unset: from the GPU | Allow the automatic 60-to-30 FPS drop when the game cannot hold 60 (a quarter of the frames late for 5 s; it then stays at 30 for at least 30 s). Off keeps the chosen limit even if the picture stutters, without a drop notice. Unset (never changed, 0.9.6), the game turns it on for integrated and Apple GPUs and off for discrete ones at its first start and writes that value; until then the page shows on on macOS, off elsewhere. Read directly from the game's section | yes |
 | `video` | `show_fps` | `0` (default), `1` | The FPS counter: a small frame rate readout in a corner of the game (<game> settings > Video > FPS counter; the game's F3 menu writes it too) | yes |
 | `audio` | `volume` | `0` to `100` (default `100`) | The game's master volume, in `[<game>.audio]` (<game> settings > Sound > Volume; the game's F3 menu writes it too). The runtime reads `[audio]`, then the game's own section | no: the game reads `launcher.ini` itself |
 | `audio` | `portal_sound` | `1` (default), `0` | Trap Team only, in `[trapteam.audio]`: the traps' voices from the portal's speaker. A real Traptanium portal plays them itself, any other portal leaves them to the computer, mixed at the game's volume; `0` silences both (Trap Team settings > Sound > Portal sound; the game's F3 menu writes it too) | no: the game reads `launcher.ini` itself |
@@ -259,12 +259,14 @@ gamerscore, pictures) is not here: it is read from the player's disc at the disc
 ## Automatic drop to 30 FPS
 
 Each game's Video tab shows **Drop to 30 FPS when needed** directly below **Frame rate limit** at 60 FPS (including Display, currently 60).
-It uses the ordinary toggle and defaults on. Like other rows that do not apply, it is hidden at other limits;
+It uses the ordinary toggle. Unset, the game picks it from its GPU at its first start (on for integrated and Apple
+GPUs, off for discrete ones, since 0.9.6) and writes it; until then the page shows on on macOS, off elsewhere. Like
+other rows that do not apply, it is hidden at other limits;
 its saved value is kept. French: « Passer à 30 FPS si besoin ».
 The hint explains that turning it off keeps the chosen rate even if the picture stutters.
 The page writes `[ssa.video]`, `[giants.video]`, `[swapforce.video]` or `[trapteam.video]` `fps_auto_fallback`.
 The game reads that section itself, including when started directly; no shared-section copy is needed.
-The fallback leaves the selected `fps_limit=60` in the file, returns to 60 after frames fit again, and keeps
+The fallback leaves the selected `fps_limit=60` in the file, returns to 60 once frames fit again with a margin, and keeps
 all existing game caps. It is independent of display VSync.
 
 `ArkeyanLauncherTest --fps-fallback-page <isolated run folder> <game> <en|fr>` activates the actual page switch

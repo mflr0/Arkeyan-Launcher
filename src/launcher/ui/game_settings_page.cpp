@@ -130,7 +130,14 @@ namespace launcher_ui
             {
                 ui::SettingRow(Tr("Drop to 30 FPS when needed"),
                     Tr("Off: your rate stays, even if the picture stutters."));
-                const std::string fallbackDefault = SettingGet(m_config, "video", "fps_auto_fallback", "1");
+                // Unset, the game chooses from its GPU at its next start and writes it (on for integrated and Apple
+                // GPUs, off for discrete ones); until then the page shows the likelier choice.
+#if defined(__APPLE__)
+                constexpr const char* GpuDefault = "1";
+#else
+                constexpr const char* GpuDefault = "0";
+#endif
+                const std::string fallbackDefault = SettingGet(m_config, "video", "fps_auto_fallback", GpuDefault);
                 toggle("##fpsautofallback", "fps_auto_fallback", fallbackDefault.c_str());
                 // Offscreen page check: feed the switch through ImGui, then capture the rendered page.
                 if (!m_shots.empty() && LauncherEnv("SKY_LAUNCHER_TEST_FPS_FALLBACK") != nullptr)
