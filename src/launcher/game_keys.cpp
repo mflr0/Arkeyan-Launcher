@@ -57,7 +57,8 @@ namespace
         { "back", N_("Skylanders Stats"), "Back", SDL_SCANCODE_BACKSPACE },
         { "start", N_("Pause"), "Start", SDL_SCANCODE_RETURN },
     };
-    // LT is the game's tag team. RB fires an attack like B in the tutorial; LB fires nothing there (nor does Y), so it has no row.
+    // LT is the game's tag team. RB fires an attack like B in the tutorial; LB is offered like Y (Attack 3), as in Swap Force
+    // (issue #51).
     constexpr GameKey TrapTeam[] = {
         MOVE_ROWS,
         { "a", N_("Jump"), "A", SDL_SCANCODE_SPACE },
@@ -65,6 +66,7 @@ namespace
         { "b", N_("Attack 2"), "B", SDL_SCANCODE_X, "Mouse Right" },
         { "y", N_("Attack 3"), "Y", SDL_SCANCODE_V },
         { "rb", N_("Attack 2"), "RB", SDL_SCANCODE_E },
+        { "lb", N_("Attack 3"), "LB", SDL_SCANCODE_Q },
         { "lt", N_("Switch Skylander / Villain"), "LT", SDL_SCANCODE_1 },
         { "rt", N_("Interact"), "RT", SDL_SCANCODE_3 },
         { "back", N_("Skylander/Villain Stats"), "Back", SDL_SCANCODE_BACKSPACE },
