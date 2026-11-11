@@ -6,6 +6,7 @@
 #include "launcher/game_install.h"
 #include "launcher/game_keys.h"
 #include "launcher/game_names.h"
+#include "launcher/portal_probe_text.h"
 #include "launcher/game_settings.h"
 #include "launcher/launcher.h"
 #include "launcher/updater.h"
@@ -822,26 +823,7 @@ std::string PortalProbeText(const std::string& mode, const PortalProbeResult& re
     if (result.portals.empty())
         text += "no portal found\n";
     for (const PortalProbeEntry& entry : result.portals)
-    {
-        text += fmt::format("{} {}:{} \"{}\": {}, {}\n", entry.kind, entry.vid, entry.pid, entry.product,
-            entry.opened ? "opened" : "not opened", entry.status);
-        if (!entry.id.empty())
-            text += fmt::format("  model: {} {}; Spyro's Adventure: {} ({})\n", entry.id, entry.model, entry.verdict,
-                entry.verdictReason);
-        // The runtime's details are "; "-separated: the device's interfaces and driver, then each step and packet.
-        for (size_t at = 0; at < entry.details.size();)
-        {
-            size_t end = entry.details.find("; ", at);
-            if (end == std::string::npos)
-                end = entry.details.size();
-            text += fmt::format("  {}{}\n", at == 0 ? "device: " : "", entry.details.substr(at, end - at));
-            at = end + 2;
-        }
-        for (const auto& [method, line] : entry.methods)
-            text += fmt::format("  {}: {}\n", method, line);
-        if (!entry.write.empty())
-            text += fmt::format("  the game writes with {}\n", entry.write);
-    }
+        text += PortalProbeEntryText(entry);
     for (const std::string& note : result.notes)
         text += note + "\n";
     bool good = false;
