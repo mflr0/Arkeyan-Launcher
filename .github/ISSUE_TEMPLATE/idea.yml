@@ -1,0 +1,27 @@
+name: Idea
+description: Something you'd like the launcher or the games to do.
+title: "Idea: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your idea
+      description: What you'd like, and why it would help.
+    validations:
+      required: true
+  - type: dropdown
+    id: games
+    attributes:
+      label: Game
+      multiple: true
+      options:
+        - Spyro's Adventure
+        - Giants
+        - Swap Force
+        - Trap Team
+        - SuperChargers
+        - Imaginators
+        - The launcher itself
+    validations:
+      required: false

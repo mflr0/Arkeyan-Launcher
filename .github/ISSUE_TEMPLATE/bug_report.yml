@@ -1,0 +1,81 @@
+name: Bug report
+description: Something doesn't work in the launcher or in a game.
+title: "Bug: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! A bug can only be fixed with the details below, **the log above all**: please fill in
+        every field. Never attach the disc image (ISO) or files from the game.
+  - type: dropdown
+    id: system
+    attributes:
+      label: System
+      options:
+        - Windows 11
+        - Windows 10
+        - macOS (Apple Silicon)
+        - Linux (desktop)
+        - Steam Deck (Desktop Mode)
+        - Steam Deck (Game Mode)
+        - Other (say which below)
+    validations:
+      required: true
+  - type: input
+    id: hardware
+    attributes:
+      label: Processor, graphics card and its driver version
+      description: 'For example "Ryzen 5 5500, RTX 3050 8 GB, driver 581.57". On Windows: Settings > System > About, and the graphics driver''s app.'
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Launcher version
+      description: Shown at the top of the launcher, next to its name (for example "v0.9.5").
+    validations:
+      required: true
+  - type: dropdown
+    id: games
+    attributes:
+      label: Game
+      multiple: true
+      options:
+        - Spyro's Adventure
+        - Giants
+        - Swap Force
+        - Trap Team
+        - SuperChargers
+        - Imaginators
+        - The launcher itself
+    validations:
+      required: true
+  - type: dropdown
+    id: api
+    attributes:
+      label: Graphics API (Windows only)
+      description: The game's settings > Video > Graphics API.
+      options:
+        - Direct3D 12
+        - Vulkan
+        - Not on Windows
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what you expected
+      description: Where in the game, and what you did just before. A screenshot or a short video helps a lot.
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: Game log
+      description: |
+        Right after the problem: Settings > Support > **Copy game log**, then paste it here. For a problem in the launcher
+        itself: Settings > Support > **Report a problem** > Copy. Names and folders are removed for you.
+      render: text
+    validations:
+      required: true

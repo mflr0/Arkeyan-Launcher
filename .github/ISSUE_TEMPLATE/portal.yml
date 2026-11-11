@@ -1,0 +1,70 @@
+name: Portal of Power problem
+description: A real portal isn't found, isn't usable, or doesn't read your figures.
+title: "Portal: "
+labels: ["portal"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! Portals differ from model to model, so these details are what lets a portal be supported.
+        Please fill in every field.
+  - type: dropdown
+    id: system
+    attributes:
+      label: System
+      options:
+        - Windows 11
+        - Windows 10
+        - macOS (Apple Silicon)
+        - Linux (desktop)
+        - Steam Deck
+        - Other (say which below)
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Launcher version
+      description: Shown at the top of the launcher, next to its name (for example "v0.9.5").
+    validations:
+      required: true
+  - type: input
+    id: portal
+    attributes:
+      label: Which portal
+      description: 'The console and the game it came with, wired or wireless, and the model number under its base (for example "Xbox 360, Trap Team, wired, 0000586").'
+    validations:
+      required: true
+  - type: textarea
+    id: test
+    attributes:
+      label: Test the portal
+      description: With the portal plugged in, Settings > Controls > Portal of Power > **Test**, then **Copy**, and paste it here.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: ids
+    attributes:
+      label: The portal as your system sees it
+      description: |
+        Windows: Device Manager > the portal > Properties > Details > **Hardware Ids** (paste them), and its Driver tab.
+        Linux: the output of `lsusb` (the portal's line) and `lsusb -t`. macOS: you can leave this empty.
+      render: text
+    validations:
+      required: false
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: Which game, which figure, what you saw.
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: Game log
+      description: After trying the portal in a game, Settings > Support > **Copy game log**, then paste it here.
+      render: text
+    validations:
+      required: true
