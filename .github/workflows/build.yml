@@ -98,6 +98,8 @@ jobs:
         # A hung package install held the v0.7.2 release for two hours: fail instead, so the job can be rerun.
         timeout-minutes: 15
         run: |
+          # The runners' Azure mirror can stop resolving for hours (2026-11-11): use Ubuntu's own servers instead.
+          sudo sed -i 's#http://azure.archive.ubuntu.com#http://archive.ubuntu.com#g' /etc/apt/apt-mirrors.txt /etc/apt/sources.list 2>/dev/null || true
           sudo apt-get update
           sudo apt-get install -y ninja-build clang-15 libstdc++-12-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev \
             libxi-dev libxss-dev libxtst-dev libxkbcommon-dev libwayland-dev wayland-protocols libegl1-mesa-dev \
