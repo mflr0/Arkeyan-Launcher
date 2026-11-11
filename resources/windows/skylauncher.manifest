@@ -2,6 +2,13 @@
 <!-- Arkeyan Launcher draws at the monitor's own DPI (per-monitor v2) and scales its UI itself (App::UpdateUiScale). -->
 <!-- activeCodePage: UTF-8 on Windows 10 1903 and later, on top of the wide file calls: a narrow path in a library stays UTF-8. -->
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+  <trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
+    <security>
+      <requestedPrivileges>
+        <requestedExecutionLevel level="asInvoker" uiAccess="false"/>
+      </requestedPrivileges>
+    </security>
+  </trustInfo>
   <application xmlns="urn:schemas-microsoft-com:asm.v3">
     <windowsSettings>
       <dpiAware xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">true/pm</dpiAware>

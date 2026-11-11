@@ -20,6 +20,7 @@ if(WIN32)
 endif()
 if(MSVC)
     add_compile_options(/utf-8) # fmt requires it
+    add_compile_options(/Brepro) # deterministic COFF object timestamps with clang-cl (the release compiler)
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>") # no VC++ runtime to install
 endif()
 
@@ -242,7 +243,7 @@ if(WIN32)
     configure_file(resources/windows/skylauncher.rc.in ${CMAKE_BINARY_DIR}/skylauncher.rc @ONLY)
     target_sources(ArkeyanLauncher PRIVATE ${CMAKE_BINARY_DIR}/skylauncher.rc)
     if(MSVC) # clang-cl, the release build: the resource holds the manifest, so the linker must not add its own
-        target_link_options(ArkeyanLauncher PRIVATE /MANIFEST:NO)
+        target_link_options(ArkeyanLauncher PRIVATE /MANIFEST:NO /Brepro /INCREMENTAL:NO)
     endif()
 endif()
 # The bundle id stays the one of the first releases (a new one would only make macOS ask again for folder permissions).
