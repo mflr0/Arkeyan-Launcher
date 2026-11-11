@@ -38,14 +38,31 @@ jobs:
           if ($version) { $extra += "-DLAUNCHER_VERSION=$version" }
           cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl @extra
           cmake --build build --target ArkeyanLauncher
-          # The checks that need no disc image (the others need the player's own).
           cmake --build build --target ArkeyanLauncherTest FakeArkeyanBuilder
-          $env:SDL_VIDEO_DRIVER = 'offscreen'
-          $env:SDL_AUDIO_DRIVER = 'dummy'
-          .\build\ArkeyanLauncherTest.exe --no-disc "$env:RUNNER_TEMP\launcher-test"
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           New-Item -ItemType Directory -Force dist | Out-Null
           Copy-Item build/ArkeyanLauncher.exe dist/ArkeyanLauncher.exe
+      - name: Tests (no disc)
+        # The checks that need no disc image (the others need the player's own), so a Windows-only bug (a ':' in a folder
+        # name, a path the other systems accept) stops the build before a release. Offscreen video, no audio device, no
+        # GPU needed; every folder and settings file in the runner's temp folder; no update check (no network).
+        timeout-minutes: 20
+        shell: pwsh
+        run: |
+          $scratch = "$env:RUNNER_TEMP\launcher-test"
+          $env:SDL_VIDEO_DRIVER = 'offscreen'
+          $env:SDL_AUDIO_DRIVER = 'dummy'
+          $env:SKY_LAUNCHER_NO_UPDATE_CHECK = '1'
+          $env:SKY_SETTINGS = "$scratch-env\none.ini"
+          $env:SKY_LAUNCHER_INI = "$scratch-env\none.ini"
+          $env:SKY_COLLECTION = "$scratch-env\collection"
+          $env:SKY_SAVE_DIR = "$scratch-env\save"
+          $env:SKYLANDERS_DATA = "$scratch-env\data"
+          $env:SKY_LAUNCHER_DATA = "$scratch-env\launcher-data"
+          $env:SKY_LAUNCHER_DESKTOP = "$scratch-env\desktop"
+          $env:SKY_LOG = "$scratch-env\game.log"
+          New-Item -ItemType Directory -Force "$scratch-env" | Out-Null
+          .\build\ArkeyanLauncherTest.exe --no-disc $scratch
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: windows
