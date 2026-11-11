@@ -1101,3 +1101,14 @@ This portal is on another driver (WinUSB, libusbK...). In Device Manager, uninst
 Xbox portals need libusb-1.0, which Windows doesn't have.	Xbox-portaler trenger libusb-1.0, som Windows ikke har.
 This Xbox portal's driver can't be used: it needs WinUSB.	Driveren til denne Xbox-portalen fungerer ikke: den trenger WinUSB.
 Windows has no driver for this portal.	Windows har ingen driver for denne portalen.
+This Xbox 360 portal needs Windows' WinUSB driver, set once: see the README.	Denne Xbox 360-portalen trenger Windows' WinUSB-driver, valgt én gang: se README.
+Windows didn't hand the Xbox One portal to the game.	Windows ga ikke Xbox One-portalen videre til spillet.
+Xbox portals need libusb-1.0: install your system's libusb-1.0 package, then test again.	Xbox-portaler trenger libusb-1.0: installer systemets libusb-1.0-pakke, og test på nytt.
+This portal is on the {} driver, which a tool such as Zadig installed and the game can't use. To give it back to Windows:	Denne portalen bruker driveren {}, som et verktøy som Zadig har installert, og som spillet ikke kan bruke. Slik gir du den tilbake til Windows:
+1. In Device Manager, right-click the portal, choose Uninstall device, tick "Attempt to remove the driver for this device", then Uninstall.	1. Høyreklikk på portalen i Enhetsbehandling, velg Avinstaller enhet, huk av for «Forsøk å fjerne driveren for denne enheten», og klikk på Avinstaller.
+2. Unplug the portal and plug it in again.	2. Koble fra portalen, og koble den til igjen.
+3. If it's back on {}: open a Command Prompt as administrator, run these two commands, then plug the portal in again:	3. Hvis den er tilbake på {}: åpne Ledetekst som administrator, kjør disse to kommandoene, og koble så til portalen igjen:
+In the first command's list, find the {} driver's oemNN.inf and put its name in the second.	Finn oemNN.inf for driveren {} i listen fra den første kommandoen, og sett navnet inn i den andre.
+Or choose WinUSB for it in Zadig: the game uses it there.	Eller velg WinUSB for den i Zadig: da bruker spillet den.
+Copy commands	Kopier kommandoer
+Commands copied	Kommandoer kopiert

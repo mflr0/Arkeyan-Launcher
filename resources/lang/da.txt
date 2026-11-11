@@ -1100,3 +1100,14 @@ This portal is on another driver (WinUSB, libusbK...). In Device Manager, uninst
 Xbox portals need libusb-1.0, which Windows doesn't have.	Xbox-portaler skal bruge libusb-1.0, som Windows ikke har.
 This Xbox portal's driver can't be used: it needs WinUSB.	Driveren til denne Xbox-portal virker ikke: den skal bruge WinUSB.
 Windows has no driver for this portal.	Windows har ingen driver til denne portal.
+This Xbox 360 portal needs Windows' WinUSB driver, set once: see the README.	Denne Xbox 360-portal skal bruge Windows' WinUSB-driver, valgt én gang: se README.
+Windows didn't hand the Xbox One portal to the game.	Windows gav ikke Xbox One-portalen videre til spillet.
+Xbox portals need libusb-1.0: install your system's libusb-1.0 package, then test again.	Xbox-portaler kræver libusb-1.0: installer systemets libusb-1.0-pakke, og test igen.
+This portal is on the {} driver, which a tool such as Zadig installed and the game can't use. To give it back to Windows:	Denne portal bruger driveren {}, som et værktøj som Zadig har installeret, og som spillet ikke kan bruge. Sådan giver du den tilbage til Windows:
+1. In Device Manager, right-click the portal, choose Uninstall device, tick "Attempt to remove the driver for this device", then Uninstall.	1. Højreklik på portalen i Enhedshåndtering, vælg Afinstaller enhed, sæt flueben ved "Forsøg at fjerne driveren til denne enhed", og klik på Afinstaller.
+2. Unplug the portal and plug it in again.	2. Tag portalen ud, og tilslut den igen.
+3. If it's back on {}: open a Command Prompt as administrator, run these two commands, then plug the portal in again:	3. Hvis den er tilbage på {}: åbn Kommandoprompt som administrator, kør disse to kommandoer, og tilslut så portalen igen:
+In the first command's list, find the {} driver's oemNN.inf and put its name in the second.	Find oemNN.inf for driveren {} i listen fra den første kommando, og sæt dens navn ind i den anden.
+Or choose WinUSB for it in Zadig: the game uses it there.	Eller vælg WinUSB til den i Zadig: så bruger spillet den.
+Copy commands	Kopiér kommandoer
+Commands copied	Kommandoer kopieret

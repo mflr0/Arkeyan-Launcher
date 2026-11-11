@@ -1101,3 +1101,14 @@ This portal is on another driver (WinUSB, libusbK...). In Device Manager, uninst
 Xbox portals need libusb-1.0, which Windows doesn't have.	Xbox-portaalit tarvitsevat libusb-1.0:n, jota Windowsissa ei ole.
 This Xbox portal's driver can't be used: it needs WinUSB.	Tämän Xbox-portaalin ajuri ei käy: se tarvitsee WinUSB:n.
 Windows has no driver for this portal.	Windowsissa ei ole ajuria tälle portaalille.
+This Xbox 360 portal needs Windows' WinUSB driver, set once: see the README.	Tämä Xbox 360 -portaali tarvitsee Windowsin WinUSB-ajurin, asetettuna kerran: katso README.
+Windows didn't hand the Xbox One portal to the game.	Windows ei antanut Xbox One -portaalia pelille.
+Xbox portals need libusb-1.0: install your system's libusb-1.0 package, then test again.	Xbox-portaalit tarvitsevat libusb-1.0:n: asenna järjestelmäsi libusb-1.0-paketti ja testaa sitten uudelleen.
+This portal is on the {} driver, which a tool such as Zadig installed and the game can't use. To give it back to Windows:	Tämä portaali käyttää ajuria {}, jonka Zadigin kaltainen työkalu asensi ja jota peli ei voi käyttää. Näin palautat sen Windowsille:
+1. In Device Manager, right-click the portal, choose Uninstall device, tick "Attempt to remove the driver for this device", then Uninstall.	1. Napsauta Laitehallinnassa portaalia hiiren kakkospainikkeella, valitse Poista laitteen asennus, valitse "Yritä poistaa tämän laitteen ohjain" ja sitten Poista asennus.
+2. Unplug the portal and plug it in again.	2. Irrota portaali ja kytke se uudelleen.
+3. If it's back on {}: open a Command Prompt as administrator, run these two commands, then plug the portal in again:	3. Jos se on taas ajurilla {}: avaa komentokehote järjestelmänvalvojana, suorita nämä kaksi komentoa ja kytke portaali sitten uudelleen:
+In the first command's list, find the {} driver's oemNN.inf and put its name in the second.	Etsi ensimmäisen komennon luettelosta ajurin {} oemNN.inf ja laita sen nimi toiseen.
+Or choose WinUSB for it in Zadig: the game uses it there.	Tai valitse sille Zadigissa WinUSB: silloin peli käyttää sitä.
+Copy commands	Kopioi komennot
+Commands copied	Komennot kopioitu

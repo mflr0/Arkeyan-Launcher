@@ -165,6 +165,16 @@ namespace launcher_ui
             }
             if (!problem.empty())
                 ui::Text(ui::TextStyle::Caption, problem.c_str(), ui::color::Dim);
+            if (const std::string commands = PortalDriverCommands(entry); !commands.empty())
+            {
+                ImGui::PushID(&entry);
+                if (ui::Button(Tr("Copy commands")))
+                {
+                    SDL_SetClipboardText(commands.c_str());
+                    Toast(Tr("Commands copied"), ui::ToastKind::Success);
+                }
+                ImGui::PopID();
+            }
         }
         for (const std::string& note : result.notes)
             ui::Text(ui::TextStyle::Caption, note.c_str(), ui::color::Dim);

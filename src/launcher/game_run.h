@@ -162,7 +162,11 @@ PortalProbeResult ParsePortalProbe(const std::string& output);
 // Runs the probe, waiting at most `timeoutMs`.
 PortalProbeResult RunPortalProbe(const std::string& runtime, uint32_t timeoutMs = 15000);
 // Why one portal can't be used, in the launcher's words (translated), with the system's own reason; empty when it answered.
+// Several lines for a portal on a driver to remove (steps, then the commands).
 std::string PortalStatusText(const PortalProbeEntry& entry);
+// The commands that delete the driver package such a portal is on (Windows' pnputil, one per line), for "Copy commands";
+// empty when there are none.
+std::string PortalDriverCommands(const PortalProbeEntry& entry);
 // What the game will do with the portal, given the setting's mode ("auto", "real", "emulated") and the test; `good` is
 // whether that is what the player wants. The words never contradict an entry's pill: "Found" answers, "Found, not
 // answering" opened without an answer, "Found, can't be opened" did not open.

@@ -609,7 +609,16 @@ PortalProbeResult ParsePortalProbe(const std::string& output)
                 std::string why = get("status");
                 if (why.starts_with("error: "))
                     why.erase(0, 7);
-                result.notes.push_back(Tf("{} can't be used: {}", get("transport") == "usb" ? Tr("USB (Xbox) portals") : Tr("HID portals"), why));
+                // libusb is Linux's only: Windows reaches Xbox portals through WinUSB and Windows' Xbox driver, macOS
+                // through IOKit (older runtimes said "libusb-1.0 not found" there too).
+                if (get("transport") == "usb" && why.find("libusb") != std::string::npos)
+                {
+#ifdef __linux__
+                    result.notes.push_back(Tr("Xbox portals need libusb-1.0: install your system's libusb-1.0 package, then test again."));
+#endif
+                }
+                else
+                    result.notes.push_back(Tf("{} can't be used: {}", get("transport") == "usb" ? Tr("USB (Xbox) portals") : Tr("HID portals"), why));
             }
             else if (!get("note").empty())
                 result.notes.push_back(get("note")); // what the system has that may be a portal (Windows)
@@ -641,6 +650,31 @@ PortalProbeResult ParsePortalProbe(const std::string& output)
     return result;
 }
 
+namespace
+{
+    // The driver a portal is on and the package to delete, from the runtime's way back (its portal_usb.h,
+    // WindowsDriverRemoval): "... the libusb0 driver, which ... pnputil /delete-driver oem42.inf /uninstall /force ...".
+    bool DriverRemoval(const std::string& status, std::string& driver, std::string& inf)
+    {
+        const size_t remove = status.find("pnputil /delete-driver "), which = status.find(" driver, which");
+        if (remove == std::string::npos || which == std::string::npos)
+            return false;
+        const size_t name = status.rfind(' ', which - 1);
+        driver = status.substr(name + 1, which - name - 1);
+        const size_t start = remove + strlen("pnputil /delete-driver "), end = status.find(' ', start);
+        inf = status.substr(start, end == std::string::npos ? std::string::npos : end - start);
+        return !driver.empty() && !inf.empty();
+    }
+}
+
+std::string PortalDriverCommands(const PortalProbeEntry& entry)
+{
+    std::string driver, inf;
+    if (!DriverRemoval(entry.status, driver, inf))
+        return {};
+    return "pnputil /enum-drivers\r\npnputil /delete-driver " + inf + " /uninstall /force\r\n";
+}
+
 std::string PortalStatusText(const PortalProbeEntry& entry)
 {
     if (entry.status.empty() || entry.status == "ok")
@@ -656,12 +690,28 @@ std::string PortalStatusText(const PortalProbeEntry& entry)
     if (why.find("udev rule") != std::string::npos)
         return Tr("Linux needs the portal's udev rule: see the README.");
     // Windows: what the driver bound to the portal means (the runtime's portal_usb.h, WindowsDriverProblem).
-    if (why.find("not Windows' own HID driver") != std::string::npos)
+    if (std::string driver, inf; DriverRemoval(why, driver, inf))
+    {
+        // A driver a tool such as Zadig installed (libusb0, libusbK): the way back, step by step.
+        std::string text = Tf("This portal is on the {} driver, which a tool such as Zadig installed and the game can't use. To give it back to Windows:", driver);
+        text += "\n" + std::string(Tr("1. In Device Manager, right-click the portal, choose Uninstall device, tick \"Attempt to remove the driver for this device\", then Uninstall."));
+        text += "\n" + std::string(Tr("2. Unplug the portal and plug it in again."));
+        text += "\n" + Tf("3. If it's back on {}: open a Command Prompt as administrator, run these two commands, then plug the portal in again:", driver);
+        text += "\n    pnputil /enum-drivers\n    pnputil /delete-driver " + inf + " /uninstall /force";
+        if (!inf.starts_with("oem") || inf == "oemNN.inf")
+            text += "\n" + Tf("In the first command's list, find the {} driver's oemNN.inf and put its name in the second.", driver);
+        return text + "\n" + Tr("Or choose WinUSB for it in Zadig: the game uses it there.");
+    }
+    if (why.find("not Windows' own HID driver") != std::string::npos) // runtimes before 0.9.6
         return Tr("This portal is on another driver (WinUSB, libusbK...). In Device Manager, uninstall the device and its driver, then plug the portal in again.");
-    if (why.find("which Windows does not have") != std::string::npos)
+    if (why.find("which Windows does not have") != std::string::npos) // runtimes before 0.9.6
         return Tr("Xbox portals need libusb-1.0, which Windows doesn't have.");
-    if (why.find("WinUSB, libusbK or libusb0 devices only") != std::string::npos)
+    if (why.find("WinUSB, libusbK or libusb0 devices only") != std::string::npos || why.find("only libusb-1.0.dll opens") != std::string::npos) // before 0.9.6
         return Tr("This Xbox portal's driver can't be used: it needs WinUSB.");
+    if (why.find("WinUsb Device") != std::string::npos)
+        return Tr("This Xbox 360 portal needs Windows' WinUSB driver, set once: see the README.");
+    if (why.find("Windows handed the portal to no program") != std::string::npos)
+        return Tr("Windows didn't hand the Xbox One portal to the game.");
     if (why.starts_with("no driver is installed"))
         return Tr("Windows has no driver for this portal.");
     if (why.find("answer within 1 s") != std::string::npos)
@@ -713,8 +763,15 @@ std::string PortalProbeText(const std::string& mode, const PortalProbeResult& re
         text += fmt::format("{} {}:{} \"{}\": {}, {}\n", entry.kind, entry.vid, entry.pid, entry.product, entry.opened ? "opened" : "not opened", entry.status);
         if (!entry.id.empty())
             text += fmt::format("  model: {} {}; Spyro's Adventure: {} ({})\n", entry.id, entry.model, entry.verdict, entry.verdictReason);
-        if (!entry.details.empty())
-            text += fmt::format("  device: {}\n", entry.details);
+        // The runtime's details are "; "-separated: the device's interfaces and driver, then each step and packet.
+        for (size_t at = 0; at < entry.details.size();)
+        {
+            size_t end = entry.details.find("; ", at);
+            if (end == std::string::npos)
+                end = entry.details.size();
+            text += fmt::format("  {}{}\n", at == 0 ? "device: " : "", entry.details.substr(at, end - at));
+            at = end + 2;
+        }
         for (const auto& [method, line] : entry.methods)
             text += fmt::format("  {}: {}\n", method, line);
         if (!entry.write.empty())

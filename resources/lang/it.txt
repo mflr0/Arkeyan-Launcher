@@ -1100,3 +1100,14 @@ This portal is on another driver (WinUSB, libusbK...). In Device Manager, uninst
 Xbox portals need libusb-1.0, which Windows doesn't have.	I portali Xbox richiedono libusb-1.0, che Windows non ha.
 This Xbox portal's driver can't be used: it needs WinUSB.	Il driver di questo portale Xbox non va bene: serve WinUSB.
 Windows has no driver for this portal.	Windows non ha un driver per questo portale.
+This Xbox 360 portal needs Windows' WinUSB driver, set once: see the README.	Questo portale Xbox 360 ha bisogno del driver WinUSB di Windows, da impostare una volta: vedi il README.
+Windows didn't hand the Xbox One portal to the game.	Windows non ha passato il portale Xbox One al gioco.
+Xbox portals need libusb-1.0: install your system's libusb-1.0 package, then test again.	I portali Xbox richiedono libusb-1.0: installa il pacchetto libusb-1.0 del tuo sistema, poi ripeti il test.
+This portal is on the {} driver, which a tool such as Zadig installed and the game can't use. To give it back to Windows:	Questo portale usa il driver {}, installato da uno strumento come Zadig, che il gioco non può usare. Per restituirlo a Windows:
+1. In Device Manager, right-click the portal, choose Uninstall device, tick "Attempt to remove the driver for this device", then Uninstall.	1. In Gestione dispositivi fai clic destro sul portale, scegli Disinstalla dispositivo, spunta "Tenta di rimuovere il driver per questo dispositivo", poi Disinstalla.
+2. Unplug the portal and plug it in again.	2. Scollega il portale e ricollegalo.
+3. If it's back on {}: open a Command Prompt as administrator, run these two commands, then plug the portal in again:	3. Se torna su {}: apri un Prompt dei comandi come amministratore, esegui questi due comandi, poi ricollega il portale:
+In the first command's list, find the {} driver's oemNN.inf and put its name in the second.	Nell'elenco del primo comando trova il file oemNN.inf del driver {} e metti il suo nome nel secondo.
+Or choose WinUSB for it in Zadig: the game uses it there.	Oppure scegli WinUSB in Zadig: così il gioco lo usa.
+Copy commands	Copia i comandi
+Commands copied	Comandi copiati
