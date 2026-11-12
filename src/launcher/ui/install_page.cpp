@@ -22,6 +22,22 @@ namespace launcher_ui
             std::u8string text = path.u8string();
             return std::string(text.begin(), text.end());
         }
+        void DrawInstallRowIcon(ImDrawList* draw, InstallChecklist::RowState state, ImVec2 centre, float iconSize)
+        {
+            using RowState = InstallChecklist::RowState;
+            switch (state)
+            {
+            case RowState::Done: ui::DrawStatusIcon(draw, ui::Status::Success, centre, iconSize); break;
+            case RowState::Running: ui::DrawStatusIcon(draw, ui::Status::Busy, centre, iconSize); break;
+            case RowState::Failed: ui::DrawStatusIcon(draw, ui::Status::Error, centre, iconSize); break;
+            case RowState::Stopped:
+                ui::DrawStatusIcon(draw, ui::Status::Info, ui::Icon::Pause, centre, iconSize);
+                break;
+            case RowState::Waiting:
+                ui::DrawIcon(draw, ui::Icon::Unknown, centre, iconSize, ui::Col(ui::color::Edge));
+                break;
+            }
+        }
     }
 
     bool OpenFolder(const std::filesystem::path& folder)
@@ -490,11 +506,6 @@ namespace launcher_ui
         InstallProgress progress = InstallSnapshot(m_s->installLog ? 600 : 0);
         uint64_t now = SDL_GetTicks();
         InstallChecklist list = MakeInstallChecklist(progress, now, m_s->game.id);
-        using State = InstallProgress::State;
-        bool running = progress.state == State::Running;
-        bool failed = progress.state == State::Failed;
-        bool interrupted = progress.state == State::Interrupted;
-        bool finished = progress.state == State::Done;
 
         const float bottom = at.y + size.y;
         const float top = at.y;
@@ -505,11 +516,33 @@ namespace launcher_ui
         at = ImGui::GetWindowPos();
         m_drawn["install-card-anchored"] = at.y >= top && at.y + ImGui::GetWindowHeight() == bottom ? "yes" : "no";
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(ui::space::S, ui::space::XS));
-        ImDrawList* draw = ImGui::GetWindowDrawList();
         const float width = ImGui::GetContentRegionAvail().x;
         const float left = ImGui::GetCursorScreenPos().x;
-        using RowState = InstallChecklist::RowState;
 
+        DrawInstallTitle(progress, left, width);
+
+        DrawInstallProgress(list, progress.state == InstallProgress::State::Running, width);
+
+        DrawInstallChecklist(list, progress, left, width);
+
+        DrawInstallMessage(list, progress, width);
+
+        std::vector<InstallAction> actions;
+        const float buttonsH = PrepareInstallActions(actions, progress, width);
+
+        DrawInstallLog(progress, at, size, width, buttonsH);
+
+        DrawInstallActions(progress, actions, ImVec2(left, at.y), size, width, buttonsH);
+        ImGui::PopStyleVar();
+        EndCard();
+    }
+
+    void App::DrawInstallTitle(const InstallProgress& progress, float left, float width)
+    {
+        using State = InstallProgress::State;
+        const bool failed = progress.state == State::Failed;
+        const bool interrupted = progress.state == State::Interrupted;
+        const bool finished = progress.state == State::Done;
         // Title, and once stopped a close button on its right. The percentage is the bar's, said once.
         const char* title = finished ? Tr("Game installed: press PLAY")
                             : failed ? Tr("INSTALLATION STOPPED")
@@ -535,7 +568,10 @@ namespace launcher_ui
             }
             ImGui::SetCursorPosY(titleBottom);
         }
+    }
 
+    void App::DrawInstallProgress(const InstallChecklist& list, bool running, float width)
+    {
         // The weighted percentage is the one progress statement. Steps have very different costs.
         ImGui::Dummy(ImVec2(0, ui::space::XXS));
         ui::ProgressBar(list.overall, -1, true);
@@ -551,31 +587,85 @@ namespace launcher_ui
         if (!times.empty())
             ui::Text(ui::TextStyle::Caption, times.c_str(), ui::color::InkSoft, width);
         ImGui::Dummy(ImVec2(0, ui::space::XXS));
+    }
 
+    void App::DrawInstallStep(const InstallChecklist::Row& row, bool current, bool running, float left, float width)
+    {
+        ImDrawList* draw = ImGui::GetWindowDrawList();
+        using RowState = InstallChecklist::RowState;
+        const float iconSize = ui::icon::Small;
+        const float rowH = ui::SizeOf(ui::TextStyle::Body) + ui::space::XS;
+        const float textX = iconSize + ui::space::S;
+        const ImVec2 rowAt = ImGui::GetCursorScreenPos();
+        DrawInstallRowIcon(draw, current && running ? RowState::Running : row.state,
+            ImVec2(rowAt.x + iconSize / 2, rowAt.y + ui::CapMiddle(ui::TextStyle::Body)), iconSize);
+        ImGui::SetCursorScreenPos(ImVec2(rowAt.x + textX, rowAt.y));
+        unsigned ink = row.state == RowState::Waiting  ? ui::color::Dim
+                       : row.state == RowState::Failed ? ui::color::Danger
+                       : current                       ? ui::color::Ink
+                                                       : ui::color::InkSoft;
+        const bool hasTime = (current && running) || (row.state == RowState::Done && row.timed && row.ms >= 1000);
+        const float timeSpace =
+            hasTime ? ui::TextSize(ui::TextStyle::Caption, InstallDuration(row.ms).c_str()).x + ui::space::S : 0;
+        ui::Text(ui::TextStyle::Body, row.title.c_str(), ink, width - textX - timeSpace, current);
+        const float titleHeight = ImGui::GetItemRectSize().y;
+        const float titleW = ImGui::GetItemRectSize().x;
+
+        // Its time on the right: the running time, or how long a done step took.
+        std::string time;
+        if (current && running)
+            time = InstallDuration(row.ms);
+        else if (row.state == RowState::Done && row.timed && row.ms >= 1000)
+            time = InstallDuration(row.ms);
+        float timeW = 0;
+        if (!time.empty())
+        {
+            ui::PushText(ui::TextStyle::Caption);
+            timeW = ImGui::CalcTextSize(time.c_str()).x;
+            ui::DrawText(draw, ImVec2(left + width - timeW, rowAt.y + (rowH - ImGui::GetFontSize()) / 2 - 1),
+                ui::Col(current ? ui::color::Ink : ui::color::Dim), time.c_str());
+            ui::PopText();
+        }
+        // The running step's own bar, between its title and its time, with its count.
+        if (current && running && row.fraction >= 0)
+        {
+            const std::string count = fmt::format("{} / {}", row.done, row.total);
+            const float countW = ui::TextSize(ui::TextStyle::Caption, count.c_str()).x;
+            const float barLeft = rowAt.x + textX + std::max(titleW + ui::space::M, width * 0.42f);
+            const float barW = left + width - timeW - ui::space::M - countW - ui::space::S - barLeft;
+            if (barW > 2 * ui::space::XXL)
+            {
+                ImGui::SetCursorScreenPos(ImVec2(barLeft, rowAt.y + (rowH - ui::space::XS) / 2 - 1));
+                ui::ProgressBar(row.fraction, barW);
+                ui::PushText(ui::TextStyle::Caption);
+                ui::DrawText(draw,
+                    ImVec2(barLeft + barW + ui::space::S, rowAt.y + (rowH - ImGui::GetFontSize()) / 2 - 1),
+                    ui::Col(ui::color::InkSoft), count.c_str());
+                ui::PopText();
+            }
+        }
+        ImGui::SetCursorScreenPos(ImVec2(rowAt.x, rowAt.y + std::max(rowH, titleHeight + ui::space::XS)));
+    }
+
+    void App::DrawInstallChecklist(
+        const InstallChecklist& list, const InstallProgress& progress, float left, float width)
+    {
+        using State = InstallProgress::State;
+        const bool running = progress.state == State::Running;
+        const bool failed = progress.state == State::Failed;
+        const bool interrupted = progress.state == State::Interrupted;
+        using RowState = InstallChecklist::RowState;
         // The checklist. With the details open, only the current step: the log takes the room.
         // Once stopped, the steps done fold into one line, to leave room for the message.
         const float iconSize = ui::icon::Small;
         const float rowH = ui::SizeOf(ui::TextStyle::Body) + ui::space::XS;
         bool fold = (failed || interrupted) && list.current > 0;
-        auto rowIcon = [&](RowState state, ImVec2 centre) {
-            switch (state)
-            {
-            case RowState::Done: ui::DrawStatusIcon(draw, ui::Status::Success, centre, iconSize); break;
-            case RowState::Running: ui::DrawStatusIcon(draw, ui::Status::Busy, centre, iconSize); break;
-            case RowState::Failed: ui::DrawStatusIcon(draw, ui::Status::Error, centre, iconSize); break;
-            case RowState::Stopped:
-                ui::DrawStatusIcon(draw, ui::Status::Info, ui::Icon::Pause, centre, iconSize);
-                break;
-            case RowState::Waiting:
-                ui::DrawIcon(draw, ui::Icon::Unknown, centre, iconSize, ui::Col(ui::color::Edge));
-                break;
-            }
-        };
         const float textX = iconSize + ui::space::S;
         if (fold && !m_s->installLog)
         {
             const ImVec2 rowAt = ImGui::GetCursorScreenPos();
-            rowIcon(RowState::Done, ImVec2(rowAt.x + iconSize / 2, rowAt.y + ui::CapMiddle(ui::TextStyle::Body)));
+            DrawInstallRowIcon(ImGui::GetWindowDrawList(), RowState::Done,
+                ImVec2(rowAt.x + iconSize / 2, rowAt.y + ui::CapMiddle(ui::TextStyle::Body)), iconSize);
             ImGui::SetCursorScreenPos(ImVec2(rowAt.x + textX, rowAt.y));
             ui::Text(ui::TextStyle::Body, Tr("Completed steps"), ui::color::InkSoft, -1);
             ImGui::SetCursorScreenPos(ImVec2(rowAt.x, rowAt.y + rowH));
@@ -586,57 +676,16 @@ namespace launcher_ui
             bool current = int(i) == list.current;
             if (((failed || interrupted) && list.current < 0) || ((m_s->installLog || fold) && !current))
                 continue;
-            const ImVec2 rowAt = ImGui::GetCursorScreenPos();
-            rowIcon(current && running ? RowState::Running : row.state,
-                ImVec2(rowAt.x + iconSize / 2, rowAt.y + ui::CapMiddle(ui::TextStyle::Body)));
-            ImGui::SetCursorScreenPos(ImVec2(rowAt.x + textX, rowAt.y));
-            unsigned ink = row.state == RowState::Waiting  ? ui::color::Dim
-                           : row.state == RowState::Failed ? ui::color::Danger
-                           : current                       ? ui::color::Ink
-                                                           : ui::color::InkSoft;
-            const bool hasTime = (current && running) || (row.state == RowState::Done && row.timed && row.ms >= 1000);
-            const float timeSpace =
-                hasTime ? ui::TextSize(ui::TextStyle::Caption, InstallDuration(row.ms).c_str()).x + ui::space::S : 0;
-            ui::Text(ui::TextStyle::Body, row.title.c_str(), ink, width - textX - timeSpace, current);
-            const float titleHeight = ImGui::GetItemRectSize().y;
-            const float titleW = ImGui::GetItemRectSize().x;
-
-            // Its time on the right: the running time, or how long a done step took.
-            std::string time;
-            if (current && running)
-                time = InstallDuration(row.ms);
-            else if (row.state == RowState::Done && row.timed && row.ms >= 1000)
-                time = InstallDuration(row.ms);
-            float timeW = 0;
-            if (!time.empty())
-            {
-                ui::PushText(ui::TextStyle::Caption);
-                timeW = ImGui::CalcTextSize(time.c_str()).x;
-                ui::DrawText(draw, ImVec2(left + width - timeW, rowAt.y + (rowH - ImGui::GetFontSize()) / 2 - 1),
-                    ui::Col(current ? ui::color::Ink : ui::color::Dim), time.c_str());
-                ui::PopText();
-            }
-            // The running step's own bar, between its title and its time, with its count.
-            if (current && running && row.fraction >= 0)
-            {
-                const std::string count = fmt::format("{} / {}", row.done, row.total);
-                const float countW = ui::TextSize(ui::TextStyle::Caption, count.c_str()).x;
-                const float barLeft = rowAt.x + textX + std::max(titleW + ui::space::M, width * 0.42f);
-                const float barW = left + width - timeW - ui::space::M - countW - ui::space::S - barLeft;
-                if (barW > 2 * ui::space::XXL)
-                {
-                    ImGui::SetCursorScreenPos(ImVec2(barLeft, rowAt.y + (rowH - ui::space::XS) / 2 - 1));
-                    ui::ProgressBar(row.fraction, barW);
-                    ui::PushText(ui::TextStyle::Caption);
-                    ui::DrawText(draw,
-                        ImVec2(barLeft + barW + ui::space::S, rowAt.y + (rowH - ImGui::GetFontSize()) / 2 - 1),
-                        ui::Col(ui::color::InkSoft), count.c_str());
-                    ui::PopText();
-                }
-            }
-            ImGui::SetCursorScreenPos(ImVec2(rowAt.x, rowAt.y + std::max(rowH, titleHeight + ui::space::XS)));
+            DrawInstallStep(row, current, running, left, width);
         }
+    }
 
+    void App::DrawInstallMessage(const InstallChecklist& list, const InstallProgress& progress, float width)
+    {
+        using State = InstallProgress::State;
+        const bool running = progress.state == State::Running;
+        const bool failed = progress.state == State::Failed;
+        const bool interrupted = progress.state == State::Interrupted;
         // Under the steps: what Arkeyan-Builder does now (one line that replaces itself), or why it stopped.
         ImGui::Dummy(ImVec2(0, ui::space::XXS));
         if (running)
@@ -681,14 +730,14 @@ namespace launcher_ui
                     ? Tr("The earlier install is still stopping. Resume in a moment.")
                     : Tr("Arkeyan Launcher closed during the install. Resume to continue from this step."),
                 ui::color::InkSoft);
+    }
 
-        struct Action
-        {
-            const char* label;
-            ui::ButtonOptions options;
-            ImVec2 offset;
-        };
-        std::vector<Action> actions;
+    float App::PrepareInstallActions(std::vector<InstallAction>& actions, const InstallProgress& progress, float width)
+    {
+        using State = InstallProgress::State;
+        const bool running = progress.state == State::Running;
+        const bool failed = progress.state == State::Failed;
+        const bool interrupted = progress.state == State::Interrupted;
         if (failed || interrupted)
         {
             actions.push_back({ failed ? Tr("Retry") : Tr("Resume"),
@@ -703,7 +752,7 @@ namespace launcher_ui
         float actionX = 0, actionY = 0;
         for (size_t i = 0; i < actions.size(); i++)
         {
-            Action& action = actions[i];
+            InstallAction& action = actions[i];
             const float w = ui::ButtonWidth(action.label, action.options);
             // A ghost label keeps a neighbouring button on its row, so its inset never reads as a new left edge.
             const float together =
@@ -718,8 +767,11 @@ namespace launcher_ui
             action.offset = ImVec2(actionX, actionY);
             actionX += w + ui::space::S;
         }
-        const float buttonsH = actionY + ui::height::Normal;
+        return actionY + ui::height::Normal;
+    }
 
+    void App::DrawInstallLog(const InstallProgress& progress, ImVec2 at, ImVec2 size, float width, float buttonsH)
+    {
         // The log follows its content, capped by the space available after reserving every row of actions.
         if (m_s->installLog)
         {
@@ -780,13 +832,22 @@ namespace launcher_ui
             ImGui::PopStyleVar(2);
             ImGui::PopStyleColor();
         }
+    }
 
+    void App::DrawInstallActions(const InstallProgress& progress, const std::vector<InstallAction>& actions, ImVec2 at,
+        ImVec2 size, float width, float buttonsH)
+    {
+        using State = InstallProgress::State;
+        const bool running = progress.state == State::Running;
+        const bool failed = progress.state == State::Failed;
+        const bool interrupted = progress.state == State::Interrupted;
+        const float left = at.x;
         ImGui::Dummy(ImVec2(0, ui::space::XXS));
         const ImVec2 buttonsAt = ImGui::GetCursorScreenPos();
         m_drawn["install-actions-fit"] = "yes";
         for (size_t i = 0; i < actions.size(); i++)
         {
-            const Action& action = actions[i];
+            const InstallAction& action = actions[i];
             ImGui::SetCursorScreenPos(ImVec2(left + action.offset.x, buttonsAt.y + action.offset.y));
             const bool hit = ui::Button(action.label, action.options);
             if (!action.options.disabled)
@@ -822,8 +883,6 @@ namespace launcher_ui
                 m_s->installLog = !m_s->installLog;
         }
         ImGui::SetCursorScreenPos(ImVec2(left, buttonsAt.y + buttonsH));
-        ImGui::PopStyleVar();
-        EndCard();
     }
 
     // The install screens (SKY_LAUNCHER_TEST_INSTALL, with SKY_LAUNCHER_KIT set to <build>/fake-kit): the Install button, the

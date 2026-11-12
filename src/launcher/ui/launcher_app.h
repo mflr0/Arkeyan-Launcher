@@ -8,6 +8,7 @@
 #include "launcher/edition_report.h"
 #include "launcher/portable_export.h"
 #include "launcher/game_install.h"
+#include "launcher/install_checklist.h"
 #include "launcher/game_music.h"
 #include "launcher/game_progress.h"
 #include "launcher/game_keys.h"
@@ -465,7 +466,20 @@ namespace launcher_ui
         void DrawBackdrop();
         void DrawSidebar();
         void DrawHome();
+        struct PlayState
+        {
+            const SlotLine& slot;
+            bool running, stopping, showGame, installing, noDisc, ready, verifying, install, update, detailed;
+        };
         void DrawPlay();
+        std::string DrawPlayHeading(
+            const PlayState& play, const ArtTexture* logo, ImVec2 titleAt, ImVec2 titleSize, ImVec2 at, float leftW);
+        void DrawPlayAction(const PlayState& play, ImVec2 at, float leftW, const std::string& status);
+        void DrawPlayPickers(bool running, ImVec2 at);
+        void DrawPlayHint(const PlayState& play, ImVec2 at, float leftW);
+        void DrawPlayDiscError(float left, float leftW);
+        void DrawPlayDiscActions(const PlayState& play, ImVec2 at, float leftW, float pillY);
+        void DrawPlayProgress(ImVec2 position, ImVec2 available);
         void DrawHeroInstall(ImVec2 at, float width);
         void DrawHeroSteps(ImVec2 at, ImVec2 size);
         void TestHeroScript(uint64_t now);
@@ -677,7 +691,23 @@ namespace launcher_ui
         void CancelUpdateAll();
         void PollUpdateAll();
         bool UpdatingAll() const { return !m_updateAll.queue.empty() || !m_updateAll.current.empty(); }
+        struct InstallAction
+        {
+            const char* label;
+            ui::ButtonOptions options;
+            ImVec2 offset;
+        };
         void DrawInstall(ImVec2 at, ImVec2 size);
+        void DrawInstallTitle(const InstallProgress& progress, float left, float width);
+        void DrawInstallProgress(const InstallChecklist& list, bool running, float width);
+        void DrawInstallChecklist(
+            const InstallChecklist& list, const InstallProgress& progress, float left, float width);
+        void DrawInstallStep(const InstallChecklist::Row& row, bool current, bool running, float left, float width);
+        void DrawInstallMessage(const InstallChecklist& list, const InstallProgress& progress, float width);
+        float PrepareInstallActions(std::vector<InstallAction>& actions, const InstallProgress& progress, float width);
+        void DrawInstallLog(const InstallProgress& progress, ImVec2 at, ImVec2 size, float width, float buttonsH);
+        void DrawInstallActions(const InstallProgress& progress, const std::vector<InstallAction>& actions, ImVec2 at,
+            ImVec2 size, float width, float buttonsH);
         InstallProgress InstallSnapshot(
             size_t logTail = 0); // this session's install, else the one read back from its log
         InstallProgress InstallSnapshot(GameSlot& slot, size_t logTail = 0); // the same, for any game's slot
