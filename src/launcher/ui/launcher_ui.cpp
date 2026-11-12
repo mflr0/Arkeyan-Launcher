@@ -1238,7 +1238,9 @@ namespace launcher_ui
         }
         // Line 2: where the player is. The logo's hover: the achievements, the time played and the version.
         activity.state = m_presenceLevel;
-        activity.largeImage = running; // the application's art asset: the game's logo on a square
+        activity.largeImage = discordpresence::GameLogoUrl(running);
+        if (activity.largeImage.empty())
+            activity.largeImage = discordpresence::LauncherIconUrl;
         for (const std::string& part :
             { m_presenceAchievements, m_presencePlayTime, version.empty() ? "" : "v" + version })
             if (!part.empty())

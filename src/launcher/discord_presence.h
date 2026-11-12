@@ -23,8 +23,9 @@ namespace discordpresence
     // logo or picture.
     inline constexpr char LauncherIconUrl[] =
         "https://raw.githubusercontent.com/mflr0/Arkeyan-Launcher/main/resources/icons/skylauncher-128.png";
-    // A character's picture, as an image address Discord fetches (discord_images.cpp); empty when there is none, and the
-    // launcher's icon stands in.
+    // The game's logo and a character's picture, as image addresses (discord_images.cpp); empty when there is none, and
+    // the launcher's icon stands in.
+    std::string GameLogoUrl(std::string_view gameId);
     std::string FigureImageUrl(uint16_t toyType);
 
     // What the running game wrote in <its player folder>/presence.txt ("level=", "menu=", "players="): `known` false

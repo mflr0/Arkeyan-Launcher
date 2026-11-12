@@ -11,6 +11,17 @@ namespace discordpresence
     namespace
     {
 
+        // The games' logos: the application's art assets (a 1024 square each), by their permanent address on Discord's
+        // CDN, which some clients (Vesktop's arRPC) need instead of the key.
+        constexpr std::array<std::pair<std::string_view, std::string_view>, 6> GameLogos{ {
+            { "ssa", "https://cdn.discordapp.com/app-assets/1570426097903083671/1570570213886398576.png" },
+            { "giants", "https://cdn.discordapp.com/app-assets/1570426097903083671/1570570215044157471.png" },
+            { "swapforce", "https://cdn.discordapp.com/app-assets/1570426097903083671/1570570213856903328.png" },
+            { "trapteam", "https://cdn.discordapp.com/app-assets/1570426097903083671/1570570213852712981.png" },
+            { "superchargers", "https://cdn.discordapp.com/app-assets/1570426097903083671/1570570213395529839.png" },
+            { "imaginators", "https://cdn.discordapp.com/app-assets/1570426097903083671/1570570213743919124.png" },
+        } };
+
         // Sorted by toy type.
         constexpr std::array<std::pair<uint16_t, std::string_view>, 204> FigureImages{ {
             { 0, "https://static.wikia.nocookie.net/skylanders/images/e/e0/Whirlwind.png/revision/"
@@ -422,6 +433,14 @@ namespace discordpresence
             { 3428, "https://static.wikia.nocookie.net/skylanders/images/8/88/Thrillipede_Promo.jpg/revision/"
                     "latest?cb=20150915190830" }, // Thrillipede
         } };
+    }
+
+    std::string GameLogoUrl(std::string_view gameId)
+    {
+        for (const auto& [id, url] : GameLogos)
+            if (id == gameId)
+                return std::string(url);
+        return {};
     }
 
     std::string FigureImageUrl(uint16_t toyType)
