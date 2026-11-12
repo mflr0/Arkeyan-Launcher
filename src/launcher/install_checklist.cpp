@@ -194,8 +194,16 @@ std::string InstallDuration(uint64_t ms)
     return fmt::format("{}:{:02}", seconds / 60, seconds % 60);
 }
 
+bool MissingMetalToolchain(const InstallProgress& progress)
+{
+    return progress.error.find("Metal shader compiler is missing") != std::string::npos ||
+           progress.error.find("MetalToolchain") != std::string::npos;
+}
+
 std::string InstallFailureHeadline(const InstallChecklist& list, const InstallProgress& progress)
 {
+    if (MissingMetalToolchain(progress))
+        return Tr("Xcode's Metal shader compiler isn't installed yet.");
     auto has = [&](const char* text) {
         std::string lower = progress.error;
         for (char& c : lower)

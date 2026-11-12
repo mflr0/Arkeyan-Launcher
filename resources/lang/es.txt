@@ -1114,3 +1114,9 @@ In the first command's list, find the {} driver's oemNN.inf and put its name in 
 Or choose WinUSB for it in Zadig: the game uses it there.	O elige WinUSB para él en Zadig: el juego lo usa así.
 Copy commands	Copiar comandos
 Commands copied	Comandos copiados
+Xcode's Metal shader compiler isn't installed yet.	El compilador de shaders Metal de Xcode aún no está instalado.
+1. Open Terminal (Applications > Utilities).	1. Abre Terminal (Aplicaciones > Utilidades).
+2. Paste the command and press Return:	2. Pega el comando y pulsa Intro:
+3. Wait until it says it's done (a few minutes, about 700 MB), then press Retry.	3. Espera a que indique que ha terminado (unos minutos, unos 700 MB) y pulsa Reintentar.
+Copy command	Copiar el comando
+Command copied	Comando copiado

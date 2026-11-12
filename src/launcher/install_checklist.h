@@ -44,6 +44,9 @@ InstallChecklist MakeInstallChecklist(const InstallProgress& progress, uint64_t 
 // What went wrong, for the player, in one sentence ("The compiler couldn't be downloaded..."); Arkeyan-Builder's own message
 // is shown under it.
 std::string InstallFailureHeadline(const InstallChecklist& list, const InstallProgress& progress);
+// macOS with Xcode 26 or later: the Metal shader compiler is a separate download Arkeyan-Builder needs (issue #67).
+bool MissingMetalToolchain(const InstallProgress& progress);
+constexpr const char* MetalToolchainCommand = "xcodebuild -downloadComponent MetalToolchain";
 
 // "about 6 min left", "less than a minute left"; empty when unknown.
 std::string InstallTimeLeft(int64_t ms);

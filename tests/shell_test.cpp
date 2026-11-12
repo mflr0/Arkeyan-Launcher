@@ -134,6 +134,15 @@ namespace
         list = MakeInstallChecklist(failed, 3000);
         SHELL_EXPECT(list.rows[0].state == RowState::Done && list.rows[4].state == RowState::Failed);
         SHELL_EXPECT(InstallFailureHeadline(list, failed) == "Something went wrong while compiling the game.");
+        // macOS, Xcode 26: the Metal shader compiler to download, its own headline (issue #67).
+        failed = Feed({ { "@step toolchain Preparing the compiler", 1000 },
+            { "@error the Metal shader compiler is missing: run xcodebuild -downloadComponent MetalToolchain (Xcode "
+              "26+)",
+                2000 } });
+        failed.state = InstallProgress::State::Failed;
+        list = MakeInstallChecklist(failed, 3000);
+        SHELL_EXPECT(MissingMetalToolchain(failed));
+        SHELL_EXPECT(InstallFailureHeadline(list, failed) == "Xcode's Metal shader compiler isn't installed yet.");
 
         // An unknown step gets its own row, before "Finishing".
         list = MakeInstallChecklist(
