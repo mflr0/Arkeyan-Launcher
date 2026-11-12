@@ -793,6 +793,13 @@ namespace
                         own("SKY_LAUNCHER_XX") == "<unset>" &&
                         own("SSA_LAUNCHER_XX") == "<unset>"); // the launcher's own is unchanged
         SDL_DestroyEnvironment(game);
+        // Linux under Steam (issue #22): the game gets the system's library path, never Steam's runtime folders.
+        SETTINGS_EXPECT(GameLibraryPath("/steam/ubuntu12_32/steam-runtime/lib:/usr/lib", "/opt/lib") == "/opt/lib");
+        SETTINGS_EXPECT(GameLibraryPath("/steam/ubuntu12_32/steam-runtime/lib:/usr/lib", "").empty());
+        SETTINGS_EXPECT(GameLibraryPath("/a/steam-runtime/pinned_libs_64:/usr/local/lib:/b/ubuntu12_64", nullptr) ==
+                        "/usr/local/lib");
+        SETTINGS_EXPECT(GameLibraryPath("/usr/lib::/opt/lib", nullptr) == "/usr/lib:/opt/lib");
+        SETTINGS_EXPECT(GameLibraryPath(nullptr, nullptr).empty());
         // Set and unset under every name.
         SetGameVariable("SKY_LAUNCHER_WW", "forced");
         SETTINGS_EXPECT(own("SKY_LAUNCHER_WW") == "forced" && own("SKYLAUNCHER_WW") == "forced" &&

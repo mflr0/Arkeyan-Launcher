@@ -719,6 +719,25 @@ namespace
     }
 }
 
+std::string GameLibraryPath(const char* libraryPath, const char* systemLibraryPath)
+{
+    if (systemLibraryPath != nullptr)
+        return systemLibraryPath;
+    std::string kept;
+    for (std::string_view rest = libraryPath != nullptr ? libraryPath : ""; !rest.empty();)
+    {
+        const size_t colon = rest.find(':');
+        const std::string_view entry = rest.substr(0, colon);
+        rest = colon == std::string_view::npos ? std::string_view() : rest.substr(colon + 1);
+        const bool steam = entry.find("/steam-runtime") != std::string_view::npos ||
+                           entry.find("/ubuntu12_32") != std::string_view::npos ||
+                           entry.find("/ubuntu12_64") != std::string_view::npos;
+        if (!entry.empty() && !steam)
+            kept += (kept.empty() ? "" : ":") + std::string(entry);
+    }
+    return kept;
+}
+
 SDL_Environment* CreateGameEnvironment(const std::vector<std::pair<std::string, std::string>>& set)
 {
     SDL_Environment* environment = SDL_CreateEnvironment(false);
@@ -745,6 +764,13 @@ SDL_Environment* CreateGameEnvironment(const std::vector<std::pair<std::string, 
                 SDL_SetEnvironmentVariable(environment, name.c_str(), entry.c_str() + equals + 1, false);
     }
     SDL_free(variables);
+#if defined(__linux__)
+    if (const std::string path = GameLibraryPath(SDL_getenv("LD_LIBRARY_PATH"), SDL_getenv("SYSTEM_LD_LIBRARY_PATH"));
+        path.empty())
+        SDL_UnsetEnvironmentVariable(environment, "LD_LIBRARY_PATH");
+    else
+        SDL_SetEnvironmentVariable(environment, "LD_LIBRARY_PATH", path.c_str(), true);
+#endif
     for (const auto& [name, value] : set)
         for (const std::string& each : AllNamesOf(name))
             SDL_SetEnvironmentVariable(environment, each.c_str(), value.c_str(), true);
