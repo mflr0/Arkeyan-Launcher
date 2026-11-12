@@ -96,6 +96,10 @@ void FreezeLauncherConfig();
 // game built by an older kit reads only the SSA_ names, a newer one the SKY_ names (shared/env.h). The launcher's own environment is
 // not changed. The caller passes it as SDL_PROP_PROCESS_CREATE_ENVIRONMENT_POINTER and destroys it (SDL_DestroyEnvironment).
 // `set`: variables given on top (a game's settings: GameLaunch), each under all its names, replacing what they held.
+// Linux: a launcher started by Steam (a non-Steam game in Game Mode) carries Steam's own libraries in LD_LIBRARY_PATH,
+// which the game's display drivers then load instead of the system's (issue #22). The game gets the library path Steam
+// saved before its own (SYSTEM_LD_LIBRARY_PATH), else the path without Steam's runtime folders; empty: unset.
+std::string GameLibraryPath(const char* libraryPath, const char* systemLibraryPath);
 struct SDL_Environment;
 SDL_Environment* CreateGameEnvironment(const std::vector<std::pair<std::string, std::string>>& set = {});
 // Sets a variable under all its names, replacing what they held.
