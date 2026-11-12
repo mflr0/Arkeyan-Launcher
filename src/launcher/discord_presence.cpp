@@ -394,12 +394,19 @@ namespace discordpresence
         return status;
     }
 
-    std::string LevelName(std::string_view levelsJson, std::string_view level)
+    std::string LevelName(std::string_view levelsJson, std::string_view level, std::string_view language)
     {
-        JsonValue names;
-        if (level.empty() || !ParseJson(levelsJson, names))
+        JsonValue file;
+        if (level.empty() || !ParseJson(levelsJson, file))
             return {};
-        return names[level].Str();
+        const JsonValue& names = file["levels"][level];
+        for (std::string_view wanted : { language, std::string_view("en") })
+            if (!names[wanted].Str().empty())
+                return names[wanted].Str();
+        for (const auto& [code, name] : names.object)
+            if (!name.Str().empty())
+                return name.Str();
+        return {};
     }
 
     Client::~Client()

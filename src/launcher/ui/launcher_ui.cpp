@@ -1214,8 +1214,8 @@ namespace launcher_ui
                     discordpresence::ParseGameStatus(readFile(folder / "presence.txt"));
                 if (status.known)
                 {
-                    const std::string levelName =
-                        discordpresence::LevelName(readFile(datadir::Game(running) / "levels.json"), status.level);
+                    const std::string levelName = discordpresence::LevelName(
+                        readFile(datadir::Game(running) / "levels.json"), status.level, i18n::Current());
                     m_presenceLevel = !levelName.empty()     ? levelName
                                       : status.menu          ? Tr("In the menus")
                                       : status.level.empty() ? std::string()

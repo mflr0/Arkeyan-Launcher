@@ -381,6 +381,7 @@ namespace art
             collection::Json upgrades;
             // Imaginators' creation parts' names (game_text.cpp): the manifest's "parts" part as it is.
             collection::Json parts;
+            collection::Json levels;
         };
 
         std::vector<Materials> ReadMaterials(const collection::Json& json)
@@ -438,6 +439,7 @@ namespace art
                     m.artworkMaterials = ReadMaterials(json["artworks"]["materials"]);
                     m.upgrades = json["upgrades"];
                     m.parts = json["parts"];
+                    m.levels = json["levels"];
                     if (!m.game.empty())
                         out.push_back(std::move(m));
                 }
@@ -1172,6 +1174,12 @@ namespace art
         return false;
     }
 
+    collection::Json ReadLevelNames(std::string_view game, const Disc& disc)
+    {
+        const Manifest* where = FindManifest(game);
+        return where != nullptr ? ReadLevelNamesFrom(where->levels, disc) : collection::Json::Object();
+    }
+
     Extraction Extract(std::string_view game, const Disc& disc, const std::vector<uint8_t>& titleIconPng, int parts)
     try
     {
@@ -1250,6 +1258,28 @@ namespace art
                 ExtractPartNames(game, where->parts, disc, file);
             }
             result.partNames = std::filesystem::is_regular_file(file, exists);
+        }
+        if ((parts & LevelNames) && where != nullptr && where->levels.IsObject())
+        {
+            std::filesystem::path data = datadir::Game(game);
+            if (!data.empty())
+            {
+                std::filesystem::path file = data / "levels.json";
+                collection::Json cached;
+                std::string text, parseError;
+                {
+                    std::ifstream in(file, std::ios::binary);
+                    text.assign(std::istreambuf_iterator<char>(in), {});
+                }
+                result.levelNames = collection::Json::Parse(text, cached, parseError) &&
+                                    cached["format"].AsInt() == 1 && cached["game"].AsString() == game &&
+                                    cached["reader"].AsInt() == LevelNamesVersion && cached["levels"].IsObject();
+                if (!result.levelNames)
+                {
+                    std::filesystem::create_directories(data, error);
+                    result.levelNames = ExtractLevelNames(game, where->levels, disc, file);
+                }
+            }
         }
         return result;
     }

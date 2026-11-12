@@ -4,6 +4,7 @@
 // The LZMA decoder below follows the public LZMA format description (range coder, literal / match / rep states); it
 // decodes chunks of at most 0x8000 bytes into a buffer, so it needs no sliding window of its own.
 #include "alchemy_archive.h"
+#include "lux_images.h"
 #include <algorithm>
 #include <cctype>
 #include <cstring>
@@ -419,13 +420,14 @@ namespace art::alchemy
         };
         if (entry.flags == 0xFFFFFFFF)
             return read(entry.offset, size);
-        // The mode's top 4 bits are the compression: 2 is LZMA [V: v8]. The later versions also have other ones (zlib,
-        // LZ4 [?]), which this reader does not decode.
-        if (!m_verified && entry.flags >> 28 != 2)
+        // Compression kind 1 is raw DEFLATE (SuperChargers and Imaginators); kind 2 is LZMA.
+        const uint32_t compression = entry.flags >> 28;
+        if (!m_verified && compression != 1 && compression != 2)
             return {};
 
         // Chunked: 0x8000 bytes of output per chunk, each chunk at an aligned offset (0x100; v10: 0x800),
         // [u16 n, little-endian in every version][LZMA props][n bytes] or stored (a chunk that doesn't start with the props).
+        // DEFLATE chunks omit the LZMA properties: [u16 compressed length][raw DEFLATE bytes].
         const uint64_t align = m_chunkAlign - 1;
         std::vector<uint8_t> out;
         out.reserve(size);
@@ -435,11 +437,23 @@ namespace art::alchemy
             if (p >= m_length)
                 return {};
             size_t want = std::min(ChunkSize, size - out.size());
+            size_t chunkSize = std::min<size_t>(ChunkSize, entry.size - out.size());
             std::vector<uint8_t> head = read(p, 7);
             if (head.size() < 7)
                 return {};
             size_t n = head[0] | (head[1] << 8);
-            if (memcmp(&head[2], LzmaProps, 5) == 0)
+            if (compression == 1 && n < chunkSize)
+            {
+                if (n == 0 || p + 2 > m_length || n > m_length - p - 2)
+                    return {};
+                std::vector<uint8_t> body = read(p + 2, n), chunk;
+                if (body.size() != n || !lux::InflateRaw(body.data(), body.size(), chunk, chunkSize) ||
+                    chunk.size() != chunkSize)
+                    return {};
+                out.insert(out.end(), chunk.begin(), chunk.begin() + want);
+                p = (p + 2 + n + align) & ~align;
+            }
+            else if (compression == 2 && memcmp(&head[2], LzmaProps, 5) == 0)
             {
                 std::vector<uint8_t> body = read(p + 7, n + 8);
                 size_t at = out.size();

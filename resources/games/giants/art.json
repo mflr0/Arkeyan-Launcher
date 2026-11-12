@@ -50,5 +50,46 @@
               "112": "character/112_TitanLife.bld", "113": "character/113_Myconman.bld",
               "114": "character/114_Mummy.bld", "115": "character/115_Ostrich.bld",
               "404": "character/004_Rock_Dragon_Legendary.bld", "416": "character/016_Spyro_Legendary.bld",
-              "419": "character/019_GoldenCheat_Legendary.bld", "430": "character/030_PandoranElite_Legendary.bld" } }
+              "419": "character/019_GoldenCheat_Legendary.bld", "430": "character/030_PandoranElite_Legendary.bld" } },
+  "levels": {
+    "kind": "script",
+    "archive": "permanent/global.bld",
+    "entry": "level.bld",
+    "languages": {
+      "en": "ENGLISH",
+      "fr": "FRENCH",
+      "de": "GERMAN",
+      "es": "SPANISH",
+      "es-419": "HISPANIC",
+      "it": "ITALIAN",
+      "nl": "DUTCH",
+      "pt": "PORTUGUESE",
+      "sv": "SWEDISH",
+      "no": "NORWEGIAN",
+      "da": "DANISH",
+      "fi": "FINNISH"
+    },
+    "sets": [
+      {
+        "loads": "Level_Loads",
+        "titles": "Level_AdventureTitles"
+      },
+      {
+        "loads": "PvP_Level_Loads",
+        "titles": "PvP_LevelTitles"
+      }
+    ],
+    "numbered": [
+      {
+        "load": "Challenge_Level_BaseString",
+        "titlePrefix": "Challenge_Title_"
+      }
+    ],
+    "prefixes": [
+      {
+        "load": "VillageLoad_Prefix",
+        "title": "999_Level_Village(1)"
+      }
+    ]
+  }
 }

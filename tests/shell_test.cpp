@@ -185,10 +185,13 @@ namespace
             SHELL_EXPECT(status.known && status.level == "level_213_tutotial" && !status.menu && status.players == 2);
             SHELL_EXPECT(
                 !discordpresence::ParseGameStatus("").known && discordpresence::ParseGameStatus("menu=1").menu);
-            SHELL_EXPECT(
-                discordpresence::LevelName(R"({"level_213_tutotial": "Ruins"})", "level_213_tutotial") == "Ruins");
-            SHELL_EXPECT(discordpresence::LevelName(R"({"a": "b"})", "level_9").empty() &&
-                         discordpresence::LevelName("not json", "a").empty());
+            const char* levels = R"({"format": 1, "levels": {"invented/room": {"en": "Room", "fr": "Salle"},
+                "only/de": {"de": "Raum"}}})";
+            SHELL_EXPECT(discordpresence::LevelName(levels, "invented/room", "fr") == "Salle");
+            SHELL_EXPECT(discordpresence::LevelName(levels, "invented/room", "it") == "Room");
+            SHELL_EXPECT(discordpresence::LevelName(levels, "only/de", "fr") == "Raum");
+            SHELL_EXPECT(discordpresence::LevelName(levels, "level_9", "en").empty() &&
+                         discordpresence::LevelName("not json", "a", "en").empty());
         }
 
         // An unknown step gets its own row, before "Finishing".

@@ -39,8 +39,9 @@ namespace discordpresence
     };
     GameStatus ParseGameStatus(std::string_view text);
 
-    // The name the game shows for `level`, from its levels.json ({"<level id>": "<name>"}); empty when unknown.
-    std::string LevelName(std::string_view levelsJson, std::string_view level);
+    // The name the game shows for `level`, from its levels.json (docs/level_names.md: "levels": {"<level id>":
+    // {"<language>": "<name>"}}), in `language`, else English, else any; empty when unknown.
+    std::string LevelName(std::string_view levelsJson, std::string_view level, std::string_view language);
 
     // What Discord shows; `shown` false: nothing.
     struct Activity

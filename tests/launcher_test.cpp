@@ -1712,6 +1712,8 @@ int CopyChecks(const std::filesystem::path& scratch, const std::string& ssaIso,
     const std::string& giantsIso); // tests/copy_test.cpp
 int PortableChecks(const std::filesystem::path& scratch); // tests/portable_test.cpp
 int VfsChecks(const std::filesystem::path& scratch); // tests/vfs_test.cpp
+int LevelNameChecks(const std::filesystem::path& root);
+int LevelNameDiscChecks();
 int LuxImageChecks(); // tests/lux_images_test.cpp
 int SingleInstanceChecks(const std::filesystem::path& scratch); // tests/single_instance_test.cpp
 int ToyboxLinkChecks(const std::filesystem::path& scratch); // tests/toybox_link_test.cpp
@@ -2479,6 +2481,13 @@ static void SourceFailureChecks(const std::filesystem::path& scratch)
 
 static int RunChecks(int argc, char** argv)
 {
+    if (argc >= 3 && getenv("SKY_LAUNCHER_TEST_LEVEL_NAMES_ONLY") != nullptr)
+    {
+        int failures = LevelNameChecks(argv[2]) + LuxImageChecks();
+        if (std::string_view(argv[1]) != "--no-disc")
+            failures += LevelNameDiscChecks();
+        return failures == 0 ? 0 : 1;
+    }
     if (argc == 2 && std::string_view(argv[1]) == "--portal-probe" &&
         std::getenv("SKY_FAKE_PROBE_CLOSED_OUTPUT") != nullptr)
     {
@@ -2785,6 +2794,7 @@ static int RunChecks(int argc, char** argv)
     g_failures += VfsChecks(scratch);
     LoopingDiscStartChecks(scratch);
     g_failures += LuxImageChecks();
+    g_failures += LevelNameChecks(scratch);
     g_failures += SingleInstanceChecks(scratch / "instance");
     g_failures += ToyboxLinkChecks(scratch / "toybox-link");
     g_failures += I18nChecks();
@@ -2889,6 +2899,8 @@ static int RunChecks(int argc, char** argv)
         EXPECT(fallback[GameVideoSection("giants")]["fps_auto_fallback"] == "0");
     }
 
+    if (!noDisc)
+        g_failures += LevelNameDiscChecks();
     if (noDisc)
     {
         for (const char* mode : { "backups", "sheet", "notes", "migration", "catalogue", "data", "uninstall", "paths" })

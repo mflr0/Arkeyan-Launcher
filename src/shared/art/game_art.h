@@ -20,6 +20,7 @@ namespace art
     {
         std::function<uint64_t(const std::string& path)> size; // 0: no such file
         std::function<bool(const std::string& path, uint64_t offset, size_t size, uint8_t* out)> read;
+        std::function<std::vector<std::string>()> files; // optional: paths relative to the disc root
     };
 
     template <typename FileSystem>
@@ -34,6 +35,13 @@ namespace art
                 auto entry = disc.Find(path);
                 return entry != nullptr && offset + size <= entry->size &&
                        disc.Read(*entry, offset, out, uint32_t(size)) == size;
+            },
+            [&disc]() {
+                std::vector<std::string> names;
+                if constexpr (requires { disc.Files(); })
+                    for (const auto& [path, entry] : disc.Files())
+                        names.push_back(path);
+                return names;
             },
         };
     }
@@ -101,7 +109,8 @@ namespace art
         Artworks = 4, // the large toy pictures of the games that have them (Giants: about 8 s and 60 MB the first time)
         Upgrades = 8, // the toys' upgrade names, descriptions and prices (<data>/<Game>/upgrades.json; game_text.h)
         PartNames = 16, // Imaginators' creation parts' names (<data>/<Game>/parts.json; game_text.h)
-        All = 31,
+        LevelNames = 32, // localized level names (<data>/<Game>/levels.json; game_text.h)
+        All = 63,
     };
 
     struct Extraction
@@ -111,6 +120,7 @@ namespace art
         int artworks = 0; // artwork files in its folder afterwards
         bool upgrades = false; // upgrades.json present afterwards
         bool partNames = false; // parts.json present afterwards
+        bool levelNames = false; // current levels.json present afterwards (possibly an empty mapping)
     };
 
     // Reads `game`'s pictures from the player's disc into its caches; what is already cached (by this version of the
