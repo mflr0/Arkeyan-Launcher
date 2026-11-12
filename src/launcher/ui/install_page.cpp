@@ -650,11 +650,30 @@ namespace launcher_ui
         {
             const std::string headline = InstallFailureHeadline(list, progress);
             ui::Text(ui::TextStyle::Label, headline.c_str(), ui::color::Ink, 0, true);
-            if (!progress.error.empty() && progress.error != headline)
-                ui::Text(ui::TextStyle::Caption, progress.error.c_str(), ui::color::InkSoft);
-            ui::Text(ui::TextStyle::Caption,
-                list.current < 0 ? Tr("Retry to start the installation.") : Tr("Retry to continue from this step."),
-                ui::color::InkSoft);
+            if (MissingMetalToolchain(progress))
+            {
+                // Xcode 26 downloads it apart: the steps, and the command to paste (issue #67).
+                ui::Text(
+                    ui::TextStyle::Caption, Tr("1. Open Terminal (Applications > Utilities)."), ui::color::InkSoft);
+                ui::Text(ui::TextStyle::Caption, Tr("2. Paste the command and press Return:"), ui::color::InkSoft);
+                ui::Text(ui::TextStyle::Caption, MetalToolchainCommand, ui::color::Ink);
+                ui::Text(ui::TextStyle::Caption,
+                    Tr("3. Wait until it says it's done (a few minutes, about 700 MB), then press Retry."),
+                    ui::color::InkSoft);
+                if (ui::Button(Tr("Copy command"), { .kind = ui::ButtonKind::Secondary, .size = ui::Size::Small }))
+                {
+                    SDL_SetClipboardText(MetalToolchainCommand);
+                    Toast(Tr("Command copied"), ui::ToastKind::Success);
+                }
+            }
+            else
+            {
+                if (!progress.error.empty() && progress.error != headline)
+                    ui::Text(ui::TextStyle::Caption, progress.error.c_str(), ui::color::InkSoft);
+                ui::Text(ui::TextStyle::Caption,
+                    list.current < 0 ? Tr("Retry to start the installation.") : Tr("Retry to continue from this step."),
+                    ui::color::InkSoft);
+            }
         }
         else if (interrupted)
             ui::Text(ui::TextStyle::Body,

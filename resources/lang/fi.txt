@@ -1115,3 +1115,9 @@ In the first command's list, find the {} driver's oemNN.inf and put its name in 
 Or choose WinUSB for it in Zadig: the game uses it there.	Tai valitse sille Zadigissa WinUSB: silloin peli käyttää sitä.
 Copy commands	Kopioi komennot
 Commands copied	Komennot kopioitu
+Xcode's Metal shader compiler isn't installed yet.	Xcoden Metal-varjostinkääntäjää ei ole vielä asennettu.
+1. Open Terminal (Applications > Utilities).	1. Avaa Pääte (Ohjelmat > Lisäohjelmat).
+2. Paste the command and press Return:	2. Liitä komento ja paina Enter:
+3. Wait until it says it's done (a few minutes, about 700 MB), then press Retry.	3. Odota, kunnes se kertoo valmistuneensa (muutama minuutti, noin 700 Mt), ja paina sitten Yritä uudelleen.
+Copy command	Kopioi komento
+Command copied	Komento kopioitu
