@@ -23,7 +23,14 @@ namespace discordpresence
     namespace
     {
         // The IPC's frames: a 32-bit opcode and a 32-bit length (little-endian), then that many bytes of JSON.
-        enum Opcode : uint32_t { OpHandshake = 0, OpFrame = 1, OpClose = 2, OpPing = 3, OpPong = 4 };
+        enum Opcode : uint32_t
+        {
+            OpHandshake = 0,
+            OpFrame = 1,
+            OpClose = 2,
+            OpPing = 3,
+            OpPong = 4
+        };
         constexpr int ReadyTimeoutMs = 3000;
         constexpr auto RetryEvery = std::chrono::seconds(15);
         constexpr auto IdleWake = std::chrono::seconds(1);
@@ -110,7 +117,8 @@ namespace discordpresence
                         bases.emplace_back(value);
                 bases.emplace_back("/tmp");
                 for (const std::string& base : bases)
-                    for (const char* within : { "", "app/com.discordapp.Discord/", "snap.discord/", ".flatpak/dev.vencord.Vesktop/xdg-run/" })
+                    for (const char* within :
+                        { "", "app/com.discordapp.Discord/", "snap.discord/", ".flatpak/dev.vencord.Vesktop/xdg-run/" })
                         for (int i = 0; i < 10; ++i)
                         {
                             std::string path = base;
@@ -187,7 +195,8 @@ namespace discordpresence
             bool Write(const std::string& data)
             {
                 DWORD written = 0;
-                return WriteFile(m_handle, data.data(), DWORD(data.size()), &written, nullptr) && written == data.size();
+                return WriteFile(m_handle, data.data(), DWORD(data.size()), &written, nullptr) &&
+                       written == data.size();
             }
 
             bool Read(int timeoutMs)
@@ -216,7 +225,7 @@ namespace discordpresence
 #else
             bool TryConnect(const std::string& path)
             {
-                sockaddr_un address {};
+                sockaddr_un address{};
                 if (path.size() >= sizeof address.sun_path)
                     return false;
                 address.sun_family = AF_UNIX;
@@ -226,7 +235,8 @@ namespace discordpresence
                     return false;
 #ifdef SO_NOSIGPIPE
                 int on = 1;
-                setsockopt(fd, SOL_SOCKET, SO_NOSIGPIPE, &on, sizeof on); // macOS: a closed Discord is an error, not SIGPIPE
+                setsockopt(
+                    fd, SOL_SOCKET, SO_NOSIGPIPE, &on, sizeof on); // macOS: a closed Discord is an error, not SIGPIPE
 #endif
                 if (::connect(fd, reinterpret_cast<sockaddr*>(&address), sizeof address) != 0)
                 {
@@ -259,7 +269,7 @@ namespace discordpresence
 
             bool Read(int timeoutMs)
             {
-                pollfd entry { m_fd, POLLIN, 0 };
+                pollfd entry{ m_fd, POLLIN, 0 };
                 int ready = ::poll(&entry, 1, timeoutMs);
                 if (ready < 0)
                     return errno == EINTR;
@@ -382,7 +392,7 @@ namespace discordpresence
         Pipe pipe;
         uint64_t seen = 0, sent = 0, nonce = 0;
         bool showing = false; // what Discord was last told is not "nothing"
-        auto nextTry = std::chrono::steady_clock::time_point {};
+        auto nextTry = std::chrono::steady_clock::time_point{};
         const uint32_t pid = ProcessId();
         for (;;)
         {

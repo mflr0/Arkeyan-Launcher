@@ -1,6 +1,7 @@
 // ArkeyanLauncherTest's checks for the launcher shell: the install checklist,
 // game runs and logs, the updater, settings. Called from launcher_test.cpp's
 // main; returns the number of failures.
+#include "launcher/discord_presence.h"
 #include "launcher/env.h"
 #include "launcher/game_install.h"
 #include "launcher/game_run.h"
@@ -144,6 +145,27 @@ namespace
         list = MakeInstallChecklist(failed, 3000);
         SHELL_EXPECT(MissingMetalToolchain(failed));
         SHELL_EXPECT(InstallFailureHeadline(list, failed) == "Xcode's Metal shader compiler isn't installed yet.");
+
+        {
+            // Discord Rich Presence: images by art asset key only (nothing fetched from the web), text escaped and cut at
+            // Discord's 128 bytes on a character boundary, nothing shown as a null activity.
+            discordpresence::Activity activity;
+            activity.shown = true;
+            activity.details = "Skylanders \"Giants\"";
+            activity.state = std::string(126, 'a') + "\xC3\xA9\xC3\xA9";
+            activity.largeImage = "giants";
+            activity.smallImage = discordpresence::LauncherIconAsset;
+            const std::string json = discordpresence::ActivityCommand(activity, 42, "n1");
+            SHELL_EXPECT(json.find("\"large_image\":\"giants\"") != std::string::npos);
+            SHELL_EXPECT(json.find("\"small_image\":\"launcher\"") != std::string::npos);
+            SHELL_EXPECT(json.find("http") == json.find("https://github.com/mflr0/Arkeyan-Launcher"));
+            SHELL_EXPECT(json.find("Skylanders \\\"Giants\\\"") != std::string::npos);
+            SHELL_EXPECT(json.find(std::string(126, 'a') + "\xC3\xA9\"") != std::string::npos);
+            SHELL_EXPECT(json.find("\"pid\":42") != std::string::npos);
+            activity.shown = false;
+            SHELL_EXPECT(
+                discordpresence::ActivityCommand(activity, 42, "n2").find("\"activity\":null") != std::string::npos);
+        }
 
         // An unknown step gets its own row, before "Finishing".
         list = MakeInstallChecklist(

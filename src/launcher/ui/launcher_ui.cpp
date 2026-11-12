@@ -1168,7 +1168,7 @@ namespace launcher_ui
         if (running.empty())
         {
             activity.details = Tr("In the launcher");
-            activity.largeImage = discordpresence::LauncherIconUrl;
+            activity.largeImage = discordpresence::LauncherIconAsset;
             activity.largeText = launcher;
             m_presence.Set(activity); // nothing is sent when it is the same
             return;
@@ -1189,7 +1189,8 @@ namespace launcher_ui
             // The achievements as the game page counts them: the disc's list (cached by the disc check) and the game's unlocks.
             const GameProgress progress = ReadGameProgress(running, i18n::Current());
             m_presenceAchievements = progress.hasList && !progress.rows.empty()
-                ? Tf("{}/{} achievements", progress.unlocked, progress.rows.size()) : std::string();
+                                         ? Tf("{}/{} achievements", progress.unlocked, progress.rows.size())
+                                         : std::string();
         }
         if (nowMs >= m_presencePortalAt)
         {
@@ -1202,10 +1203,12 @@ namespace launcher_ui
                 for (const std::string& path : ReadSeats(*game, SessionFile(*game)))
                 {
                     collection::Figure figure;
-                    if (path.empty() || !collection::Read(path, figure) || figure.toy == nullptr || !collection::HasProgress(figure))
+                    if (path.empty() || !collection::Read(path, figure) || figure.toy == nullptr ||
+                        !collection::HasProgress(figure))
                         continue;
                     m_presenceFigureType = figure.type;
-                    m_presenceFigureText = collection::NameIn(figure, running) + " \xC2\xB7 " + Tf("Level {}", figure.level);
+                    m_presenceFigureText =
+                        collection::NameIn(figure, running) + " \xC2\xB7 " + Tf("Level {}", figure.level);
                     break;
                 }
         }
@@ -1224,7 +1227,7 @@ namespace launcher_ui
         }
         else
         {
-            activity.smallImage = discordpresence::LauncherIconUrl;
+            activity.smallImage = discordpresence::LauncherIconAsset;
             activity.smallText = launcher;
         }
         m_presence.Set(activity);
@@ -2759,7 +2762,8 @@ namespace launcher_ui
         ui::SectionHeader(Tr("Discord"));
         if (ui::BeginSettings("##discord"))
         {
-            ui::SettingRow(Tr("Show my activity on Discord"), Tr("The game you play, its achievements and version, or that you are in the launcher."));
+            ui::SettingRow(Tr("Show my activity on Discord"),
+                Tr("The game you play, its achievements and version, or that you are in the launcher."));
             bool presence = SettingGet(m_config, "discord", "presence", "1") != "0";
             if (ui::Toggle("##discordpresence", &presence))
             {

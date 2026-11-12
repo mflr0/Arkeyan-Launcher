@@ -17,11 +17,12 @@ namespace discordpresence
     // ("giants"), each character's picture "fig_<toy type>" ("fig_103").
     inline constexpr char ApplicationId[] = "1570426097903083671";
     inline constexpr char RepositoryUrl[] = "https://github.com/mflr0/Arkeyan-Launcher";
-    // The launcher's icon: in the corner of the game's, alone in the launcher (an image URL needs no upload to the application).
+    // Every image is an art asset of the application, named by its key: replacing or removing one on
+    // discord.com/developers needs no new launcher. The launcher's icon: in the corner of the game's, alone in the launcher.
     // The player's figure in the corner: the application's art asset "fig_<toy type>" (tools/discord_icons.cpp writes them
     // from the Toy Box's pictures, to upload on discord.com/developers).
     inline constexpr char FigureAssetPrefix[] = "fig_";
-    inline constexpr char LauncherIconUrl[] = "https://raw.githubusercontent.com/mflr0/Arkeyan-Launcher/main/resources/icons/skylauncher-128.png";
+    inline constexpr char LauncherIconAsset[] = "launcher";
 
     // What Discord shows; `shown` false: nothing.
     struct Activity
@@ -30,7 +31,7 @@ namespace discordpresence
         std::string details;      // the first line: the game's name, or "In the launcher"
         std::string state;        // the second line: "12 h 34 in total · v0.8.2"
         bool namedByDetails = false; // the member list says "Playing <details>" instead of the application's name
-        std::string largeImage;   // an art asset's key ("giants") or an image URL
+        std::string largeImage;   // an art asset's key ("giants", "launcher")
         std::string largeText;    // its tooltip
         std::string smallImage;   // the corner's image; empty: none
         std::string smallText;
