@@ -563,8 +563,13 @@ fs::path DownloadVerified(const ReleaseInfo& release, std::string_view assetName
         error = result.error;
         return {};
     }
-    std::string data = ReadText(file);
-    std::string actual = Sha256Hex({ reinterpret_cast<const uint8_t*>(data.data()), data.size() });
+    std::string actual = filelist::Sha256OfFile(file, cancel);
+    if (cancel != nullptr && *cancel)
+    {
+        fs::remove(file, fsError);
+        error = "cancelled";
+        return {};
+    }
     if (actual != expected)
     {
         fs::remove(file, fsError);
