@@ -49,12 +49,16 @@ jobs:
             if (labels.size) await github.rest.issues.addLabels({ ...context.repo, issue_number: issue.number, labels: [...labels] });
 
             // Bug and portal reports need a real game log or portal test: the launcher's copies start with known lines.
+            // The maintainers' own issues (plans, known problems) need no log.
+            if (['OWNER', 'MEMBER', 'COLLABORATOR'].includes(issue.author_association)) return;
             const isReport = issue.labels.some(l => ['bug', 'portal'].includes(l.name)) || /^(Bug|Portal): /.test(issue.title);
             if (!isReport) return;
             const log = answer('Game log');
             const looksLikeLog = /\[(version|system|gpu|portal|log)\]|===== |Arkeyan Launcher problem report|Portal test \(/.test(log) && log.length > 300;
+            // A log too long for the field comes as an attached file.
+            const attached = /github\.com\/user-attachments\/files\/\d+\/[^)\s]*\.(txt|log|zip)/i.test(body);
             const hasNeeds = issue.labels.some(l => l.name === 'needs-info');
-            if (looksLikeLog) {
+            if (looksLikeLog || attached) {
               if (hasNeeds) await github.rest.issues.removeLabel({ ...context.repo, issue_number: issue.number, name: 'needs-info' }).catch(() => {});
               return;
             }
