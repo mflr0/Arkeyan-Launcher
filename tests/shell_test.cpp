@@ -165,6 +165,14 @@ namespace
             activity.shown = false;
             SHELL_EXPECT(
                 discordpresence::ActivityCommand(activity, 42, "n2").find("\"activity\":null") != std::string::npos);
+            // The pictures by address: every game's logo and a character's picture; none for an unknown game or toy
+            // (the launcher's icon stands in).
+            for (const char* game : { "ssa", "giants", "swapforce", "trapteam", "superchargers", "imaginators" })
+                SHELL_EXPECT(discordpresence::GameLogoUrl(game).starts_with("https://upload.wikimedia.org/"));
+            SHELL_EXPECT(discordpresence::GameLogoUrl("unknown").empty());
+            SHELL_EXPECT(
+                discordpresence::FigureImageUrl(0).starts_with("https://static.wikia.nocookie.net/skylanders/"));
+            SHELL_EXPECT(discordpresence::FigureImageUrl(65000).empty());
         }
 
         // An unknown step gets its own row, before "Finishing".

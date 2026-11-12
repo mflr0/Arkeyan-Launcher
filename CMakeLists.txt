@@ -198,6 +198,7 @@ target_sources(ArkeyanLauncherCore PRIVATE
     src/launcher/game_run.cpp
     src/launcher/portal_probe_text.cpp
     src/launcher/discord_presence.cpp
+    src/launcher/discord_images.cpp
     src/launcher/portal_status.cpp
     src/launcher/profiles.cpp
     src/launcher/game_keys.cpp
@@ -303,10 +304,6 @@ target_include_directories(ArkeyanLauncherTest PRIVATE lib/miniz)
 add_executable(ArkeyanPortalTextTest EXCLUDE_FROM_ALL tests/portal_text_test.cpp src/launcher/portal_probe_text.cpp)
 target_include_directories(ArkeyanPortalTextTest PRIVATE src)
 target_compile_definitions(ArkeyanPortalTextTest PRIVATE PORTAL_TEXT_TEST_STANDALONE)
-# The art assets of Discord Rich Presence from this computer's discs: DiscordFigureIcons <folder> (tools/discord_icons.cpp; never committed).
-add_executable(DiscordFigureIcons EXCLUDE_FROM_ALL tools/discord_icons.cpp)
-target_link_libraries(DiscordFigureIcons PRIVATE ArkeyanLauncherCore)
-target_include_directories(DiscordFigureIcons PRIVATE lib/stb)
 
 # Synthetic offscreen timing and frame-pacing regression checks.
 add_executable(ArkeyanLauncherPerf EXCLUDE_FROM_ALL tests/performance_test.cpp)

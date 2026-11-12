@@ -1216,13 +1216,17 @@ namespace launcher_ui
             activity.state = m_presenceAchievements;
         if (!version.empty())
             activity.state += (activity.state.empty() ? "v" : " \xC2\xB7 v") + version;
-        activity.largeImage = running; // the application's art asset named after the game
+        activity.largeImage = discordpresence::GameLogoUrl(running);
+        if (activity.largeImage.empty())
+            activity.largeImage = discordpresence::LauncherIconAsset;
         activity.largeText = activity.details;
         if (!version.empty())
             activity.largeText += " v" + version;
-        if (m_presenceFigureType >= 0)
+        const std::string figureImage =
+            m_presenceFigureType >= 0 ? discordpresence::FigureImageUrl(uint16_t(m_presenceFigureType)) : std::string();
+        if (!figureImage.empty())
         {
-            activity.smallImage = discordpresence::FigureAssetPrefix + std::to_string(m_presenceFigureType);
+            activity.smallImage = figureImage;
             activity.smallText = m_presenceFigureText;
         }
         else

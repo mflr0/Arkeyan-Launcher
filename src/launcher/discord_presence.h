@@ -9,20 +9,20 @@
 #include <cstdint>
 #include <mutex>
 #include <string>
+#include <string_view>
 #include <thread>
 
 namespace discordpresence
 {
-    // The application on discord.com/developers. Its Rich Presence art assets: each game's logo named after the game's id
-    // ("giants"), each character's picture "fig_<toy type>" ("fig_103").
+    // The application on discord.com/developers. Its one art asset: the launcher's icon, "launcher".
     inline constexpr char ApplicationId[] = "1570426097903083671";
     inline constexpr char RepositoryUrl[] = "https://github.com/mflr0/Arkeyan-Launcher";
-    // Every image is an art asset of the application, named by its key: replacing or removing one on
-    // discord.com/developers needs no new launcher. The launcher's icon: in the corner of the game's, alone in the launcher.
-    // The player's figure in the corner: the application's art asset "fig_<toy type>" (tools/discord_icons.cpp writes them
-    // from the Toy Box's pictures, to upload on discord.com/developers).
-    inline constexpr char FigureAssetPrefix[] = "fig_";
+    // The launcher's icon (the art asset), alone in the launcher and in the corner when no figure has a picture.
     inline constexpr char LauncherIconAsset[] = "launcher";
+    // The game's logo and a character's picture, as image addresses Discord fetches (discord_images.cpp); empty when
+    // there is none, and the launcher's icon stands in.
+    std::string GameLogoUrl(std::string_view gameId);
+    std::string FigureImageUrl(uint16_t toyType);
 
     // What Discord shows; `shown` false: nothing.
     struct Activity
@@ -31,7 +31,7 @@ namespace discordpresence
         std::string details;      // the first line: the game's name, or "In the launcher"
         std::string state;        // the second line: "12 h 34 in total · v0.8.2"
         bool namedByDetails = false; // the member list says "Playing <details>" instead of the application's name
-        std::string largeImage;   // an art asset's key ("giants", "launcher")
+        std::string largeImage;   // an art asset's key ("launcher") or an image's https address
         std::string largeText;    // its tooltip
         std::string smallImage;   // the corner's image; empty: none
         std::string smallText;

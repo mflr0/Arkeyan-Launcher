@@ -354,3 +354,16 @@ License: MIT, Copyright (c) GitHub Inc.
 The figures' tag format (the blocks and their checksums) was learned by reading the Skylanders portal code of Dolphin and
 RPCS3 (GPL-2.0-or-later); no code of theirs is in this project, and every detail was checked against figures the games wrote.
 
+
+## Images shown by Discord Rich Presence (linked, not shipped)
+
+The launcher ships none of these pictures: it gives Discord their addresses (`src/launcher/discord_images.cpp`) and
+Discord fetches them. Skylanders and the games' logos and characters are trademarks of Activision Publishing, Inc.;
+this project is not affiliated with Activision.
+
+- Game logos, from Wikimedia: Skylanders Trap Team logo (Wikimedia Commons, CC BY 4.0), Skylanders Swap Force logo
+  (Wikimedia Commons, CC0), Skylanders SuperChargers logo (Wikimedia Commons, CC BY 4.0), Skylanders Imaginators logo
+  (Wikimedia Commons, CC BY-SA 4.0), Skylanders: Spyro's Adventure and Skylanders Giants logos (French Wikipedia, marked
+  as trademarks). Each file's page on commons.wikimedia.org or fr.wikipedia.org gives its author and terms.
+- Character pictures: the main picture of each character's page on the Skylanders Wiki (skylanders.fandom.com), whose
+  text is available under CC BY-SA.
