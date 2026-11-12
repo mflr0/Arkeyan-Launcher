@@ -87,6 +87,34 @@ jobs:
           name: windows
           path: dist/*
 
+  sanitizers:
+    # The no-disc checks built with AddressSanitizer and UndefinedBehaviorSanitizer: an out-of-bounds read, a use after
+    # free or a NaN reaching an integer stops the run with its stack. Slower: the child scenarios get 5 minutes, the pad
+    # walk 45.
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          submodules: recursive
+      - name: Dependencies
+        timeout-minutes: 15
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build clang-15 libstdc++-12-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev \
+            libxi-dev libxss-dev libxtst-dev libxkbcommon-dev libwayland-dev wayland-protocols libegl1-mesa-dev \
+            libgl1-mesa-dev libgles2-mesa-dev libdbus-1-dev libudev-dev libdrm-dev libgbm-dev
+      - name: Build and test
+        env:
+          ASAN_OPTIONS: detect_leaks=0
+          UBSAN_OPTIONS: print_stacktrace=1
+          SKY_LAUNCHER_TEST_TIMEOUT_MS: '300000'
+          SKY_LAUNCHER_TEST_PADWALK_MINUTES: '45'
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DSKY_SANITIZE=ON \
+            -DCMAKE_C_COMPILER=clang-15 -DCMAKE_CXX_COMPILER=clang++-15
+          cmake --build build --target ArkeyanLauncher ArkeyanLauncherTest FakeArkeyanBuilder
+          SDL_VIDEO_DRIVER=offscreen SDL_AUDIO_DRIVER=dummy build/ArkeyanLauncherTest --no-disc "$RUNNER_TEMP/launcher-test"
+
   linux:
     # 22.04: the AppImage needs the glibc it was built against (2.35), and the game kit's baseline is 2.34.
     runs-on: ubuntu-22.04
