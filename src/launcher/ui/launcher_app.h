@@ -823,12 +823,12 @@ namespace launcher_ui
         std::string m_presenceGame;
         int64_t m_presenceSince = 0;
         uint64_t m_presenceAt = 0, m_presencePortalAt = 0; // when the achievements and the portal are read again
-        std::string m_presenceAchievements;               // "3/50 achievements"
-        int m_presenceFigureType = -1;                    // the player's figure on the portal, -1: none
-        std::string m_presenceFigureText;                 // "Eruptor · Level 7"
+        std::string m_presenceAchievements; // "3/50 achievements"
+        int m_presenceFigureType = -1; // the player's figure on the portal, -1: none
+        std::string m_presenceFigureText; // "Eruptor · Level 7"
         void UpdatePresence(uint64_t nowMs);
         bool PresenceOn() const;
-        std::string m_sessionIso;  // the disc image it was started with (the crash report names it)
+        std::string m_sessionIso; // the disc image it was started with (the crash report names it)
         ProbeJob m_probe;
         GameLog m_lastRun; // Support: the run Copy game log carries (LastGameLog)
         uint64_t m_lastRunLookAt = 0;
