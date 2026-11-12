@@ -51,13 +51,14 @@ Islands.
 | Game | Mac | Windows | Linux | Played so far |
 |---|---|---|---|---|
 | Spyro's Adventure | ✅ | ✅ | ✅ | 27 story levels and the Ruins played with a hero; bosses and Heroic Challenges not all confirmed |
-| Giants | ✅ | ⚠️ in Wine only | ✅ | Chapter 1, and 78 of its 91 levels in an automatic tour; a real portal on Linux |
+| Giants | ✅ | ✅ | ✅ | Chapter 1, and 78 of its 91 levels in an automatic tour; a real portal on Linux |
 | Swap Force | ✅ | ✅ | ✅ | The tutorial, the first area of the story and the two-player arenas; 158 of 195 zones in an automatic tour |
 | Trap Team | ✅ | ✅ | ⚠️ not tested yet | The tutorial, the first chapters and the Academy, a villain captured and kept in its trap; 53 of 56 levels in an automatic tour |
 | SuperChargers | ✅ | ✅ | ✅ (Steam Deck, Desktop Mode) | The opening and the Academy, a vehicle on the portal |
-| Imaginators | ✅ | ⚠️ not tested yet | ⚠️ not tested yet | The opening and the hub |
+| Imaginators | ✅ | ✅ | ⚠️ not tested yet | The opening and the hub |
 
-✅ means played on a real computer of that kind, by the author or by players. The Steam Deck works in Desktop Mode;
+✅ means played on a real computer of that kind, by the author or by players; each one has its evidence (an issue or a
+tester's log) on the game's status page in the [forge](https://github.com/arkeyan-forge/forge). The Steam Deck works in Desktop Mode;
 Game Mode is being fixed for 0.9.6.
 
 Finished a game, or played one on Windows or Linux? Please say so in an
