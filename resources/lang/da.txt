@@ -611,6 +611,11 @@ Pick one below	Vælg nedenfor
 Picture	Billede
 Play	Spil
 Play time: {}	Spilletid: {}
+{}/{} achievements	{}/{} præstationer
+In the launcher	I startprogrammet
+Discord	Discord
+Show my activity on Discord	Vis min aktivitet på Discord
+The game you play, its achievements and version, or that you are in the launcher.	Spillet du spiller, præstationer og version, eller at du er i startprogrammet.
 Play without updating	Spil uden at opdatere
 Play {}	Spil {}
 Play {} with Arkeyan Launcher	Spil {} med Arkeyan Launcher

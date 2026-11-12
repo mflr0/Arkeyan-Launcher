@@ -612,6 +612,11 @@ Pick one below	Välj en nedan
 Picture	Bild
 Play	Spela
 Play time: {}	Speltid: {}
+{}/{} achievements	{}/{} prestationer
+In the launcher	I startprogrammet
+Discord	Discord
+Show my activity on Discord	Visa min aktivitet på Discord
+The game you play, its achievements and version, or that you are in the launcher.	Spelet du spelar, prestationer och version, eller att du är i startprogrammet.
 Play without updating	Spela utan att uppdatera
 Play {}	Spela {}
 Play {} with Arkeyan Launcher	Spela {} med Arkeyan Launcher

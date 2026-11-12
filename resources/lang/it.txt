@@ -611,6 +611,11 @@ Pick one below	Scegli qui sotto
 Picture	Immagine
 Play	Gioca
 Play time: {}	Tempo di gioco: {}
+{}/{} achievements	{}/{} obiettivi
+In the launcher	Nel launcher
+Discord	Discord
+Show my activity on Discord	Mostra la mia attività su Discord
+The game you play, its achievements and version, or that you are in the launcher.	Il gioco in corso, i suoi obiettivi e la versione, o che sei nel launcher.
 Play without updating	Gioca senza aggiornare
 Play {}	Gioca a {}
 Play {} with Arkeyan Launcher	Gioca a {} con Arkeyan Launcher

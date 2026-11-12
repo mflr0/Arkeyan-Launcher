@@ -612,6 +612,11 @@ Pick one below	Valitse alta
 Picture	Kuva
 Play	Pelaa
 Play time: {}	Peliaika: {}
+{}/{} achievements	{}/{} saavutusta
+In the launcher	Käynnistimessä
+Discord	Discord
+Show my activity on Discord	Näytä toimintani Discordissa
+The game you play, its achievements and version, or that you are in the launcher.	Pelaamasi peli, sen saavutukset ja versio, tai että olet käynnistimessä.
 Play without updating	Pelaa päivittämättä
 Play {}	Pelaa: {}
 Play {} with Arkeyan Launcher	Pelaa: {} Arkeyan Launcherilla
