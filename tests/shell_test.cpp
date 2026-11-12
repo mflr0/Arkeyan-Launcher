@@ -8,6 +8,7 @@
 #include "launcher/launcher.h"
 #include "launcher/report.h"
 #include "launcher/updater.h"
+#include "shared/collection/file_list.h"
 #include "shared/collection/save_backup.h"
 #include "shared/dir_list.h"
 #include "shared/mini_json.h"
@@ -685,6 +686,87 @@ namespace
             SDL_Delay(20);
     }
 
+    void DownloadHashChecks(const std::filesystem::path& updates)
+    {
+        // Binary files around SHA-256 padding and read-buffer boundaries, including an empty file.
+        const auto small = updates / "hash-blocks.bin";
+        for (size_t size : { size_t(0), size_t(1), size_t(55), size_t(56), size_t(63), size_t(64), size_t(65),
+                 size_t((1 << 20) - 1), size_t(1 << 20), size_t((1 << 20) + 1) })
+        {
+            std::string data(size, '\0');
+            for (size_t i = 0; i < size; i++)
+                data[i] = char(i % 251);
+            WriteBytes(small, data);
+            SHELL_EXPECT(filelist::Sha256OfFile(small) == Sha(data));
+        }
+        std::atomic<bool> cancel = true;
+        SHELL_EXPECT(filelist::Sha256OfFile(small, &cancel).empty());
+        std::filesystem::remove(small);
+        SHELL_EXPECT(filelist::Sha256OfFile(small).empty());
+
+        // A sparse synthetic asset: its expected digest is independent of the implementation under test.
+        const auto folder = updates / "large-release";
+        const auto source = folder / "large.bin";
+        constexpr uint64_t size = 320ULL << 20;
+        const std::string expected = "9942003e84c1648820149cb7b82869eb1e6515ddd04951bd2c69f9273b09c053";
+        WriteBytes(source, "");
+        std::filesystem::resize_file(source, size);
+        WriteBytes(folder / "SHA256SUMS", expected + "  large.bin\n");
+        ReleaseInfo release;
+        release.tag = "v99.0.0";
+        release.assets = { { "large.bin", FileUrl(source), size },
+            { "SHA256SUMS", FileUrl(folder / "SHA256SUMS"), 0 } };
+        std::string error;
+        uint64_t received = 0;
+        uint64_t start = SDL_GetTicks();
+        auto file = DownloadVerified(
+            release, "large.bin", updates / "large-got", [&](uint64_t bytes) { received = bytes; }, nullptr, error);
+        SHELL_EXPECT(!file.empty() && received == size && std::filesystem::file_size(file) == size);
+        printf("Verified download: 320 MiB in %.3f s\n", double(SDL_GetTicks() - start) / 1000);
+        start = SDL_GetTicks();
+        SHELL_EXPECT(filelist::Sha256OfFile(source) == expected);
+        printf("Shared file hash: 320 MiB in %.3f s\n", double(SDL_GetTicks() - start) / 1000);
+
+        // Cancel at the first progress report, even if a fast local transfer has already finished writing.
+        cancel = false;
+        received = 0;
+        file = DownloadVerified(
+            release, "large.bin", updates / "large-cancel",
+            [&](uint64_t bytes) {
+                received = bytes;
+                if (bytes > 0)
+                    cancel = true;
+            },
+            &cancel, error);
+        SHELL_EXPECT(file.empty() && cancel && received > 0 && error == "cancelled" &&
+                     !std::filesystem::exists(updates / "large-cancel" / "large.bin") &&
+                     !std::filesystem::exists(updates / "large-cancel" / "large.bin.part"));
+        std::filesystem::remove_all(updates / "large-cancel");
+        std::filesystem::remove_all(updates / "large-got");
+        std::filesystem::remove_all(folder);
+
+        // Cancellation at the final progress report must also stop the verification of a small download.
+        MakeRelease(folder, "v99.0.0", { { "empty.bin", "" } }, {});
+        SHELL_EXPECT(ParseRelease(ReadBytes(folder / "latest.json"), release));
+        file = DownloadVerified(release, "empty.bin", updates / "empty-got", {}, nullptr, error);
+        SHELL_EXPECT(!file.empty() && std::filesystem::file_size(file) == 0);
+        cancel = false;
+        file = DownloadVerified(
+            release, "empty.bin", updates / "empty-cancel", [&](uint64_t) { cancel = true; }, &cancel, error);
+        SHELL_EXPECT(file.empty() && cancel && error == "cancelled" &&
+                     !std::filesystem::exists(updates / "empty-cancel" / "empty.bin"));
+
+        // A file that vanishes before verification is a read failure, even for the digest of empty input.
+        file = DownloadVerified(
+            release, "empty.bin", updates / "empty-missing",
+            [&](uint64_t) { std::filesystem::remove(updates / "empty-missing" / "empty.bin"); }, nullptr, error);
+        SHELL_EXPECT(file.empty() && error.find("damaged") != std::string::npos);
+        std::filesystem::remove_all(updates / "empty-got");
+        std::filesystem::remove_all(updates / "empty-cancel");
+        std::filesystem::remove_all(updates / "empty-missing");
+        std::filesystem::remove_all(folder);
+    }
+
     void ParseGamesLineChecks()
     {
         std::vector<GameUpdate> games;
@@ -802,9 +884,17 @@ namespace
         SHELL_EXPECT(file.empty() && downloadError.find("can't be verified") != std::string::npos);
         file = DownloadVerified(release, "Other.exe", updates / "got3", {}, nullptr, downloadError);
         SHELL_EXPECT(file.empty() && downloadError.find("Other.exe") != std::string::npos);
+        MakeRelease(updates / "r-line", "v99.0.0", { { "ArkeyanLauncher.exe", "exe bytes" } }, {});
+        WriteBytes(updates / "r-line" / "SHA256SUMS", Sha("other") + "  other.bin\n");
+        SHELL_EXPECT(ParseRelease(ReadBytes(updates / "r-line" / "latest.json"), release));
+        file = DownloadVerified(release, "ArkeyanLauncher.exe", updates / "got-line", {}, nullptr, downloadError);
+        SHELL_EXPECT(file.empty() && downloadError.find("can't be verified") != std::string::npos &&
+                     !std::filesystem::exists(updates / "got-line" / "ArkeyanLauncher.exe"));
         HttpResult missing = HttpDownload(FileUrl(updates / "nowhere.bin"), updates / "got4" / "x");
         SHELL_EXPECT(!missing.ok && !missing.error.empty() && !std::filesystem::exists(updates / "got4" / "x.part"));
         SHELL_EXPECT(!HttpDownload("http://example.test/x", updates / "got4" / "y").ok); // never plain http
+
+        DownloadHashChecks(updates);
 
         // Swapping: the new one in place, the old one kept as .old, undone when the
         // new one is missing.
@@ -918,6 +1008,7 @@ namespace
 
         // The manager: a check against the fake latest.json, then the kit update from
         // it.
+        TestSetEnv("SKY_LAUNCHER_DATA", (updates / "data").string().c_str());
         TestSetEnv("SKY_LAUNCHER_UPDATE_URL", FileUrl(updates / "r1" / "latest.json").c_str());
         UpdateManager manager;
         UpdateManager::Settings settings;
@@ -958,7 +1049,6 @@ namespace
         // else the latest, verified, then found.
         auto setEnv = [](const char* name, const std::string& value) { TestSetEnv(name, value.c_str()); };
         TestUnsetEnv("SKY_LAUNCHER_KIT");
-        setEnv("SKY_LAUNCHER_DATA", (updates / "data").string());
         std::string launcherTag = "v" + LauncherVersion();
         std::string dlZip = MakeZip(updates / "dl" / KitAssetName(),
             { { "ssa-kit/", "" }, { "ssa-kit/SSABuild", "dl kit" }, { "ssa-kit/SSABuild.exe", "dl kit" },

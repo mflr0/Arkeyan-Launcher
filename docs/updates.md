@@ -54,6 +54,17 @@ keeps, so it needs nothing.
 HTTPS is `curl` (`curl.exe` ships with Windows 10 and 11, as Arkeyan-Builder already relies on it; macOS and most Linux have it):
 `--proto =https --tlsv1.2`, a 15 s connect timeout, no redirect to plain http. No new library.
 
+### Download verification
+
+Launcher updates and kit downloads first fetch `SHA256SUMS` and require a checksum line for the requested asset. After curl
+finishes writing the download, the shared `filelist::Sha256OfFile` helper reads it in fixed 1 MiB blocks and compares its
+lowercase SHA-256 with that line. This is a separate pass over the file; memory use for hashing stays at 1 MiB even for a
+large kit. Install file lists and integrity checks already use the same helper.
+
+A missing checksum list or line refuses the download. A hash mismatch or read failure deletes the downloaded asset;
+cancelling during verification also deletes it. An interrupted transfer fails and removes its `.part` file, without
+installing anything. Curl's retry and redirect handling are unchanged.
+
 ## The game kit
 
 The kit is an asset of the launcher's own release: `skylanders-kit-windows-x64.zip`, `skylanders-kit-macos-arm64.zip` and
@@ -148,3 +159,8 @@ launcher from an older release, replaced before INSTALL builds; a kit without `g
 the game updates: a fake release whose games line bumps Giants only: UPDATE for Giants and PLAY for the other, no kit downloaded
 in the background, Play without updating, UPDATE fetching the kit and rebuilding Giants only; and the same offline: silent). `SKY_LAUNCHER_TEST_UPDATE=1` with `SKY_LAUNCHER_UPDATE_URL` on a
 fake `latest.json` takes the banner, What's new, About and failure screenshots.
+
+The download checks also verify an empty asset, binary hashes around SHA-256 padding and 1 MiB buffer boundaries, a missing
+checksum line, read failure, cancellation during a transfer and before verification, and a sparse 320 MiB zero-filled
+asset with a known digest. The large source and downloaded files are created in the scratch folder and removed after the
+checks. Download verification and shared file hashing each print their elapsed time.

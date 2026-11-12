@@ -81,8 +81,9 @@ struct HttpResult
 HttpResult HttpDownload(const std::string& url, const std::filesystem::path& file,
     const std::function<void(uint64_t)>& progress = {}, const std::atomic<bool>* cancel = nullptr);
 
-// Downloads `asset` of `release` into `folder`, then checks its SHA-256 against the release's SHA256SUMS asset. A release
-// without SHA256SUMS, or with another hash, is refused (the file is deleted). Returns the file ("" and `error` otherwise).
+// Downloads `asset` of `release` into `folder`, then hashes it in fixed-size blocks against the release's SHA256SUMS asset.
+// Without SHA256SUMS, or with another hash, it is refused (the file is deleted). Read failure or cancellation during the
+// check also deletes it. Returns the file ("" and `error` otherwise).
 std::filesystem::path DownloadVerified(const ReleaseInfo& release, std::string_view assetName,
     const std::filesystem::path& folder, const std::function<void(uint64_t)>& progress, const std::atomic<bool>* cancel,
     std::string& error);
