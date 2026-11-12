@@ -1125,3 +1125,6 @@ Xcode's Metal shader compiler isn't installed yet.	El compilador de shaders Meta
 3. Wait until it says it's done (a few minutes, about 700 MB), then press Retry.	3. Espera a que indique que ha terminado (unos minutos, unos 700 MB) y pulsa Reintentar.
 Copy command	Copiar el comando
 Command copied	Comando copiado
+In the menus	En los menús
+In a level	En un nivel
+{} played	{} jugado

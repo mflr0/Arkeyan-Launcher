@@ -1125,3 +1125,6 @@ Xcode's Metal shader compiler isn't installed yet.	De Metal-shadercompiler van X
 3. Wait until it says it's done (a few minutes, about 700 MB), then press Retry.	3. Wacht tot er staat dat het klaar is (een paar minuten, ongeveer 700 MB) en druk dan op Opnieuw proberen.
 Copy command	Opdracht kopiëren
 Command copied	Opdracht gekopieerd
+In the menus	In de menu's
+In a level	In een level
+{} played	{} gespeeld

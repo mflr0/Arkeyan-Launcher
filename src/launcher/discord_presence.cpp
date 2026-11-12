@@ -1,4 +1,5 @@
 #include "launcher/discord_presence.h"
+#include "shared/mini_json.h"
 
 #include <chrono>
 #include <cstdio>
@@ -352,14 +353,53 @@ namespace discordpresence
                     AppendEscaped(json, Clip(activity.smallText));
                 }
             }
-            json += "},\"buttons\":[{\"label\":\"Arkeyan Launcher on GitHub\",\"url\":";
+            json += '}';
+            if (activity.partySize > 0 && activity.partyMax >= activity.partySize)
+                json += ",\"party\":{\"id\":\"arkeyan\",\"size\":[" + std::to_string(activity.partySize) + "," +
+                        std::to_string(activity.partyMax) + "]}";
+            json += ",\"buttons\":[{\"label\":\"Arkeyan Launcher\",\"url\":";
             AppendEscaped(json, RepositoryUrl);
+            json += "},{\"label\":\"Discord\",\"url\":";
+            AppendEscaped(json, DiscordUrl);
             json += "}]}";
         }
         json += "},\"nonce\":";
         AppendEscaped(json, nonce);
         json += '}';
         return json;
+    }
+
+    GameStatus ParseGameStatus(std::string_view text)
+    {
+        GameStatus status;
+        status.known = !text.empty();
+        while (!text.empty())
+        {
+            const size_t end = std::min(text.find('\n'), text.size());
+            std::string_view line = text.substr(0, end);
+            text.remove_prefix(std::min(end + 1, text.size()));
+            if (!line.empty() && line.back() == '\r')
+                line.remove_suffix(1);
+            const size_t equals = line.find('=');
+            if (equals == std::string_view::npos)
+                continue;
+            const std::string_view key = line.substr(0, equals), value = line.substr(equals + 1);
+            if (key == "level")
+                status.level = std::string(value);
+            else if (key == "menu")
+                status.menu = value == "1";
+            else if (key == "players")
+                status.players = value == "2" ? 2 : value == "1" ? 1 : 0;
+        }
+        return status;
+    }
+
+    std::string LevelName(std::string_view levelsJson, std::string_view level)
+    {
+        JsonValue names;
+        if (level.empty() || !ParseJson(levelsJson, names))
+            return {};
+        return names[level].Str();
     }
 
     Client::~Client()

@@ -826,6 +826,9 @@ namespace launcher_ui
         std::string m_presenceAchievements; // "3/50 achievements"
         int m_presenceFigureType = -1; // the player's figure on the portal, -1: none
         std::string m_presenceFigureText; // "Eruptor · Level 7"
+        std::string m_presenceLevel; // the level line: its name, "In a level" or "In the menus"; "" when unknown
+        int m_presencePlayers = 0; // 2 while a second player plays
+        std::string m_presencePlayTime; // "34 h 12" in all
         void UpdatePresence(uint64_t nowMs);
         bool PresenceOn() const;
         std::string m_sessionIso; // the disc image it was started with (the crash report names it)

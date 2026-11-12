@@ -1126,3 +1126,6 @@ Xcode's Metal shader compiler isn't installed yet.	Xcoden Metal-varjostinkäänt
 3. Wait until it says it's done (a few minutes, about 700 MB), then press Retry.	3. Odota, kunnes se kertoo valmistuneensa (muutama minuutti, noin 700 Mt), ja paina sitten Yritä uudelleen.
 Copy command	Kopioi komento
 Command copied	Komento kopioitu
+In the menus	Valikoissa
+In a level	Kentällä
+{} played	{} pelattu

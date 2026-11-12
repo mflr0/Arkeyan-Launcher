@@ -357,8 +357,9 @@ RPCS3 (GPL-2.0-or-later); no code of theirs is in this project, and every detail
 
 ## Images shown by Discord Rich Presence (linked, not shipped)
 
-The launcher ships none of these pictures: it gives Discord their addresses (`src/launcher/discord_images.cpp`) and
-Discord fetches them. Skylanders and the games' logos and characters are trademarks of Activision Publishing, Inc.;
+The launcher ships none of these pictures. The game logos are the Discord application's art assets (each logo below
+placed on a transparent square); the characters' pictures are addresses (`src/launcher/discord_images.cpp`) Discord
+fetches. Skylanders and the games' logos and characters are trademarks of Activision Publishing, Inc.;
 this project is not affiliated with Activision.
 
 - Game logos, from Wikimedia: Skylanders Trap Team logo (Wikimedia Commons, CC BY 4.0), Skylanders Swap Force logo

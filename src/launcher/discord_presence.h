@@ -14,15 +14,32 @@
 
 namespace discordpresence
 {
-    // The application on discord.com/developers. Its one art asset: the launcher's icon, "launcher".
+    // The application on discord.com/developers. Its art assets: each game's logo on a square, named after the game's id
+    // ("giants"), uploaded once (Discord crops a wide picture to a square); every other picture is an address.
     inline constexpr char ApplicationId[] = "1570426097903083671";
     inline constexpr char RepositoryUrl[] = "https://github.com/mflr0/Arkeyan-Launcher";
-    // The launcher's icon (the art asset), alone in the launcher and in the corner when no figure has a picture.
-    inline constexpr char LauncherIconAsset[] = "launcher";
-    // The game's logo and a character's picture, as image addresses Discord fetches (discord_images.cpp); empty when
-    // there is none, and the launcher's icon stands in.
-    std::string GameLogoUrl(std::string_view gameId);
+    inline constexpr char DiscordUrl[] = "https://discord.gg/UMQY4SAS3F";
+    // The launcher's icon (this repository's PNG of the README's logo), alone in the launcher and in place of a missing
+    // logo or picture.
+    inline constexpr char LauncherIconUrl[] =
+        "https://raw.githubusercontent.com/mflr0/Arkeyan-Launcher/main/resources/icons/skylauncher-128.png";
+    // A character's picture, as an image address Discord fetches (discord_images.cpp); empty when there is none, and the
+    // launcher's icon stands in.
     std::string FigureImageUrl(uint16_t toyType);
+
+    // What the running game wrote in <its player folder>/presence.txt ("level=", "menu=", "players="): `known` false
+    // when the file is missing (an older game).
+    struct GameStatus
+    {
+        bool known = false;
+        std::string level; // the runtime's level id ("level_213_tutotial", "academy/academy")
+        bool menu = false; // the title or the front end
+        int players = 0;
+    };
+    GameStatus ParseGameStatus(std::string_view text);
+
+    // The name the game shows for `level`, from its levels.json ({"<level id>": "<name>"}); empty when unknown.
+    std::string LevelName(std::string_view levelsJson, std::string_view level);
 
     // What Discord shows; `shown` false: nothing.
     struct Activity
@@ -31,11 +48,12 @@ namespace discordpresence
         std::string details;      // the first line: the game's name, or "In the launcher"
         std::string state;        // the second line: "12 h 34 in total · v0.8.2"
         bool namedByDetails = false; // the member list says "Playing <details>" instead of the application's name
-        std::string largeImage;   // an art asset's key ("launcher") or an image's https address
+        std::string largeImage;   // an image's https address (or an art asset's key)
         std::string largeText;    // its tooltip
         std::string smallImage;   // the corner's image; empty: none
         std::string smallText;
         int64_t start = 0;        // unix time: Discord counts the time from it; 0: no time
+        int partySize = 0, partyMax = 0; // "2 of 2" players; 0: none shown
         bool operator==(const Activity&) const = default;
     };
 

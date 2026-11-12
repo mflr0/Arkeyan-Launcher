@@ -1168,7 +1168,7 @@ namespace launcher_ui
         if (running.empty())
         {
             activity.details = Tr("In the launcher");
-            activity.largeImage = discordpresence::LauncherIconAsset;
+            activity.largeImage = discordpresence::LauncherIconUrl;
             activity.largeText = launcher;
             m_presence.Set(activity); // nothing is sent when it is the same
             return;
@@ -1191,6 +1191,8 @@ namespace launcher_ui
             m_presenceAchievements = progress.hasList && !progress.rows.empty()
                                          ? Tf("{}/{} achievements", progress.unlocked, progress.rows.size())
                                          : std::string();
+            m_presencePlayTime =
+                progress.play.totalSeconds > 0 ? Tf("{} played", FormatPlayTime(progress.play.totalSeconds)) : "";
         }
         if (nowMs >= m_presencePortalAt)
         {
@@ -1199,6 +1201,28 @@ namespace launcher_ui
             // figure only: a real one on a real portal is not in portal.txt.
             m_presenceFigureType = -1;
             m_presenceFigureText.clear();
+            // Where the player is: the runtime's presence.txt, the level's name from levels.json (the disc's own names).
+            m_presenceLevel.clear();
+            m_presencePlayers = 0;
+            const auto readFile = [](const std::filesystem::path& path) {
+                std::ifstream file(path, std::ios::binary);
+                return std::string(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
+            };
+            if (const std::filesystem::path folder = progress::Folder(running); !folder.empty())
+            {
+                const discordpresence::GameStatus status =
+                    discordpresence::ParseGameStatus(readFile(folder / "presence.txt"));
+                if (status.known)
+                {
+                    const std::string levelName =
+                        discordpresence::LevelName(readFile(datadir::Game(running) / "levels.json"), status.level);
+                    m_presenceLevel = !levelName.empty()     ? levelName
+                                      : status.menu          ? Tr("In the menus")
+                                      : status.level.empty() ? std::string()
+                                                             : Tr("In a level");
+                    m_presencePlayers = status.players;
+                }
+            }
             if (const collection::Game* game = collection::Catalogue::Get().FindGame(running))
                 for (const std::string& path : ReadSeats(*game, SessionFile(*game)))
                 {
@@ -1212,16 +1236,20 @@ namespace launcher_ui
                     break;
                 }
         }
-        if (!m_presenceAchievements.empty())
-            activity.state = m_presenceAchievements;
-        if (!version.empty())
-            activity.state += (activity.state.empty() ? "v" : " \xC2\xB7 v") + version;
-        activity.largeImage = discordpresence::GameLogoUrl(running);
-        if (activity.largeImage.empty())
-            activity.largeImage = discordpresence::LauncherIconAsset;
-        activity.largeText = activity.details;
-        if (!version.empty())
-            activity.largeText += " v" + version;
+        // Line 2: where the player is. The logo's hover: the achievements, the time played and the version.
+        activity.state = m_presenceLevel;
+        activity.largeImage = running; // the application's art asset: the game's logo on a square
+        for (const std::string& part :
+            { m_presenceAchievements, m_presencePlayTime, version.empty() ? "" : "v" + version })
+            if (!part.empty())
+                activity.largeText += (activity.largeText.empty() ? "" : " \xC2\xB7 ") + part;
+        if (activity.largeText.empty())
+            activity.largeText = activity.details;
+        if (m_presencePlayers == 2)
+        {
+            activity.partySize = 2;
+            activity.partyMax = 2;
+        }
         const std::string figureImage =
             m_presenceFigureType >= 0 ? discordpresence::FigureImageUrl(uint16_t(m_presenceFigureType)) : std::string();
         if (!figureImage.empty())
@@ -1231,7 +1259,7 @@ namespace launcher_ui
         }
         else
         {
-            activity.smallImage = discordpresence::LauncherIconAsset;
+            activity.smallImage = discordpresence::LauncherIconUrl;
             activity.smallText = launcher;
         }
         m_presence.Set(activity);
