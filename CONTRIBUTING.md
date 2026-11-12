@@ -29,6 +29,10 @@ ninja -C build ArkeyanLauncher ArkeyanLauncherTest
 ./build/ArkeyanLauncherTest --no-disc <an empty scratch folder>
 tools/check_format.sh          # tools/check_format.sh --fix formats for you (clang-format 23: pip install clang-format==23.1.4)
 ```
+To hunt memory bugs, build the tests with the sanitizers (CI runs them too):
+`cmake -S . -B build-asan -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DSKY_SANITIZE=ON`. Every build also checks the
+standard library's bounds (`std::vector` indexes...): a wrong index stops the launcher instead of reading other memory.
+
 New behaviour needs a test in `tests/`. A bug fix should come with a test that fails without it when that's possible.
 Try your build in **portable mode**, never on your real data: an empty `portable.txt` next to the launcher (on macOS
 next to the `.app`) keeps its settings, games, saves and figures in a `data` folder beside it

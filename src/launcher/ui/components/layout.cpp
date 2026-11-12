@@ -276,7 +276,9 @@ namespace ui
             ImGui::PopStyleVar();
             return false;
         }
-        ImGui::TableSetupColumn("label", ImGuiTableColumnFlags_WidthStretch);
+        // A weight of its own: with SizingStretchProp, ImGui derives it from the width measured so far, 0 / 0 on the
+        // first frame (a NaN that reached the window sizes; found by the sanitizer build).
+        ImGui::TableSetupColumn("label", ImGuiTableColumnFlags_WidthStretch, 1.0f);
         ImGui::TableSetupColumn(
             "control", ImGuiTableColumnFlags_WidthFixed, std::max(controlWidth, float(height::SettingControl)));
         return true;
