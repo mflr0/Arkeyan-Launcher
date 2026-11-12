@@ -2927,6 +2927,13 @@ namespace launcher_ui
         }
 
         ImGui::Render();
+        const bool shotNow = !m_shots.empty() && m_testAt != 0 && SDL_GetTicks() >= m_testAt;
+        // The pad walk checks focus and legends, which need ImGui's layout, not pixels: in its quick mode only the frames
+        // it saves are drawn. Offscreen, SDL draws in software and that drawing was 96 % of the walk's time.
+        static const bool quickWalk =
+            m_testPadWalk && std::string_view(LauncherEnv("SKY_LAUNCHER_TEST_PADWALK")) == "quick";
+        if (quickWalk && !shotNow)
+            return;
         // ImGui works in window points: scale them to the output's pixels (Retina and other high-density displays).
         ImGuiIO& io = ImGui::GetIO();
         SDL_SetRenderScale(m_renderer, io.DisplayFramebufferScale.x, io.DisplayFramebufferScale.y);
@@ -2935,7 +2942,7 @@ namespace launcher_ui
         ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), m_renderer);
         if (ToyboxWindow())
             ToyboxShot();
-        if (!m_shots.empty() && m_testAt != 0 && SDL_GetTicks() >= m_testAt)
+        if (shotNow)
         {
             static const char* const Names[] = { "01-no-iso", "02-verified", "03-game-video", "04-controls",
                 "05-collection", "06-home", "07-figure-sheet", "08-new-figure", "09-play-with", "10-language",
