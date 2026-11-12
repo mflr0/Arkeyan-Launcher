@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <cfloat>
 #include <cstdio>
+#include <cstdlib>
 #include <fmt/format.h>
 #include <imgui_internal.h>
 #include <string_view>
@@ -207,7 +208,13 @@ namespace launcher_ui
         };
         if (m_testBegan == 0)
             m_testBegan = now;
-        if (now - m_testBegan > (quick ? 900000u : 3600000u))
+        // SKY_LAUNCHER_TEST_PADWALK_MINUTES: a longer limit for slow builds (CI's sanitizers job).
+        static const uint64_t limitMs = [&] {
+            const char* minutes = LauncherEnv("SKY_LAUNCHER_TEST_PADWALK_MINUTES");
+            const unsigned long long value = minutes != nullptr ? std::strtoull(minutes, nullptr, 10) : 0;
+            return value > 0 ? value * 60000ull : (quick ? 900000ull : 3600000ull);
+        }();
+        if (now - m_testBegan > limitMs)
         {
             fprintf(stderr, "FAIL padwalk: timeout\n");
             m_testFailures++;

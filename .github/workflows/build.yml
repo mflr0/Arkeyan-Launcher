@@ -89,7 +89,8 @@ jobs:
 
   sanitizers:
     # The no-disc checks built with AddressSanitizer and UndefinedBehaviorSanitizer: an out-of-bounds read, a use after
-    # free or a NaN reaching an integer stops the run with its stack. Slower: the child scenarios get 5 minutes.
+    # free or a NaN reaching an integer stops the run with its stack. Slower: the child scenarios get 5 minutes, the pad
+    # walk 45.
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -107,6 +108,7 @@ jobs:
           ASAN_OPTIONS: detect_leaks=0
           UBSAN_OPTIONS: print_stacktrace=1
           SKY_LAUNCHER_TEST_TIMEOUT_MS: '300000'
+          SKY_LAUNCHER_TEST_PADWALK_MINUTES: '45'
         run: |
           cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DSKY_SANITIZE=ON \
             -DCMAKE_C_COMPILER=clang-15 -DCMAKE_CXX_COMPILER=clang++-15
