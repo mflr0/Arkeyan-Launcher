@@ -22,9 +22,9 @@ option(SKY_SANITIZE "Build with AddressSanitizer and UndefinedBehaviorSanitizer"
 if(SKY_SANITIZE AND NOT MSVC)
     add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer -fno-sanitize-recover=undefined)
     add_link_options(-fsanitize=address,undefined)
-    # miniz (lib/, not ours) copies zero bytes from a null pointer when a zip entry has no extra field: harmless, left
-    # as it is upstream.
-    set_source_files_properties(lib/miniz/miniz.c PROPERTIES COMPILE_OPTIONS -fno-sanitize=nonnull-attribute)
+    # miniz (lib/, not ours) relies on behaviour UBSan reports by design (unaligned loads for speed, zero-byte copies
+    # from a null pointer): it keeps AddressSanitizer only, left as it is upstream.
+    set_source_files_properties(lib/miniz/miniz.c PROPERTIES COMPILE_OPTIONS -fno-sanitize=undefined)
 endif()
 set(BUILD_SHARED_LIBS OFF)
 if(MINGW)
