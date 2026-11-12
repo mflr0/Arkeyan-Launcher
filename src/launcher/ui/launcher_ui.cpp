@@ -1985,7 +1985,6 @@ namespace launcher_ui
         }
         const ImVec2 position = ImGui::GetCursorScreenPos();
         const ImVec2 available = ImGui::GetContentRegionAvail();
-        ImDrawList* draw = ImGui::GetWindowDrawList();
         ui::NavColumn(0); // the actions; the portal is column 1
         const float margin = ui::space::XL;
         const float left = position.x + margin;
@@ -2015,6 +2014,8 @@ namespace launcher_ui
             RequestFocus(FocusTo::Page);
         }
         const bool detailed = m_s->installView && (!installing || m_s->installLog);
+        const PlayState play{ state, running, stopping, showGame, installing, noDisc, ready, verifying, install, update,
+            detailed };
         const float panelH = panelW < ui::hero::PanelWidth ? ui::hero::CompactPanelHeight : ui::hero::PanelHeight;
 
         // One lower edge for the portal and the commands; the painting remains visible between the columns.
@@ -2042,122 +2043,173 @@ namespace launcher_ui
         const ImVec2 titleAt(left, statusY - ui::space::M - titleH);
         if (!detailed)
         {
-            if (logo != nullptr)
-            {
-                const float logoW = std::min(leftW, ui::hero::LogoHeight * logo->aspect);
-                DrawHeroLogo(draw, *logo, titleAt, ImVec2(logoW, ui::hero::LogoHeight));
-            }
-            else
-                ui::HeroHeading(draw, titleAt, ImVec2(titleW, titleH), "Skylanders", shortName);
-
-            std::string status = noDisc ? Tr("Not installed yet") : running ? Tr("Playing now") : state.text;
-            if (running)
-            {
-                const uint64_t now = SDL_GetTicks();
-                const uint64_t seconds = m_testHero ? 42 : (now - std::min(now, m_sessionStart)) / 1000;
-                status = Tf("Playing now · {} this session", fmt::format("{}:{:02}", seconds / 60, seconds % 60));
-            }
-            if (stopping)
-                status = Tr("Stopping...");
-            if (installing)
-            {
-                const InstallChecklist list = MakeInstallChecklist(
-                    m_testHero ? m_testHeroProgress : InstallSnapshot(), SDL_GetTicks(), m_s->game.id);
-                const std::string eta = InstallTimeLeft(list.etaMs);
-                if (!eta.empty())
-                    status = Tf("Installing · {}", eta);
-            }
-            if (state.state == SlotState::Ready && m_progress.play.totalSeconds > 0)
-            {
-                status = Tf("Ready · {} played", FormatPlayTime(m_progress.play.totalSeconds));
-                if (m_progress.play.lastEnd > 0)
-                    status += " · " + Tf("Last played: {}",
-                                          FormatLastPlayed(m_progress.play.lastEnd, int64_t(std::time(nullptr))));
-            }
-            ImGui::SetCursorScreenPos(ImVec2(left, statusY));
-            if (running)
-            {
-                draw->AddCircleFilled(ImVec2(left + ui::icon::Small / 2, statusY + ui::CapMiddle(ui::TextStyle::Body)),
-                    ui::icon::Small / 4, ui::Col(ui::color::Success));
-                ImGui::SetCursorScreenPos(ImVec2(left + ui::icon::Small + ui::space::XS, statusY));
-                ui::Text(ui::TextStyle::Body, status.c_str(), ui::color::InkSoft, -1);
-            }
-            else
-                ui::StatusLine(noDisc ? ui::Status::Warning : StatusOf(state.state), status.c_str(), leftW,
-                    IconOf(state.state)); // the sidebar's and Home's icon
+            const std::string status =
+                DrawPlayHeading(play, logo, titleAt, ImVec2(titleW, titleH), ImVec2(left, statusY), leftW);
 
             if (installing)
                 DrawHeroInstall(ImVec2(left, buttonY), leftW);
             else
-            {
-                MainAction action{ running ? Tr("Stop") : state.button.c_str(),
-                    state.buttonEnabled && !m_testButtonsOff };
-                action.icon = running   ? ui::Icon::Stop
-                              : noDisc  ? ui::Icon::Disc
-                              : install ? ui::Icon::Download
-                              : update  ? ui::Icon::Update
-                                        : ui::Icon::Play;
-                action.danger = running;
-                action.width = std::min(ui::height::MainWidth, leftW - ui::height::MainGear - ui::space::S);
-                ui::ButtonOptions showOptions;
-                showOptions.size = ui::Size::Large;
-                showOptions.icon = ui::Icon::Monitor;
-                showOptions.overArt = true;
-                if (running)
-                {
-                    action.enabled = (m_testHero || m_session.Ours()) && !stopping && !m_testButtonsOff;
-                    action.width = std::min(ui::height::MainWidth, leftW);
-                    if (showGame)
-                        action.width = std::min(ui::height::MainWidth,
-                            leftW - ui::space::S - ui::ButtonWidth(Tr("Show the game"), showOptions));
-                }
-                if (verifying)
-                {
-                    action.progress = m_s->verify.progress;
-                    action.indeterminate = m_s->verify.progress >= 0.97f;
-                }
-                const MainActionHit hit = DrawMainAction(ImVec2(left, buttonY), action);
-                const ImVec2 actionMin = ImGui::GetItemRectMin(), actionMax = ImGui::GetItemRectMax();
-                if (m_testRunning || m_testHero)
-                {
-                    m_drawn["hero-main"] = std::string(action.label) + (action.enabled ? "" : " (off)");
-                    m_drawn["hero-show"] = showGame ? "shown" : "hidden";
-                    m_drawn["hero-status"] = status;
-                    m_drawn["hero-gear"] = running && m_testGearAt.x < 0 ? "hidden" : "shown";
-                }
-                if (hit == MainActionHit::Settings)
-                    GoTo(Page::GameSettings);
-                else if (hit == MainActionHit::Main && !m_testHero)
-                {
-                    if (running)
-                        m_session.Stop(SDL_GetTicks());
-                    else if (!ready)
-                        Browse();
-                    else if (install || update)
-                        StartInstall();
-                    else
-                        PlayNow();
-                }
-                if (showGame)
-                {
-                    ImGui::SetCursorScreenPos(ImVec2(left + action.width + ui::space::S, buttonY));
-                    if (ui::Button(Tr("Show the game"), showOptions) && !m_testHero)
-                        if (!m_session.Show())
-                            Toast(Tr("Couldn't show the game window."), ui::ToastKind::Error);
-                    if (m_testHero || m_testRunning)
-                    {
-                        const ImVec2 min = ImGui::GetItemRectMin(), max = ImGui::GetItemRectMax();
-                        m_drawn["hero-aligned"] = min.y == actionMin.y && max.y == actionMax.y &&
-                                                          max.x <= left + leftW && min.x > left + action.width
-                                                      ? "yes"
-                                                      : "no";
-                    }
-                }
-            }
+                DrawPlayAction(play, ImVec2(left, buttonY), leftW, status);
         }
         else
             DrawInstall(ImVec2(left, position.y + margin), ImVec2(leftW, pillY - position.y - margin - ui::space::M));
 
+        DrawPlayPickers(running, ImVec2(left, pillY));
+
+        DrawPlayHint(play, ImVec2(left, pillY), leftW);
+
+        DrawPlayDiscActions(play, ImVec2(left, position.y + margin), leftW, pillY);
+
+        ui::NavColumn(1);
+        if (noDisc)
+            DrawHeroSteps(ImVec2(left + leftW + ui::space::L, foot - panelH), ImVec2(panelW, panelH));
+        else
+            m_s->collection->DrawHeroPortal(
+                ImVec2(left + leftW + ui::space::L, foot - panelH), ImVec2(panelW, panelH), running);
+        if (m_testInstall)
+        {
+            const ImVec2 min = ImGui::GetItemRectMin(), max = ImGui::GetItemRectMax();
+            m_drawn["install-panel-rect"] = fmt::format("{},{},{},{}", min.x, min.y, max.x, max.y);
+        }
+
+        DrawPlayProgress(position, available);
+        // Y: the game's settings, as the gear beside the main action (none while the game runs).
+        if (!running && ui::PadAction(ui::PadButton::North, Tr("Game settings")))
+            GoTo(Page::GameSettings);
+        if (ui::Ctx().glyphs != ui::Glyphs::Keyboard)
+        {
+            ImGui::SetCursorScreenPos(ImVec2(position.x, position.y + available.y - ui::height::Normal));
+            ui::PageLegend(Tr("Back"), available.x, true);
+        }
+        ui::NavColumn(-1);
+        ui::Ctx().testNavigationItems = nullptr;
+    }
+
+    std::string App::DrawPlayHeading(
+        const PlayState& play, const ArtTexture* logo, ImVec2 titleAt, ImVec2 titleSize, ImVec2 at, float leftW)
+    {
+        ImDrawList* draw = ImGui::GetWindowDrawList();
+        const float left = at.x, statusY = at.y;
+        const float titleW = titleSize.x, titleH = titleSize.y;
+        const char* shortName = GameName(m_s->game.id, GameNameForm::Short);
+        if (logo != nullptr)
+        {
+            const float logoW = std::min(leftW, ui::hero::LogoHeight * logo->aspect);
+            DrawHeroLogo(draw, *logo, titleAt, ImVec2(logoW, ui::hero::LogoHeight));
+        }
+        else
+            ui::HeroHeading(draw, titleAt, ImVec2(titleW, titleH), "Skylanders", shortName);
+
+        std::string status = play.noDisc ? Tr("Not installed yet") : play.running ? Tr("Playing now") : play.slot.text;
+        if (play.running)
+        {
+            const uint64_t now = SDL_GetTicks();
+            const uint64_t seconds = m_testHero ? 42 : (now - std::min(now, m_sessionStart)) / 1000;
+            status = Tf("Playing now · {} this session", fmt::format("{}:{:02}", seconds / 60, seconds % 60));
+        }
+        if (play.stopping)
+            status = Tr("Stopping...");
+        if (play.installing)
+        {
+            const InstallChecklist list =
+                MakeInstallChecklist(m_testHero ? m_testHeroProgress : InstallSnapshot(), SDL_GetTicks(), m_s->game.id);
+            const std::string eta = InstallTimeLeft(list.etaMs);
+            if (!eta.empty())
+                status = Tf("Installing · {}", eta);
+        }
+        if (play.slot.state == SlotState::Ready && m_progress.play.totalSeconds > 0)
+        {
+            status = Tf("Ready · {} played", FormatPlayTime(m_progress.play.totalSeconds));
+            if (m_progress.play.lastEnd > 0)
+                status += " · " +
+                          Tf("Last played: {}", FormatLastPlayed(m_progress.play.lastEnd, int64_t(std::time(nullptr))));
+        }
+        ImGui::SetCursorScreenPos(ImVec2(left, statusY));
+        if (play.running)
+        {
+            draw->AddCircleFilled(ImVec2(left + ui::icon::Small / 2, statusY + ui::CapMiddle(ui::TextStyle::Body)),
+                ui::icon::Small / 4, ui::Col(ui::color::Success));
+            ImGui::SetCursorScreenPos(ImVec2(left + ui::icon::Small + ui::space::XS, statusY));
+            ui::Text(ui::TextStyle::Body, status.c_str(), ui::color::InkSoft, -1);
+        }
+        else
+            ui::StatusLine(play.noDisc ? ui::Status::Warning : StatusOf(play.slot.state), status.c_str(), leftW,
+                IconOf(play.slot.state)); // the sidebar's and Home's icon
+
+        return status;
+    }
+
+    void App::DrawPlayAction(const PlayState& play, ImVec2 at, float leftW, const std::string& status)
+    {
+        const float left = at.x, buttonY = at.y;
+        MainAction action{ play.running ? Tr("Stop") : play.slot.button.c_str(),
+            play.slot.buttonEnabled && !m_testButtonsOff };
+        action.icon = play.running   ? ui::Icon::Stop
+                      : play.noDisc  ? ui::Icon::Disc
+                      : play.install ? ui::Icon::Download
+                      : play.update  ? ui::Icon::Update
+                                     : ui::Icon::Play;
+        action.danger = play.running;
+        action.width = std::min(ui::height::MainWidth, leftW - ui::height::MainGear - ui::space::S);
+        ui::ButtonOptions showOptions;
+        showOptions.size = ui::Size::Large;
+        showOptions.icon = ui::Icon::Monitor;
+        showOptions.overArt = true;
+        if (play.running)
+        {
+            action.enabled = (m_testHero || m_session.Ours()) && !play.stopping && !m_testButtonsOff;
+            action.width = std::min(ui::height::MainWidth, leftW);
+            if (play.showGame)
+                action.width = std::min(
+                    ui::height::MainWidth, leftW - ui::space::S - ui::ButtonWidth(Tr("Show the game"), showOptions));
+        }
+        if (play.verifying)
+        {
+            action.progress = m_s->verify.progress;
+            action.indeterminate = m_s->verify.progress >= 0.97f;
+        }
+        const MainActionHit hit = DrawMainAction(ImVec2(left, buttonY), action);
+        const ImVec2 actionMin = ImGui::GetItemRectMin(), actionMax = ImGui::GetItemRectMax();
+        if (m_testRunning || m_testHero)
+        {
+            m_drawn["hero-main"] = std::string(action.label) + (action.enabled ? "" : " (off)");
+            m_drawn["hero-show"] = play.showGame ? "shown" : "hidden";
+            m_drawn["hero-status"] = status;
+            m_drawn["hero-gear"] = play.running && m_testGearAt.x < 0 ? "hidden" : "shown";
+        }
+        if (hit == MainActionHit::Settings)
+            GoTo(Page::GameSettings);
+        else if (hit == MainActionHit::Main && !m_testHero)
+        {
+            if (play.running)
+                m_session.Stop(SDL_GetTicks());
+            else if (!play.ready)
+                Browse();
+            else if (play.install || play.update)
+                StartInstall();
+            else
+                PlayNow();
+        }
+        if (play.showGame)
+        {
+            ImGui::SetCursorScreenPos(ImVec2(left + action.width + ui::space::S, buttonY));
+            if (ui::Button(Tr("Show the game"), showOptions) && !m_testHero)
+                if (!m_session.Show())
+                    Toast(Tr("Couldn't show the game window."), ui::ToastKind::Error);
+            if (m_testHero || m_testRunning)
+            {
+                const ImVec2 min = ImGui::GetItemRectMin(), max = ImGui::GetItemRectMax();
+                m_drawn["hero-aligned"] =
+                    min.y == actionMin.y && max.y == actionMax.y && max.x <= left + leftW && min.x > left + action.width
+                        ? "yes"
+                        : "no";
+            }
+        }
+    }
+
+    void App::DrawPlayPickers(bool running, ImVec2 at)
+    {
+        const float left = at.x, pillY = at.y;
         if (m_testHero || m_testRunning)
             m_drawn["hero-pickers"] = running ? "hidden" : "shown";
         if (!running)
@@ -2229,15 +2281,57 @@ namespace launcher_ui
                 }
             }
         }
+    }
 
-        ImGui::SetCursorScreenPos(ImVec2(left,
-            running ? pillY + (ui::height::Small - ui::type::Body) / 2 : pillY + ui::height::Small + ui::space::M));
-        if (noDisc)
+    void App::DrawPlayDiscError(float left, float leftW)
+    {
+        ui::Text(ui::TextStyle::Caption, m_s->check.message.c_str(), ui::color::Danger, leftW);
+        if (const GameInfo* other = FindEnabledGame(m_s->check.otherGame, m_config);
+            other != nullptr && m_s->check.status == GameSourceStatus::WrongGame)
+        {
+            ImGui::SetCursorScreenPos(ImVec2(left, ImGui::GetCursorScreenPos().y));
+            if (ui::Button(Tf("Use it for {}", other->name).c_str(), { .kind = ui::ButtonKind::Primary }))
+                UseDiscForOtherGame();
+        }
+        // Another edition of this game: its details for a "New disc edition" issue (README).
+        if (m_s->check.status == GameSourceStatus::WrongVersion && !m_s->check.discDetails.empty())
+        {
+            ImGui::SetCursorScreenPos(ImVec2(left, ImGui::GetCursorScreenPos().y));
+            if (ui::Button(Tr("Copy disc details")))
+            {
+                SDL_SetClipboardText(m_s->check.discDetails.c_str());
+                Toast(Tr("Disc details copied"), ui::ToastKind::Success);
+            }
+            // The kit reads the disc further: whether its game code is a supported release's (a report to paste).
+            ImGui::SameLine(0, ui::space::XS);
+            const bool finding = m_s->editionJob.Running() || (m_s->editionAfterKit && m_s->kitDownload.Running());
+            if (ui::Button(finding ? Tr("Finding your edition…") : Tr("Find my edition"),
+                    { .disabled = !finding && (m_s->kitDownload.Running() || m_s->installer.Running()),
+                        .loading = finding }))
+                FindEdition();
+            // The report is on the clipboard; its verdict (its last line, in English like the report) stays here.
+            if (size_t result = m_s->editionText.rfind("Result: "); result != std::string::npos)
+            {
+                ImGui::SetCursorScreenPos(ImVec2(left, ImGui::GetCursorScreenPos().y));
+                const std::string verdict =
+                    m_s->editionText.substr(result + 8, m_s->editionText.find('\n', result) - result - 8);
+                ui::Text(ui::TextStyle::Caption, verdict.c_str(), ui::color::InkSoft, leftW);
+            }
+        }
+    }
+
+    void App::DrawPlayHint(const PlayState& play, ImVec2 at, float leftW)
+    {
+        ImDrawList* draw = ImGui::GetWindowDrawList();
+        const float left = at.x, pillY = at.y;
+        ImGui::SetCursorScreenPos(ImVec2(left, play.running ? pillY + (ui::height::Small - ui::type::Body) / 2
+                                                            : pillY + ui::height::Small + ui::space::M));
+        if (play.noDisc)
             ui::Text(ui::TextStyle::Body, Tr("Or drop your .iso on this window. It stays on this computer."),
                 ui::color::InkSoft, leftW);
-        else if (installing)
+        else if (play.installing)
             ui::Text(ui::TextStyle::Body, Tr("You can set up your portal while you wait."), ui::color::InkSoft, leftW);
-        else if (running)
+        else if (play.running)
         {
             const char* hint = Tr("Toy Box in the game: F6, or View + Y on a controller.");
             const float hintSize = ui::FitSize(ui::Ctx().fonts.text, ui::type::Body, hint, leftW);
@@ -2248,43 +2342,11 @@ namespace launcher_ui
         }
         else if (!m_testHero && m_s->disc == DiscState::Failed)
         {
-            ui::Text(ui::TextStyle::Caption, m_s->check.message.c_str(), ui::color::Danger, leftW);
-            if (const GameInfo* other = FindEnabledGame(m_s->check.otherGame, m_config);
-                other != nullptr && m_s->check.status == GameSourceStatus::WrongGame)
-            {
-                ImGui::SetCursorScreenPos(ImVec2(left, ImGui::GetCursorScreenPos().y));
-                if (ui::Button(Tf("Use it for {}", other->name).c_str(), { .kind = ui::ButtonKind::Primary }))
-                    UseDiscForOtherGame();
-            }
-            // Another edition of this game: its details for a "New disc edition" issue (README).
-            if (m_s->check.status == GameSourceStatus::WrongVersion && !m_s->check.discDetails.empty())
-            {
-                ImGui::SetCursorScreenPos(ImVec2(left, ImGui::GetCursorScreenPos().y));
-                if (ui::Button(Tr("Copy disc details")))
-                {
-                    SDL_SetClipboardText(m_s->check.discDetails.c_str());
-                    Toast(Tr("Disc details copied"), ui::ToastKind::Success);
-                }
-                // The kit reads the disc further: whether its game code is a supported release's (a report to paste).
-                ImGui::SameLine(0, ui::space::XS);
-                const bool finding = m_s->editionJob.Running() || (m_s->editionAfterKit && m_s->kitDownload.Running());
-                if (ui::Button(finding ? Tr("Finding your edition…") : Tr("Find my edition"),
-                        { .disabled = !finding && (m_s->kitDownload.Running() || m_s->installer.Running()),
-                            .loading = finding }))
-                    FindEdition();
-                // The report is on the clipboard; its verdict (its last line, in English like the report) stays here.
-                if (size_t result = m_s->editionText.rfind("Result: "); result != std::string::npos)
-                {
-                    ImGui::SetCursorScreenPos(ImVec2(left, ImGui::GetCursorScreenPos().y));
-                    const std::string verdict =
-                        m_s->editionText.substr(result + 8, m_s->editionText.find('\n', result) - result - 8);
-                    ui::Text(ui::TextStyle::Caption, verdict.c_str(), ui::color::InkSoft, leftW);
-                }
-            }
+            DrawPlayDiscError(left, leftW);
         }
-        else if (update && !installing && state.buttonEnabled)
+        else if (play.update && !play.installing && play.slot.buttonEnabled)
         {
-            if (const GameUpdate* pending = PendingUpdate(*m_s); pending != nullptr && !detailed)
+            if (const GameUpdate* pending = PendingUpdate(*m_s); pending != nullptr && !play.detailed)
             {
                 std::string size;
                 if (KitNeedsFetch(*m_s))
@@ -2299,28 +2361,32 @@ namespace launcher_ui
                 ui::Text(ui::TextStyle::Caption, offer.c_str(), ui::color::InkSoft);
             }
             ImGui::SetCursorScreenPos(ImVec2(left, ImGui::GetCursorScreenPos().y));
-            if (ui::Button(
-                    Tr("Play without updating"), { .kind = detailed ? ui::ButtonKind::Secondary : ui::ButtonKind::Ghost,
-                                                     .size = ui::Size::Small,
-                                                     .overArt = true }) ||
+            if (ui::Button(Tr("Play without updating"),
+                    { .kind = play.detailed ? ui::ButtonKind::Secondary : ui::ButtonKind::Ghost,
+                        .size = ui::Size::Small,
+                        .overArt = true }) ||
                 m_testPlayWithout)
             {
                 m_testPlayWithout = false;
                 m_s->skipUpdate = true;
-                if (detailed)
+                if (play.detailed)
                     m_s->installView = false;
             }
         }
+    }
 
-        if (ready && !detailed && !installing && !running && !m_s->fromCopy)
+    void App::DrawPlayDiscActions(const PlayState& play, ImVec2 at, float leftW, float pillY)
+    {
+        const float left = at.x;
+        if (play.ready && !play.detailed && !play.installing && !play.running && !m_s->fromCopy)
         {
-            ImGui::SetCursorScreenPos(ImVec2(left, position.y + margin));
+            ImGui::SetCursorScreenPos(ImVec2(left, at.y));
             if (ui::Button(
                     Tr("Change disc..."), { .kind = ui::ButtonKind::Ghost, .size = ui::Size::Small, .overArt = true }))
                 Browse();
             ui::Tooltip(m_s->discPath.c_str());
         }
-        if (ready && !detailed && !installing && !running && install)
+        if (play.ready && !play.detailed && !play.installing && !play.running && play.install)
         {
             ImGui::SetCursorScreenPos(ImVec2(left, pillY + ui::height::Small + ui::space::M));
             ui::Text(ui::TextStyle::Caption,
@@ -2329,24 +2395,16 @@ namespace launcher_ui
                     .c_str(),
                 ui::color::InkSoft, leftW);
         }
-        if (ready && !detailed && !m_s->fromCopy && m_s->copy.state == gamedata::State::Damaged)
+        if (play.ready && !play.detailed && !m_s->fromCopy && m_s->copy.state == gamedata::State::Damaged)
         {
-            ImGui::SetCursorScreenPos(ImVec2(left, position.y + margin + ui::height::Normal));
+            ImGui::SetCursorScreenPos(ImVec2(left, at.y + ui::height::Normal));
             ui::StatusPill(ui::Status::Error, Tr("Game data damaged: using the disc image."));
         }
+    }
 
-        ui::NavColumn(1);
-        if (noDisc)
-            DrawHeroSteps(ImVec2(left + leftW + ui::space::L, foot - panelH), ImVec2(panelW, panelH));
-        else
-            m_s->collection->DrawHeroPortal(
-                ImVec2(left + leftW + ui::space::L, foot - panelH), ImVec2(panelW, panelH), running);
-        if (m_testInstall)
-        {
-            const ImVec2 min = ImGui::GetItemRectMin(), max = ImGui::GetItemRectMax();
-            m_drawn["install-panel-rect"] = fmt::format("{},{},{},{}", min.x, min.y, max.x, max.y);
-        }
-
+    void App::DrawPlayProgress(ImVec2 position, ImVec2 available)
+    {
+        const float margin = ui::space::XL;
         // Achievements and the speaker keep their entry points over the painting, at its top right: the portal's column (down
         // from them goes to the portal).
         float musicRight = position.x + available.x - margin;
@@ -2373,16 +2431,6 @@ namespace launcher_ui
                     { .kind = ui::ButtonKind::Secondary, .size = ui::Size::Small, .overArt = true }))
                 Set("launcher", "game_music", on ? "0" : "1");
         }
-        // Y: the game's settings, as the gear beside the main action (none while the game runs).
-        if (!running && ui::PadAction(ui::PadButton::North, Tr("Game settings")))
-            GoTo(Page::GameSettings);
-        if (ui::Ctx().glyphs != ui::Glyphs::Keyboard)
-        {
-            ImGui::SetCursorScreenPos(ImVec2(position.x, position.y + available.y - ui::height::Normal));
-            ui::PageLegend(Tr("Back"), available.x, true);
-        }
-        ui::NavColumn(-1);
-        ui::Ctx().testNavigationItems = nullptr;
     }
 
     void App::DrawPortalStatus()

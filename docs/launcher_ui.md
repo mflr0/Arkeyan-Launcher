@@ -48,6 +48,12 @@ component has becomes a component (or an option of one) first, with its states d
 - `resources/fonts/` - licensed fonts (Bungee, Outfit) with their OFL licenses; they are also built into the executable.
 - `docs/settings.md` - the settings file the launcher writes and the game reads.
 
+`App::DrawPlay` keeps the page layout and navigation columns together; private helpers draw its heading, main action,
+device pickers, hints, disc actions and progress controls. `App::DrawInstall` owns the install card scope and delegates
+its title, progress, checklist rows, message, log and actions. `CollectionPage::DrawAdd` delegates the filters, toy grid,
+version panel and footer in `collection_add.cpp`. These helpers share the caller's ImGui scopes: widget IDs, submission
+order and the page legend belong to the same page as before.
+
 ## Tokens
 All in `tokens.h`, namespace `ui`. Sizes are launcher points (the window scales them, "Size on high-DPI screens").
 
