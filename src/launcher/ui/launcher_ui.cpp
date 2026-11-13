@@ -3,6 +3,9 @@
 // Every choice is written to launcher.ini, which the game runtime reads (docs/settings.md lists the keys).
 #include "launcher/ui/launcher_ui.h"
 #include "launcher/env.h"
+#include "launcher/game_names.h"
+#include "launcher/ui/collection_model.h"
+#include "shared/collection/progress.h"
 #include "launcher/ui/text_fit.h"
 #include "launcher/install_checklist.h"
 #include "shared/art/game_art.h"
@@ -1108,6 +1111,7 @@ namespace launcher_ui
         const std::optional<GameSession::Ended> ended = m_session.Poll(now);
         if (!m_session.Running().empty() && m_session.Running() != previous)
             m_sessionStart = now;
+        UpdatePresence(now);
         if (!ended)
             return;
         // The game writes its own section of its settings file (the F3 menu): read it again, or the next save here would put
@@ -1138,6 +1142,137 @@ namespace launcher_ui
         else
             ShowGameStopped(*game, ended->exitCode, m_configPath, m_config, m_sessionIso, m_window);
     }
+
+    // Discord Rich Presence (discord_presence.h), unless [discord] presence=0 (Settings > Launcher > Discord). A game that
+    // runs, started here or not: its name, icon, version, the session's time and its achievements (achievements.txt, read
+    // again every AchievementsMs), and in the corner the player's figure on the portal (portal.txt, which the game rewrites
+    // at every change, read every PortalMs): its Toy Box picture (the art asset fig_<type>), its name and level. No game: the launcher, and
+    // the time since it opened or the last game ended.
+    void App::UpdatePresence(uint64_t nowMs)
+    {
+        constexpr uint64_t AchievementsMs = 30000, PortalMs = 3000;
+        if (!PresenceOn())
+        {
+            m_presenceGame.clear();
+            m_presenceSince = 0;
+            m_presence.Set({});
+            return;
+        }
+        const std::string& running = m_session.Running();
+        if (running != m_presenceGame || m_presenceSince == 0)
+        {
+            m_presenceGame = running;
+            m_presenceSince = int64_t(std::time(nullptr));
+            m_presenceAt = m_presencePortalAt = 0;
+        }
+        const std::string launcher = "Arkeyan Launcher " + LauncherVersion();
+        discordpresence::Activity activity;
+        activity.shown = true;
+        activity.start = m_presenceSince;
+        if (running.empty())
+        {
+            activity.details = Tr("In the launcher");
+            activity.largeImage = discordpresence::LauncherIconUrl;
+            activity.largeText = launcher;
+            m_presence.Set(activity); // nothing is sent when it is the same
+            return;
+        }
+        if (nowMs < m_presenceAt && nowMs < m_presencePortalAt)
+            return;
+
+        const char* name = GameName(running);
+        activity.details = name != nullptr ? name : running;
+        activity.namedByDetails = true;
+        std::string version;
+        for (const std::unique_ptr<GameSlot>& slot : m_slots)
+            if (running == slot->game.id)
+                version = slot->installed.gameVersion;
+        if (nowMs >= m_presenceAt)
+        {
+            m_presenceAt = nowMs + AchievementsMs;
+            // The achievements as the game page counts them: the disc's list (cached by the disc check) and the game's unlocks.
+            const GameProgress progress = ReadGameProgress(running, i18n::Current());
+            m_presenceAchievements = progress.hasList && !progress.rows.empty()
+                                         ? Tf("{}/{} achievements", progress.unlocked, progress.rows.size())
+                                         : std::string();
+            m_presencePlayTime =
+                progress.play.totalSeconds > 0 ? Tf("{} played", FormatPlayTime(progress.play.totalSeconds)) : "";
+        }
+        if (nowMs >= m_presencePortalAt)
+        {
+            m_presencePortalAt = nowMs + PortalMs;
+            // The first seat holding a toy that levels up (player 1's character before an item or a trap). A virtual
+            // figure only: a real one on a real portal is not in portal.txt.
+            m_presenceFigureType = -1;
+            m_presenceFigureText.clear();
+            // Where the player is: the runtime's presence.txt, the level's name from levels.json (the disc's own names).
+            m_presenceLevel.clear();
+            m_presencePlayers = 0;
+            const auto readFile = [](const std::filesystem::path& path) {
+                std::ifstream file(path, std::ios::binary);
+                return std::string(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
+            };
+            if (const std::filesystem::path folder = progress::Folder(running); !folder.empty())
+            {
+                const discordpresence::GameStatus status =
+                    discordpresence::ParseGameStatus(readFile(folder / "presence.txt"));
+                if (status.known)
+                {
+                    const std::string levelName = discordpresence::LevelName(
+                        readFile(datadir::Game(running) / "levels.json"), status.level, i18n::Current());
+                    m_presenceLevel = !levelName.empty()     ? levelName
+                                      : status.menu          ? Tr("In the menus")
+                                      : status.level.empty() ? std::string()
+                                                             : Tr("In a level");
+                    m_presencePlayers = status.players;
+                }
+            }
+            if (const collection::Game* game = collection::Catalogue::Get().FindGame(running))
+                for (const std::string& path : ReadSeats(*game, SessionFile(*game)))
+                {
+                    collection::Figure figure;
+                    if (path.empty() || !collection::Read(path, figure) || figure.toy == nullptr ||
+                        !collection::HasProgress(figure))
+                        continue;
+                    m_presenceFigureType = figure.type;
+                    m_presenceFigureText =
+                        collection::NameIn(figure, running) + " \xC2\xB7 " + Tf("Level {}", figure.level);
+                    break;
+                }
+        }
+        // Line 2: where the player is. The logo's hover: the achievements, the time played and the version.
+        activity.state = m_presenceLevel;
+        activity.largeImage = discordpresence::GameLogoUrl(running);
+        if (activity.largeImage.empty())
+            activity.largeImage = discordpresence::LauncherIconUrl;
+        for (const std::string& part :
+            { m_presenceAchievements, m_presencePlayTime, version.empty() ? "" : "v" + version })
+            if (!part.empty())
+                activity.largeText += (activity.largeText.empty() ? "" : " \xC2\xB7 ") + part;
+        if (activity.largeText.empty())
+            activity.largeText = activity.details;
+        if (m_presencePlayers == 2)
+        {
+            activity.partySize = 2;
+            activity.partyMax = 2;
+        }
+        const std::string figureImage =
+            m_presenceFigureType >= 0 ? discordpresence::FigureImageUrl(uint16_t(m_presenceFigureType)) : std::string();
+        if (!figureImage.empty())
+        {
+            activity.smallImage = figureImage;
+            activity.smallText = m_presenceFigureText;
+        }
+        else
+        {
+            activity.smallImage = discordpresence::LauncherIconUrl;
+            activity.smallText = launcher;
+        }
+        m_presence.Set(activity);
+    }
+
+    // Off in the screenshot and test scripts (SKY_LAUNCHER_SHOTS): they must not show on the developer's Discord.
+    bool App::PresenceOn() const { return m_shots.empty() && SettingGet(m_config, "discord", "presence", "1") != "0"; }
 
     // --play (a desktop shortcut): PLAY as soon as the shown game's disc is checked and the game is built. If it can't
     // be played (no disc, a disc that fails, nothing built), the window stays as it is and says why on its page.
@@ -2662,6 +2797,19 @@ namespace launcher_ui
         DrawLauncherLanguage();
         ui::SectionHeader(Tr("Updates"));
         DrawUpdates();
+        ui::SectionHeader(Tr("Discord"));
+        if (ui::BeginSettings("##discord"))
+        {
+            ui::SettingRow(Tr("Show my activity on Discord"),
+                Tr("The game you play, its achievements and version, or that you are in the launcher."));
+            bool presence = SettingGet(m_config, "discord", "presence", "1") != "0";
+            if (ui::Toggle("##discordpresence", &presence))
+            {
+                Set("discord", "presence", presence ? "1" : "0");
+                UpdatePresence(SDL_GetTicks()); // shown or taken back at once
+            }
+            ui::EndSettings();
+        }
         ui::SectionHeader(Tr("Data folder"), Tr(strings::DataFolderHint));
         const std::string dataPath = datadir::Text(LauncherDataFolder()); // in the tooltip, not in the text
         ui::ButtonOptions folder;

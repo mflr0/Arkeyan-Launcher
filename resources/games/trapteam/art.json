@@ -26,5 +26,46 @@
     { "archive": "misc/UI_Collection_Champions.arc", "folder": "collection_images/skylander_toys/" },
     { "archive": "misc/ui_collection_traps.arc", "folder": "collection_images/traps/square/" },
     { "archive": "misc/ui_villainvault_stream.arc", "folder": "collection_images/villains/captured/" },
-    { "archive": "misc/ui_villainvault_stream.arc", "folder": "collection_images/villains/escaped/" } ] }
+    { "archive": "misc/ui_villainvault_stream.arc", "folder": "collection_images/villains/escaped/" } ] },
+  "levels": {
+    "kind": "script",
+    "archive": "permanent/global.bld",
+    "entry": "level.bld",
+    "languages": {
+      "en": "ENGLISH",
+      "fr": "FRENCH",
+      "de": "GERMAN",
+      "es": "SPANISH",
+      "es-419": "HISPANIC",
+      "it": "ITALIAN",
+      "nl": "DUTCH",
+      "pt": "PORTUGUESE",
+      "sv": "SWEDISH",
+      "no": "NORWEGIAN",
+      "da": "DANISH",
+      "fi": "FINNISH"
+    },
+    "sets": [
+      {
+        "loads": "Level_Loads",
+        "titles": "Level_AdventureTitles"
+      },
+      {
+        "loads": "Horde_Level_Loads",
+        "titles": "Horde_Level_Titles"
+      }
+    ],
+    "numbered": [
+      {
+        "load": "Challenge_Level_BaseString",
+        "titlePrefix": "Challenge_Title_"
+      }
+    ],
+    "prefixes": [
+      {
+        "load": "VillageLoad_Prefix",
+        "title": "999_Level_Village(1)"
+      }
+    ]
+  }
 }

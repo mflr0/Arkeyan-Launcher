@@ -10,5 +10,9 @@
     { "archive": "archives/levelload.pak", "names": [ "textures@!ui!loading!bg_full`tga" ] },
     { "package": "nxeart", "names": [ "nxebg.jpg" ] } ],
   "portraits": { "materials": [
-    { "archive": "archives/toycollectionmaterials.pak", "folder": "temporary/buildserver/xenon/output/materialinstances/toycollection/" } ] }
+    { "archive": "archives/toycollectionmaterials.pak", "folder": "temporary/buildserver/xenon/output/materialinstances/toycollection/" } ] },
+  "levels": {
+    "kind": "igz",
+    "archive": "archives/zoneinfos.pak"
+  }
 }

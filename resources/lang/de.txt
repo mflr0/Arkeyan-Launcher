@@ -609,6 +609,11 @@ Pick one below	Unten wählen
 Picture	Bild
 Play	Spielen
 Play time: {}	Spielzeit: {}
+{}/{} achievements	{}/{} Erfolge
+In the launcher	Im Launcher
+Discord	Discord
+Show my activity on Discord	Meine Aktivität auf Discord zeigen
+The game you play, its achievements and version, or that you are in the launcher.	Das gespielte Spiel, seine Erfolge und Version, oder dass du im Launcher bist.
 Play without updating	Ohne Update spielen
 Play {}	{} spielen
 Play {} with Arkeyan Launcher	{} mit Arkeyan Launcher spielen
@@ -1118,3 +1123,6 @@ Xcode's Metal shader compiler isn't installed yet.	Der Metal-Shader-Compiler von
 3. Wait until it says it's done (a few minutes, about 700 MB), then press Retry.	3. Warten Sie, bis er fertig meldet (einige Minuten, etwa 700 MB), und drücken Sie dann Erneut versuchen.
 Copy command	Befehl kopieren
 Command copied	Befehl kopiert
+In the menus	In den Menüs
+In a level	In einem Level
+{} played	{} gespielt

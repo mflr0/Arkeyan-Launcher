@@ -611,6 +611,11 @@ Pick one below	Kies er een
 Picture	Beeld
 Play	Spelen
 Play time: {}	Speeltijd: {}
+{}/{} achievements	{}/{} prestaties
+In the launcher	In de launcher
+Discord	Discord
+Show my activity on Discord	Mijn activiteit op Discord tonen
+The game you play, its achievements and version, or that you are in the launcher.	Het spel dat je speelt, de prestaties en versie, of dat je in de launcher bent.
 Play without updating	Spelen zonder bij te werken
 Play {}	{} spelen
 Play {} with Arkeyan Launcher	{} spelen met Arkeyan Launcher
@@ -1120,3 +1125,6 @@ Xcode's Metal shader compiler isn't installed yet.	De Metal-shadercompiler van X
 3. Wait until it says it's done (a few minutes, about 700 MB), then press Retry.	3. Wacht tot er staat dat het klaar is (een paar minuten, ongeveer 700 MB) en druk dan op Opnieuw proberen.
 Copy command	Opdracht kopiëren
 Command copied	Opdracht gekopieerd
+In the menus	In de menu's
+In a level	In een level
+{} played	{} gespeeld

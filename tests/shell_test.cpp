@@ -1,6 +1,7 @@
 // ArkeyanLauncherTest's checks for the launcher shell: the install checklist,
 // game runs and logs, the updater, settings. Called from launcher_test.cpp's
 // main; returns the number of failures.
+#include "launcher/discord_presence.h"
 #include "launcher/env.h"
 #include "launcher/game_install.h"
 #include "launcher/game_run.h"
@@ -144,6 +145,54 @@ namespace
         list = MakeInstallChecklist(failed, 3000);
         SHELL_EXPECT(MissingMetalToolchain(failed));
         SHELL_EXPECT(InstallFailureHeadline(list, failed) == "Xcode's Metal shader compiler isn't installed yet.");
+
+        {
+            // Discord Rich Presence: images by art asset key only (nothing fetched from the web), text escaped and cut at
+            // Discord's 128 bytes on a character boundary, nothing shown as a null activity.
+            discordpresence::Activity activity;
+            activity.shown = true;
+            activity.details = "Skylanders \"Giants\"";
+            activity.state = std::string(126, 'a') + "\xC3\xA9\xC3\xA9";
+            activity.largeImage = "giants";
+            activity.smallImage = discordpresence::LauncherIconUrl;
+            const std::string json = discordpresence::ActivityCommand(activity, 42, "n1");
+            SHELL_EXPECT(json.find("\"large_image\":\"giants\"") != std::string::npos);
+            SHELL_EXPECT(json.find("\"small_image\":\"https://raw.githubusercontent.com/mflr0/Arkeyan-Launcher/") !=
+                         std::string::npos);
+            SHELL_EXPECT(json.find("Skylanders \\\"Giants\\\"") != std::string::npos);
+            SHELL_EXPECT(json.find(std::string(126, 'a') + "\xC3\xA9\"") != std::string::npos);
+            SHELL_EXPECT(json.find("\"pid\":42") != std::string::npos);
+            activity.shown = false;
+            SHELL_EXPECT(
+                discordpresence::ActivityCommand(activity, 42, "n2").find("\"activity\":null") != std::string::npos);
+            // The logos and the characters' pictures by address; none for an unknown game or toy (the launcher's icon).
+            for (const char* game : { "ssa", "giants", "swapforce", "trapteam", "superchargers", "imaginators" })
+                SHELL_EXPECT(discordpresence::GameLogoUrl(game).starts_with("https://cdn.discordapp.com/app-assets/"));
+            SHELL_EXPECT(discordpresence::GameLogoUrl("unknown").empty());
+            SHELL_EXPECT(
+                discordpresence::FigureImageUrl(0).starts_with("https://static.wikia.nocookie.net/skylanders/"));
+            SHELL_EXPECT(discordpresence::FigureImageUrl(65000).empty());
+            // Two buttons; the party only for two players.
+            SHELL_EXPECT(
+                json.find("\"label\":\"Discord\"") != std::string::npos && json.find("\"party\"") == std::string::npos);
+            activity.shown = true;
+            activity.partySize = activity.partyMax = 2;
+            SHELL_EXPECT(
+                discordpresence::ActivityCommand(activity, 42, "n3").find("\"size\":[2,2]") != std::string::npos);
+            // What the running game says: presence.txt, and the level's name from levels.json.
+            const discordpresence::GameStatus status =
+                discordpresence::ParseGameStatus("level=level_213_tutotial\r\nmenu=0\nplayers=2\n");
+            SHELL_EXPECT(status.known && status.level == "level_213_tutotial" && !status.menu && status.players == 2);
+            SHELL_EXPECT(
+                !discordpresence::ParseGameStatus("").known && discordpresence::ParseGameStatus("menu=1").menu);
+            const char* levels = R"({"format": 1, "levels": {"invented/room": {"en": "Room", "fr": "Salle"},
+                "only/de": {"de": "Raum"}}})";
+            SHELL_EXPECT(discordpresence::LevelName(levels, "invented/room", "fr") == "Salle");
+            SHELL_EXPECT(discordpresence::LevelName(levels, "invented/room", "it") == "Room");
+            SHELL_EXPECT(discordpresence::LevelName(levels, "only/de", "fr") == "Raum");
+            SHELL_EXPECT(discordpresence::LevelName(levels, "level_9", "en").empty() &&
+                         discordpresence::LevelName("not json", "a", "en").empty());
+        }
 
         // An unknown step gets its own row, before "Finishing".
         list = MakeInstallChecklist(

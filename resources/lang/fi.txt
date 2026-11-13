@@ -612,6 +612,11 @@ Pick one below	Valitse alta
 Picture	Kuva
 Play	Pelaa
 Play time: {}	Peliaika: {}
+{}/{} achievements	{}/{} saavutusta
+In the launcher	Käynnistimessä
+Discord	Discord
+Show my activity on Discord	Näytä toimintani Discordissa
+The game you play, its achievements and version, or that you are in the launcher.	Pelaamasi peli, sen saavutukset ja versio, tai että olet käynnistimessä.
 Play without updating	Pelaa päivittämättä
 Play {}	Pelaa: {}
 Play {} with Arkeyan Launcher	Pelaa: {} Arkeyan Launcherilla
@@ -1121,3 +1126,6 @@ Xcode's Metal shader compiler isn't installed yet.	Xcoden Metal-varjostinkäänt
 3. Wait until it says it's done (a few minutes, about 700 MB), then press Retry.	3. Odota, kunnes se kertoo valmistuneensa (muutama minuutti, noin 700 Mt), ja paina sitten Yritä uudelleen.
 Copy command	Kopioi komento
 Command copied	Komento kopioitu
+In the menus	Valikoissa
+In a level	Kentällä
+{} played	{} pelattu

@@ -4,6 +4,7 @@
 // and collection_page.cpp (the figure collection). Nothing outside launcher/ui includes this; launcher_ui.h is the
 // public entry point.
 #include "assets/launcher_assets.h"
+#include "launcher/discord_presence.h"
 #include "launcher/game_copy.h"
 #include "launcher/edition_report.h"
 #include "launcher/portable_export.h"
@@ -816,6 +817,20 @@ namespace launcher_ui
         uint64_t m_sessionStart = 0; // SDL_GetTicks when the game started: the time on the game page
         bool m_launchPending = false; // the page theme must finish fading before the process starts
         gamemusic::Player m_music; // the shown game's menu theme, softly (game_music.h)
+        // Discord Rich Presence (discord_presence.h): the game it shows ("" in the launcher), since when (unix time), and
+        // what it last read of the game's achievements and portal (SDL_GetTicks for the times).
+        discordpresence::Client m_presence;
+        std::string m_presenceGame;
+        int64_t m_presenceSince = 0;
+        uint64_t m_presenceAt = 0, m_presencePortalAt = 0; // when the achievements and the portal are read again
+        std::string m_presenceAchievements; // "3/50 achievements"
+        int m_presenceFigureType = -1; // the player's figure on the portal, -1: none
+        std::string m_presenceFigureText; // "Eruptor · Level 7"
+        std::string m_presenceLevel; // the level line: its name, "In a level" or "In the menus"; "" when unknown
+        int m_presencePlayers = 0; // 2 while a second player plays
+        std::string m_presencePlayTime; // "34 h 12" in all
+        void UpdatePresence(uint64_t nowMs);
+        bool PresenceOn() const;
         std::string m_sessionIso; // the disc image it was started with (the crash report names it)
         ProbeJob m_probe;
         GameLog m_lastRun; // Support: the run Copy game log carries (LastGameLog)

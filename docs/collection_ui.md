@@ -33,6 +33,10 @@ and words, a sheet with three main actions. The look is dorydev's: the colours, 
   figure's upgrade field means, with the game's own names, descriptions and prices in English or French; the texts
   are read from the player's disc when it is checked (`<data>/<Game>/upgrades.json`, part `art::Upgrades`), else a
   plain list ("Upgrade 1"...). ArkeyanRuntime's `docs/runtime/host/figures.md` ("Upgrades") has the bit layout.
+- **Level names for presence.** The same disc check reads all six games' localized level names into
+  `<data>/<Game>/levels.json` (`art::LevelNames`, included in `art::All`). The file maps complete runtime identifiers
+  to names by text language and has its own reader version stamp. Unknown or empty names are omitted, preserving
+  the “In a level” fallback. See [Level names from the disc](level_names.md) for sources, schema and checks.
 - Removed: `figure_file.*` and `figure_collection.*` (the old engine), replaced by `figure_tag`/`figure_crypto`/
   `figure_data` and `collection`.
 - Folder: `collection::Folder()` (`%APPDATA%\Skylanders\Collection`, `~/Library/Application Support/Skylanders/Collection`).

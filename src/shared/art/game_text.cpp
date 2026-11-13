@@ -7,10 +7,13 @@
 #include "../collection/datadir.h"
 #include <SDL3/SDL.h>
 #include <algorithm>
+#include <charconv>
+#include <cctype>
 #include <cstring>
 #include <fstream>
 #include <map>
 #include <optional>
+#include <set>
 #include <unordered_map>
 #include <vector>
 
@@ -50,8 +53,11 @@ namespace art
                 out += char(c);
             else if (c < 0x800)
                 out += char(0xC0 | c >> 6), out += char(0x80 | (c & 0x3F));
-            else
+            else if (c < 0x10000)
                 out += char(0xE0 | c >> 12), out += char(0x80 | (c >> 6 & 0x3F)), out += char(0x80 | (c & 0x3F));
+            else
+                out += char(0xF0 | c >> 18), out += char(0x80 | (c >> 12 & 0x3F)), out += char(0x80 | (c >> 6 & 0x3F)),
+                    out += char(0x80 | (c & 0x3F));
         }
 
         collection::Json Texts(const std::map<std::string, std::string>& byLanguage)
@@ -167,6 +173,17 @@ namespace art
                 for (size_t i = *block; i + 1 < *block + size; i += 2)
                 {
                     uint32_t c = uint32_t(b[i]) << 8 | b[i + 1];
+                    if (c >= 0xD800 && c <= 0xDBFF && i + 3 < *block + size)
+                    {
+                        uint32_t low = uint32_t(b[i + 2]) << 8 | b[i + 3];
+                        if (low >= 0xDC00 && low <= 0xDFFF)
+                        {
+                            c = 0x10000 + ((c - 0xD800) << 10) + low - 0xDC00;
+                            i += 2;
+                        }
+                    }
+                    if (c >= 0xD800 && c <= 0xDFFF)
+                        c = 0xFFFD;
                     if (c == 0)
                         out.push_back(std::move(text)), text.clear();
                     else
@@ -442,6 +459,444 @@ namespace art
                 parts.Set(std::to_string(id), Texts(byLanguage));
             return int(texts.size());
         }
+
+        // --- Level display names -------------------------------------------------------------------------------------
+
+        std::string Normal(std::string text)
+        {
+            for (char& c : text)
+                c = c == '\\' ? '/' : char(std::tolower(static_cast<unsigned char>(c)));
+            return text;
+        }
+
+        bool LevelId(const std::string& id)
+        {
+            return !id.empty() && id.back() != '_' && std::all_of(id.begin(), id.end(), [](unsigned char c) {
+                return std::isalnum(c) || c == '_' || c == '/' || c == '-';
+            });
+        }
+
+        void AddLevel(
+            collection::Json& levels, const std::string& id, const std::string& language, const std::string& name)
+        {
+            if (!LevelId(id) || language.empty() || name.empty() ||
+                std::all_of(name.begin(), name.end(), [](unsigned char c) { return std::isspace(c); }))
+                return;
+            collection::Json texts = levels.Has(id) ? levels[id] : collection::Json::Object();
+            texts.Set(language, name);
+            levels.Set(id, std::move(texts));
+        }
+
+        uint32_t TextKey(std::string_view name)
+        {
+            uint32_t crc = 0xFFFFFFFF;
+            for (unsigned char c : name)
+            {
+                crc ^= c;
+                for (int bit = 0; bit < 8; bit++)
+                    crc = (crc >> 1) ^ (crc & 1 ? 0xEDB88320 : 0);
+            }
+            return ~crc;
+        }
+
+        void LuxLevels(const collection::Json& manifest, const Disc& disc, collection::Json& levels)
+        {
+            std::vector<uint8_t> stream;
+            if (!lux::UnpackStream(ReadAll(disc, manifest["stream"].AsString()), stream))
+                return;
+            // The load identifiers also serve as LXB keys. Keep their original case for the CRC; the runtime reports
+            // lower case. Only complete, NUL-terminated identifiers are candidates, never a title inferred from a path.
+            std::map<std::string, uint32_t> keys;
+            for (size_t at = 0; at < stream.size(); at++)
+            {
+                if (stream[at] != 'L' && stream[at] != 'P' && stream[at] != 'C')
+                    continue;
+                size_t end = at;
+                while (end < stream.size() && end - at < 128 && (std::isalnum(stream[end]) || stream[end] == '_'))
+                    end++;
+                if (end == stream.size() || stream[end] != 0)
+                    continue;
+                std::string key(reinterpret_cast<const char*>(stream.data() + at), end - at), id = Normal(key);
+                if (id.starts_with("challenge_level_") && manifest["challengePrefix"].IsString())
+                    key = manifest["challengePrefix"].AsString() + key.substr(16);
+                if (id.starts_with("level_") || id.starts_with("pvp_level_") || id.starts_with("challenge_level_"))
+                    keys[id] = TextKey(key);
+                at = end;
+            }
+            for (const auto& [language, code] : manifest["languages"].Members())
+            {
+                std::string path = manifest["text"].AsString();
+                if (size_t at = path.find("{language}"); at != std::string::npos)
+                    path.replace(at, 10, code.AsString());
+                auto texts = LxbTexts(ReadAll(disc, path));
+                for (const auto& [id, key] : keys)
+                    if (auto text = texts.find(key); text != texts.end())
+                        AddLevel(levels, id, language, text->second);
+            }
+        }
+
+        void ScriptLevels(const collection::Json& manifest, const Disc& disc, collection::Json& levels)
+        {
+            Archive archive;
+            auto file = archive.Open(disc, manifest["archive"].AsString()) ? archive.Entry(manifest["entry"].AsString())
+                                                                           : std::nullopt;
+            if (!file)
+                return;
+            Script script(*file);
+            std::vector<uint64_t> infos;
+            std::map<std::string, uint64_t> byName;
+            for (uint64_t object : script.objects)
+                if (file->TypeName(object) == "StringInfo")
+                {
+                    infos.push_back(object);
+                    byName[script.Text(file->Word(object, 2))] = object;
+                }
+            std::map<std::string, std::vector<std::string>> packs;
+            for (const auto& [language, name] : manifest["languages"].Members())
+                if (auto pack = archive.Entry(name.AsString() + ".pak"))
+                    packs[language] = PakTexts(*pack);
+            if (packs.empty())
+                return;
+            auto text = [&](uint64_t object, const std::vector<std::string>& pack) -> std::string {
+                auto at = std::lower_bound(infos.begin(), infos.end(), object);
+                size_t index = size_t(at - infos.begin());
+                return at != infos.end() && *at == object && index < pack.size() ? pack[index] : std::string();
+            };
+            const auto& paths = packs.contains("en") ? packs.at("en") : packs.begin()->second;
+            const auto files = disc.files ? disc.files() : std::vector<std::string>();
+            std::set<std::string> levelFiles;
+            for (const auto& file : files)
+                levelFiles.insert(Normal(file));
+            auto present = [&](const std::string& id) {
+                return files.empty() || levelFiles.contains("level/" + id + ".bld");
+            };
+            auto pair = [&](uint64_t load, uint64_t title) {
+                std::string id = Normal(text(load, paths));
+                if (!LevelId(id) || !present(id))
+                    return;
+                for (const auto& [language, pack] : packs)
+                    AddLevel(levels, id, language, text(title, pack));
+            };
+            for (const collection::Json& sets : manifest["sets"].Items())
+            {
+                auto loads = script.Set(sets["loads"].AsString()), titles = script.Set(sets["titles"].AsString());
+                if (!loads || !titles)
+                    continue;
+                auto loadItems = script.Items(*loads), titleItems = script.Items(*titles);
+                // A truncated pair of lists must not shift names onto other levels.
+                if (loadItems.size() != titleItems.size())
+                    continue;
+                for (size_t i = 0; i < loadItems.size(); i++)
+                    pair(loadItems[i], titleItems[i]);
+            }
+            for (const auto& pattern : manifest["numbered"].Items())
+            {
+                auto base = byName.find(pattern["load"].AsString());
+                const std::string prefix = pattern["titlePrefix"].AsString();
+                if (base == byName.end() || prefix.empty())
+                    continue;
+                for (const auto& [name, title] : byName)
+                {
+                    if (!name.starts_with(prefix))
+                        continue;
+                    std::string number = name.substr(prefix.size());
+                    if (number.empty() ||
+                        !std::all_of(number.begin(), number.end(), [](unsigned char c) { return std::isdigit(c); }))
+                        continue;
+                    std::string id = Normal(text(base->second, paths) + number);
+                    if (!present(id))
+                        continue;
+                    for (const auto& [language, pack] : packs)
+                        AddLevel(levels, id, language, text(title, pack));
+                }
+            }
+            // Hub load strings end in a stage prefix. Match actual level files, including any leading zeroes.
+            for (const auto& named : manifest["prefixes"].Items())
+            {
+                auto load = byName.find(named["load"].AsString()), title = byName.find(named["title"].AsString());
+                if (load == byName.end() || title == byName.end())
+                    continue;
+                const std::string prefix = Normal(text(load->second, paths));
+                if (prefix.empty())
+                    continue;
+                for (const auto& path : files)
+                {
+                    std::string file = Normal(path);
+                    if (!file.starts_with("level/" + prefix) || !file.ends_with(".bld"))
+                        continue;
+                    std::string id = file.substr(6, file.size() - 10);
+                    if (!std::all_of(
+                            id.begin() + prefix.size(), id.end(), [](unsigned char c) { return std::isdigit(c); }))
+                        continue;
+                    for (const auto& [language, pack] : packs)
+                        AddLevel(levels, id, language, text(title->second, pack));
+                }
+            }
+        }
+
+        struct LocalizedText
+        {
+            std::string object, field, text;
+        };
+
+        std::vector<LocalizedText> LocalizedTexts(const alchemy::IgzFile& file)
+        {
+            std::vector<std::string> objects, fields;
+            const auto& strings = file.StringTable();
+            auto pairs = file.RecordWords("EXNM");
+            for (size_t i = 0; i + 1 < pairs.size(); i += 2)
+                (pairs[i] & 0x80000000 ? objects : fields)
+                    .push_back(pairs[i + 1] < strings.size() ? strings[pairs[i + 1]] : std::string());
+            std::vector<LocalizedText> out;
+            for (uint64_t object : file.ObjectOffsets())
+            {
+                if (file.TypeName(object) != "igLocalizedStringData")
+                    continue;
+                uint32_t target = file.Word(object, 3), field = file.Word(object, 4);
+                auto text = file.Pointer(file.Word(object, 2));
+                if (!(target & 0x80000000) || !(field & 0x80000000) || !text || (target & 0xFFFFFF) >= objects.size() ||
+                    (field & 0xFFFFFF) >= fields.size())
+                    continue;
+                out.push_back({ objects[target & 0xFFFFFF], fields[field & 0xFFFFFF], file.String(*text) });
+            }
+            return out;
+        }
+
+        // The zone metadata's named root objects link the language files' external object names to runtime paths.
+        std::map<std::string, std::string> ZoneObjects(const alchemy::IgzFile& file)
+        {
+            std::map<std::string, std::string> out;
+            auto roots = file.RecordWords("ROOT"), names = file.RecordWords("ONAM");
+            auto root = roots.empty() ? std::nullopt : file.Pointer(roots[0]);
+            auto named = names.empty() ? std::nullopt : file.Pointer(names[0]);
+            if (!root || !named)
+                return out;
+            auto objects = ListItems(file, *root), labels = ListItems(file, *named, 8);
+            for (size_t i = 0; i < objects.size() && i < labels.size(); i++)
+            {
+                auto object = file.Pointer(file.Be32(objects[i])), name = file.Pointer(file.Be32(labels[i]));
+                if (!object || !name || file.TypeName(*object) != "CZoneInfo")
+                    continue;
+                auto path = file.Pointer(file.Word(*object, 2));
+                if (path)
+                    out[file.String(*name)] = Normal(file.String(*path));
+            }
+            return out;
+        }
+
+        std::string XmlText(std::string_view value)
+        {
+            std::string out;
+            for (size_t i = 0; i < value.size(); i++)
+            {
+                if (value[i] != '&')
+                {
+                    out += value[i];
+                    continue;
+                }
+                size_t end = value.find(';', i);
+                if (end == std::string_view::npos)
+                    return {};
+                std::string entity(value.substr(i + 1, end - i - 1));
+                if (entity == "amp")
+                    out += '&';
+                else if (entity == "lt")
+                    out += '<';
+                else if (entity == "gt")
+                    out += '>';
+                else if (entity == "quot")
+                    out += '"';
+                else if (entity == "apos")
+                    out += '\'';
+                else if (entity.starts_with('#'))
+                {
+                    uint32_t code = 0;
+                    bool hex = entity.size() > 1 && entity[1] == 'x';
+                    const char* first = entity.data() + (hex ? 2 : 1);
+                    auto parsed = std::from_chars(first, entity.data() + entity.size(), code, hex ? 16 : 10);
+                    if (parsed.ec != std::errc() || parsed.ptr != entity.data() + entity.size() || code == 0 ||
+                        code > 0x10FFFF || (code >= 0xD800 && code <= 0xDFFF))
+                        return {};
+                    AppendUtf8(out, code);
+                }
+                else
+                    return {};
+                i = end;
+            }
+            return out;
+        }
+
+        struct XmlObject
+        {
+            std::string name, type;
+            std::map<std::string, std::string> values, references;
+        };
+
+        // MUA's flat object/var records. Tokenize quoted attributes so a '>' in translated text cannot end a tag.
+        // No entities beyond XML's built-ins and numeric character references are expanded.
+        std::vector<XmlObject> MuaObjects(const std::vector<uint8_t>& bytes)
+        {
+            std::string_view xml(reinterpret_cast<const char*>(bytes.data()), bytes.size());
+            std::vector<XmlObject> out;
+            bool inObject = false;
+            for (size_t at = 0; (at = xml.find('<', at)) != std::string_view::npos;)
+            {
+                if (xml.substr(at, 4) == "<!--")
+                {
+                    size_t end = xml.find("-->", at + 4);
+                    if (end == std::string_view::npos)
+                        return {};
+                    at = end + 3;
+                    continue;
+                }
+                size_t end = at + 1;
+                char quote = 0;
+                for (; end < xml.size(); end++)
+                {
+                    char c = xml[end];
+                    if (quote != 0)
+                    {
+                        if (c == quote)
+                            quote = 0;
+                    }
+                    else if (c == '\'' || c == '"')
+                        quote = c;
+                    else if (c == '>')
+                        break;
+                }
+                if (end == xml.size())
+                    return {};
+                std::string_view tag = xml.substr(at + 1, end - at - 1);
+                at = end + 1;
+                size_t word = tag.find_first_of(" \t\r\n/");
+                if (tag.starts_with("/object"))
+                {
+                    inObject = false;
+                    continue;
+                }
+                std::string kind(tag.substr(0, word));
+                if (kind != "object" && kind != "var")
+                    continue;
+                std::map<std::string, std::string> attrs;
+                size_t pos = word;
+                while (pos < tag.size())
+                {
+                    pos = tag.find_first_not_of(" \t\r\n/", pos);
+                    if (pos == std::string_view::npos)
+                        break;
+                    size_t equal = tag.find('=', pos);
+                    if (equal == std::string_view::npos)
+                        return {};
+                    size_t keyEnd = tag.find_last_not_of(" \t\r\n", equal - 1);
+                    std::string key(tag.substr(pos, keyEnd + 1 - pos));
+                    pos = tag.find_first_not_of(" \t\r\n", equal + 1);
+                    if (pos == std::string_view::npos || (tag[pos] != '"' && tag[pos] != '\''))
+                        return {};
+                    size_t close = tag.find(tag[pos], pos + 1);
+                    if (close == std::string_view::npos)
+                        return {};
+                    attrs[key] = XmlText(tag.substr(pos + 1, close - pos - 1));
+                    pos = close + 1;
+                }
+                if (kind == "object")
+                {
+                    out.push_back({ attrs["refname"], attrs["type"], {}, {} });
+                    inObject = !tag.ends_with('/');
+                }
+                else if (inObject)
+                {
+                    if (attrs.contains("value"))
+                        out.back().values[attrs["name"]] = attrs["value"];
+                    if (attrs.contains("ref"))
+                        out.back().references[attrs["name"]] = attrs["ref"];
+                }
+            }
+            return inObject ? std::vector<XmlObject>() : out;
+        }
+
+        void ZoneLevels(const collection::Json& manifest, const Disc& disc, collection::Json& levels)
+        {
+            Archive archive;
+            if (!archive.Open(disc, manifest["archive"].AsString()))
+                return;
+            bool mua = manifest["kind"].AsString() == "mua";
+            std::map<std::string, size_t> entries;
+            for (size_t i = 0; i < archive.iga->Count(); i++)
+            {
+                std::string path = Normal(archive.iga->Name(i));
+                path = path.substr(path.find_last_of('/') + 1);
+                entries[path] = i;
+            }
+            const std::string suffix = mua ? ".mua" : ".igz", localized = mua ? ".mua" : ".lng";
+            for (const auto& [name, index] : entries)
+            {
+                if (!name.ends_with("_zoneinfo" + suffix))
+                    continue;
+                std::map<std::string, std::string> objects;
+                auto bytes = archive.iga->Read(index);
+                if (mua)
+                {
+                    for (const auto& object : MuaObjects(bytes))
+                        if (object.type == "CZoneInfo" && object.values.contains("_zoneName"))
+                            objects[object.name] = Normal(object.values.at("_zoneName"));
+                }
+                else if (auto file = alchemy::IgzFile::Parse(std::move(bytes)))
+                    objects = ZoneObjects(*file);
+                if (objects.empty())
+                    continue;
+                std::string prefix = name.substr(0, name.size() - suffix.size()) + "_";
+                for (const auto& [path, entry] : entries)
+                {
+                    if (!path.starts_with(prefix) || !path.ends_with(localized))
+                        continue;
+                    std::string language = path.substr(prefix.size(), path.size() - prefix.size() - localized.size());
+                    std::vector<LocalizedText> texts;
+                    auto data = archive.iga->Read(entry);
+                    if (mua)
+                    {
+                        for (auto object : MuaObjects(data))
+                            if (object.type == "igLocalizedString")
+                            {
+                                std::string target = object.references["_object"], field = object.references["_field"];
+                                target = target.substr(target.find_last_of('.') + 1);
+                                if (field.starts_with("metafield."))
+                                    field.erase(0, 10);
+                                texts.push_back({ target, field, object.values["_string"] });
+                            }
+                    }
+                    else if (auto file = alchemy::IgzFile::Parse(std::move(data)))
+                        texts = LocalizedTexts(*file);
+                    for (const auto& text : texts)
+                        if (text.field == "CZoneInfo::_displayName")
+                            if (auto target = objects.find(text.object); target != objects.end())
+                                AddLevel(levels, target->second, language, text.text);
+                }
+            }
+        }
+    }
+
+    collection::Json ReadLevelNamesFrom(const collection::Json& manifest, const Disc& disc)
+    {
+        collection::Json levels = collection::Json::Object();
+        const std::string kind = manifest["kind"].AsString();
+        if (kind == "lux")
+            LuxLevels(manifest, disc, levels);
+        else if (kind == "script")
+            ScriptLevels(manifest, disc, levels);
+        else if (kind == "mua" || kind == "igz")
+            ZoneLevels(manifest, disc, levels);
+        return levels;
+    }
+
+    bool ExtractLevelNames(
+        std::string_view game, const collection::Json& manifest, const Disc& disc, const std::filesystem::path& out)
+    {
+        collection::Json file = collection::Json::Object();
+        file.Set("format", 1);
+        file.Set("reader", LevelNamesVersion);
+        file.Set("game", std::string(game));
+        file.Set("levels", ReadLevelNamesFrom(manifest, disc));
+        return WriteFile(file, out);
     }
 
     int ExtractPartNames(

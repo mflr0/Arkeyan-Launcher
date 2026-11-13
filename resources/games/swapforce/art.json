@@ -28,5 +28,9 @@
     { "archive": "archives/characterillustrations.pak", "folder": "materialinstances\\wiiportraits\\", "ending": "fortune_wii_material.igz" },
     { "archive": "archives/characterillustrations.pak", "folder": "materialinstances\\wiiportraits\\", "ending": "stormbird_wii_material.igz" },
     { "archive": "archives/characterillustrations.pak", "folder": "materialinstances\\wiiportraits\\", "ending": "vampire_wii_material.igz" },
-    { "archive": "archives/characterillustrations.pak", "folder": "materialinstances\\wiiportraits\\", "ending": "altdecocowboybelt_wii_material.igz" } ] }
+    { "archive": "archives/characterillustrations.pak", "folder": "materialinstances\\wiiportraits\\", "ending": "altdecocowboybelt_wii_material.igz" } ] },
+  "levels": {
+    "kind": "mua",
+    "archive": "archives/zoneinfos.pak"
+  }
 }

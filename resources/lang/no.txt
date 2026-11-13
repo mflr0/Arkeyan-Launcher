@@ -612,6 +612,11 @@ Pick one below	Velg nedenfor
 Picture	Bilde
 Play	Spill
 Play time: {}	Spilletid: {}
+{}/{} achievements	{}/{} prestasjoner
+In the launcher	I startprogrammet
+Discord	Discord
+Show my activity on Discord	Vis aktiviteten min på Discord
+The game you play, its achievements and version, or that you are in the launcher.	Spillet du spiller, prestasjoner og versjon, eller at du er i startprogrammet.
 Play without updating	Spill uten å oppdatere
 Play {}	Spill {}
 Play {} with Arkeyan Launcher	Spill {} med Arkeyan Launcher
@@ -1121,3 +1126,6 @@ Xcode's Metal shader compiler isn't installed yet.	Xcodes Metal-shaderkompilator
 3. Wait until it says it's done (a few minutes, about 700 MB), then press Retry.	3. Vent til det står at det er ferdig (noen minutter, omtrent 700 MB), og trykk deretter Prøv igjen.
 Copy command	Kopier kommandoen
 Command copied	Kommandoen er kopiert
+In the menus	I menyene
+In a level	På et brett
+{} played	{} spilt

@@ -10,5 +10,23 @@
                                                           "fullscreen_018", "fullscreen_challenge_018" ] } ],
   "music": { "package": "audio/streaming.pck", "stream": "0x0C45FC64" },
   "portraits": { "stream": "uigameimage.str", "pictures": ["toy_{name}_hud", "{name}_vs"], "images": true },
-  "upgrades": { "stream": "global.str", "text": "text/{language}/global.lxb", "languages": { "en": "eng", "fr": "fre", "de": "ger", "es": "spa", "it": "ita", "nl": "dut", "sv": "swe", "no": "nor", "da": "dan", "fi": "fin" } }
+  "upgrades": { "stream": "global.str", "text": "text/{language}/global.lxb", "languages": { "en": "eng", "fr": "fre", "de": "ger", "es": "spa", "it": "ita", "nl": "dut", "sv": "swe", "no": "nor", "da": "dan", "fi": "fin" } },
+  "levels": {
+    "kind": "lux",
+    "stream": "global.str",
+    "text": "text/{language}/global.lxb",
+    "languages": {
+      "en": "eng",
+      "fr": "fre",
+      "de": "ger",
+      "es": "spa",
+      "it": "ita",
+      "nl": "dut",
+      "sv": "swe",
+      "no": "nor",
+      "da": "dan",
+      "fi": "fin"
+    },
+    "challengePrefix": "Challenge_Title_"
+  }
 }
