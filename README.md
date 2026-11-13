@@ -328,10 +328,8 @@ checks). Security problems: [SECURITY.md](SECURITY.md).
 
 Designed by dorydev, made by mflr0, UI/UX by Gumelia.
 
-To you who use Arkeyan Launcher and take the time to report a bug or suggest an idea: thank you, every report makes it
-better. Special thanks to those who opened issues, sent logs and tested on their own hardware: jdalmanza,
-GummyWormWood, RGNTromYT, ssjwarriorx, GobGub and vientodelbosque, and the testers on Discord. And thank you to
-everyone who contributes to the Arkeyan project.
+Thank you to everyone who contributes to this project, and to the testers on the
+[Discord](https://discord.gg/UMQY4SAS3F): every report, log and test on real hardware makes it better.
 
 The ports are built with [XenonRecomp](https://github.com/hedge-dev/XenonRecomp) and
 [XenosRecomp](https://github.com/hedge-dev/XenosRecomp) (hedge-dev; [squidbus's fork](https://github.com/squidbus/XenosRecomp)),
