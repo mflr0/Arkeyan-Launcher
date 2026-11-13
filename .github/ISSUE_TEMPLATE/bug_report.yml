@@ -92,6 +92,6 @@ body:
       description: |
         Right after the problem: Settings > Support > **Copy game log**, then paste it here. For a problem in the launcher
         itself: Settings > Support > **Report a problem** > Copy. Names and folders are removed for you.
-      render: text
+        Too long for this box? Save it as a .txt file and drag the file into the box.
     validations:
       required: true

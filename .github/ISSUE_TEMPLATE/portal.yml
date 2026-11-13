@@ -64,7 +64,6 @@ body:
     id: log
     attributes:
       label: Game log
-      description: After trying the portal in a game, Settings > Support > **Copy game log**, then paste it here.
-      render: text
+      description: After trying the portal in a game, Settings > Support > **Copy game log**, then paste it here. Too long for this box? Drag the log file into the box instead.
     validations:
       required: true
