@@ -296,6 +296,7 @@ target_compile_definitions(ArkeyanLauncherTest PRIVATE SKYLAUNCHER_FAKE_KIT="${C
 # The launcher shell's checks (tests/shell_test.cpp), run by ArkeyanLauncherTest.
 target_sources(ArkeyanLauncherTest PRIVATE tests/shell_test.cpp tests/portal_text_test.cpp tests/settings_test.cpp tests/copy_test.cpp tests/portable_test.cpp tests/i18n_test.cpp tests/uninstall_test.cpp tests/text_fit_test.cpp tests/navigation_test.cpp tests/accent_test.cpp tests/music_test.cpp tests/profiles_test.cpp tests/single_instance_test.cpp tests/toybox_link_test.cpp tests/vfs_test.cpp tests/lux_images_test.cpp)
 target_compile_definitions(ArkeyanLauncherTest PRIVATE SKYLAUNCHER_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+target_sources(ArkeyanLauncherTest PRIVATE tests/ui_render_test.cpp)
 target_include_directories(ArkeyanLauncherTest PRIVATE lib/miniz)
 
 # The copied portal lines only: no device, runtime or launcher process.
