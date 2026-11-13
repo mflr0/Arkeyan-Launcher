@@ -46,6 +46,9 @@ namespace launcher_ui
     ui::ModalResult OverlayActions(const char* cancel, const char* confirm = nullptr, bool confirmDisabled = false);
     // "Doom Stone" for "Doom Stone (top)" or "(bottom)": a swapper's halves are named after it.
     std::string WithoutHalf(std::string name);
+    // Add a figure keeps the full requirement on every card, including the longest translated game name.
+    std::string AddToyRequirement(const collection::Toy& toy);
+    float AddToyMinCell();
 
     // A figure's picture: the disc's portrait, or a generated icon (the page writes the initials over those).
     struct FigureIconTexture

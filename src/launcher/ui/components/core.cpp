@@ -363,7 +363,10 @@ namespace ui
             return;
         // The glyph's em square is Lucide's 24-point grid: its top left on whole pixels, the icon centred on `c`.
         char text[4] = { char(0xE0 | glyph >> 12), char(0x80 | (glyph >> 6 & 0x3F)), char(0x80 | (glyph & 0x3F)), 0 };
+        // Binding the font makes ImGui select a bake at this window's framebuffer density, including after a display move.
+        ImGui::PushFont(g_context.fonts.icons, size);
         draw->AddText(g_context.fonts.icons, size, ImVec2(Snap(c.x - size / 2), Snap(c.y - size / 2)), color, text);
+        ImGui::PopFont();
     }
 
     void DrawSpinner(ImDrawList* draw, ImVec2 centre, float size, ImU32 color)

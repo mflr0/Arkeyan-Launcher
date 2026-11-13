@@ -1703,6 +1703,7 @@ int SettingsChecks(const std::filesystem::path& scratch); // tests/settings_test
 int I18nChecks(); // tests/i18n_test.cpp
 int UninstallChecks(const std::filesystem::path& scratch); // tests/uninstall_test.cpp
 int TextFitChecks(); // tests/text_fit_test.cpp
+int UiRenderChecks(const std::filesystem::path& scratch); // tests/ui_render_test.cpp
 int NavigationChecks(); // tests/navigation_test.cpp
 int AccentChecks(const std::filesystem::path& scratch); // tests/accent_test.cpp, in a process of its own
 int AccentChecksInChild(const char* executable, const std::filesystem::path& scratch);
@@ -2487,6 +2488,8 @@ static int RunChecks(int argc, char** argv)
         SDL_Delay(5000);
         return 2;
     }
+    if (argc == 3 && std::string_view(argv[1]) == "--ui-render")
+        return UiRenderChecks(argv[2]) == 0 ? 0 : 1;
     if (argc == 4 && std::string_view(argv[1]) == "--review-ui")
         return launcher_ui::ReviewChecks::Run(std::filesystem::absolute(argv[2]), argv[3]);
     if (argc == 3 && std::string_view(argv[1]) == "--review-shell")
@@ -2789,6 +2792,7 @@ static int RunChecks(int argc, char** argv)
     g_failures += ToyboxLinkChecks(scratch / "toybox-link");
     g_failures += I18nChecks();
     g_failures += TextFitChecks();
+    g_failures += UiRenderChecks(scratch / "ui-render");
     g_failures += NavigationChecks();
     g_failures += AccentChecksInChild(argv[0], scratch);
     g_failures += MusicChecks(scratch);

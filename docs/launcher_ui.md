@@ -1184,6 +1184,10 @@ already points), capped so the smallest layout fits the display's usable area. I
 the scale and a framebuffer scale multiplied by it, so it draws and rasterizes the fonts at the screen's real density.
 It follows `SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED`; Ctrl (Cmd) + / - / 0 zoom and reset, saved in `ui_scale`.
 The Windows executable declares per-monitor v2 DPI awareness in its manifest (`resources/windows/`).
+`ui::DrawIcon` binds the Lucide font before drawing its glyph, so ImGui selects the current window's rasterization
+density for icons too. Their point sizes stay the same at integer and fractional display scales and after display changes.
+`ArkeyanLauncherTest --ui-render <scratch>` checks glyph density and bitmap resolution at 1x, 1.5x, 2x and back to 1x,
+and writes `icons-0.png` through `icons-3.png`. These checks also run in `--no-disc` under `launcher_test/ui-render/`.
 
 ## How to change the look
 - Colours and sizes: the tokens (`ui/theme/tokens.h`), named by role; the palette's values in `launcher_theme.h`; ImGui's own

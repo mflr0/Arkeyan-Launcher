@@ -55,6 +55,22 @@ namespace launcher_ui
         }
     }
 
+    std::string AddToyRequirement(const Toy& toy) { return Tf("needs {}", ShortGameName(toy.game)); }
+
+    float AddToyMinCell()
+    {
+        float width = ui::height::Main + ui::height::Normal;
+        ui::PushText(ui::TextStyle::Caption);
+        for (const collection::Game& game : collection::Catalogue::Get().Games())
+        {
+            Toy toy;
+            toy.game = game.id;
+            width = std::max(width, ImGui::CalcTextSize(AddToyRequirement(toy).c_str()).x + 2 * ui::space::XS);
+        }
+        ui::PopText();
+        return std::ceil(width);
+    }
+
     void CollectionPage::DrawAdd()
     {
         DrawAddFilters();
@@ -187,11 +203,7 @@ namespace launcher_ui
         if (pass == 1)
         {
             ui::PushText(ui::TextStyle::Caption);
-            // "needs SuperChargers" when it fits the card, else the game's name alone (the section says "Later games").
-            const float room = cell - 2 * ui::space::XS;
-            std::string note = Tf("needs {}", ShortGameName(toy.game));
-            if (ImGui::CalcTextSize(note.c_str()).x > room)
-                note = ui::Ellipsize(ShortGameName(toy.game).c_str(), room);
+            const std::string note = AddToyRequirement(toy);
             ui::DrawText(draw, ImVec2(at.x + (cell - ImGui::CalcTextSize(note.c_str()).x) / 2, noteY),
                 ui::Col(ui::color::Dim), note.c_str());
             ui::PopText();
@@ -219,7 +231,8 @@ namespace launcher_ui
         ui::BeginRoomyChild("##addtoys", size, ImGuiChildFlags_NavFlattened,
             ImGuiWindowFlags_NoBackground | (found ? ImGuiWindowFlags_AlwaysVerticalScrollbar : 0));
         ImGui::SetScrollX(0.0f);
-        constexpr float MinCell = ui::height::Main + ui::height::Normal, Gap = ui::space::S;
+        const float MinCell = AddToyMinCell();
+        constexpr float Gap = ui::space::S;
         const float usable = ImGui::GetContentRegionAvail().x - ui::space::XS;
         const int columns = std::max(1, int((usable + Gap) / (MinCell + Gap)));
         const float Cell = std::floor((usable + Gap) / columns - Gap);
