@@ -379,6 +379,10 @@ namespace launcher_ui
 
     bool App::Init()
     {
+        // The Xbox portals look like Xbox pads: SDL's gamepad code would claim them through libusb (the portal test then
+        // says "cannot claim interface", and the game cannot reach the portal) and list them as a gamepad (#82).
+        for (const char* hint : { SDL_HINT_HIDAPI_IGNORE_DEVICES, SDL_HINT_JOYSTICK_BLACKLIST_DEVICES })
+            SDL_SetHint(hint, "0x1430/0x1f17,0x1430/0x09aa,0x1430/0x09ab,0x24c6/0xfa00");
         if (!SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD))
             return false;
         // The offscreen driver (screenshot test) has no GPU: no graphics context for the window, software drawing.
