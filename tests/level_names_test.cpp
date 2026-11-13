@@ -427,8 +427,12 @@ namespace
         LEVEL_CHECK(art::Extract("ssa", disc, {}, art::LevelNames).levelNames);
         const auto file = root / "SSA" / "levels.json";
         LEVEL_CHECK(std::filesystem::is_regular_file(file));
-        std::ifstream input(file);
-        Json cached = Parse(std::string(std::istreambuf_iterator<char>(input), {}));
+        // Each read closes its file: Windows cannot replace a file that is still open.
+        auto read = [](const std::filesystem::path& path) {
+            std::ifstream input(path);
+            return Parse(std::string(std::istreambuf_iterator<char>(input), {}));
+        };
+        Json cached = read(file);
         LEVEL_CHECK(cached["reader"].AsInt() == art::LevelNamesVersion && cached["levels"].Members().empty());
         // An empty current cache is a completed read; missing levels retain the presence fallback.
         art::Disc unreadable{ [](const std::string&) -> uint64_t {
@@ -446,9 +450,7 @@ namespace
             output << cached.Dump();
         }
         LEVEL_CHECK(art::Extract("ssa", disc, {}, art::LevelNames).levelNames);
-        std::ifstream refreshed(file);
-        LEVEL_CHECK(Parse(std::string(std::istreambuf_iterator<char>(refreshed), {}))["reader"].AsInt() ==
-                    art::LevelNamesVersion);
+        LEVEL_CHECK(read(file)["reader"].AsInt() == art::LevelNamesVersion);
         LEVEL_CHECK(!art::Extract("unknown", disc, {}, art::LevelNames).levelNames);
         if (old.empty())
             TestUnsetEnv("SKYLANDERS_DATA");
