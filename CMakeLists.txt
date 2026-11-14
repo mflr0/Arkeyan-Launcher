@@ -225,7 +225,8 @@ target_sources(ArkeyanLauncherCore PRIVATE
     src/launcher/ui/integrity_page.cpp
     src/launcher/ui/support_page.cpp
     src/launcher/ui/update_page.cpp
-    src/launcher/ui/defender_notice.cpp)
+    src/launcher/ui/defender_notice.cpp
+    src/launcher/ui/game_stopped.cpp)
 target_include_directories(ArkeyanLauncherCore PUBLIC src PRIVATE lib/stb lib/miniz)
 target_link_libraries(ArkeyanLauncherCore PUBLIC SDL3::SDL3-static fmt::fmt XenonXex imgui)
 target_compile_definitions(ArkeyanLauncherCore PRIVATE SKYLAUNCHER_VERSION_STRING="${LAUNCHER_VERSION}" ARKEYAN_SOURCE_FONT_DIR="${CMAKE_SOURCE_DIR}/resources/fonts")
