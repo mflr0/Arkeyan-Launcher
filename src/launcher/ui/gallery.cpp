@@ -28,6 +28,7 @@ namespace launcher_ui
             { "modal-danger", "Modal: danger" },
             { "menu-tooltip", "Menu, tooltip" },
             { "select-open", "Select, open" },
+            { "game-stopped", "The game stopped unexpectedly" },
         };
         constexpr int PageCount = int(std::size(Pages));
 
@@ -681,8 +682,19 @@ namespace launcher_ui
             }
             break;
         }
+        case 12: // The crash dialog (game_stopped.cpp), as a game started here that stopped would show it
+        {
+            Caption("The game stopped unexpectedly: Report, Copy log, Close");
+            if (!m_gameStopped)
+                m_gameStopped = GameStopped{ "ssa", "", 3 };
+            break;
+        }
         }
         ImGui::End();
+        if (page == 12)
+            DrawGameStopped();
+        else
+            m_gameStopped.reset();
         if (page != 7)
             m_toasts.Clear();
     }

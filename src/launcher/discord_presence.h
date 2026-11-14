@@ -8,6 +8,7 @@
 #include <condition_variable>
 #include <cstdint>
 #include <mutex>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <thread>
@@ -28,14 +29,17 @@ namespace discordpresence
     std::string GameLogoUrl(std::string_view gameId);
     std::string FigureImageUrl(uint16_t toyType);
 
-    // What the running game wrote in <its player folder>/presence.txt ("level=", "menu=", "players="): `known` false
-    // when the file is missing (an older game).
+    // What the running game wrote in <its player folder>/presence.txt: level, menu, players, and player 1's toy type,
+    // variant id and optional toylevel as unsigned decimal numbers. Toy fields are absent when no character is present;
+    // `known` is false when the file is missing (an older game).
     struct GameStatus
     {
         bool known = false;
         std::string level; // the runtime's level id ("level_213_tutotial", "academy/academy")
         bool menu = false; // the title or the front end
         int players = 0;
+        std::optional<uint16_t> toy, variant;
+        std::optional<uint32_t> toyLevel;
     };
     GameStatus ParseGameStatus(std::string_view text);
 

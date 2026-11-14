@@ -108,15 +108,21 @@ void ShowGameStopped(const GameInfo& game, int exitCode, const std::string& conf
             SDL_SetClipboardText(GameLogText().c_str());
             continue;
         }
-        SavedReport saved = SaveProblemReport(configPath, config, game.id, iso);
-        std::string title = fmt::format("The game stopped unexpectedly (exit code {})", exitCode);
-        std::string body = "What I was doing:\n\n\n" +
-                           (saved.file.empty() ? std::string("The report file could not be saved; the log is below.\n")
-                                               : "The report file is " + saved.file.filename().string() +
-                                                     " (on my Desktop or in the logs folder); I attach it here:\n\n");
-        SDL_OpenURL(("https://github.com/mflr0/Arkeyan-Launcher/issues/new?title=" + UrlEncode(title) +
-                     "&body=" + UrlEncode(body))
-                .c_str());
+        ReportGameStopped(game, exitCode, configPath, config, iso);
         return;
     }
+}
+
+void ReportGameStopped(const GameInfo& game, int exitCode, const std::string& configPath, const LauncherConfig& config,
+    const std::string& iso)
+{
+    SavedReport saved = SaveProblemReport(configPath, config, game.id, iso);
+    std::string title = fmt::format("The game stopped unexpectedly (exit code {})", exitCode);
+    std::string body = "What I was doing:\n\n\n" +
+                       (saved.file.empty() ? std::string("The report file could not be saved; the log is below.\n")
+                                           : "The report file is " + saved.file.filename().string() +
+                                                 " (on my Desktop or in the logs folder); I attach it here:\n\n");
+    SDL_OpenURL(
+        ("https://github.com/mflr0/Arkeyan-Launcher/issues/new?title=" + UrlEncode(title) + "&body=" + UrlEncode(body))
+            .c_str());
 }

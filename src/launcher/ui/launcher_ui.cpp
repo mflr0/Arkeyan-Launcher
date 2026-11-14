@@ -1140,14 +1140,15 @@ namespace launcher_ui
         if (!m_shots.empty()) // a screenshot script: no dialog that waits for a click
             m_drawn["stopped"] = fmt::format("{} {}", ended->game, ended->exitCode);
         else
-            ShowGameStopped(*game, ended->exitCode, m_configPath, m_config, m_sessionIso, m_window);
+            m_gameStopped = GameStopped{ ended->game, m_sessionIso, ended->exitCode };
     }
 
     // Discord Rich Presence (discord_presence.h), unless [discord] presence=0 (Settings > Launcher > Discord). A game that
     // runs, started here or not: its name, icon, version, the session's time and its achievements (achievements.txt, read
     // again every AchievementsMs), and in the corner the player's figure on the portal (portal.txt, which the game rewrites
-    // at every change, read every PortalMs): its Toy Box picture (the art asset fig_<type>), its name and level. No game: the launcher, and
-    // the time since it opened or the last game ended.
+    // at every change, read every PortalMs), else player 1's real figure from presence.txt: its picture by toy type, its
+    // name in the running game and its level when known. No game: the launcher, and the time since it opened or the last
+    // game ended.
     void App::UpdatePresence(uint64_t nowMs)
     {
         constexpr uint64_t AchievementsMs = 30000, PortalMs = 3000;
@@ -1201,21 +1202,21 @@ namespace launcher_ui
         if (nowMs >= m_presencePortalAt)
         {
             m_presencePortalAt = nowMs + PortalMs;
-            // The first seat holding a toy that levels up (player 1's character before an item or a trap). A virtual
-            // figure only: a real one on a real portal is not in portal.txt.
+            // The first seat holding a toy that levels up (player 1's character before an item or a trap) takes priority
+            // over the real figure reported by the runtime.
             m_presenceFigureType = -1;
             m_presenceFigureText.clear();
             // Where the player is: the runtime's presence.txt, the level's name from levels.json (the disc's own names).
             m_presenceLevel.clear();
             m_presencePlayers = 0;
+            discordpresence::GameStatus status;
             const auto readFile = [](const std::filesystem::path& path) {
                 std::ifstream file(path, std::ios::binary);
                 return std::string(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
             };
             if (const std::filesystem::path folder = progress::Folder(running); !folder.empty())
             {
-                const discordpresence::GameStatus status =
-                    discordpresence::ParseGameStatus(readFile(folder / "presence.txt"));
+                status = discordpresence::ParseGameStatus(readFile(folder / "presence.txt"));
                 if (status.known)
                 {
                     const std::string levelName = discordpresence::LevelName(
@@ -1239,6 +1240,19 @@ namespace launcher_ui
                         collection::NameIn(figure, running) + " \xC2\xB7 " + Tf("Level {}", figure.level);
                     break;
                 }
+            if (m_presenceFigureType < 0 && status.toy && status.variant)
+            {
+                const collection::Catalogue& catalogue = collection::Catalogue::Get();
+                collection::Figure figure;
+                figure.type = *status.toy;
+                figure.variant = *status.variant;
+                figure.toy = catalogue.Find(figure.type);
+                figure.variantInfo = catalogue.Describe(figure.toy, figure.variant);
+                m_presenceFigureType = figure.type;
+                m_presenceFigureText = collection::NameIn(figure, running);
+                if (status.toyLevel)
+                    m_presenceFigureText += " \xC2\xB7 " + Tf("Level {}", *status.toyLevel);
+            }
         }
         // Line 2: where the player is. The logo's hover: the achievements, the time played and the version.
         activity.state = m_presenceLevel;
@@ -3116,12 +3130,13 @@ namespace launcher_ui
             DrawProblemReport();
             DrawQuitPrompt();
             DrawDefenderNotice();
+            DrawGameStopped();
             DrawToast();
             // Who answers B / Escape next frame: an open menu or dialog, a field being edited, the collection's search or View.
             // LB / RB belong to the pages unless a dialog, a menu or a field has the input.
             m_pagesTaken = ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopupId | ImGuiPopupFlags_AnyPopupLevel) ||
                            ImGui::IsAnyItemActive() || m_toasts.HasFocus() || m_reportOpen || m_whatsNewOpen ||
-                           m_integrityOpen || m_quitPrompt || m_defenderNoticeOpen;
+                           m_integrityOpen || m_quitPrompt || m_defenderNoticeOpen || m_gameStopped.has_value();
             m_backTaken = m_pagesTaken || (m_page == Page::Collection && m_s->collection->TakesBack());
             m_focusTo = FocusTo::None; // a request no page answered (its item wasn't drawn) is dropped
         }

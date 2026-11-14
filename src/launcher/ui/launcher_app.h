@@ -575,6 +575,7 @@ namespace launcher_ui
         // defender_notice.cpp: once, on Windows, before the first install or update; true while it holds `then` back.
         bool DefenderNoticeFirst(std::function<void()> then);
         void DrawDefenderNotice();
+        void DrawGameStopped();
         // integrity_page.cpp: the file check at start (integrity.h), its dialog and Repair.
         void StartIntegrityCheck();
         void PollIntegrity();
@@ -854,6 +855,13 @@ namespace launcher_ui
         bool m_whatsNewOpen = false;
         bool m_defenderNoticeOpen = false;
         std::function<void()> m_defenderThen; // what the player asked for, run on Continue
+        // A game that stopped unexpectedly (its exit code): the crash dialog, DrawGameStopped (game_stopped.cpp).
+        struct GameStopped
+        {
+            std::string game, iso;
+            int exitCode = 0;
+        };
+        std::optional<GameStopped> m_gameStopped;
         IntegrityCheck m_integrity;
         bool m_integrityPolled = true; // the last check's report has been taken
         std::vector<IntegrityFinding> m_findings; // what is wrong, the first one in the dialog
