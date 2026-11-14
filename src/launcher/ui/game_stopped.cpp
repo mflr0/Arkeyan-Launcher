@@ -23,7 +23,8 @@ namespace launcher_ui
         if (ui::BeginModal("##gamestopped", Tr("The game stopped unexpectedly"), &open, ui::ModalSize::Medium))
         {
             ui::Text(ui::TextStyle::Body,
-                Tf("{} stopped unexpectedly (exit code {}).\n\nPress Report to save a report file with the log and where "
+                Tf("{} stopped unexpectedly (exit code {}).\n\nPress Report to save a report file with the log and "
+                   "where "
                    "the game stopped.",
                     game->name, m_gameStopped->exitCode)
                     .c_str(),
