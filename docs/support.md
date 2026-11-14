@@ -61,9 +61,12 @@ On Windows the process is started without a console window and its exit code is 
 reports none for such processes. (A screenshot script that plays, `SKY_LAUNCHER_TEST_PLAY`, still closes the window and
 `src/main.cpp` runs the game with `RunGame`, its output piped, waiting for it.)
 
-If the runtime exits with a non-zero code a dialog over the window says **The game stopped unexpectedly**, with its exit code and the logs
-folder, and three buttons: **Report** (writes the same report file as above to the Desktop, shows it in the file manager and opens a new
-GitHub issue with a template to attach it to), **Copy log**, **Close**. Nothing is sent by the launcher.
+If the runtime exits with a non-zero code a dialog over the window says **The game stopped unexpectedly**, with its exit code,
+and three buttons: **Report** (writes the same report file as above to the Desktop, shows it in the file manager and opens a new
+GitHub issue with a template to attach it to), **Copy log** (copies the game's log, the dialog stays) and **Close**. Nothing is sent
+by the launcher. Since 0.9.7 it is the launcher's own dialog (`ui/game_stopped.cpp`, `App::DrawGameStopped`; the gallery's last
+page shows it, issue #2); a game started from its shortcut without the window (`src/main.cpp`) keeps the system message box
+(`ShowGameStopped`), the same buttons. Both report through `ReportGameStopped`.
 
 ## Portal status
 
