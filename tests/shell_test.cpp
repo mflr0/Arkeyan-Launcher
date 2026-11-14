@@ -183,8 +183,34 @@ namespace
             const discordpresence::GameStatus status =
                 discordpresence::ParseGameStatus("level=level_213_tutotial\r\nmenu=0\nplayers=2\n");
             SHELL_EXPECT(status.known && status.level == "level_213_tutotial" && !status.menu && status.players == 2);
+            SHELL_EXPECT(!status.toy && !status.variant && !status.toyLevel);
             SHELL_EXPECT(
                 !discordpresence::ParseGameStatus("").known && discordpresence::ParseGameStatus("menu=1").menu);
+            // Real portal: zero is a valid toy type and variant; a level is independent and may be absent.
+            const discordpresence::GameStatus real = discordpresence::ParseGameStatus(
+                "level=invented/room\r\nmenu=0\nplayers=1\ntoy=0\r\nvariant=5635\r\ntoylevel=12");
+            SHELL_EXPECT(real.known && real.toy == 0 && real.variant == 5635 && real.toyLevel == 12);
+            SHELL_EXPECT(real.level == "invented/room" && !real.menu && real.players == 1);
+            const discordpresence::GameStatus noLevel = discordpresence::ParseGameStatus("toy=14\nvariant=0\n");
+            SHELL_EXPECT(noLevel.toy == 14 && noLevel.variant == 0 && !noLevel.toyLevel);
+            const discordpresence::GameStatus noToy = discordpresence::ParseGameStatus("menu=1\nplayers=1\n");
+            SHELL_EXPECT(noToy.known && !noToy.toy && !noToy.variant && !noToy.toyLevel);
+            const discordpresence::GameStatus zero = discordpresence::ParseGameStatus("toy=0\nvariant=0\ntoylevel=0\n");
+            SHELL_EXPECT(zero.toy == 0 && zero.variant == 0 && zero.toyLevel == 0);
+            const discordpresence::GameStatus limits =
+                discordpresence::ParseGameStatus("toy=65535\nvariant=65535\ntoylevel=4294967295\n");
+            SHELL_EXPECT(limits.toy == 65535 && limits.variant == 65535 && limits.toyLevel == UINT32_MAX);
+            for (const char* value :
+                { "", "-1", "+1", " 1", "1 ", "12x", "0x1603", "4294967296", "999999999999999999999999999999" })
+            {
+                const std::string number(value);
+                const discordpresence::GameStatus invalid = discordpresence::ParseGameStatus(
+                    "toy=" + number + "\nvariant=" + number + "\ntoylevel=" + number + "\n");
+                SHELL_EXPECT(!invalid.toy && !invalid.variant && !invalid.toyLevel);
+            }
+            const discordpresence::GameStatus overflow =
+                discordpresence::ParseGameStatus("toy=65536\nvariant=65536\ntoylevel=20\n");
+            SHELL_EXPECT(!overflow.toy && !overflow.variant && overflow.toyLevel == 20);
             const char* levels = R"({"format": 1, "levels": {"invented/room": {"en": "Room", "fr": "Salle"},
                 "only/de": {"de": "Raum"}}})";
             SHELL_EXPECT(discordpresence::LevelName(levels, "invented/room", "fr") == "Salle");

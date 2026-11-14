@@ -2,6 +2,7 @@
 #include "shared/mini_json.h"
 
 #include <chrono>
+#include <charconv>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -35,6 +36,18 @@ namespace discordpresence
         constexpr int ReadyTimeoutMs = 3000;
         constexpr auto RetryEvery = std::chrono::seconds(15);
         constexpr auto IdleWake = std::chrono::seconds(1);
+
+        template <typename T>
+        std::optional<T> UnsignedDecimal(std::string_view text)
+        {
+            if (text.empty())
+                return std::nullopt;
+            T value = 0;
+            const auto [end, error] = std::from_chars(text.data(), text.data() + text.size(), value);
+            if (error != std::errc() || end != text.data() + text.size())
+                return std::nullopt;
+            return value;
+        }
 
         uint32_t ProcessId()
         {
@@ -390,6 +403,12 @@ namespace discordpresence
                 status.menu = value == "1";
             else if (key == "players")
                 status.players = value == "2" ? 2 : value == "1" ? 1 : 0;
+            else if (key == "toy")
+                status.toy = UnsignedDecimal<uint16_t>(value);
+            else if (key == "variant")
+                status.variant = UnsignedDecimal<uint16_t>(value);
+            else if (key == "toylevel")
+                status.toyLevel = UnsignedDecimal<uint32_t>(value);
         }
         return status;
     }
