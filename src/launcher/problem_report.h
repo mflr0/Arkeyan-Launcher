@@ -13,8 +13,8 @@ namespace launcher_report
 }
 
 // The sources of a report for the game in `config`: the logs folders, `configPath`, the kit, the disc image, the player's names.
-launcher_report::Sources CurrentReportSources(const std::string& configPath, const LauncherConfig& config, const std::string& gameId,
-    const std::string& iso);
+launcher_report::Sources CurrentReportSources(
+    const std::string& configPath, const LauncherConfig& config, const std::string& gameId, const std::string& iso);
 
 struct SavedReport
 {

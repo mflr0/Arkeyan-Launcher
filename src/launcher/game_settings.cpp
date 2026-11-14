@@ -14,13 +14,14 @@ namespace fs = std::filesystem;
 
 namespace
 {
-    constexpr std::array<const char*, 16> VideoKeys = { "fullscreen", "resolution_scale", "fps_limit", "skip_intro_movies", "vsync",
-        "anisotropy", "aspect", "texture_packs", "texture_dump", "original_resolution", "show_fps", "edge_smoothing", "upscaler", "fsr_quality", "fsr_frame_generation",
-        "gpu_backend" };
+    constexpr std::array<const char*, 16> VideoKeys = { "fullscreen", "resolution_scale", "fps_limit",
+        "skip_intro_movies", "vsync", "anisotropy", "aspect", "texture_packs", "texture_dump", "original_resolution",
+        "show_fps", "edge_smoothing", "upscaler", "fsr_quality", "fsr_frame_generation", "gpu_backend" };
 
     // Top-level names in the game's folder (docs/install.md has the table).
     // The achievements and the play time (collection/progress.h) go with the saves: kept when the game is removed, deleted with them.
-    constexpr std::array<const char*, 5> SaveNames = { "saves", "saves-backup", "portal.txt", "achievements.txt", "playtime.txt" };
+    constexpr std::array<const char*, 5> SaveNames = { "saves", "saves-backup", "portal.txt", "achievements.txt",
+        "playtime.txt" };
     constexpr std::array<const char*, 3> CacheNames = { "pipelines.bin", "launcher-cache", "portraits" };
     // Never removed by uninstalling: the player's data, and what comes from the disc and is cheap to keep.
     // "gamedata" is the copied game data (game_copy.h): like the disc image it came from, it is only removed from the Disc tab.
@@ -33,9 +34,8 @@ namespace
 
     bool PlayerDataName(const std::string& name, const auto& names)
     {
-        return std::any_of(names.begin(), names.end(), [&](const char* kept) {
-            return name == kept || name.starts_with(std::string(kept) + ".old-");
-        });
+        return std::any_of(names.begin(), names.end(),
+            [&](const char* kept) { return name == kept || name.starts_with(std::string(kept) + ".old-"); });
     }
 
     bool Holds(const fs::path& parent, const fs::path& child)
@@ -67,7 +67,8 @@ namespace
         uint64_t total = 0;
         if (!fs::is_directory(path, error))
             return 0;
-        for (fs::recursive_directory_iterator it(path, fs::directory_options::skip_permission_denied, error), end; !error && it != end; it.increment(error))
+        for (fs::recursive_directory_iterator it(path, fs::directory_options::skip_permission_denied, error), end;
+            !error && it != end; it.increment(error))
         {
             std::error_code fileError;
             if (it->is_regular_file(fileError))
@@ -77,10 +78,7 @@ namespace
     }
 
     // A path that may be deleted: not empty, not a drive's root.
-    bool Deletable(const fs::path& path)
-    {
-        return !path.empty() && path.has_filename() && path != path.root_path();
-    }
+    bool Deletable(const fs::path& path) { return !path.empty() && path.has_filename() && path != path.root_path(); }
 
     void Remove(const fs::path& path, DataResult& result)
     {
@@ -124,7 +122,8 @@ namespace
         {
             std::string name = datadir::Text(entry.path().filename());
             if ((Named(name, CacheNames) || (entry.is_regular_file(error) && IsGameLog(entry.path()))) &&
-                !Holds(entry.path(), folders.saves) && (folders.saves.empty() || !Holds(entry.path(), savebackup::BackupRoot(folders.saves))))
+                !Holds(entry.path(), folders.saves) &&
+                (folders.saves.empty() || !Holds(entry.path(), savebackup::BackupRoot(folders.saves))))
                 paths.push_back(entry.path());
         }
         return paths;
@@ -212,7 +211,8 @@ bool FrameGenerationOffered(std::string_view gameId)
 
 int ResolutionScaleOf(std::string_view value)
 {
-    if (value.empty() || value.size() > 2 || !std::all_of(value.begin(), value.end(), [](char c) { return c >= '0' && c <= '9'; }))
+    if (value.empty() || value.size() > 2 ||
+        !std::all_of(value.begin(), value.end(), [](char c) { return c >= '0' && c <= '9'; }))
         return 0;
     const int scale = std::stoi(std::string(value));
     return scale >= 1 && scale <= 10 ? scale : 0;
@@ -221,7 +221,8 @@ int ResolutionScaleOf(std::string_view value)
 void ApplyGameVideo(LauncherConfig& config, std::string_view gameId)
 {
     CopyVideo(config, GameVideoSection(gameId), "video");
-    if (auto scale = config["video"].find("resolution_scale"); scale != config["video"].end() && scale->second != "auto" && ResolutionScaleOf(scale->second) == 0)
+    if (auto scale = config["video"].find("resolution_scale");
+        scale != config["video"].end() && scale->second != "auto" && ResolutionScaleOf(scale->second) == 0)
         config["video"].erase(scale);
     // A game with no saved frame rate gets the one its page shows, never a saved one changed.
     config["video"].emplace("fps_limit", DefaultFrameRate(gameId));
@@ -235,7 +236,10 @@ void ApplyGameVideo(LauncherConfig& config, std::string_view gameId)
     }
 }
 
-void StoreGameVideo(LauncherConfig& config, std::string_view gameId) { CopyVideo(config, "video", GameVideoSection(gameId)); }
+void StoreGameVideo(LauncherConfig& config, std::string_view gameId)
+{
+    CopyVideo(config, "video", GameVideoSection(gameId));
+}
 
 unsigned MaxFrameRate(std::string_view gameId)
 {
@@ -251,7 +255,8 @@ void MigrateFrameRates(LauncherConfig& config)
         capped = "1";
         if (auto giants = config.find(GameVideoSection("giants")); giants != config.end())
             if (auto limit = giants->second.find("fps_limit");
-                limit != giants->second.end() && (limit->second == "0" || limit->second == "120" || limit->second == "144" || limit->second == "240"))
+                limit != giants->second.end() &&
+                (limit->second == "0" || limit->second == "120" || limit->second == "144" || limit->second == "240"))
                 limit->second = "60";
     }
     // Every video section's limit above 60 (and "display", up to 60) becomes 60: once for the first versions' values
@@ -264,8 +269,10 @@ void MigrateFrameRates(LauncherConfig& config)
         for (auto& [name, section] : config)
         {
             bool video = name == "video" || (name.size() > 6 && name.compare(name.size() - 6, 6, ".video") == 0);
-            if (auto limit = section.find("fps_limit"); video && limit != section.end() &&
-                (limit->second == "0" || limit->second == "120" || limit->second == "144" || limit->second == "240" || (display && limit->second == "display")))
+            if (auto limit = section.find("fps_limit");
+                video && limit != section.end() &&
+                (limit->second == "0" || limit->second == "120" || limit->second == "144" || limit->second == "240" ||
+                    (display && limit->second == "display")))
                 limit->second = "60";
         }
     };
@@ -298,7 +305,8 @@ GameDataSizes MeasureGameData(const GameFolders& folders)
         for (const fs::directory_entry& entry : ListDirectory(folders.game, error))
         {
             std::string name = datadir::Text(entry.path().filename());
-            if (!Named(name, SaveNames) && !Named(name, CacheNames) && !Named(name, KeptNames) && !IsGameLog(entry.path()))
+            if (!Named(name, SaveNames) && !Named(name, CacheNames) && !Named(name, KeptNames) &&
+                !IsGameLog(entry.path()))
                 sizes.installed += BytesOf(entry.path());
         }
     return sizes;
@@ -350,8 +358,9 @@ DataResult UninstallGame(const GameFolders& folders, LauncherConfig& config)
         for (const fs::directory_entry& entry : ListDirectory(folders.game, error))
         {
             std::string name = datadir::Text(entry.path().filename());
-            if (PlayerDataName(name, SaveNames) || PlayerDataName(name, KeptNames) || name == "portraits" || name == "launcher-cache" ||
-                Holds(entry.path(), folders.saves) || (!folders.saves.empty() && Holds(entry.path(), savebackup::BackupRoot(folders.saves))))
+            if (PlayerDataName(name, SaveNames) || PlayerDataName(name, KeptNames) || name == "portraits" ||
+                name == "launcher-cache" || Holds(entry.path(), folders.saves) ||
+                (!folders.saves.empty() && Holds(entry.path(), savebackup::BackupRoot(folders.saves))))
                 continue;
             Remove(entry.path(), result);
         }

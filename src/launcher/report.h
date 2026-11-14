@@ -37,15 +37,17 @@ namespace launcher_report
     };
 
     // The version numbers, the OS and the GPU as the game itself logged them.
-    Versions ReadVersions(const std::string& launcherVersion, const std::string& kitVersion, const std::filesystem::path& runtimeFolder);
+    Versions ReadVersions(
+        const std::string& launcherVersion, const std::string& kitVersion, const std::filesystem::path& runtimeFolder);
 
     // The files the report is made of. Missing files are named in the report, not skipped silently.
     struct Sources
     {
-        std::filesystem::path runtimeFolder; // <data>/SSA: Arkeyan.log (SSARecomp.log from older kits), install.log, install-logs/
+        std::filesystem::path
+            runtimeFolder; // <data>/SSA: Arkeyan.log (SSARecomp.log from older kits), install.log, install-logs/
         std::filesystem::path logFolder;     // <data>/logs: skylauncher-game.log, migration.log
         std::filesystem::path settingsFile;  // <data>/launcher.ini
-        GameLog lastRun;                     // the last run's log (LastGameLog); empty: the newest in the two folders above
+        GameLog lastRun; // the last run's log (LastGameLog); empty: the newest in the two folders above
         Versions versions;
         std::string iso;
         std::string userName, computerName, homeFolder; // for the redaction
@@ -61,7 +63,8 @@ namespace launcher_report
 
     // Writes `text` as `name` in the first of `folders` that takes it (the Desktop, then the logs folder). Returns the file, or an
     // empty path when none did.
-    std::filesystem::path SaveToFirstFolder(const std::string& text, const std::string& name, const std::vector<std::filesystem::path>& folders);
+    std::filesystem::path SaveToFirstFolder(
+        const std::string& text, const std::string& name, const std::vector<std::filesystem::path>& folders);
 
     // "ArkeyanLauncher-report-<yyyymmdd-hhmmss>.txt".
     std::string FileName();

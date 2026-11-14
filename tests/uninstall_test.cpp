@@ -25,8 +25,15 @@ namespace
 
     int g_failures = 0;
 
-#define UN_EXPECT(condition) \
-    do { if (!(condition)) { fprintf(stderr, "FAIL %s line %d: %s\n", __FILE__, __LINE__, #condition); g_failures++; } } while (0)
+#define UN_EXPECT(condition)                                                                                           \
+    do                                                                                                                 \
+    {                                                                                                                  \
+        if (!(condition))                                                                                              \
+        {                                                                                                              \
+            fprintf(stderr, "FAIL %s line %d: %s\n", __FILE__, __LINE__, #condition);                                  \
+            g_failures++;                                                                                              \
+        }                                                                                                              \
+    } while (0)
 
     // SDL and the shared folder code read separate environments; restore each one's original values, including absence.
     class ScratchEnvironment
@@ -180,13 +187,14 @@ namespace
         fs::create_symlink(tree.outside / "precious-folder", tree.root / "Giants" / "linked-folder", error);
         fs::create_symlink(tree.outside / "precious.txt", tree.root / "Collection" / "linked.sky", error);
         Put(tree.root / "SSA" / "copy-of-my-disc.iso", 5000); // a disc image in a game's folder: kept
-        Put(tree.root / "notes.txt", 12);                      // the player's, in the data folder: kept
+        Put(tree.root / "notes.txt", 12); // the player's, in the data folder: kept
 
         // The desktop shortcuts of each system, and a file of the player's with the same kind of name.
         const std::string name = "Skylanders: Giants";
         const fs::path shortcut = tree.desktop / ShortcutName(os, name);
         if (os == Os::MacOS)
-            Put(shortcut / "Contents" / "MacOS" / "run", 100, "#!/bin/sh\nexec '/Applications/Skylauncher.app' --game giants --play\n");
+            Put(shortcut / "Contents" / "MacOS" / "run", 100,
+                "#!/bin/sh\nexec '/Applications/Skylauncher.app' --game giants --play\n");
         else if (os == Os::Linux)
             Put(shortcut, 100, "[Desktop Entry]\nExec=\"/x/Skylauncher.AppImage\" --game giants --play\n");
         else
@@ -228,9 +236,10 @@ namespace
         env.launcherSelf = tree.self;
         env.trash = tree.base / "home" / ".Trash";
         env.games = { { "ssa", "Skylanders: Spyro's Adventure", tree.root / "SSA", tree.root / "SSA" / "saves", false },
-                      { "giants", "Skylanders: Giants", tree.root / "Giants", tree.root / "Giants" / "saves", false } };
+            { "giants", "Skylanders: Giants", tree.root / "Giants", tree.root / "Giants" / "saves", false } };
         env.discImages = { tree.discs / "spyro.iso", tree.discs / "giants.iso" };
-        env.builtGames = { tree.root / "SSA" / (bundle ? "SSARecomp.app" : "SSARecomp.exe"), tree.root / "Giants" / (bundle ? "SGRecomp.app" : "SGRecomp.exe") };
+        env.builtGames = { tree.root / "SSA" / (bundle ? "SSARecomp.app" : "SSARecomp.exe"),
+            tree.root / "Giants" / (bundle ? "SGRecomp.app" : "SGRecomp.exe") };
         return tree;
     }
 
@@ -243,7 +252,8 @@ namespace
         UN_EXPECT(DefaultRoot(Os::MacOS, dirs) == fs::path("/home/p/Library/Application Support/Skylanders"));
         UN_EXPECT(DefaultRoot(Os::Linux, dirs) == fs::path("/home/p/.local/share/Skylanders"));
 #ifdef _WIN32
-        const fs::path xdg = "C:/xdg/data"; // absolute here: "/xdg/data" has no drive, so it counts as relative on Windows
+        const fs::path xdg =
+            "C:/xdg/data"; // absolute here: "/xdg/data" has no drive, so it counts as relative on Windows
 #else
         const fs::path xdg = "/xdg/data";
 #endif
@@ -259,7 +269,8 @@ namespace
 
         // The shared folder code agrees with the default layout, entirely inside scratch on every system.
         const fs::path layout = base / "layout";
-        SystemDirs here{ layout / "home", layout / "home" / "AppData" / "Roaming", layout / "home" / ".local" / "share" };
+        SystemDirs here{ layout / "home", layout / "home" / "AppData" / "Roaming",
+            layout / "home" / ".local" / "share" };
         fs::path data;
         switch (CurrentOs())
         {
@@ -284,10 +295,11 @@ namespace
         Plan plan = MakePlan(env);
         UN_EXPECT(Listing(tree.base) == before);
         UN_EXPECT(!plan.refused && plan.running.empty() && !plan.figuresInUse);
-        UN_EXPECT(plan.Has(Group::Games) && plan.Has(Group::GameData) && plan.Has(Group::Tools) && plan.Has(Group::Caches) &&
-            plan.Has(Group::Settings) && plan.Has(Group::Shortcuts) && plan.Has(Group::Launcher) && plan.Has(Group::Saves) && plan.Has(Group::Figures));
-        UN_EXPECT(plan.Bytes(Group::GameData) == 10000);   // both gamedata folders
-        UN_EXPECT(plan.Bytes(Group::Tools) == 16000);      // kit + toolchains
+        UN_EXPECT(plan.Has(Group::Games) && plan.Has(Group::GameData) && plan.Has(Group::Tools) &&
+                  plan.Has(Group::Caches) && plan.Has(Group::Settings) && plan.Has(Group::Shortcuts) &&
+                  plan.Has(Group::Launcher) && plan.Has(Group::Saves) && plan.Has(Group::Figures));
+        UN_EXPECT(plan.Bytes(Group::GameData) == 10000); // both gamedata folders
+        UN_EXPECT(plan.Bytes(Group::Tools) == 16000); // kit + toolchains
         UN_EXPECT(plan.Bytes(Group::Settings) == 400);
         UN_EXPECT(plan.Bytes(Group::Saves) == 2 * (4000 + 4000 + 30));
         // Figures: the collection's own files (not notes-to-self.txt, not the link), and each game's figures and textures.
@@ -302,45 +314,59 @@ namespace
         for (const Item& item : plan.items)
         {
             UN_EXPECT(item.path.string().rfind(tree.outside.string(), 0) != 0); // nothing outside
-            UN_EXPECT(item.path.filename() != "precious.txt" && item.path.filename() != "notes.txt" && item.path.filename() != "My notes.txt");
+            UN_EXPECT(item.path.filename() != "precious.txt" && item.path.filename() != "notes.txt" &&
+                      item.path.filename() != "My notes.txt");
         }
         // The launcher is listed with its size (and nothing else is done about it in RunUninstall).
         UN_EXPECT(plan.Bytes(Group::Launcher) == (os == Os::MacOS ? 5100u : 6000u));
 
         // Nothing built elsewhere: the settings' builds are all in their folders.
-        UN_EXPECT(std::none_of(plan.left.begin(), plan.left.end(), [](const Left& left) { return left.why == Why::Elsewhere; }));
+        UN_EXPECT(std::none_of(
+            plan.left.begin(), plan.left.end(), [](const Left& left) { return left.why == Why::Elsewhere; }));
 
         // Without the tick: everything but the player's saves and figures; the launcher is left to its helper.
         Result without = RunUninstall(plan, env, false);
         UN_EXPECT(!Has(tree.root / "SSA" / (os == Os::MacOS ? "SSARecomp.app" : "SSARecomp.exe")));
         UN_EXPECT(!Has(tree.root / "Giants" / (os == Os::MacOS ? "SGRecomp.app" : "SGRecomp.exe")));
-        UN_EXPECT(!Has(tree.root / "SSA" / "gamedata") && !Has(tree.root / "SSA" / "pipelines.bin") && !Has(tree.root / "Giants" / "launcher-cache"));
-        UN_EXPECT(!Has(tree.root / "kit") && !Has(tree.root / "toolchains") && !Has(tree.root / "logs") && !Has(tree.root / "launcher.ini"));
+        UN_EXPECT(!Has(tree.root / "SSA" / "gamedata") && !Has(tree.root / "SSA" / "pipelines.bin") &&
+                  !Has(tree.root / "Giants" / "launcher-cache"));
+        UN_EXPECT(!Has(tree.root / "kit") && !Has(tree.root / "toolchains") && !Has(tree.root / "logs") &&
+                  !Has(tree.root / "launcher.ini"));
         UN_EXPECT(!Has(tree.desktop / ShortcutName(os, "Skylanders: Giants")));
-        UN_EXPECT(Has(tree.root / "SSA" / "saves" / "slot1.sav") && Has(tree.root / "Giants" / "saves-backup" / "20260101" / "slot1.sav") &&
-            Has(tree.root / "SSA" / "portal.txt"));
-        UN_EXPECT(Has(tree.root / "Collection" / "Spyro.sky") && Has(tree.root / "Giants" / "figures" / "old.sky") && Has(tree.root / "Giants" / "textures" / "pack.dds"));
+        UN_EXPECT(Has(tree.root / "SSA" / "saves" / "slot1.sav") &&
+                  Has(tree.root / "Giants" / "saves-backup" / "20260101" / "slot1.sav") &&
+                  Has(tree.root / "SSA" / "portal.txt"));
+        UN_EXPECT(Has(tree.root / "Collection" / "Spyro.sky") && Has(tree.root / "Giants" / "figures" / "old.sky") &&
+                  Has(tree.root / "Giants" / "textures" / "pack.dds"));
         UN_EXPECT(Has(tree.self)); // the launcher is not removed here
         UN_EXPECT(without.freed > 0 && without.removed > 0);
 
         // With the tick: the saves and figures too, but never the disc images, the links' targets, or what is not ours.
         Result with = RunUninstall(plan, env, true);
-        UN_EXPECT(!Has(tree.root / "SSA" / "saves") && !Has(tree.root / "Giants" / "saves-backup") && !Has(tree.root / "SSA" / "portal.txt"));
-        UN_EXPECT(!Has(tree.root / "Collection" / "Spyro.sky") && !Has(tree.root / "Collection" / "Gill.bin") && !Has(tree.root / "Collection" / "collection.json") &&
-            !Has(tree.root / "Collection" / "backups") && !Has(tree.root / "Collection" / "trash"));
+        UN_EXPECT(!Has(tree.root / "SSA" / "saves") && !Has(tree.root / "Giants" / "saves-backup") &&
+                  !Has(tree.root / "SSA" / "portal.txt"));
+        UN_EXPECT(!Has(tree.root / "Collection" / "Spyro.sky") && !Has(tree.root / "Collection" / "Gill.bin") &&
+                  !Has(tree.root / "Collection" / "collection.json") && !Has(tree.root / "Collection" / "backups") &&
+                  !Has(tree.root / "Collection" / "trash"));
         UN_EXPECT(!Has(tree.root / "Giants" / "figures") && !Has(tree.root / "Giants" / "textures"));
-        UN_EXPECT(Has(tree.root / "Collection" / "notes-to-self.txt"));             // not a figure: stays, and says so
-        UN_EXPECT(Has(tree.root / "SSA" / "copy-of-my-disc.iso"));                  // a disc image stays, and so does its folder
-        UN_EXPECT(Has(tree.root / "notes.txt") && Has(tree.root));                  // the player's file in the data folder
-        UN_EXPECT(!Has(tree.root / "Giants" / "linked-folder"));                    // a link in a game's folder goes as a link...
-        UN_EXPECT(Has(tree.root / "Collection" / "linked.sky"));                    // ...one in the figure folder is left alone
-        UN_EXPECT(Listing(tree.outside) == outsideBefore && Listing(tree.discs) == discsBefore); // and what they pointed at never moves
+        UN_EXPECT(Has(tree.root / "Collection" / "notes-to-self.txt")); // not a figure: stays, and says so
+        UN_EXPECT(Has(tree.root / "SSA" / "copy-of-my-disc.iso")); // a disc image stays, and so does its folder
+        UN_EXPECT(Has(tree.root / "notes.txt") && Has(tree.root)); // the player's file in the data folder
+        UN_EXPECT(!Has(tree.root / "Giants" / "linked-folder")); // a link in a game's folder goes as a link...
+        UN_EXPECT(Has(tree.root / "Collection" / "linked.sky")); // ...one in the figure folder is left alone
+        UN_EXPECT(Listing(tree.outside) == outsideBefore &&
+                  Listing(tree.discs) == discsBefore); // and what they pointed at never moves
         UN_EXPECT(Has(tree.desktop / "My notes.txt") && Has(tree.self));
-        UN_EXPECT(std::any_of(with.left.begin(), with.left.end(), [](const Left& left) { return left.why == Why::DiscImage; }));
-        UN_EXPECT(std::any_of(with.left.begin(), with.left.end(), [](const Left& left) { return left.why == Why::Kept; }));
+        UN_EXPECT(std::any_of(
+            with.left.begin(), with.left.end(), [](const Left& left) { return left.why == Why::DiscImage; }));
+        UN_EXPECT(
+            std::any_of(with.left.begin(), with.left.end(), [](const Left& left) { return left.why == Why::Kept; }));
         (void)without;
-        printf("Uninstall (%s layout): plan with sizes, the run without and with the tick, discs, links and strangers kept\n",
-            os == Os::MacOS ? "macOS" : os == Os::Windows ? "Windows" : "Linux");
+        printf("Uninstall (%s layout): plan with sizes, the run without and with the tick, discs, links and strangers "
+               "kept\n",
+            os == Os::MacOS     ? "macOS"
+            : os == Os::Windows ? "Windows"
+                                : "Linux");
     }
 
     // ---- A scratch folder reached through a link ($TMPDIR is /var/... on macOS, really /private/var/...) ------------------
@@ -358,7 +384,8 @@ namespace
         for (Os os : { Os::MacOS, Os::Windows, Os::Linux })
             PlanAndRunChecks(link, os);
         // The links are followed in both directions: the same trees written by their real path are the same tree.
-        UN_EXPECT(Has(real / "linux" / "apps" / "Skylauncher.AppImage") && Has(real / "mac" / "apps" / "Skylauncher.app"));
+        UN_EXPECT(
+            Has(real / "linux" / "apps" / "Skylauncher.AppImage") && Has(real / "mac" / "apps" / "Skylauncher.app"));
 
         // A launcher reached through a link into a system folder is still refused, and one in an ordinary folder is not.
         const fs::path system = "/usr/bin/true";
@@ -372,7 +399,8 @@ namespace
             tree.env.launcherSelf = tree.self;
             UN_EXPECT(PlanLauncherRemoval(tree.env).ok);
         }
-        printf("Uninstall through a link: the plan and the run work on a folder reached by a link, a link into a system folder is refused\n");
+        printf("Uninstall through a link: the plan and the run work on a folder reached by a link, a link into a "
+               "system folder is refused\n");
     }
 
     // ---- The folders of the layout before 0.3.1 ---------------------------------------------------------------------
@@ -388,7 +416,8 @@ namespace
             Put(game.folder / "figures.old-20260101" / "toy.bin", 30);
             RunUninstall(MakePlan(current.env), current.env, false);
             UN_EXPECT(Has(game.saves / "slot.sav"));
-            UN_EXPECT(Has(game.folder / "saves.old-20260101" / "slot.sav") && Has(game.folder / "figures.old-20260101" / "toy.bin"));
+            UN_EXPECT(Has(game.folder / "saves.old-20260101" / "slot.sav") &&
+                      Has(game.folder / "figures.old-20260101" / "toy.bin"));
         }
         {
             // Saves kept in the game folder itself: nothing of it goes, even with the player's data ticked.
@@ -419,7 +448,8 @@ namespace
             if (left.why == Why::Kept && left.group == Group::OldFolders && left.path == old / "xbox-signing")
                 kept = true;
         UN_EXPECT(listed && kept);
-        UN_EXPECT(std::none_of(plan.items.begin(), plan.items.end(), [&](const Item& item) { return item.path.filename() == "xbox-signing"; }));
+        UN_EXPECT(std::none_of(plan.items.begin(), plan.items.end(),
+            [&](const Item& item) { return item.path.filename() == "xbox-signing"; }));
 
         RunUninstall(plan, env, false);
         UN_EXPECT(Has(old / "SSARecomp" / "saves" / "slot.sav") && Has(old / "figures" / "toy.bin"));
@@ -449,22 +479,25 @@ namespace
         }
         // Unsafe roots refuse everything: empty, '/', a folder under it, the home folder, a folder that holds it, relative, ".."
         const fs::path home = tree.env.home;
-        for (const fs::path& root : { fs::path(), fs::path("/"), fs::path("/tmp"), home, home.parent_path(), fs::path("relative/Skylanders"),
-                 tree.root / ".." / "data" })
+        for (const fs::path& root : { fs::path(), fs::path("/"), fs::path("/tmp"), home, home.parent_path(),
+                 fs::path("relative/Skylanders"), tree.root / ".." / "data" })
         {
             Environment env = tree.env;
             env.root = env.launcherData = root;
             Plan plan = MakePlan(env);
             UN_EXPECT(plan.refused && plan.items.empty());
             Result result = RunUninstall(plan, env, true);
-            UN_EXPECT(result.freed == 0 && result.left.size() == 1 && result.left[0].why == Why::Unsafe && Listing(tree.base) == before);
+            UN_EXPECT(result.freed == 0 && result.left.size() == 1 && result.left[0].why == Why::Unsafe &&
+                      Listing(tree.base) == before);
         }
         // A plan that was tampered with: a path outside, the home folder, the root, a link, relative.
         {
             Plan forged;
-            for (const fs::path& path : { tree.outside / "precious.txt", home, tree.root, fs::path("/"), tree.root / "SSA" / ".." / ".." / "outside", fs::path("kit") })
+            for (const fs::path& path : { tree.outside / "precious.txt", home, tree.root, fs::path("/"),
+                     tree.root / "SSA" / ".." / ".." / "outside", fs::path("kit") })
                 forged.items.push_back({ Group::Games, "ssa", path, 1, false });
-            forged.items.push_back({ Group::Figures, {}, tree.outside / "precious-folder", 1, true }); // as if it were the figure folder
+            forged.items.push_back(
+                { Group::Figures, {}, tree.outside / "precious-folder", 1, true }); // as if it were the figure folder
             forged.items.push_back({ Group::Settings, {}, tree.outside / "precious.txt", 1, false });
             Result result = RunUninstall(forged, tree.env, true);
             UN_EXPECT(result.freed == 0 && Listing(tree.base) == before);
@@ -477,7 +510,8 @@ namespace
             fs::create_symlink(tree.outside, tree.root / "Giants", error);
             const std::set<std::string> outsideBefore = Listing(tree.outside);
             Plan plan = MakePlan(tree.env);
-            UN_EXPECT(std::any_of(plan.left.begin(), plan.left.end(), [](const Left& left) { return left.why == Why::Link; }));
+            UN_EXPECT(std::any_of(
+                plan.left.begin(), plan.left.end(), [](const Left& left) { return left.why == Why::Link; }));
             RunUninstall(plan, tree.env, true);
             UN_EXPECT(Listing(tree.outside) == outsideBefore);
             fs::remove(tree.root / "Giants");
@@ -500,11 +534,13 @@ namespace
             const fs::path away = moved.base / "away";
             fs::rename(moved.root / "Giants", away);
             moved.env.games[1].folder = moved.root / "Giants"; // where the launcher looks: gone
-            moved.env.builtGames[1] = away / "SGRecomp.exe";   // where the settings say it is built: moved
+            moved.env.builtGames[1] = away / "SGRecomp.exe"; // where the settings say it is built: moved
             moved.env.builtGames.push_back(moved.base / "nowhere" / "SGRecomp.exe"); // and a build that is simply gone
             Plan plan = MakePlan(moved.env);
-            UN_EXPECT(std::count_if(plan.left.begin(), plan.left.end(), [](const Left& left) { return left.why == Why::Elsewhere; }) == 1);
-            UN_EXPECT(std::count_if(plan.left.begin(), plan.left.end(), [](const Left& left) { return left.why == Why::Missing; }) == 1);
+            UN_EXPECT(std::count_if(plan.left.begin(), plan.left.end(),
+                          [](const Left& left) { return left.why == Why::Elsewhere; }) == 1);
+            UN_EXPECT(std::count_if(plan.left.begin(), plan.left.end(),
+                          [](const Left& left) { return left.why == Why::Missing; }) == 1);
             const std::set<std::string> awayBefore = Listing(away);
             RunUninstall(plan, moved.env, true);
             UN_EXPECT(Listing(away) == awayBefore);
@@ -515,11 +551,13 @@ namespace
             odd.env.games[0].saves = odd.outside / "my-saves";
             Put(odd.outside / "my-saves" / "s.sav", 10);
             Plan plan = MakePlan(odd.env);
-            UN_EXPECT(std::any_of(plan.left.begin(), plan.left.end(), [](const Left& left) { return left.why == Why::Outside; }));
+            UN_EXPECT(std::any_of(
+                plan.left.begin(), plan.left.end(), [](const Left& left) { return left.why == Why::Outside; }));
             RunUninstall(plan, odd.env, true);
             UN_EXPECT(Has(odd.outside / "my-saves" / "s.sav"));
         }
-        printf("Uninstall refusals: a game running, unsafe roots, a forged plan, links, a moved game, saves elsewhere\n");
+        printf(
+            "Uninstall refusals: a game running, unsafe roots, a forged plan, links, a moved game, saves elsewhere\n");
     }
 
     // ---- The launcher itself, on every system's rules ------------------------------------------------------------
@@ -549,7 +587,8 @@ namespace
                 text += char(unit);
             else
                 text += unit < 0x800 ? std::string{ char(0xC0 | (unit >> 6)), char(0x80 | (unit & 0x3F)) }
-                                      : std::string{ char(0xE0 | (unit >> 12)), char(0x80 | ((unit >> 6) & 0x3F)), char(0x80 | (unit & 0x3F)) };
+                                     : std::string{ char(0xE0 | (unit >> 12)), char(0x80 | ((unit >> 6) & 0x3F)),
+                                           char(0x80 | (unit & 0x3F)) };
         }
         return text;
     }
@@ -574,7 +613,9 @@ namespace
     {
         const char* argv[] = { "/usr/bin/true", nullptr };
         SDL_Process* process = SDL_CreateProcess(argv, false);
-        uint32_t pid = process == nullptr ? 999999 : uint32_t(SDL_GetNumberProperty(SDL_GetProcessProperties(process), SDL_PROP_PROCESS_PID_NUMBER, 999999));
+        uint32_t pid = process == nullptr ? 999999
+                                          : uint32_t(SDL_GetNumberProperty(SDL_GetProcessProperties(process),
+                                                SDL_PROP_PROCESS_PID_NUMBER, 999999));
         if (process != nullptr)
         {
             SDL_WaitProcess(process, true, nullptr);
@@ -587,7 +628,11 @@ namespace
     {
         for (Os os : { Os::MacOS, Os::Windows, Os::Linux })
         {
-            Tree tree = MakeTree(base / "launcher" / (os == Os::MacOS ? "mac" : os == Os::Windows ? "win" : "linux"), os);
+            Tree tree = MakeTree(base / "launcher" /
+                                     (os == Os::MacOS        ? "mac"
+                                         : os == Os::Windows ? "win"
+                                                             : "linux"),
+                os);
             Environment env = tree.env;
             // An update leaves a .old beside the launcher: it goes too.
             fs::path old = tree.self;
@@ -597,7 +642,8 @@ namespace
             else
                 Put(old, 10);
             LauncherRemoval removal = PlanLauncherRemoval(env);
-            UN_EXPECT(removal.ok && removal.paths.size() == 2 && removal.paths[0] == tree.self && removal.paths[1] == old);
+            UN_EXPECT(
+                removal.ok && removal.paths.size() == 2 && removal.paths[0] == tree.self && removal.paths[1] == old);
             UN_EXPECT(os != Os::MacOS || removal.trash == tree.base / "home" / ".Trash");
 
             // What does not fit this system is refused: the other systems' kinds, a folder, a link, a data folder, the disc.
@@ -608,9 +654,12 @@ namespace
                 return !r.ok && r.why == why && r.paths.empty() && ScheduleCommand(os, r, 1).empty();
             };
             UN_EXPECT(refused({}, Why::Unfit));
-            UN_EXPECT(refused("/", Why::Unsafe) && refused(env.home, Why::Unsafe) && refused(env.home.parent_path(), Why::Unsafe));
-            UN_EXPECT(refused("Skylauncher.exe", Why::Unsafe) && refused(tree.base / "apps" / ".." / ".." / "x.exe", Why::Unsafe));
-            UN_EXPECT(refused(tree.root / "SSA" / (os == Os::MacOS ? "SSARecomp.app" : "SSARecomp.exe"), Why::Outside)); // inside the data folder
+            UN_EXPECT(refused("/", Why::Unsafe) && refused(env.home, Why::Unsafe) &&
+                      refused(env.home.parent_path(), Why::Unsafe));
+            UN_EXPECT(refused("Skylauncher.exe", Why::Unsafe) &&
+                      refused(tree.base / "apps" / ".." / ".." / "x.exe", Why::Unsafe));
+            UN_EXPECT(refused(tree.root / "SSA" / (os == Os::MacOS ? "SSARecomp.app" : "SSARecomp.exe"),
+                Why::Outside)); // inside the data folder
             UN_EXPECT(refused(tree.discs / "spyro.iso", Why::DiscImage));
             UN_EXPECT(refused(tree.base / "apps" / "missing", Why::Unfit));
             if (os == Os::MacOS)
@@ -624,9 +673,13 @@ namespace
             }
             if (os == Os::Linux)
                 for (const char* system : { "/usr/bin/env", "/bin/sh" })
-                    UN_EXPECT(refused(system, Why::Unfit) || refused(system, Why::Link) || refused(system, Why::Unsafe)); // never a system file, whatever it is
+                    UN_EXPECT(refused(system, Why::Unfit) || refused(system, Why::Link) ||
+                              refused(system, Why::Unsafe)); // never a system file, whatever it is
             std::error_code error;
-            fs::path link = tree.base / "apps" / (os == Os::MacOS ? "Linked.app" : os == Os::Windows ? "Linked.exe" : "Linked.AppImage");
+            fs::path link = tree.base / "apps" /
+                            (os == Os::MacOS        ? "Linked.app"
+                                : os == Os::Windows ? "Linked.exe"
+                                                    : "Linked.AppImage");
             fs::create_symlink(tree.self, link, error);
             UN_EXPECT(refused(link, Why::Link));
 
@@ -637,20 +690,25 @@ namespace
                 UN_EXPECT(command.size() == 9 && command[0] == "powershell.exe" && command[7] == "-EncodedCommand");
                 std::string script = Decode(command[8]);
                 UN_EXPECT(script == WindowsScript(removal, 4242));
-                UN_EXPECT(script.find("Wait-Process -Id 4242") != std::string::npos && script.find(tree.self.string()) != std::string::npos);
+                UN_EXPECT(script.find("Wait-Process -Id 4242") != std::string::npos &&
+                          script.find(tree.self.string()) != std::string::npos);
                 UN_EXPECT(script.find("Remove-Item -LiteralPath") != std::string::npos);
             }
             else
             {
-                UN_EXPECT(command.size() >= 6 && command[0] == "/bin/sh" && command[1] == "-c" && command[2] == PosixScript(os) && command[4] == "4242");
-                UN_EXPECT(command.back() == old.string() && std::find(command.begin(), command.end(), tree.self.string()) != command.end());
-                UN_EXPECT((os == Os::MacOS) == (std::find(command.begin(), command.end(), removal.trash.string()) != command.end()));
+                UN_EXPECT(command.size() >= 6 && command[0] == "/bin/sh" && command[1] == "-c" &&
+                          command[2] == PosixScript(os) && command[4] == "4242");
+                UN_EXPECT(command.back() == old.string() &&
+                          std::find(command.begin(), command.end(), tree.self.string()) != command.end());
+                UN_EXPECT((os == Os::MacOS) ==
+                          (std::find(command.begin(), command.end(), removal.trash.string()) != command.end()));
             }
             // A quote in a name cannot end the string (PowerShell): doubled.
             LauncherRemoval quote = removal;
             quote.paths = { fs::path("C:/Users/o'brien/Skylauncher.exe") };
             UN_EXPECT(WindowsScript(quote, 1).find("'C:/Users/o''brien/Skylauncher.exe'") != std::string::npos);
-            UN_EXPECT(Decode(EncodeForPowerShell("a\xC3\xA9 b")) == "a\xC3\xA9 b" && Decode(EncodeForPowerShell("")).empty());
+            UN_EXPECT(
+                Decode(EncodeForPowerShell("a\xC3\xA9 b")) == "a\xC3\xA9 b" && Decode(EncodeForPowerShell("")).empty());
         }
 
 #ifndef _WIN32 // the macOS and Linux helpers are /bin/sh scripts, which Windows does not have; its own helper is a PowerShell script, checked as text above
@@ -669,14 +727,16 @@ namespace
             UN_EXPECT(removal.ok && removal.trash == trash);
             UN_EXPECT(RunHelper(ScheduleCommand(Os::MacOS, removal, DeadPid())));
             UN_EXPECT(!Has(mac.self) && !Has(old));
-            UN_EXPECT(Has(trash / "Skylauncher.app" / "Contents" / "old.txt") && Has(trash / "Skylauncher 1.app" / "Contents" / "MacOS" / "Skylauncher") &&
-                Has(trash / "Skylauncher.app.old"));
+            UN_EXPECT(Has(trash / "Skylauncher.app" / "Contents" / "old.txt") &&
+                      Has(trash / "Skylauncher 1.app" / "Contents" / "MacOS" / "Skylauncher") &&
+                      Has(trash / "Skylauncher.app.old"));
             UN_EXPECT(Has(mac.root / "notes.txt")); // nothing else was touched
         }
         {
             Tree linuxTree = MakeTree(run / "linux", Os::Linux);
             LauncherRemoval removal = PlanLauncherRemoval(linuxTree.env);
-            UN_EXPECT(removal.ok && RunHelper(ScheduleCommand(Os::Linux, removal, DeadPid())) && !Has(linuxTree.self) && Has(linuxTree.root / "notes.txt"));
+            UN_EXPECT(removal.ok && RunHelper(ScheduleCommand(Os::Linux, removal, DeadPid())) && !Has(linuxTree.self) &&
+                      Has(linuxTree.root / "notes.txt"));
         }
         {
             // It waits for the launcher to end: a live process holds it back, then it runs once that process is gone.
@@ -684,7 +744,10 @@ namespace
             LauncherRemoval removal = PlanLauncherRemoval(linuxTree.env);
             const char* sleeper[] = { "/bin/sleep", "1", nullptr };
             SDL_Process* live = SDL_CreateProcess(sleeper, false);
-            uint32_t pid = live == nullptr ? 0 : uint32_t(SDL_GetNumberProperty(SDL_GetProcessProperties(live), SDL_PROP_PROCESS_PID_NUMBER, 0));
+            uint32_t pid =
+                live == nullptr
+                    ? 0
+                    : uint32_t(SDL_GetNumberProperty(SDL_GetProcessProperties(live), SDL_PROP_PROCESS_PID_NUMBER, 0));
             if (pid != 0)
             {
                 std::vector<std::string> command = ScheduleCommand(Os::Linux, removal, pid);
@@ -703,7 +766,8 @@ namespace
             }
         }
 #endif
-        printf("Uninstall of the launcher: each system's rules, the refusals, the commands, the helper run on a dummy in scratch\n");
+        printf("Uninstall of the launcher: each system's rules, the refusals, the commands, the helper run on a dummy "
+               "in scratch\n");
     }
 
     // ---- This machine ---------------------------------------------------------------------------------------------
@@ -727,11 +791,13 @@ namespace
         UN_EXPECT(env.root == data && !env.games.empty());
         // None of its paths is in the real application folders.
         if (!home.empty())
-            for (const char* real : { "/Library/Application Support/Skylanders", "/Library/Application Support/SSARecomp", "/Library/Application Support/Skylauncher",
-                     "/.local/share/Skylanders", "/.Trash" })
+            for (const char* real :
+                { "/Library/Application Support/Skylanders", "/Library/Application Support/SSARecomp",
+                    "/Library/Application Support/Skylauncher", "/.local/share/Skylanders", "/.Trash" })
                 for (const fs::path& path : { env.root, env.launcherData, env.settingsFile, env.collection, env.trash })
                     UN_EXPECT(path.string().rfind(home + real, 0) != 0);
-        printf("Uninstall on this machine: scratch variables keep the launcher, the Trash and the real folders out of it\n");
+        printf("Uninstall on this machine: scratch variables keep the launcher, the Trash and the real folders out of "
+               "it\n");
     }
 }
 

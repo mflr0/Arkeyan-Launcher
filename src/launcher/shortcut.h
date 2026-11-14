@@ -22,7 +22,8 @@ struct ShortcutSpec
     std::filesystem::path launcher;    // the Arkeyan Launcher executable the shortcut starts
     std::vector<uint8_t> iconPng;      // the game's icon; empty: the shortcut has no icon of its own
     std::filesystem::path folder;      // where the shortcut goes (the Desktop)
-    std::filesystem::path iconFolder;  // where Windows and Linux keep the icon file the shortcut points to (the game's folder)
+    std::filesystem::path
+        iconFolder;  // where Windows and Linux keep the icon file the shortcut points to (the game's folder)
 };
 
 struct ShortcutResult

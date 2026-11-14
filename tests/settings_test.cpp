@@ -30,8 +30,15 @@ namespace
 
     int g_settingsFailures = 0;
 
-#define SETTINGS_EXPECT(condition) \
-    do { if (!(condition)) { fprintf(stderr, "FAIL %s line %d: %s\n", __FILE__, __LINE__, #condition); g_settingsFailures++; } } while (0)
+#define SETTINGS_EXPECT(condition)                                                                                     \
+    do                                                                                                                 \
+    {                                                                                                                  \
+        if (!(condition))                                                                                              \
+        {                                                                                                              \
+            fprintf(stderr, "FAIL %s line %d: %s\n", __FILE__, __LINE__, #condition);                                  \
+            g_settingsFailures++;                                                                                      \
+        }                                                                                                              \
+    } while (0)
 
     void Write(const fs::path& file, const std::string& data)
     {
@@ -109,7 +116,8 @@ namespace
         for (const char* id : { "ssa", "giants", "swapforce", "trapteam", "superchargers", "imaginators" })
         {
             SETTINGS_EXPECT(MaxFrameRate(id) == 60 && launcher_ui::FrameRateChoices(id).size() == 2);
-            SETTINGS_EXPECT(std::string(launcher_ui::FrameRateChoices(id)[0].value) == "30" && std::string(launcher_ui::FrameRateChoices(id)[1].value) == "60");
+            SETTINGS_EXPECT(std::string(launcher_ui::FrameRateChoices(id)[0].value) == "30" &&
+                            std::string(launcher_ui::FrameRateChoices(id)[1].value) == "60");
         }
         // A file from 0.9.3 (both earlier passes done) with a rate above 60 chosen since, "display" or no limit: 60, once.
         {
@@ -128,7 +136,8 @@ namespace
             config["ssa.video"]["fps_limit"] = "240";
             MigrateFrameRates(config);
             SETTINGS_EXPECT(config["ssa.video"]["fps_limit"] == "240");
-            SETTINGS_EXPECT(launcher_ui::ChoiceIndex(launcher_ui::FrameRateChoices("ssa"), config["ssa.video"]["fps_limit"], 0) == 1);
+            SETTINGS_EXPECT(launcher_ui::ChoiceIndex(
+                                launcher_ui::FrameRateChoices("ssa"), config["ssa.video"]["fps_limit"], 0) == 1);
         }
         // A file from the version before the cap (frame rates already migrated): Giants' higher values become 60, once.
         for (const char* old : { "0", "120", "144", "240" })
@@ -140,7 +149,8 @@ namespace
             config["ssa.video"]["fps_limit"] = old;
             config["swapforce.video"]["fps_limit"] = old;
             MigrateFrameRates(config);
-            SETTINGS_EXPECT(config["giants.video"]["fps_limit"] == "60" && config["ssa.video"]["fps_limit"] == old && config["swapforce.video"]["fps_limit"] == old);
+            SETTINGS_EXPECT(config["giants.video"]["fps_limit"] == "60" && config["ssa.video"]["fps_limit"] == old &&
+                            config["swapforce.video"]["fps_limit"] == old);
             config["giants.video"]["fps_limit"] = "30";
             MigrateFrameRates(config);
             SETTINGS_EXPECT(config["giants.video"]["fps_limit"] == "30" && config["launcher"]["giants_cap"] == "1");
@@ -167,35 +177,43 @@ namespace
         SETTINGS_EXPECT(config["ssa.video"]["fps_limit"] == "60" && config["giants.video"]["vsync"] == "0");
         SETTINGS_EXPECT(config["ssa.video"].count("custom") == 0);
 
-        // Trap Team has its own controls: LT is its tag team, RB an attack like B, and LB (which fires nothing) is not among them.
+        // Trap Team has its own controls: LT is its tag team, RB an attack like B, LB one like Y (issue #51).
         bool tagTeam = false, rightBumper = false, leftBumper = false;
         for (const GameKey& key : GameKeys("trapteam"))
         {
-            tagTeam = tagTeam || (std::string_view(key.action) == "lt" && std::string_view(key.label) == "Switch Skylander / Villain");
-            rightBumper = rightBumper || (std::string_view(key.action) == "rb" && std::string_view(key.label) == "Attack 2");
-            leftBumper = leftBumper || std::string_view(key.action) == "lb";
+            tagTeam = tagTeam || (std::string_view(key.action) == "lt" &&
+                                     std::string_view(key.label) == "Switch Skylander / Villain");
+            rightBumper =
+                rightBumper || (std::string_view(key.action) == "rb" && std::string_view(key.label) == "Attack 2");
+            leftBumper =
+                leftBumper || (std::string_view(key.action) == "lb" && std::string_view(key.label) == "Attack 3");
         }
-        SETTINGS_EXPECT(tagTeam && rightBumper && !leftBumper);
+        SETTINGS_EXPECT(tagTeam && rightBumper && leftBumper);
 
         // Every game's list: unique actions, one row per pad button, SuperChargers' driving on the triggers.
         for (const char* game : { "ssa", "giants", "swapforce", "trapteam", "superchargers", "imaginators" })
         {
             std::set<std::string> actions, pads;
             for (const GameKey& key : GameKeys(game))
-                SETTINGS_EXPECT(actions.insert(key.action).second && (std::string_view(key.pad).find("stick") != std::string_view::npos || pads.insert(key.pad).second));
+                SETTINGS_EXPECT(
+                    actions.insert(key.action).second &&
+                    (std::string_view(key.pad).find("stick") != std::string_view::npos || pads.insert(key.pad).second));
         }
         for (const char* game : { "superchargers" })
         {
             bool accelerate = false, drift = false;
             for (const GameKey& key : GameKeys(game))
             {
-                accelerate = accelerate || (std::string_view(key.action) == "rt" && std::string_view(key.label) == "Accelerate (vehicle)");
-                drift = drift || (std::string_view(key.action) == "lb" && std::string_view(key.label) == "Drift (vehicle)");
+                accelerate = accelerate || (std::string_view(key.action) == "rt" &&
+                                               std::string_view(key.label) == "Accelerate (vehicle)");
+                drift =
+                    drift || (std::string_view(key.action) == "lb" && std::string_view(key.label) == "Drift (vehicle)");
             }
             SETTINGS_EXPECT(accelerate && drift);
         }
         for (const GameKey& key : GameKeys("imaginators")) // no vehicles
-            SETTINGS_EXPECT(std::string_view(key.label).find("vehicle") == std::string_view::npos && std::string_view(key.action) != "rt");
+            SETTINGS_EXPECT(std::string_view(key.label).find("vehicle") == std::string_view::npos &&
+                            std::string_view(key.action) != "rt");
         SeedGameVideo(config, "trapteam");
         SETTINGS_EXPECT(config["trapteam.video"]["fps_limit"] == "30" && config["trapteam.video"]["vsync"] == "0");
         config["trapteam.video"]["fps_limit"] = "60";
@@ -211,7 +229,8 @@ namespace
         SeedGameVideo(config, "giants"); // never overwrites a game's copy
         SETTINGS_EXPECT(config["giants.video"]["fps_limit"] == "30");
         ApplyGameVideo(config, "giants");
-        SETTINGS_EXPECT(config["video"]["fps_limit"] == "30" && config["video"].count("vsync") == 0 && config["video"]["custom"] == "kept");
+        SETTINGS_EXPECT(config["video"]["fps_limit"] == "30" && config["video"].count("vsync") == 0 &&
+                        config["video"]["custom"] == "kept");
         ApplyGameVideo(config, "ssa");
         SETTINGS_EXPECT(config["video"]["fps_limit"] == "60" && config["video"]["vsync"] == "0");
         // A game with no frame rate yet gets its default: 60 for Giants and Swap Force, 30 for SSA.
@@ -219,14 +238,16 @@ namespace
         ApplyGameVideo(config, "swapforce");
         SETTINGS_EXPECT(config["video"]["fps_limit"] == "60" && config["video"]["vsync"] == "1");
         LauncherConfig none;
-        for (auto [id, rate] : { std::pair<const char*, const char*>{ "ssa", "30" }, { "giants", "60" }, { "swapforce", "60" } })
+        for (auto [id, rate] :
+            { std::pair<const char*, const char*>{ "ssa", "30" }, { "giants", "60" }, { "swapforce", "60" } })
         {
             none["video"]["fps_limit"] = "120"; // another game's leftover
             ApplyGameVideo(none, id);
             SETTINGS_EXPECT(none["video"]["fps_limit"] == rate && std::string(DefaultFrameRate(id)) == rate);
         }
         // A saved value is left alone, whatever the default: SSA's 60, Giants' 30, Swap Force's "display" and 144.
-        for (auto [id, saved] : { std::pair<const char*, const char*>{ "ssa", "60" }, { "giants", "30" }, { "swapforce", "display" }, { "ssa", "144" } })
+        for (auto [id, saved] : { std::pair<const char*, const char*>{ "ssa", "60" }, { "giants", "30" },
+                 { "swapforce", "display" }, { "ssa", "144" } })
         {
             LauncherConfig kept;
             kept[GameVideoSection(id)]["fps_limit"] = saved;
@@ -237,19 +258,23 @@ namespace
         // The runtime changes [video] while the game runs: kept as that game's, the other game's copy untouched.
         config["video"]["resolution_scale"] = "3";
         StoreGameVideo(config, "ssa");
-        SETTINGS_EXPECT(config["ssa.video"]["resolution_scale"] == "3" && config["giants.video"].count("resolution_scale") == 0);
+        SETTINGS_EXPECT(
+            config["ssa.video"]["resolution_scale"] == "3" && config["giants.video"].count("resolution_scale") == 0);
         SETTINGS_EXPECT(GameVideoSection("giants") == "giants.video" && GameVideoKeys().size() == 16);
 
         // A resolution scale the page does not offer (hand-edited) is shown as Auto and the game gets Auto too (issue #9, S-26).
-        SETTINGS_EXPECT(ResolutionScaleOf("3") == 3 && ResolutionScaleOf("10") == 10 && ResolutionScaleOf("auto") == 0 && ResolutionScaleOf("") == 0);
-        SETTINGS_EXPECT(ResolutionScaleOf("999") == 0 && ResolutionScaleOf("11") == 0 && ResolutionScaleOf("0") == 0 && ResolutionScaleOf("-2") == 0 &&
-            ResolutionScaleOf("3.5") == 0 && ResolutionScaleOf("x3") == 0 && ResolutionScaleOf("007") == 0 && ResolutionScaleOf("1e9") == 0);
+        SETTINGS_EXPECT(ResolutionScaleOf("3") == 3 && ResolutionScaleOf("10") == 10 &&
+                        ResolutionScaleOf("auto") == 0 && ResolutionScaleOf("") == 0);
+        SETTINGS_EXPECT(ResolutionScaleOf("999") == 0 && ResolutionScaleOf("11") == 0 && ResolutionScaleOf("0") == 0 &&
+                        ResolutionScaleOf("-2") == 0 && ResolutionScaleOf("3.5") == 0 && ResolutionScaleOf("x3") == 0 &&
+                        ResolutionScaleOf("007") == 0 && ResolutionScaleOf("1e9") == 0);
         for (const char* odd : { "999", "0", "-1", "2x", "" })
         {
             LauncherConfig wild;
             wild["ssa.video"]["resolution_scale"] = odd;
             ApplyGameVideo(wild, "ssa");
-            SETTINGS_EXPECT(wild["video"].count("resolution_scale") == 0 || wild["video"]["resolution_scale"] == "auto");
+            SETTINGS_EXPECT(
+                wild["video"].count("resolution_scale") == 0 || wild["video"]["resolution_scale"] == "auto");
         }
         for (const char* fine : { "auto", "1", "10" })
         {
@@ -267,7 +292,8 @@ namespace
         StoreGameVideo(config, "swapforce");
         SETTINGS_EXPECT(config["swapforce.video"]["original_resolution"] == "0");
         ApplyGameVideo(config, "ssa");
-        SETTINGS_EXPECT(config["video"].count("original_resolution") == 0 && config["ssa.video"].count("original_resolution") == 0);
+        SETTINGS_EXPECT(
+            config["video"].count("original_resolution") == 0 && config["ssa.video"].count("original_resolution") == 0);
 
         // Edge smoothing (Swap Force, Trap Team): the same way, a key of the game's copy.
         config["trapteam.video"]["edge_smoothing"] = "off";
@@ -277,15 +303,19 @@ namespace
         StoreGameVideo(config, "trapteam");
         SETTINGS_EXPECT(config["trapteam.video"]["edge_smoothing"] == "light");
         ApplyGameVideo(config, "ssa");
-        SETTINGS_EXPECT(config["video"].count("edge_smoothing") == 0 && config["ssa.video"].count("edge_smoothing") == 0);
+        SETTINGS_EXPECT(
+            config["video"].count("edge_smoothing") == 0 && config["ssa.video"].count("edge_smoothing") == 0);
 
         // The graphics API (0.9.5, Windows only): [<game>.video] gpu_backend, Direct3D 12 by default, a key of the game's copy.
         {
             using namespace launcher_ui;
-            SETTINGS_EXPECT(std::size(GpuBackendChoices) == 2 && std::string_view(GpuBackendChoices[0].value) == "d3d12" &&
+            SETTINGS_EXPECT(std::size(GpuBackendChoices) == 2 &&
+                            std::string_view(GpuBackendChoices[0].value) == "d3d12" &&
                             std::string_view(GpuBackendChoices[1].value) == "vulkan");
-            SETTINGS_EXPECT(std::string_view(GpuBackendChoices[ChoiceIndex(GpuBackendChoices, "", 0)].value) == "d3d12");
-            SETTINGS_EXPECT(std::string_view(GpuBackendChoices[ChoiceIndex(GpuBackendChoices, "opengl", 0)].value) == "d3d12");
+            SETTINGS_EXPECT(
+                std::string_view(GpuBackendChoices[ChoiceIndex(GpuBackendChoices, "", 0)].value) == "d3d12");
+            SETTINGS_EXPECT(
+                std::string_view(GpuBackendChoices[ChoiceIndex(GpuBackendChoices, "opengl", 0)].value) == "d3d12");
 #if defined(_WIN32)
             SETTINGS_EXPECT(GpuBackendShown);
 #else
@@ -307,18 +337,28 @@ namespace
         {
             using namespace launcher_ui;
             const std::string video = GameVideoSection(id), audio = std::string(id) + ".audio";
-            auto upscaler = [&](const LauncherConfig& c) { return SettingGet(c, video, "upscaler", "off") == "fsr3" ? "fsr3" : "off"; };
-            auto quality = [&](const LauncherConfig& c) { return FsrQualityChoices[ChoiceIndex(FsrQualityChoices, SettingGet(c, video, "fsr_quality"), 1)].value; }; // the page's default, Quality, is the second
-            auto frameGeneration = [&](const LauncherConfig& c) { return SettingGet(c, video, "fsr_frame_generation", "off") == "on" ? "on" : "off"; };
-            auto speakers = [&](const LauncherConfig& c) { return SpeakerChoices[ChoiceIndex(SpeakerChoices, SettingGet(c, audio, "speakers"), 0)].value; };
+            auto upscaler = [&](const LauncherConfig& c) {
+                return SettingGet(c, video, "upscaler", "off") == "fsr3" ? "fsr3" : "off";
+            };
+            auto quality = [&](const LauncherConfig& c) {
+                return FsrQualityChoices[ChoiceIndex(FsrQualityChoices, SettingGet(c, video, "fsr_quality"), 1)].value;
+            }; // the page's default, Quality, is the second
+            auto frameGeneration = [&](const LauncherConfig& c) {
+                return SettingGet(c, video, "fsr_frame_generation", "off") == "on" ? "on" : "off";
+            };
+            auto speakers = [&](const LauncherConfig& c) {
+                return SpeakerChoices[ChoiceIndex(SpeakerChoices, SettingGet(c, audio, "speakers"), 0)].value;
+            };
 
             // Defaults: a new settings file shows off, quality, auto, and PLAY passes no key (the game's defaults are the same).
             LauncherConfig fresh;
             SeedGameVideo(fresh, id);
-            SETTINGS_EXPECT(upscaler(fresh) == std::string("off") && quality(fresh) == std::string("quality") && speakers(fresh) == std::string("auto"));
+            SETTINGS_EXPECT(upscaler(fresh) == std::string("off") && quality(fresh) == std::string("quality") &&
+                            speakers(fresh) == std::string("auto"));
             ApplyGameVideo(fresh, id);
             SETTINGS_EXPECT(fresh["video"].count("upscaler") == 0 && fresh["video"].count("fsr_quality") == 0);
-            SETTINGS_EXPECT(frameGeneration(fresh) == std::string("off") && fresh["video"].count("fsr_frame_generation") == 0);
+            SETTINGS_EXPECT(
+                frameGeneration(fresh) == std::string("off") && fresh["video"].count("fsr_frame_generation") == 0);
 
             // Written by the page, through the file and back, and into [video] by PLAY; another game's PLAY drops them.
             for (const char* preset : { "native", "quality", "balanced", "performance", "ultra_performance" })
@@ -332,7 +372,8 @@ namespace
                     fs::path file = root / "fsr.ini";
                     SETTINGS_EXPECT(SaveLauncherConfig(file.string(), page));
                     LauncherConfig back = LoadLauncherConfig(file.string());
-                    SETTINGS_EXPECT(upscaler(back) == std::string("fsr3") && quality(back) == std::string(preset) && speakers(back) == std::string(output));
+                    SETTINGS_EXPECT(upscaler(back) == std::string("fsr3") && quality(back) == std::string(preset) &&
+                                    speakers(back) == std::string(output));
                     SETTINGS_EXPECT(back[video]["fsr_quality"] == preset && back[audio]["speakers"] == output);
                     ApplyGameVideo(back, id);
                     SETTINGS_EXPECT(back["video"]["upscaler"] == "fsr3" && back["video"]["fsr_quality"] == preset);
@@ -341,7 +382,8 @@ namespace
                     ApplyGameVideo(back, other);
                     SETTINGS_EXPECT(back["video"].count("upscaler") == 0 && back["video"].count("fsr_quality") == 0);
                     SETTINGS_EXPECT(back["video"].count("fsr_frame_generation") == 0);
-                    SETTINGS_EXPECT(back[GameVideoSection(other)].count("upscaler") == 0 && back[std::string(other) + ".audio"].count("speakers") == 0);
+                    SETTINGS_EXPECT(back[GameVideoSection(other)].count("upscaler") == 0 &&
+                                    back[std::string(other) + ".audio"].count("speakers") == 0);
                     fs::remove(file);
                 }
             // Turned off again: the preset stays for the next time, the game reads off.
@@ -355,11 +397,13 @@ namespace
             Write(old, "[" + video + "]\nfps_limit=30\nvsync=1\n[" + audio + "]\nvolume=80\n");
             LauncherConfig before = LoadLauncherConfig(old.string());
             SeedGameVideo(before, id);
-            SETTINGS_EXPECT(upscaler(before) == std::string("off") && quality(before) == std::string("quality") && speakers(before) == std::string("auto"));
+            SETTINGS_EXPECT(upscaler(before) == std::string("off") && quality(before) == std::string("quality") &&
+                            speakers(before) == std::string("auto"));
             SETTINGS_EXPECT(SaveLauncherConfig(old.string(), before));
             const std::string text = Read(old);
-            SETTINGS_EXPECT(text.find("upscaler") == std::string::npos && text.find("fsr_quality") == std::string::npos && text.find("speakers") == std::string::npos &&
-                            text.find("fsr_frame_generation") == std::string::npos);
+            SETTINGS_EXPECT(
+                text.find("upscaler") == std::string::npos && text.find("fsr_quality") == std::string::npos &&
+                text.find("speakers") == std::string::npos && text.find("fsr_frame_generation") == std::string::npos);
             SETTINGS_EXPECT(LoadLauncherConfig(old.string())[audio]["volume"] == "80");
             fs::remove(old);
 
@@ -374,9 +418,11 @@ namespace
 #if defined(_WIN32)
             SETTINGS_EXPECT(!FrameGenerationOffered("giants") && !FrameGenerationOffered("swapforce"));
 #else
-            SETTINGS_EXPECT(FrameGenerationOffered("giants") && FrameGenerationOffered("ssa") && FrameGenerationOffered("swapforce"));
+            SETTINGS_EXPECT(FrameGenerationOffered("giants") && FrameGenerationOffered("ssa") &&
+                            FrameGenerationOffered("swapforce"));
 #endif
-            SETTINGS_EXPECT(upscaler(odd) == std::string("off") && quality(odd) == std::string("quality") && speakers(odd) == std::string("auto"));
+            SETTINGS_EXPECT(upscaler(odd) == std::string("off") && quality(odd) == std::string("quality") &&
+                            speakers(odd) == std::string("auto"));
         }
 
         // Through the settings file, sections with a dot included.
@@ -436,13 +482,20 @@ namespace
     void KeyChecks(const fs::path& root)
     {
         // Each game lists the actions it uses, named as it names them; a button it ignores has no row.
-        SETTINGS_EXPECT(HasRow("ssa", "a", "1st Power / Accept") && HasRow("ssa", "x", "2nd Power") && HasRow("ssa", "y", "Use / Talk"));
-        SETTINGS_EXPECT(HasRow("ssa", "b", "Special Power / Back") && HasRow("ssa", "start", "Pause") && HasRow("ssa", "right_up", "Shake / Insert / Swing"));
-        SETTINGS_EXPECT(HasRow("giants", "a", "Attack 1 / Accept") && HasRow("giants", "x", "Attack 2") && HasRow("giants", "y", "Action"));
-        SETTINGS_EXPECT(HasRow("giants", "b", "Attack 3 / Back") && !HasRow("giants", "right_up", "Shake / Insert / Swing"));
-        SETTINGS_EXPECT(HasRow("swapforce", "a", "Jump") && HasRow("swapforce", "x", "Attack 1") && HasRow("swapforce", "back", "Skylanders Stats"));
-        SETTINGS_EXPECT(HasRow("swapforce", "b", "Attack 2") && HasRow("swapforce", "y", "Attack 3") && HasRow("swapforce", "lt", "Interact"));
-        SETTINGS_EXPECT(GameKeys("giants").size() == 10 && GameKeys("ssa").size() == 14 && GameKeys("swapforce").size() == 14 && GameKeys("nothing").empty());
+        SETTINGS_EXPECT(HasRow("ssa", "a", "1st Power / Accept") && HasRow("ssa", "x", "2nd Power") &&
+                        HasRow("ssa", "y", "Use / Talk"));
+        SETTINGS_EXPECT(HasRow("ssa", "b", "Special Power / Back") && HasRow("ssa", "start", "Pause") &&
+                        HasRow("ssa", "right_up", "Shake / Insert / Swing"));
+        SETTINGS_EXPECT(HasRow("giants", "a", "Attack 1 / Accept") && HasRow("giants", "x", "Attack 2") &&
+                        HasRow("giants", "y", "Action"));
+        SETTINGS_EXPECT(
+            HasRow("giants", "b", "Attack 3 / Back") && !HasRow("giants", "right_up", "Shake / Insert / Swing"));
+        SETTINGS_EXPECT(HasRow("swapforce", "a", "Jump") && HasRow("swapforce", "x", "Attack 1") &&
+                        HasRow("swapforce", "back", "Skylanders Stats"));
+        SETTINGS_EXPECT(HasRow("swapforce", "b", "Attack 2") && HasRow("swapforce", "y", "Attack 3") &&
+                        HasRow("swapforce", "lt", "Interact"));
+        SETTINGS_EXPECT(GameKeys("giants").size() == 10 && GameKeys("ssa").size() == 14 &&
+                        GameKeys("swapforce").size() == 14 && GameKeys("nothing").empty());
         for (const char* game : { "ssa", "giants", "swapforce" })
             for (const GameKey& key : GameKeys(game))
             {
@@ -454,50 +507,65 @@ namespace
 
         // A key name is shown in the player's language; the stored value stays SDL's English name.
         i18n::SetLanguage("fr");
-        SETTINGS_EXPECT(KeyDisplayName("Space") == "Espace" && KeyDisplayName("Backspace") == "Retour arrière" && KeyDisplayName("W") == "W");
-        SETTINGS_EXPECT(std::string(i18n::Tr("L stick")) == "stick gauche" && std::string(i18n::Tr("R stick up")) == "stick droit haut");
+        SETTINGS_EXPECT(KeyDisplayName("Space") == "Espace" && KeyDisplayName("Backspace") == "Retour arrière" &&
+                        KeyDisplayName("W") == "W");
+        SETTINGS_EXPECT(std::string(i18n::Tr("L stick")) == "stick gauche" &&
+                        std::string(i18n::Tr("R stick up")) == "stick droit haut");
         i18n::SetLanguage("en");
         SETTINGS_EXPECT(KeyDisplayName("Space") == "Space");
 
         // Keys are places (scancodes): a captured key stores its place's name, which reads back as the same place, and is
         // shown with the letter the layout prints there (the test's default layout is US: W shows as W).
-        for (SDL_Scancode place : { SDL_SCANCODE_W, SDL_SCANCODE_Q, SDL_SCANCODE_SEMICOLON, SDL_SCANCODE_RETURN, SDL_SCANCODE_1 })
+        for (SDL_Scancode place :
+            { SDL_SCANCODE_W, SDL_SCANCODE_Q, SDL_SCANCODE_SEMICOLON, SDL_SCANCODE_RETURN, SDL_SCANCODE_1 })
             SETTINGS_EXPECT(SDL_GetScancodeFromName(CapturedKeyName(place).c_str()) == place);
-        SETTINGS_EXPECT(CapturedKeyName(SDL_SCANCODE_W) == "W" && KeyDisplayName("W") == "W" && KeyDisplayName("Return") == "Return");
+        SETTINGS_EXPECT(CapturedKeyName(SDL_SCANCODE_W) == "W" && KeyDisplayName("W") == "W" &&
+                        KeyDisplayName("Return") == "Return");
         for (const char* game : { "ssa", "giants", "swapforce" }) // the defaults are places too
             for (const GameKey& key : GameKeys(game))
-                SETTINGS_EXPECT(SDL_GetScancodeFromName(GameKeyName(LauncherConfig{}, game, key).c_str()) == key.fallback);
+                SETTINGS_EXPECT(
+                    SDL_GetScancodeFromName(GameKeyName(LauncherConfig{}, game, key).c_str()) == key.fallback);
 
         // The pad's button names follow the pad in use (a fixed glyph style wins), by place on a Switch.
-        auto row = [](std::string_view action) -> const GameKey*
-        {
+        auto row = [](std::string_view action) -> const GameKey* {
             for (const GameKey& key : GameKeys("ssa"))
                 if (action == key.action)
                     return &key;
             return nullptr;
         };
-        const GameKey* a = row("a"), *ssaBack = row("back"), *ssaStart = row("start");
+        const GameKey *a = row("a"), *ssaBack = row("back"), *ssaStart = row("start");
         SETTINGS_EXPECT(a != nullptr && ssaBack != nullptr && ssaStart != nullptr);
         const GameKey& ssaA = *a;
-        SETTINGS_EXPECT(PadButtonName(ssaA, PadFamily::Xbox360) == "A" && PadButtonName(ssaA, PadFamily::PlayStation) == "Cross");
-        SETTINGS_EXPECT(PadButtonName(ssaA, PadFamily::Nintendo) == "B" && PadButtonName(ssaA, PadFamily::XboxOne) == "A");
-        SETTINGS_EXPECT(PadButtonName(*ssaBack, PadFamily::XboxOne) == "View" && PadButtonName(*ssaStart, PadFamily::XboxOne) == "Menu");
-        SETTINGS_EXPECT(PadButtonName(*ssaBack, PadFamily::PlayStation) == "Touchpad" && PadButtonName(*ssaStart, PadFamily::PlayStation) == "Options");
-        SETTINGS_EXPECT(PadButtonName(*ssaBack, PadFamily::PlayStation3) == "Select" && PadButtonName(*ssaStart, PadFamily::Nintendo) == "+");
+        SETTINGS_EXPECT(
+            PadButtonName(ssaA, PadFamily::Xbox360) == "A" && PadButtonName(ssaA, PadFamily::PlayStation) == "Cross");
+        SETTINGS_EXPECT(
+            PadButtonName(ssaA, PadFamily::Nintendo) == "B" && PadButtonName(ssaA, PadFamily::XboxOne) == "A");
+        SETTINGS_EXPECT(PadButtonName(*ssaBack, PadFamily::XboxOne) == "View" &&
+                        PadButtonName(*ssaStart, PadFamily::XboxOne) == "Menu");
+        SETTINGS_EXPECT(PadButtonName(*ssaBack, PadFamily::PlayStation) == "Touchpad" &&
+                        PadButtonName(*ssaStart, PadFamily::PlayStation) == "Options");
+        SETTINGS_EXPECT(PadButtonName(*ssaBack, PadFamily::PlayStation3) == "Select" &&
+                        PadButtonName(*ssaStart, PadFamily::Nintendo) == "+");
         SETTINGS_EXPECT(PadButtonName(*row("left_up"), PadFamily::PlayStation) == "L stick");
-        SETTINGS_EXPECT(PadFamilyOf(SDL_GAMEPAD_TYPE_PS5) == PadFamily::PlayStation && PadFamilyOf(SDL_GAMEPAD_TYPE_PS3) == PadFamily::PlayStation3);
-        SETTINGS_EXPECT(PadFamilyOf(SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO) == PadFamily::Nintendo && PadFamilyOf(SDL_GAMEPAD_TYPE_XBOXONE) == PadFamily::XboxOne);
+        SETTINGS_EXPECT(PadFamilyOf(SDL_GAMEPAD_TYPE_PS5) == PadFamily::PlayStation &&
+                        PadFamilyOf(SDL_GAMEPAD_TYPE_PS3) == PadFamily::PlayStation3);
+        SETTINGS_EXPECT(PadFamilyOf(SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO) == PadFamily::Nintendo &&
+                        PadFamilyOf(SDL_GAMEPAD_TYPE_XBOXONE) == PadFamily::XboxOne);
         SETTINGS_EXPECT(PadFamilyOf(SDL_GAMEPAD_TYPE_STANDARD) == PadFamily::Xbox360);
-        SETTINGS_EXPECT(PadFamilyFor("auto", PadFamily::Nintendo) == PadFamily::Nintendo && PadFamilyFor("playstation", PadFamily::Nintendo) == PadFamily::PlayStation);
-        SETTINGS_EXPECT(PadFamilyFor("xbox", PadFamily::PlayStation) == PadFamily::Xbox360 && PadFamilyFor("xbox", PadFamily::XboxOne) == PadFamily::XboxOne);
+        SETTINGS_EXPECT(PadFamilyFor("auto", PadFamily::Nintendo) == PadFamily::Nintendo &&
+                        PadFamilyFor("playstation", PadFamily::Nintendo) == PadFamily::PlayStation);
+        SETTINGS_EXPECT(PadFamilyFor("xbox", PadFamily::PlayStation) == PadFamily::Xbox360 &&
+                        PadFamilyFor("xbox", PadFamily::XboxOne) == PadFamily::XboxOne);
         i18n::SetLanguage("fr");
-        SETTINGS_EXPECT(PadButtonName(ssaA, PadFamily::PlayStation) == "Croix" && PadButtonName(*ssaBack, PadFamily::PlayStation) == "Pavé tactile");
+        SETTINGS_EXPECT(PadButtonName(ssaA, PadFamily::PlayStation) == "Croix" &&
+                        PadButtonName(*ssaBack, PadFamily::PlayStation) == "Pavé tactile");
         SETTINGS_EXPECT(PadButtonName(ssaA, PadFamily::Xbox360) == "A");
         i18n::SetLanguage("en");
 
         // Seeded once from the player's [input] keys; the other keys of [input] are not copied; the device stays.
         LauncherConfig config;
-        config["input"] = { { "device", "keyboard" }, { "key_x", "F" }, { "key_dpad_up", "T" }, { "glyphs", "keyboard" } };
+        config["input"] = { { "device", "keyboard" }, { "key_x", "F" }, { "key_dpad_up", "T" },
+            { "glyphs", "keyboard" } };
         SeedGameInput(config, "ssa");
         SeedGameInput(config, "giants");
         SETTINGS_EXPECT(config["ssa.input"]["key_x"] == "F" && config["giants.input"]["key_dpad_up"] == "T");
@@ -519,11 +587,14 @@ namespace
         config["ssa.input"]["key_a"] = "J";
         config["giants.input"]["key_a"] = "K";
         ApplyGameInput(config, "ssa");
-        SETTINGS_EXPECT(config["input"]["key_a"] == "J" && config["input"]["key_x"] == "F" && config["input"]["key_y"] == "V");
+        SETTINGS_EXPECT(
+            config["input"]["key_a"] == "J" && config["input"]["key_x"] == "F" && config["input"]["key_y"] == "V");
         SETTINGS_EXPECT(config["input"]["device"] == "keyboard" && config["input"]["glyphs"] == "keyboard");
-        SETTINGS_EXPECT(config["input"]["key_dpad_up"] == "T" && config["input"].count("key_lb") == 0); // an unused action keeps what it was seeded with
+        SETTINGS_EXPECT(config["input"]["key_dpad_up"] == "T" &&
+                        config["input"].count("key_lb") == 0); // an unused action keeps what it was seeded with
         ApplyGameInput(config, "giants");
-        SETTINGS_EXPECT(config["input"]["key_a"] == "K" && config["input"]["key_x"] == "F" && config["input"]["key_dpad_up"] == "T");
+        SETTINGS_EXPECT(config["input"]["key_a"] == "K" && config["input"]["key_x"] == "F" &&
+                        config["input"]["key_dpad_up"] == "T");
         SETTINGS_EXPECT(config["ssa.input"]["key_a"] == "J" && config["giants.input"]["key_a"] == "K");
 
         // Two rows of one game on the same key are a conflict, in that game only.
@@ -538,10 +609,12 @@ namespace
 
         // Reset: the game's copy loses its keys (the marker stays), and PLAY then puts the defaults in [input].
         ResetGameKeys(config, "giants");
-        SETTINGS_EXPECT(config["giants.input"].count("key_a") == 0 && config["giants.input"].count("key_dpad_up") == 0 && config["giants.input"]["seeded"] == "1");
+        SETTINGS_EXPECT(config["giants.input"].count("key_a") == 0 &&
+                        config["giants.input"].count("key_dpad_up") == 0 && config["giants.input"]["seeded"] == "1");
         SETTINGS_EXPECT(GameKeyName(config, "giants", giants[4]) == "Space");
         ApplyGameInput(config, "giants");
-        SETTINGS_EXPECT(config["input"]["key_a"] == "Space" && config["input"]["key_y"] == "V" && config["input"].count("key_dpad_up") == 0);
+        SETTINGS_EXPECT(config["input"]["key_a"] == "Space" && config["input"]["key_y"] == "V" &&
+                        config["input"].count("key_dpad_up") == 0);
 
         // The mouse: off by default (no button anywhere), on: attack 1 and 2 on the clicks, one button per action, Reset clears
         // the lines but not the switch; PLAY never copies the mouse to [input]. The Toy Box keys: [input], F6 F7 F8 by default.
@@ -562,21 +635,26 @@ namespace
             SetGameMouseOn(mice, "swapforce", true);
             SETTINGS_EXPECT(GameMouseOn(mice, "swapforce") && !GameMouseOn(mice, "giants"));
             SETTINGS_EXPECT(GameMouseName(mice, "swapforce", find("swapforce", "x")) == "Mouse Left" &&
-                GameMouseName(mice, "swapforce", find("swapforce", "b")) == "Mouse Right" && GameMouseName(mice, "swapforce", find("swapforce", "a")).empty());
+                            GameMouseName(mice, "swapforce", find("swapforce", "b")) == "Mouse Right" &&
+                            GameMouseName(mice, "swapforce", find("swapforce", "a")).empty());
             SETTINGS_EXPECT(GameMouseName(mice, "ssa", find("ssa", "a")).empty()); // another game's switch is its own
             SetGameMouseButton(mice, "swapforce", find("swapforce", "a"), "Mouse Left"); // Jump takes the left button
             SETTINGS_EXPECT(GameMouseName(mice, "swapforce", find("swapforce", "a")) == "Mouse Left" &&
-                GameMouseName(mice, "swapforce", find("swapforce", "x")).empty() && mice["swapforce.input"]["mouse_x"] == "none");
+                            GameMouseName(mice, "swapforce", find("swapforce", "x")).empty() &&
+                            mice["swapforce.input"]["mouse_x"] == "none");
             SetGameMouseButton(mice, "swapforce", find("swapforce", "left_up"), "Wheel Up");
-            SETTINGS_EXPECT(mice["swapforce.input"]["mouse_left_up"] == "Wheel Up" && MouseDisplayName("Wheel Up") == "Wheel up");
-            SETTINGS_EXPECT(CapturedMouseName(SDL_BUTTON_X1) == "Mouse 4" && CapturedMouseName(9).empty() && CapturedWheelName(-1) == "Wheel Down");
+            SETTINGS_EXPECT(
+                mice["swapforce.input"]["mouse_left_up"] == "Wheel Up" && MouseDisplayName("Wheel Up") == "Wheel up");
+            SETTINGS_EXPECT(CapturedMouseName(SDL_BUTTON_X1) == "Mouse 4" && CapturedMouseName(9).empty() &&
+                            CapturedWheelName(-1) == "Wheel Down");
             ApplyGameInput(mice, "swapforce");
             for (const auto& [key, value] : mice["input"])
                 SETTINGS_EXPECT(!key.starts_with("mouse"));
             ResetGameKeys(mice, "swapforce");
             SETTINGS_EXPECT(GameMouseOn(mice, "swapforce") && mice["swapforce.input"].count("mouse_x") == 0 &&
-                GameMouseName(mice, "swapforce", find("swapforce", "x")) == "Mouse Left");
-            SETTINGS_EXPECT(ToyboxKeys().size() == 3 && ToyboxKeyName(mice, ToyboxKeys()[0]) == "F6" && ToyboxKeyName(mice, ToyboxKeys()[2]) == "F8");
+                            GameMouseName(mice, "swapforce", find("swapforce", "x")) == "Mouse Left");
+            SETTINGS_EXPECT(ToyboxKeys().size() == 3 && ToyboxKeyName(mice, ToyboxKeys()[0]) == "F6" &&
+                            ToyboxKeyName(mice, ToyboxKeys()[2]) == "F8");
             mice["input"]["key_toybox_add"] = "G";
             SETTINGS_EXPECT(ToyboxKeyName(mice, ToyboxKeys()[1]) == "G");
             ApplyGameInput(mice, "ssa");
@@ -589,7 +667,8 @@ namespace
         LauncherConfig back = LoadLauncherConfig(scratch.string());
         SETTINGS_EXPECT(back["ssa.input"]["key_a"] == "J" && back["giants.input"]["seeded"] == "1");
         fs::remove(scratch);
-        printf("Settings: each game's keys are its own (its own actions and names), seeded once, put in [input] at PLAY, reset, conflicts\n");
+        printf("Settings: each game's keys are its own (its own actions and names), seeded once, put in [input] at "
+               "PLAY, reset, conflicts\n");
     }
 
     // ---- The command line ------------------------------------------------------------------------------------------------
@@ -606,7 +685,8 @@ namespace
         // RB does B's job: one line in the game's own section, and the other games and sections are not touched.
         SetPadTarget(config, "giants", 5, 1);
         SETTINGS_EXPECT(config["giants.input"]["pad_rb"] == "b" && PadTarget(config, "giants", 5) == 1);
-        SETTINGS_EXPECT(PadTarget(config, "ssa", 5) == 5 && config.count("ssa.input") == 0 && config.count("input") == 0);
+        SETTINGS_EXPECT(
+            PadTarget(config, "ssa", 5) == 5 && config.count("ssa.input") == 0 && config.count("input") == 0);
         SetPadTarget(config, "giants", 12, -1); // the D-pad's up turned off
         SETTINGS_EXPECT(config["giants.input"]["pad_dpad_up"] == "none" && PadTarget(config, "giants", 12) == -1);
         config["giants.input"]["pad_a"] = "nonsense"; // a value the runtime would refuse: the button keeps its own job
@@ -622,14 +702,19 @@ namespace
         ResetPadMap(config, "giants");
         SETTINGS_EXPECT(PadTarget(config, "giants", 1) == 1 && PadTarget(config, "giants", 12) == 12);
         SETTINGS_EXPECT(config["giants.input"]["key_a"] == "G" && RumbleLevel(config, "giants", 0) == "strong");
-        SETTINGS_EXPECT(RumbleLevel(config, "giants", 1) == "normal"); // an unknown level reads as normal, as the runtime does
+        SETTINGS_EXPECT(
+            RumbleLevel(config, "giants", 1) == "normal"); // an unknown level reads as normal, as the runtime does
         SETTINGS_EXPECT(std::string_view(RumbleLevels()[0]) == "off" && RumbleLevels().size() == 4);
         // Names: as the pad in use prints them, and the game's word for the button's job.
-        SETTINGS_EXPECT(PadButtonLabel(5, PadFamily::Xbox360) == "RB" && PadButtonLabel(5, PadFamily::PlayStation) == "R1");
-        SETTINGS_EXPECT(PadButtonLabel(10, PadFamily::PlayStation) == "L3" && PadButtonLabel(0, PadFamily::Nintendo) == "B");
-        SETTINGS_EXPECT(PadButtonLabel(12, PadFamily::XboxOne) == "D-pad up" && PadButtonLabel(99, PadFamily::XboxOne).empty());
+        SETTINGS_EXPECT(
+            PadButtonLabel(5, PadFamily::Xbox360) == "RB" && PadButtonLabel(5, PadFamily::PlayStation) == "R1");
+        SETTINGS_EXPECT(
+            PadButtonLabel(10, PadFamily::PlayStation) == "L3" && PadButtonLabel(0, PadFamily::Nintendo) == "B");
+        SETTINGS_EXPECT(
+            PadButtonLabel(12, PadFamily::XboxOne) == "D-pad up" && PadButtonLabel(99, PadFamily::XboxOne).empty());
         SETTINGS_EXPECT(PadActionName("swapforce", 5) == "Attack 2" && PadActionName("swapforce", 4) == "Attack 3");
-        SETTINGS_EXPECT(PadActionName("giants", 5).empty() && PadActionName("giants", 12).empty() && PadActionName("giants", 0) == "Attack 1 / Accept");
+        SETTINGS_EXPECT(PadActionName("giants", 5).empty() && PadActionName("giants", 12).empty() &&
+                        PadActionName("giants", 0) == "Attack 1 / Accept");
         printf("Pad buttons: remap, reset, rumble and names\n");
     }
 
@@ -648,7 +733,8 @@ namespace
         const char* equals[] = { "Skylauncher", "--game=ssa", "--bogus", "-h", "--game" };
         LauncherArguments mixed = ParseLauncherArguments(5, equals);
         SETTINGS_EXPECT(mixed.game == "ssa" && mixed.help && !mixed.play);
-        SETTINGS_EXPECT(mixed.unknown.size() == 2 && mixed.unknown[0] == "--bogus" && mixed.unknown[1] == "--game"); // no value: unknown
+        SETTINGS_EXPECT(mixed.unknown.size() == 2 && mixed.unknown[0] == "--bogus" &&
+                        mixed.unknown[1] == "--game"); // no value: unknown
         SETTINGS_EXPECT(std::string(LauncherUsage()).find("--play") != std::string::npos);
         printf("Command line: --game, --game=, --play, --help, --after-update; the rest listed\n");
     }
@@ -657,9 +743,13 @@ namespace
 
     void EnvironmentChecks()
     {
-        const char* all[] = { "SKY_LAUNCHER_ZZ", "SKYLAUNCHER_ZZ", "SSA_LAUNCHER_ZZ", "SKY_ZZ", "SSA_ZZ", "SKY_YY", "SSA_YY", "SKYLAUNCHER_XX", "SKY_LAUNCHER_XX", "SSA_LAUNCHER_XX",
-            "SKY_LAUNCHER_WW", "SKYLAUNCHER_WW", "SSA_LAUNCHER_WW" };
-        auto clear = [&] { for (const char* name : all) SetEnv(name, ""); };
+        const char* all[] = { "SKY_LAUNCHER_ZZ", "SKYLAUNCHER_ZZ", "SSA_LAUNCHER_ZZ", "SKY_ZZ", "SSA_ZZ", "SKY_YY",
+            "SSA_YY", "SKYLAUNCHER_XX", "SKY_LAUNCHER_XX", "SSA_LAUNCHER_XX", "SKY_LAUNCHER_WW", "SKYLAUNCHER_WW",
+            "SSA_LAUNCHER_WW" };
+        auto clear = [&] {
+            for (const char* name : all)
+                SetEnv(name, "");
+        };
         clear();
         // The launcher reads the new name, then SKYLAUNCHER_, then SSA_LAUNCHER_; a game's variable SKY_ then SSA_.
         SETTINGS_EXPECT(LauncherEnv("SKY_LAUNCHER_ZZ") == nullptr);
@@ -683,21 +773,40 @@ namespace
         SetEnv("SSA_LAUNCHER_ZZ", "other"); // both set: neither is replaced
         SDL_Environment* game = CreateGameEnvironment();
         SETTINGS_EXPECT(game != nullptr);
-        auto var = [&](const char* name) { const char* value = SDL_GetEnvironmentVariable(game, name); return value != nullptr ? std::string(value) : std::string("<unset>"); };
-        auto own = [](const char* name) { const char* value = SDL_getenv(name); return value != nullptr ? std::string(value) : std::string("<unset>"); };
+        auto var = [&](const char* name) {
+            const char* value = SDL_GetEnvironmentVariable(game, name);
+            return value != nullptr ? std::string(value) : std::string("<unset>");
+        };
+        auto own = [](const char* name) {
+            const char* value = SDL_getenv(name);
+            return value != nullptr ? std::string(value) : std::string("<unset>");
+        };
         SETTINGS_EXPECT(var("SSA_YY") == "new" && var("SKY_YY") == "new");
         SETTINGS_EXPECT(var("SKY_ZZ") == "old" && var("SSA_ZZ") == "old");
-        SETTINGS_EXPECT(var("SKY_LAUNCHER_XX") == "launcher" && var("SKYLAUNCHER_XX") == "launcher" && var("SSA_LAUNCHER_XX") == "launcher");
-        SETTINGS_EXPECT(var("SKY_LAUNCHER_WW") == "oldest" && var("SKYLAUNCHER_WW") == "oldest" && var("SSA_LAUNCHER_WW") == "oldest");
+        SETTINGS_EXPECT(var("SKY_LAUNCHER_XX") == "launcher" && var("SKYLAUNCHER_XX") == "launcher" &&
+                        var("SSA_LAUNCHER_XX") == "launcher");
+        SETTINGS_EXPECT(var("SKY_LAUNCHER_WW") == "oldest" && var("SKYLAUNCHER_WW") == "oldest" &&
+                        var("SSA_LAUNCHER_WW") == "oldest");
         SETTINGS_EXPECT(var("SKY_LAUNCHER_ZZ") == "kept" && var("SSA_LAUNCHER_ZZ") == "other");
         SETTINGS_EXPECT(var("HOME") == own("HOME") && var("PATH") == own("PATH")); // everything else goes along
-        SETTINGS_EXPECT(own("SSA_YY") == "<unset>" && own("SKY_ZZ") == "<unset>" && own("SKY_LAUNCHER_XX") == "<unset>" && own("SSA_LAUNCHER_XX") == "<unset>"); // the launcher's own is unchanged
+        SETTINGS_EXPECT(own("SSA_YY") == "<unset>" && own("SKY_ZZ") == "<unset>" &&
+                        own("SKY_LAUNCHER_XX") == "<unset>" &&
+                        own("SSA_LAUNCHER_XX") == "<unset>"); // the launcher's own is unchanged
         SDL_DestroyEnvironment(game);
+        // Linux under Steam (issue #22): the game gets the system's library path, never Steam's runtime folders.
+        SETTINGS_EXPECT(GameLibraryPath("/steam/ubuntu12_32/steam-runtime/lib:/usr/lib", "/opt/lib") == "/opt/lib");
+        SETTINGS_EXPECT(GameLibraryPath("/steam/ubuntu12_32/steam-runtime/lib:/usr/lib", "").empty());
+        SETTINGS_EXPECT(GameLibraryPath("/a/steam-runtime/pinned_libs_64:/usr/local/lib:/b/ubuntu12_64", nullptr) ==
+                        "/usr/local/lib");
+        SETTINGS_EXPECT(GameLibraryPath("/usr/lib::/opt/lib", nullptr) == "/usr/lib:/opt/lib");
+        SETTINGS_EXPECT(GameLibraryPath(nullptr, nullptr).empty());
         // Set and unset under every name.
         SetGameVariable("SKY_LAUNCHER_WW", "forced");
-        SETTINGS_EXPECT(own("SKY_LAUNCHER_WW") == "forced" && own("SKYLAUNCHER_WW") == "forced" && own("SSA_LAUNCHER_WW") == "forced");
+        SETTINGS_EXPECT(own("SKY_LAUNCHER_WW") == "forced" && own("SKYLAUNCHER_WW") == "forced" &&
+                        own("SSA_LAUNCHER_WW") == "forced");
         UnsetGameVariable("SKY_LAUNCHER_WW");
-        SETTINGS_EXPECT(own("SKY_LAUNCHER_WW") == "<unset>" && own("SKYLAUNCHER_WW") == "<unset>" && own("SSA_LAUNCHER_WW") == "<unset>");
+        SETTINGS_EXPECT(own("SKY_LAUNCHER_WW") == "<unset>" && own("SKYLAUNCHER_WW") == "<unset>" &&
+                        own("SSA_LAUNCHER_WW") == "<unset>");
         clear();
         printf("Environment: new names first, older names still read, both names given to a game\n");
     }
@@ -710,7 +819,8 @@ namespace
         SETTINGS_EXPECT(ShortcutFileName("Skylanders: Spyro's Adventure") == "Skylanders Spyro's Adventure");
         SETTINGS_EXPECT(ShortcutFileName("  A/B*C?  ") == "A B C" && ShortcutFileName(":::") == "Skylanders");
         SETTINGS_EXPECT(ShortcutArguments("giants") == "--game giants --play");
-        SETTINGS_EXPECT(ShortcutFileName("Skylanders: Swap Force") == "Skylanders Swap Force" && ShortcutArguments("swapforce") == "--game swapforce --play");
+        SETTINGS_EXPECT(ShortcutFileName("Skylanders: Swap Force") == "Skylanders Swap Force" &&
+                        ShortcutArguments("swapforce") == "--game swapforce --play");
         SETTINGS_EXPECT(GameVideoSection("swapforce") == "swapforce.video");
         SETTINGS_EXPECT(ShellQuote("/Applications/My Apps/Sky'launcher") == "'/Applications/My Apps/Sky'\\''launcher'");
         SETTINGS_EXPECT(DesktopExecQuote("/opt/sky launcher/run") == "\"/opt/sky launcher/run\"");
@@ -721,8 +831,9 @@ namespace
         std::vector<uint8_t> png = PngOf(64);
         std::vector<uint8_t> icns = MacIcns(png);
         SETTINGS_EXPECT(icns.size() == 16 + png.size() && std::string(icns.begin(), icns.begin() + 4) == "icns" &&
-            std::string(icns.begin() + 8, icns.begin() + 12) == "icp6");
-        SETTINGS_EXPECT(icns[4] == 0 && icns[5] == 0 && icns[6] == 0 && icns[7] == icns.size() && icns[15] == icns.size() - 8); // big-endian sizes
+                        std::string(icns.begin() + 8, icns.begin() + 12) == "icp6");
+        SETTINGS_EXPECT(icns[4] == 0 && icns[5] == 0 && icns[6] == 0 && icns[7] == icns.size() &&
+                        icns[15] == icns.size() - 8); // big-endian sizes
         SETTINGS_EXPECT(std::equal(png.begin(), png.end(), icns.begin() + 16));
         std::vector<uint8_t> big = MacIcns(PngOf(256));
         SETTINGS_EXPECT(std::string(big.begin() + 8, big.begin() + 12) == "ic08");
@@ -736,18 +847,23 @@ namespace
             };
             SETTINGS_EXPECT(stbi_write_png_to_func(append, &real, 512, 512, 4, pixels.data(), 512 * 4) != 0);
             std::vector<uint8_t> bigIco = WindowsIco(real);
-            SETTINGS_EXPECT(bigIco.size() > 22 + 24 && bigIco[6] == 0 && bigIco[22 + 16] == 0 && bigIco[22 + 17] == 0 && bigIco[22 + 18] == 1 && bigIco[22 + 19] == 0); // IHDR width 256
+            SETTINGS_EXPECT(bigIco.size() > 22 + 24 && bigIco[6] == 0 && bigIco[22 + 16] == 0 && bigIco[22 + 17] == 0 &&
+                            bigIco[22 + 18] == 1 && bigIco[22 + 19] == 0); // IHDR width 256
         }
         std::vector<uint8_t> ico = WindowsIco(png);
-        SETTINGS_EXPECT(ico.size() == 22 + png.size() && ico[0] == 0 && ico[1] == 0 && ico[2] == 1 && ico[3] == 0 && ico[4] == 1 && ico[5] == 0);
-        SETTINGS_EXPECT(ico[6] == 64 && ico[7] == 64 && ico[10] == 1 && ico[12] == 32 && ico[14] == png.size() && ico[18] == 22);
+        SETTINGS_EXPECT(ico.size() == 22 + png.size() && ico[0] == 0 && ico[1] == 0 && ico[2] == 1 && ico[3] == 0 &&
+                        ico[4] == 1 && ico[5] == 0);
+        SETTINGS_EXPECT(
+            ico[6] == 64 && ico[7] == 64 && ico[10] == 1 && ico[12] == 32 && ico[14] == png.size() && ico[18] == 22);
         SETTINGS_EXPECT(std::equal(png.begin(), png.end(), ico.begin() + 22));
         SETTINGS_EXPECT(WindowsIco(PngOf(256))[6] == 0 && WindowsIco({ 1, 2, 3 }).empty()); // 0 means 256
 
         // The text files.
         std::string script = MacLaunchScript("/Applications/Skylauncher.app/Contents/MacOS/Skylauncher", "giants");
-        SETTINGS_EXPECT(script.starts_with("#!/bin/sh\n") &&
-            script.find("exec '/Applications/Skylauncher.app/Contents/MacOS/Skylauncher' --game giants --play\n") != std::string::npos);
+        SETTINGS_EXPECT(
+            script.starts_with("#!/bin/sh\n") &&
+            script.find("exec '/Applications/Skylauncher.app/Contents/MacOS/Skylauncher' --game giants --play\n") !=
+                std::string::npos);
         std::string plist = MacInfoPlist("Skylanders: Giants & co", "giants", true);
         SETTINGS_EXPECT(plist.find("<string>Skylanders Giants &amp; co</string>") != std::string::npos &&
                         plist.find("<key>CFBundleIconFile</key>") != std::string::npos &&
@@ -788,9 +904,11 @@ namespace
 
         ShortcutResult app = WriteMacApp(spec);
         SETTINGS_EXPECT(app.ok && app.file == scratch / "desktop" / "Skylanders Giants.app");
-        SETTINGS_EXPECT(Read(app.file / "Contents" / "Info.plist") == MacInfoPlist("Skylanders: Giants", "giants", true));
+        SETTINGS_EXPECT(
+            Read(app.file / "Contents" / "Info.plist") == MacInfoPlist("Skylanders: Giants", "giants", true));
         SETTINGS_EXPECT(Read(app.file / "Contents" / "MacOS" / "launch") == MacLaunchScript(spec.launcher, "giants"));
-        SETTINGS_EXPECT(Read(app.file / "Contents" / "Resources" / "icon.icns") == std::string(icns.begin(), icns.end()));
+        SETTINGS_EXPECT(
+            Read(app.file / "Contents" / "Resources" / "icon.icns") == std::string(icns.begin(), icns.end()));
         // Installed families take precedence over the fallback PNG, byte for byte.
         const auto installedIco = WindowsIco(PngOf(256));
         fs::create_directories(spec.iconFolder);
@@ -809,7 +927,8 @@ namespace
         SETTINGS_EXPECT((perms & fs::perms::owner_exec) != fs::perms::none);
         std::string command = "'" + (app.file / "Contents" / "MacOS" / "launch").string() + "'";
         SETTINGS_EXPECT(std::system(command.c_str()) == 0);
-        SETTINGS_EXPECT(Read(scratch / "args.txt") == "--game giants --play\n"); // the shortcut started the launcher with its options
+        SETTINGS_EXPECT(Read(scratch / "args.txt") ==
+                        "--game giants --play\n"); // the shortcut started the launcher with its options
         ShortcutSpec spyro = spec;
         spyro.gameId = "ssa";
         spyro.gameName = "Skylanders Spyro's Adventure";
@@ -824,11 +943,12 @@ namespace
         ShortcutSpec noIcon = spec;
         noIcon.iconPng.clear();
         SETTINGS_EXPECT(WriteMacApp(noIcon).ok && !fs::exists(app.file / "Contents" / "Resources" / "icon.icns") &&
-            Read(app.file / "Contents" / "Info.plist").find("CFBundleIconFile") == std::string::npos);
+                        Read(app.file / "Contents" / "Info.plist").find("CFBundleIconFile") == std::string::npos);
 
         ShortcutResult desktop = WriteLinuxDesktop(spec);
         SETTINGS_EXPECT(desktop.ok && desktop.file == scratch / "desktop" / "skylanders-giants.desktop");
-        SETTINGS_EXPECT(Read(desktop.file) == LinuxDesktopEntry("Skylanders: Giants", spec.launcher, "giants", scratch / "gamefolder" / "shortcut-icon.png"));
+        SETTINGS_EXPECT(Read(desktop.file) == LinuxDesktopEntry("Skylanders: Giants", spec.launcher, "giants",
+                                                  scratch / "gamefolder" / "shortcut-icon.png"));
         SETTINGS_EXPECT(Read(scratch / "gamefolder" / "shortcut-icon.png") == std::string(png.begin(), png.end()));
 #ifndef _WIN32
         SETTINGS_EXPECT((fs::status(desktop.file).permissions() & fs::perms::owner_exec) != fs::perms::none);
@@ -845,7 +965,9 @@ namespace
         {
             const fs::path desktop = scratch / "older-desktop";
             const std::string oldExec = "/Applications/Skylauncher.app/Contents/MacOS/Skylauncher";
-            const std::string oldScript = "#!/bin/sh\n# Opens Skylauncher on this game and starts it. Made by Skylauncher (Game settings).\nexec '" + oldExec + "' --game giants --play\n";
+            const std::string oldScript = "#!/bin/sh\n# Opens Skylauncher on this game and starts it. Made by "
+                                          "Skylauncher (Game settings).\nexec '" +
+                                          oldExec + "' --game giants --play\n";
             Write(desktop / "Skylanders Giants.app" / "Contents" / "MacOS" / "launch", oldScript);
             Write(desktop / "Skylanders Giants.app" / "Contents" / "Resources" / "icon.icns", "icon");
             const std::string oldEntry = "[Desktop Entry]\nType=Application\nVersion=1.0\nName=Skylanders: Spyro's "
@@ -854,24 +976,31 @@ namespace
                                          "--play\nIcon=/games/shortcut-icon.png\nTerminal=false\nCategories=Game;\n";
             Write(desktop / "skylanders-spyro's-adventure.desktop", oldEntry);
             // Not ours (no --game), already current, and another game's name: untouched.
-            Write(desktop / "skylanders-swap-force.desktop", "[Desktop Entry]\nName=Skylanders: Swap Force\nComment=with Skylauncher\nExec=/bin/true\n");
-            const std::vector<std::pair<std::string, std::string>> games = { { "ssa", "Skylanders: Spyro's Adventure" }, { "giants", "Skylanders: Giants" },
-                { "swapforce", "Skylanders: Swap Force" } };
+            Write(desktop / "skylanders-swap-force.desktop",
+                "[Desktop Entry]\nName=Skylanders: Swap Force\nComment=with Skylauncher\nExec=/bin/true\n");
+            const std::vector<std::pair<std::string, std::string>> games = { { "ssa", "Skylanders: Spyro's Adventure" },
+                { "giants", "Skylanders: Giants" }, { "swapforce", "Skylanders: Swap Force" } };
             const fs::path newer = "/Applications/Arkeyan Launcher.app/Contents/MacOS/ArkeyanLauncher";
             SETTINGS_EXPECT(RefreshShortcuts(desktop, games, newer) == 2);
-            SETTINGS_EXPECT(Read(desktop / "Skylanders Giants.app" / "Contents" / "MacOS" / "launch") == MacLaunchScript(newer, "giants"));
-            SETTINGS_EXPECT(Read(desktop / "Skylanders Giants.app" / "Contents" / "MacOS" / "launch").find("Skylauncher") == std::string::npos);
+            SETTINGS_EXPECT(Read(desktop / "Skylanders Giants.app" / "Contents" / "MacOS" / "launch") ==
+                            MacLaunchScript(newer, "giants"));
+            SETTINGS_EXPECT(
+                Read(desktop / "Skylanders Giants.app" / "Contents" / "MacOS" / "launch").find("Skylauncher") ==
+                std::string::npos);
             SETTINGS_EXPECT(Read(desktop / "Skylanders Giants.app" / "Contents" / "Resources" / "icon.icns") == "icon");
             const std::string rewritten = Read(desktop / "skylanders-spyro's-adventure.desktop");
             SETTINGS_EXPECT(rewritten == LinuxDesktopEntry("Skylanders: Spyro's Adventure", newer, "ssa",
                                              "/games/shortcut-icon.png") &&
                             rewritten.find("Skylauncher") == std::string::npos);
-            SETTINGS_EXPECT(Read(desktop / "skylanders-swap-force.desktop").find("Exec=/bin/true") != std::string::npos);
+            SETTINGS_EXPECT(
+                Read(desktop / "skylanders-swap-force.desktop").find("Exec=/bin/true") != std::string::npos);
             SETTINGS_EXPECT(RefreshShortcuts(desktop, games, newer) == 0); // once is enough
-            SETTINGS_EXPECT(RefreshShortcuts(desktop / "nowhere", games, newer) == 0 && RefreshShortcuts(desktop, games, {}) == 0);
+            SETTINGS_EXPECT(
+                RefreshShortcuts(desktop / "nowhere", games, newer) == 0 && RefreshShortcuts(desktop, games, {}) == 0);
         }
         SetEnv("SKY_LAUNCHER_DESKTOP", "");
-        printf("Shortcut: macOS .app (script run), Linux .desktop, Windows .ico, names and quoting, shortcuts of older launchers rewritten\n");
+        printf("Shortcut: macOS .app (script run), Linux .desktop, Windows .ico, names and quoting, shortcuts of older "
+               "launchers rewritten\n");
     }
 
     // ---- Delete data, uninstall -------------------------------------------------------------------------------------------
@@ -911,17 +1040,19 @@ namespace
         GameDataSizes sizes = MeasureGameData(folders);
         SETTINGS_EXPECT(sizes.saves == 100 + 100 + 5 + 11 + 13);
         SETTINGS_EXPECT(sizes.caches == 300 + 50 + 40 + 7 + 3);
-        SETTINGS_EXPECT(sizes.installed == 1000 + 10 + 20); // the build and its logs; the textures and figures are not its
+        SETTINGS_EXPECT(
+            sizes.installed == 1000 + 10 + 20); // the build and its logs; the textures and figures are not its
 
         // Caches: only the caches go.
         DataResult cleared = ClearGameCaches(folders);
         SETTINGS_EXPECT(cleared.ok && cleared.freed == 300 + 50 + 40 + 7 + 3);
         SETTINGS_EXPECT(!fs::exists(folders.game / "pipelines.bin") && !fs::exists(folders.game / "launcher-cache") &&
-            !fs::exists(folders.game / "portraits") && !fs::exists(folders.game / "SSARecomp.log") &&
-            !fs::exists(folders.game / "Arkeyan.log"));
+                        !fs::exists(folders.game / "portraits") && !fs::exists(folders.game / "SSARecomp.log") &&
+                        !fs::exists(folders.game / "Arkeyan.log"));
         SETTINGS_EXPECT(fs::exists(folders.saves / "a" / "GLOBAL.DAT") && fs::exists(folders.game / "SGRecomp.app") &&
-            fs::exists(folders.game / "install.log") && fs::exists(folders.game / "textures" / "t.dds"));
-        SETTINGS_EXPECT(MeasureGameData(folders).caches == 0 && ClearGameCaches(folders).ok); // twice: nothing left, no error
+                        fs::exists(folders.game / "install.log") && fs::exists(folders.game / "textures" / "t.dds"));
+        SETTINGS_EXPECT(
+            MeasureGameData(folders).caches == 0 && ClearGameCaches(folders).ok); // twice: nothing left, no error
 
         // A running game: nothing is deleted.
         folders = Populate(scratch / "data");
@@ -932,7 +1063,8 @@ namespace
         SETTINGS_EXPECT(!ClearGameCaches(folders).ok);
         LauncherConfig config;
         SETTINGS_EXPECT(!UninstallGame(folders, config).ok);
-        SETTINGS_EXPECT(fs::exists(folders.saves / "a" / "GLOBAL.DAT") && fs::exists(folders.game / "SGRecomp.app") && fs::exists(folders.game / "pipelines.bin"));
+        SETTINGS_EXPECT(fs::exists(folders.saves / "a" / "GLOBAL.DAT") && fs::exists(folders.game / "SGRecomp.app") &&
+                        fs::exists(folders.game / "pipelines.bin"));
         savebackup::SetGameRunning(false, folders.saves);
         SETTINGS_EXPECT(!GameIsRunning(folders));
 
@@ -941,37 +1073,46 @@ namespace
             GameFolders inGame = Populate(scratch / "saves-in-game");
             inGame.saves = inGame.game;
             std::ofstream(inGame.game / "slot.sav") << "save";
-            SETTINGS_EXPECT(!UninstallGame(inGame, config).ok && fs::exists(inGame.game / "slot.sav") && fs::exists(inGame.game / "SGRecomp.app"));
+            SETTINGS_EXPECT(!UninstallGame(inGame, config).ok && fs::exists(inGame.game / "slot.sav") &&
+                            fs::exists(inGame.game / "SGRecomp.app"));
         }
 
         // Delete data: the saves, the backups, the seats and the caches; the game, the textures and the figures stay.
         DataResult deleted = DeleteGameData(folders);
         SETTINGS_EXPECT(deleted.ok && deleted.freed == 229 + 400);
         SETTINGS_EXPECT(!fs::exists(folders.game / "achievements.txt") && !fs::exists(folders.game / "playtime.txt"));
-        SETTINGS_EXPECT(!fs::exists(folders.saves) && !fs::exists(folders.game / "saves-backup") && !fs::exists(folders.game / "portal.txt") &&
-            !fs::exists(folders.game / "pipelines.bin") && !fs::exists(folders.game / "portraits"));
-        SETTINGS_EXPECT(fs::exists(folders.game / "SGRecomp.app" / "Contents" / "MacOS" / "SGRecomp") && fs::exists(folders.game / "install.log") &&
-            fs::exists(folders.game / "textures" / "t.dds") && fs::exists(folders.game / "figures" / "f.bin"));
+        SETTINGS_EXPECT(!fs::exists(folders.saves) && !fs::exists(folders.game / "saves-backup") &&
+                        !fs::exists(folders.game / "portal.txt") && !fs::exists(folders.game / "pipelines.bin") &&
+                        !fs::exists(folders.game / "portraits"));
+        SETTINGS_EXPECT(fs::exists(folders.game / "SGRecomp.app" / "Contents" / "MacOS" / "SGRecomp") &&
+                        fs::exists(folders.game / "install.log") && fs::exists(folders.game / "textures" / "t.dds") &&
+                        fs::exists(folders.game / "figures" / "f.bin"));
 
         // Uninstall: the build goes with its logs, what the player made stays, the settings forget the build.
         folders = Populate(scratch / "data");
         config.clear();
         config["install.aaaa"]["runtime"] = (folders.game / "SGRecomp.app").string();
         config["install.aaaa"]["kit"] = "fake-1";
-        config["install.bbbb"]["runtime"] = (scratch / "elsewhere" / "SSARecomp").string(); // another game's, not in this folder
+        config["install.bbbb"]["runtime"] =
+            (scratch / "elsewhere" / "SSARecomp").string(); // another game's, not in this folder
         config["giants"]["iso"] = "/discs/giants.iso";
         config["giants.video"]["fps_limit"] = "30";
         DataResult uninstalled = UninstallGame(folders, config);
         SETTINGS_EXPECT(uninstalled.ok && uninstalled.freed >= 1000 + 10 + 20);
         SETTINGS_EXPECT(!fs::exists(folders.game / "SGRecomp.app") && !fs::exists(folders.game / "install.log") &&
-            !fs::exists(folders.game / "install-logs") && !fs::exists(folders.game / "pipelines.bin") && !fs::exists(folders.game / "SSARecomp.log"));
-        SETTINGS_EXPECT(fs::exists(folders.saves / "a" / "GLOBAL.DAT") && fs::exists(folders.game / "saves-backup") && fs::exists(folders.game / "portal.txt") &&
-            fs::exists(folders.game / "textures" / "t.dds") && fs::exists(folders.game / "figures" / "f.bin") &&
-            fs::exists(folders.game / "launcher-cache" / "title_icon.png") && fs::exists(folders.game / "portraits" / "p.png"));
-        SETTINGS_EXPECT(fs::exists(folders.game / "gamedata" / "default.xex")); // the copy stays: it is the disc's files, removed from the Disc tab
-        SETTINGS_EXPECT(Read(folders.game / "achievements.txt") == "achievement" && Read(folders.game / "playtime.txt") == "playtime-data");
-        SETTINGS_EXPECT(config.count("install.aaaa") == 0 && config.count("install.bbbb") == 1 && config["giants"]["iso"] == "/discs/giants.iso" &&
-            config["giants.video"]["fps_limit"] == "30");
+                        !fs::exists(folders.game / "install-logs") && !fs::exists(folders.game / "pipelines.bin") &&
+                        !fs::exists(folders.game / "SSARecomp.log"));
+        SETTINGS_EXPECT(fs::exists(folders.saves / "a" / "GLOBAL.DAT") && fs::exists(folders.game / "saves-backup") &&
+                        fs::exists(folders.game / "portal.txt") && fs::exists(folders.game / "textures" / "t.dds") &&
+                        fs::exists(folders.game / "figures" / "f.bin") &&
+                        fs::exists(folders.game / "launcher-cache" / "title_icon.png") &&
+                        fs::exists(folders.game / "portraits" / "p.png"));
+        SETTINGS_EXPECT(fs::exists(folders.game / "gamedata" /
+                                   "default.xex")); // the copy stays: it is the disc's files, removed from the Disc tab
+        SETTINGS_EXPECT(Read(folders.game / "achievements.txt") == "achievement" &&
+                        Read(folders.game / "playtime.txt") == "playtime-data");
+        SETTINGS_EXPECT(config.count("install.aaaa") == 0 && config.count("install.bbbb") == 1 &&
+                        config["giants"]["iso"] == "/discs/giants.iso" && config["giants.video"]["fps_limit"] == "30");
 
         // A custom save folder and migration's conflict copies are still player data when uninstalling a game.
         folders = Populate(scratch / "cached-saves");
@@ -987,8 +1128,10 @@ namespace
         Write(folders.game / "saves.old-20260101" / "slot.sav", "old save");
         Write(folders.game / "figures.old-20260101" / "toy.bin", "old figure");
         SETTINGS_EXPECT(UninstallGame(folders, config).ok);
-        SETTINGS_EXPECT(fs::exists(folders.saves / "slot.sav") && fs::exists(savebackup::BackupRoot(folders.saves) / "slot.sav"));
-        SETTINGS_EXPECT(fs::exists(folders.game / "saves.old-20260101" / "slot.sav") && fs::exists(folders.game / "figures.old-20260101" / "toy.bin"));
+        SETTINGS_EXPECT(
+            fs::exists(folders.saves / "slot.sav") && fs::exists(savebackup::BackupRoot(folders.saves) / "slot.sav"));
+        SETTINGS_EXPECT(fs::exists(folders.game / "saves.old-20260101" / "slot.sav") &&
+                        fs::exists(folders.game / "figures.old-20260101" / "toy.bin"));
 
         // A symlink standing for the whole game folder must not delete files in its destination.
         const GameFolders outside = Populate(scratch / "outside-data");
@@ -998,21 +1141,25 @@ namespace
         if (!linkError)
         {
             GameFolders alias{ linked, linked / "saves" };
-            SETTINGS_EXPECT(!ClearGameCaches(alias).ok && !DeleteGameData(alias).ok && !UninstallGame(alias, config).ok);
-            SETTINGS_EXPECT(fs::exists(outside.saves / "a" / "GLOBAL.DAT") && fs::exists(outside.game / "pipelines.bin"));
+            SETTINGS_EXPECT(
+                !ClearGameCaches(alias).ok && !DeleteGameData(alias).ok && !UninstallGame(alias, config).ok);
+            SETTINGS_EXPECT(
+                fs::exists(outside.saves / "a" / "GLOBAL.DAT") && fs::exists(outside.game / "pipelines.bin"));
         }
         else
             printf("SKIP game-folder symlink: %s\n", linkError.message().c_str());
 
         // A game with no folder, or none to name: refused, and nothing outside is touched.
         GameFolders nothing;
-        SETTINGS_EXPECT(!DeleteGameData(nothing).ok && !UninstallGame(nothing, config).ok && MeasureGameData(nothing).saves == 0);
+        SETTINGS_EXPECT(
+            !DeleteGameData(nothing).ok && !UninstallGame(nothing, config).ok && MeasureGameData(nothing).saves == 0);
         SETTINGS_EXPECT(fs::exists(scratch / "data" / "Giants" / "textures" / "t.dds"));
 
         // FoldersOf names the game's folder in the data folder, and SKY_SAVE_DIR moves the saves.
         SetEnv("SKYLANDERS_DATA", (scratch / "root").string());
         SetEnv("SKY_LAUNCHER_DATA", "");
-        SETTINGS_EXPECT(FoldersOf("giants").game == scratch / "root" / "Giants" && FoldersOf("giants").saves == scratch / "root" / "Giants" / "saves");
+        SETTINGS_EXPECT(FoldersOf("giants").game == scratch / "root" / "Giants" &&
+                        FoldersOf("giants").saves == scratch / "root" / "Giants" / "saves");
         SETTINGS_EXPECT(FoldersOf("ssa").game == scratch / "root" / "SSA");
         SetEnv("SKY_SAVE_DIR", (scratch / "elsewhere-saves").string());
         SETTINGS_EXPECT(FoldersOf("ssa").saves == scratch / "elsewhere-saves");
@@ -1033,7 +1180,8 @@ namespace
             else
                 printf("SKIP settings temporary symlink: %s\n", error.message().c_str());
         }
-        printf("Delete data and uninstall: sizes, caches only, refused while the game runs, what stays, on a scratch folder\n");
+        printf("Delete data and uninstall: sizes, caches only, refused while the game runs, what stays, on a scratch "
+               "folder\n");
     }
 }
 
@@ -1051,7 +1199,8 @@ namespace
             return out;
         };
 
-        SETTINGS_EXPECT(OffersLanguage({}, "fr") && OffersLanguage({ "en" }, "") && OffersLanguage({ "en", "fr" }, "fr") && !OffersLanguage({ "en" }, "fr"));
+        SETTINGS_EXPECT(OffersLanguage({}, "fr") && OffersLanguage({ "en" }, "") &&
+                        OffersLanguage({ "en", "fr" }, "fr") && !OffersLanguage({ "en" }, "fr"));
 
         LauncherConfig config;
         art::DiscLanguages europe{ { "es", "it" }, { "es", "it" } };
@@ -1059,10 +1208,14 @@ namespace
         SETTINGS_EXPECT(config["swapforce"]["disc_text_languages"] == "es,it");
         // Nothing chosen: the launcher's language when the disc holds it, else the game's own default.
         const std::vector<std::string> enFr = { "en", "fr" }, frNl = { "fr", "nl" };
-        SETTINGS_EXPECT(GameLanguageToPass("", enFr, true, "fr") == "fr" && GameLanguageToPass("", enFr, false, "fr") == "fr");
-        SETTINGS_EXPECT(GameLanguageToPass("", { "en" }, true, "fr").empty() && GameLanguageToPass("", {}, true, "fr").empty());
-        SETTINGS_EXPECT(GameLanguageToPass("en", enFr, true, "fr") == "en" && GameLanguageToPass("de", frNl, true, "en") == "fr");
-        SETTINGS_EXPECT(GameLanguageToPass("de", frNl, false, "en").empty() && GameLanguageToPass("de", {}, true, "en") == "de");
+        SETTINGS_EXPECT(
+            GameLanguageToPass("", enFr, true, "fr") == "fr" && GameLanguageToPass("", enFr, false, "fr") == "fr");
+        SETTINGS_EXPECT(
+            GameLanguageToPass("", { "en" }, true, "fr").empty() && GameLanguageToPass("", {}, true, "fr").empty());
+        SETTINGS_EXPECT(
+            GameLanguageToPass("en", enFr, true, "fr") == "en" && GameLanguageToPass("de", frNl, true, "en") == "fr");
+        SETTINGS_EXPECT(
+            GameLanguageToPass("de", frNl, false, "en").empty() && GameLanguageToPass("de", {}, true, "en") == "de");
         art::DiscLanguages back = StoredDiscLanguages(config, "swapforce");
         SETTINGS_EXPECT(back.text == europe.text && back.voice == europe.voice);
         // It survives the settings file.
@@ -1127,14 +1280,17 @@ namespace
         // Nothing stored (a game checked before this version): today's full lists; Swap Force's was English and French, Trap Team's
         // is English.
         LauncherConfig old;
-        SETTINGS_EXPECT(GameLanguageChoices(old, "ssa", false).size() == 10 && GameLanguageChoices(old, "giants", false).size() == 12);
+        SETTINGS_EXPECT(GameLanguageChoices(old, "ssa", false).size() == 10 &&
+                        GameLanguageChoices(old, "giants", false).size() == 12);
         SETTINGS_EXPECT(GameLanguageChoices(old, "giants", true).size() == 13);
         SETTINGS_EXPECT(values(GameLanguageChoices(old, "swapforce", true)) == V({ "en", "fr" }));
         SETTINGS_EXPECT(values(GameLanguageChoices(old, "trapteam", false)) == V({ "en" }));
         // Forgetting the disc clears them.
         StoreDiscLanguages(config, "swapforce", {});
-        SETTINGS_EXPECT(config["swapforce"].count("disc_text_languages") == 0 && StoredDiscLanguages(config, "swapforce").text.empty());
-        printf("Disc languages: stored, filtered, the default when the choice is not on the disc, the full list when unknown\n");
+        SETTINGS_EXPECT(config["swapforce"].count("disc_text_languages") == 0 &&
+                        StoredDiscLanguages(config, "swapforce").text.empty());
+        printf("Disc languages: stored, filtered, the default when the choice is not on the disc, the full list when "
+               "unknown\n");
     }
 
     // The launcher's own language: never the shown game's; an old "game" is the system's and goes at the next save.

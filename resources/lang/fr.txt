@@ -332,6 +332,8 @@ Show in folder	Afficher dans le dossier
 Skip intro movies	Passer les vidéos d'intro
 Graphics API	API graphique
 Direct3D 12 by default; the game uses the other if it cannot start.	Direct3D 12 par défaut ; le jeu prend l'autre s'il ne peut pas démarrer.
+Direct3D 12 showed nothing: the game starts again with Vulkan	Direct3D 12 n'affichait rien : le jeu redémarre avec Vulkan
+Vulkan, since Direct3D 12 showed nothing on this PC.	Vulkan, car Direct3D 12 n'affichait rien sur ce PC.
 Skylanders, Spyro and Activision are trademarks of Activision Publishing, Inc. This project is not affiliated with or endorsed by Activision.	Skylanders, Spyro et Activision sont des marques d'Activision Publishing, Inc. Ce projet n'est ni affilié à Activision ni approuvé par Activision.
 Arkeyan Launcher couldn't find its own file.	Arkeyan Launcher n'a pas trouvé son propre fichier.
 Arkeyan Launcher is up to date.	Arkeyan Launcher est à jour.
@@ -915,6 +917,11 @@ Hidden achievement	Succès caché
 Appears once the game's disc is checked.	Apparaît une fois le disque du jeu vérifié.
 {} of {} unlocked · {} of {} G	{} sur {} débloqués · {} sur {} G
 Play time: {}	Temps de jeu : {}
+{}/{} achievements	{}/{} succès
+In the launcher	Dans le launcher
+Discord	Discord
+Show my activity on Discord	Afficher mon activité sur Discord
+The game you play, its achievements and version, or that you are in the launcher.	Le jeu en cours, ses succès et sa version, ou que vous êtes dans le launcher.
 Last played: {}	Dernière partie : {}
 Turn the game music off	Couper la musique des jeux
 Turn the game music on	Remettre la musique des jeux
@@ -1130,3 +1137,24 @@ This portal is on another driver (WinUSB, libusbK...). In Device Manager, uninst
 Xbox portals need libusb-1.0, which Windows doesn't have.	Les portails Xbox ont besoin de libusb-1.0, que Windows n'a pas.
 This Xbox portal's driver can't be used: it needs WinUSB.	Le pilote de ce portail Xbox ne convient pas : il lui faut WinUSB.
 Windows has no driver for this portal.	Windows n'a pas de pilote pour ce portail.
+This Xbox 360 portal needs Windows' WinUSB driver, set once: see the README.	Ce portail Xbox 360 a besoin du pilote WinUSB de Windows, à choisir une fois : voir le README.
+Windows didn't hand the Xbox One portal to the game.	Windows n'a pas confié le portail Xbox One au jeu.
+Xbox portals need libusb-1.0: install your system's libusb-1.0 package, then test again.	Les portails Xbox ont besoin de libusb-1.0 : installez le paquet libusb-1.0 de votre système, puis refaites le test.
+This portal is on the {} driver, which a tool such as Zadig installed and the game can't use. To give it back to Windows:	Ce portail est sur le pilote {}, installé par un outil comme Zadig, que le jeu ne peut pas utiliser. Pour le rendre à Windows :
+1. In Device Manager, right-click the portal, choose Uninstall device, tick "Attempt to remove the driver for this device", then Uninstall.	1. Dans le Gestionnaire de périphériques, faites un clic droit sur le portail, choisissez Désinstaller l'appareil, cochez « Tenter de supprimer le pilote de ce périphérique », puis Désinstaller.
+2. Unplug the portal and plug it in again.	2. Débranchez le portail, puis rebranchez-le.
+3. If it's back on {}: open a Command Prompt as administrator, run these two commands, then plug the portal in again:	3. S'il revient sur {} : ouvrez une Invite de commandes en tant qu'administrateur, lancez ces deux commandes, puis rebranchez le portail :
+In the first command's list, find the {} driver's oemNN.inf and put its name in the second.	Dans la liste de la première commande, trouvez le oemNN.inf du pilote {} et mettez son nom dans la seconde.
+Or choose WinUSB for it in Zadig: the game uses it there.	Ou choisissez WinUSB pour lui dans Zadig : le jeu l'utilise alors.
+Copy commands	Copier les commandes
+Commands copied	Commandes copiées
+Tabs	Onglets
+Xcode's Metal shader compiler isn't installed yet.	Le compilateur de shaders Metal d'Xcode n'est pas encore installé.
+1. Open Terminal (Applications > Utilities).	1. Ouvrez Terminal (Applications > Utilitaires).
+2. Paste the command and press Return:	2. Collez la commande et appuyez sur Entrée :
+3. Wait until it says it's done (a few minutes, about 700 MB), then press Retry.	3. Attendez qu'elle indique avoir terminé (quelques minutes, environ 700 Mo), puis appuyez sur Réessayer.
+Copy command	Copier la commande
+Command copied	Commande copiée
+In the menus	Dans les menus
+In a level	Dans un niveau
+{} played	{} de jeu

@@ -15,11 +15,12 @@ namespace launcher_ui
         // The HD textures of a whole disc, measured with the kit's builder (docs/tools/hd_textures.md).
         uint64_t PackBytes(std::string_view game)
         {
-            const double gigabytes = game == "giants"          ? 4.8
-                                     : game == "ssa"           ? 2.3
-                                     : game == "swapforce"     ? 2.2
-                                     : game == "superchargers" ? 2.6
-                                                               : 3.0; // Imaginators 3.0; Trap Team the same until measured
+            const double gigabytes = game == "giants"      ? 4.8
+                                     : game == "ssa"       ? 2.3
+                                     : game == "swapforce" ? 2.2
+                                     : game == "superchargers"
+                                         ? 2.6
+                                         : 3.0; // Imaginators 3.0; Trap Team the same until measured
             return uint64_t(gigabytes * double(1ull << 30));
         }
     }
@@ -29,7 +30,8 @@ namespace launcher_ui
     bool App::HdTexturesOffered() const
     {
         const std::string_view id = m_s->game.id;
-        return id == "ssa" || id == "giants" || id == "swapforce" || id == "trapteam" || id == "superchargers" || id == "imaginators";
+        return id == "ssa" || id == "giants" || id == "swapforce" || id == "trapteam" || id == "superchargers" ||
+               id == "imaginators";
     }
 
     bool App::HdTexturesWanted(const GameSlot& slot) const
@@ -48,7 +50,8 @@ namespace launcher_ui
         if (!HdTexturesOffered())
             return;
         const bool built = !m_s->installed.runtime.empty();
-        std::string hint = Tf("Doubles the game's textures from your disc. About {} of disk, a few minutes.", ui::FormatSize(PackBytes(m_s->game.id)));
+        std::string hint = Tf("Doubles the game's textures from your disc. About {} of disk, a few minutes.",
+            ui::FormatSize(PackBytes(m_s->game.id)));
         bool disabled = false;
         if (m_s->kit && !m_s->kit->hdTextures)
         {
@@ -80,13 +83,17 @@ namespace launcher_ui
     {
         if (!HdTexturesOffered())
             return;
-        auto note = [](const std::string& text, unsigned color = ui::color::Dim) { ui::Text(ui::TextStyle::Caption, text.c_str(), color, ImGui::GetContentRegionAvail().x); };
+        auto note = [](const std::string& text, unsigned color = ui::color::Dim) {
+            ui::Text(ui::TextStyle::Caption, text.c_str(), color, ImGui::GetContentRegionAvail().x);
+        };
         if (m_s->hdJob.Running())
         {
             const InstallProgress progress = m_s->hdJob.Snapshot();
-            note(m_s->hdOn ? Tr("Making the HD textures. You can keep using the launcher; the game waits.") : Tr("Removing the HD textures."));
+            note(m_s->hdOn ? Tr("Making the HD textures. You can keep using the launcher; the game waits.")
+                           : Tr("Removing the HD textures."));
             if (progress.total > 0)
-                ui::ProgressBar(float(double(std::min(progress.done, progress.total)) / double(progress.total)), -1, true);
+                ui::ProgressBar(
+                    float(double(std::min(progress.done, progress.total)) / double(progress.total)), -1, true);
             else
                 ui::IndeterminateBar();
             ImGui::Dummy(ImVec2(0, ui::space::XXS));
@@ -196,7 +203,8 @@ namespace launcher_ui
             return;
         }
         case 2:
-            if (m_s->kit && !m_s->kit->hdTextures) // too old a kit: the switch is disabled with its reason, nothing to run
+            if (m_s->kit &&
+                !m_s->kit->hdTextures) // too old a kit: the switch is disabled with its reason, nothing to run
             {
                 expect(!m_s->hdJob.Running() && !HdTexturesWanted(*m_s), "a kit too old for it: nothing starts");
                 m_running = false;
@@ -247,9 +255,7 @@ namespace launcher_ui
                 shoot("3-done");
             }
             return;
-        default:
-            m_running = false;
-            return;
+        default: m_running = false; return;
         }
     }
 }

@@ -39,7 +39,13 @@ std::string PortableStamp();
 
 struct PortableResult
 {
-    enum class Outcome { Done, NotEnoughSpace, Cancelled, Failed } outcome = Outcome::Failed;
+    enum class Outcome
+    {
+        Done,
+        NotEnoughSpace,
+        Cancelled,
+        Failed
+    } outcome = Outcome::Failed;
     std::string error;                  // Failed: what went wrong
     uint64_t needed = 0, available = 0; // NotEnoughSpace
     std::filesystem::path path;         // Done: the portable
@@ -54,7 +60,11 @@ PortableResult ExportPortable(const PortableSpec& spec, const std::atomic<bool>*
 class PortableExportJob
 {
 public:
-    ~PortableExportJob() { Cancel(); Join(); }
+    ~PortableExportJob()
+    {
+        Cancel();
+        Join();
+    }
     bool Running() const { return m_started; }
     bool Done() const { return m_done; }
     void Start(const PortableSpec& spec);
@@ -65,7 +75,11 @@ public:
     PortableResult Collect();
 
 private:
-    void Join() { if (m_thread.joinable()) m_thread.join(); }
+    void Join()
+    {
+        if (m_thread.joinable())
+            m_thread.join();
+    }
 
     std::thread m_thread;
     std::atomic<bool> m_started{ false }, m_done{ false }, m_cancel{ false };

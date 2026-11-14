@@ -207,7 +207,12 @@ namespace art::lux
         if (size < 2 || (data[0] & 0x0F) != 8 || (data[0] >> 4) > 7 || (data[1] & 0x20) != 0 ||
             ((data[0] << 8) | data[1]) % 31 != 0)
             return false;
-        BitReader in{ data + 2, size - 2 };
+        return InflateRaw(data + 2, size - 2, out, limit);
+    }
+
+    bool InflateRaw(const uint8_t* data, size_t size, std::vector<uint8_t>& out, size_t limit)
+    {
+        BitReader in{ data, size };
         bool last = false;
         while (!last)
         {

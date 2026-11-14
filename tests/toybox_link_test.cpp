@@ -17,8 +17,15 @@ namespace
     using Client = toyboxlinkclient::Client;
     int g_linkFailures = 0;
 
-#define LINK_EXPECT(condition) \
-    do { if (!(condition)) { fprintf(stderr, "FAIL %s line %d: %s\n", __FILE__, __LINE__, #condition); g_linkFailures++; } } while (0)
+#define LINK_EXPECT(condition)                                                                                         \
+    do                                                                                                                 \
+    {                                                                                                                  \
+        if (!(condition))                                                                                              \
+        {                                                                                                              \
+            fprintf(stderr, "FAIL %s line %d: %s\n", __FILE__, __LINE__, #condition);                                  \
+            g_linkFailures++;                                                                                          \
+        }                                                                                                              \
+    } while (0)
 
     bool WaitFor(const std::function<bool()>& done, int ms = 3000)
     {
@@ -100,7 +107,8 @@ int ToyboxLinkChecks(const fs::path& scratch)
         LINK_EXPECT(game.Accept());
         toyboxlink::Message hello;
         LINK_EXPECT(game.Line(hello) && hello.verb == "hello" && hello.fields.size() == 3 &&
-            hello.fields[0] == std::to_string(toyboxlink::Version) && hello.fields[1] == game.token && hello.fields[2] == "test");
+                    hello.fields[0] == std::to_string(toyboxlink::Version) && hello.fields[1] == game.token &&
+                    hello.fields[2] == "test");
         game.Send({ "hello", { std::to_string(toyboxlink::Version), "giants" } });
         toyboxlink::Seat spyro;
         spyro.kind = toyboxlink::Seat::Kind::Virtual;
@@ -117,19 +125,21 @@ int ToyboxLinkChecks(const fs::path& scratch)
         LINK_EXPECT(WaitFor([&] { return client.Generation() == 1; }));
         LINK_EXPECT(client.Current() == Client::State::Connected && client.Game() == "giants");
         const std::vector<toyboxlink::Seat> seats = client.Seats();
-        LINK_EXPECT(seats.size() == 3 && seats[0] == spyro && seats[1] == real && seats[2].kind == toyboxlink::Seat::Kind::Empty);
+        LINK_EXPECT(seats.size() == 3 && seats[0] == spyro && seats[1] == real &&
+                    seats[2].kind == toyboxlink::Seat::Kind::Empty);
 
         LINK_EXPECT(client.Put(2, "/c/My figures/Gill Grunt.sky"));
         toyboxlink::Message put;
         LINK_EXPECT(game.Line(put) && put.verb == "put" && put.fields.size() == 2 && put.fields[0] == "2" &&
-            put.fields[1] == "/c/My figures/Gill Grunt.sky");
+                    put.fields[1] == "/c/My figures/Gill Grunt.sky");
         LINK_EXPECT(client.Off(1) && client.Swap() && client.Clear());
         toyboxlink::Message off, swap, clear;
         LINK_EXPECT(game.Line(off) && off.verb == "off" && off.fields == std::vector<std::string>{ "1" });
         LINK_EXPECT(game.Line(swap) && swap.verb == "swap" && game.Line(clear) && clear.verb == "clear");
         game.Send({ "done", { "put", "2", toyboxlink::refusal::Full } });
         Client::Done done;
-        LINK_EXPECT(WaitFor([&] { return client.NextDone(done); }) && done.verb == "put" && done.seat == 2 && done.result == "full");
+        LINK_EXPECT(WaitFor([&] { return client.NextDone(done); }) && done.verb == "put" && done.seat == 2 &&
+                    done.result == "full");
         LINK_EXPECT(!client.Put(0, "a\tb")); // a path with a tab cannot be sent
 
         game.Send({ "bye", {} });
@@ -157,7 +167,8 @@ int ToyboxLinkChecks(const fs::path& scratch)
         toyboxlink::Message hello;
         LINK_EXPECT(game.Line(hello));
         game.Send({ "hello", { "0", "giants" } });
-        LINK_EXPECT(WaitFor([&] { return client.Current() == Client::State::OtherVersion; }) && client.GameVersion() == 0);
+        LINK_EXPECT(
+            WaitFor([&] { return client.Current() == Client::State::OtherVersion; }) && client.GameVersion() == 0);
     }
 
     // Another window has the game: this one says so and tries again.

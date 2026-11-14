@@ -20,7 +20,10 @@ namespace art
         constexpr size_t Block = 0x1000, PerTable = 170, PerTable1 = 28900, EntrySize = 0x40, HashSize = 0x18;
         constexpr uint32_t End = 0xFFFFFF;
 
-        uint32_t Big32(const uint8_t* p) { return uint32_t(p[0]) << 24 | uint32_t(p[1]) << 16 | uint32_t(p[2]) << 8 | p[3]; }
+        uint32_t Big32(const uint8_t* p)
+        {
+            return uint32_t(p[0]) << 24 | uint32_t(p[1]) << 16 | uint32_t(p[2]) << 8 | p[3];
+        }
         uint32_t Little24(const uint8_t* p) { return uint32_t(p[0]) | uint32_t(p[1]) << 8 | uint32_t(p[2]) << 16; }
         uint32_t Big24(const uint8_t* p) { return uint32_t(p[0]) << 16 | uint32_t(p[1]) << 8 | p[2]; }
 
@@ -50,7 +53,9 @@ namespace art
                 n += (size_t(b / PerTable1) + 1) << shift;
             return first + n * Block;
         };
-        auto blockAt = [&](uint32_t b) -> const uint8_t* { return stored(b) + Block <= size ? p + stored(b) : nullptr; };
+        auto blockAt = [&](uint32_t b) -> const uint8_t* {
+            return stored(b) + Block <= size ? p + stored(b) : nullptr;
+        };
         // One table per level and no more than 170 data blocks: the one level-0 table at `first` holds every chain.
         const bool oneTable = shift == 0 && size <= first + (PerTable + 1) * Block;
 
@@ -67,7 +72,8 @@ namespace art
                     !SameName(std::string_view(reinterpret_cast<const char*>(entry), length), name))
                     continue;
                 const bool consecutive = (entry[0x28] & 0x40) != 0;
-                const uint32_t blocks = Little24(entry + 0x29), start = Little24(entry + 0x2F), bytes = Big32(entry + 0x34);
+                const uint32_t blocks = Little24(entry + 0x29), start = Little24(entry + 0x2F),
+                               bytes = Big32(entry + 0x34);
                 if (!consecutive && !oneTable)
                     return {};
                 std::vector<uint8_t> out;

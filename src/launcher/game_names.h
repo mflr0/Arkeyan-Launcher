@@ -6,7 +6,11 @@
 // sidebar's rows, chips, filters, a select's rows). Names are never translated.
 #include <string_view>
 
-enum class GameNameForm { Full, Short };
+enum class GameNameForm
+{
+    Full,
+    Short
+};
 
 struct GameNames
 {

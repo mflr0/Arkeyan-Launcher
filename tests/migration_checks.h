@@ -24,17 +24,21 @@ inline void FolderMigrationChecks(const std::filesystem::path& scratch)
         put(old.skylauncher / "games" / "bbb" / "keep", "second build");
         put(old.skylauncher / "kit" / "v1.0.0" / "builder", "synthetic kit");
         put(old.localSsarecomp / "toolchains" / "compiler" / "ready", "synthetic compiler");
-        put(old.ssarecomp / "launcher.ini", "[install.synthetic]\nruntime=" + datadir::Text(build / "SSARecomp") + "\nfuture=keep\n");
+        put(old.ssarecomp / "launcher.ini",
+            "[install.synthetic]\nruntime=" + datadir::Text(build / "SSARecomp") + "\nfuture=keep\n");
         datadir::MigrationOptions options{ copy, "test" };
         const auto report = datadir::Migrate(old, root, options);
         EXPECT(report.failed == 0 && report.rewritten == 1 && (copy ? report.copied > 0 : report.moved > 0));
-        EXPECT(read(root / "SSA" / "saves" / "slot") == "synthetic save" && read(root / "SSA" / "figures" / "test.bin") == "synthetic figure");
+        EXPECT(read(root / "SSA" / "saves" / "slot") == "synthetic save" &&
+               read(root / "SSA" / "figures" / "test.bin") == "synthetic figure");
         EXPECT(read(root / "SSA" / "SSARecomp") == "synthetic executable" && !fs::exists(build));
         EXPECT(read(old.skylauncher / "games" / "bbb" / "keep") == "second build");
         EXPECT(read(old.ssarecomp / "xbox-signing" / "keep") == "development file");
-        EXPECT(read(root / "kit" / "v1.0.0" / "builder") == "synthetic kit" && read(root / "toolchains" / "compiler" / "ready") == "synthetic compiler");
+        EXPECT(read(root / "kit" / "v1.0.0" / "builder") == "synthetic kit" &&
+               read(root / "toolchains" / "compiler" / "ready") == "synthetic compiler");
         auto config = LoadLauncherConfig(datadir::Text(root / "launcher.ini"));
-        EXPECT(config["install.synthetic"]["runtime"] == datadir::Text(root / "SSA" / "SSARecomp") && config["install.synthetic"]["future"] == "keep");
+        EXPECT(config["install.synthetic"]["runtime"] == datadir::Text(root / "SSA" / "SSARecomp") &&
+               config["install.synthetic"]["future"] == "keep");
         EXPECT(fs::exists(root / "logs" / "migration.log"));
         // Resume the save migration independently of the builds retained in the old launcher folder.
         datadir::OldRoots gameOnly{ old.ssarecomp, {}, {} };
@@ -47,7 +51,8 @@ inline void FolderMigrationChecks(const std::filesystem::path& scratch)
         put(old.ssarecomp / "SSARecomp" / "saves" / "slot", "different save");
         const auto conflict = datadir::Migrate(gameOnly, root, options);
         EXPECT(conflict.kept == 1 && conflict.failed == 0);
-        EXPECT(read(root / "SSA" / "saves" / "slot") == "synthetic save" && read(root / "SSA" / "saves.old-test-2" / "slot") == "different save");
+        EXPECT(read(root / "SSA" / "saves" / "slot") == "synthetic save" &&
+               read(root / "SSA" / "saves.old-test-2" / "slot") == "different save");
         EXPECT(read(root / "SSA" / "saves.old-test" / "slot") == "earlier conflict");
 
         // An unwritable destination shape retains the source; removing the obstacle allows a later pass to finish.
@@ -58,7 +63,9 @@ inline void FolderMigrationChecks(const std::filesystem::path& scratch)
         EXPECT(failed.failed == 1 && read(old.ssarecomp / "SSARecomp" / "saves" / "slot") == "retry save");
         EXPECT(read(blocked / "logs" / "migration.log").find("FAILED") != std::string::npos);
         fs::remove(blocked / "SSA");
-        EXPECT(datadir::Migrate(gameOnly, blocked, options).failed == 0 && read(blocked / "SSA" / "saves" / "slot") == "retry save");
+        EXPECT(datadir::Migrate(gameOnly, blocked, options).failed == 0 &&
+               read(blocked / "SSA" / "saves" / "slot") == "retry save");
     }
-    printf("Folder migration: rename/copy, path rewrite, duplicate recovery, conflicts and failed-destination retry checked\n");
+    printf("Folder migration: rename/copy, path rewrite, duplicate recovery, conflicts and failed-destination retry "
+           "checked\n");
 }

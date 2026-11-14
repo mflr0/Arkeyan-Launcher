@@ -103,6 +103,7 @@ Auto: 5.1 when the device has six channels.	Auto: 5.1 når enheten har seks kana
 Automatic	Automatisk
 Automatic detection	Automatisk gjenkjenning
 Back	Tilbake
+Tabs	Faner
 Back side button	Bakre sideknapp
 Back up now	Ta sikkerhetskopi nå
 Backed up	Sikkerhetskopiert
@@ -611,6 +612,11 @@ Pick one below	Velg nedenfor
 Picture	Bilde
 Play	Spill
 Play time: {}	Spilletid: {}
+{}/{} achievements	{}/{} prestasjoner
+In the launcher	I startprogrammet
+Discord	Discord
+Show my activity on Discord	Vis aktiviteten min på Discord
+The game you play, its achievements and version, or that you are in the launcher.	Spillet du spiller, prestasjoner og versjon, eller at du er i startprogrammet.
 Play without updating	Spill uten å oppdatere
 Play {}	Spill {}
 Play {} with Arkeyan Launcher	Spill {} med Arkeyan Launcher
@@ -735,6 +741,8 @@ Silver	Sølv
 Skip intro movies	Hopp over introfilmer
 Graphics API	Grafikk-API
 Direct3D 12 by default; the game uses the other if it cannot start.	Direct3D 12 som standard; starter den ikke, bruker spillet den andre.
+Direct3D 12 showed nothing: the game starts again with Vulkan	Direct3D 12 viste ingenting: spillet starter på nytt med Vulkan
+Vulkan, since Direct3D 12 showed nothing on this PC.	Vulkan, siden Direct3D 12 ikke viste noe på denne PC-en.
 Skylander Info	Skylanderinfo
 Skylander Profile	Skylanderprofil
 Skylander/Villain Stats	Skylander- og skurkestatistikk
@@ -1101,3 +1109,23 @@ This portal is on another driver (WinUSB, libusbK...). In Device Manager, uninst
 Xbox portals need libusb-1.0, which Windows doesn't have.	Xbox-portaler trenger libusb-1.0, som Windows ikke har.
 This Xbox portal's driver can't be used: it needs WinUSB.	Driveren til denne Xbox-portalen fungerer ikke: den trenger WinUSB.
 Windows has no driver for this portal.	Windows har ingen driver for denne portalen.
+This Xbox 360 portal needs Windows' WinUSB driver, set once: see the README.	Denne Xbox 360-portalen trenger Windows' WinUSB-driver, valgt én gang: se README.
+Windows didn't hand the Xbox One portal to the game.	Windows ga ikke Xbox One-portalen videre til spillet.
+Xbox portals need libusb-1.0: install your system's libusb-1.0 package, then test again.	Xbox-portaler trenger libusb-1.0: installer systemets libusb-1.0-pakke, og test på nytt.
+This portal is on the {} driver, which a tool such as Zadig installed and the game can't use. To give it back to Windows:	Denne portalen bruker driveren {}, som et verktøy som Zadig har installert, og som spillet ikke kan bruke. Slik gir du den tilbake til Windows:
+1. In Device Manager, right-click the portal, choose Uninstall device, tick "Attempt to remove the driver for this device", then Uninstall.	1. Høyreklikk på portalen i Enhetsbehandling, velg Avinstaller enhet, huk av for «Forsøk å fjerne driveren for denne enheten», og klikk på Avinstaller.
+2. Unplug the portal and plug it in again.	2. Koble fra portalen, og koble den til igjen.
+3. If it's back on {}: open a Command Prompt as administrator, run these two commands, then plug the portal in again:	3. Hvis den er tilbake på {}: åpne Ledetekst som administrator, kjør disse to kommandoene, og koble så til portalen igjen:
+In the first command's list, find the {} driver's oemNN.inf and put its name in the second.	Finn oemNN.inf for driveren {} i listen fra den første kommandoen, og sett navnet inn i den andre.
+Or choose WinUSB for it in Zadig: the game uses it there.	Eller velg WinUSB for den i Zadig: da bruker spillet den.
+Copy commands	Kopier kommandoer
+Commands copied	Kommandoer kopiert
+Xcode's Metal shader compiler isn't installed yet.	Xcodes Metal-shaderkompilator er ikke installert ennå.
+1. Open Terminal (Applications > Utilities).	1. Åpne Terminal (Programmer > Verktøy).
+2. Paste the command and press Return:	2. Lim inn kommandoen og trykk Retur:
+3. Wait until it says it's done (a few minutes, about 700 MB), then press Retry.	3. Vent til det står at det er ferdig (noen minutter, omtrent 700 MB), og trykk deretter Prøv igjen.
+Copy command	Kopier kommandoen
+Command copied	Kommandoen er kopiert
+In the menus	I menyene
+In a level	På et brett
+{} played	{} spilt

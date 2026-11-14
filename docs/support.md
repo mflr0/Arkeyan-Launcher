@@ -108,12 +108,32 @@ system's own reason left as it is. Then what the game will do given the mode (`P
 use it.", "The portal doesn't answer: ..." (opened, no answer), "The portal can't be opened: ..." (none opened), "No portal
 found: ...", each ending with "the game will wait" (mode real) or "using the virtual portal". **Copy** beside it puts the
 whole result on the clipboard (`PortalProbeText`): the launcher's version and the mode, each portal's line, its model,
-every method's line and the method the game writes with, the notes, the verdict. Each portal line of a newer runtime also
+every method's line and the method the game writes with, the notes, the verdict. A USB portal's `details` (the runtime's `; `-separated steps) are split: the interfaces and driver on the `device:` line, then each step and packet on its own line (0.9.6: an Xbox 360 portal's start request and first packets, an Xbox One portal's Windows route). Windows' Xbox portals (0.9.6): "This Xbox 360 portal needs Windows' WinUSB driver, set once: see the README." (the README's "Xbox 360 portal on Windows"), "Windows didn't hand the Xbox One portal to the game.". A portal on libusbK or libusb0 (0.9.6; the runtime's status carries its way back with `pnputil /delete-driver <inf>`): the steps, one per line (`PortalStatusText`: uninstall with "Attempt to remove the driver for this device", replug, then the two `pnputil` commands, the package's `oemNN.inf` filled in when the runtime read it), and a **Copy commands** button (`PortalDriverCommands`: both commands, CRLF). The transport line "libusb-1.0 not found" is never shown on Windows or macOS; on Linux it reads "Xbox portals need libusb-1.0: install your system's libusb-1.0 package, then test again." Each portal line of a newer runtime also
 carries `id`, `model`, `verdict` and `verdict_reason` (the portal's answer to the game's reset command: "Model: Spyro's
 Adventure portal (Xbox 360) (id 01 28)", then "Spyro's Adventure accepts this portal." or, in red, why the game would
 reject or warn about it; the contract is the runtime's `docs/portal_probe.md`). A runtime without `--portal-probe` exits
 with code 2: "This version of the game doesn't have the portal test yet". Parser, words and tests: `ParsePortalProbe`,
 `PortalStatusText`, `PortalVerdict`, `PortalProbeText`, `tests/shell_test.cpp`.
+
+The copied model line adds parentheses only when `verdict_reason` is nonempty: for example,
+`model: <id> <model>; Spyro's Adventure: works`, or `Spyro's Adventure: warns (<reason>)`.
+The write line reads `the game writes with output-report` (or `hid-write` / `usb-control`). The launcher owns the parsed
+strings. If a runtime supplies a damaged selected-method label, Copy uses the intact method name only when exactly one
+method answered both commands successfully and the portal is opened with status `ok`; otherwise it omits that line.
+This protects the copied text; it does not repair the runtime that supplied the damaged label.
+When output-report answered both commands and the HID portal's status is `ok`, a Windows HID write diagnostic with
+`ERROR_IO_PENDING` (`0x3E5`) followed by `S: not tried` reads `hid-write: not needed (output-report works)`.
+Other errors remain visible, including pending writes without a successful output-report probe. This changes the report
+only, never the game's writes. The per-portal formatter is `PortalProbeEntryText` in `src/launcher/portal_probe_text.cpp`;
+`tests/portal_text_test.cpp` checks its exact lines with synthetic strings and no device or process, as part of the shell
+checks or separately with the `ArkeyanPortalTextTest` target. With a C++20 compiler, the same test can also run without
+the launcher dependencies:
+
+```sh
+c++ -std=c++20 -Isrc -DPORTAL_TEXT_TEST_STANDALONE tests/portal_text_test.cpp \
+    src/launcher/portal_probe_text.cpp -o portal-text-test
+./portal-text-test
+```
 
 Portal mode is `[portal] mode` = `auto`, `emulated` (Virtual) or `real`; the launcher passes it as `SKY_PORTAL`. Older
 `hid` and `usb` values still work and show as "Real portal".

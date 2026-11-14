@@ -19,7 +19,8 @@ int main(int argc, char** argv)
     {
         fprintf(stderr, "%s\n", LauncherUsage());
 #ifdef _WIN32
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Arkeyan Launcher", LauncherUsage(), nullptr); // a Windows app has no console
+        SDL_ShowSimpleMessageBox(
+            SDL_MESSAGEBOX_INFORMATION, "Arkeyan Launcher", LauncherUsage(), nullptr); // a Windows app has no console
 #endif
         return 0;
     }
@@ -55,7 +56,8 @@ int main(int argc, char** argv)
             request = { single_instance::Request::Kind::Play, arguments.game };
         if (single_instance::HandOver(instance, datadir::Root(), request))
         {
-            fprintf(stderr, "launcher: already running for %s: handed it the request\n", datadir::Text(datadir::Root()).c_str());
+            fprintf(stderr, "launcher: already running for %s: handed it the request\n",
+                datadir::Text(datadir::Root()).c_str());
             return 0;
         }
     }
@@ -75,7 +77,8 @@ int main(int argc, char** argv)
 
     // The game last shown ([launcher] game=), else Spyro's Adventure. Picking another game in the sidebar switches the
     // window to it in place; the game that was shown when PLAY was pressed is the one that runs.
-    const GameInfo* game = arguments.game.empty() ? FindEnabledGame(config["launcher"]["game"], config) : FindEnabledGame(arguments.game, config);
+    const GameInfo* game = arguments.game.empty() ? FindEnabledGame(config["launcher"]["game"], config)
+                                                  : FindEnabledGame(arguments.game, config);
     if (!arguments.game.empty() && game == nullptr)
         fprintf(stderr, "launcher: no game called \"%s\" (see --help)\n", arguments.game.c_str());
     if (game == nullptr)
@@ -90,7 +93,8 @@ int main(int argc, char** argv)
     options.play = arguments.play && (arguments.game.empty() || FindEnabledGame(arguments.game, config) != nullptr);
     options.startGames = true;
     options.requests = true;
-    std::string chosen = RunLauncherWindow(*game, configPath, config, config[game->id]["iso"], &installed, &game, options);
+    std::string chosen =
+        RunLauncherWindow(*game, configPath, config, config[game->id]["iso"], &installed, &game, options);
     if (chosen.empty())
         return 0;
 

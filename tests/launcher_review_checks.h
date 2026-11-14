@@ -18,11 +18,16 @@ namespace launcher_ui
             namespace fs = std::filesystem;
             int failures = 0;
             auto expect = [&](bool ok, const char* what) {
-                if (!ok) { fprintf(stderr, "FAIL review %s: %s\n", mode.c_str(), what); ++failures; }
+                if (!ok)
+                {
+                    fprintf(stderr, "FAIL review %s: %s\n", mode.c_str(), what);
+                    ++failures;
+                }
             };
             auto set = [&](const char* name, const fs::path& value) { TestSetEnv(name, datadir::Text(value).c_str()); };
             fs::create_directories(root);
-            for (const char* name : { "HOME", "CFFIXED_USER_HOME", "USERPROFILE" }) set(name, root / "home");
+            for (const char* name : { "HOME", "CFFIXED_USER_HOME", "USERPROFILE" })
+                set(name, root / "home");
             set("SKYLANDERS_DATA", root / "data");
             set("SKY_LAUNCHER_DATA", root / "data");
             set("SKY_LAUNCHER_INI", root / "data" / "launcher.ini");
@@ -58,7 +63,8 @@ namespace launcher_ui
                 removal.ok = true;
                 removal.paths = { root / word / "a'b.exe" };
                 const std::string script = uninstall::WindowsScript(removal, 1);
-                expect(script.find(datadir::Text(root / word)) != std::string::npos, "PowerShell receives UTF-8 path text");
+                expect(script.find(datadir::Text(root / word)) != std::string::npos,
+                    "PowerShell receives UTF-8 path text");
                 return failures == 0 ? 0 : 1;
             }
             if (mode == "data")
@@ -66,10 +72,13 @@ namespace launcher_ui
                 const fs::path game = root / "data" / "SSA", runtime = game / "runtime";
                 fs::create_directories(game);
                 std::ofstream(runtime) << "stand-in";
-                const auto launch = PrepareGameLaunch(*FindGame("ssa"), config, datadir::Text(game), datadir::Text(runtime));
-                expect(launch.runtime.empty() && !launch.error.empty(), "unwritable settings prevent starting with stale game settings");
+                const auto launch =
+                    PrepareGameLaunch(*FindGame("ssa"), config, datadir::Text(game), datadir::Text(runtime));
+                expect(launch.runtime.empty() && !launch.error.empty(),
+                    "unwritable settings prevent starting with stale game settings");
                 const auto result = DeleteGameData({ game, game });
-                expect(!result.ok && fs::exists(runtime), "a saves override naming the game folder cannot delete the game");
+                expect(!result.ok && fs::exists(runtime),
+                    "a saves override naming the game folder cannot delete the game");
                 fs::create_directories(root / "concurrent");
                 const std::string file = datadir::Text(root / "concurrent" / "launcher.ini");
                 std::atomic<int> refused{ 0 };
@@ -79,12 +88,16 @@ namespace launcher_ui
                         LauncherConfig value;
                         value["launcher"]["payload"] = std::string(4096, char('a' + writer));
                         for (int write = 0; write < 10; ++write)
-                            if (!SaveLauncherConfig(file, value)) ++refused;
+                            if (!SaveLauncherConfig(file, value))
+                                ++refused;
                     });
-                for (auto& writer : writers) writer.join();
+                for (auto& writer : writers)
+                    writer.join();
                 const auto saved = LoadLauncherConfig(file);
                 const std::string payload = SettingGet(saved, "launcher", "payload");
-                expect(refused == 0 && payload.size() == 4096 && std::all_of(payload.begin(), payload.end(), [&](char c) { return c == payload.front(); }), "concurrent settings writes each produce a complete file");
+                expect(refused == 0 && payload.size() == 4096 &&
+                           std::all_of(payload.begin(), payload.end(), [&](char c) { return c == payload.front(); }),
+                    "concurrent settings writes each produce a complete file");
                 return failures == 0 ? 0 : 1;
             }
             if (mode == "migration")
@@ -95,7 +108,8 @@ namespace launcher_ui
                 fs::create_directories(session);
                 std::ofstream(session / "keep") << "keep";
                 app.m_s->collection->Open();
-                expect(config["portal"]["place"] == figure && config["collection"]["moved"] != "1", "failed migration retains the old portal settings for retry");
+                expect(config["portal"]["place"] == figure && config["collection"]["moved"] != "1",
+                    "failed migration retains the old portal settings for retry");
                 return failures == 0 ? 0 : 1;
             }
             if (mode == "catalogue")
@@ -104,10 +118,12 @@ namespace launcher_ui
                 fs::create_directories(file.parent_path());
                 const std::string damaged = "{\"format\":1,\"toys\":[";
                 std::ofstream(file) << damaged;
-                expect(!NameUnknownToy(3502, "Synthetic toy", collection::Category::Core, "ssa"), "damaged catalogue refuses a rewrite");
+                expect(!NameUnknownToy(3502, "Synthetic toy", collection::Category::Core, "ssa"),
+                    "damaged catalogue refuses a rewrite");
                 {
                     std::ifstream in(file);
-                    expect(std::string(std::istreambuf_iterator<char>(in), {}) == damaged, "damaged catalogue stays available for recovery");
+                    expect(std::string(std::istreambuf_iterator<char>(in), {}) == damaged,
+                        "damaged catalogue stays available for recovery");
                 }
                 fs::remove(file);
 #if !defined(_WIN32)
@@ -143,18 +159,28 @@ namespace launcher_ui
                 return failures == 0 ? 0 : 1;
             }
             expect(app.Init(), "offscreen window initialized");
-            if (failures != 0) return 1;
+            if (failures != 0)
+                return 1;
             i18n::SetLanguage("en");
             if (mode == "notes")
             {
-                std::ofstream(root / "release.json") << "{\"tag_name\":\"v99.0.0\",\"body\":\"#\\n###\\n# Title\",\"assets\":[]}";
+                std::ofstream(root / "release.json")
+                    << "{\"tag_name\":\"v99.0.0\",\"body\":\"#\\n###\\n# Title\",\"assets\":[]}";
                 TestSetEnv("SKY_LAUNCHER_UPDATE_URL", TestFileUrl(root / "release.json").c_str());
                 app.m_updates.Check({});
-                while (app.m_updates.Busy()) SDL_Delay(5);
+                while (app.m_updates.Busy())
+                    SDL_Delay(5);
                 expect(app.m_updates.Snapshot().checked, "local release read");
                 app.m_whatsNewOpen = true;
-                try { app.Frame(); app.Frame(); }
-                catch (const std::out_of_range&) { expect(false, "empty Markdown headings render without an exception"); }
+                try
+                {
+                    app.Frame();
+                    app.Frame();
+                }
+                catch (const std::out_of_range&)
+                {
+                    expect(false, "empty Markdown headings render without an exception");
+                }
                 return failures == 0 ? 0 : 1;
             }
             CollectionPage& page = *app.m_s->collection;
@@ -163,7 +189,8 @@ namespace launcher_ui
             std::vector<uint32_t> items;
             auto item = [&](const char* label) {
                 for (uint32_t id : items)
-                    if (ui::Ctx().testNavigationLabels[id] == label) return id;
+                    if (ui::Ctx().testNavigationLabels[id] == label)
+                        return id;
                 return uint32_t(0);
             };
             ui::Ctx().testNavigationItems = &items;
@@ -190,7 +217,8 @@ namespace launcher_ui
                     ui::Ctx().hold.Update(restore, true, true, SDL_GetTicks() + 1, done);
                     SDL_Delay(HoldConfirm::HoldMs + 5);
                     app.Frame(); // Restore reloads the collection while this list is being drawn.
-                    expect(page.m_model.Find(first) != nullptr && page.m_model.Find(second) != nullptr, "both figures remain after restore");
+                    expect(page.m_model.Find(first) != nullptr && page.m_model.Find(second) != nullptr,
+                        "both figures remain after restore");
                 }
             }
             else if (mode == "sheet")

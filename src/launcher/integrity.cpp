@@ -59,7 +59,8 @@ std::vector<std::string> InstalledGameFiles(const fs::path& gameFolder, const fs
         AddTree(gameFolder, gameFolder / bundle, files);
     else
         files.push_back(Generic(relative));
-    for (const char* name : { "THIRD_PARTY_NOTICES.md", "game_icon.png", "game_icon.ico", "game_icon.icns", "game.desktop" })
+    for (const char* name :
+        { "THIRD_PARTY_NOTICES.md", "game_icon.png", "game_icon.ico", "game_icon.icns", "game.desktop" })
         if (fs::is_regular_file(gameFolder / name, error))
             files.push_back(name);
     AddTree(gameFolder, gameFolder / "fonts", files);
@@ -82,7 +83,8 @@ bool WriteInstalledGameList(const fs::path& gameFolder, const fs::path& runtime,
 IntegrityFinding CheckFolder(const IntegrityTarget& target, const std::atomic<bool>* cancel)
 {
     filelist::Result result = filelist::Check(target.folder, cancel);
-    return { target.id, target.folder, result.cancelled ? std::vector<filelist::Problem>() : std::move(result.problems) };
+    return { target.id, target.folder,
+        result.cancelled ? std::vector<filelist::Problem>() : std::move(result.problems) };
 }
 
 IntegrityCheck::~IntegrityCheck()
@@ -101,7 +103,8 @@ void IntegrityCheck::WriteGameList(const fs::path& gameFolder, const fs::path& r
     m_writing = true;
     m_writer = std::thread([this, gameFolder, runtime] {
         if (std::string error; !WriteInstalledGameList(gameFolder, runtime, error))
-            fprintf(stderr, "launcher: no file list for %s: %s\n", gameFolder.filename().string().c_str(), error.c_str());
+            fprintf(
+                stderr, "launcher: no file list for %s: %s\n", gameFolder.filename().string().c_str(), error.c_str());
         m_writing = false;
     });
 }

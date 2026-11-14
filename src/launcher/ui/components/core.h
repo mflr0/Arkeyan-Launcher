@@ -23,25 +23,45 @@ namespace ui
     };
 
     // Whose names the pad legend and the key caps show: the keyboard's keys or a pad family's buttons.
-    enum class Glyphs { Keyboard, Xbox, PlayStation, Nintendo };
+    enum class Glyphs
+    {
+        Keyboard,
+        Xbox,
+        PlayStation,
+        Nintendo
+    };
 
     // One per window, set by the window before it draws (App::Frame).
     struct Context
     {
         Fonts fonts;
-        unsigned accent = color::Focus;  // the focus ring: the shown game's accent on its pages, the launcher's blue elsewhere
+        unsigned accent =
+            color::Focus;  // the focus ring: the shown game's accent on its pages, the launcher's blue elsewhere
         Glyphs glyphs = Glyphs::Keyboard;
         bool reduceMotion = false;
         uint64_t now = 0;                // this frame's time, ms
         launcher_ui::HoldConfirm hold;   // the hold-to-confirm buttons' state (one is held at a time)
         uint32_t testHeld = 0;           // the screenshot test holds this hold button down (its ImGui ID)
-        bool animating = false;          // something drawn last frame moves (a spinner, a held button): draw again now
-        uint32_t holdHintId = 0;         // the hold button whose "Hold to confirm" shows after a tap too short
+        bool animating = false; // something drawn last frame moves (a spinner, a held button): draw again now
+        uint32_t holdHintId = 0; // the hold button whose "Hold to confirm" shows after a tap too short
         uint64_t holdHintUntil = 0;
         std::vector<uint32_t>* testNavigationItems = nullptr; // screenshot checks: enabled controls in the game page
         std::map<uint32_t, std::string> testNavigationLabels;
-        struct TestStop { uint32_t id, root; ImVec2 min, max; bool shown; }; // shown: not scrolled out of its window
-        std::vector<TestStop>* testStops = nullptr; // the pad walk: every enabled stop drawn, its top window's ID and its rectangle
+        struct TestStop
+        {
+            uint32_t id, root;
+            ImVec2 min, max;
+            bool shown;
+        }; // shown: not scrolled out of its window
+        std::vector<TestStop>* testStops =
+            nullptr; // the pad walk: every enabled stop drawn, its top window's ID and its rectangle
+        struct TestHint
+        {
+            int button;
+            std::string label;
+            bool withNext;
+        };
+        std::map<uint32_t, std::vector<TestHint>> testLegendHints;
         std::vector<uint32_t>* testLegends = nullptr; // the pad walk: the top windows a pad legend was drawn in
     };
     Context& Ctx();
@@ -53,12 +73,12 @@ namespace ui
     struct State
     {
         bool hovered = false;
-        bool focused = false;  // the keyboard or pad focus, with its cursor shown (the mouse hides it)
+        bool focused = false; // the keyboard or pad focus, with its cursor shown (the mouse hides it)
         bool pressed = false;
         bool disabled = false;
         bool loading = false;
-        float holdFill = -1;   // the gallery: a hold button this far into its hold
-        bool preview = false;  // forced by PreviewState (a tooltip then shows at once)
+        float holdFill = -1; // the gallery: a hold button this far into its hold
+        bool preview = false; // forced by PreviewState (a tooltip then shows at once)
     };
     // The gallery: the next item a component reads its state from (its first part: the main half of the main action, the
     // first tab) looks as if in `state`, whatever the input does.
@@ -115,7 +135,8 @@ namespace ui
     void FocusRingIf(const State& state, float rounding, ImDrawFlags flags = 0);
     void SoftShadow(ImDrawList* draw, ImVec2 min, ImVec2 max, float rounding, float offsetY, float spread, float alpha);
     // A rounded rectangle filled with a vertical gradient, alpha included (`flags`: which corners are rounded).
-    void GradientRect(ImDrawList* draw, ImVec2 min, ImVec2 max, ImU32 top, ImU32 bottom, float rounding, ImDrawFlags flags = 0);
+    void GradientRect(
+        ImDrawList* draw, ImVec2 min, ImVec2 max, ImU32 top, ImU32 bottom, float rounding, ImDrawFlags flags = 0);
     // A short text in a bubble under min..max (above it when there is no room below), kept inside the window: the tooltip
     // of a control and the hint of a hold button. Drawn this frame only.
     void Bubble(const char* text, ImVec2 min, ImVec2 max);
@@ -128,13 +149,45 @@ namespace ui
     // square of `size` points (icon::Small, Normal or Large). ----
     enum class Icon
     {
-        None, Check, Cross, Plus, Minus, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, ArrowUp, ArrowDown,
-        Search, Gear, Info, Warning, Error, Download, Trash, Folder, Disc, Play, Hold, More, Star,
-        Success, Update, Pause, Unknown, Loader, // a state: done, an update, stopped, not known yet; the spinner's
-        Gamepad, Circle, Square, Triangle, // with Cross: PlayStation's face buttons
-        Trophy, External, // External: opens a web page
-        Stop, Monitor, // the running game's actions
-        Sound, Muted // the speaker, on and crossed
+        None,
+        Check,
+        Cross,
+        Plus,
+        Minus,
+        ChevronDown,
+        ChevronUp,
+        ChevronLeft,
+        ChevronRight,
+        ArrowUp,
+        ArrowDown,
+        Search,
+        Gear,
+        Info,
+        Warning,
+        Error,
+        Download,
+        Trash,
+        Folder,
+        Disc,
+        Play,
+        Hold,
+        More,
+        Star,
+        Success,
+        Update,
+        Pause,
+        Unknown,
+        Loader, // a state: done, an update, stopped, not known yet; the spinner's
+        Gamepad,
+        Circle,
+        Square,
+        Triangle, // with Cross: PlayStation's face buttons
+        Trophy,
+        External, // External: opens a web page
+        Stop,
+        Monitor, // the running game's actions
+        Sound,
+        Muted // the speaker, on and crossed
     };
     void DrawIcon(ImDrawList* draw, Icon icon, ImVec2 centre, float size, ImU32 color);
     // The loader icon turning (an indeterminate wait); still when motion is reduced.

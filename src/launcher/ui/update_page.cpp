@@ -11,9 +11,8 @@ std::string GameUpdateSummary(const std::vector<std::string>& games)
 {
     if (games.empty())
         return Tr("Arkeyan Launcher is up to date.");
-    return games.size() == 1
-        ? Tf("Arkeyan Launcher is up to date. An update is available for {}.", games.front())
-        : Tf("Arkeyan Launcher is up to date. {} game updates available.", games.size());
+    return games.size() == 1 ? Tf("Arkeyan Launcher is up to date. An update is available for {}.", games.front())
+                             : Tf("Arkeyan Launcher is up to date. {} game updates available.", games.size());
 }
 
 namespace launcher_ui
@@ -27,7 +26,8 @@ namespace launcher_ui
 
         std::string Fit(const std::string& text, float width)
         {
-            return launcher_ui::FitText(text, width, [](const std::string& s) { return ImGui::CalcTextSize(s.c_str()).x; });
+            return launcher_ui::FitText(
+                text, width, [](const std::string& s) { return ImGui::CalcTextSize(s.c_str()).x; });
         }
 
         const char* PlatformName()
@@ -72,10 +72,10 @@ namespace launcher_ui
                 if (state.checked)
                     m_gameUpdates = state.games; // offline or failed: silent, the list stays as it was
                 if (m_updateManual)
-                    m_updateDoneNote = !state.checked ? Tf("Couldn't check: {}", state.checkError)
-                        : state.launcherNewer          ? Tf("Version {} is available.", state.launcher.tag)
-                        : AnyGameUpdate()              ? GameUpdateNote()
-                                                       : Tr("Arkeyan Launcher is up to date.");
+                    m_updateDoneNote = !state.checked        ? Tf("Couldn't check: {}", state.checkError)
+                                       : state.launcherNewer ? Tf("Version {} is available.", state.launcher.tag)
+                                       : AnyGameUpdate()     ? GameUpdateNote()
+                                                             : Tr("Arkeyan Launcher is up to date.");
             }
         }
     }
@@ -93,11 +93,12 @@ namespace launcher_ui
     {
         UpdateManager::State state = m_updates.Snapshot();
         using Phase = UpdateManager::Phase;
-        bool progress = state.phase == Phase::Downloading || state.phase == Phase::Verifying || state.phase == Phase::Installing;
+        bool progress =
+            state.phase == Phase::Downloading || state.phase == Phase::Verifying || state.phase == Phase::Installing;
         bool offer = state.launcherNewer && !m_updateLater;
-        bool shown = progress || state.restartNeeded || (state.phase == Phase::Failed && !state.error.empty()) || offer ||
-            (state.phase == Phase::Done && !state.note.empty());
-        return shown ? BannerH : 0;
+        bool shown = progress || state.restartNeeded || (state.phase == Phase::Failed && !state.error.empty()) ||
+                     offer || (state.phase == Phase::Done && !state.note.empty());
+        return shown ? BannerH + (ui::Ctx().glyphs != ui::Glyphs::Keyboard ? ui::height::Normal : 0) : 0;
     }
 
     void App::DrawUpdateBanner(float height)
@@ -109,19 +110,37 @@ namespace launcher_ui
         ImGui::SetNextWindowSize(ImVec2(display.x - SidebarW, height));
         ImGui::PushStyleColor(ImGuiCol_WindowBg, Rgb(BottomBar));
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(ui::space::L, ui::space::XS));
-        ImGui::Begin("##updatebanner", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings |
-            ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+        ImGui::Begin("##updatebanner", nullptr,
+            ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings |
+                ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
         ImDrawList* draw = ImGui::GetWindowDrawList();
         ImVec2 at = ImGui::GetWindowPos();
-        draw->AddRectFilled(ImVec2(at.x, at.y + height - ui::stroke::Selection), ImVec2(at.x + display.x - SidebarW, at.y + height), Rgb(ui::color::AccentFillPressed));
+        draw->AddRectFilled(ImVec2(at.x, at.y + height - ui::stroke::Selection),
+            ImVec2(at.x + display.x - SidebarW, at.y + height), Rgb(ui::color::AccentFillPressed));
 
         // Buttons are laid out from the right; the text takes what is left.
-        struct Button { const char* label; bool primary; int action; };
+        struct Button
+        {
+            const char* label;
+            bool primary;
+            int action;
+        };
         std::vector<Button> buttons;
         std::string text;
         float barFraction = -1;
-        bool progress = state.phase == Phase::Downloading || state.phase == Phase::Verifying || state.phase == Phase::Installing;
-        enum { None, WhatsNew, UpdateLauncher, Later, Restart, Cancel, Retry, Dismiss };
+        bool progress =
+            state.phase == Phase::Downloading || state.phase == Phase::Verifying || state.phase == Phase::Installing;
+        enum
+        {
+            None,
+            WhatsNew,
+            UpdateLauncher,
+            Later,
+            Restart,
+            Cancel,
+            Retry,
+            Dismiss
+        };
         if (state.restartNeeded)
         {
             text = Tf("Arkeyan Launcher {} is installed. Restart to use it.", state.launcher.tag);
@@ -130,7 +149,7 @@ namespace launcher_ui
         else if (progress)
         {
             text = state.phase == Phase::Downloading ? Tr("Downloading Arkeyan Launcher")
-                : state.phase == Phase::Verifying    ? Tr("Checking Arkeyan Launcher")
+                   : state.phase == Phase::Verifying ? Tr("Checking Arkeyan Launcher")
                                                      : Tr("Installing Arkeyan Launcher");
             barFraction = state.phase == Phase::Downloading ? state.progress : -1;
             if (state.phase == Phase::Downloading)
@@ -149,7 +168,8 @@ namespace launcher_ui
         else if (state.launcherNewer && !m_updateLater)
         {
             text = Tf("Update available: {}", state.launcher.tag);
-            buttons = { { Tr("Update now"), true, UpdateLauncher }, { Tr("What's new"), false, WhatsNew }, { Tr("Later"), false, Later } };
+            buttons = { { Tr("Update now"), true, UpdateLauncher }, { Tr("What's new"), false, WhatsNew },
+                { Tr("Later"), false, Later } };
         }
         // else: BannerHeight said there is nothing to show, and the banner is not drawn
 
@@ -164,9 +184,11 @@ namespace launcher_ui
             buttonsW += ui::ButtonWidth(button.label, optionsOf(button)) + ui::space::S;
         const float contentW = display.x - SidebarW - 2 * ui::space::L;
         const float textW = contentW - buttonsW - ui::space::M;
-        const float middle = (height - ui::stroke::Selection) / 2;
+        const float legendH = ui::Ctx().glyphs != ui::Glyphs::Keyboard ? ui::height::Normal : 0;
+        const float middle = (height - legendH - ui::stroke::Selection) / 2;
         ImGui::SetCursorPos(ImVec2(ui::space::L, std::round(middle - ui::SizeOf(ui::TextStyle::Body) / 2)));
-        std::string shown = ui::Ellipsize(text.c_str(), progress ? std::min(textW, ui::TextSize(ui::TextStyle::Body, text.c_str(), nullptr, true).x) : textW);
+        std::string shown = ui::Ellipsize(text.c_str(),
+            progress ? std::min(textW, ui::TextSize(ui::TextStyle::Body, text.c_str(), nullptr, true).x) : textW);
         ui::Text(ui::TextStyle::Body, shown.c_str(), ui::color::Ink, -1, true);
         if (shown != text && ImGui::IsItemHovered()) // cut to fit: the whole message under the pointer
             ImGui::SetTooltip("%s", text.c_str());
@@ -199,6 +221,34 @@ namespace launcher_ui
             x += ui::ButtonWidth(button.label, options) + ui::space::S;
         }
         ui::NavJoin(nullptr);
+        const int backAction = state.restartNeeded                 ? None
+                               : state.phase == Phase::Downloading ? Cancel
+                               : state.phase == Phase::Failed || (state.phase == Phase::Done && !state.note.empty())
+                                   ? Dismiss
+                               : !progress && state.launcherNewer && !m_updateLater ? Later
+                                                                                    : None;
+        const char* back = backAction == Cancel    ? Tr("Cancel")
+                           : backAction == Later   ? Tr("Later")
+                           : backAction == Dismiss ? Tr("Close")
+                                                   : Tr("Back");
+        if (backAction != None)
+        {
+            const bool pressedBack = ui::PadAction(ui::PadButton::East, back);
+            m_bannerTakesBack = ui::HasInput() && ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
+            if (m_bannerTakesBack && pressedBack)
+                pressed = backAction;
+        }
+        if (legendH > 0)
+        {
+            ImGui::SetCursorPos(ImVec2(ui::space::L, height - legendH));
+            ui::PageLegend(back, contentW, false, !buttons.empty());
+        }
+        // A banner that loses its controls must not strand the focus in a window with no stops.
+        if (pressed != None || (buttons.empty() && ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows)))
+        {
+            RequestFocus(FocusTo::Page);
+            m_bannerTakesBack = false;
+        }
         ImGui::End();
         ImGui::PopStyleVar();
         ImGui::PopStyleColor();
@@ -249,12 +299,17 @@ namespace launcher_ui
             return;
         UpdateManager::State state = m_updates.Snapshot();
         bool open = true;
-        if (ui::BeginModal("##whatsnew", Tf("What's new in {}", state.launcher.tag).c_str(), &open, ui::ModalSize::Large))
+        if (ui::BeginModal(
+                "##whatsnew", Tf("What's new in {}", state.launcher.tag).c_str(), &open, ui::ModalSize::Large))
         {
             // The notes in an inset card as tall as the window allows (the title and the actions take the rest): the release's
             // Markdown read simply, its headings as bold lines, its "- " items as bullets, the rest as written.
-            const float room = ImGui::GetIO().DisplaySize.y - 2 * ui::space::XL - 3 * ui::height::Large - ui::ModalLegendHeight();
-            ui::BeginCard("##notes", ImVec2(0, std::clamp(room, 3.0f * ui::height::Large, 8.0f * ui::height::Large - ui::ModalLegendHeight())), { .inset = true, .padding = ui::space::M });
+            const float room =
+                ImGui::GetIO().DisplaySize.y - 2 * ui::space::XL - 3 * ui::height::Large - ui::ModalLegendHeight();
+            ui::BeginCard("##notes",
+                ImVec2(
+                    0, std::clamp(room, 3.0f * ui::height::Large, 8.0f * ui::height::Large - ui::ModalLegendHeight())),
+                { .inset = true, .padding = ui::space::M });
             ImGui::SetScrollX(0.0f);
             std::string notes = Trimmed(StripHtmlComments(state.launcher.notes));
             if (notes.empty())
@@ -292,7 +347,8 @@ namespace launcher_ui
                     {
                         line = Trimmed(line.substr(2));
                         const ImVec2 at = ImGui::GetCursorScreenPos();
-                        ImGui::GetWindowDrawList()->AddCircleFilled(ImVec2(at.x + ui::space::XS / 2, at.y + ui::CapMiddle(ui::TextStyle::Body)), 2.0f,
+                        ImGui::GetWindowDrawList()->AddCircleFilled(
+                            ImVec2(at.x + ui::space::XS / 2, at.y + ui::CapMiddle(ui::TextStyle::Body)), 2.0f,
                             ui::Col(ui::color::InkSoft));
                         ImGui::SetCursorScreenPos(ImVec2(at.x + ui::space::M, at.y));
                     }
@@ -312,17 +368,16 @@ namespace launcher_ui
             const ui::ModalResult result = ui::ModalActions(&open, Tr("Update now"), Tr("Close"));
             const float actionsY = ImGui::GetItemRectMin().y, afterY = ImGui::GetCursorPosY();
             ImGui::SetCursorScreenPos(ImVec2(ImGui::GetWindowPos().x + ImGui::GetCursorStartPos().x, actionsY));
-            if (ui::Button(Tr("Release page"), { .kind = ui::ButtonKind::Ghost, .icon = ui::Icon::External, .disabled = state.launcher.pageUrl.empty() }))
+            if (ui::Button(Tr("Release page"), { .kind = ui::ButtonKind::Ghost,
+                                                   .icon = ui::Icon::External,
+                                                   .disabled = state.launcher.pageUrl.empty() }))
                 SDL_OpenURL(state.launcher.pageUrl.c_str());
             ImGui::SetCursorPosY(afterY);
             ImGui::Dummy(ImVec2(0, 0));
             switch (result)
             {
-            case ui::ModalResult::Confirm:
-                UpdateLauncherNow();
-                break;
-            default:
-                break;
+            case ui::ModalResult::Confirm: UpdateLauncherNow(); break;
+            default: break;
             }
             ui::EndModal();
         }
@@ -358,13 +413,20 @@ namespace launcher_ui
     void App::DrawAbout()
     {
         ui::Text(ui::TextStyle::Display, "Arkeyan Launcher", ui::color::AccentFill, -1);
-        ui::Text(ui::TextStyle::Body, Tf("Version {}, {}", LauncherVersion(), PlatformName()).c_str(), ui::color::InkSoft);
-        ui::Text(ui::TextStyle::Body, Tr("Native PC ports of Skylanders. No game code or art: it comes from your disc."));
+        ui::Text(
+            ui::TextStyle::Body, Tf("Version {}, {}", LauncherVersion(), PlatformName()).c_str(), ui::color::InkSoft);
+        ui::Text(
+            ui::TextStyle::Body, Tr("Native PC ports of Skylanders. No game code or art: it comes from your disc."));
 
         ui::SectionHeader(Tr("Credits"));
         ui::Text(ui::TextStyle::Body, Tr("Designed by dorydev, made by mflr0, UI/UX by Gumelia."), ui::color::InkSoft);
-        ui::Text(ui::TextStyle::Body, Tr("Built with SDL 3, Dear ImGui, {fmt}, stb, miniz, XenonRecomp, Outfit and Bungee. MIT licensed."), ui::color::InkSoft);
-        ui::Text(ui::TextStyle::Body, Tr("Games: XenonRecomp, XenosRecomp, plume, SDL 3, Dear ImGui, FFmpeg, parts of Xenia. Figure format learned from Dolphin and RPCS3."), ui::color::InkSoft);
+        ui::Text(ui::TextStyle::Body,
+            Tr("Built with SDL 3, Dear ImGui, {fmt}, stb, miniz, XenonRecomp, Outfit and Bungee. MIT licensed."),
+            ui::color::InkSoft);
+        ui::Text(ui::TextStyle::Body,
+            Tr("Games: XenonRecomp, XenosRecomp, plume, SDL 3, Dear ImGui, FFmpeg, parts of Xenia. Figure format "
+               "learned from Dolphin and RPCS3."),
+            ui::color::InkSoft);
         ImGui::Dummy(ImVec2(0, ui::space::XXS));
         // Each opens a web page: the External icon, as Release page's; the row's gap is the buttons' (S).
         const ui::ButtonOptions web{ .icon = ui::Icon::External };
@@ -377,7 +439,10 @@ namespace launcher_ui
         if (ui::Button(Tr("Report a bug"), web))
             SDL_OpenURL((std::string(Project) + "/issues/new").c_str());
         ImGui::Dummy(ImVec2(0, ui::space::XS));
-        ui::Text(ui::TextStyle::Caption, Tr("Skylanders, Spyro and Activision are trademarks of Activision Publishing, Inc. This project is not affiliated with or endorsed by Activision."), ui::color::Dim);
+        ui::Text(ui::TextStyle::Caption,
+            Tr("Skylanders, Spyro and Activision are trademarks of Activision Publishing, Inc. This project is not "
+               "affiliated with or endorsed by Activision."),
+            ui::color::Dim);
     }
 
     // The update screens (SKY_LAUNCHER_TEST_UPDATE, SKY_LAUNCHER_UPDATE_URL on a fake release): the banner, What's new, About
@@ -412,12 +477,11 @@ namespace launcher_ui
             m_updates.UpdateLauncher(); // a fake release without SHA256SUMS: refused; with one, the update is made
             m_updateWasBusy = true;
             m_page = Page::Play;
-            if (const auto phase = m_updates.Snapshot().phase; phase == UpdateManager::Phase::Failed || phase == UpdateManager::Phase::Done)
+            if (const auto phase = m_updates.Snapshot().phase;
+                phase == UpdateManager::Phase::Failed || phase == UpdateManager::Phase::Done)
                 m_testAt = now + 400;
             break;
-        default:
-            m_running = false;
-            break;
+        default: m_running = false; break;
         }
     }
 }

@@ -31,7 +31,7 @@ namespace i18n
 
     // A formatted string: its translation, with `{}` or `{0}`, `{1}`... in place of the arguments (a language may put them in
     // another order, with the numbered form). A translation that doesn't fit the arguments is replaced by the English one.
-    template<typename... Args>
+    template <typename... Args>
     std::string Tf(const char* english, Args&&... args)
     {
         try
@@ -58,5 +58,5 @@ namespace i18n
     bool ParseCatalog(std::string_view text, Catalog& out);
 }
 
-using i18n::Tr;
 using i18n::Tf;
+using i18n::Tr;

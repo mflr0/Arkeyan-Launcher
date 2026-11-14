@@ -40,7 +40,8 @@ namespace
 
 #ifdef __APPLE__
     constexpr char SelectAgainHint[] = "hold Shift (or Option) while the app starts, or start it with --launcher";
-    constexpr char PermissionHint[] = N_("\n\nAllow access in System Settings > Privacy & Security > Files and Folders.");
+    constexpr char PermissionHint[] =
+        N_("\n\nAllow access in System Settings > Privacy & Security > Files and Folders.");
 #else
     constexpr char SelectAgainHint[] = "hold Shift while the app starts, or start it with --launcher";
     constexpr char PermissionHint[] = "";
@@ -93,8 +94,8 @@ namespace
             return false;
         if (auto imports = FindXexHeader(xex, XexHeaderImportLibraries))
         {
-            if (*imports + 12 > header || *imports + ReadBE32(&xex[*imports]) > header
-                || uint64_t(ReadBE32(&xex[*imports + 4])) + 12 > ReadBE32(&xex[*imports]))
+            if (*imports + 12 > header || *imports + ReadBE32(&xex[*imports]) > header ||
+                uint64_t(ReadBE32(&xex[*imports + 4])) + 12 > ReadBE32(&xex[*imports]))
                 return false;
         }
         const uint64_t data = size - header;
@@ -111,7 +112,8 @@ namespace
         if (infoSize < 8 + 4 + 24)
             return false;
         const uint64_t window = ReadBE32(&xex[*format + 8]), firstBlock = ReadBE32(&xex[*format + 12]);
-        return window >= 0x8000 && window <= 0x200000 && (window & (window - 1)) == 0 && firstBlock >= 24 && firstBlock <= data;
+        return window >= 0x8000 && window <= 0x200000 && (window & (window - 1)) == 0 && firstBlock >= 24 &&
+               firstBlock <= data;
     }
 
     struct ExecutionInfo
@@ -132,7 +134,8 @@ namespace
 
     std::string FormatVersion(uint32_t version)
     {
-        return fmt::format("{}.{}.{}.{}", version >> 28, (version >> 24) & 0xF, (version >> 8) & 0xFFFF, version & 0xFF);
+        return fmt::format(
+            "{}.{}.{}.{}", version >> 28, (version >> 24) & 0xF, (version >> 8) & 0xFFFF, version & 0xFF);
     }
 
     // The XEX2 security info's region mask (0x178 into it; its offset is at 0x10): the consoles the disc runs on.
@@ -151,8 +154,8 @@ namespace
         if (region == 0xFFFFFFFF)
             return fmt::format("{:08X} (region free)", region);
         std::string names;
-        const std::pair<uint32_t, const char*> areas[] = { { 0x000000FF, "North America" }, { 0x0000FF00, "Japan and Asia" },
-            { 0x00FF0000, "Europe and Australia" } };
+        const std::pair<uint32_t, const char*> areas[] = { { 0x000000FF, "North America" },
+            { 0x0000FF00, "Japan and Asia" }, { 0x00FF0000, "Europe and Australia" } };
         for (const auto& [mask, name] : areas)
             if (region & mask)
                 names += (names.empty() ? "" : ", ") + std::string(name);
@@ -192,21 +195,76 @@ namespace
 
 std::string Sha256Hex(std::span<const uint8_t> data)
 {
-    static constexpr uint32_t K[64] =
-    {
-        0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
-        0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
-        0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
-        0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
-        0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
-        0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
-        0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
-        0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2,
+    static constexpr uint32_t K[64] = {
+        0x428a2f98,
+        0x71374491,
+        0xb5c0fbcf,
+        0xe9b5dba5,
+        0x3956c25b,
+        0x59f111f1,
+        0x923f82a4,
+        0xab1c5ed5,
+        0xd807aa98,
+        0x12835b01,
+        0x243185be,
+        0x550c7dc3,
+        0x72be5d74,
+        0x80deb1fe,
+        0x9bdc06a7,
+        0xc19bf174,
+        0xe49b69c1,
+        0xefbe4786,
+        0x0fc19dc6,
+        0x240ca1cc,
+        0x2de92c6f,
+        0x4a7484aa,
+        0x5cb0a9dc,
+        0x76f988da,
+        0x983e5152,
+        0xa831c66d,
+        0xb00327c8,
+        0xbf597fc7,
+        0xc6e00bf3,
+        0xd5a79147,
+        0x06ca6351,
+        0x14292967,
+        0x27b70a85,
+        0x2e1b2138,
+        0x4d2c6dfc,
+        0x53380d13,
+        0x650a7354,
+        0x766a0abb,
+        0x81c2c92e,
+        0x92722c85,
+        0xa2bfe8a1,
+        0xa81a664b,
+        0xc24b8b70,
+        0xc76c51a3,
+        0xd192e819,
+        0xd6990624,
+        0xf40e3585,
+        0x106aa070,
+        0x19a4c116,
+        0x1e376c08,
+        0x2748774c,
+        0x34b0bcb5,
+        0x391c0cb3,
+        0x4ed8aa4a,
+        0x5b9cca4f,
+        0x682e6ff3,
+        0x748f82ee,
+        0x78a5636f,
+        0x84c87814,
+        0x8cc70208,
+        0x90befffa,
+        0xa4506ceb,
+        0xbef9a3f7,
+        0xc67178f2,
     };
-    uint32_t hash[8] = { 0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19 };
+    uint32_t hash[8] = { 0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab,
+        0x5be0cd19 };
     auto rotate = [](uint32_t x, int n) { return (x >> n) | (x << (32 - n)); };
-    auto processBlock = [&](const uint8_t* block)
-    {
+    auto processBlock = [&](const uint8_t* block) {
         uint32_t w[64];
         for (int i = 0; i < 16; i++)
             w[i] = ReadBE32(block + i * 4);
@@ -231,8 +289,14 @@ std::string Sha256Hex(std::span<const uint8_t> data)
             b = a;
             a = t1 + t2;
         }
-        hash[0] += a; hash[1] += b; hash[2] += c; hash[3] += d;
-        hash[4] += e; hash[5] += f; hash[6] += g; hash[7] += h;
+        hash[0] += a;
+        hash[1] += b;
+        hash[2] += c;
+        hash[3] += d;
+        hash[4] += e;
+        hash[5] += f;
+        hash[6] += g;
+        hash[7] += h;
     };
 
     size_t whole = data.size() / 64 * 64;
@@ -261,7 +325,10 @@ std::string Sha256Hex(std::span<const uint8_t> data)
 GameSourceCheck CheckGameSource(const std::string& path, const GameInfo& game, const GameSourceProgress& progress)
 {
     using enum GameSourceStatus;
-    auto report = [&](float fraction, std::string_view step) { if (progress) progress(fraction, step); };
+    auto report = [&](float fraction, std::string_view step) {
+        if (progress)
+            progress(fraction, step);
+    };
 
     report(0.03f, Tr("Looking for the disc image"));
     SDL_PathInfo info;
@@ -313,7 +380,8 @@ GameSourceCheck CheckGameSource(const std::string& path, const GameInfo& game, c
     if (owner != &game)
     {
         std::string found = owner != nullptr ? owner->name : Tf("another game (title ID {:08X})", execution->titleId);
-        return { WrongGame, Tf("This disc image is {}, not {}.", found, game.name), {}, owner != nullptr ? owner->id : "" };
+        return { WrongGame, Tf("This disc image is {}, not {}.", found, game.name), {},
+            owner != nullptr ? owner->id : "" };
     }
 
     // The disc's languages, from its files' names. Trap Team's are entries inside two or three of its archives: their
@@ -328,7 +396,9 @@ GameSourceCheck CheckGameSource(const std::string& path, const GameInfo& game, c
             if (file == nullptr || file->directory)
                 return entries;
             auto archive = art::alchemy::IgaArchive::Open(
-                [&](uint64_t offset, size_t size, uint8_t* out) { return disc.Read(*file, offset, out, uint32_t(size)) == size; },
+                [&](uint64_t offset, size_t size, uint8_t* out) {
+                    return disc.Read(*file, offset, out, uint32_t(size)) == size;
+                },
                 file->size);
             for (size_t i = 0; archive && i < archive->Count(); i++)
                 entries.push_back(archive->Name(i));
@@ -370,15 +440,19 @@ GameSourceCheck CheckGameSource(const std::string& path, const GameInfo& game, c
     {
         if (release.mediaId == execution->mediaId && release.version == execution->version)
         {
-            return { Damaged, Tf("This looks like the {} disc of {}, but it's damaged or modified. Copy the disc again.", release.label, game.name) };
+            return { Damaged,
+                Tf("This looks like the {} disc of {}, but it's damaged or modified. Copy the disc again.",
+                    release.label, game.name) };
         }
     }
 
     std::string supported;
     for (const GameRelease& release : game.releases)
-        supported += Tf("\n- {} (media ID {:08X}, version {})", release.label, release.mediaId, FormatVersion(release.version));
-    GameSourceCheck check{ WrongVersion, Tf("This is {}, but this disc version isn't supported yet (media ID {:08X}, version {}).\n\nSupported:{}",
-        game.name, execution->mediaId, FormatVersion(execution->version), supported) };
+        supported +=
+            Tf("\n- {} (media ID {:08X}, version {})", release.label, release.mediaId, FormatVersion(release.version));
+    GameSourceCheck check{ WrongVersion,
+        Tf("This is {}, but this disc version isn't supported yet (media ID {:08X}, version {}).\n\nSupported:{}",
+            game.name, execution->mediaId, FormatVersion(execution->version), supported) };
     // For a "New disc edition" issue: ids, sizes and the executable's hash. No path, no name, no game bytes.
     const std::optional<uint32_t> region = ReadRegion(xex);
     const art::DiscLanguages found = languages();
@@ -391,16 +465,23 @@ GameSourceCheck CheckGameSource(const std::string& path, const GameInfo& game, c
     std::error_code sizeError;
     const uintmax_t discSize = copy ? 0 : std::filesystem::file_size(datadir::FromText(path), sizeError);
     check.discDetails = fmt::format("Arkeyan Launcher {}: a disc edition it doesn't know\n", LauncherVersion());
-    check.discDetails += fmt::format("Game: {}\nTitle ID: {:08X}\nMedia ID: {:08X}\nVersion: {}\n", game.name, execution->titleId,
-        execution->mediaId, FormatVersion(execution->version));
+    check.discDetails += fmt::format("Game: {}\nTitle ID: {:08X}\nMedia ID: {:08X}\nVersion: {}\n", game.name,
+        execution->titleId, execution->mediaId, FormatVersion(execution->version));
     check.discDetails += fmt::format("Region: {}\n", region ? RegionText(*region) : "not known");
-    check.discDetails += fmt::format("Languages: {}\n", found.text.empty() && found.voice.empty() ? std::string("not known")
-        : fmt::format("text {}; voices {}", found.text.empty() ? "not known" : join(found.text), found.voice.empty() ? "not known" : join(found.voice)));
+    check.discDetails += fmt::format(
+        "Languages: {}\n", found.text.empty() && found.voice.empty()
+                               ? std::string("not known")
+                               : fmt::format("text {}; voices {}", found.text.empty() ? "not known" : join(found.text),
+                                     found.voice.empty() ? "not known" : join(found.voice)));
     check.discDetails += fmt::format("default.xex: {} bytes, SHA-256 {}\n", xex.size(), sha256);
-    check.discDetails += imageSha256.empty() ? std::string("Loaded image: not readable\n")
-        : fmt::format("Loaded image: {} bytes, SHA-256 {} (another game code than the supported releases')\n", imageSize, imageSha256);
-    check.discDetails += copy ? std::string("Disc image: a copy of the game data (a folder)\n")
-        : sizeError ? std::string("Disc image: size not known\n") : fmt::format("Disc image: {} bytes\n", discSize);
+    check.discDetails +=
+        imageSha256.empty()
+            ? std::string("Loaded image: not readable\n")
+            : fmt::format("Loaded image: {} bytes, SHA-256 {} (another game code than the supported releases')\n",
+                  imageSize, imageSha256);
+    check.discDetails += copy        ? std::string("Disc image: a copy of the game data (a folder)\n")
+                         : sizeError ? std::string("Disc image: size not known\n")
+                                     : fmt::format("Disc image: {} bytes\n", discSize);
     return check;
 }
 
@@ -425,7 +506,8 @@ TitleMetadata ReadTitleMetadata(const std::vector<uint8_t>& xex)
         uint32_t address = ReadBE32(resource + 8);
         uint32_t size = ReadBE32(resource + 12);
         Image image = Image::ParseImage(xex.data(), xex.size());
-        if (image.data == nullptr || address < image.base || address - image.base > image.size || size > image.size - (address - image.base))
+        if (image.data == nullptr || address < image.base || address - image.base > image.size ||
+            size > image.size - (address - image.base))
             break;
 
         XDBFWrapper xdbf(image.data.get() + (address - image.base), size);
@@ -466,7 +548,8 @@ LauncherArguments ParseLauncherArguments(int argc, const char* const* argv)
 const char* LauncherUsage()
 {
     return "Arkeyan Launcher [--game <id>] [--play]\n\n"
-           "  --game <id>  open on that game's page: ssa (Spyro's Adventure), giants (Giants), swapforce (Swap Force), trapteam (Trap Team),\n"
+           "  --game <id>  open on that game's page: ssa (Spyro's Adventure), giants (Giants), swapforce (Swap Force), "
+           "trapteam (Trap Team),\n"
            "               superchargers (SuperChargers) or imaginators (Imaginators)\n"
            "  --play       start the game as soon as its disc is checked (what a desktop shortcut runs)\n"
            "  --toybox <id> the Toy Box window of that game while it runs (the launcher opens it)\n"
@@ -514,12 +597,16 @@ LauncherConfig LoadLauncherConfig(const std::string& path)
     // Older versions had "[launcher] language=game" (follow the shown game's language): it is the system's language now, and the
     // key goes at the next save.
     if (auto launcher = config.find("launcher"); launcher != config.end())
-        if (auto language = launcher->second.find("language"); language != launcher->second.end() && language->second == "game")
+        if (auto language = launcher->second.find("language");
+            language != launcher->second.end() && language->second == "game")
             launcher->second.erase(language);
     return config;
 }
 
-namespace { bool g_configFrozen = false; }
+namespace
+{
+    bool g_configFrozen = false;
+}
 
 void FreezeLauncherConfig() { g_configFrozen = true; }
 
@@ -632,6 +719,25 @@ namespace
     }
 }
 
+std::string GameLibraryPath(const char* libraryPath, const char* systemLibraryPath)
+{
+    if (systemLibraryPath != nullptr)
+        return systemLibraryPath;
+    std::string kept;
+    for (std::string_view rest = libraryPath != nullptr ? libraryPath : ""; !rest.empty();)
+    {
+        const size_t colon = rest.find(':');
+        const std::string_view entry = rest.substr(0, colon);
+        rest = colon == std::string_view::npos ? std::string_view() : rest.substr(colon + 1);
+        const bool steam = entry.find("/steam-runtime") != std::string_view::npos ||
+                           entry.find("/ubuntu12_32") != std::string_view::npos ||
+                           entry.find("/ubuntu12_64") != std::string_view::npos;
+        if (!entry.empty() && !steam)
+            kept += (kept.empty() ? "" : ":") + std::string(entry);
+    }
+    return kept;
+}
+
 SDL_Environment* CreateGameEnvironment(const std::vector<std::pair<std::string, std::string>>& set)
 {
     SDL_Environment* environment = SDL_CreateEnvironment(false);
@@ -658,6 +764,13 @@ SDL_Environment* CreateGameEnvironment(const std::vector<std::pair<std::string, 
                 SDL_SetEnvironmentVariable(environment, name.c_str(), entry.c_str() + equals + 1, false);
     }
     SDL_free(variables);
+#if defined(__linux__)
+    if (const std::string path = GameLibraryPath(SDL_getenv("LD_LIBRARY_PATH"), SDL_getenv("SYSTEM_LD_LIBRARY_PATH"));
+        path.empty())
+        SDL_UnsetEnvironmentVariable(environment, "LD_LIBRARY_PATH");
+    else
+        SDL_SetEnvironmentVariable(environment, "LD_LIBRARY_PATH", path.c_str(), true);
+#endif
     for (const auto& [name, value] : set)
         for (const std::string& each : AllNamesOf(name))
             SDL_SetEnvironmentVariable(environment, each.c_str(), value.c_str(), true);
@@ -679,8 +792,7 @@ void UnsetGameVariable(const char* currentName)
 LanguageChoice ResolveLanguages(const GameInfo& game)
 {
     LauncherConfig config = LoadLauncherConfig(LauncherConfigPath());
-    auto pick = [&](const char* variable, const char* key)
-    {
+    auto pick = [&](const char* variable, const char* key) {
         const char* value = getenv(variable);
         return value != nullptr ? std::string(value) : config[game.id][key];
     };
@@ -690,8 +802,7 @@ LanguageChoice ResolveLanguages(const GameInfo& game)
 void StoreDiscLanguages(LauncherConfig& config, std::string_view game, const art::DiscLanguages& languages)
 {
     auto& section = config[std::string(game)];
-    auto store = [&](const char* key, const std::vector<std::string>& codes)
-    {
+    auto store = [&](const char* key, const std::vector<std::string>& codes) {
         if (codes.empty())
             section.erase(key);
         else

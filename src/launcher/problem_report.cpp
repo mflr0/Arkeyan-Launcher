@@ -48,8 +48,8 @@ namespace
     }
 }
 
-launcher_report::Sources CurrentReportSources(const std::string& configPath, const LauncherConfig& config, const std::string& gameId,
-    const std::string& iso)
+launcher_report::Sources CurrentReportSources(
+    const std::string& configPath, const LauncherConfig& config, const std::string& gameId, const std::string& iso)
 {
     launcher_report::Sources sources;
     sources.runtimeFolder = RuntimeLogFolder();
@@ -71,7 +71,8 @@ launcher_report::Sources CurrentReportSources(const std::string& configPath, con
 SavedReport SaveProblemReportText(const std::string& text, bool show)
 {
     SavedReport saved;
-    saved.file = launcher_report::SaveToFirstFolder(text, launcher_report::FileName(), { DesktopFolder(), GameLogFolder() });
+    saved.file =
+        launcher_report::SaveToFirstFolder(text, launcher_report::FileName(), { DesktopFolder(), GameLogFolder() });
     if (saved.file.empty())
         saved.error = "no folder could be written";
     else if (show)
@@ -82,17 +83,21 @@ SavedReport SaveProblemReportText(const std::string& text, bool show)
 SavedReport SaveProblemReport(const std::string& configPath, const LauncherConfig& config, const std::string& gameId,
     const std::string& iso, bool show)
 {
-    return SaveProblemReportText(launcher_report::BuildReport(CurrentReportSources(configPath, config, gameId, iso)), show);
+    return SaveProblemReportText(
+        launcher_report::BuildReport(CurrentReportSources(configPath, config, gameId, iso)), show);
 }
 
 void ShowGameStopped(const GameInfo& game, int exitCode, const std::string& configPath, const LauncherConfig& config,
     const std::string& iso, SDL_Window* parent)
 {
     SDL_InitSubSystem(SDL_INIT_VIDEO);
-    std::string message = Tf("{} stopped unexpectedly (exit code {}).\n\nPress Report to save a report file with the log and where the game stopped.", game.name, exitCode);
-    const SDL_MessageBoxButtonData buttons[] = { { SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 2, Tr("Report") }, { 0, 1, Tr("Copy log") },
-        { SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 0, Tr("Close") } };
-    SDL_MessageBoxData box{ SDL_MESSAGEBOX_ERROR, parent, Tr("The game stopped unexpectedly"), message.c_str(), 3, buttons, nullptr };
+    std::string message = Tf("{} stopped unexpectedly (exit code {}).\n\nPress Report to save a report file with the "
+                             "log and where the game stopped.",
+        game.name, exitCode);
+    const SDL_MessageBoxButtonData buttons[] = { { SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 2, Tr("Report") },
+        { 0, 1, Tr("Copy log") }, { SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 0, Tr("Close") } };
+    SDL_MessageBoxData box{ SDL_MESSAGEBOX_ERROR, parent, Tr("The game stopped unexpectedly"), message.c_str(), 3,
+        buttons, nullptr };
     for (;;)
     {
         int pressed = 0;
@@ -105,9 +110,13 @@ void ShowGameStopped(const GameInfo& game, int exitCode, const std::string& conf
         }
         SavedReport saved = SaveProblemReport(configPath, config, game.id, iso);
         std::string title = fmt::format("The game stopped unexpectedly (exit code {})", exitCode);
-        std::string body = "What I was doing:\n\n\n" + (saved.file.empty() ? std::string("The report file could not be saved; the log is below.\n")
-            : "The report file is " + saved.file.filename().string() + " (on my Desktop or in the logs folder); I attach it here:\n\n");
-        SDL_OpenURL(("https://github.com/mflr0/Arkeyan-Launcher/issues/new?title=" + UrlEncode(title) + "&body=" + UrlEncode(body)).c_str());
+        std::string body = "What I was doing:\n\n\n" +
+                           (saved.file.empty() ? std::string("The report file could not be saved; the log is below.\n")
+                                               : "The report file is " + saved.file.filename().string() +
+                                                     " (on my Desktop or in the logs folder); I attach it here:\n\n");
+        SDL_OpenURL(("https://github.com/mflr0/Arkeyan-Launcher/issues/new?title=" + UrlEncode(title) +
+                     "&body=" + UrlEncode(body))
+                .c_str());
         return;
     }
 }

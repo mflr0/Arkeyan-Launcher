@@ -43,25 +43,27 @@ namespace launcher_ui
 
     std::string ElementName(collection::Element element)
     {
-        static const char* const Names[] = { N_("Air"), N_("Earth"), N_("Fire"), N_("Water"), N_("Magic"), N_("Tech"), N_("Life"), N_("Undead"),
-            N_("Light"), N_("Dark"), N_("No element") };
+        static const char* const Names[] = { N_("Air"), N_("Earth"), N_("Fire"), N_("Water"), N_("Magic"), N_("Tech"),
+            N_("Life"), N_("Undead"), N_("Light"), N_("Dark"), N_("No element") };
         return Tr(Names[std::min<size_t>(size_t(element), 10)]);
     }
 
     std::string CategoryLabel(collection::Category category)
     {
-        static const char* const Names[] = { N_("Skylanders"), N_("Giants"), N_("Swap Force tops"), N_("Swap Force bottoms"), N_("Trap Masters"),
-            N_("SuperChargers"), N_("Senseis"), N_("Minis and sidekicks"), N_("Traps"), N_("Villains"), N_("Vehicles"), N_("Creation Crystals"),
-            N_("Magic Items"), N_("Adventure Packs"), N_("Trophies") };
+        static const char* const Names[] = { N_("Skylanders"), N_("Giants"), N_("Swap Force tops"),
+            N_("Swap Force bottoms"), N_("Trap Masters"), N_("SuperChargers"), N_("Senseis"), N_("Minis and sidekicks"),
+            N_("Traps"), N_("Villains"), N_("Vehicles"), N_("Creation Crystals"), N_("Magic Items"),
+            N_("Adventure Packs"), N_("Trophies") };
         static_assert(std::size(Names) == size_t(collection::Category::Count));
         return category < collection::Category::Count ? Tr(Names[size_t(category)]) : std::string();
     }
 
     std::string KindLabel(collection::VariantKind kind)
     {
-        static const char* const Names[] = { N_("Standard"), N_("Legendary"), N_("Dark"), N_("Crystal Clear"), N_("Glow in the Dark"),
-            N_("Metallic"), N_("Gold"), N_("Silver"), N_("Chrome"), N_("Flocked"), N_("Series"), N_("LightCore"), N_("Eon's Elite"),
-            N_("Alternate deco"), N_("Event and exclusive"), N_("Trap shape"), N_("Other") };
+        static const char* const Names[] = { N_("Standard"), N_("Legendary"), N_("Dark"), N_("Crystal Clear"),
+            N_("Glow in the Dark"), N_("Metallic"), N_("Gold"), N_("Silver"), N_("Chrome"), N_("Flocked"), N_("Series"),
+            N_("LightCore"), N_("Eon's Elite"), N_("Alternate deco"), N_("Event and exclusive"), N_("Trap shape"),
+            N_("Other") };
         static_assert(std::size(Names) == size_t(collection::VariantKind::Count));
         return kind < collection::VariantKind::Count ? Tr(Names[size_t(kind)]) : std::string();
     }
@@ -74,8 +76,8 @@ namespace launcher_ui
         // launcher's language. A piece it does not know stays as it is (a name).
         std::string LevelPiece(const std::string& piece)
         {
-            static const char* const Classes[] = { N_("Knight"), N_("Bowslinger"), N_("Quickshot"), N_("Ninja"), N_("Brawler"),
-                N_("Smasher"), N_("Sorcerer"), N_("Swashbuckler"), N_("Sentinel"), N_("Bazooker") };
+            static const char* const Classes[] = { N_("Knight"), N_("Bowslinger"), N_("Quickshot"), N_("Ninja"),
+                N_("Brawler"), N_("Smasher"), N_("Sorcerer"), N_("Swashbuckler"), N_("Sentinel"), N_("Bazooker") };
             int level = 0, shown = 0;
             if (std::sscanf(piece.c_str(), "Level %d (%d)", &level, &shown) == 2)
                 return Tf("Level {} ({})", level, shown);
@@ -164,7 +166,9 @@ namespace launcher_ui
     {
         if (size_t(element) < 8)
             return Elements[size_t(element)];
-        return element == collection::Element::Light ? 0xE9D96A : element == collection::Element::Dark ? 0x7A6AA8 : 0x8A8A96;
+        return element == collection::Element::Light  ? 0xE9D96A
+               : element == collection::Element::Dark ? 0x7A6AA8
+                                                      : 0x8A8A96;
     }
 
     namespace
@@ -199,9 +203,10 @@ namespace launcher_ui
         }
 
         // The elements in the order the games' menus show them (the Element menu).
-        constexpr collection::Element MenuElements[] = { collection::Element::Magic, collection::Element::Earth, collection::Element::Water,
-            collection::Element::Air, collection::Element::Fire, collection::Element::Life, collection::Element::Undead, collection::Element::Tech,
-            collection::Element::Light, collection::Element::Dark };
+        constexpr collection::Element MenuElements[] = { collection::Element::Magic, collection::Element::Earth,
+            collection::Element::Water, collection::Element::Air, collection::Element::Fire, collection::Element::Life,
+            collection::Element::Undead, collection::Element::Tech, collection::Element::Light,
+            collection::Element::Dark };
     }
 
     // ---- Icons ----------------------------------------------------------------------------------------------------
@@ -220,17 +225,19 @@ namespace launcher_ui
 
     void CollectionPage::ClearIcons() { m_icons->Clear(); }
 
-    const FigureIconTexture& CollectionPage::Icon(const collection::Toy* toy, collection::VariantKind kind, bool large, uint16_t variant)
+    const FigureIconTexture& CollectionPage::Icon(
+        const collection::Toy* toy, collection::VariantKind kind, bool large, uint16_t variant)
     {
         // The newest cached art, independent of the viewed game (shared/collection/icons.h).
         if (toy != nullptr && variant == 0)
             variant = collection::VariantFor(*toy, kind);
-        std::string path = toy != nullptr ? collection::PortraitPath(m_app.m_s->game.id, *toy, variant, large) : std::string();
+        std::string path =
+            toy != nullptr ? collection::PortraitPath(m_app.m_s->game.id, *toy, variant, large) : std::string();
         // A creation crystal: the disc's one magenta picture, tinted per element (CrystalPicture).
         const bool crystal = toy != nullptr && toy->category == collection::Category::CreationCrystal && !path.empty();
-        std::string key = crystal ? fmt::format("crystal:{}:{}", toy->type, path)
-            : !path.empty()       ? path
-                                  : fmt::format("gen:{}:{}", toy != nullptr ? toy->type : 0xFFFF, int(kind));
+        std::string key = crystal         ? fmt::format("crystal:{}:{}", toy->type, path)
+                          : !path.empty() ? path
+                                          : fmt::format("gen:{}:{}", toy != nullptr ? toy->type : 0xFFFF, int(kind));
         auto found = m_icons->textures.find(key);
         if (found != m_icons->textures.end())
             return found->second;
@@ -241,7 +248,8 @@ namespace launcher_ui
             if (collection::Image image = collection::CrystalPicture(*toy, path); !image.Empty())
             {
                 std::vector<uint8_t> bytes(image.rgba.size() * 4);
-                std::memcpy(bytes.data(), image.rgba.data(), bytes.size()); // R, G, B, A in memory on the little-endian systems we run on
+                std::memcpy(bytes.data(), image.rgba.data(),
+                    bytes.size()); // R, G, B, A in memory on the little-endian systems we run on
                 icon.texture = LoadRgba(m_app.m_renderer, bytes, image.width, image.height);
             }
         }
@@ -258,7 +266,8 @@ namespace launcher_ui
         return m_icons->textures[key] = icon;
     }
 
-    void CollectionPage::DrawIcon(ImDrawList* draw, const collection::Toy* toy, collection::VariantKind kind, ImVec2 at, float size, bool large, uint16_t variant)
+    void CollectionPage::DrawIcon(ImDrawList* draw, const collection::Toy* toy, collection::VariantKind kind, ImVec2 at,
+        float size, bool large, uint16_t variant)
     {
         const FigureIconTexture& icon = Icon(toy, kind, large, variant);
         if (icon.texture != nullptr)
@@ -270,20 +279,24 @@ namespace launcher_ui
         ImGui::PushFont(ui::Ctx().fonts.title, size * 0.3f); // the letters grow with the picture they are written over
         ImVec2 text = ImGui::CalcTextSize(letters.c_str());
         ImVec2 position(at.x + (size - text.x) / 2, at.y + (size - text.y) / 2);
-        draw->AddText(ImVec2(position.x + ui::stroke::Hairline, position.y + 2 * ui::stroke::Hairline), ui::Col(ui::color::Scrim, 0.5f), letters.c_str());
+        draw->AddText(ImVec2(position.x + ui::stroke::Hairline, position.y + 2 * ui::stroke::Hairline),
+            ui::Col(ui::color::Scrim, 0.5f), letters.c_str());
         draw->AddText(position, ui::Col(ui::color::Ink), letters.c_str());
         ImGui::PopFont();
     }
 
-    void CollectionPage::DrawPicture(ImDrawList* draw, const collection::Toy* toy, collection::VariantKind kind, uint16_t variant, ImVec2 at, float box)
+    void CollectionPage::DrawPicture(ImDrawList* draw, const collection::Toy* toy, collection::VariantKind kind,
+        uint16_t variant, ImVec2 at, float box)
     {
-        std::string path = toy != nullptr ? collection::BestPicturePath(m_app.m_s->game.id, *toy, variant) : std::string();
+        std::string path =
+            toy != nullptr ? collection::BestPicturePath(m_app.m_s->game.id, *toy, variant) : std::string();
         if (path.empty())
         {
             DrawIcon(draw, toy, kind, at, box, true, variant);
             return;
         }
-        const bool crystal = toy->category == collection::Category::CreationCrystal; // one magenta picture, tinted per element
+        const bool crystal =
+            toy->category == collection::Category::CreationCrystal; // one magenta picture, tinted per element
         const std::string key = crystal ? fmt::format("crystal:{}:{}", toy->type, path) : path;
         auto found = m_icons->textures.find(key);
         if (found == m_icons->textures.end())
@@ -294,7 +307,8 @@ namespace launcher_ui
                 if (collection::Image image = collection::CrystalPicture(*toy, path); !image.Empty())
                 {
                     std::vector<uint8_t> bytes(image.rgba.size() * 4);
-                    std::memcpy(bytes.data(), image.rgba.data(), bytes.size()); // R, G, B, A in memory on the little-endian systems we run on
+                    std::memcpy(bytes.data(), image.rgba.data(),
+                        bytes.size()); // R, G, B, A in memory on the little-endian systems we run on
                     picture.texture = LoadRgba(m_app.m_renderer, bytes, image.width, image.height);
                 }
             }
@@ -310,12 +324,14 @@ namespace launcher_ui
             DrawIcon(draw, toy, kind, at, box, true, variant);
             return;
         }
-        float scale = std::min(box / picture.width, box / picture.height), w = picture.width * scale, h = picture.height * scale;
+        float scale = std::min(box / picture.width, box / picture.height), w = picture.width * scale,
+              h = picture.height * scale;
         ImVec2 corner(at.x + (box - w) / 2, at.y + (box - h) / 2);
         draw->AddImage(Ref(picture.texture), corner, ImVec2(corner.x + w, corner.y + h));
     }
 
-    bool CollectionPage::DrawSwapper(ImDrawList* draw, const collection::Toy* top, uint16_t topVariant, const collection::Toy* bottom, uint16_t bottomVariant, ImVec2 at, float box)
+    bool CollectionPage::DrawSwapper(ImDrawList* draw, const collection::Toy* top, uint16_t topVariant,
+        const collection::Toy* bottom, uint16_t bottomVariant, ImVec2 at, float box)
     {
         if (top == nullptr || bottom == nullptr)
             return false;
@@ -324,10 +340,12 @@ namespace launcher_ui
         if (found == m_icons->textures.end())
         {
             FigureIconTexture picture;
-            if (collection::Image image = collection::SwapperPicture(*top, topVariant, *bottom, bottomVariant); !image.Empty())
+            if (collection::Image image = collection::SwapperPicture(*top, topVariant, *bottom, bottomVariant);
+                !image.Empty())
             {
                 std::vector<uint8_t> bytes(image.rgba.size() * 4);
-                std::memcpy(bytes.data(), image.rgba.data(), bytes.size()); // R, G, B, A in memory on the little-endian systems we run on
+                std::memcpy(bytes.data(), image.rgba.data(),
+                    bytes.size()); // R, G, B, A in memory on the little-endian systems we run on
                 picture.texture = LoadRgba(m_app.m_renderer, bytes, image.width, image.height);
                 picture.width = float(image.width), picture.height = float(image.height);
             }
@@ -336,7 +354,8 @@ namespace launcher_ui
         const FigureIconTexture& picture = found->second;
         if (picture.texture == nullptr)
             return false;
-        float scale = std::min(box / picture.width, box / picture.height), w = picture.width * scale, h = picture.height * scale;
+        float scale = std::min(box / picture.width, box / picture.height), w = picture.width * scale,
+              h = picture.height * scale;
         ImVec2 corner(at.x + (box - w) / 2, at.y + (box - h) / 2);
         draw->AddImage(Ref(picture.texture), corner, ImVec2(corner.x + w, corner.y + h));
         return true;
@@ -344,20 +363,15 @@ namespace launcher_ui
 
     bool CollectionPage::DrawSwapper(ImDrawList* draw, const collection::Card& card, ImVec2 at, float box)
     {
-        return card.Swapper() && DrawSwapper(draw, card.first->toy, card.first->variant, card.second->toy, card.second->variant, at, box);
+        return card.Swapper() &&
+               DrawSwapper(draw, card.first->toy, card.first->variant, card.second->toy, card.second->variant, at, box);
     }
 
     // ---- Data -----------------------------------------------------------------------------------------------------
 
-    std::string CollectionPage::Folder() const
-    {
-        return collection::Folder();
-    }
+    std::string CollectionPage::Folder() const { return collection::Folder(); }
 
-    void CollectionPage::Toast(const std::string& text, ui::ToastKind kind)
-    {
-        m_app.Toast(text, kind);
-    }
+    void CollectionPage::Toast(const std::string& text, ui::ToastKind kind) { m_app.Toast(text, kind); }
 
     void CollectionPage::Open()
     {
@@ -369,7 +383,8 @@ namespace launcher_ui
             collection::Migration migration = collection::Migrate(legacy);
             if (migration.copied > 0)
                 Toast(migration.copied == 1 ? Tf("{} figure copied", migration.copied)
-                                            : Tf("{} figures copied", migration.copied), ui::ToastKind::Success);
+                                            : Tf("{} figures copied", migration.copied),
+                    ui::ToastKind::Success);
         }
         // The launcher's own favorites and portal list, from before the shared collection, move once.
         if (SettingGet(m_app.m_config, "collection", "moved") != "1")
@@ -378,7 +393,8 @@ namespace launcher_ui
             if (const collection::Game* game = m_model.Game())
             {
                 std::vector<std::string> seats = MoveLauncherSettings(*game, collection::LegacyFolder(),
-                    SplitList(SettingGet(m_app.m_config, "collection", "favourites")), SplitList(SettingGet(m_app.m_config, "portal", "place")));
+                    SplitList(SettingGet(m_app.m_config, "collection", "favourites")),
+                    SplitList(SettingGet(m_app.m_config, "portal", "place")));
                 if (!seats.empty())
                     moved = WriteSeats(*game, SessionFile(*game), seats);
             }
@@ -414,8 +430,8 @@ namespace launcher_ui
     // The shelf: the filters, the search and the seat being chosen for, cut into the shelf's sections.
     void CollectionPage::Rebuild()
     {
-        std::string key = fmt::format("{}|{}|{}|{}|{}|{}|{}|{}", m_generation, m_search, m_choosing, m_filter.element, m_filter.game,
-            m_filter.category, int(m_filter.sort), m_model.gameId);
+        std::string key = fmt::format("{}|{}|{}|{}|{}|{}|{}|{}", m_generation, m_search, m_choosing, m_filter.element,
+            m_filter.game, m_filter.category, int(m_filter.sort), m_model.gameId);
         if (key == m_listKey)
             return;
         m_listKey = key;
@@ -441,7 +457,8 @@ namespace launcher_ui
         if (!figure.partner.empty())
             for (const Figure& other : m_model.figures)
                 if (other.file == figure.partner)
-                    return figure.IsSwapBottom() ? collection::Card{ &other, &figure } : collection::Card{ &figure, &other };
+                    return figure.IsSwapBottom() ? collection::Card{ &other, &figure }
+                                                 : collection::Card{ &figure, &other };
         return { &figure, nullptr };
     }
 
@@ -449,9 +466,11 @@ namespace launcher_ui
     void CollectionPage::DrawBottom(ImDrawList* draw, const Figure& bottom, ImVec2 at, float size)
     {
         const float edge = ui::stroke::Edge;
-        draw->AddRectFilled(ImVec2(at.x - edge, at.y - edge), ImVec2(at.x + size + edge, at.y + size + edge), ui::Col(ui::color::Surface), ui::radius::Control);
+        draw->AddRectFilled(ImVec2(at.x - edge, at.y - edge), ImVec2(at.x + size + edge, at.y + size + edge),
+            ui::Col(ui::color::Surface), ui::radius::Control);
         DrawIcon(draw, bottom.toy, bottom.Kind(), at, size, false, bottom.variant);
-        draw->AddRect(ImVec2(at.x - edge, at.y - edge), ImVec2(at.x + size + edge, at.y + size + edge), ui::Col(ui::color::Edge), ui::radius::Control);
+        draw->AddRect(ImVec2(at.x - edge, at.y - edge), ImVec2(at.x + size + edge, at.y + size + edge),
+            ui::Col(ui::color::Edge), ui::radius::Control);
     }
 
     // The game's words: the player's name for it, else the toy's name with the nickname the game shows.
@@ -474,7 +493,8 @@ namespace launcher_ui
     std::string CollectionPage::Detail(const Figure& figure) const
     {
         if (m_model.Incompatible(figure))
-            return Tr("Not for this game"); // the page names the game; a card is too narrow for "Not for Spyro's Adventure"
+            return Tr(
+                "Not for this game"); // the page names the game; a card is too narrow for "Not for Spyro's Adventure"
         collection::Card card = CardOf(figure);
         if (card.Busy())
             return Tr("Playing now");
@@ -493,7 +513,9 @@ namespace launcher_ui
         {
             // Giants has one seat for a magic item or an adventure pack.
             const std::vector<Category>& accepts = game->seats[seat].accepts;
-            return std::find(accepts.begin(), accepts.end(), Category::Adventure) != accepts.end() ? Tr("Item or adventure") : Tr("Magic item");
+            return std::find(accepts.begin(), accepts.end(), Category::Adventure) != accepts.end()
+                       ? Tr("Item or adventure")
+                       : Tr("Magic item");
         }
         if (id == "adventure")
             return Tr("Adventure");
@@ -541,10 +563,7 @@ namespace launcher_ui
         return {};
     }
 
-    bool CollectionPage::Writable(const Figure& figure) const
-    {
-        return !Busy(figure);
-    }
+    bool CollectionPage::Writable(const Figure& figure) const { return !Busy(figure); }
 
     bool CollectionPage::SeatBusy(const Figure& figure) const
     {
@@ -579,7 +598,8 @@ namespace launcher_ui
             seat = -1;
         if (seat >= 0 && m_model.Live() && (!m_model.CanEditSeats() || m_model.RealSeat(size_t(seat))))
         {
-            Toast(m_model.RealSeat(size_t(seat)) ? Tr("A real figure is there: lift it off the portal first") : Tr("Waiting for the game..."));
+            Toast(m_model.RealSeat(size_t(seat)) ? Tr("A real figure is there: lift it off the portal first")
+                                                 : Tr("Waiting for the game..."));
             seat = -1;
         }
         if (seat >= 0 && !m_model.CanEditSeats())
@@ -694,7 +714,8 @@ namespace launcher_ui
         else if (m_model.SetSeat(seat, ""))
         {
             m_generation++;
-            Toast(Tf("{}: {} taken off", SeatName(seat), figure != nullptr ? Name(*figure) : std::string(Tr("figure"))));
+            Toast(
+                Tf("{}: {} taken off", SeatName(seat), figure != nullptr ? Name(*figure) : std::string(Tr("figure"))));
         }
         else
             Toast(Tr("Couldn't write the seats for the next start"), ui::ToastKind::Error);
@@ -712,24 +733,26 @@ namespace launcher_ui
     namespace
     {
         // The page's own parts, sized from the tokens.
-        constexpr float PageMax = 1180;                    // the widest the page's column gets
+        constexpr float PageMax = 1180; // the widest the page's column gets
         constexpr float SeatPicture = ui::height::Normal;
-        constexpr float SeatPad = ui::space::M;                        // inside a seat, round its picture and its lines
+        constexpr float SeatPad = ui::space::M; // inside a seat, round its picture and its lines
         constexpr float SeatHeight = SeatPicture + 2 * SeatPad;
-        constexpr float SeatGap = ui::space::M;                        // between the seats
-        constexpr float ShelfCell = 2 * ui::height::Main;  // the narrowest a figure's card gets
+        constexpr float SeatGap = ui::space::M; // between the seats
+        constexpr float ShelfCell = 2 * ui::height::Main; // the narrowest a figure's card gets
         constexpr float ShelfGap = ui::space::XS;
         constexpr float FilterPanel = ui::height::SettingControl + 2 * ui::height::Main;
 
         // A card's fill: the surface (raised under the pointer or the focus) at the elevation's alpha, faded by `fade`.
         ImU32 CardFill(bool raised, float fade = 1)
         {
-            return ui::Col(raised ? ui::color::Raised : ui::color::Surface, fade * float(ui::elevation::Card.fillAlpha) / 255.0f);
+            return ui::Col(
+                raised ? ui::color::Raised : ui::color::Surface, fade * float(ui::elevation::Card.fillAlpha) / 255.0f);
         }
 
     }
 
-    void PutText(ImDrawList* draw, ImVec2 at, ui::TextStyle style, bool bold, unsigned color, const std::string& text, float room)
+    void PutText(ImDrawList* draw, ImVec2 at, ui::TextStyle style, bool bold, unsigned color, const std::string& text,
+        float room)
     {
         ui::PushText(style, bold);
         ui::DrawText(draw, at, ui::Col(color), ui::Ellipsize(text.c_str(), room).c_str());
@@ -774,23 +797,25 @@ namespace launcher_ui
                 TakeOff(*static_cast<const size_t*>(payload->Data));
             ImGui::EndDragDropTarget();
         }
+        HandleShortcuts();
         if (pad)
             ui::PageLegend(Tr("Back"), width, true); // with the page's pad actions (HandleShortcuts)
         ImGui::EndChild();
 
-        HandleShortcuts();
         DrawOverlay();
     }
 
     void CollectionPage::DrawHeader(float width)
     {
         const ImVec2 top = ImGui::GetCursorScreenPos();
-        ui::Text(ui::TextStyle::Display, m_model.Live() ? Tr("Toy Box") : Tr("Collection"), ui::color::Ink, -1); // the window is the Toy Box
+        ui::Text(ui::TextStyle::Display, m_model.Live() ? Tr("Toy Box") : Tr("Collection"), ui::color::Ink,
+            -1); // the window is the Toy Box
         const ImVec2 title = ImGui::GetItemRectSize();
         // The real portal's state beside the title, centred on its capitals (a pill, as on the game page).
         if (!m_app.m_portal.Current().Line().empty())
         {
-            ImGui::SetCursorScreenPos(ImVec2(ImGui::GetItemRectMax().x + ui::space::M, std::round(top.y + ui::CapMiddle(ui::TextStyle::Display) - ui::PillHeight / 2)));
+            ImGui::SetCursorScreenPos(ImVec2(ImGui::GetItemRectMax().x + ui::space::M,
+                std::round(top.y + ui::CapMiddle(ui::TextStyle::Display) - ui::PillHeight / 2)));
             m_app.DrawPortalStatus();
         }
 
@@ -800,7 +825,8 @@ namespace launcher_ui
         add.icon = ui::Icon::Plus;
         ui::ButtonOptions manage;
         manage.trailing = ui::Icon::ChevronDown;
-        const float addWidth = ui::ButtonWidth(Tr("Add a figure"), add), manageWidth = ui::ButtonWidth(Tr("Manage"), manage);
+        const float addWidth = ui::ButtonWidth(Tr("Add a figure"), add),
+                    manageWidth = ui::ButtonWidth(Tr("Manage"), manage);
         // On the title's line: the buttons' middle on its capitals' middle.
         const float buttonsY = std::round(top.y + ui::CapMiddle(ui::TextStyle::Display) - ui::height::Normal / 2);
         const float row = std::max(title.y, buttonsY + ui::height::Normal - top.y);
@@ -816,7 +842,7 @@ namespace launcher_ui
         ImGui::SameLine(0, ui::space::S);
         if (ui::Button(Tr("Manage"), manage) || m_testMenu == 1)
         {
-            ui::OpenMenu("##collectionmenu", {.alignRight = true});
+            ui::OpenMenu("##collectionmenu", { .alignRight = true });
             m_testMenu = 0;
         }
         if (ui::BeginMenu("##collectionmenu"))
@@ -844,12 +870,14 @@ namespace launcher_ui
         // What the page holds, under the title.
         ImGui::SetCursorScreenPos(ImVec2(top.x, top.y + row + ui::space::XXS));
         const int shown = int(m_model.figures.size()) - m_hiddenStarters;
-        const size_t favourites = std::count_if(m_model.figures.begin(), m_model.figures.end(), [](const Figure& f) { return f.favourite; });
+        const size_t favourites =
+            std::count_if(m_model.figures.begin(), m_model.figures.end(), [](const Figure& f) { return f.favourite; });
         std::string summary = FigureCountText(shown);
         if (favourites > 0)
             summary += favourites == 1 ? Tf(" · {} favorite", favourites) : Tf(" · {} favorites", favourites);
         ui::Text(ui::TextStyle::Caption, summary.c_str(), ui::color::InkSoft, -1);
-        ImGui::SetCursorScreenPos(ImVec2(top.x, ImGui::GetCursorScreenPos().y - ImGui::GetStyle().ItemSpacing.y + ui::space::L));
+        ImGui::SetCursorScreenPos(
+            ImVec2(top.x, ImGui::GetCursorScreenPos().y - ImGui::GetStyle().ItemSpacing.y + ui::space::L));
     }
 
     void CollectionPage::DrawSeatMenu()
@@ -857,7 +885,8 @@ namespace launcher_ui
         if (!ui::BeginMenu("##seatmenu"))
             return;
         const size_t seat = size_t(m_seatMenu);
-        const Figure* figure = seat < m_model.seats.size() && !m_model.seats[seat].empty() ? m_model.Find(m_model.seats[seat]) : nullptr;
+        const Figure* figure =
+            seat < m_model.seats.size() && !m_model.seats[seat].empty() ? m_model.Find(m_model.seats[seat]) : nullptr;
         if (seat >= m_model.seats.size() || m_model.seats[seat].empty())
             ImGui::CloseCurrentPopup();
         else
@@ -904,19 +933,23 @@ namespace launcher_ui
             m_model.Load();
             m_heroLoaded = true;
         }
-        if (!m_heroFixture) m_model.Poll(SDL_GetTicks());
+        if (!m_heroFixture)
+            m_model.Poll(SDL_GetTicks());
         if (m_model.Game() == nullptr)
             return; // a game the catalogue doesn't list yet has no seats to show
         ImGui::SetCursorScreenPos(at);
-        ui::BeginCard("##hero-portal", size, { .panel = true, .padding = ui::space::M, .edge = live ? ui::color::Success : 0 });
+        ui::BeginCard(
+            "##hero-portal", size, { .panel = true, .padding = ui::space::M, .edge = live ? ui::color::Success : 0 });
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(ui::space::S, ui::space::XS));
         // While the game runs, the button opens the Toy Box window beside it (toybox_window.cpp); else the Collection page.
-        const ui::ButtonOptions open{ .kind = ui::ButtonKind::Secondary, .size = ui::Size::Small,
+        const ui::ButtonOptions open{ .kind = ui::ButtonKind::Secondary,
+            .size = ui::Size::Small,
             .tooltip = live ? Tr("The Toy Box in its own window, to keep beside the game") : Tr("Open the Toy Box") };
-        const float titleW = ui::TextSize(ui::TextStyle::Body, Tr("On the portal"), nullptr, true).x
-            + (live ? ui::BadgeSize(Tr("Live")).x + ui::space::S : 0);
+        const float titleW = ui::TextSize(ui::TextStyle::Body, Tr("On the portal"), nullptr, true).x +
+                             (live ? ui::BadgeSize(Tr("Live")).x + ui::space::S : 0);
         const char* wide = live ? Tr("Toy Box window") : Tr("Open the Toy Box");
-        const char* openLabel = titleW + ui::space::S + ui::ButtonWidth(wide, open) <= size.x - 2 * ui::space::M ? wide : Tr("Toy Box");
+        const char* openLabel =
+            titleW + ui::space::S + ui::ButtonWidth(wide, open) <= size.x - 2 * ui::space::M ? wide : Tr("Toy Box");
         const float linkW = ui::ButtonWidth(openLabel, open);
         const float headerY = at.y + ui::space::M;
         ImGui::SetCursorScreenPos(ImVec2(at.x + ui::space::M,
@@ -926,7 +959,8 @@ namespace launcher_ui
         if (live) // on the title's line, so the seats do not move when the game starts
         {
             const ImVec2 badge = ui::BadgeSize(Tr("Live"));
-            ImGui::SetCursorScreenPos(ImVec2(labelRight + ui::space::S, std::round(headerY + (ui::height::Small - badge.y) / 2)));
+            ImGui::SetCursorScreenPos(
+                ImVec2(labelRight + ui::space::S, std::round(headerY + (ui::height::Small - badge.y) / 2)));
             ui::Badge(Tr("Live"), ui::color::Success);
         }
         ImGui::SetCursorScreenPos(ImVec2(at.x + size.x - ui::space::M - linkW, headerY));
@@ -941,7 +975,8 @@ namespace launcher_ui
         const collection::Game* game = m_model.Game();
         // Every seat the game has, as in its Collection: Trap Team's trap, SuperChargers' vehicles, the adventure pack.
         const size_t count = game != nullptr ? game->seats.size() : 0;
-        const float rowH = count == 0 ? 0 : (at.y + size.y - ui::space::M - rowsY - (count - 1) * ui::space::XS) / count;
+        const float rowH =
+            count == 0 ? 0 : (at.y + size.y - ui::space::M - rowsY - (count - 1) * ui::space::XS) / count;
         size_t rowIndex = 0;
         if (game != nullptr)
             for (size_t i = 0; i < game->seats.size(); i++)
@@ -956,8 +991,9 @@ namespace launcher_ui
                 if (figure != nullptr)
                 {
                     const collection::Card card = CardOf(*figure);
-                    const std::string level = m_heroFixture ? Tf("Level {}", figure->level) : card.Swapper()
-                        ? CardLevelLabel(card, m_model.gameId) : LevelLabel(*figure, m_model.gameId);
+                    const std::string level = m_heroFixture    ? Tf("Level {}", figure->level)
+                                              : card.Swapper() ? CardLevelLabel(card, m_model.gameId)
+                                                               : LevelLabel(*figure, m_model.gameId);
                     detail = level.empty() ? seat : Tf("{} · {}", seat, level);
                 }
                 ImGui::PushID(int(i));
@@ -966,7 +1002,8 @@ namespace launcher_ui
                 row.titleStyle = figure != nullptr ? ui::TextStyle::Label : ui::TextStyle::Body;
                 row.subtitleStyle = ui::TextStyle::Body;
                 row.minHeight = std::floor(rowsY + rowIndex * rowH + (rowIndex - 1) * ui::space::XS) - rowY;
-                if (row.minHeight < ui::height::Large) // many seats (SuperChargers' vehicles): the rows fit the card, the lines smaller
+                if (row.minHeight <
+                    ui::height::Large) // many seats (SuperChargers' vehicles): the rows fit the card, the lines smaller
                 {
                     row.exactHeight = row.minHeight;
                     row.titleStyle = ui::TextStyle::Body;
@@ -987,7 +1024,8 @@ namespace launcher_ui
                 };
                 if (ui::ListRow((name + "##hero-seat").c_str(), row))
                 {
-                    if (!m_opened) Open();
+                    if (!m_opened)
+                        Open();
                     Choose(live ? -1 : int(i));
                     m_app.GoTo(Page::Collection);
                 }
@@ -1002,20 +1040,24 @@ namespace launcher_ui
         using State = toyboxlinkclient::Client::State;
         const ImVec2 line = ImGui::GetCursorScreenPos();
         const float width = ImGui::GetContentRegionAvail().x;
-        ImGui::SetCursorScreenPos(ImVec2(line.x, std::round(line.y + ui::height::Normal / 2 - ui::CapMiddle(ui::TextStyle::Body))));
-        ui::Text(ui::TextStyle::Body, Tf("On the portal of {}", ShortGameName(m_model.gameId)).c_str(), ui::color::InkSoft, -1, true);
+        ImGui::SetCursorScreenPos(
+            ImVec2(line.x, std::round(line.y + ui::height::Normal / 2 - ui::CapMiddle(ui::TextStyle::Body))));
+        ui::Text(ui::TextStyle::Body, Tf("On the portal of {}", ShortGameName(m_model.gameId)).c_str(),
+            ui::color::InkSoft, -1, true);
         const State state = m_model.live->Current();
         const float pillY = std::round(line.y + (ui::height::Normal - ui::PillHeight) / 2);
         ImGui::SetCursorScreenPos(ImVec2(ImGui::GetItemRectMax().x + ui::space::M, pillY));
         if (state == State::Connected)
         {
             const ImVec2 badge = ui::BadgeSize(Tr("Live"));
-            ImGui::SetCursorScreenPos(ImVec2(ImGui::GetCursorScreenPos().x, std::round(line.y + (ui::height::Normal - badge.y) / 2)));
+            ImGui::SetCursorScreenPos(
+                ImVec2(ImGui::GetCursorScreenPos().x, std::round(line.y + (ui::height::Normal - badge.y) / 2)));
             ui::Badge(Tr("Live"), ui::color::Success);
         }
         else if (state == State::OtherVersion)
-            ui::StatusPill(ui::Status::Warning, m_model.live->GameVersion() > toyboxlink::Version ? Tr("The game is newer: update the launcher")
-                                                                                                 : Tr("The game is older: update it"));
+            ui::StatusPill(ui::Status::Warning, m_model.live->GameVersion() > toyboxlink::Version
+                                                    ? Tr("The game is newer: update the launcher")
+                                                    : Tr("The game is older: update it"));
         else if (state == State::Busy)
             ui::StatusPill(ui::Status::Info, Tr("Another Toy Box window has this game"));
         else if (m_app.ToyboxGameWithoutLink())
@@ -1028,7 +1070,8 @@ namespace launcher_ui
         ui::PushText(ui::TextStyle::Body);
         const float labelW = ImGui::CalcTextSize(label).x + ui::height::Mark + ui::space::S;
         ui::PopText();
-        ImGui::SetCursorScreenPos(ImVec2(line.x + width - labelW, std::round(line.y + (ui::height::Normal - ui::height::Small) / 2)));
+        ImGui::SetCursorScreenPos(
+            ImVec2(line.x + width - labelW, std::round(line.y + (ui::height::Normal - ui::height::Small) / 2)));
         if (ui::Checkbox(label, &withGame))
             m_app.SetToyboxWithGame(withGame);
         ui::Tooltip(Tr("The Toy Box window opens each time you play"));
@@ -1042,7 +1085,8 @@ namespace launcher_ui
         const collection::Toy* toy = real.known ? collection::Catalogue::Get().Find(real.type) : nullptr;
         const ImVec2 picture(at.x + SeatPad, at.y + SeatPad);
         const float tx = picture.x + SeatPicture + ui::space::S, room = end.x - tx - SeatPad;
-        const float top = at.y + std::round((SeatHeight - (2 * ui::type::Caption + ui::type::Body + 2 * ui::space::XXS)) / 2);
+        const float top =
+            at.y + std::round((SeatHeight - (2 * ui::type::Caption + ui::type::Body + 2 * ui::space::XXS)) / 2);
         const float second = top + ui::type::Caption + ui::space::XXS, third = second + ui::type::Body + ui::space::XXS;
         std::string name = Tr("A real figure");
         if (toy != nullptr)
@@ -1055,10 +1099,12 @@ namespace launcher_ui
         {
             const ImVec2 box(picture.x + SeatPicture, picture.y + SeatPicture);
             draw->AddRectFilled(picture, box, ui::Col(ui::color::Inset), ui::radius::Control);
-            ui::DrawIcon(draw, ui::Icon::Circle, ImVec2(picture.x + SeatPicture / 2, picture.y + SeatPicture / 2), ui::icon::Normal, ui::Col(ui::color::Dim));
+            ui::DrawIcon(draw, ui::Icon::Circle, ImVec2(picture.x + SeatPicture / 2, picture.y + SeatPicture / 2),
+                ui::icon::Normal, ui::Col(ui::color::Dim));
         }
         PutText(draw, ImVec2(tx, second), ui::TextStyle::Body, true, ui::color::Ink, name, room);
-        PutText(draw, ImVec2(tx, third), ui::TextStyle::Caption, false, ui::color::Success, Tr("Real figure · on the portal"), room);
+        PutText(draw, ImVec2(tx, third), ui::TextStyle::Caption, false, ui::color::Success,
+            Tr("Real figure · on the portal"), room);
     }
 
     void CollectionPage::DrawSeats(float width)
@@ -1076,49 +1122,59 @@ namespace launcher_ui
             DrawLiveLine();
         else
         {
-        ImGui::SetCursorScreenPos(ImVec2(line.x, textY));
-        ui::Text(ui::TextStyle::Body, Tr("On the portal for"), ui::color::InkSoft, -1);
-        ui::SelectOptions selectOptions;
-        for (const collection::Game& g : collection::Catalogue::Get().Games())
-            if (!SessionFile(g).empty())
-                selectOptions.width = std::max(selectOptions.width, ui::SelectWidth(ShortGameName(g.id).c_str()));
-        ImGui::SetCursorScreenPos(ImVec2(ImGui::GetItemRectMax().x + ui::space::XS, line.y));
-        if (ui::BeginSelect("##portalgame", ShortGameName(m_model.gameId).c_str(), selectOptions))
-        {
+            ImGui::SetCursorScreenPos(ImVec2(line.x, textY));
+            ui::Text(ui::TextStyle::Body, Tr("On the portal for"), ui::color::InkSoft, -1);
+            ui::SelectOptions selectOptions;
             for (const collection::Game& g : collection::Catalogue::Get().Games())
-                if (!SessionFile(g).empty() && ui::SelectOption(ShortGameName(g.id).c_str(), g.id == m_model.gameId))
-                    SelectPortalGame(g.id);
-            ui::EndSelect();
-        }
-        else
-            ui::Tooltip(Tr("The figures on the portal when the game starts"));
-        if (!live.empty())
-        {
-            ImGui::SetCursorScreenPos(ImVec2(ImGui::GetItemRectMax().x + ui::space::M, std::round(line.y + (ui::height::Normal - ui::PillHeight) / 2)));
-            ui::StatusPill(ui::Status::Info, Tf("{} is running: use its Toy Box", ShortGameName(live)).c_str());
-            if (m_app.m_session.Running() == live)
+                if (!SessionFile(g).empty())
+                    selectOptions.width = std::max(selectOptions.width, ui::SelectWidth(ShortGameName(g.id).c_str()));
+            ImGui::SetCursorScreenPos(ImVec2(ImGui::GetItemRectMax().x + ui::space::XS, line.y));
+            if (ui::BeginSelect("##portalgame", ShortGameName(m_model.gameId).c_str(), selectOptions))
             {
-                // Its Toy Box in a window of its own, beside the game (toybox_window.cpp).
-                const ui::ButtonOptions window{ .kind = ui::ButtonKind::Secondary, .size = ui::Size::Small,
-                    .tooltip = Tr("The Toy Box in its own window, to keep beside the game") };
-                ImGui::SetCursorScreenPos(ImVec2(ImGui::GetItemRectMax().x + ui::space::S, std::round(line.y + (ui::height::Normal - ui::height::Small) / 2)));
-                if (ui::Button(Tr("Toy Box window"), window))
-                    m_app.OpenToyboxWindow();
+                for (const collection::Game& g : collection::Catalogue::Get().Games())
+                    if (!SessionFile(g).empty() &&
+                        ui::SelectOption(ShortGameName(g.id).c_str(), g.id == m_model.gameId))
+                        SelectPortalGame(g.id);
+                ui::EndSelect();
+            }
+            else
+                ui::Tooltip(Tr("The figures on the portal when the game starts"));
+            if (!live.empty())
+            {
+                ImGui::SetCursorScreenPos(ImVec2(ImGui::GetItemRectMax().x + ui::space::M,
+                    std::round(line.y + (ui::height::Normal - ui::PillHeight) / 2)));
+                ui::StatusPill(ui::Status::Info, Tf("{} is running: use its Toy Box", ShortGameName(live)).c_str());
+                if (m_app.m_session.Running() == live)
+                {
+                    // Its Toy Box in a window of its own, beside the game (toybox_window.cpp).
+                    const ui::ButtonOptions window{ .kind = ui::ButtonKind::Secondary,
+                        .size = ui::Size::Small,
+                        .tooltip = Tr("The Toy Box in its own window, to keep beside the game") };
+                    ImGui::SetCursorScreenPos(ImVec2(ImGui::GetItemRectMax().x + ui::space::S,
+                        std::round(line.y + (ui::height::Normal - ui::height::Small) / 2)));
+                    if (ui::Button(Tr("Toy Box window"), window))
+                        m_app.OpenToyboxWindow();
+                }
             }
         }
-        }
         ImGui::SetCursorScreenPos(ImVec2(line.x, line.y + ui::height::Normal + ui::space::S));
+        // Choosing another game above reloads the seats at once: the game read before may have more of them (Trap Team
+        // and SuperChargers have 5, Giants 3), so read it again and never go past the seats loaded (issue #45).
+        game = m_model.Game();
         if (game == nullptr)
             return;
 
-        const size_t count = game->seats.size();
+        const size_t count = std::min(game->seats.size(), m_model.seats.size());
+        if (count == 0)
+            return;
         const float w = std::floor((width - SeatGap * float(count - 1)) / float(count));
         const ImVec2 row = ImGui::GetCursorScreenPos();
         m_navSeat = m_hoverSeat = -1;
         m_crossAt.assign(count, ImVec2(-1, -1));
         for (size_t i = 0; i < count; i++)
         {
-            const ImVec2 at(row.x + float(i) * (w + SeatGap), row.y), end(i + 1 == count ? row.x + width : at.x + w, at.y + SeatHeight);
+            const ImVec2 at(row.x + float(i) * (w + SeatGap), row.y),
+                end(i + 1 == count ? row.x + width : at.x + w, at.y + SeatHeight);
             ImGui::SetCursorScreenPos(at);
             ImGui::PushID(int(i));
             // The X is submitted over the seat: without this the seat keeps the hover and the X never sees the pointer.
@@ -1151,7 +1207,8 @@ namespace launcher_ui
             {
                 size_t index = i;
                 ImGui::SetDragDropPayload("SKYSEAT", &index, sizeof(index));
-                ui::Text(ui::TextStyle::Body, figure != nullptr ? Name(*figure).c_str() : Tr("Take it off"), ui::color::Ink, -1);
+                ui::Text(ui::TextStyle::Body, figure != nullptr ? Name(*figure).c_str() : Tr("Take it off"),
+                    ui::color::Ink, -1);
                 ImGui::EndDragDropSource();
             }
             const bool menu = ImGui::IsItemClicked(ImGuiMouseButton_Right) && occupied;
@@ -1163,16 +1220,22 @@ namespace launcher_ui
             }
             const bool choosing = m_choosing == int(i);
             draw->AddRectFilled(at, end, CardFill(choosing || hovered || nav), ui::radius::Card);
-            draw->AddRect(at, end, ui::Col(choosing ? ui::color::AccentFill : hovered ? ui::color::Edge : ui::color::Hairline), ui::radius::Card, 0,
-                choosing ? ui::stroke::Edge : ui::stroke::Hairline);
+            draw->AddRect(at, end,
+                ui::Col(choosing  ? ui::color::AccentFill
+                        : hovered ? ui::color::Edge
+                                  : ui::color::Hairline),
+                ui::radius::Card, 0, choosing ? ui::stroke::Edge : ui::stroke::Hairline);
             const ImVec2 picture(at.x + SeatPad, at.y + SeatPad);
             // Three lines beside the picture: the seat (leaving room for the X at the corner), the figure's name, its level.
             const float tx = picture.x + SeatPicture + ui::space::S, room = end.x - tx - SeatPad;
             const bool cross = occupied && editable && !(figure != nullptr && SeatBusy(*figure));
             const float crossRoom = room - (cross ? ui::space::L : 0);
-            const float top = at.y + std::round((SeatHeight - (2 * ui::type::Caption + ui::type::Body + 2 * ui::space::XXS)) / 2);
-            const float second = top + ui::type::Caption + ui::space::XXS, third = second + ui::type::Body + ui::space::XXS;
-            PutText(draw, ImVec2(tx, top), ui::TextStyle::Caption, false, choosing ? ui::color::Info : ui::color::Dim, SeatName(i), crossRoom);
+            const float top =
+                at.y + std::round((SeatHeight - (2 * ui::type::Caption + ui::type::Body + 2 * ui::space::XXS)) / 2);
+            const float second = top + ui::type::Caption + ui::space::XXS,
+                        third = second + ui::type::Body + ui::space::XXS;
+            PutText(draw, ImVec2(tx, top), ui::TextStyle::Caption, false, choosing ? ui::color::Info : ui::color::Dim,
+                SeatName(i), crossRoom);
             if (m_model.RealSeat(i))
                 DrawRealSeat(draw, i, at, end);
             else if (occupied && figure != nullptr)
@@ -1181,30 +1244,41 @@ namespace launcher_ui
                 {
                     DrawIcon(draw, figure->toy, figure->Kind(), picture, SeatPicture, false, figure->variant);
                     if (card.Swapper())
-                        DrawBottom(draw, *card.second, ImVec2(picture.x + SeatPicture * 0.58f, picture.y + SeatPicture * 0.58f), SeatPicture * 0.42f);
+                        DrawBottom(draw, *card.second,
+                            ImVec2(picture.x + SeatPicture * 0.58f, picture.y + SeatPicture * 0.58f),
+                            SeatPicture * 0.42f);
                 }
                 PutText(draw, ImVec2(tx, second), ui::TextStyle::Body, true, ui::color::Ink, Name(*figure), room);
                 if (std::string detail = Detail(*figure); !detail.empty())
-                    PutText(draw, ImVec2(tx, third), ui::TextStyle::Caption, false, Busy(*figure) ? ui::color::Success : ui::color::Dim, detail, room);
+                    PutText(draw, ImVec2(tx, third), ui::TextStyle::Caption, false,
+                        Busy(*figure) ? ui::color::Success : ui::color::Dim, detail, room);
             }
             else
             {
                 // Empty, or a figure the collection no longer has (deleted, moved): the seat can still be emptied.
                 const ImVec2 box(picture.x + SeatPicture, picture.y + SeatPicture);
                 draw->AddRectFilled(picture, box, ui::Col(ui::color::Inset), ui::radius::Control);
-                draw->AddRect(picture, box, ui::Col(choosing ? ui::color::AccentFill : ui::color::Hairline), ui::radius::Control, 0, ui::stroke::Edge);
-                ui::DrawIcon(draw, ui::Icon::Plus, ImVec2(picture.x + SeatPicture / 2, picture.y + SeatPicture / 2), ui::icon::Normal,
-                    ui::Col(choosing ? ui::color::AccentFill : ui::color::Dim));
-                PutText(draw, ImVec2(tx, second), ui::TextStyle::Body, true, occupied ? ui::color::Danger : ui::color::InkSoft,
-                    occupied ? Tr("Missing figure") : Tr("Empty"), room);
-                PutText(draw, ImVec2(tx, third), ui::TextStyle::Caption, false, ui::color::Dim, choosing ? Tr("Pick one below") : editable ? Tr("Choose") : "", room);
+                draw->AddRect(picture, box, ui::Col(choosing ? ui::color::AccentFill : ui::color::Hairline),
+                    ui::radius::Control, 0, ui::stroke::Edge);
+                ui::DrawIcon(draw, ui::Icon::Plus, ImVec2(picture.x + SeatPicture / 2, picture.y + SeatPicture / 2),
+                    ui::icon::Normal, ui::Col(choosing ? ui::color::AccentFill : ui::color::Dim));
+                PutText(draw, ImVec2(tx, second), ui::TextStyle::Body, true,
+                    occupied ? ui::color::Danger : ui::color::InkSoft, occupied ? Tr("Missing figure") : Tr("Empty"),
+                    room);
+                PutText(draw, ImVec2(tx, third), ui::TextStyle::Caption, false, ui::color::Dim,
+                    choosing   ? Tr("Pick one below")
+                    : editable ? Tr("Choose")
+                               : "",
+                    room);
             }
             if (cross)
             {
                 ImGui::SetCursorScreenPos(ImVec2(end.x - ui::height::Small, at.y));
                 ImGui::PushID(int(i) + 100);
-                ImGui::PushItemFlag(ImGuiItemFlags_NoNav, true); // the pointer's: the pad and the keyboard take it off with X and Delete on the seat
-                const bool off = ui::IconButton("##off", ui::Icon::Cross, Tr("Take it off"), { ui::ButtonKind::Ghost, ui::Size::Small });
+                ImGui::PushItemFlag(ImGuiItemFlags_NoNav,
+                    true); // the pointer's: the pad and the keyboard take it off with X and Delete on the seat
+                const bool off = ui::IconButton(
+                    "##off", ui::Icon::Cross, Tr("Take it off"), { ui::ButtonKind::Ghost, ui::Size::Small });
                 ImGui::PopItemFlag();
                 const ImVec2 a = ImGui::GetItemRectMin(), b = ImGui::GetItemRectMax();
                 m_crossAt[i] = ImVec2((a.x + b.x) / 2, (a.y + b.y) / 2);
@@ -1231,11 +1305,12 @@ namespace launcher_ui
             const std::string text = Tf("Choose a figure for {}", SeatName(size_t(m_choosing)));
             ui::PushText(ui::TextStyle::Body, true);
             const float textWidth = ImGui::CalcTextSize(text.c_str()).x;
-            ui::DrawText(draw, ImVec2(at.x + ui::space::S, middle - ui::type::Body / 2), ui::Col(ui::color::Ink), text.c_str());
+            ui::DrawText(
+                draw, ImVec2(at.x + ui::space::S, middle - ui::type::Body / 2), ui::Col(ui::color::Ink), text.c_str());
             ui::PopText();
             ui::PushText(ui::TextStyle::Caption);
-            ui::DrawText(draw, ImVec2(at.x + ui::space::S + textWidth + ui::space::S, middle - ui::type::Caption / 2), ui::Col(ui::color::InkSoft),
-                Tf("only what {} reads", ShortGameName(m_model.gameId)).c_str());
+            ui::DrawText(draw, ImVec2(at.x + ui::space::S + textWidth + ui::space::S, middle - ui::type::Caption / 2),
+                ui::Col(ui::color::InkSoft), Tf("only what {} reads", ShortGameName(m_model.gameId)).c_str());
             ui::PopText();
             ui::ButtonOptions cancel;
             cancel.size = ui::Size::Normal;
@@ -1250,13 +1325,15 @@ namespace launcher_ui
         const int active = (m_filter.element >= 0) + !m_filter.game.empty() + (m_filter.category >= 0);
         ui::ButtonOptions filters;
         filters.trailing = ui::Icon::ChevronDown;
-        const std::string filtersLabel = std::string(Tr("Filters")) + (active > 0 ? fmt::format(" · {}", active) : std::string());
+        const std::string filtersLabel =
+            std::string(Tr("Filters")) + (active > 0 ? fmt::format(" · {}", active) : std::string());
         const float filtersWidth = ui::ButtonWidth(filtersLabel.c_str(), filters);
         // As wide as its longest choice shows uncut (the select's own padding and chevron: SelectWidth).
         float sortWidth = 0;
         for (int sort = 0; sort < int(collection::Sort::Count); sort++)
             sortWidth = std::max(sortWidth, ui::SelectWidth(Tf("Sort: {}", SortText(collection::Sort(sort))).c_str()));
-        const float searchWidth = std::max(ui::height::SettingControl / 2, ImGui::GetContentRegionAvail().x - filtersWidth - sortWidth - 2 * ui::space::S);
+        const float searchWidth = std::max(ui::height::SettingControl / 2,
+            ImGui::GetContentRegionAvail().x - filtersWidth - sortWidth - 2 * ui::space::S);
         if (m_focusSearch)
         {
             ImGui::SetKeyboardFocusHere();
@@ -1279,7 +1356,7 @@ namespace launcher_ui
 
         const bool pressed = ui::Button(filtersLabel.c_str(), filters);
         if (pressed || m_openFilters)
-            ui::OpenMenu("##filtersmenu", {.alignRight = true});
+            ui::OpenMenu("##filtersmenu", { .alignRight = true });
         m_openFilters = false;
         DrawFilters(active);
         DrawTags();
@@ -1302,10 +1379,12 @@ namespace launcher_ui
             column = std::max(column, ImGui::CalcTextSize(Tr(label)).x + ui::space::M);
         ui::PopText();
         const float room = ImGui::GetContentRegionAvail().x;
-        auto row = [&](const char* label, const char* id, const std::string& value, const std::function<void()>& items) {
+        auto row = [&](const char* label, const char* id, const std::string& value,
+                       const std::function<void()>& items) {
             const ImVec2 at = ImGui::GetCursorScreenPos();
-            PutText(ImGui::GetWindowDrawList(), ImVec2(at.x + ui::space::XS, at.y + (ui::height::Normal - ui::type::Caption) / 2), ui::TextStyle::Caption, false,
-                ui::color::InkSoft, Tr(label), column);
+            PutText(ImGui::GetWindowDrawList(),
+                ImVec2(at.x + ui::space::XS, at.y + (ui::height::Normal - ui::type::Caption) / 2),
+                ui::TextStyle::Caption, false, ui::color::InkSoft, Tr(label), column);
             ImGui::SetCursorScreenPos(ImVec2(at.x + column, at.y));
             ui::SelectOptions options;
             options.width = room - column;
@@ -1315,13 +1394,14 @@ namespace launcher_ui
                 ui::EndSelect();
             }
         };
-        row(N_("Element"), "##element", m_filter.element >= 0 ? ElementName(collection::Element(m_filter.element)) : Tr("All elements"), [&] {
-            if (ui::SelectOption(Tr("All elements"), m_filter.element < 0))
-                m_filter.element = -1;
-            for (collection::Element element : MenuElements)
-                if (ui::SelectOption(ElementName(element).c_str(), m_filter.element == int(element)))
-                    m_filter.element = int(element);
-        });
+        row(N_("Element"), "##element",
+            m_filter.element >= 0 ? ElementName(collection::Element(m_filter.element)) : Tr("All elements"), [&] {
+                if (ui::SelectOption(Tr("All elements"), m_filter.element < 0))
+                    m_filter.element = -1;
+                for (collection::Element element : MenuElements)
+                    if (ui::SelectOption(ElementName(element).c_str(), m_filter.element == int(element)))
+                        m_filter.element = int(element);
+            });
         row(N_("Works in"), "##game", m_filter.game.empty() ? Tr("All games") : ShortGameName(m_filter.game), [&] {
             if (ui::SelectOption(Tr("All games"), m_filter.game.empty()))
                 m_filter.game.clear();
@@ -1329,15 +1409,17 @@ namespace launcher_ui
                 if (ui::SelectOption(ShortGameName(g.id).c_str(), m_filter.game == g.id))
                     m_filter.game = g.id;
         });
-        row(N_("Type"), "##type", m_filter.category >= 0 ? CategoryLabel(Category(m_filter.category)) : Tr("All types"), [&] {
-            if (ui::SelectOption(Tr("All types"), m_filter.category < 0))
-                m_filter.category = -1;
-            // The types the collection has.
-            for (int category = 0; category < int(Category::Count); category++)
-                if (std::any_of(m_model.figures.begin(), m_model.figures.end(), [&](const Figure& f) { return f.toy != nullptr && int(f.toy->category) == category; }))
-                    if (ui::SelectOption(CategoryLabel(Category(category)).c_str(), m_filter.category == category))
-                        m_filter.category = category;
-        });
+        row(N_("Type"), "##type", m_filter.category >= 0 ? CategoryLabel(Category(m_filter.category)) : Tr("All types"),
+            [&] {
+                if (ui::SelectOption(Tr("All types"), m_filter.category < 0))
+                    m_filter.category = -1;
+                // The types the collection has.
+                for (int category = 0; category < int(Category::Count); category++)
+                    if (std::any_of(m_model.figures.begin(), m_model.figures.end(),
+                            [&](const Figure& f) { return f.toy != nullptr && int(f.toy->category) == category; }))
+                        if (ui::SelectOption(CategoryLabel(Category(category)).c_str(), m_filter.category == category))
+                            m_filter.category = category;
+            });
         ui::ButtonOptions clear;
         clear.width = -1;
         clear.disabled = active == 0 && m_search[0] == 0;
@@ -1366,7 +1448,8 @@ namespace launcher_ui
         };
         std::vector<Tag> tags;
         if (m_filter.element >= 0)
-            tags.push_back({ ElementName(collection::Element(m_filter.element)), ElementInk(collection::Element(m_filter.element)), 0 });
+            tags.push_back({ ElementName(collection::Element(m_filter.element)),
+                ElementInk(collection::Element(m_filter.element)), 0 });
         if (!m_filter.game.empty())
             tags.push_back({ Tf("Works in {}", ShortGameName(m_filter.game)), 0, 1 });
         if (m_filter.category >= 0)
@@ -1395,7 +1478,8 @@ namespace launcher_ui
         const float countWidth = ImGui::CalcTextSize(count.c_str()).x;
         ui::PopText();
         ImGui::SameLine(0, 0);
-        ImGui::SetCursorScreenPos(ImVec2(right - countWidth, ImGui::GetCursorScreenPos().y + (ui::height::Small - ui::type::Caption) / 2));
+        ImGui::SetCursorScreenPos(
+            ImVec2(right - countWidth, ImGui::GetCursorScreenPos().y + (ui::height::Small - ui::type::Caption) / 2));
         ui::Text(ui::TextStyle::Caption, count.c_str(), ui::color::InkSoft, -1);
         switch (remove)
         {
@@ -1480,14 +1564,18 @@ namespace launcher_ui
         const int seat = m_model.SeatOf(figure.path);
         const bool selected = m_selected == figure.path && focused;
         draw->AddRectFilled(at, end, CardFill(hovered), ui::radius::Card);
-        draw->AddRect(at, end, ui::Col(seat >= 0 ? ui::color::AccentFill : selected || hovered ? ui::color::Edge : ui::color::Hairline), ui::radius::Card, 0,
-            seat >= 0 || selected ? ui::stroke::Edge : ui::stroke::Hairline);
+        draw->AddRect(at, end,
+            ui::Col(seat >= 0             ? ui::color::AccentFill
+                    : selected || hovered ? ui::color::Edge
+                                          : ui::color::Hairline),
+            ui::radius::Card, 0, seat >= 0 || selected ? ui::stroke::Edge : ui::stroke::Hairline);
         if (collection::Card card = CardOf(figure); !DrawSwapper(draw, card, picture, art))
         {
             DrawIcon(draw, figure.toy, figure.Kind(), picture, art, false, figure.variant);
             { // the busts end flat: fade their foot into the card
                 const ImVec2 top(picture.x, picture.y + art - ui::space::L), foot(picture.x + art, picture.y + art + 1);
-                const ImU32 clear = ui::Col(hovered ? ui::color::Raised : ui::color::Surface, 0), solid = CardFill(hovered);
+                const ImU32 clear = ui::Col(hovered ? ui::color::Raised : ui::color::Surface, 0),
+                            solid = CardFill(hovered);
                 draw->AddRectFilledMultiColor(top, foot, clear, clear, solid, solid);
             }
             if (card.Swapper())
@@ -1506,7 +1594,8 @@ namespace launcher_ui
         // Marks: the variant, favorite, seat.
         collection::VariantKind kind = figure.Kind();
         if (kind != collection::VariantKind::Base)
-            ui::DrawBadge(draw, ImVec2(at.x + ui::space::XS, at.y + ui::space::XS), KindLabel(kind).c_str(), collection::VariantKindRgb(kind));
+            ui::DrawBadge(draw, ImVec2(at.x + ui::space::XS, at.y + ui::space::XS), KindLabel(kind).c_str(),
+                collection::VariantKindRgb(kind));
         // The favorite star, in the top right corner: empty, filled once the figure is a favorite; a click toggles it (the pad
         // has it on the figure's sheet).
         const ImVec2 starAt(end.x - ui::space::M, at.y + ui::space::M);
@@ -1524,11 +1613,13 @@ namespace launcher_ui
             ImGui::PopItemFlag();
             ImGui::PopID();
             if (starHovered && !ImGui::GetIO().NavVisible)
-                ui::Bubble(figure.favourite ? Tr("Remove from favorites") : Tr("Add to favorites"), ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
+                ui::Bubble(figure.favourite ? Tr("Remove from favorites") : Tr("Add to favorites"),
+                    ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
             ImGui::SetCursorScreenPos(cursor);
         }
         if (starred && !busy)
-            m_toggleFavourite = figure.path; // after the shelf is drawn: reloading now would pull the figures from under it
+            m_toggleFavourite =
+                figure.path; // after the shelf is drawn: reloading now would pull the figures from under it
         if (figure.favourite)
         {
             // Lucide's star is an outline: its inside filled under it (the star's points on a 24-unit grid).
@@ -1536,18 +1627,23 @@ namespace launcher_ui
             for (int p = 0; p < 10; p++)
             {
                 const float angle = -IM_PI / 2 + p * IM_PI / 5, radius = (p % 2 == 0 ? 10.0f : 4.2f) * starSize / 24;
-                points[p] = ImVec2(starAt.x + radius * std::cos(angle), starAt.y + 0.6f * starSize / 24 + radius * std::sin(angle));
+                points[p] = ImVec2(
+                    starAt.x + radius * std::cos(angle), starAt.y + 0.6f * starSize / 24 + radius * std::sin(angle));
             }
             draw->AddConcavePolyFilled(points, 10, ui::Col(ui::color::Warning));
         }
-        ui::DrawIcon(draw, ui::Icon::Star, starAt, starSize, ui::Col(figure.favourite || starHovered ? ui::color::Warning : ui::color::Dim));
+        ui::DrawIcon(draw, ui::Icon::Star, starAt, starSize,
+            ui::Col(figure.favourite || starHovered ? ui::color::Warning : ui::color::Dim));
         if (seat >= 0)
-            ui::DrawBadge(draw, ImVec2(at.x + ui::space::XS, picture.y + art - ui::space::L), SeatTag(size_t(seat)).c_str(), ui::color::AccentFill, ui::color::OnAccent);
+            ui::DrawBadge(draw, ImVec2(at.x + ui::space::XS, picture.y + art - ui::space::L),
+                SeatTag(size_t(seat)).c_str(), ui::color::AccentFill, ui::color::OnAccent);
         if (dim)
-            draw->AddRectFilled(at, end, ui::Col(ui::color::Scrim, float(ui::elevation::ScrimAlpha) / 255.0f), ui::radius::Card);
+            draw->AddRectFilled(
+                at, end, ui::Col(ui::color::Scrim, float(ui::elevation::ScrimAlpha) / 255.0f), ui::radius::Card);
         centred(ui::TextStyle::Caption, true, dim ? ui::color::Dim : ui::color::Ink, Name(figure), textY);
         if (std::string detail = Detail(figure); !detail.empty())
-            centred(ui::TextStyle::Caption, false, !dim && busy ? ui::color::Success : ui::color::Dim, detail, textY + ui::type::Caption + ui::space::XXS);
+            centred(ui::TextStyle::Caption, false, !dim && busy ? ui::color::Success : ui::color::Dim, detail,
+                textY + ui::type::Caption + ui::space::XXS);
         return pressed;
     }
 
@@ -1560,7 +1656,8 @@ namespace launcher_ui
             const bool none = int(m_model.figures.size()) == m_hiddenStarters;
             if (none)
             {
-                if (ui::EmptyState(ui::Icon::Plus, Tr("No figures yet. Add one, or drop your figure files on the window."), Tr("Add a figure")))
+                if (ui::EmptyState(ui::Icon::Plus,
+                        Tr("No figures yet. Add one, or drop your figure files on the window."), Tr("Add a figure")))
                 {
                     m_overlay = Overlay::Add;
                     m_addToy = 0xFFFF;
@@ -1568,27 +1665,29 @@ namespace launcher_ui
                     m_addGame = m_model.gameId;
                 }
                 ui::ButtonOptions starters;
-                const std::string label = Tf("Create the {} starter pack", GameName(m_model.gameId.c_str(), GameNameForm::Short));
-                ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (ImGui::GetContentRegionAvail().x - ui::ButtonWidth(label.c_str(), starters)) / 2);
+                const std::string label =
+                    Tf("Create the {} starter pack", GameName(m_model.gameId.c_str(), GameNameForm::Short));
+                ImGui::SetCursorPosX(ImGui::GetCursorPosX() +
+                                     (ImGui::GetContentRegionAvail().x - ui::ButtonWidth(label.c_str(), starters)) / 2);
                 if (ui::Button(label.c_str(), starters))
                 {
                     // The figures in the box of each game's starter pack.
                     if (m_model.gameId == "giants")
                     {
-                        collection::Create(112);        // Tree Rex
-                        collection::Create(100);        // Jet-Vac
+                        collection::Create(112); // Tree Rex
+                        collection::Create(100); // Jet-Vac
                         collection::Create(32, 0x1801); // Series 2 Cynder
                     }
                     else if (m_model.gameId == "swapforce")
                     {
                         collection::CreateSwapper(2015, 1015); // Wash Buckler
                         collection::CreateSwapper(2004, 1004); // Blast Zone
-                        collection::Create(26, 0x2805);        // Ninja Stealth Elf
+                        collection::Create(26, 0x2805); // Ninja Stealth Elf
                     }
                     else if (m_model.gameId == "trapteam")
                     {
-                        collection::Create(462);         // Snap Shot
-                        collection::Create(476);         // Food Fight
+                        collection::Create(462); // Snap Shot
+                        collection::Create(476); // Food Fight
                         collection::Create(211, 0x3001); // a Water Trap
                         collection::Create(217, 0x3003); // a Life Trap
                     }
@@ -1598,7 +1697,8 @@ namespace launcher_ui
                     Reload();
                 }
             }
-            else if (ui::EmptyState(ui::Icon::Search, m_choosing >= 0 && !filtered ? Tr("Nothing for this seat yet") : Tr("No figure matches"),
+            else if (ui::EmptyState(ui::Icon::Search,
+                         m_choosing >= 0 && !filtered ? Tr("Nothing for this seat yet") : Tr("No figure matches"),
                          filtered ? Tr("Clear search and filters") : nullptr))
                 ClearFilters();
             return;
@@ -1644,9 +1744,11 @@ namespace launcher_ui
         // X takes the focused seat's figure off (Delete), else opens the focused card's sheet (F2); Y the search (F3); LT / RT
         // choose for the seat before or after (Page Up / Page Down).
         const collection::Game* seatsOf = m_model.Game();
-        const bool onSeat = m_navSeat >= 0 && size_t(m_navSeat) < m_model.seats.size() && !m_model.seats[size_t(m_navSeat)].empty();
+        const bool onSeat =
+            m_navSeat >= 0 && size_t(m_navSeat) < m_model.seats.size() && !m_model.seats[size_t(m_navSeat)].empty();
         const bool takeOff = onSeat && ui::PadAction(ui::PadButton::West, Tr("Take it off"), nullptr, ImGuiKey_Delete);
-        const bool sheet = !onSeat && m_navSeat < 0 && ui::PadAction(ui::PadButton::West, Tr("Figure sheet"), "F2", ImGuiKey_F2);
+        const bool sheet =
+            !onSeat && m_navSeat < 0 && ui::PadAction(ui::PadButton::West, Tr("Figure sheet"), "F2", ImGuiKey_F2);
         const bool search = ui::PadAction(ui::PadButton::North, Tr("Search"), "F3", ImGuiKey_F3);
         bool before = false, after = false;
         if (seatsOf != nullptr && !seatsOf->seats.empty())
@@ -1656,7 +1758,9 @@ namespace launcher_ui
         }
         if (m_overlay != Overlay::None || ImGui::IsAnyItemActive())
             return;
-        auto pressed = [](ImGuiKey a, ImGuiKey b) { return ImGui::IsKeyPressed(a, false) || ImGui::IsKeyPressed(b, false); };
+        auto pressed = [](ImGuiKey a, ImGuiKey b) {
+            return ImGui::IsKeyPressed(a, false) || ImGui::IsKeyPressed(b, false);
+        };
         if (ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopupId))
             return;
         if (takeOff)

@@ -78,13 +78,15 @@ struct HttpResult
     std::string error;
 };
 // Downloads `url` into `file` with curl. `progress` gets the bytes so far (about every 150 ms); setting `cancel` stops it.
-HttpResult HttpDownload(const std::string& url, const std::filesystem::path& file, const std::function<void(uint64_t)>& progress = {},
-    const std::atomic<bool>* cancel = nullptr);
+HttpResult HttpDownload(const std::string& url, const std::filesystem::path& file,
+    const std::function<void(uint64_t)>& progress = {}, const std::atomic<bool>* cancel = nullptr);
 
-// Downloads `asset` of `release` into `folder`, then checks its SHA-256 against the release's SHA256SUMS asset. A release
-// without SHA256SUMS, or with another hash, is refused (the file is deleted). Returns the file ("" and `error` otherwise).
-std::filesystem::path DownloadVerified(const ReleaseInfo& release, std::string_view assetName, const std::filesystem::path& folder,
-    const std::function<void(uint64_t)>& progress, const std::atomic<bool>* cancel, std::string& error);
+// Downloads `asset` of `release` into `folder`, then hashes it in fixed-size blocks against the release's SHA256SUMS asset.
+// Without SHA256SUMS, or with another hash, it is refused (the file is deleted). Read failure or cancellation during the
+// check also deletes it. Returns the file ("" and `error` otherwise).
+std::filesystem::path DownloadVerified(const ReleaseInfo& release, std::string_view assetName,
+    const std::filesystem::path& folder, const std::function<void(uint64_t)>& progress, const std::atomic<bool>* cancel,
+    std::string& error);
 
 // target -> target.old, fresh -> target; if the second move fails the first is undone. False and `error` on failure, with
 // `target` as it was. The .old stays (a running exe can't delete itself): CleanupOldUpdate removes it at the next start.
@@ -113,14 +115,21 @@ std::string TaggedReleaseUrl(const std::string& repo, const std::string& tag);
 // `progress` gets the bytes so far and the asset's size (0 when unknown). `into`, when set, is the folder unpacked over
 // instead (the Repair of a damaged kit that is not in kitRoot, docs/install.md "File check").
 std::filesystem::path DownloadKit(const std::string& repo, const std::string& tag, const std::filesystem::path& kitRoot,
-    const std::function<void(uint64_t, uint64_t)>& progress, const std::atomic<bool>* cancel, std::string& error, std::string* releaseTag = nullptr,
-    const std::filesystem::path& into = {});
+    const std::function<void(uint64_t, uint64_t)>& progress, const std::atomic<bool>* cancel, std::string& error,
+    std::string* releaseTag = nullptr, const std::filesystem::path& into = {});
 
 // DownloadKit on a thread, for the INSTALL card to poll.
 class KitDownloader
 {
 public:
-    enum class State { Idle, Running, Done, Failed, Cancelled };
+    enum class State
+    {
+        Idle,
+        Running,
+        Done,
+        Failed,
+        Cancelled
+    };
     struct Snapshot_
     {
         State state = State::Idle;
@@ -128,8 +137,13 @@ public:
         std::string error, tag;
         std::filesystem::path folder;
     };
-    ~KitDownloader() { Cancel(); Join(); }
-    void Start(const std::string& repo, const std::string& tag, const std::filesystem::path& kitRoot, const std::filesystem::path& into = {});
+    ~KitDownloader()
+    {
+        Cancel();
+        Join();
+    }
+    void Start(const std::string& repo, const std::string& tag, const std::filesystem::path& kitRoot,
+        const std::filesystem::path& into = {});
     void Cancel() { m_cancel = true; }
     Snapshot_ Snapshot();
     bool Running() const { return m_running; }
@@ -147,7 +161,16 @@ private:
 class UpdateManager
 {
 public:
-    enum class Phase { Idle, Checking, Downloading, Verifying, Installing, Done, Failed };
+    enum class Phase
+    {
+        Idle,
+        Checking,
+        Downloading,
+        Verifying,
+        Installing,
+        Done,
+        Failed
+    };
     struct Settings
     {
         std::string repo = "mflr0/Arkeyan-Launcher";
@@ -161,7 +184,8 @@ public:
         bool launcherNewer = false;
         ReleaseInfo launcher;
         ReleaseInfo kit;                // the release that carries the games (its assets' sizes tell the download)
-        std::vector<GameUpdate> games;  // its notes' games line: what each game's latest version is (empty: none published)
+        std::vector<GameUpdate>
+            games;  // its notes' games line: what each game's latest version is (empty: none published)
         std::string doing;              // "launcher" or "kit", what Downloading..Installing is for
         float progress = -1;            // 0..1 while downloading, -1 when unknown
         std::string error;              // why Failed
@@ -169,11 +193,15 @@ public:
         std::string note;               // e.g. "The installer was opened: drag Arkeyan Launcher to Applications."
     };
 
-    ~UpdateManager() { Cancel(); Join(); }
-    void Check(const Settings& settings);      // the latest launcher release (and the games' manifest), in the background
-    void UpdateLauncher();                     // download, verify, replace; needs a Check that found one
+    ~UpdateManager()
+    {
+        Cancel();
+        Join();
+    }
+    void Check(const Settings& settings); // the latest launcher release (and the games' manifest), in the background
+    void UpdateLauncher(); // download, verify, replace; needs a Check that found one
     void Cancel() { m_cancel = true; }
-    void Dismiss();                            // clears a failure or a note
+    void Dismiss(); // clears a failure or a note
 
     State Snapshot();
     bool Busy() const { return m_busy; }

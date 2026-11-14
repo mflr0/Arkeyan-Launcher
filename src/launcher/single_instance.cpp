@@ -49,8 +49,9 @@ namespace single_instance
 #if defined(_WIN32)
             // Shared for reading, so the next start reads the id; for deleting, so "Uninstall everything" can remove the
             // folder. The byte locked lies far past the text: reading the id is never blocked by the lock.
-            HANDLE handle = CreateFileW(LockFile(root).c_str(), GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                nullptr, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+            HANDLE handle = CreateFileW(LockFile(root).c_str(), GENERIC_READ | GENERIC_WRITE,
+                FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL,
+                nullptr);
             if (handle != INVALID_HANDLE_VALUE)
             {
                 OVERLAPPED at{};
@@ -74,7 +75,8 @@ namespace single_instance
                 if (flock(fd, LOCK_EX | LOCK_NB) == 0)
                 {
                     if (ftruncate(fd, 0) != 0 || pwrite(fd, pid.data(), pid.size(), 0) != ssize_t(pid.size()))
-                        fprintf(stderr, "launcher: couldn't write the process id in %s\n", LockFile(root).string().c_str());
+                        fprintf(
+                            stderr, "launcher: couldn't write the process id in %s\n", LockFile(root).string().c_str());
                     m_fd = fd;
                 }
                 else
@@ -126,7 +128,8 @@ namespace single_instance
     bool SendRequest(const fs::path& root, const Request& request)
     {
         if (request.kind == Request::Kind::Play)
-            return FindGame(request.game) != nullptr && launcher_files::WriteAtomic(RequestFile(root), "play " + request.game + "\n");
+            return FindGame(request.game) != nullptr &&
+                   launcher_files::WriteAtomic(RequestFile(root), "play " + request.game + "\n");
         return request.kind == Request::Kind::Focus && launcher_files::WriteAtomic(RequestFile(root), "focus\n");
     }
 

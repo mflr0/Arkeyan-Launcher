@@ -27,8 +27,8 @@ namespace ui
 #endif
         }
 
-        constexpr const char* Months[] = { N_("Jan"), N_("Feb"), N_("Mar"), N_("Apr"), N_("May"), N_("Jun"), N_("Jul"), N_("Aug"),
-            N_("Sep"), N_("Oct"), N_("Nov"), N_("Dec") };
+        constexpr const char* Months[] = { N_("Jan"), N_("Feb"), N_("Mar"), N_("Apr"), N_("May"), N_("Jun"), N_("Jul"),
+            N_("Aug"), N_("Sep"), N_("Oct"), N_("Nov"), N_("Dec") };
     }
 
     std::string FormatSize(uint64_t bytes)
@@ -66,7 +66,8 @@ namespace ui
         std::tm local{};
         if (!LocalTime(when, local))
             return {};
-        return Tf("{0} {1} {2}", local.tm_mday, Tr(Months[local.tm_mon]), local.tm_year + 1900); // a language may reorder them
+        return Tf("{0} {1} {2}", local.tm_mday, Tr(Months[local.tm_mon]),
+            local.tm_year + 1900); // a language may reorder them
     }
 
     std::string FormatTime(std::time_t when)
@@ -98,7 +99,8 @@ namespace ui
     {
         std::tm utc{};
         std::string text(iso);
-        if (std::sscanf(text.c_str(), "%4d-%2d-%2dT%2d:%2d:%2d", &utc.tm_year, &utc.tm_mon, &utc.tm_mday, &utc.tm_hour, &utc.tm_min, &utc.tm_sec) < 5)
+        if (std::sscanf(text.c_str(), "%4d-%2d-%2dT%2d:%2d:%2d", &utc.tm_year, &utc.tm_mon, &utc.tm_mday, &utc.tm_hour,
+                &utc.tm_min, &utc.tm_sec) < 5)
             return 0;
         utc.tm_year -= 1900;
         utc.tm_mon -= 1;

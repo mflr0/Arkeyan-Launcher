@@ -100,6 +100,7 @@ Auto: 5.1 when the device has six channels.	Auto: 5.1, wenn das Gerät sechs Kan
 Automatic	Automatisch
 Automatic detection	Automatische Erkennung
 Back	Zurück
+Tabs	Tabs
 Back side button	Seitentaste hinten
 Back up now	Jetzt sichern
 Backed up	Gesichert
@@ -608,6 +609,11 @@ Pick one below	Unten wählen
 Picture	Bild
 Play	Spielen
 Play time: {}	Spielzeit: {}
+{}/{} achievements	{}/{} Erfolge
+In the launcher	Im Launcher
+Discord	Discord
+Show my activity on Discord	Meine Aktivität auf Discord zeigen
+The game you play, its achievements and version, or that you are in the launcher.	Das gespielte Spiel, seine Erfolge und Version, oder dass du im Launcher bist.
 Play without updating	Ohne Update spielen
 Play {}	{} spielen
 Play {} with Arkeyan Launcher	{} mit Arkeyan Launcher spielen
@@ -732,6 +738,8 @@ Silver	Silber
 Skip intro movies	Intro-Videos überspringen
 Graphics API	Grafik-API
 Direct3D 12 by default; the game uses the other if it cannot start.	Standardmäßig Direct3D 12; startet sie nicht, nutzt das Spiel die andere.
+Direct3D 12 showed nothing: the game starts again with Vulkan	Direct3D 12 zeigte nichts: Das Spiel startet neu mit Vulkan
+Vulkan, since Direct3D 12 showed nothing on this PC.	Vulkan, da Direct3D 12 auf diesem PC nichts anzeigte.
 Skylander Info	Skylander-Info
 Skylander Profile	Skylander-Profil
 Skylander/Villain Stats	Skylander-/Schurken-Werte
@@ -1098,3 +1106,23 @@ This portal is on another driver (WinUSB, libusbK...). In Device Manager, uninst
 Xbox portals need libusb-1.0, which Windows doesn't have.	Xbox-Portale brauchen libusb-1.0, das Windows nicht hat.
 This Xbox portal's driver can't be used: it needs WinUSB.	Der Treiber dieses Xbox-Portals passt nicht: Es braucht WinUSB.
 Windows has no driver for this portal.	Windows hat keinen Treiber für dieses Portal.
+This Xbox 360 portal needs Windows' WinUSB driver, set once: see the README.	Dieses Xbox-360-Portal braucht den WinUSB-Treiber von Windows, einmal eingerichtet: siehe README.
+Windows didn't hand the Xbox One portal to the game.	Windows hat das Xbox-One-Portal nicht an das Spiel übergeben.
+Xbox portals need libusb-1.0: install your system's libusb-1.0 package, then test again.	Xbox-Portale brauchen libusb-1.0: Installiere das Paket libusb-1.0 deines Systems und teste dann erneut.
+This portal is on the {} driver, which a tool such as Zadig installed and the game can't use. To give it back to Windows:	Dieses Portal nutzt den Treiber {}, den ein Tool wie Zadig installiert hat und den das Spiel nicht nutzen kann. So bekommt Windows es zurück:
+1. In Device Manager, right-click the portal, choose Uninstall device, tick "Attempt to remove the driver for this device", then Uninstall.	1. Klicke im Geräte-Manager mit der rechten Maustaste auf das Portal, wähle Gerät deinstallieren, setze das Häkchen bei „Versuchen, den Treiber für dieses Gerät zu entfernen“ und klicke auf Deinstallieren.
+2. Unplug the portal and plug it in again.	2. Trenne das Portal und schließe es wieder an.
+3. If it's back on {}: open a Command Prompt as administrator, run these two commands, then plug the portal in again:	3. Ist es wieder auf {}: Öffne die Eingabeaufforderung als Administrator, führe diese zwei Befehle aus und schließe das Portal dann wieder an:
+In the first command's list, find the {} driver's oemNN.inf and put its name in the second.	Suche in der Liste des ersten Befehls die oemNN.inf des Treibers {} und setze ihren Namen in den zweiten ein.
+Or choose WinUSB for it in Zadig: the game uses it there.	Oder wähle in Zadig WinUSB dafür: Damit nutzt das Spiel es.
+Copy commands	Befehle kopieren
+Commands copied	Befehle kopiert
+Xcode's Metal shader compiler isn't installed yet.	Der Metal-Shader-Compiler von Xcode ist noch nicht installiert.
+1. Open Terminal (Applications > Utilities).	1. Öffnen Sie Terminal (Programme > Dienstprogramme).
+2. Paste the command and press Return:	2. Fügen Sie den Befehl ein und drücken Sie die Eingabetaste:
+3. Wait until it says it's done (a few minutes, about 700 MB), then press Retry.	3. Warten Sie, bis er fertig meldet (einige Minuten, etwa 700 MB), und drücken Sie dann Erneut versuchen.
+Copy command	Befehl kopieren
+Command copied	Befehl kopiert
+In the menus	In den Menüs
+In a level	In einem Level
+{} played	{} gespielt

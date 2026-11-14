@@ -1,0 +1,57 @@
+# The launcher's C++ style: 4 spaces, braces on their own line, 120 columns. Checked by CI (tools/check_format.sh).
+BasedOnStyle: LLVM
+Language: Cpp
+Standard: c++20
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+ColumnLimit: 120
+PenaltyBreakBeforeFirstCallParameter: 1000
+PenaltyExcessCharacter: 1000000
+BreakBeforeBraces: Custom
+PointerAlignment: Left
+ReferenceAlignment: Left
+AllowShortFunctionsOnASingleLine: All
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+AllowShortLambdasOnASingleLine: All
+AlwaysBreakTemplateDeclarations: Yes
+NamespaceIndentation: All
+FixNamespaceComments: false
+IndentCaseLabels: false
+AccessModifierOffset: -4
+SpaceAfterTemplateKeyword: true
+SortIncludes: Never
+ReflowComments: false    # comments carry addresses and tables: never rewrap them
+AlignTrailingComments:
+  Kind: Leave
+AlignConsecutiveAssignments: None
+AlignConsecutiveDeclarations: None
+AllowShortBlocksOnASingleLine: Empty
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortEnumsOnASingleLine: true
+BreakConstructorInitializers: BeforeColon
+PackConstructorInitializers: NextLine
+BinPackArguments: true
+BinPackParameters: true
+AlignAfterOpenBracket: DontAlign
+ContinuationIndentWidth: 4
+SpaceBeforeCpp11BracedList: false
+Cpp11BracedListStyle: false
+BraceWrapping:
+  AfterCaseLabel: true
+  AfterClass: true
+  AfterControlStatement: Always
+  AfterEnum: true
+  AfterFunction: true
+  AfterNamespace: true
+  AfterStruct: true
+  AfterUnion: true
+  AfterExternBlock: true
+  BeforeCatch: true
+  BeforeElse: true
+  BeforeLambdaBody: false
+  BeforeWhile: false
+  SplitEmptyFunction: false
+  SplitEmptyRecord: false
+  SplitEmptyNamespace: false

@@ -36,7 +36,8 @@ namespace launcher_ui
     unsigned ElementInk(collection::Element element); // 0xRRGGBB
     std::string Lower(std::string text);
     // A line of text at `at`, drawn without an item, cut to `room` with "...".
-    void PutText(ImDrawList* draw, ImVec2 at, ui::TextStyle style, bool bold, unsigned color, const std::string& text, float room);
+    void PutText(ImDrawList* draw, ImVec2 at, ui::TextStyle style, bool bold, unsigned color, const std::string& text,
+        float room);
     // What scrolls inside an overlay is this tall: the window less the dialog's margins and `chrome` (its title, footer...),
     // between `least` and `most`.
     float OverlayBody(float chrome, float least, float most);
@@ -45,6 +46,9 @@ namespace launcher_ui
     ui::ModalResult OverlayActions(const char* cancel, const char* confirm = nullptr, bool confirmDisabled = false);
     // "Doom Stone" for "Doom Stone (top)" or "(bottom)": a swapper's halves are named after it.
     std::string WithoutHalf(std::string name);
+    // Add a figure keeps the full requirement on every card, including the longest translated game name.
+    std::string AddToyRequirement(const collection::Toy& toy);
+    float AddToyMinCell();
 
     // A figure's picture: the disc's portrait, or a generated icon (the page writes the initials over those).
     struct FigureIconTexture
@@ -76,7 +80,11 @@ namespace launcher_ui
             m_model.gameId = game;
             m_model.live = link;
         }
-        void LinkChanged() { m_model.Load(); m_generation++; } // connected, waiting, ended: the seats read again
+        void LinkChanged()
+        {
+            m_model.Load();
+            m_generation++;
+        } // connected, waiting, ended: the seats read again
         // SKY_LAUNCHER_TEST_TOYBOX (toybox_window.cpp): what a drop on a seat, the seat's X and a click on a seat do.
         void TestPutOn(size_t seat, const std::string& path) { PutOn(seat, path); }
         void TestTakeOff(size_t seat) { TakeOff(seat); }
@@ -107,14 +115,21 @@ namespace launcher_ui
         void TestScreen(int step);
         void TestManageTab(int tab) { m_manageTab = tab; }
         static const char* TestShotName(int step);
-        static bool TestPad(); // SKY_LAUNCHER_TEST_COLLECTION=pad: the shots show the page as a pad player sees it (the legend)
+        static bool
+        TestPad(); // SKY_LAUNCHER_TEST_COLLECTION=pad: the shots show the page as a pad player sees it (the legend)
         static int TestShotCount();
 
     private:
         friend struct ReviewChecks;
         bool m_heroLoaded = false;
         bool m_heroFixture = false;
-        enum class Overlay { None, Figure, Add, Manage };
+        enum class Overlay
+        {
+            None,
+            Figure,
+            Add,
+            Manage
+        };
 
         friend struct PerformanceProbe;
         void Open();
@@ -125,7 +140,7 @@ namespace launcher_ui
         void DrawSeats(float width);
         void DrawSeatMenu();
         void TakeOff(size_t seat);
-        void Choose(int seat);  // the next card picked goes on this seat; -1: stop choosing
+        void Choose(int seat); // the next card picked goes on this seat; -1: stop choosing
         void DrawBar();
         void DrawFilters(int active);
         void DrawTags();
@@ -146,6 +161,15 @@ namespace launcher_ui
         void OpenEdit(const collection::Figure& figure);
         void DeleteFigure(const std::string& path);
         void DrawAdd();
+        void DrawAddFilters();
+        int FirstAddMatchingVersion(const collection::Toy& toy, const std::string& search) const;
+        bool MatchesAddToy(const collection::Toy& toy, const std::string& search) const;
+        int CountAddOwned(uint16_t type, int variant, const std::string& edition) const;
+        const collection::Toy* DrawAddGrid(ImVec2 size, const std::string& search);
+        bool DrawAddToy(const collection::Toy& toy, int pass, float cell, const std::string& search);
+        void DrawAddVersions(const collection::Toy* chosen, float listH);
+        void DrawAddFooter(const collection::Toy* chosen);
+        void CreateAddFigure(const collection::Toy* chosen, const std::string& versionName);
         void DrawManage();
         void DrawTrash();
         void DrawBackups();
@@ -153,16 +177,20 @@ namespace launcher_ui
         void DrawUnknown();
         void DrawTidy();
         void HandleShortcuts();
-        void DrawIcon(ImDrawList* draw, const collection::Toy* toy, collection::VariantKind kind, ImVec2 at, float size, bool large, uint16_t variant = 0);
+        void DrawIcon(ImDrawList* draw, const collection::Toy* toy, collection::VariantKind kind, ImVec2 at, float size,
+            bool large, uint16_t variant = 0);
         // The best picture of a toy (its variant's artwork when the game has one, else a portrait), fitted into the square
         // `box` at `at` and centred; the drawn icon when there is none.
-        void DrawPicture(ImDrawList* draw, const collection::Toy* toy, collection::VariantKind kind, uint16_t variant, ImVec2 at, float box);
+        void DrawPicture(ImDrawList* draw, const collection::Toy* toy, collection::VariantKind kind, uint16_t variant,
+            ImVec2 at, float box);
         // A swapper's picture, its two halves joined as the game's swap screen shows them (shared/collection/icons.h,
         // SwapperPicture), fitted into the square `box` at `at` and centred. False when a half has no such picture from
         // a disc: the caller draws the top's picture with the bottom small in a corner (DrawBottom).
-        bool DrawSwapper(ImDrawList* draw, const collection::Toy* top, uint16_t topVariant, const collection::Toy* bottom, uint16_t bottomVariant, ImVec2 at, float box);
+        bool DrawSwapper(ImDrawList* draw, const collection::Toy* top, uint16_t topVariant,
+            const collection::Toy* bottom, uint16_t bottomVariant, ImVec2 at, float box);
         bool DrawSwapper(ImDrawList* draw, const collection::Card& card, ImVec2 at, float box);
-        const FigureIconTexture& Icon(const collection::Toy* toy, collection::VariantKind kind, bool large, uint16_t variant);
+        const FigureIconTexture& Icon(
+            const collection::Toy* toy, collection::VariantKind kind, bool large, uint16_t variant);
         // A swapper (Swap Force) is one card: the top stands for it, the bottom is drawn small at its corner.
         collection::Card CardOf(const collection::Figure& figure) const;
         bool Busy(const collection::Figure& figure) const { return CardOf(figure).Busy(); }
@@ -208,48 +236,50 @@ namespace launcher_ui
         std::vector<collection::Figure> m_list;
         std::vector<collection::Section> m_sections;
         int m_hiddenStarters = 0;
-        ShelfFilter m_filter;           // Element, Game, Type, Sort (the search is m_search)
+        ShelfFilter m_filter; // Element, Game, Type, Sort (the search is m_search)
         char m_search[64] = {};
-        bool m_openFilters = false;     // the screenshot test opens the Filters panel, and closes it at the next screen
+        bool m_openFilters = false; // the screenshot test opens the Filters panel, and closes it at the next screen
         bool m_closeFilters = false;
-        bool m_focusSearch = false;     // Y, F3: the search box takes the keyboard next frame
-        int m_choosing = -1;            // the seat the next card goes on (a seat clicked, A, LT / RT); -1: browsing
-        std::vector<ImVec2> m_crossAt;  // where each seat's X was drawn this frame (-1: none), for the test
-        int m_navSeat = -1;             // the seat with the keyboard or pad focus this frame, -1: none
-        int m_testMenu = 0;             // the screenshot test opens a menu on its own: 1 Manage's, 2 the figure sheet's, 3 its Put on the portal
+        bool m_focusSearch = false; // Y, F3: the search box takes the keyboard next frame
+        int m_choosing = -1; // the seat the next card goes on (a seat clicked, A, LT / RT); -1: browsing
+        std::vector<ImVec2> m_crossAt; // where each seat's X was drawn this frame (-1: none), for the test
+        int m_navSeat = -1; // the seat with the keyboard or pad focus this frame, -1: none
+        int m_testMenu =
+            0; // the screenshot test opens a menu on its own: 1 Manage's, 2 the figure sheet's, 3 its Put on the portal
         bool m_testScrollBottom = false; // the screenshot test shows the shelf's last row and its bottom spacing
-        int m_hoverSeat = -1;           // the seat under the mouse this frame
-        int m_focusSeat = -1;           // focus this seat next frame (the screenshot test),
-        bool m_focusCard = false;       // or the shelf's first card
-        int m_seatMenu = -1;            // the seat whose right-click menu is open
-        std::string m_selected;         // the card with the focus
+        int m_hoverSeat = -1; // the seat under the mouse this frame
+        int m_focusSeat = -1; // focus this seat next frame (the screenshot test),
+        bool m_focusCard = false; // or the shelf's first card
+        int m_seatMenu = -1; // the seat whose right-click menu is open
+        std::string m_selected; // the card with the focus
         std::string m_toggleFavourite; // the card whose star was clicked this frame (HandleShortcuts applies it)
-        std::string m_hovered;          // the card under the mouse or the focus (X: its sheet)
+        std::string m_hovered; // the card under the mouse or the focus (X: its sheet)
 
         // The overlays.
         Overlay m_overlay = Overlay::None;
-        std::string m_figure;           // the figure sheet's dump
-        bool m_details = false;         // the sheet's Details are open
-        std::string m_changeKeep;       // "Change the bottom/top": the half the card keeps while the other is chosen
+        std::string m_figure; // the figure sheet's dump
+        bool m_details = false; // the sheet's Details are open
+        std::string m_changeKeep; // "Change the bottom/top": the half the card keeps while the other is chosen
         bool m_editing = false;
-        std::string m_sheetShown;       // the figure and the view (sheet, Edit, Change...) drawn last: another one opens at the top
-        bool m_sheetTop = false;        // a new one is shown: its scrolling body starts at the top too
+        std::string
+            m_sheetShown; // the figure and the view (sheet, Edit, Change...) drawn last: another one opens at the top
+        bool m_sheetTop = false; // a new one is shown: its scrolling body starts at the top too
         figures::FigureStats m_edit;
         figures::FigureStats m_editBase; // as read when Edit stats opened: Save writes back only what changed since
-        char m_nickname[64] = {};        // 16 characters of up to 3 bytes, and the terminator
+        char m_nickname[64] = {}; // 16 characters of up to 3 bytes, and the terminator
         char m_label[64] = {};
-        std::string m_confirm;          // "reset", "delete": the question asked over the sheet
+        std::string m_confirm; // "reset", "delete": the question asked over the sheet
         std::string m_addGame = "ssa";
         uint16_t m_addToy = 0xFFFF;
-        int m_addVersion = 0;           // 0: standard, else 1 + an index in the toy's variants
+        int m_addVersion = 0; // 0: standard, else 1 + an index in the toy's variants
         int m_addCategory = -1;
         char m_addSearch[64] = {};
         char m_addLabel[64] = {};
-        std::string m_created;          // the figure Add a figure just made
+        std::string m_created; // the figure Add a figure just made
         int m_diskGeneration = -1;
         std::vector<collection::TrashEntry> m_trash;
         std::vector<std::string> m_trashNames; // the figure each trashed dump is (by m_trash's order)
-        size_t m_starters = 0;          // untouched starters (Manage > Tidy)
+        size_t m_starters = 0; // untouched starters (Manage > Tidy)
         std::map<std::string, std::vector<BackupRow>> m_backups; // per figure, filled as asked
         int m_manageTab = 0;
         bool m_shelfTop = false; // the shelf back to its top on the next frame (choosing a figure for a seat)

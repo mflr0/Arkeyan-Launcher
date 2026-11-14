@@ -22,13 +22,16 @@ struct InstallKit
     std::filesystem::path folder;
     std::filesystem::path ssabuild; // the kit's builder: Arkeyan-Builder (SkyBuild, SSABuild in older kits)
     std::string release;            // "version=" in kit.txt: the release it came from, "" when it has none
-    std::string version;            // "build=" (else "version=") in the kit's kit.txt, else a fingerprint of Arkeyan-Builder
-    std::vector<std::string> games; // "games=" in kit.txt: what the kit builds ("ssa", "giants", "swapforce", "trapteam"); a kit before 0.5.0 has none: SSA only
-    std::map<std::string, std::string> gameVersions; // "game_version.<id>=" in kit.txt: the version of each game the kit builds ("0.8.2"); a kit before 0.5.2 has none
-    std::string tag;                // the release it was downloaded from (its kit/<tag>/ folder), "" for any other kit
-    bool chosen = false;            // SKY_LAUNCHER_KIT or "[launcher] kit=": the player's own, never replaced by the launcher
-    bool hdTextures = false;        // the builder knows --hd-textures (0.9.1 on): its file holds the option's name; an older kit does not
-    bool editionReport = false;     // the builder knows --edition-report (0.9.5 on): "Find my edition"
+    std::string version; // "build=" (else "version=") in the kit's kit.txt, else a fingerprint of Arkeyan-Builder
+    std::vector<std::string>
+        games; // "games=" in kit.txt: what the kit builds ("ssa", "giants", "swapforce", "trapteam"); a kit before 0.5.0 has none: SSA only
+    std::map<std::string, std::string>
+        gameVersions; // "game_version.<id>=" in kit.txt: the version of each game the kit builds ("0.8.2"); a kit before 0.5.2 has none
+    std::string tag; // the release it was downloaded from (its kit/<tag>/ folder), "" for any other kit
+    bool chosen = false; // SKY_LAUNCHER_KIT or "[launcher] kit=": the player's own, never replaced by the launcher
+    bool hdTextures =
+        false; // the builder knows --hd-textures (0.9.1 on): its file holds the option's name; an older kit does not
+    bool editionReport = false; // the builder knows --edition-report (0.9.5 on): "Find my edition"
 
     bool Builds(std::string_view gameId) const;
     std::string GameVersion(std::string_view gameId) const; // "" when the kit does not say
@@ -74,11 +77,12 @@ struct InstalledGame
 {
     std::string runtime;
     std::string kitVersion;
-    std::string gameVersion; // "version=": the game's version when it was built ("0.8.2"); empty for a build from before versions
+    std::string
+        gameVersion; // "version=": the game's version when it was built ("0.8.2"); empty for a build from before versions
 };
 InstalledGame FindInstalledGame(const LauncherConfig& config, const std::string& xexSha256);
-void RecordInstalledGame(LauncherConfig& config, const std::string& xexSha256, const std::string& runtime, const std::string& kitVersion,
-    const std::string& gameVersion = {});
+void RecordInstalledGame(LauncherConfig& config, const std::string& xexSha256, const std::string& runtime,
+    const std::string& kitVersion, const std::string& gameVersion = {});
 
 // After a successful install (docs/install.md, "Housekeeping"): the build's work folder (2-3 GB) goes but its logs stay in
 // <game>/install-logs, the kits older than `kitFolder` (a downloaded kit, kit/<release tag>/) go, and so do compiler
@@ -95,13 +99,24 @@ bool IsOlderLayoutBuild(const std::filesystem::path& runtime, const std::filesys
 // Kit 0.5.0 on an M1 Pro: SSA 193 s, Giants 563 s (4443 shaders instead of 1118); slower PCs take longer.
 inline constexpr int InstallMinutes = 10;
 inline constexpr int GiantsInstallMinutes = 15;
-inline int InstallMinutesFor(std::string_view gameId) { return gameId == "giants" ? GiantsInstallMinutes : InstallMinutes; }
+inline int InstallMinutesFor(std::string_view gameId)
+{
+    return gameId == "giants" ? GiantsInstallMinutes : InstallMinutes;
+}
 inline constexpr int InstallGigabytes = 6;
 
 // What Arkeyan-Builder has said so far.
 struct InstallProgress
 {
-    enum class State { Idle, Running, Failed, Cancelled, Done, Interrupted }; // Interrupted: read back from install.log
+    enum class State
+    {
+        Idle,
+        Running,
+        Failed,
+        Cancelled,
+        Done,
+        Interrupted
+    }; // Interrupted: read back from install.log
     struct Step
     {
         std::string id, title;
@@ -110,14 +125,15 @@ struct InstallProgress
 
     State state = State::Idle;
     std::vector<Step> steps;
-    uint64_t done = 0, total = 0;  // the current step's @progress
-    std::string error;             // @error, or why Arkeyan-Builder stopped
-    bool startFailed = false;      // the installer never started (the kit, the folder): `error` is in the launcher's language
-    std::string runtime;           // @done
-    std::string action;            // the current step's last @log line
-    bool hdTextures = false;       // the build was asked for the HD textures: their step is expected after the others
-    std::vector<std::string> log;  // every line, @log text and anything else Arkeyan-Builder printed
-    size_t logLines = 0;           // lines in the full log (the copy may hold only the last ones)
+    uint64_t done = 0, total = 0; // the current step's @progress
+    std::string error; // @error, or why Arkeyan-Builder stopped
+    bool startFailed =
+        false; // the installer never started (the kit, the folder): `error` is in the launcher's language
+    std::string runtime; // @done
+    std::string action; // the current step's last @log line
+    bool hdTextures = false; // the build was asked for the HD textures: their step is expected after the others
+    std::vector<std::string> log; // every line, @log text and anything else Arkeyan-Builder printed
+    size_t logLines = 0; // lines in the full log (the copy may hold only the last ones)
 
     // Applies one stdout line at time `now`.
     void Apply(std::string_view line, uint64_t now);
@@ -135,10 +151,12 @@ public:
     // Starts Arkeyan-Builder; false (and Failed with the reason) when there is no kit or it can't start. False too, and nothing
     // touched, while a build runs: it is stopped with Cancel, never waited for here (this is called on the window's thread).
     // `hdTextures`: also make the game's HD texture pack at the end (--hd-textures auto, docs/tools/hd_textures.md).
-    bool Start(const std::optional<InstallKit>& kit, const std::string& iso, const std::filesystem::path& out, bool hdTextures = false);
+    bool Start(const std::optional<InstallKit>& kit, const std::string& iso, const std::filesystem::path& out,
+        bool hdTextures = false);
     // The HD texture step alone, for a game already built (no --out): `on` makes the pack, else removes it. Its log is
     // gameFolder/hd-textures.log, never the install's. Fails to start with a reason when the kit is too old for it.
-    bool StartHdTextures(const std::optional<InstallKit>& kit, const std::string& iso, const std::filesystem::path& gameFolder, bool on);
+    bool StartHdTextures(
+        const std::optional<InstallKit>& kit, const std::string& iso, const std::filesystem::path& gameFolder, bool on);
     // Stops Arkeyan-Builder, the process this installer started, and on Windows the processes it started in turn. Returns at
     // once; the state becomes Cancelled when Arkeyan-Builder has exited.
     void Cancel();
@@ -149,7 +167,8 @@ public:
     uint32_t ProcessId() const { return m_pid; } // Arkeyan-Builder's, while it runs
 
 private:
-    bool Launch(const std::optional<InstallKit>& kit, const std::string& iso, const std::filesystem::path& out, const char* hdTextures, bool hdOnly);
+    bool Launch(const std::optional<InstallKit>& kit, const std::string& iso, const std::filesystem::path& out,
+        const char* hdTextures, bool hdOnly);
     void Read();
     void Join();
 

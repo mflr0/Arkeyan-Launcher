@@ -102,6 +102,7 @@ Auto: 5.1 when the device has six channels.	Auto: 5.1 se o dispositivo tiver sei
 Automatic	Automático
 Automatic detection	Deteção automática
 Back	Voltar
+Tabs	Separadores
 Back side button	Botão lateral de recuo
 Back up now	Guardar cópia agora
 Backed up	Cópia guardada
@@ -610,6 +611,11 @@ Pick one below	Escolhe abaixo
 Picture	Imagem
 Play	Jogar
 Play time: {}	Tempo de jogo: {}
+{}/{} achievements	{}/{} conquistas
+In the launcher	No launcher
+Discord	Discord
+Show my activity on Discord	Mostrar a minha atividade no Discord
+The game you play, its achievements and version, or that you are in the launcher.	O jogo que jogas, as conquistas e a versão, ou que estás no launcher.
 Play without updating	Jogar sem atualizar
 Play {}	Jogar {}
 Play {} with Arkeyan Launcher	Jogar {} com o Arkeyan Launcher
@@ -734,6 +740,8 @@ Silver	Prateado
 Skip intro movies	Saltar filmes de introdução
 Graphics API	API gráfica
 Direct3D 12 by default; the game uses the other if it cannot start.	Direct3D 12 por predefinição; se não arrancar, o jogo usa a outra.
+Direct3D 12 showed nothing: the game starts again with Vulkan	O Direct3D 12 não mostrou nada: o jogo reinicia com Vulkan
+Vulkan, since Direct3D 12 showed nothing on this PC.	Vulkan, porque o Direct3D 12 não mostrava nada neste PC.
 Skylander Info	Info do Skylander
 Skylander Profile	Perfil do Skylander
 Skylander/Villain Stats	Estatísticas do Skylander/Vilão
@@ -1100,3 +1108,23 @@ This portal is on another driver (WinUSB, libusbK...). In Device Manager, uninst
 Xbox portals need libusb-1.0, which Windows doesn't have.	Os portais de Xbox precisam de libusb-1.0, que o Windows não tem.
 This Xbox portal's driver can't be used: it needs WinUSB.	O driver deste portal de Xbox não serve: ele precisa de WinUSB.
 Windows has no driver for this portal.	O Windows não tem driver para este portal.
+This Xbox 360 portal needs Windows' WinUSB driver, set once: see the README.	Este portal de Xbox 360 precisa do driver WinUSB do Windows, configurado uma vez: veja o README.
+Windows didn't hand the Xbox One portal to the game.	O Windows não passou o portal de Xbox One para o jogo.
+Xbox portals need libusb-1.0: install your system's libusb-1.0 package, then test again.	Os portais Xbox precisam da libusb-1.0: instala o pacote libusb-1.0 do teu sistema e volta a testar.
+This portal is on the {} driver, which a tool such as Zadig installed and the game can't use. To give it back to Windows:	Este portal está no driver {}, instalado por uma ferramenta como o Zadig, que o jogo não consegue usar. Para o devolver ao Windows:
+1. In Device Manager, right-click the portal, choose Uninstall device, tick "Attempt to remove the driver for this device", then Uninstall.	1. No Gestor de Dispositivos, clica com o botão direito no portal, escolhe Desinstalar dispositivo, marca "Tentar remover o controlador deste dispositivo" e depois Desinstalar.
+2. Unplug the portal and plug it in again.	2. Desliga o portal e volta a ligá-lo.
+3. If it's back on {}: open a Command Prompt as administrator, run these two commands, then plug the portal in again:	3. Se voltar ao {}: abre a Linha de Comandos como administrador, executa estes dois comandos e volta a ligar o portal:
+In the first command's list, find the {} driver's oemNN.inf and put its name in the second.	Na lista do primeiro comando, encontra o oemNN.inf do driver {} e põe o nome dele no segundo.
+Or choose WinUSB for it in Zadig: the game uses it there.	Ou escolhe WinUSB para ele no Zadig: o jogo usa-o assim.
+Copy commands	Copiar comandos
+Commands copied	Comandos copiados
+Xcode's Metal shader compiler isn't installed yet.	O compilador de shaders Metal do Xcode ainda não está instalado.
+1. Open Terminal (Applications > Utilities).	1. Abra o Terminal (Aplicações > Utilitários).
+2. Paste the command and press Return:	2. Cole o comando e prima Enter:
+3. Wait until it says it's done (a few minutes, about 700 MB), then press Retry.	3. Espere até indicar que terminou (alguns minutos, cerca de 700 MB) e prima Repetir.
+Copy command	Copiar o comando
+Command copied	Comando copiado
+In the menus	Nos menus
+In a level	Num nível
+{} played	{} jogado

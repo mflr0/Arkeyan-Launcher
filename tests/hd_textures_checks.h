@@ -10,22 +10,28 @@ inline void HdTexturesChecks(const std::filesystem::path& scratch)
     auto read = [](const fs::path& path) {
         std::ifstream in(path, std::ios::binary);
         std::string text(std::istreambuf_iterator<char>(in), {});
-        while (!text.empty() && (text.back() == '\n' || text.back() == '\r')) text.pop_back();
+        while (!text.empty() && (text.back() == '\n' || text.back() == '\r'))
+            text.pop_back();
         return text;
     };
     auto wait = [](GameInstaller& installer) {
         const uint64_t deadline = SDL_GetTicks() + 5000;
-        while (installer.Running() && SDL_GetTicks() < deadline) SDL_Delay(5);
+        while (installer.Running() && SDL_GetTicks() < deadline)
+            SDL_Delay(5);
         EXPECT(!installer.Running());
-        if (installer.Running()) installer.Cancel();
+        if (installer.Running())
+            installer.Cancel();
         return installer.Snapshot(3);
     };
     TestSetEnv("FAKE_ARKEYAN_BUILDER_DELAY", "0");
-    for (const char* key : { "FAKE_ARKEYAN_BUILDER_FAIL", "FAKE_ARKEYAN_BUILDER_FAIL_STEP", "FAKE_ARKEYAN_BUILDER_PAUSE_STEP", "FAKE_ARKEYAN_BUILDER_HOLD", "FAKE_ARKEYAN_BUILDER_ENDING", "FAKE_ARKEYAN_BUILDER_HD_MARKER" })
+    for (const char* key :
+        { "FAKE_ARKEYAN_BUILDER_FAIL", "FAKE_ARKEYAN_BUILDER_FAIL_STEP", "FAKE_ARKEYAN_BUILDER_PAUSE_STEP",
+            "FAKE_ARKEYAN_BUILDER_HOLD", "FAKE_ARKEYAN_BUILDER_ENDING", "FAKE_ARKEYAN_BUILDER_HD_MARKER" })
         TestUnsetEnv(key);
     const auto kit = InstallKitIn(SKYLAUNCHER_FAKE_KIT);
     EXPECT(kit.has_value());
-    if (!kit) return;
+    if (!kit)
+        return;
     const std::string marker = (root / "marker.txt").string();
     TestSetEnv("FAKE_ARKEYAN_BUILDER_HD_MARKER", marker.c_str());
 
@@ -33,7 +39,10 @@ inline void HdTexturesChecks(const std::filesystem::path& scratch)
     EXPECT(kit->hdTextures);
     const fs::path oldKitFolder = root / "old-kit";
     fs::create_directories(oldKitFolder);
-    { std::ofstream(oldKitFolder / "Arkeyan-Builder") << "usage: Arkeyan-Builder --iso <disc> --out <dir> [--jobs N]\n"; }
+    {
+        std::ofstream(oldKitFolder / "Arkeyan-Builder")
+            << "usage: Arkeyan-Builder --iso <disc> --out <dir> [--jobs N]\n";
+    }
     const auto oldKit = InstallKitIn(oldKitFolder);
 #if defined(_WIN32)
     fs::rename(oldKitFolder / "Arkeyan-Builder", oldKitFolder / "Arkeyan-Builder.exe");
@@ -65,11 +74,16 @@ inline void HdTexturesChecks(const std::filesystem::path& scratch)
     TestSetEnv("FAKE_ARKEYAN_BUILDER_PAUSE_STEP", "1");
     EXPECT(installer.StartHdTextures(kit, "synthetic.iso", game, true));
     const uint64_t deadline = SDL_GetTicks() + 5000;
-    do { state = installer.Snapshot(); SDL_Delay(5); } while (!(state.steps.size() == 1 && state.done == 1) && installer.Running() && SDL_GetTicks() < deadline);
+    do
+    {
+        state = installer.Snapshot();
+        SDL_Delay(5);
+    } while (!(state.steps.size() == 1 && state.done == 1) && installer.Running() && SDL_GetTicks() < deadline);
     EXPECT(installer.Running() && state.state == InstallProgress::State::Running && state.done == 1);
     installer.Cancel();
     state = wait(installer);
-    EXPECT(state.state == InstallProgress::State::Cancelled && state.runtime.empty() && !fs::exists(game / "install.log"));
+    EXPECT(
+        state.state == InstallProgress::State::Cancelled && state.runtime.empty() && !fs::exists(game / "install.log"));
     TestUnsetEnv("FAKE_ARKEYAN_BUILDER_PAUSE_STEP");
 
     // A failure says why, in the builder's words, and is not a start failure.
@@ -83,7 +97,8 @@ inline void HdTexturesChecks(const std::filesystem::path& scratch)
     // A kit too old for the option: nothing starts, and the reason is the launcher's own.
     EXPECT(!installer.StartHdTextures(tooOld, "synthetic.iso", game, true));
     state = installer.Snapshot();
-    EXPECT(state.state == InstallProgress::State::Failed && state.startFailed && state.error.find("can't make the HD textures") != std::string::npos);
+    EXPECT(state.state == InstallProgress::State::Failed && state.startFailed &&
+           state.error.find("can't make the HD textures") != std::string::npos);
     EXPECT(!installer.Start(tooOld, "synthetic.iso", root / "old-install", true));
     EXPECT(installer.Snapshot().startFailed && !fs::exists(root / "old-install" / "install.log"));
     EXPECT(!installer.StartHdTextures({}, "synthetic.iso", game, true) && installer.Snapshot().startFailed);
@@ -96,14 +111,17 @@ inline void HdTexturesChecks(const std::filesystem::path& scratch)
     EXPECT(state.hdTextures);
     {
         const InstallChecklist early = MakeInstallChecklist(state, SDL_GetTicks());
-        EXPECT(!early.rows.empty() && early.rows.back().id == "hdtextures" && early.rows.back().state == InstallChecklist::RowState::Waiting);
+        EXPECT(!early.rows.empty() && early.rows.back().id == "hdtextures" &&
+               early.rows.back().state == InstallChecklist::RowState::Waiting);
     }
     state = wait(installer);
-    EXPECT(state.state == InstallProgress::State::Done && state.steps.size() == 11 && state.steps.back().id == "hdtextures");
+    EXPECT(state.state == InstallProgress::State::Done && state.steps.size() == 11 &&
+           state.steps.back().id == "hdtextures");
     EXPECT(read(marker) == "auto" && fs::is_regular_file(state.runtime) && fs::exists(withPack / "layout.txt"));
     {
         const InstallChecklist done = MakeInstallChecklist(state, SDL_GetTicks());
-        EXPECT(done.overall == 1.0f && done.rows.back().id == "hdtextures" && done.rows.back().state == InstallChecklist::RowState::Done);
+        EXPECT(done.overall == 1.0f && done.rows.back().id == "hdtextures" &&
+               done.rows.back().state == InstallChecklist::RowState::Done);
         EXPECT(done.rows.back().title == "Making the HD textures");
     }
     fs::remove(marker);
@@ -113,7 +131,8 @@ inline void HdTexturesChecks(const std::filesystem::path& scratch)
     EXPECT(state.state == InstallProgress::State::Done && state.steps.size() == 10 && !fs::exists(marker));
     {
         const InstallChecklist plain = MakeInstallChecklist(state, SDL_GetTicks());
-        EXPECT(std::none_of(plain.rows.begin(), plain.rows.end(), [](const auto& row) { return row.id == "hdtextures"; }));
+        EXPECT(
+            std::none_of(plain.rows.begin(), plain.rows.end(), [](const auto& row) { return row.id == "hdtextures"; }));
     }
     TestUnsetEnv("FAKE_ARKEYAN_BUILDER_HD_MARKER");
     TestUnsetEnv("FAKE_ARKEYAN_BUILDER_DELAY");

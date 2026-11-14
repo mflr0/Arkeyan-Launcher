@@ -9,5 +9,9 @@
   "scenes": [ { "package": "nxeart", "names": [ "nxebg.jpg" ] } ],
   "portraits": { "materials": [
     { "archive": "archives/toycollectionmaterials.pak", "folder": "temporary/buildserver/xenon/output/materialinstances/toycollection/" } ] },
-  "parts": { "archive": "archives/permanent.pak", "trackers": "LooseData/CollectibleTrackers.igz", "texts": "LooseData/CollectibleTrackers_" }
+  "parts": { "archive": "archives/permanent.pak", "trackers": "LooseData/CollectibleTrackers.igz", "texts": "LooseData/CollectibleTrackers_" },
+  "levels": {
+    "kind": "igz",
+    "archive": "archives/zoneinfos.pak"
+  }
 }

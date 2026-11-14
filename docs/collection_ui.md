@@ -33,6 +33,10 @@ and words, a sheet with three main actions. The look is dorydev's: the colours, 
   figure's upgrade field means, with the game's own names, descriptions and prices in English or French; the texts
   are read from the player's disc when it is checked (`<data>/<Game>/upgrades.json`, part `art::Upgrades`), else a
   plain list ("Upgrade 1"...). ArkeyanRuntime's `docs/runtime/host/figures.md` ("Upgrades") has the bit layout.
+- **Level names for presence.** The same disc check reads all six games' localized level names into
+  `<data>/<Game>/levels.json` (`art::LevelNames`, included in `art::All`). The file maps complete runtime identifiers
+  to names by text language and has its own reader version stamp. Unknown or empty names are omitted, preserving
+  the “In a level” fallback. See [Level names from the disc](level_names.md) for sources, schema and checks.
 - Removed: `figure_file.*` and `figure_collection.*` (the old engine), replaced by `figure_tag`/`figure_crypto`/
   `figure_data` and `collection`.
 - Folder: `collection::Folder()` (`%APPDATA%\Skylanders\Collection`, `~/Library/Application Support/Skylanders/Collection`).
@@ -175,7 +179,8 @@ At the first visit to the page (`CollectionPage::Open`):
   writes no stats (and makes no backup).
 - **Add a figure** (a Modal, Large): a game Select (the six games), a SearchField, a **Type** Select (as the bar's), one card per
   character with an "owned x2" Badge; the toys the game reads first, then "Later games" labelled "needs Giants" (a
-  SectionHeader each, with its count). A side Card lists the versions as ListRows (the picture in `image`, "owned x2" as `trailing`)
+  SectionHeader each, with its count). Every category keeps the full "needs <game>" label; the grid's minimum card width
+  fits the longest requirement in the current language. A side Card lists the versions as ListRows (the picture in `image`, "owned x2" as `trailing`)
   (the plain toy under its own name, then the variants the chosen game tells apart and the same-tag editions: a variant the game plays
   as the plain toy is not a row, `Catalogue::Read`); the plain toy makes the figure under the id the toy is sold with, and the
   toy's own entry in the catalogue (its `base` kind) is never a second row; the footer holds the optional name, "Put it on Player 1" after a Create, and Close then Create at the right (the dialog stays open after a Create, to make another). A toy with

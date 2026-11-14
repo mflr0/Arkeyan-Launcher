@@ -47,7 +47,7 @@ namespace art::alchemy
         // The entry's source path as the name table stores it ("C:/tfb/build/360/levels/.../mainmenu.png/0x....igz").
         const std::string& Name(size_t index) const { return m_entries[index].name; }
         uint32_t Size(size_t index) const { return m_entries[index].size; }
-        // The entry's bytes: stored, or chunked LZMA (0x8000 bytes of output per chunk). `size` limits how many are
+        // The entry's bytes: stored, or chunked LZMA/DEFLATE (0x8000 bytes of output per chunk). `size` limits how many are
         // decoded (0: all). Empty if a chunk is corrupt.
         std::vector<uint8_t> Read(size_t index, size_t size = 0) const;
         // The first entry whose name contains `part` (any case), if any.

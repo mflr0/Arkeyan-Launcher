@@ -14,7 +14,8 @@ FILETYPE 1
     {
         BLOCK "040904B0"
         {
-            VALUE "CompanyName", ""
+            VALUE "CompanyName", "Arkeyan project"
+            VALUE "LegalCopyright", "Copyright (c) 2026 Arkeyan Launcher contributors (formerly Skylauncher)"
             VALUE "FileDescription", "Arkeyan Launcher"
             VALUE "FileVersion", "@LAUNCHER_VERSION@"
             VALUE "InternalName", "ArkeyanLauncher"

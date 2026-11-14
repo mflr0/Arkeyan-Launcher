@@ -18,7 +18,8 @@ namespace figures
 
         Rgba Unpack(uint32_t abgr)
         {
-            return { float(abgr & 0xFF), float(abgr >> 8 & 0xFF), float(abgr >> 16 & 0xFF), float(abgr >> 24) / 255.0f };
+            return { float(abgr & 0xFF), float(abgr >> 8 & 0xFF), float(abgr >> 16 & 0xFF),
+                float(abgr >> 24) / 255.0f };
         }
 
         Rgba Scale(Rgba color, float factor)
@@ -44,7 +45,8 @@ namespace figures
             const float pi = 3.14159265f, half = pi / n;
             float angle = std::fmod(std::atan2(x, y) + 2 * pi, 2 * half) - half;
             float length = std::hypot(x, y);
-            float px = length * std::cos(angle) - r * std::cos(half), py = std::fabs(length * std::sin(angle)) - r * std::sin(half);
+            float px = length * std::cos(angle) - r * std::cos(half),
+                  py = std::fabs(length * std::sin(angle)) - r * std::sin(half);
             py += std::clamp(-py, 0.0f, r * std::sin(half));
             return std::hypot(px, py) * (px < 0 ? -1.0f : 1.0f);
         }
@@ -95,8 +97,10 @@ namespace figures
         collection::Element element = toy != nullptr ? toy->element : collection::Element::None;
         Category category = toy != nullptr ? toy->category : Category::Core;
         // The element colours are Spyro's Adventure's (figures::ElementColor); Light and Dark are the style's.
-        uint32_t fill = element == collection::Element::Light ? style.light : element == collection::Element::Dark ? style.dark
-            : element >= collection::Element::None ? style.neutral : ElementColor(Element(element));
+        uint32_t fill = element == collection::Element::Light  ? style.light
+                        : element == collection::Element::Dark ? style.dark
+                        : element >= collection::Element::None ? style.neutral
+                                                               : ElementColor(Element(element));
         if (kind == VariantKind::Base && toy != nullptr)
             kind = toy->edition; // Legendary Bash, Dark Spyro: the toy type itself is the edition
         Rgba base = Unpack(fill);
@@ -118,13 +122,15 @@ namespace figures
                 for (int sy = 0; sy < Samples; sy++)
                     for (int sx = 0; sx < Samples; sx++)
                     {
-                        float x = (px + (sx + 0.5f) / Samples) / size - 0.5f, y = (py + (sy + 0.5f) / Samples) / size - 0.5f;
+                        float x = (px + (sx + 0.5f) / Samples) / size - 0.5f,
+                              y = (py + (sy + 0.5f) / Samples) / size - 0.5f;
                         Rgba color{};
                         float shape = Shape(category, x, y);
                         if (shape < 0)
                         {
                             float t = std::clamp(y + 0.5f, 0.0f, 1.0f);
-                            color = { top.r + (bottom.r - top.r) * t, top.g + (bottom.g - top.g) * t, top.b + (bottom.b - top.b) * t, fillAlpha };
+                            color = { top.r + (bottom.r - top.r) * t, top.g + (bottom.g - top.g) * t,
+                                top.b + (bottom.b - top.b) * t, fillAlpha };
                             // Swap Force: a swapper's half is lit, the other half shaded.
                             if ((category == Category::SwapTop && y > 0) || (category == Category::SwapBottom && y < 0))
                                 color = Scale(color, 0.8f);

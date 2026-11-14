@@ -40,27 +40,33 @@ namespace launcher_ui
         if (ui::BeginModal("##defender", Tr("Windows Defender may block the install"), &open, ui::ModalSize::Large))
         {
             ui::Text(ui::TextStyle::Body,
-                Tr("Windows Defender may report Arkeyan-Builder.exe, ArkeyanLauncher.exe or a game built here as Trojan:Win32/Bearfoos.A!ml. "
-                   "The !ml ending means no known malware was found: Defender's machine-learning model guesses from what the program does. "
-                   "The launcher is not signed, downloads a compiler, builds a new game on your PC and updates itself: that is the whole guess."),
+                Tr("Windows Defender may report Arkeyan-Builder.exe, ArkeyanLauncher.exe or a game built here as "
+                   "Trojan:Win32/Bearfoos.A!ml. "
+                   "The !ml ending means no known malware was found: Defender's machine-learning model guesses from "
+                   "what the program does. "
+                   "The launcher is not signed, downloads a compiler, builds a new game on your PC and updates itself: "
+                   "that is the whole guess."),
                 ui::color::Ink);
             ImGui::Dummy(ImVec2(0, ui::space::XS));
             ui::Text(ui::TextStyle::Body,
-                Tr("The author has submitted the launcher and its source code to Microsoft as a false positive; the review is pending."),
+                Tr("The author has submitted the launcher and its source code to Microsoft as a false positive; the "
+                   "review is pending."),
                 ui::color::InkSoft);
             ImGui::Dummy(ImVec2(0, ui::space::S));
             ui::Text(ui::TextStyle::Body, Tr("If Windows Defender blocks a file:"), ui::color::Ink);
             const char* steps[] = {
                 N_("1. Open Windows Security, then Virus & threat protection > Protection history."),
                 N_("2. Open the blocked item, then Actions > Allow on device."),
-                N_("3. In Virus & threat protection settings, choose Manage settings > Exclusions > Add or remove exclusions > Add an exclusion > Folder, and pick %APPDATA%\\Skylanders\\kit."),
+                N_("3. In Virus & threat protection settings, choose Manage settings > Exclusions > Add or remove "
+                   "exclusions > Add an exclusion > Folder, and pick %APPDATA%\\Skylanders\\kit."),
                 N_("4. Back here, choose Retry."),
             };
             for (const char* step : steps)
                 ui::Text(ui::TextStyle::Body, Tr(step), ui::color::InkSoft);
             ImGui::Dummy(ImVec2(0, ui::space::XS));
             ui::Text(ui::TextStyle::Caption,
-                Tr("Every download is checked against the release's SHA-256 before it runs, and every release is built by GitHub Actions from the public source."),
+                Tr("Every download is checked against the release's SHA-256 before it runs, and every release is built "
+                   "by GitHub Actions from the public source."),
                 ui::color::Dim);
             go = ui::ModalActions(&open, Tr("Continue"), Tr("Not now")) == ui::ModalResult::Confirm;
             // Why, at the left of the actions' row.

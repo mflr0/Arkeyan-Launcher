@@ -7,7 +7,7 @@ name: Build
 # with the version in CMakeLists.txt.
 on:
   push:
-    branches: [main, 'feat/**']
+    branches: [main, 'release-*', 'feat/**']
     tags: ['v*']
   pull_request:
   workflow_dispatch:
@@ -18,11 +18,30 @@ concurrency:
 
 env:
   VERSION: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || '' }}
+  # A pull request may add English text without its translations (CONTRIBUTING.md): missing ones are warnings there.
+  SKY_LAUNCHER_TEST_I18N_MISSING_OK: ${{ github.event_name == 'pull_request' && '1' || '0' }}
 
 permissions:
   contents: read
 
 jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+      - name: Format (.clang-format)
+        run: |
+          pip install --quiet clang-format==23.1.4
+          tools/check_format.sh
+      - name: Pull request title and sign-off
+        if: github.event_name == 'pull_request'
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: tools/check_pull_request.sh
   windows:
     runs-on: windows-latest
     steps:
@@ -38,18 +57,63 @@ jobs:
           if ($version) { $extra += "-DLAUNCHER_VERSION=$version" }
           cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl @extra
           cmake --build build --target ArkeyanLauncher
-          # The checks that need no disc image (the others need the player's own).
           cmake --build build --target ArkeyanLauncherTest FakeArkeyanBuilder
-          $env:SDL_VIDEO_DRIVER = 'offscreen'
-          $env:SDL_AUDIO_DRIVER = 'dummy'
-          .\build\ArkeyanLauncherTest.exe --no-disc "$env:RUNNER_TEMP\launcher-test"
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           New-Item -ItemType Directory -Force dist | Out-Null
           Copy-Item build/ArkeyanLauncher.exe dist/ArkeyanLauncher.exe
+      - name: Tests (no disc)
+        # The checks that need no disc image (the others need the player's own), so a Windows-only bug (a ':' in a folder
+        # name, a path the other systems accept) stops the build before a release. Offscreen video, no audio device, no
+        # GPU needed; every folder and settings file in the runner's temp folder; no update check (no network).
+        timeout-minutes: 20
+        shell: pwsh
+        run: |
+          $scratch = "$env:RUNNER_TEMP\launcher-test"
+          $env:SDL_VIDEO_DRIVER = 'offscreen'
+          $env:SDL_AUDIO_DRIVER = 'dummy'
+          $env:SKY_LAUNCHER_NO_UPDATE_CHECK = '1'
+          $env:SKY_SETTINGS = "$scratch-env\none.ini"
+          $env:SKY_LAUNCHER_INI = "$scratch-env\none.ini"
+          $env:SKY_COLLECTION = "$scratch-env\collection"
+          $env:SKY_SAVE_DIR = "$scratch-env\save"
+          $env:SKYLANDERS_DATA = "$scratch-env\data"
+          $env:SKY_LAUNCHER_DATA = "$scratch-env\launcher-data"
+          $env:SKY_LAUNCHER_DESKTOP = "$scratch-env\desktop"
+          $env:SKY_LOG = "$scratch-env\game.log"
+          New-Item -ItemType Directory -Force "$scratch-env" | Out-Null
+          .\build\ArkeyanLauncherTest.exe --no-disc $scratch
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: windows
           path: dist/*
+
+  sanitizers:
+    # The no-disc checks built with AddressSanitizer and UndefinedBehaviorSanitizer: an out-of-bounds read, a use after
+    # free or a NaN reaching an integer stops the run with its stack. Slower: the child scenarios get 5 minutes, the pad
+    # walk 45.
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          submodules: recursive
+      - name: Dependencies
+        timeout-minutes: 15
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build clang-15 libstdc++-12-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev \
+            libxi-dev libxss-dev libxtst-dev libxkbcommon-dev libwayland-dev wayland-protocols libegl1-mesa-dev \
+            libgl1-mesa-dev libgles2-mesa-dev libdbus-1-dev libudev-dev libdrm-dev libgbm-dev
+      - name: Build and test
+        env:
+          ASAN_OPTIONS: detect_leaks=0
+          UBSAN_OPTIONS: print_stacktrace=1
+          SKY_LAUNCHER_TEST_TIMEOUT_MS: '300000'
+          SKY_LAUNCHER_TEST_PADWALK_MINUTES: '45'
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DSKY_SANITIZE=ON \
+            -DCMAKE_C_COMPILER=clang-15 -DCMAKE_CXX_COMPILER=clang++-15
+          cmake --build build --target ArkeyanLauncher ArkeyanLauncherTest FakeArkeyanBuilder
+          SDL_VIDEO_DRIVER=offscreen SDL_AUDIO_DRIVER=dummy build/ArkeyanLauncherTest --no-disc "$RUNNER_TEMP/launcher-test"
 
   linux:
     # 22.04: the AppImage needs the glibc it was built against (2.35), and the game kit's baseline is 2.34.

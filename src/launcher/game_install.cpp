@@ -34,7 +34,8 @@ namespace
     {
         while (!text.empty() && (text.front() == ' ' || text.front() == '\t'))
             text.remove_prefix(1);
-        while (!text.empty() && (text.back() == ' ' || text.back() == '\t' || text.back() == '\r' || text.back() == '\n'))
+        while (
+            !text.empty() && (text.back() == ' ' || text.back() == '\t' || text.back() == '\r' || text.back() == '\n'))
             text.remove_suffix(1);
         return text;
     }
@@ -102,13 +103,15 @@ namespace
             else if (text.starts_with("game_version."))
             {
                 size_t equals = text.find('=');
-                if (std::string id(Trim(text.substr(13, equals - 13))), value(Trim(text.substr(equals + 1))); !id.empty() && !value.empty())
+                if (std::string id(Trim(text.substr(13, equals - 13))), value(Trim(text.substr(equals + 1)));
+                    !id.empty() && !value.empty())
                     kit.gameVersions[id] = value;
             }
             else if (text.starts_with("games="))
             {
                 std::string_view list = text.substr(6);
-                for (size_t comma = 0; !list.empty(); list.remove_prefix(comma == std::string_view::npos ? list.size() : comma + 1))
+                for (size_t comma = 0; !list.empty();
+                    list.remove_prefix(comma == std::string_view::npos ? list.size() : comma + 1))
                 {
                     comma = list.find(',');
                     if (std::string_view game = Trim(list.substr(0, comma)); !game.empty())
@@ -133,10 +136,7 @@ namespace
         return kit;
     }
 
-    std::string InstallSection(const std::string& xexSha256)
-    {
-        return "install." + xexSha256;
-    }
+    std::string InstallSection(const std::string& xexSha256) { return "install." + xexSha256; }
 }
 
 std::filesystem::path LauncherDataFolder()
@@ -220,7 +220,8 @@ std::optional<InstallKit> FindInstallKit(const LauncherConfig& config, std::stri
                     return kit;
             std::error_code error;
             for (const auto& entry : ListDirectory(folder, error))
-                if (entry.is_directory(error) && (Utf8(entry.path().filename()).starts_with("skylanders-kit") || Utf8(entry.path().filename()).starts_with("ssa-kit")))
+                if (entry.is_directory(error) && (Utf8(entry.path().filename()).starts_with("skylanders-kit") ||
+                                                     Utf8(entry.path().filename()).starts_with("ssa-kit")))
                     if (auto kit = KitIn(entry.path()))
                         return kit;
         }
@@ -229,7 +230,8 @@ std::optional<InstallKit> FindInstallKit(const LauncherConfig& config, std::stri
     std::optional<InstallKit> beside = nextToLauncher();
     if (!beside || !best)
         return beside ? beside : best;
-    bool downloadedWins = IsNewer(best->tag, beside->release) || beside->release.empty() || (!gameId.empty() && !beside->Builds(gameId) && best->Builds(gameId));
+    bool downloadedWins = IsNewer(best->tag, beside->release) || beside->release.empty() ||
+                          (!gameId.empty() && !beside->Builds(gameId) && best->Builds(gameId));
     return downloadedWins ? best : beside;
 }
 
@@ -326,15 +328,15 @@ InstalledGame FindInstalledGame(const LauncherConfig& config, const std::string&
 {
     if (xexSha256.empty())
         return {};
-    InstalledGame game{ Setting(config, InstallSection(xexSha256), "runtime"), Setting(config, InstallSection(xexSha256), "kit"),
-        Setting(config, InstallSection(xexSha256), "version") };
+    InstalledGame game{ Setting(config, InstallSection(xexSha256), "runtime"),
+        Setting(config, InstallSection(xexSha256), "kit"), Setting(config, InstallSection(xexSha256), "version") };
     if (!game.runtime.empty())
         game.runtime = ResolveRuntime(Path(game.runtime));
     return game;
 }
 
-void RecordInstalledGame(LauncherConfig& config, const std::string& xexSha256, const std::string& runtime, const std::string& kitVersion,
-    const std::string& gameVersion)
+void RecordInstalledGame(LauncherConfig& config, const std::string& xexSha256, const std::string& runtime,
+    const std::string& kitVersion, const std::string& gameVersion)
 {
     auto& section = config[InstallSection(xexSha256)];
     section["runtime"] = runtime;
@@ -408,7 +410,7 @@ InstallProgress ReadInstallLog(const std::filesystem::path& gameFolder)
     for (std::string line; std::getline(file, line);)
         progress.Apply(line, 0);
     progress.state = !progress.runtime.empty() ? InstallProgress::State::Done
-        : !progress.error.empty()              ? InstallProgress::State::Failed
+                     : !progress.error.empty() ? InstallProgress::State::Failed
                                                : InstallProgress::State::Interrupted;
     return progress;
 }
@@ -449,7 +451,8 @@ void CleanAfterInstall(const std::filesystem::path& gameFolder, const std::files
     // A compiler archive whose extracted copy is ready (Arkeyan-Builder deletes it itself; this is for older installs).
     fs::path toolchains = LauncherDataFolder() / "toolchains";
     for (const auto& entry : ListDirectory(toolchains, error))
-        if (entry.path().extension() == ".zip" && fs::exists(entry.path().parent_path() / entry.path().stem() / "ssabuild-ready.txt", error))
+        if (entry.path().extension() == ".zip" &&
+            fs::exists(entry.path().parent_path() / entry.path().stem() / "ssabuild-ready.txt", error))
             fs::remove(entry.path(), error);
 }
 
@@ -473,18 +476,21 @@ GameInstaller::~GameInstaller()
     Join();
 }
 
-bool GameInstaller::Start(const std::optional<InstallKit>& kit, const std::string& iso, const std::filesystem::path& out, bool hdTextures)
+bool GameInstaller::Start(
+    const std::optional<InstallKit>& kit, const std::string& iso, const std::filesystem::path& out, bool hdTextures)
 {
     return Launch(kit, iso, out, hdTextures ? "auto" : nullptr, false);
 }
 
-bool GameInstaller::StartHdTextures(const std::optional<InstallKit>& kit, const std::string& iso, const std::filesystem::path& gameFolder, bool on)
+bool GameInstaller::StartHdTextures(
+    const std::optional<InstallKit>& kit, const std::string& iso, const std::filesystem::path& gameFolder, bool on)
 {
     return Launch(kit, iso, gameFolder, on ? "auto" : "off", true);
 }
 
 // `hdTextures`: the --hd-textures mode to pass, else none. `hdOnly`: that step alone, `out` being the game's folder.
-bool GameInstaller::Launch(const std::optional<InstallKit>& kit, const std::string& iso, const std::filesystem::path& out, const char* hdTextures, bool hdOnly)
+bool GameInstaller::Launch(const std::optional<InstallKit>& kit, const std::string& iso,
+    const std::filesystem::path& out, const char* hdTextures, bool hdOnly)
 {
     if (m_running)
         return false;
@@ -508,7 +514,8 @@ bool GameInstaller::Launch(const std::optional<InstallKit>& kit, const std::stri
     };
 
     if (!kit)
-        return fail(Tr("Game kit not found. Put the skylanders-kit folder next to Arkeyan Launcher, then press Retry."));
+        return fail(
+            Tr("Game kit not found. Put the skylanders-kit folder next to Arkeyan Launcher, then press Retry."));
     if (hdTextures != nullptr && !kit->hdTextures)
         return fail(Tr("These game tools can't make the HD textures. Update them first."));
     std::error_code error;
@@ -539,7 +546,8 @@ bool GameInstaller::Launch(const std::optional<InstallKit>& kit, const std::stri
         arguments.insert(arguments.end(), { "--toolchain", toolchainText.c_str() });
 #endif
     arguments.push_back(nullptr);
-    SDL_Environment* environment = CreateGameEnvironment(); // a builder of an older kit reads the SSA_ names, a newer one the SKY_ names
+    SDL_Environment* environment =
+        CreateGameEnvironment(); // a builder of an older kit reads the SSA_ names, a newer one the SKY_ names
     SDL_PropertiesID properties = SDL_CreateProperties();
     if (environment != nullptr)
         SDL_SetPointerProperty(properties, SDL_PROP_PROCESS_CREATE_ENVIRONMENT_POINTER, environment);
@@ -587,7 +595,8 @@ bool GameInstaller::Launch(const std::optional<InstallKit>& kit, const std::stri
 
 void GameInstaller::Read()
 {
-    SDL_IOStream* output = static_cast<SDL_IOStream*>(SDL_GetPointerProperty(SDL_GetProcessProperties(m_process), SDL_PROP_PROCESS_STDOUT_POINTER, nullptr));
+    SDL_IOStream* output = static_cast<SDL_IOStream*>(
+        SDL_GetPointerProperty(SDL_GetProcessProperties(m_process), SDL_PROP_PROCESS_STDOUT_POINTER, nullptr));
     std::ofstream logFile(m_logFile, std::ios::app | std::ios::binary);
     std::string pending;
     char buffer[4096];
@@ -618,7 +627,8 @@ void GameInstaller::Read()
                 apply(std::string_view(pending).substr(0, end));
             continue;
         }
-        if (exited && (output == nullptr || SDL_GetIOStatus(output) == SDL_IO_STATUS_EOF || SDL_GetIOStatus(output) == SDL_IO_STATUS_ERROR))
+        if (exited && (output == nullptr || SDL_GetIOStatus(output) == SDL_IO_STATUS_EOF ||
+                          SDL_GetIOStatus(output) == SDL_IO_STATUS_ERROR))
             break;
         // The pipe is non-blocking. Once Arkeyan-Builder has exited, a process it left behind may still hold the pipe open.
         SDL_Delay(20);
@@ -652,8 +662,10 @@ void GameInstaller::Read()
     {
         progress.state = InstallProgress::State::Failed;
         if (progress.error.empty())
-            progress.error = exitCode != 0 ? Tf("The installer stopped with exit code {}.", exitCode)
-                                           : std::string(Tr(m_hdOnly ? N_("The HD textures stopped before they were made.") : N_("The installer stopped before the game was built.")));
+            progress.error = exitCode != 0
+                                 ? Tf("The installer stopped with exit code {}.", exitCode)
+                                 : std::string(Tr(m_hdOnly ? N_("The HD textures stopped before they were made.")
+                                                           : N_("The installer stopped before the game was built.")));
     }
     m_pid = 0;
     m_running = false;
@@ -672,7 +684,8 @@ void GameInstaller::Cancel()
     else
         SDL_KillProcess(m_process, true);
 #else
-    SDL_KillProcess(m_process, false); // SIGTERM lets Arkeyan-Builder stop its compilers; Read() forces it after a while
+    SDL_KillProcess(
+        m_process, false); // SIGTERM lets Arkeyan-Builder stop its compilers; Read() forces it after a while
 #endif
 }
 

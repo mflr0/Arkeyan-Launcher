@@ -31,7 +31,8 @@ EditionReport RunEditionReport(const std::filesystem::path& builder, const std::
     for (size_t at = 0; at < output.size();)
     {
         size_t end = output.find('\n', at);
-        std::string_view line = std::string_view(output).substr(at, end == std::string::npos ? std::string::npos : end - at);
+        std::string_view line =
+            std::string_view(output).substr(at, end == std::string::npos ? std::string::npos : end - at);
         at = end == std::string::npos ? output.size() : end + 1;
         if (!line.empty() && line.back() == '\r')
             line.remove_suffix(1);

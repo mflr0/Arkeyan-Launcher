@@ -67,7 +67,8 @@ namespace profiles
     // player files (SKY_PROFILE_DIR, datadir::PlayerGame), its pseudo, picture and Xbox id (SKY_PLAYER_NAME, _PICTURE,
     // _XUID). The first profile sets only its name, picture and id: its Toy Box and saves are where they always were.
     // `player2`: the profile of the second pad, if any (SKY_PLAYER2_NAME, _PICTURE, _XUID).
-    std::vector<std::pair<std::string, std::string>> Environment(const Profile& profile, const Profile* player2 = nullptr);
+    std::vector<std::pair<std::string, std::string>> Environment(
+        const Profile& profile, const Profile* player2 = nullptr);
 
     // A key of the settings file that belongs to the player, not to the computer: a game's keys and pad ([<game>.input],
     // [<game>.pad]), its text and voice languages and its options ([<game>] language, voice_language, nightmare_from_start).

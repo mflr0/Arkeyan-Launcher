@@ -34,7 +34,8 @@ namespace launcher_ui
 
     float OverlayBody(float chrome, float least, float most)
     {
-        return std::clamp(ImGui::GetIO().DisplaySize.y - 2 * ui::space::XL - chrome - ui::ModalLegendHeight(), least, most - ui::ModalLegendHeight());
+        return std::clamp(ImGui::GetIO().DisplaySize.y - 2 * ui::space::XL - chrome - ui::ModalLegendHeight(), least,
+            most - ui::ModalLegendHeight());
     }
 
     ui::ModalResult OverlayActions(const char* cancel, const char* confirm, bool confirmDisabled)
@@ -42,7 +43,8 @@ namespace launcher_ui
         ui::ButtonOptions cancelOptions, confirmOptions;
         confirmOptions.kind = ui::ButtonKind::Primary;
         confirmOptions.disabled = confirmDisabled;
-        const float width = ui::ButtonWidth(cancel, cancelOptions) + (confirm != nullptr ? ui::space::S + ui::ButtonWidth(confirm, confirmOptions) : 0);
+        const float width = ui::ButtonWidth(cancel, cancelOptions) +
+                            (confirm != nullptr ? ui::space::S + ui::ButtonWidth(confirm, confirmOptions) : 0);
         ImGui::SetCursorPosX(ImGui::GetCursorPosX() + std::max(0.0f, ImGui::GetContentRegionAvail().x - width));
         ui::ModalResult result = ui::ModalResult::None;
         if (ui::Button(cancel, cancelOptions))
@@ -67,7 +69,8 @@ namespace launcher_ui
         // B / Escape go back one step: out of Edit or "Change the bottom", then out of the dialog (which closes itself). A menu
         // or a question open (a deeper popup), or a field being typed in, answers it first.
         const bool deeper = ImGui::GetCurrentContext()->OpenPopupStack.Size > 1;
-        if (m_overlay == Overlay::Figure && (m_editing || !m_changeKeep.empty()) && !deeper && !ImGui::IsAnyItemActive() &&
+        if (m_overlay == Overlay::Figure && (m_editing || !m_changeKeep.empty()) && !deeper &&
+            !ImGui::IsAnyItemActive() &&
             (ImGui::IsKeyPressed(ImGuiKey_Escape, false) || ImGui::IsKeyPressed(ImGuiKey_GamepadFaceRight, false)))
         {
             if (m_editing)
@@ -96,7 +99,8 @@ namespace launcher_ui
         }
         // Each figure, and each of its views (the sheet, Edit, Change the bottom), opens at the top: the dialog and its scrolling
         // body are the same windows for all of them and would keep the last one's place.
-        const std::string sheet = m_overlay == Overlay::Figure ? m_figure + (m_editing ? "|edit|" : "|sheet|") + m_changeKeep : std::string();
+        const std::string sheet =
+            m_overlay == Overlay::Figure ? m_figure + (m_editing ? "|edit|" : "|sheet|") + m_changeKeep : std::string();
         if (sheet != m_sheetShown)
         {
             m_sheetShown = sheet;
@@ -125,10 +129,11 @@ namespace launcher_ui
             // the rest, goes with the page.
             ImDrawList* draw = ImGui::GetWindowDrawList();
             draw->PushClipRectFullScreen();
-            draw->AddRectFilled(ImVec2(0, 0), ImGui::GetIO().DisplaySize, ui::Col(ui::color::Scrim, float(ui::elevation::ScrimAlpha) / 255.0f));
+            draw->AddRectFilled(ImVec2(0, 0), ImGui::GetIO().DisplaySize,
+                ui::Col(ui::color::Scrim, float(ui::elevation::ScrimAlpha) / 255.0f));
             draw->PopClipRect();
         }
-        ui::EndModal();
+        ui::EndModal(m_editing || !m_changeKeep.empty() ? Tr("Back") : Tr("Close"));
         if (!open && m_overlay != Overlay::None) // the cross, B or Escape
         {
             m_overlay = Overlay::None;
@@ -179,7 +184,8 @@ namespace launcher_ui
                     ImGui::TableNextRow();
                     ImGui::TableSetColumnIndex(0);
                     // The name on the value's baseline (the value is Body, the name Caption).
-                    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + ui::Baseline(ui::TextStyle::Body) - ui::Baseline(ui::TextStyle::Caption));
+                    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + ui::Baseline(ui::TextStyle::Body) -
+                                         ui::Baseline(ui::TextStyle::Caption));
                     ui::Text(ui::TextStyle::Caption, name.c_str(), ui::color::Dim);
                     ImGui::TableSetColumnIndex(1);
                     ui::Text(ui::TextStyle::Body, value.c_str(), ui::color::Ink);
@@ -195,7 +201,10 @@ namespace launcher_ui
         {
             return std::clamp(std::strtoll(text, nullptr, 10), 0LL, most);
         }
-        int DigitsOnly(ImGuiInputTextCallbackData* data) { return data->EventChar >= '0' && data->EventChar <= '9' ? 0 : 1; }
+        int DigitsOnly(ImGuiInputTextCallbackData* data)
+        {
+            return data->EventChar >= '0' && data->EventChar <= '9' ? 0 : 1;
+        }
     }
 
     void CollectionPage::RefreshDisk()
@@ -209,9 +218,11 @@ namespace launcher_ui
         for (const collection::TrashEntry& entry : m_trash)
         {
             Figure trashed;
-            m_trashNames.push_back(collection::Read(entry.path, trashed) && trashed.toy != nullptr ? trashed.DisplayName() : entry.file);
+            m_trashNames.push_back(
+                collection::Read(entry.path, trashed) && trashed.toy != nullptr ? trashed.DisplayName() : entry.file);
         }
-        m_starters = size_t(std::count_if(m_model.figures.begin(), m_model.figures.end(), [&](const Figure& f) { return collection::UntouchedStarter(f) && m_model.SeatOf(f.path) < 0; }));
+        m_starters = size_t(std::count_if(m_model.figures.begin(), m_model.figures.end(),
+            [&](const Figure& f) { return collection::UntouchedStarter(f) && m_model.SeatOf(f.path) < 0; }));
         m_backups.clear();
     }
 
@@ -237,7 +248,8 @@ namespace launcher_ui
     void CollectionPage::DrawFigureFacts(const Figure& f)
     {
         if (!collection::HasProgress(f) && f.toy != nullptr)
-            ui::Text(ui::TextStyle::Body, Tf("{} keep no level or gold.", CategoryLabel(f.toy->category)).c_str(), ui::color::InkSoft);
+            ui::Text(ui::TextStyle::Body, Tf("{} keep no level or gold.", CategoryLabel(f.toy->category)).c_str(),
+                ui::color::InkSoft);
         else if (f.state == figures::AreaState::Blank)
             ui::Text(ui::TextStyle::Body, Tr("New: never played."), ui::color::InkSoft);
         else if (f.state == figures::AreaState::Damaged)
@@ -253,24 +265,32 @@ namespace launcher_ui
             float fraction = to > from ? std::clamp(float(xp - from) / float(to - from), 0.0f, 1.0f) : 1.0f;
             ui::Text(ui::TextStyle::Title, LevelLabel(f, m_model.gameId).c_str(), ui::color::Ink, -1);
             ui::ProgressBar(fraction, -1, false);
-            std::string next = level >= figures::MaxLevelSwapForce ? std::string(Tr("maximum level")) : Tf("{} to level {}", ui::FormatNumber(to - xp), level + 1);
+            std::string next = level >= figures::MaxLevelSwapForce
+                                   ? std::string(Tr("maximum level"))
+                                   : Tf("{} to level {}", ui::FormatNumber(to - xp), level + 1);
             ui::Text(ui::TextStyle::Caption, Tf("{} XP · {}", ui::FormatNumber(xp), next).c_str(), ui::color::Dim);
         }
         std::vector<std::pair<std::string, std::string>> rows;
         if (IsTrap(f) && f.stats.villain != 0)
             for (const collection::Villain* villain : VillainsOf(f))
                 if (villain->id == f.stats.villain + figures::VillainResourceBase)
-                    rows.push_back({ Tr("Villain"), f.stats.villainEvolved ? Tf("{} · Evolved", villain->name) : villain->name });
+                    rows.push_back(
+                        { Tr("Villain"), f.stats.villainEvolved ? Tf("{} · Evolved", villain->name) : villain->name });
         if (collection::HasProgress(f) && f.state == figures::AreaState::Valid)
-            rows.push_back({ Tr("Gold"), Tf("{} · {} played", ui::FormatNumber(f.stats.gold), PlayTime(f.stats.playSeconds)) });
+            rows.push_back(
+                { Tr("Gold"), Tf("{} · {} played", ui::FormatNumber(f.stats.gold), PlayTime(f.stats.playSeconds)) });
         // A never-played figure already says so above: no "Last played: Never" row for it.
         if (f.state != figures::AreaState::Blank)
-            rows.push_back({ Tr("Last played"), f.lastGame.empty() ? std::string(Tr("Never")) : fmt::format("{} · {}", FullGameName(f.lastGame), When(f.lastUsed)) });
+            rows.push_back({ Tr("Last played"),
+                f.lastGame.empty() ? std::string(Tr("Never"))
+                                   : fmt::format("{} · {}", FullGameName(f.lastGame), When(f.lastUsed)) });
         // What the chosen game makes of it (a variant it does not tell apart plays as another), and the games whose wheel has it.
         if (f.toy != nullptr)
         {
-            collection::Catalogue::Reading reading = collection::Catalogue::Get().Read(m_model.gameId, f.toy, f.variant);
-            if (reading.works && !reading.exact && f.edition.empty() && f.variant != 0 && f.variantInfo.kind != collection::VariantKind::Base)
+            collection::Catalogue::Reading reading =
+                collection::Catalogue::Get().Read(m_model.gameId, f.toy, f.variant);
+            if (reading.works && !reading.exact && f.edition.empty() && f.variant != 0 &&
+                f.variantInfo.kind != collection::VariantKind::Base)
                 rows.push_back({ Tf("In {}", ShortGameName(m_model.gameId)),
                     Tf("plays as {}", reading.seen != nullptr ? reading.seen->name : f.toy->name) });
             std::string wheels;
@@ -292,15 +312,22 @@ namespace launcher_ui
         {
             std::string nickname = figures::NicknameUtf8(f.stats);
             rows.push_back({ Tr("Nickname"), nickname.empty() ? std::string(Tr("None")) : nickname });
-            rows.push_back({ Tr("Hero points"), Tf("{} · {} · {} upgrades", f.stats.heroPoints, HatText(f.stats.hat), std::popcount(uint16_t(collection::EditorBits(f.stats.upgrades, f.stats.wowPow) & 0x07FF))) });
+            rows.push_back({ Tr("Hero points"),
+                Tf("{} · {} · {} upgrades", f.stats.heroPoints, HatText(f.stats.hat),
+                    std::popcount(uint16_t(collection::EditorBits(f.stats.upgrades, f.stats.wowPow) & 0x07FF))) });
         }
         std::string games;
         int count = 0;
         for (const collection::Game& game : collection::Catalogue::Get().Games())
             if (f.toy != nullptr && collection::Catalogue::Get().Accepts(game.id, f.type))
                 games += (games.empty() ? "" : ", ") + ShortGameName(game.id), count++;
-        rows.push_back({ Tr("Plays in"), games.empty() ? std::string(Tr("No game this launcher knows")) : count == int(collection::Catalogue::Get().Games().size()) ? std::string(Tr("every game")) : games });
-        rows.push_back({ Tr("Toy"), Tf("{} · type {} · variant {:04X}", f.toy != nullptr ? f.toy->name : std::string(Tr("Unknown")), f.type, f.variant) });
+        rows.push_back({ Tr("Plays in"), games.empty() ? std::string(Tr("No game this launcher knows"))
+                                         : count == int(collection::Catalogue::Get().Games().size())
+                                             ? std::string(Tr("every game"))
+                                             : games });
+        rows.push_back(
+            { Tr("Toy"), Tf("{} · type {} · variant {:04X}",
+                             f.toy != nullptr ? f.toy->name : std::string(Tr("Unknown")), f.type, f.variant) });
         {
             // How the file came to be: the collection stores a word (created, imported, portal), shown in the player's language.
             static const char* const Origins[] = { N_("created"), N_("imported"), N_("portal") };
@@ -352,8 +379,10 @@ namespace launcher_ui
         if (card.Swapper())
         {
             partner = *(card.first == &f ? card.second : card.first);
-            if (card.first == &f) card.second = &partner;
-            else card.first = &partner;
+            if (card.first == &f)
+                card.second = &partner;
+            else
+                card.first = &partner;
         }
         const bool writable = Writable(f);
         ImDrawList* draw = ImGui::GetWindowDrawList();
@@ -362,12 +391,16 @@ namespace launcher_ui
         constexpr float Picture = 3 * ui::height::Main + ui::height::Small;
         ImGui::BeginGroup();
         const ImVec2 origin = ImGui::GetCursorScreenPos();
-        draw->AddRectFilled(origin, ImVec2(origin.x + Picture, origin.y + Picture), ui::Col(ui::color::Inset), ui::radius::Card);
-        if (!DrawSwapper(draw, card, ImVec2(origin.x + ui::space::XS, origin.y + ui::space::XS), Picture - 2 * ui::space::XS))
+        draw->AddRectFilled(
+            origin, ImVec2(origin.x + Picture, origin.y + Picture), ui::Col(ui::color::Inset), ui::radius::Card);
+        if (!DrawSwapper(
+                draw, card, ImVec2(origin.x + ui::space::XS, origin.y + ui::space::XS), Picture - 2 * ui::space::XS))
         {
-            DrawPicture(draw, f.toy, f.Kind(), f.variant, ImVec2(origin.x + ui::space::XS, origin.y + ui::space::XS), Picture - 2 * ui::space::XS);
+            DrawPicture(draw, f.toy, f.Kind(), f.variant, ImVec2(origin.x + ui::space::XS, origin.y + ui::space::XS),
+                Picture - 2 * ui::space::XS);
             if (card.Swapper())
-                DrawBottom(draw, *card.second, ImVec2(origin.x + Picture * 0.66f, origin.y + Picture * 0.66f), Picture * 0.3f);
+                DrawBottom(
+                    draw, *card.second, ImVec2(origin.x + Picture * 0.66f, origin.y + Picture * 0.66f), Picture * 0.3f);
         }
         ImGui::Dummy(ImVec2(Picture, Picture));
         float used = 0;
@@ -397,13 +430,15 @@ namespace launcher_ui
         ImGui::BeginGroup();
         std::string what = f.toy != nullptr ? f.variantInfo.name : Tf("Toy type {}", f.type);
         if (card.Swapper())
-            what = Tf("Top: {} · Bottom: {}", WithoutHalf(f.variantInfo.name), WithoutHalf(card.second->variantInfo.name));
+            what =
+                Tf("Top: {} · Bottom: {}", WithoutHalf(f.variantInfo.name), WithoutHalf(card.second->variantInfo.name));
         if (what != Name(f)) // the line only when it says more (a nickname over the toy's name)
             ui::Text(ui::TextStyle::Body, what.c_str(), ui::color::InkSoft);
         if (card.Busy())
             ui::StatusPill(ui::Status::Warning, Tf("On the portal in {}: read-only", LiveGame(f)).c_str());
         else if (int seat = m_model.SeatOf(path); seat >= 0)
-            ui::StatusPill(ui::Status::Info, Tf("On {} at the next start of {}", SeatName(size_t(seat)), ShortGameName(m_model.gameId)).c_str());
+            ui::StatusPill(ui::Status::Info,
+                Tf("On {} at the next start of {}", SeatName(size_t(seat)), ShortGameName(m_model.gameId)).c_str());
 
         const collection::Game* game = m_model.Game();
         const int seated = m_model.SeatOf(path);
@@ -418,16 +453,21 @@ namespace launcher_ui
         }
         if (ui::BeginMenu("##puton"))
         {
-            ui::Text(ui::TextStyle::Caption, (m_model.Live() ? Tf("Now in {}", FullGameName(m_model.gameId))
-                                                             : Tf("At the next start of {}", FullGameName(m_model.gameId))).c_str(), ui::color::Dim, -1);
+            ui::Text(ui::TextStyle::Caption,
+                (m_model.Live() ? Tf("Now in {}", FullGameName(m_model.gameId))
+                                : Tf("At the next start of {}", FullGameName(m_model.gameId)))
+                    .c_str(),
+                ui::color::Dim, -1);
             for (size_t i = 0; game != nullptr && i < game->seats.size(); i++)
             {
                 std::string text = SeatName(i);
                 if (!m_model.seats[i].empty() && m_model.seats[i] != path)
                     if (const Figure* held = m_model.Find(m_model.seats[i]))
                         text += Tf(" (replaces {})", Name(*held));
-                const bool fits = SeatAccepts(game->seats[i], f) && (f.toy == nullptr || collection::Catalogue::Get().Accepts(m_model.gameId, f.type));
-                if (ui::MenuItem((text + "##seat" + std::to_string(i)).c_str(), { ui::Icon::None, seated == int(i), false, !fits || m_model.RealSeat(i) }))
+                const bool fits = SeatAccepts(game->seats[i], f) &&
+                                  (f.toy == nullptr || collection::Catalogue::Get().Accepts(m_model.gameId, f.type));
+                if (ui::MenuItem((text + "##seat" + std::to_string(i)).c_str(),
+                        { ui::Icon::None, seated == int(i), false, !fits || m_model.RealSeat(i) }))
                     PutOn(i, path);
             }
             if (seated >= 0)
@@ -464,7 +504,10 @@ namespace launcher_ui
         }
         DrawFigureMenu(f, writable);
         if (!m_model.CanEditSeats())
-            ui::Text(ui::TextStyle::Caption, m_model.RunningGame().empty() ? Tr("Not available for this game yet") : Tr("The game is running: use its Toy Box"), ui::color::Dim);
+            ui::Text(ui::TextStyle::Caption,
+                m_model.RunningGame().empty() ? Tr("Not available for this game yet")
+                                              : Tr("The game is running: use its Toy Box"),
+                ui::color::Dim);
         // A swapper changes one half at a time ("Change the bottom": mixing stays possible); a half on its own looks for its partner.
         if (f.IsSwapTop() || f.IsSwapBottom())
         {
@@ -537,16 +580,20 @@ namespace launcher_ui
         {
             std::string error;
             std::string copy = collection::Duplicate(f.path, &error);
-            Toast(copy.empty() ? Tr("Couldn't duplicate it: ") + error : Tr("Duplicated: ") + datadir::Text(datadir::FromText(copy).filename()), copy.empty() ? ui::ToastKind::Error : ui::ToastKind::Success);
+            Toast(copy.empty() ? Tr("Couldn't duplicate it: ") + error
+                               : Tr("Duplicated: ") + datadir::Text(datadir::FromText(copy).filename()),
+                copy.empty() ? ui::ToastKind::Error : ui::ToastKind::Success);
             Reload();
         }
         if (ui::MenuItem(Tr("Back up now"), { ui::Icon::None, false, false, !writable }))
         {
             std::string backup = collection::Backup(f.path);
-            Toast(backup.empty() ? Tr("Couldn't back it up") : Tr("Backed up"), backup.empty() ? ui::ToastKind::Error : ui::ToastKind::Success);
+            Toast(backup.empty() ? Tr("Couldn't back it up") : Tr("Backed up"),
+                backup.empty() ? ui::ToastKind::Error : ui::ToastKind::Success);
             m_generation++; // Restore lists it
         }
-        if (ui::MenuItem(Tr("Restore a backup..."), { ui::Icon::None, false, false, !writable || Backups(f.path).empty() }))
+        if (ui::MenuItem(
+                Tr("Restore a backup..."), { ui::Icon::None, false, false, !writable || Backups(f.path).empty() }))
         {
             m_overlay = Overlay::Manage; // the backups of this figure, in Manage
             m_manageTab = 1;
@@ -558,7 +605,8 @@ namespace launcher_ui
             OpenFolder(std::filesystem::path(std::u8string(folder.begin(), folder.end())));
         }
         ui::MenuSeparator();
-        if (collection::HasProgress(f) && ui::MenuItem(Tr("Reset to new..."), { ui::Icon::None, false, true, !writable }))
+        if (collection::HasProgress(f) &&
+            ui::MenuItem(Tr("Reset to new..."), { ui::Icon::None, false, true, !writable }))
             m_confirm = "reset";
         if (ui::MenuItem(Tr("Delete..."), { ui::Icon::Trash, false, true, !writable }))
             m_confirm = "delete";
@@ -572,9 +620,12 @@ namespace launcher_ui
             return;
         const bool reset = m_confirm == "reset";
         bool open = true;
-        const ui::ModalResult result = ui::ConfirmDialog("##confirmfigure", reset ? Tr("Reset to new") : Tr("Move to the trash"),
-            (reset ? Tf("Reset {} to new? Level, gold and upgrades are lost.", Name(f)) : Tf("Move {} to the trash? It stays there for 30 days.", Name(f))).c_str(),
-            reset ? Tr("Reset") : Tr("Move to the trash"), Tr("Cancel"), &open, ui::ModalKind::Danger);
+        const ui::ModalResult result =
+            ui::ConfirmDialog("##confirmfigure", reset ? Tr("Reset to new") : Tr("Move to the trash"),
+                (reset ? Tf("Reset {} to new? Level, gold and upgrades are lost.", Name(f))
+                       : Tf("Move {} to the trash? It stays there for 30 days.", Name(f)))
+                    .c_str(),
+                reset ? Tr("Reset") : Tr("Move to the trash"), Tr("Cancel"), &open, ui::ModalKind::Danger);
         if (result == ui::ModalResult::None)
             return;
         m_confirm.clear();
@@ -585,7 +636,8 @@ namespace launcher_ui
         {
             std::string error;
             const bool done = collection::ResetToNew(path, &error);
-            Toast(done ? Tr("Reset to new") : Tr("Couldn't reset it: ") + error, !done ? ui::ToastKind::Error : ui::ToastKind::Success);
+            Toast(done ? Tr("Reset to new") : Tr("Couldn't reset it: ") + error,
+                !done ? ui::ToastKind::Error : ui::ToastKind::Success);
             Reload();
         }
         else
@@ -660,13 +712,15 @@ namespace launcher_ui
         const bool wantBottom = keep->IsSwapTop();
         collection::Card keepCard = CardOf(*keep);
         const Figure* current = keepCard.Swapper() ? (wantBottom ? keepCard.second : keepCard.first) : nullptr;
-        ui::Text(ui::TextStyle::Body, Tf("{}: pick the new {}", Name(*keep), wantBottom ? Tr("bottom") : Tr("top")).c_str(), ui::color::InkSoft);
+        ui::Text(ui::TextStyle::Body,
+            Tf("{}: pick the new {}", Name(*keep), wantBottom ? Tr("bottom") : Tr("top")).c_str(), ui::color::InkSoft);
 
         // The candidates: lone halves first.
         std::vector<const Figure*> rows;
         for (const Figure& half : m_model.figures)
         {
-            if (!(wantBottom ? half.IsSwapBottom() : half.IsSwapTop()) || (current != nullptr && half.path == current->path))
+            if (!(wantBottom ? half.IsSwapBottom() : half.IsSwapTop()) ||
+                (current != nullptr && half.path == current->path))
                 continue;
             collection::Card card = CardOf(half);
             if (card.Busy() || m_model.SeatOf(card.first->path) >= 0 || collection::UntouchedStarter(half))
@@ -677,7 +731,9 @@ namespace launcher_ui
 
         if (std::exchange(m_sheetTop, false))
             ImGui::SetNextWindowScroll(ImVec2(0.0f, 0.0f));
-        ui::BeginRoomyChild("##changehalf", ImVec2(0, OverlayBody(3 * ui::height::Main, 2 * ui::height::Main, 6 * ui::height::Main)), ImGuiChildFlags_NavFlattened, ImGuiWindowFlags_NoBackground);
+        ui::BeginRoomyChild("##changehalf",
+            ImVec2(0, OverlayBody(3 * ui::height::Main, 2 * ui::height::Main, 6 * ui::height::Main)),
+            ImGuiChildFlags_NavFlattened, ImGuiWindowFlags_NoBackground);
         ImGui::SetScrollX(0.0f);
         constexpr float Art = ui::height::Large - 2 * ui::space::XXS;
         const Figure* chosen = nullptr;
@@ -685,11 +741,16 @@ namespace launcher_ui
         {
             collection::Card card = CardOf(*half);
             const std::string title = half->label.empty() ? WithoutHalf(half->DisplayName()) : half->label;
-            const std::string note = card.Swapper() ? Tf("Now with {}", WithoutHalf((half->IsSwapTop() ? card.second : card.first)->DisplayName())) : std::string(Tr("On its own"));
+            const std::string note =
+                card.Swapper()
+                    ? Tf("Now with {}", WithoutHalf((half->IsSwapTop() ? card.second : card.first)->DisplayName()))
+                    : std::string(Tr("On its own"));
             ui::ListRowOptions options;
             options.subtitle = note.c_str();
             options.imageWidth = Art;
-            options.image = [&](ImDrawList* draw, ImVec2 at, ImVec2) { DrawIcon(draw, half->toy, half->Kind(), at, Art, false, half->variant); };
+            options.image = [&](ImDrawList* draw, ImVec2 at, ImVec2) {
+                DrawIcon(draw, half->toy, half->Kind(), at, Art, false, half->variant);
+            };
             ImGui::PushID(half->path.c_str());
             if (ui::ListRow(title.c_str(), options))
                 chosen = half;
@@ -725,7 +786,8 @@ namespace launcher_ui
             bits = edited;
             collection::StoreEditorBits(edited, m_edit.upgrades, m_edit.wowPow);
         };
-        ui::SectionHeader(Tr("Upgrades"), Tf("{} of {}", collection::BoughtCount(bits, table), table.upgrades.size()).c_str());
+        ui::SectionHeader(
+            Tr("Upgrades"), Tf("{} of {}", collection::BoughtCount(bits, table), table.upgrades.size()).c_str());
         ui::ButtonOptions small;
         small.size = ui::Size::Small;
         if (ui::Button(Tr("All"), small))
@@ -736,14 +798,15 @@ namespace launcher_ui
         ImGui::Dummy(ImVec2(0, ui::space::XS));
         const float columnW = (ImGui::GetContentRegionAvail().x - 2 * ui::space::S) / 3;
         const ImVec2 origin = ImGui::GetCursorScreenPos();
-        bool chosen = (bits >> collection::UpgradePathChosenBit & 1) != 0, second = (bits >> collection::UpgradePathSecondBit & 1) != 0;
+        bool chosen = (bits >> collection::UpgradePathChosenBit & 1) != 0,
+             second = (bits >> collection::UpgradePathSecondBit & 1) != 0;
         const std::string titles[3] = { Tr("Basic"), table.pathNames[0], table.pathNames[1] };
         ImDrawList* draw = ImGui::GetWindowDrawList();
         for (int column = 0; column < 3; column++)
         {
             bool lit = column == 0 || (chosen && second == (column == 2));
-            PutText(draw, ImVec2(origin.x + column * (columnW + ui::space::S), origin.y), ui::TextStyle::Body, true, lit ? ui::color::Info : ui::color::Dim,
-                titles[column], columnW);
+            PutText(draw, ImVec2(origin.x + column * (columnW + ui::space::S), origin.y), ui::TextStyle::Body, true,
+                lit ? ui::color::Info : ui::color::Dim, titles[column], columnW);
         }
         int rows[3] = { 0, 0, 0 };
         float bottom = origin.y;
@@ -754,7 +817,8 @@ namespace launcher_ui
             const collection::Upgrade& upgrade = table.upgrades[i];
             using collection::UpgradePath;
             int column = upgrade.path == UpgradePath::First ? 1 : upgrade.path == UpgradePath::Second ? 2 : 0;
-            const ImVec2 at(origin.x + column * (columnW + ui::space::S), origin.y + header + rows[column]++ * ui::height::Normal);
+            const ImVec2 at(
+                origin.x + column * (columnW + ui::space::S), origin.y + header + rows[column]++ * ui::height::Normal);
             ImGui::SetCursorScreenPos(at);
             bool bought = collection::UpgradeBought(bits, upgrade);
             const bool greyed = collection::UpgradeGreyed(bits, upgrade);
@@ -763,7 +827,8 @@ namespace launcher_ui
             const float priceW = ImGui::CalcTextSize(price.c_str()).x;
             ui::PopText();
             ui::PushText(ui::TextStyle::Body);
-            const std::string name = ui::Ellipsize(collection::UpgradeName(upgrade.name, language).c_str(), columnW - ui::height::Mark - 2 * ui::space::S - priceW);
+            const std::string name = ui::Ellipsize(collection::UpgradeName(upgrade.name, language).c_str(),
+                columnW - ui::height::Mark - 2 * ui::space::S - priceW);
             ui::PopText();
             if (greyed)
                 ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ui::DisabledAlpha); // the other path's: it still toggles
@@ -771,8 +836,8 @@ namespace launcher_ui
                 setBits(collection::ToggleUpgrade(bits, upgrade));
             if (ImGui::IsItemHovered() || ImGui::IsItemFocused())
                 hint = collection::UpgradeLine(upgrade.description, language);
-            PutText(draw, ImVec2(at.x + columnW - priceW, at.y + (ui::height::Mark - ui::type::Caption) / 2), ui::TextStyle::Caption, false,
-                bought ? ui::color::Info : ui::color::Dim, price, priceW);
+            PutText(draw, ImVec2(at.x + columnW - priceW, at.y + (ui::height::Mark - ui::type::Caption) / 2),
+                ui::TextStyle::Caption, false, bought ? ui::color::Info : ui::color::Dim, price, priceW);
             if (greyed)
                 ImGui::PopStyleVar();
             bottom = std::max(bottom, at.y + ui::height::Normal);
@@ -788,11 +853,15 @@ namespace launcher_ui
     {
         bool stats = collection::HasProgress(f) && f.state != figures::AreaState::Damaged;
         const bool trap = IsTrap(f) && f.state != figures::AreaState::Damaged && !VillainsOf(f).empty();
-        ui::Text(ui::TextStyle::Body, (f.variantInfo.name != Name(f) ? Name(f) + " · " + f.variantInfo.name : Name(f)).c_str(), ui::color::InkSoft);
+        ui::Text(ui::TextStyle::Body,
+            (f.variantInfo.name != Name(f) ? Name(f) + " · " + f.variantInfo.name : Name(f)).c_str(),
+            ui::color::InkSoft);
         // The fields scroll above the Save row (the upgrades list makes the sheet taller than a small window).
         if (std::exchange(m_sheetTop, false))
             ImGui::SetNextWindowScroll(ImVec2(0.0f, 0.0f));
-        ui::BeginRoomyChild("##editbody", ImVec2(0, OverlayBody(4 * ui::height::Main, 3 * ui::height::Main, 8 * ui::height::Main)), ImGuiChildFlags_NavFlattened, ImGuiWindowFlags_NoBackground);
+        ui::BeginRoomyChild("##editbody",
+            ImVec2(0, OverlayBody(4 * ui::height::Main, 3 * ui::height::Main, 8 * ui::height::Main)),
+            ImGuiChildFlags_NavFlattened, ImGuiWindowFlags_NoBackground);
         ImGui::SetScrollX(0.0f);
         if (ui::BeginSettings("##edit"))
         {
@@ -805,13 +874,17 @@ namespace launcher_ui
                 // One list and one switch: the villain the trap plays, and whether it is evolved. The game reads them
                 // when the trap is put on the portal, so the trap is off it while this is open (Edit needs it free).
                 const std::vector<const collection::Villain*> villains = VillainsOf(f);
-                const auto chosen = std::find_if(villains.begin(), villains.end(), [&](const collection::Villain* v) { return v->id == m_edit.villain + figures::VillainResourceBase; });
+                const auto chosen = std::find_if(villains.begin(), villains.end(), [&](const collection::Villain* v) {
+                    return v->id == m_edit.villain + figures::VillainResourceBase;
+                });
                 ui::SettingRow(Tr("Villain"), Tr("The one this trap holds"));
                 if (ui::BeginSelect("##villain", chosen != villains.end() ? (*chosen)->name.c_str() : Tr("None")))
                 {
                     for (const collection::Villain* villain : villains)
                         if (const uint16_t stored = uint16_t(villain->id - figures::VillainResourceBase);
-                            ui::SelectOption(fmt::format("{}##villain{}", villain->name, villain->id).c_str(), m_edit.villain == stored) && m_edit.villain != stored)
+                            ui::SelectOption(fmt::format("{}##villain{}", villain->name, villain->id).c_str(),
+                                m_edit.villain == stored) &&
+                            m_edit.villain != stored)
                         {
                             m_edit.villain = stored;
                             m_edit.villainEvolved = false;
@@ -888,13 +961,18 @@ namespace launcher_ui
                 // The figure as it is now (a game may have played it since the editor opened), with only the fields
                 // changed here.
                 // Only the name changed: no write to the figure (and no backup of it).
-                bool changed = m_edit.experience != m_editBase.experience || m_edit.giantsExperience != m_editBase.giantsExperience ||
-                    m_edit.swapForceExperience != m_editBase.swapForceExperience || m_edit.gold != m_editBase.gold || m_edit.heroPoints != m_editBase.heroPoints || m_edit.hat != m_editBase.hat ||
-                    m_edit.upgrades != m_editBase.upgrades || m_edit.wowPow != m_editBase.wowPow || figures::NicknameUtf8(m_editBase) != Trimmed(m_nickname);
+                bool changed = m_edit.experience != m_editBase.experience ||
+                               m_edit.giantsExperience != m_editBase.giantsExperience ||
+                               m_edit.swapForceExperience != m_editBase.swapForceExperience ||
+                               m_edit.gold != m_editBase.gold || m_edit.heroPoints != m_editBase.heroPoints ||
+                               m_edit.hat != m_editBase.hat || m_edit.upgrades != m_editBase.upgrades ||
+                               m_edit.wowPow != m_editBase.wowPow ||
+                               figures::NicknameUtf8(m_editBase) != Trimmed(m_nickname);
                 if (changed)
                     saved = SaveEditedStats(f.path, m_editBase, m_edit, m_nickname, &error);
             }
-            if (saved && trap && m_edit.villain != 0 && (m_edit.villain != m_editBase.villain || m_edit.villainEvolved != m_editBase.villainEvolved))
+            if (saved && trap && m_edit.villain != 0 &&
+                (m_edit.villain != m_editBase.villain || m_edit.villainEvolved != m_editBase.villainEvolved))
                 saved = collection::SetTrapVillain(f.path, uint8_t(m_edit.villain), m_edit.villainEvolved, &error);
             if (saved)
             {
@@ -903,7 +981,9 @@ namespace launcher_ui
                 Reload();
             }
             else
-                Toast(Tr("Couldn't save it: ") + (error.empty() ? std::string(Tr("the collection's index can't be written")) : error), ui::ToastKind::Error);
+                Toast(Tr("Couldn't save it: ") +
+                          (error.empty() ? std::string(Tr("the collection's index can't be written")) : error),
+                    ui::ToastKind::Error);
         }
     }
 }

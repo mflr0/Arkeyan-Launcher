@@ -22,10 +22,20 @@ namespace
 
     int g_instanceFailures = 0;
 
-#define INSTANCE_EXPECT(condition) \
-    do { if (!(condition)) { fprintf(stderr, "FAIL %s line %d: %s\n", __FILE__, __LINE__, #condition); g_instanceFailures++; } } while (0)
+#define INSTANCE_EXPECT(condition)                                                                                     \
+    do                                                                                                                 \
+    {                                                                                                                  \
+        if (!(condition))                                                                                              \
+        {                                                                                                              \
+            fprintf(stderr, "FAIL %s line %d: %s\n", __FILE__, __LINE__, #condition);                                  \
+            g_instanceFailures++;                                                                                      \
+        }                                                                                                              \
+    } while (0)
 
-    void WriteRequest(const fs::path& root, const char* text) { std::ofstream(RequestFile(root), std::ios::binary) << text; }
+    void WriteRequest(const fs::path& root, const char* text)
+    {
+        std::ofstream(RequestFile(root), std::ios::binary) << text;
+    }
 
     long long MsSince(std::chrono::steady_clock::time_point start)
     {
@@ -69,7 +79,8 @@ int SingleInstanceChecks(const fs::path& scratch)
         INSTANCE_EXPECT(play.kind == Request::Kind::Play && play.game == "giants");
         INSTANCE_EXPECT(!SendRequest(one, { Request::Kind::Play, "nosuchgame" }) && !fs::exists(RequestFile(one)));
         INSTANCE_EXPECT(!SendRequest(one, { Request::Kind::None, "" }));
-        for (const char* bad : { "play nosuchgame\n", "play ../ssa", "play", "focus please", "", "PLAY ssa", "play ssa giants" })
+        for (const char* bad :
+            { "play nosuchgame\n", "play ../ssa", "play", "focus please", "", "PLAY ssa", "play ssa giants" })
         {
             WriteRequest(one, bad);
             INSTANCE_EXPECT(TakeRequest(one).kind == Request::Kind::None && !fs::exists(RequestFile(one)));
@@ -130,6 +141,7 @@ int SingleInstanceChecks(const fs::path& scratch)
         INSTANCE_EXPECT(MsSince(start) < 2000 && TakeRequest(one).kind == Request::Kind::Focus);
     }
 
-    printf("One launcher per data folder: lock, request, hand-over and the self-update's wait: %d failures\n", g_instanceFailures);
+    printf("One launcher per data folder: lock, request, hand-over and the self-update's wait: %d failures\n",
+        g_instanceFailures);
     return g_instanceFailures;
 }

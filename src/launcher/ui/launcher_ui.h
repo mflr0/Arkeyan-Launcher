@@ -32,12 +32,15 @@ struct LauncherOptions
 {
     bool openGame = false; // --game <id>: open on that game's Play page
     bool play = false;     // --play: start the game as soon as its disc is checked and it is built
-    bool startGames = false; // PLAY starts the game and the window stays (GameSession); else PLAY closes it and returns the choice
-    bool requests = false;   // this process holds the data folder's lock: it reads what a second start asks (single_instance.h)
+    bool startGames =
+        false; // PLAY starts the game and the window stays (GameSession); else PLAY closes it and returns the choice
+    bool requests =
+        false;   // this process holds the data folder's lock: it reads what a second start asks (single_instance.h)
     std::string toybox;      // --toybox <id>: this process is the Toy Box window of that game (docs/toybox_window.md)
 };
 std::string RunLauncherWindow(const GameInfo& game, const std::string& configPath, LauncherConfig& config,
-    const std::string& previous, std::string* installed = nullptr, const GameInfo** played = nullptr, const LauncherOptions& options = {});
+    const std::string& previous, std::string* installed = nullptr, const GameInfo** played = nullptr,
+    const LauncherOptions& options = {});
 
 // Small pure helpers, also used by ArkeyanRuntimeLauncherTest.
 std::string LauncherLanguageLabel(const LauncherConfig& config, const GameInfo& game);
@@ -46,7 +49,6 @@ bool LauncherFullscreen(const LauncherConfig& config);
 std::string LauncherFormatSize(uint64_t bytes);
 std::string LauncherMiddleEllipsis(std::string_view text, size_t maxCharacters);
 std::string LauncherDisplayName(std::string_view xdbfName, const GameInfo& game);
-
 
 // The result of a manual check when the launcher itself is current. Names are full game titles.
 std::string GameUpdateSummary(const std::vector<std::string>& games);

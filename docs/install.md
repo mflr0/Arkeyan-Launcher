@@ -134,6 +134,16 @@ versions (`SKYLAUNCHER_<X>`, `SSA_LAUNCHER_<X>`, `SSA_<X>`), so every old script
 older names (`src/shared/env.h`). A game the launcher starts gets both names of each variable that is set (`CreateGameEnvironment`: the launcher's own environment is not changed):
 a game built by an older kit reads only the `SSA_` names. `SKYLANDERS_DATA` never changed.
 
+On Linux the game also gets the system's library path, not Steam's: a launcher added to Steam as a non-Steam game and
+started in Game Mode carries Steam's runtime libraries in `LD_LIBRARY_PATH`, which the game's display drivers loaded
+instead of the system's, so no video driver started (issue #22). `GameLibraryPath`: Steam's saved
+`SYSTEM_LD_LIBRARY_PATH` when set, else the path without its `steam-runtime` and `ubuntu12_*` folders; empty: unset.
+
+**macOS, Xcode 26 and later** (issue #67): the Metal shader compiler is a separate download. When Arkeyan-Builder stops on
+"the Metal shader compiler is missing", the install card says so in one line (`MissingMetalToolchain`,
+`install_checklist.cpp`) and shows the steps: open Terminal, paste `xcodebuild -downloadComponent MetalToolchain` (a
+**Copy command** button), wait for it to finish, then Retry.
+
 `SKYLANDERS_DATA` replaces the root (tests). **Portable mode**: a file `portable.txt` next to the launcher (on macOS next to the `.app`) makes `<that folder>/data` the root; `datadir::ApplyPortable()` sets `SKYLANDERS_DATA` to it at the start of `main`, so the games the launcher starts inherit it and no older folder is migrated. `SKY_LAUNCHER_DATA` still replaces the launcher's part of it
 (the game folder, the kits, the logs). The launcher settings (the gear) > Launcher > **Show in folder** opens the root, and each game's settings > Game > Folders > **Game files** opens its own folder.
 

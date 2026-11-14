@@ -8,45 +8,69 @@
 
 namespace
 {
-    constexpr std::array<const char*, 22> Actions = { "a", "b", "x", "y", "start", "back", "lb", "rb", "lt", "rt", "left_up", "left_down",
-        "left_left", "left_right", "right_up", "right_down", "right_left", "right_right", "dpad_up", "dpad_down", "dpad_left", "dpad_right" };
+    constexpr std::array<const char*, 22> Actions = { "a", "b", "x", "y", "start", "back", "lb", "rb", "lt", "rt",
+        "left_up", "left_down", "left_left", "left_right", "right_up", "right_down", "right_left", "right_right",
+        "dpad_up", "dpad_down", "dpad_left", "dpad_right" };
 
-    // The defaults, shared by the games: the pad's buttons sit on the same keys in each (A Space, X C, Y V, B X).
-    // Names and buttons: each game's own controls screen, read in the running game (docs/settings.md, "Where the names come from").
-    #define MOVE_ROWS \
-        { "left_up", N_("Move up"), N_("L stick"), SDL_SCANCODE_W }, { "left_down", N_("Move down"), N_("L stick"), SDL_SCANCODE_S }, \
-        { "left_left", N_("Move left"), N_("L stick"), SDL_SCANCODE_A }, { "left_right", N_("Move right"), N_("L stick"), SDL_SCANCODE_D }
+// The defaults, shared by the games: the pad's buttons sit on the same keys in each (A Space, X C, Y V, B X).
+// Names and buttons: each game's own controls screen, read in the running game (docs/settings.md, "Where the names come from").
+#define MOVE_ROWS                                                                                                      \
+    { "left_up", N_("Move up"), N_("L stick"), SDL_SCANCODE_W },                                                       \
+        { "left_down", N_("Move down"), N_("L stick"), SDL_SCANCODE_S },                                               \
+        { "left_left", N_("Move left"), N_("L stick"), SDL_SCANCODE_A },                                               \
+    {                                                                                                                  \
+        "left_right", N_("Move right"), N_("L stick"), SDL_SCANCODE_D                                                  \
+    }
 
     constexpr GameKey Ssa[] = {
         MOVE_ROWS,
-        { "a", N_("1st Power / Accept"), "A", SDL_SCANCODE_SPACE, "Mouse Left" }, { "x", N_("2nd Power"), "X", SDL_SCANCODE_C, "Mouse Right" },
-        { "y", N_("Use / Talk"), "Y", SDL_SCANCODE_V }, { "b", N_("Special Power / Back"), "B", SDL_SCANCODE_X },
-        { "back", N_("Skylander Info"), "Back", SDL_SCANCODE_BACKSPACE }, { "start", N_("Pause"), "Start", SDL_SCANCODE_RETURN },
-        { "right_up", N_("Shake / Insert / Swing"), N_("R stick up"), SDL_SCANCODE_I }, { "right_down", N_("Same"), N_("R stick down"), SDL_SCANCODE_K },
-        { "right_left", N_("Same"), N_("R stick left"), SDL_SCANCODE_J }, { "right_right", N_("Same"), N_("R stick right"), SDL_SCANCODE_L },
+        { "a", N_("1st Power / Accept"), "A", SDL_SCANCODE_SPACE, "Mouse Left" },
+        { "x", N_("2nd Power"), "X", SDL_SCANCODE_C, "Mouse Right" },
+        { "y", N_("Use / Talk"), "Y", SDL_SCANCODE_V },
+        { "b", N_("Special Power / Back"), "B", SDL_SCANCODE_X },
+        { "back", N_("Skylander Info"), "Back", SDL_SCANCODE_BACKSPACE },
+        { "start", N_("Pause"), "Start", SDL_SCANCODE_RETURN },
+        { "right_up", N_("Shake / Insert / Swing"), N_("R stick up"), SDL_SCANCODE_I },
+        { "right_down", N_("Same"), N_("R stick down"), SDL_SCANCODE_K },
+        { "right_left", N_("Same"), N_("R stick left"), SDL_SCANCODE_J },
+        { "right_right", N_("Same"), N_("R stick right"), SDL_SCANCODE_L },
     };
     constexpr GameKey Giants[] = {
         MOVE_ROWS,
-        { "a", N_("Attack 1 / Accept"), "A", SDL_SCANCODE_SPACE, "Mouse Left" }, { "x", N_("Attack 2"), "X", SDL_SCANCODE_C, "Mouse Right" },
-        { "y", N_("Action"), "Y", SDL_SCANCODE_V }, { "b", N_("Attack 3 / Back"), "B", SDL_SCANCODE_X },
-        { "back", N_("Skylander Info"), "Back", SDL_SCANCODE_BACKSPACE }, { "start", N_("Pause"), "Start", SDL_SCANCODE_RETURN },
+        { "a", N_("Attack 1 / Accept"), "A", SDL_SCANCODE_SPACE, "Mouse Left" },
+        { "x", N_("Attack 2"), "X", SDL_SCANCODE_C, "Mouse Right" },
+        { "y", N_("Action"), "Y", SDL_SCANCODE_V },
+        { "b", N_("Attack 3 / Back"), "B", SDL_SCANCODE_X },
+        { "back", N_("Skylander Info"), "Back", SDL_SCANCODE_BACKSPACE },
+        { "start", N_("Pause"), "Start", SDL_SCANCODE_RETURN },
     };
     constexpr GameKey SwapForce[] = {
         MOVE_ROWS,
-        { "a", N_("Jump"), "A", SDL_SCANCODE_SPACE }, { "x", N_("Attack 1"), "X", SDL_SCANCODE_C, "Mouse Left" },
-        { "b", N_("Attack 2"), "B", SDL_SCANCODE_X, "Mouse Right" }, { "y", N_("Attack 3"), "Y", SDL_SCANCODE_V },
-        { "rb", N_("Attack 2"), "RB", SDL_SCANCODE_E }, { "lb", N_("Attack 3"), "LB", SDL_SCANCODE_Q },
-        { "lt", N_("Interact"), "LT", SDL_SCANCODE_1 }, { "rt", N_("Interact"), "RT", SDL_SCANCODE_3 },
-        { "back", N_("Skylanders Stats"), "Back", SDL_SCANCODE_BACKSPACE }, { "start", N_("Pause"), "Start", SDL_SCANCODE_RETURN },
+        { "a", N_("Jump"), "A", SDL_SCANCODE_SPACE },
+        { "x", N_("Attack 1"), "X", SDL_SCANCODE_C, "Mouse Left" },
+        { "b", N_("Attack 2"), "B", SDL_SCANCODE_X, "Mouse Right" },
+        { "y", N_("Attack 3"), "Y", SDL_SCANCODE_V },
+        { "rb", N_("Attack 2"), "RB", SDL_SCANCODE_E },
+        { "lb", N_("Attack 3"), "LB", SDL_SCANCODE_Q },
+        { "lt", N_("Interact"), "LT", SDL_SCANCODE_1 },
+        { "rt", N_("Interact"), "RT", SDL_SCANCODE_3 },
+        { "back", N_("Skylanders Stats"), "Back", SDL_SCANCODE_BACKSPACE },
+        { "start", N_("Pause"), "Start", SDL_SCANCODE_RETURN },
     };
-    // LT is the game's tag team. RB fires an attack like B in the tutorial; LB fires nothing there (nor does Y), so it has no row.
+    // LT is the game's tag team. RB fires an attack like B in the tutorial; LB is offered like Y (Attack 3), as in Swap Force
+    // (issue #51).
     constexpr GameKey TrapTeam[] = {
         MOVE_ROWS,
-        { "a", N_("Jump"), "A", SDL_SCANCODE_SPACE }, { "x", N_("Attack 1"), "X", SDL_SCANCODE_C, "Mouse Left" },
-        { "b", N_("Attack 2"), "B", SDL_SCANCODE_X, "Mouse Right" }, { "y", N_("Attack 3"), "Y", SDL_SCANCODE_V },
+        { "a", N_("Jump"), "A", SDL_SCANCODE_SPACE },
+        { "x", N_("Attack 1"), "X", SDL_SCANCODE_C, "Mouse Left" },
+        { "b", N_("Attack 2"), "B", SDL_SCANCODE_X, "Mouse Right" },
+        { "y", N_("Attack 3"), "Y", SDL_SCANCODE_V },
         { "rb", N_("Attack 2"), "RB", SDL_SCANCODE_E },
-        { "lt", N_("Switch Skylander / Villain"), "LT", SDL_SCANCODE_1 }, { "rt", N_("Interact"), "RT", SDL_SCANCODE_3 },
-        { "back", N_("Skylander/Villain Stats"), "Back", SDL_SCANCODE_BACKSPACE }, { "start", N_("Pause"), "Start", SDL_SCANCODE_RETURN },
+        { "lb", N_("Attack 3"), "LB", SDL_SCANCODE_Q },
+        { "lt", N_("Switch Skylander / Villain"), "LT", SDL_SCANCODE_1 },
+        { "rt", N_("Interact"), "RT", SDL_SCANCODE_3 },
+        { "back", N_("Skylander/Villain Stats"), "Back", SDL_SCANCODE_BACKSPACE },
+        { "start", N_("Pause"), "Start", SDL_SCANCODE_RETURN },
     };
 
     // SuperChargers' own controls screen (pause menu, read in the running game): the vehicle's words sit on the same buttons as
@@ -54,25 +78,33 @@ namespace
     // (Horn) have no row.
     constexpr GameKey SuperChargers[] = {
         MOVE_ROWS,
-        { "a", N_("Jump / Drift (vehicle)"), "A", SDL_SCANCODE_SPACE }, { "x", N_("Attack 1"), "X", SDL_SCANCODE_C, "Mouse Left" },
-        { "y", N_("Attack 2"), "Y", SDL_SCANCODE_V }, { "b", N_("Brake / Reverse (vehicle)"), "B", SDL_SCANCODE_X, "Mouse Right" },
-        { "lb", N_("Drift (vehicle)"), "LB", SDL_SCANCODE_Q }, { "rb", N_("Interact"), "RB", SDL_SCANCODE_E },
-        { "lt", N_("Switch Driver (co-op)"), "LT", SDL_SCANCODE_1 }, { "rt", N_("Accelerate (vehicle)"), "RT", SDL_SCANCODE_3 },
-        { "back", N_("My Team"), "Back", SDL_SCANCODE_BACKSPACE }, { "start", N_("Pause"), "Start", SDL_SCANCODE_RETURN },
+        { "a", N_("Jump / Drift (vehicle)"), "A", SDL_SCANCODE_SPACE },
+        { "x", N_("Attack 1"), "X", SDL_SCANCODE_C, "Mouse Left" },
+        { "y", N_("Attack 2"), "Y", SDL_SCANCODE_V },
+        { "b", N_("Brake / Reverse (vehicle)"), "B", SDL_SCANCODE_X, "Mouse Right" },
+        { "lb", N_("Drift (vehicle)"), "LB", SDL_SCANCODE_Q },
+        { "rb", N_("Interact"), "RB", SDL_SCANCODE_E },
+        { "lt", N_("Switch Driver (co-op)"), "LT", SDL_SCANCODE_1 },
+        { "rt", N_("Accelerate (vehicle)"), "RT", SDL_SCANCODE_3 },
+        { "back", N_("My Team"), "Back", SDL_SCANCODE_BACKSPACE },
+        { "start", N_("Pause"), "Start", SDL_SCANCODE_RETURN },
     };
     // Imaginators has no vehicles: SuperChargers' on-foot rows on the same engine's buttons (the rest of its pad is not read
     // yet, so it has no row); its Back is the Skylander profile.
     constexpr GameKey Imaginators[] = {
         MOVE_ROWS,
-        { "a", N_("Jump"), "A", SDL_SCANCODE_SPACE }, { "x", N_("Attack 1"), "X", SDL_SCANCODE_C, "Mouse Left" },
-        { "y", N_("Attack 2"), "Y", SDL_SCANCODE_V, "Mouse Right" }, { "rb", N_("Interact"), "RB", SDL_SCANCODE_E },
-        { "back", N_("Skylander Profile"), "Back", SDL_SCANCODE_BACKSPACE }, { "start", N_("Pause"), "Start", SDL_SCANCODE_RETURN },
+        { "a", N_("Jump"), "A", SDL_SCANCODE_SPACE },
+        { "x", N_("Attack 1"), "X", SDL_SCANCODE_C, "Mouse Left" },
+        { "y", N_("Attack 2"), "Y", SDL_SCANCODE_V, "Mouse Right" },
+        { "rb", N_("Interact"), "RB", SDL_SCANCODE_E },
+        { "back", N_("Skylander Profile"), "Back", SDL_SCANCODE_BACKSPACE },
+        { "start", N_("Pause"), "Start", SDL_SCANCODE_RETURN },
     };
 
     // The SDL names of the keys the launcher words in the player's language (the others, letters and digits, are the same everywhere).
-    constexpr std::array<const char*, 16> KeyNames = { N_("Space"), N_("Return"), N_("Backspace"), N_("Escape"), N_("Up"), N_("Down"),
-        N_("Left"), N_("Right"), N_("Left Shift"), N_("Right Shift"), N_("Left Ctrl"), N_("Right Ctrl"), N_("Left Alt"), N_("Right Alt"),
-        N_("Caps Lock"), N_("Delete") };
+    constexpr std::array<const char*, 16> KeyNames = { N_("Space"), N_("Return"), N_("Backspace"), N_("Escape"),
+        N_("Up"), N_("Down"), N_("Left"), N_("Right"), N_("Left Shift"), N_("Right Shift"), N_("Left Ctrl"),
+        N_("Right Ctrl"), N_("Left Alt"), N_("Right Alt"), N_("Caps Lock"), N_("Delete") };
 
     std::string KeyLine(const char* action) { return std::string("key_") + action; }
     std::string MouseLine(const char* action) { return std::string("mouse_") + action; }
@@ -127,7 +159,8 @@ std::string KeyDisplayName(const std::string& sdlName)
 {
     std::string shown = sdlName;
     if (SDL_Scancode place = SDL_GetScancodeFromName(sdlName.c_str()); place != SDL_SCANCODE_UNKNOWN)
-        if (const char* name = SDL_GetKeyName(SDL_GetKeyFromScancode(place, SDL_KMOD_NONE, false)); name != nullptr && *name != 0)
+        if (const char* name = SDL_GetKeyName(SDL_GetKeyFromScancode(place, SDL_KMOD_NONE, false));
+            name != nullptr && *name != 0)
             shown = name;
     for (const char* name : KeyNames)
         if (shown == name)
@@ -155,37 +188,55 @@ PadFamily PadFamilyOf(SDL_GamepadType type)
 
 PadFamily PadFamilyFor(std::string_view glyphs, PadFamily seen)
 {
-    if (glyphs == "xbox360") return PadFamily::Xbox360;
-    if (glyphs == "xboxone") return PadFamily::XboxOne;
-    if (glyphs == "playstation") return PadFamily::PlayStation;
-    if (glyphs == "nintendo") return PadFamily::Nintendo;
-    if (glyphs == "xbox") return seen == PadFamily::XboxOne ? PadFamily::XboxOne : PadFamily::Xbox360;
+    if (glyphs == "xbox360")
+        return PadFamily::Xbox360;
+    if (glyphs == "xboxone")
+        return PadFamily::XboxOne;
+    if (glyphs == "playstation")
+        return PadFamily::PlayStation;
+    if (glyphs == "nintendo")
+        return PadFamily::Nintendo;
+    if (glyphs == "xbox")
+        return seen == PadFamily::XboxOne ? PadFamily::XboxOne : PadFamily::Xbox360;
     return seen;
 }
 
-std::string PadButtonName(const GameKey& key, PadFamily family) { return PadButtonName(std::string_view(key.pad), family); }
+std::string PadButtonName(const GameKey& key, PadFamily family)
+{
+    return PadButtonName(std::string_view(key.pad), family);
+}
 
 std::string PadButtonName(std::string_view pad, PadFamily family)
 {
     // Per Xbox 360 name: Xbox One / Series, PlayStation 4 / 5, PlayStation 3, Nintendo Switch (by place: the 360's A is
     // the Switch's B). N_: the words are translated.
     static const std::pair<const char*, std::array<const char*, 4>> Names[] = {
-        { "A", { "A", N_("Cross"), N_("Cross"), "B" } }, { "B", { "B", N_("Circle"), N_("Circle"), "A" } },
-        { "X", { "X", N_("Square"), N_("Square"), "Y" } }, { "Y", { "Y", N_("Triangle"), N_("Triangle"), "X" } },
-        { "Back", { "View", N_("Touchpad"), "Select", "-" } }, { "Start", { "Menu", "Options", "Start", "+" } },
-        { "LB", { "LB", "L1", "L1", "L" } }, { "RB", { "RB", "R1", "R1", "R" } },
-        { "LT", { "LT", "L2", "L2", "ZL" } }, { "RT", { "RT", "R2", "R2", "ZR" } },
-        { "LS", { "LS", "L3", "L3", "LS" } }, { "RS", { "RS", "R3", "R3", "RS" } },
+        { "A", { "A", N_("Cross"), N_("Cross"), "B" } },
+        { "B", { "B", N_("Circle"), N_("Circle"), "A" } },
+        { "X", { "X", N_("Square"), N_("Square"), "Y" } },
+        { "Y", { "Y", N_("Triangle"), N_("Triangle"), "X" } },
+        { "Back", { "View", N_("Touchpad"), "Select", "-" } },
+        { "Start", { "Menu", "Options", "Start", "+" } },
+        { "LB", { "LB", "L1", "L1", "L" } },
+        { "RB", { "RB", "R1", "R1", "R" } },
+        { "LT", { "LT", "L2", "L2", "ZL" } },
+        { "RT", { "RT", "R2", "R2", "ZR" } },
+        { "LS", { "LS", "L3", "L3", "LS" } },
+        { "RS", { "RS", "R3", "R3", "RS" } },
     };
     if (family != PadFamily::Xbox360)
     {
-        size_t column = family == PadFamily::XboxOne ? 0 : family == PadFamily::PlayStation ? 1 : family == PadFamily::PlayStation3 ? 2 : 3;
+        size_t column = family == PadFamily::XboxOne        ? 0
+                        : family == PadFamily::PlayStation  ? 1
+                        : family == PadFamily::PlayStation3 ? 2
+                                                            : 3;
         for (const auto& [xbox360, names] : Names)
             if (pad == xbox360)
                 return i18n::Tr(names[column]);
     }
     // The 360's names as printed on the pad (Back stays Back, not the B button's "Back" action); the sticks' are words.
-    return pad.find("stick") != std::string_view::npos || pad.starts_with("D-pad") ? i18n::Tr(std::string(pad).c_str()) : std::string(pad);
+    return pad.find("stick") != std::string_view::npos || pad.starts_with("D-pad") ? i18n::Tr(std::string(pad).c_str())
+                                                                                   : std::string(pad);
 }
 
 bool GameKeyConflict(const LauncherConfig& config, std::string_view gameId, const GameKey& key)
@@ -243,10 +294,10 @@ void ApplyGameInput(LauncherConfig& config, std::string_view gameId)
 namespace
 {
     // Display order = the runtime's g_padButtons; the 360's names, which the games' rows (GameKey::pad) use.
-    constexpr std::array<const char*, PadButtonTotal> PadNames = { "a", "b", "x", "y", "lb", "rb", "lt", "rt", "start", "back", "ls", "rs",
-        "dpad_up", "dpad_down", "dpad_left", "dpad_right" };
-    constexpr std::array<const char*, PadButtonTotal> PadXbox = { "A", "B", "X", "Y", "LB", "RB", "LT", "RT", "Start", "Back", "LS", "RS",
-        N_("D-pad up"), N_("D-pad down"), N_("D-pad left"), N_("D-pad right") };
+    constexpr std::array<const char*, PadButtonTotal> PadNames = { "a", "b", "x", "y", "lb", "rb", "lt", "rt", "start",
+        "back", "ls", "rs", "dpad_up", "dpad_down", "dpad_left", "dpad_right" };
+    constexpr std::array<const char*, PadButtonTotal> PadXbox = { "A", "B", "X", "Y", "LB", "RB", "LT", "RT", "Start",
+        "Back", "LS", "RS", N_("D-pad up"), N_("D-pad down"), N_("D-pad left"), N_("D-pad right") };
     constexpr std::array<const char*, 4> Rumble = { "off", "low", "normal", "strong" };
 
     std::string PadLine(int button) { return std::string("pad_") + PadNames[size_t(button)]; }
@@ -315,8 +366,8 @@ std::string RumbleLevel(const LauncherConfig& config, std::string_view gameId, i
 namespace
 {
     // The runtime's mouse names (host/mouse.h), and how the player reads them.
-    constexpr std::array<std::pair<const char*, const char*>, 7> MouseNames = { {
-        { "Mouse Left", N_("Left click") }, { "Mouse Right", N_("Right click") }, { "Mouse Middle", N_("Middle click") },
+    constexpr std::array<std::pair<const char*, const char*>, 7> MouseNames = { { { "Mouse Left", N_("Left click") },
+        { "Mouse Right", N_("Right click") }, { "Mouse Middle", N_("Middle click") },
         { "Mouse 4", N_("Back side button") }, { "Mouse 5", N_("Forward side button") }, { "Wheel Up", N_("Wheel up") },
         { "Wheel Down", N_("Wheel down") } } };
 
@@ -340,8 +391,8 @@ namespace
         return IsMouseName(value->second) ? value->second : std::string();
     }
 
-    constexpr ToyboxKey Toybox[] = { { "key_toybox", N_("Open the Toy Box"), "F6" }, { "key_toybox_add", N_("Add a figure"), "F7" },
-        { "key_toybox_clear", N_("Clear the figures"), "F8" } };
+    constexpr ToyboxKey Toybox[] = { { "key_toybox", N_("Open the Toy Box"), "F6" },
+        { "key_toybox_add", N_("Add a figure"), "F7" }, { "key_toybox_clear", N_("Clear the figures"), "F8" } };
 }
 
 bool GameMouseOn(const LauncherConfig& config, std::string_view gameId)
@@ -350,7 +401,10 @@ bool GameMouseOn(const LauncherConfig& config, std::string_view gameId)
     return value != nullptr && (*value == "1" || *value == "true" || *value == "on" || *value == "yes");
 }
 
-void SetGameMouseOn(LauncherConfig& config, std::string_view gameId, bool on) { config[GameInputSection(gameId)]["mouse"] = on ? "1" : "0"; }
+void SetGameMouseOn(LauncherConfig& config, std::string_view gameId, bool on)
+{
+    config[GameInputSection(gameId)]["mouse"] = on ? "1" : "0";
+}
 
 std::string GameMouseName(const LauncherConfig& config, std::string_view gameId, const GameKey& key)
 {
@@ -363,7 +417,8 @@ std::string GameMouseName(const LauncherConfig& config, std::string_view gameId,
     // The default goes when an action with a line of its own took the button (the runtime's mouse::Effective).
     for (const GameKey& other : GameKeys(gameId))
         if (&other != &key)
-            if (std::optional<std::string> stored = StoredMouse(config, gameId, other.action); stored && *stored == key.mouse)
+            if (std::optional<std::string> stored = StoredMouse(config, gameId, other.action);
+                stored && *stored == key.mouse)
                 return {};
     return key.mouse;
 }

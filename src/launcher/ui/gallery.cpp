@@ -12,7 +12,7 @@ namespace launcher_ui
     {
         struct Page
         {
-            const char* name;  // the shot's
+            const char* name; // the shot's
             const char* title; // the page's heading
         };
         constexpr Page Pages[] = {
@@ -61,7 +61,12 @@ namespace launcher_ui
             float cellW, rowH, labelW;
             int columns;
             Grid(int columns, float rowH, float labelW = 120)
-                : origin(ImGui::GetCursorScreenPos()), cellW((ImGui::GetContentRegionAvail().x - labelW) / float(columns)), rowH(rowH), labelW(labelW), columns(columns) {}
+                : origin(ImGui::GetCursorScreenPos()),
+                  cellW((ImGui::GetContentRegionAvail().x - labelW) / float(columns)),
+                  rowH(rowH),
+                  labelW(labelW),
+                  columns(columns)
+            {}
             void Header(const char* const* names)
             {
                 for (int i = 0; i < columns; i++)
@@ -76,8 +81,16 @@ namespace launcher_ui
                 ImGui::SetCursorScreenPos(ImVec2(origin.x, origin.y + rowH * float(row) + ui::space::S));
                 Caption(name);
             }
-            void At(int row, int column) { ImGui::SetCursorScreenPos(ImVec2(origin.x + labelW + cellW * float(column), origin.y + rowH * float(row))); }
-            void End(int rows) { ImGui::SetCursorScreenPos(ImVec2(origin.x, origin.y + rowH * float(rows))); ImGui::Dummy(ImVec2(0, 0)); }
+            void At(int row, int column)
+            {
+                ImGui::SetCursorScreenPos(
+                    ImVec2(origin.x + labelW + cellW * float(column), origin.y + rowH * float(row)));
+            }
+            void End(int rows)
+            {
+                ImGui::SetCursorScreenPos(ImVec2(origin.x, origin.y + rowH * float(rows)));
+                ImGui::Dummy(ImVec2(0, 0));
+            }
         };
 
         void Preview(const StateCase& c) { ui::PreviewState(c.state); }
@@ -89,16 +102,19 @@ namespace launcher_ui
     void App::DrawGallery()
     {
         const ImVec2 size = ImGui::GetIO().DisplaySize;
-        ImGui::GetBackgroundDrawList()->AddRectFilledMultiColor(ImVec2(0, 0), size, Rgb(PageTop), Rgb(PageTop), Rgb(PageBottom), Rgb(PageBottom));
+        ImGui::GetBackgroundDrawList()->AddRectFilledMultiColor(
+            ImVec2(0, 0), size, Rgb(PageTop), Rgb(PageTop), Rgb(PageBottom), Rgb(PageBottom));
         ImGui::SetNextWindowPos(ImVec2(0, 0));
         ImGui::SetNextWindowSize(size);
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(ui::space::XL, ui::space::L));
-        ImGui::Begin("##gallery", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBackground |
-            ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoBringToFrontOnFocus);
+        ImGui::Begin("##gallery", nullptr,
+            ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBackground |
+                ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoBringToFrontOnFocus);
         ImGui::PopStyleVar();
         const int page = std::clamp(m_galleryPage, 0, PageCount - 1);
-        const std::string title = Pages[page].title, note = fmt::format("Arkeyan Launcher components  |  {}  |  {:g}x  |  page {} of {}",
-            i18n::Current(), m_uiScale, page + 1, PageCount);
+        const std::string title = Pages[page].title,
+                          note = fmt::format("Arkeyan Launcher components  |  {}  |  {:g}x  |  page {} of {}",
+                              i18n::Current(), m_uiScale, page + 1, PageCount);
         ui::Text(ui::TextStyle::Title, title.c_str(), ui::color::Ink, -1);
         Caption(note.c_str());
         ImGui::Dummy(ImVec2(0, ui::space::XS));
@@ -112,7 +128,14 @@ namespace launcher_ui
         {
             Grid grid(int(std::size(States)), ui::height::Normal + ui::space::S);
             grid.Header(stateNames);
-            struct Row { const char* name; ui::ButtonKind kind; const char* label; ui::Icon icon; bool hold; };
+            struct Row
+            {
+                const char* name;
+                ui::ButtonKind kind;
+                const char* label;
+                ui::Icon icon;
+                bool hold;
+            };
             const Row rows[] = {
                 { "Primary", ui::ButtonKind::Primary, Tr("INSTALL"), ui::Icon::None, false },
                 { "Secondary", ui::ButtonKind::Secondary, Tr("Retry"), ui::Icon::None, false },
@@ -200,7 +223,15 @@ namespace launcher_ui
         case 2: // The other games: their colours and focus ring
         {
             static const char* const Games[] = { "ssa", "giants", "swapforce" };
-            struct Case { const char* name; ui::State state; bool enabled; float progress; bool indeterminate; const char* label; };
+            struct Case
+            {
+                const char* name;
+                ui::State state;
+                bool enabled;
+                float progress;
+                bool indeterminate;
+                const char* label;
+            };
             const Case all[] = {
                 { "Normal", {}, true, -1, false, "INSTALL" },
                 { "Hover", { .hovered = true }, true, -1, false, "INSTALL" },
@@ -212,7 +243,8 @@ namespace launcher_ui
             };
             const int caseCount = page == 1 ? int(std::size(all)) : 3;
             const int pick[] = { 0, 2, 5 }; // the other games: normal, focus, busy
-            const float cellW = ui::height::MainWidth + ui::height::MainGear + ui::space::XL, rowH = ui::height::Main + ui::space::XL;
+            const float cellW = ui::height::MainWidth + ui::height::MainGear + ui::space::XL,
+                        rowH = ui::height::Main + ui::space::XL;
             ImVec2 origin = ImGui::GetCursorScreenPos();
             int cell = 0;
             for (int g = page == 1 ? 0 : 1; g < (page == 1 ? 1 : 3); g++)
@@ -222,7 +254,8 @@ namespace launcher_ui
                     const int column = cell % 2, row = cell / 2;
                     ImVec2 at(origin.x + cellW * float(column), origin.y + rowH * float(row));
                     ImGui::SetCursorScreenPos(at);
-                    const std::string caption = page == 1 ? c.name : fmt::format("{}: {}", GameName(Games[g], GameNameForm::Short), c.name);
+                    const std::string caption =
+                        page == 1 ? c.name : fmt::format("{}: {}", GameName(Games[g], GameNameForm::Short), c.name);
                     Caption(caption.c_str());
                     ImGui::SetCursorScreenPos(ImVec2(at.x, at.y + ui::type::Caption + ui::space::XS));
                     ImGui::PushID(cell);
@@ -233,7 +266,9 @@ namespace launcher_ui
                     options.indeterminate = c.indeterminate;
                     options.style = &StyleOf(Games[g]);
                     options.separated = true;
-                    options.icon = std::string_view(c.label) == "INSTALL" ? ui::Icon::Download : std::string_view(c.label) == "UPDATE" ? ui::Icon::Update : ui::Icon::Play; // the game page's
+                    options.icon = std::string_view(c.label) == "INSTALL"  ? ui::Icon::Download
+                                   : std::string_view(c.label) == "UPDATE" ? ui::Icon::Update
+                                                                           : ui::Icon::Play; // the game page's
                     const unsigned accent = ui::Ctx().accent;
                     ui::Ctx().accent = StyleOf(Games[g]).glow; // the focus ring in the game's colour, as on its page
                     ui::PreviewState(c.state);
@@ -247,7 +282,8 @@ namespace launcher_ui
         }
         case 3: // Selection controls
         {
-            const char* const tabs[] = { Tr("Video"), Tr("Keyboard"), Tr("Language"), Tr("Disc"), Tr("Saves"), Tr("Game") };
+            const char* const tabs[] = { Tr("Video"), Tr("Keyboard"), Tr("Language"), Tr("Disc"), Tr("Saves"),
+                Tr("Game") };
             static int tab = 1, tabPad = 2, segment = 0, segment2 = 1, level = 12;
             Caption("Tabs (keyboard), the first one focused");
             ui::TabsOptions noBumpers;
@@ -417,7 +453,8 @@ namespace launcher_ui
             picture.subtitle = Tr("Water");
             picture.imageWidth = ui::height::Large - 2 * ui::space::XXS;
             picture.image = [](ImDrawList* draw, ImVec2 at, ImVec2 size) {
-                draw->AddCircleFilled(ImVec2(at.x + size.x / 2, at.y + size.y / 2), size.y / 2, ui::Col(ui::color::AccentFill));
+                draw->AddCircleFilled(
+                    ImVec2(at.x + size.x / 2, at.y + size.y / 2), size.y / 2, ui::Col(ui::color::AccentFill));
             };
             ui::ListRow(GameName("giants", GameNameForm::Short), picture);
             ui::SectionHeader(Tr("Language"), Tr("Looks for updates at each start."));
@@ -447,7 +484,8 @@ namespace launcher_ui
             ui::Badge(Tr("Dark"), 0x1A1A22);
             ImGui::Dummy(ImVec2(0, ui::space::XS));
 
-            Caption("Chip: filter off, hover, focus, on (accent, an element), disabled; sort ascending, descending, focus");
+            Caption(
+                "Chip: filter off, hover, focus, on (accent, an element), disabled; sort ascending, descending, focus");
             const ui::State chipStates[] = { {}, { .hovered = true }, { .focused = true }, {}, {}, {} };
             for (int i = 0; i < 6; i++)
             {
@@ -480,7 +518,8 @@ namespace launcher_ui
             Caption("StatusPill: never a colour alone");
             const std::pair<ui::Status, const char*> statuses[] = { { ui::Status::Success, Tr("Ready to play") },
                 { ui::Status::Info, Tr("Ready to install") }, { ui::Status::Busy, Tr("Checking your disc") },
-                { ui::Status::Warning, Tr("Needs your disc") }, { ui::Status::Error, Tr("Disc not found") }, { ui::Status::Neutral, Tr("Open") } };
+                { ui::Status::Warning, Tr("Needs your disc") }, { ui::Status::Error, Tr("Disc not found") },
+                { ui::Status::Neutral, Tr("Open") } };
             for (const auto& [status, text] : statuses)
             {
                 ui::StatusPill(status, text);
@@ -492,7 +531,8 @@ namespace launcher_ui
             Caption("The status shapes alone (the sidebar's dot)");
             ImVec2 at = ImGui::GetCursorScreenPos();
             for (int i = 0; i < 6; i++)
-                ui::DrawStatusIcon(ImGui::GetWindowDrawList(), ui::Status(i), ImVec2(at.x + 10 + 32 * float(i), at.y + 10), 14);
+                ui::DrawStatusIcon(
+                    ImGui::GetWindowDrawList(), ui::Status(i), ImVec2(at.x + 10 + 32 * float(i), at.y + 10), 14);
             ImGui::Dummy(ImVec2(0, 20));
             ImGui::Dummy(ImVec2(0, ui::space::XS));
 
@@ -511,14 +551,15 @@ namespace launcher_ui
             ui::Spinner();
             ImGui::Dummy(ImVec2(0, ui::space::M));
             Caption("GuideStep: disc setup");
-            ui::GuideStep(1, Tr("Choose your disc"), Tr("Your own copy, as an .iso"), ImGui::GetContentRegionAvail().x, true);
+            ui::GuideStep(
+                1, Tr("Choose your disc"), Tr("Your own copy, as an .iso"), ImGui::GetContentRegionAvail().x, true);
             break;
         }
         case 7: // Toasts, key caps, the pad legend
         {
             Caption("KeyCap: each pad family's buttons, then keyboard keys");
-            const std::pair<ui::Glyphs, const char*> families[] = { { ui::Glyphs::Xbox, "Xbox" }, { ui::Glyphs::PlayStation, "PlayStation" },
-                { ui::Glyphs::Nintendo, "Nintendo" } };
+            const std::pair<ui::Glyphs, const char*> families[] = { { ui::Glyphs::Xbox, "Xbox" },
+                { ui::Glyphs::PlayStation, "PlayStation" }, { ui::Glyphs::Nintendo, "Nintendo" } };
             for (const auto& [family, name] : families)
             {
                 ImVec2 row = ImGui::GetCursorScreenPos();
@@ -543,11 +584,14 @@ namespace launcher_ui
                 ImGui::NewLine();
             }
             ImGui::Dummy(ImVec2(0, ui::space::XS));
-            Caption("PadLegend: the bottom hint bar, in each family and on the keyboard (a hint the keyboard lacks is left out)");
-            const ui::PadHint hints[] = { { ui::PadButton::LeftBumper, nullptr, Tr("Pages"), true }, { ui::PadButton::South, Tr("Return"), Tr("Open") },
-                { ui::PadButton::East, Tr("Escape"), Tr("Back") }, { ui::PadButton::West, nullptr, Tr("Edit") }, { ui::PadButton::North, "Tab", Tr("Filters") } };
+            Caption("PadLegend: the bottom hint bar, in each family and on the keyboard (a hint the keyboard lacks is "
+                    "left out)");
+            const ui::PadHint hints[] = { { ui::PadButton::LeftBumper, nullptr, Tr("Pages"), true },
+                { ui::PadButton::South, Tr("Return"), Tr("Open") }, { ui::PadButton::East, Tr("Escape"), Tr("Back") },
+                { ui::PadButton::West, nullptr, Tr("Edit") }, { ui::PadButton::North, "Tab", Tr("Filters") } };
             const float legendW = ImGui::GetContentRegionAvail().x * 0.62f;
-            for (ui::Glyphs family : { ui::Glyphs::Xbox, ui::Glyphs::PlayStation, ui::Glyphs::Nintendo, ui::Glyphs::Keyboard })
+            for (ui::Glyphs family :
+                { ui::Glyphs::Xbox, ui::Glyphs::PlayStation, ui::Glyphs::Nintendo, ui::Glyphs::Keyboard })
             {
                 ui::PadLegend(hints, family, legendW);
                 ImGui::Dummy(ImVec2(0, ui::space::XXS));
@@ -576,7 +620,8 @@ namespace launcher_ui
                 modal = true;
                 if (ui::BeginModal("##gallerymodal", Tr("Report a bug"), &modal, ui::ModalSize::Medium))
                 {
-                    ui::Text(ui::TextStyle::Body, Tr("Native PC ports of Skylanders. No game code or art: it comes from your disc."),
+                    ui::Text(ui::TextStyle::Body,
+                        Tr("Native PC ports of Skylanders. No game code or art: it comes from your disc."),
                         ui::color::InkSoft);
                     static bool tick = true;
                     ui::Checkbox(Tr("Fullscreen"), &tick);
@@ -587,8 +632,8 @@ namespace launcher_ui
             else
             {
                 danger = true;
-                ui::ConfirmDialog("##gallerydanger", Tr("Uninstall everything"), Tr("Hold to delete all of this."), Tr("Uninstall everything"),
-                    Tr("Cancel"), &danger, ui::ModalKind::Danger);
+                ui::ConfirmDialog("##gallerydanger", Tr("Uninstall everything"), Tr("Hold to delete all of this."),
+                    Tr("Uninstall everything"), Tr("Cancel"), &danger, ui::ModalKind::Danger);
             }
             break;
         }
@@ -660,7 +705,8 @@ namespace launcher_ui
             SDL_SetWindowSize(m_window, int(WindowW * m_uiScale), int(WindowH * m_uiScale));
         }
         m_galleryPage = page;
-        m_testShot = fmt::format("gallery-{}-{}x-{:02}-{}", i18n::Current(), int(Scales[pass]), page + 1, Pages[page].name);
+        m_testShot =
+            fmt::format("gallery-{}-{}x-{:02}-{}", i18n::Current(), int(Scales[pass]), page + 1, Pages[page].name);
         m_testAt = now + (page == 0 ? 1200 : 600);
     }
 }

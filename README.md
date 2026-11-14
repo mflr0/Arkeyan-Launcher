@@ -13,10 +13,16 @@
 
 # Arkeyan Launcher: native Skylanders on PC, macOS and Linux
 
-**Play Skylanders natively on Windows PC, macOS and Linux.** A native PC port of the Xbox 360 Skylanders games, by static
-recompilation. Arkeyan Launcher builds *Spyro's Adventure*, *Giants*, *Swap Force*,
-*Trap Team*, *SuperChargers* and *Imaginators* from your own Xbox 360 disc image into real PC games: no emulator, your own saves, your
-figures in a virtual portal, any controller, keyboard or mouse. Formerly Skylauncher: it updates itself to this version.
+**Play Skylanders natively on Windows PC, macOS, Linux and the Steam Deck.** Arkeyan Launcher turns your own Xbox 360
+disc of *Spyro's Adventure*, *Giants*, *Swap Force*, *Trap Team*, *SuperChargers* or *Imaginators* into a real PC game, by
+static recompilation: no emulator, sharper than the console at up to 60 FPS, your figures on a virtual portal (or your
+real Portal of Power), any controller, the keyboard or the mouse, and two players on one screen. Drop your disc image on
+the window, click INSTALL, then PLAY. Formerly Skylauncher: it updates itself to this version.
+
+<p align="center"><a href="https://github.com/mflr0/Arkeyan-Launcher/releases/latest"><b>Download</b></a> ·
+<a href="https://discord.gg/UMQY4SAS3F"><b>Join the Discord</b></a> ·
+<a href="#get-help">Get help</a> ·
+<a href="#wanted-uiux-designers">UI/UX designers wanted</a></p>
 
 <!-- SCREENSHOTS: four gameplay pictures (one per game), hosted outside the repository -->
 
@@ -38,6 +44,8 @@ on your computer.
 - **A portable copy** of an installed game in one file, to play it anywhere without the launcher.
 - **Two players on one computer**, each with a controller and a figure, real or virtual.
 - **Profiles**, each with its own Toy Box, saves, keys and achievements, and the games' **achievements** in the launcher.
+- **Discord Rich Presence**: your friends see the game, the level you are in, your Skylander and how long you have played
+  (Settings > Launcher > Discord to turn it off).
 - **The launcher in eleven languages**: English, French, German, Spanish, Italian, Portuguese, Dutch, Swedish, Norwegian,
   Danish and Finnish.
 - **Each system's own graphics**: Direct3D 12 on Windows (or Vulkan, a choice in each game's settings), Metal on macOS,
@@ -51,14 +59,15 @@ Islands.
 | Game | Mac | Windows | Linux | Played so far |
 |---|---|---|---|---|
 | Spyro's Adventure | ✅ | ✅ | ✅ | 27 story levels and the Ruins played with a hero; bosses and Heroic Challenges not all confirmed |
-| Giants | ✅ | ⚠️ in Wine only | ✅ | Chapter 1, and 78 of its 91 levels in an automatic tour; a real portal on Linux |
+| Giants | ✅ | ✅ | ✅ | Chapter 1, and 78 of its 91 levels in an automatic tour; a real portal on Linux |
 | Swap Force | ✅ | ✅ | ✅ | The tutorial, the first area of the story and the two-player arenas; 158 of 195 zones in an automatic tour |
 | Trap Team | ✅ | ✅ | ⚠️ not tested yet | The tutorial, the first chapters and the Academy, a villain captured and kept in its trap; 53 of 56 levels in an automatic tour |
-| SuperChargers | ✅ | ✅ | ✅ (Steam Deck, Desktop Mode) | The opening and the Academy, a vehicle on the portal |
-| Imaginators | ✅ | ⚠️ not tested yet | ⚠️ not tested yet | The opening and the hub |
+| SuperChargers | ✅ | ✅ | ✅ (Steam Deck) | The opening and the Academy, a vehicle on the portal |
+| Imaginators | ✅ | ✅ | ⚠️ not tested yet | The opening and the hub |
 
-✅ means played on a real computer of that kind, by the author or by players. The Steam Deck works in Desktop Mode;
-Game Mode is being fixed for 0.9.6.
+✅ means played on a real computer of that kind, by the author or by players; each one has its evidence (an issue or a
+tester's log) on the game's status page in the [forge](https://github.com/arkeyan-forge/forge). The Steam Deck works in
+Game Mode and in Desktop Mode.
 
 Finished a game, or played one on Windows or Linux? Please say so in an
 [issue](https://github.com/mflr0/Arkeyan-Launcher/issues): it is how this table gets filled.
@@ -97,7 +106,7 @@ Every release is checked before it ships, on the six games:
 - Apple Silicon Mac required (M1 or later).
 - An internet connection the first time: INSTALL downloads the game tools (about 30 to 40 MB) and the compiler.
 - **Linux:** an x86_64 PC with a Vulkan driver (Mesa or NVIDIA), about 6 GB free, and a distribution from 2022 or later
-  (glibc 2.34+: Ubuntu 22.04+, Fedora, Arch; SteamOS on the Steam Deck works in Desktop Mode). No compiler or root is needed: INSTALL
+  (glibc 2.34+: Ubuntu 22.04+, Fedora, Arch; SteamOS on the Steam Deck). No compiler or root is needed: INSTALL
   downloads zig (55 MB) as the compiler. A real portal needs udev rules once (Wii, Wii U, PlayStation and PC portals, then every Activision USB device: the Xbox 360 portal `1430:1F17` and the Xbox One portal `1430:09AA`), the only step that needs `sudo` (on
   the Steam Deck, set a password with `passwd` first):
 
@@ -195,6 +204,19 @@ figure and the other a virtual one.
 To use a real portal (Wii, PlayStation, Xbox 360 or Xbox One), plug it in and choose it in Settings > Controls >
 Portal of Power. Then click **Test the portal**.
 
+**Xbox 360 portal on Windows:** Windows has no driver that lets a program talk to it, so it needs Windows' own WinUSB
+driver, once (nothing to download): in Device Manager, right-click the portal ("Spyro Portal", or an unknown device),
+**Update driver** > **Browse my computer for drivers** > **Let me pick from a list** > **Universal Serial Bus devices** >
+**WinUsb Device**, then unplug the portal and plug it in again. Zadig's WinUSB driver works the same way. The Xbox One
+portal needs nothing: the game reaches it through Windows' own Xbox driver.
+
+**A Wii, PlayStation or PC portal moved to another driver (Zadig) on Windows:** on WinUSB, the game uses it as it is. On
+libusbK or libusb0, **Test the portal** shows the way back: in Device Manager, right-click the portal, **Uninstall device**,
+tick **Attempt to remove the driver for this device**, then unplug the portal and plug it in again. If Windows puts that
+driver back, open a Command Prompt as administrator and run `pnputil /enum-drivers`, then
+`pnputil /delete-driver oemNN.inf /uninstall /force` with the driver's `oemNN.inf` (the Test names it, and **Copy
+commands** copies both), then plug the portal in again.
+
 ## Settings
 
 - **Resolution scale:** Auto picks x1 on integrated graphics and x2 on dedicated cards. If the game is slow, use x1.
@@ -209,10 +231,16 @@ Portal of Power. Then click **Test the portal**.
 - **Your saves are safe:** each save is written in one go, and the previous version is kept before it is replaced. To go
   back to one, open the game's settings (the gear next to PLAY) > Saves > Restore.
 
-## If something goes wrong
+## Get help
 
-- Settings (the gear) > Support > **Copy game log** copies the log so you can send it to us. **Open logs folder** shows the
-  files.
+- **Ask on the [Discord](https://discord.gg/UMQY4SAS3F)**: players and the author answer there, and new versions are tested
+  there before they ship.
+- **Report a bug** with an [issue](https://github.com/mflr0/Arkeyan-Launcher/issues/new/choose): the forms ask for what is
+  needed (read [How to report a bug](https://github.com/mflr0/Arkeyan-Launcher/issues?q=is%3Aissue+is%3Apinned) first).
+  The launcher's **Report a bug** button writes a report (your system, settings and logs, with your user name and
+  folders removed) to attach.
+- Settings (the gear) > Support > **Copy game log** copies the log to paste in the issue (or drop the `.txt` file into it).
+  **Open logs folder** shows the files.
 - Everything is in one "Skylanders" folder: `%APPDATA%\Skylanders\` on Windows, `~/Library/Application Support/Skylanders/`
   on Mac, `~/.local/share/Skylanders/` on Linux. The logs are in its `logs/` folder and in each game's folder.
 - If the game stops with an error, a window offers Copy log and Report.
@@ -258,11 +286,14 @@ The developer docs are in `docs/`: `launcher_ui.md` covers the screens and theme
 
 ## Known issues
 
-- Steam Deck: in Game Mode the game's picture may not appear; Desktop Mode works. Being fixed for 0.9.6.
-- Xbox 360 and Xbox One portals don't work on Windows yet, and the Xbox 360 portal doesn't answer on Linux yet: both
-  are being fixed for 0.9.6. Wii, Wii U, PlayStation and PC portals work everywhere.
-- Trap Team: Spy Rise looks almost black, its voices follow the text language, and LB is not offered as a key yet. A real
-  Traptanium portal's speaker has not been tried yet.
+- Xbox 360 and Xbox One portals on Windows have not been confirmed on a real PC yet
+  ([#29](https://github.com/mflr0/Arkeyan-Launcher/issues/29)): if you have one, please try it and tell us. Wii, Wii U,
+  PlayStation and PC portals work everywhere.
+- Giants: in a maximized window wider than 16:9, the menus can jitter
+  ([#78](https://github.com/mflr0/Arkeyan-Launcher/issues/78)); setting Widescreen to 16:9 in the game's settings avoids it.
+- Swap Force: the core seen through the cage in the tutorial's volcano is drawn with dark streaks
+  ([#80](https://github.com/mflr0/Arkeyan-Launcher/issues/80)).
+- Trap Team: a real Traptanium portal's speaker has not been tried yet.
 - The mouse does nothing in the games' own menus yet: use the keyboard or a controller there.
 - The Mac app is not notarized, and Windows SmartScreen or Defender may warn about the launcher (see
   [Windows Defender alerts](#windows-defender-alerts)).
@@ -281,14 +312,24 @@ container.
 Everything here is made for this project: the launcher, the kits and the ports. The reverse engineering, the architecture
 and every design decision are the author's own; AI tools write the code from that design and run the tests.
 
+## Wanted: UI/UX designers
+
+The launcher works; now it should feel like Skylanders. We are looking for **UI/UX designers** to help rethink the Toy
+Box (how you pick, swap and create figures, in the game and in its own window) and to give the launcher a style that
+belongs to the Skylanders universe. Say hello on the
+[Discord](https://discord.gg/UMQY4SAS3F) or in an [issue](https://github.com/mflr0/Arkeyan-Launcher/issues).
+
+## Contributing
+
+Pull requests are welcome: read [CONTRIBUTING.md](CONTRIBUTING.md) first (what to send, the branch to target, the
+checks). Security problems: [SECURITY.md](SECURITY.md).
+
 ## Credits and license
 
 Designed by dorydev, made by mflr0, UI/UX by Gumelia.
 
-To you who use Arkeyan Launcher and take the time to report a bug or suggest an idea: thank you, every report makes it
-better. Special thanks to those who opened issues, sent logs and tested on their own hardware: jdalmanza,
-GummyWormWood, RGNTromYT, ssjwarriorx, GobGub and vientodelbosque, and the testers on Discord. And thank you to
-everyone who contributes to the Arkeyan project.
+Thank you to everyone who contributes to this project, and to the testers on the
+[Discord](https://discord.gg/UMQY4SAS3F): every report, log and test on real hardware makes it better.
 
 The ports are built with [XenonRecomp](https://github.com/hedge-dev/XenonRecomp) and
 [XenosRecomp](https://github.com/hedge-dev/XenosRecomp) (hedge-dev; [squidbus's fork](https://github.com/squidbus/XenosRecomp)),

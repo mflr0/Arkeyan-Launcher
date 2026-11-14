@@ -94,7 +94,8 @@ namespace
             output = Tf("curl couldn't start ({})", SDL_GetError());
             return false;
         }
-        SDL_IOStream* stream = static_cast<SDL_IOStream*>(SDL_GetPointerProperty(SDL_GetProcessProperties(process), SDL_PROP_PROCESS_STDOUT_POINTER, nullptr));
+        SDL_IOStream* stream = static_cast<SDL_IOStream*>(
+            SDL_GetPointerProperty(SDL_GetProcessProperties(process), SDL_PROP_PROCESS_STDOUT_POINTER, nullptr));
         int code = -1;
         bool exited = false;
         char buffer[2048];
@@ -148,7 +149,8 @@ namespace
     // A zip entry's name safe to put under a folder: relative, no "..".
     bool SafeEntry(const std::string& name)
     {
-        if (name.empty() || name[0] == '/' || name[0] == '\\' || name.find(':') != std::string::npos || name.find('\0') != std::string::npos)
+        if (name.empty() || name[0] == '/' || name[0] == '\\' || name.find(':') != std::string::npos ||
+            name.find('\0') != std::string::npos)
             return false;
         size_t begin = 0;
         while (begin <= name.size())
@@ -199,9 +201,11 @@ namespace
         if (fs::is_regular_file(folder / filelist::ListName, error))
             return true;
 #if defined(_WIN32)
-        return fs::exists(folder / "Arkeyan-Builder.exe", error) || fs::exists(folder / "SkyBuild.exe", error) || fs::exists(folder / "SSABuild.exe", error);
+        return fs::exists(folder / "Arkeyan-Builder.exe", error) || fs::exists(folder / "SkyBuild.exe", error) ||
+               fs::exists(folder / "SSABuild.exe", error);
 #else
-        return fs::exists(folder / "Arkeyan-Builder", error) || fs::exists(folder / "SkyBuild", error) || fs::exists(folder / "SSABuild", error);
+        return fs::exists(folder / "Arkeyan-Builder", error) || fs::exists(folder / "SkyBuild", error) ||
+               fs::exists(folder / "SSABuild", error);
 #endif
     }
 }
@@ -244,12 +248,18 @@ SemVer ParseSemVer(std::string_view text)
 
 int CompareSemVer(const SemVer& a, const SemVer& b)
 {
-    if (a.major != b.major) return a.major < b.major ? -1 : 1;
-    if (a.minor != b.minor) return a.minor < b.minor ? -1 : 1;
-    if (a.patch != b.patch) return a.patch < b.patch ? -1 : 1;
-    if (a.pre == b.pre) return 0;
-    if (a.pre.empty()) return 1;  // 1.0.0 is after 1.0.0-beta
-    if (b.pre.empty()) return -1;
+    if (a.major != b.major)
+        return a.major < b.major ? -1 : 1;
+    if (a.minor != b.minor)
+        return a.minor < b.minor ? -1 : 1;
+    if (a.patch != b.patch)
+        return a.patch < b.patch ? -1 : 1;
+    if (a.pre == b.pre)
+        return 0;
+    if (a.pre.empty())
+        return 1;  // 1.0.0 is after 1.0.0-beta
+    if (b.pre.empty())
+        return -1;
     return a.pre < b.pre ? -1 : 1;
 }
 
@@ -270,7 +280,8 @@ bool ParseRelease(const std::string& json, ReleaseInfo& release, std::string* er
     if (root["tag_name"].Str().empty())
     {
         if (error != nullptr)
-            *error = root["message"].IsString() ? Tf("GitHub says: {}", root["message"].Str()) : std::string(Tr("The answer has no release in it"));
+            *error = root["message"].IsString() ? Tf("GitHub says: {}", root["message"].Str())
+                                                : std::string(Tr("The answer has no release in it"));
         return false;
     }
     release = {};
@@ -281,7 +292,8 @@ bool ParseRelease(const std::string& json, ReleaseInfo& release, std::string* er
     release.prerelease = root["prerelease"].boolean;
     const JsonValue& assets = root["assets"];
     for (size_t i = 0; assets.IsArray() && i < assets.array.size(); i++)
-        release.assets.push_back({ assets[i]["name"].Str(), assets[i]["browser_download_url"].Str(), uint64_t(assets[i]["size"].number) });
+        release.assets.push_back(
+            { assets[i]["name"].Str(), assets[i]["browser_download_url"].Str(), uint64_t(assets[i]["size"].number) });
     return true;
 }
 
@@ -325,9 +337,11 @@ void ParseGamesLine(const std::string& notes, const std::string& tag, std::vecto
                 if (eq == std::string::npos || eq == 0)
                     continue;
                 GameUpdate game{ item.substr(0, eq), item.substr(eq + 1), tag };
-                bool idOk = std::all_of(game.id.begin(), game.id.end(), [](char c) { return (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9'); });
+                bool idOk = std::all_of(game.id.begin(), game.id.end(),
+                    [](char c) { return (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9'); });
                 SemVer version = ParseSemVer(game.version);
-                bool plain = !game.version.empty() && std::all_of(game.version.begin(), game.version.end(), [](char c) { return (c >= '0' && c <= '9') || c == '.'; });
+                bool plain = !game.version.empty() && std::all_of(game.version.begin(), game.version.end(),
+                                                          [](char c) { return (c >= '0' && c <= '9') || c == '.'; });
                 if (idOk && plain && version.valid)
                     games.push_back(std::move(game));
             }
@@ -425,10 +439,12 @@ std::string TaggedReleaseUrl(const std::string& repo, const std::string& tag)
 
 // ---- Download and checks ------------------------------------------------------------------------------------------
 
-HttpResult HttpDownload(const std::string& url, const fs::path& file, const std::function<void(uint64_t)>& progress, const std::atomic<bool>* cancel)
+HttpResult HttpDownload(const std::string& url, const fs::path& file, const std::function<void(uint64_t)>& progress,
+    const std::atomic<bool>* cancel)
 {
     HttpResult result;
-    if (url.empty() || !(url.starts_with("https://") || url.starts_with("file://") || LauncherEnv("SKY_LAUNCHER_UPDATE_URL") != nullptr))
+    if (url.empty() || !(url.starts_with("https://") || url.starts_with("file://") ||
+                           LauncherEnv("SKY_LAUNCHER_UPDATE_URL") != nullptr))
     {
         result.error = Tr("The address isn't a secure one (https)");
         return result;
@@ -439,10 +455,11 @@ HttpResult HttpDownload(const std::string& url, const fs::path& file, const std:
     part += ".part";
     fs::remove(part, error);
     std::string agent = "ArkeyanLauncher/" + LauncherVersion();
-    std::vector<std::string> arguments{ CurlProgram(), "-fsSL", "--connect-timeout", "15", "--max-time", "1800", "--retry", "2",
-        "-A", agent, "-H", "Accept: application/vnd.github+json", "-o", ToUtf8(part), url };
+    std::vector<std::string> arguments{ CurlProgram(), "-fsSL", "--connect-timeout", "15", "--max-time", "1800",
+        "--retry", "2", "-A", agent, "-H", "Accept: application/vnd.github+json", "-o", ToUtf8(part), url };
     if (url.starts_with("https://"))
-        arguments.insert(arguments.begin() + 1, { "--proto", "=https", "--tlsv1.2" }); // https only, never a redirect to plain http
+        arguments.insert(
+            arguments.begin() + 1, { "--proto", "=https", "--tlsv1.2" }); // https only, never a redirect to plain http
     std::string output;
     uint64_t lastReport = 0;
     bool ok = RunCurl(arguments, output, [&] {
@@ -509,7 +526,8 @@ fs::path DownloadVerified(const ReleaseInfo& release, std::string_view assetName
 {
     const ReleaseAsset* asset = FindAsset(release, assetName);
     const ReleaseAsset* sums = FindAsset(release, "SHA256SUMS");
-    if ((asset != nullptr && !TrustedAssetUrl(asset->url, release.repo)) || (sums != nullptr && !TrustedAssetUrl(sums->url, release.repo)))
+    if ((asset != nullptr && !TrustedAssetUrl(asset->url, release.repo)) ||
+        (sums != nullptr && !TrustedAssetUrl(sums->url, release.repo)))
     {
         error = Tf("{} points outside its GitHub release, so it wasn't installed", release.tag);
         return {};
@@ -545,8 +563,13 @@ fs::path DownloadVerified(const ReleaseInfo& release, std::string_view assetName
         error = result.error;
         return {};
     }
-    std::string data = ReadText(file);
-    std::string actual = Sha256Hex({ reinterpret_cast<const uint8_t*>(data.data()), data.size() });
+    std::string actual = filelist::Sha256OfFile(file, cancel);
+    if (cancel != nullptr && *cancel)
+    {
+        fs::remove(file, fsError);
+        error = "cancelled";
+        return {};
+    }
     if (actual != expected)
     {
         fs::remove(file, fsError);
@@ -801,8 +824,8 @@ bool InstallKitZip(const fs::path& zip, const fs::path& kitFolder, std::string& 
 }
 
 fs::path DownloadKit(const std::string& repo, const std::string& tag, const fs::path& kitRoot,
-    const std::function<void(uint64_t, uint64_t)>& progress, const std::atomic<bool>* cancel, std::string& error, std::string* releaseTag,
-    const fs::path& into)
+    const std::function<void(uint64_t, uint64_t)>& progress, const std::atomic<bool>* cancel, std::string& error,
+    std::string* releaseTag, const fs::path& into)
 {
     std::error_code fsError;
     fs::path work = kitRoot / ".download";
@@ -812,7 +835,8 @@ fs::path DownloadKit(const std::string& repo, const std::string& tag, const fs::
     std::string tagError;
     fs::path file = work / "release.json";
     // The release of this launcher's version, else the latest one.
-    if (!(HttpDownload(TaggedReleaseUrl(repo, tag), file, {}, cancel).ok && ParseRelease(ReadText(file), release, &tagError)))
+    if (!(HttpDownload(TaggedReleaseUrl(repo, tag), file, {}, cancel).ok &&
+            ParseRelease(ReadText(file), release, &tagError)))
     {
         HttpResult result = HttpDownload(LatestReleaseUrl(repo), file, {}, cancel);
         if (result.ok)
@@ -834,7 +858,13 @@ fs::path DownloadKit(const std::string& repo, const std::string& tag, const fs::
         return {};
     }
     uint64_t size = asset->size;
-    fs::path zip = DownloadVerified(release, kitAsset, work, [&](uint64_t bytes) { if (progress) progress(bytes, size); }, cancel, error);
+    fs::path zip = DownloadVerified(
+        release, kitAsset, work,
+        [&](uint64_t bytes) {
+            if (progress)
+                progress(bytes, size);
+        },
+        cancel, error);
     fs::path folder;
     if (!zip.empty())
     {
@@ -863,14 +893,19 @@ KitDownloader::Snapshot_ KitDownloader::Snapshot()
     return m_state;
 }
 
-void KitDownloader::Start(const std::string& repo, const std::string& tag, const fs::path& kitRoot, const fs::path& into)
+void KitDownloader::Start(
+    const std::string& repo, const std::string& tag, const fs::path& kitRoot, const fs::path& into)
 {
     if (m_running)
         return;
     Join();
     m_running = true;
     m_cancel = false;
-    { std::lock_guard lock(m_mutex); m_state = {}; m_state.state = State::Running; }
+    {
+        std::lock_guard lock(m_mutex);
+        m_state = {};
+        m_state.state = State::Running;
+    }
     m_thread = std::thread([this, repo, tag, kitRoot, into] {
         std::string error, releaseTag;
         auto progress = [&](uint64_t bytes, uint64_t size) {
@@ -938,7 +973,12 @@ void UpdateManager::Check(const Settings& settings)
     m_busy = true;
     m_cancel = false;
     m_settings = settings;
-    { std::lock_guard lock(m_mutex); m_state.phase = Phase::Checking; m_state.checkError.clear(); m_state.error.clear(); }
+    {
+        std::lock_guard lock(m_mutex);
+        m_state.phase = Phase::Checking;
+        m_state.checkError.clear();
+        m_state.error.clear();
+    }
     m_thread = std::thread([this] {
         fs::path temp = LauncherDataFolder() / "update"; // the player's own folder, not a shared temporary one
         auto fetch = [&](const std::string& repo, ReleaseInfo& release, std::string& error) {
@@ -994,12 +1034,19 @@ void UpdateManager::UpdateLauncher()
     m_cancel = false;
     m_thread = std::thread([this] {
         ReleaseInfo release;
-        { std::lock_guard lock(m_mutex); release = m_state.launcher; m_state.error.clear(); m_state.note.clear(); }
+        {
+            std::lock_guard lock(m_mutex);
+            release = m_state.launcher;
+            m_state.error.clear();
+            m_state.note.clear();
+        }
         const std::string assetName = LauncherAssetName();
         auto progress = [&](uint64_t bytes) {
             const ReleaseAsset* asset = FindAsset(release, assetName);
             std::lock_guard lock(m_mutex);
-            m_state.progress = asset != nullptr && asset->size > 0 ? std::min(1.0f, float(double(bytes) / double(asset->size))) : -1.0f;
+            m_state.progress = asset != nullptr && asset->size > 0
+                                   ? std::min(1.0f, float(double(bytes) / double(asset->size)))
+                                   : -1.0f;
         };
         fs::path self = LauncherSelf();
         std::error_code fsError;
@@ -1070,7 +1117,8 @@ void UpdateManager::UpdateLauncher()
             return;
         }
 #elif !defined(_WIN32)
-        fs::permissions(fresh, fs::perms::owner_exec | fs::perms::group_exec | fs::perms::others_exec, fs::perm_options::add, fsError);
+        fs::permissions(fresh, fs::perms::owner_exec | fs::perms::group_exec | fs::perms::others_exec,
+            fs::perm_options::add, fsError);
 #endif
         bool ok = ReplaceInPlace(self, fresh, error);
         if (ok)

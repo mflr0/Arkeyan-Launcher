@@ -24,7 +24,12 @@
 
 namespace uninstall
 {
-    enum class Os { Windows, MacOS, Linux };
+    enum class Os
+    {
+        Windows,
+        MacOS,
+        Linux
+    };
     Os CurrentOs();
 
     // What the player sees in the list, in this order. Saves, figures and older folders go only when the box "Also delete
@@ -43,7 +48,10 @@ namespace uninstall
         Figures,   // the figure collection, the games' own figure folders, texture packs
     };
     // Migration can leave saves and figures in the older folders after a conflict or a failed move.
-    constexpr bool NeedsTick(Group group) { return group == Group::Saves || group == Group::Figures || group == Group::OldFolders; }
+    constexpr bool NeedsTick(Group group)
+    {
+        return group == Group::Saves || group == Group::Figures || group == Group::OldFolders;
+    }
 
     struct Item
     {
@@ -58,16 +66,16 @@ namespace uninstall
     // Why a path was left alone, for the result message.
     enum class Why
     {
-        Elsewhere,  // the game is not in its folder (moved by the player, or set up by hand): its folder was not touched
-        Missing,    // the settings know a game build that is no longer there
-        Link,       // a link: never followed
-        Outside,    // not inside a folder of ours
-        Unsafe,     // the filesystem root, the home folder, relative paths...
-        DiscImage,  // a disc image or a folder around one
-        InUse,      // a game or a figure in use
+        Elsewhere, // the game is not in its folder (moved by the player, or set up by hand): its folder was not touched
+        Missing, // the settings know a game build that is no longer there
+        Link, // a link: never followed
+        Outside, // not inside a folder of ours
+        Unsafe, // the filesystem root, the home folder, relative paths...
+        DiscImage, // a disc image or a folder around one
+        InUse, // a game or a figure in use
         NotRemoved, // the system refused (the error is in `detail`)
-        Unfit,      // not a launcher we know how to remove (not a .app, .exe...)
-        Kept,       // left on purpose: other files in the figure folder, the Xbox signing keys
+        Unfit, // not a launcher we know how to remove (not a .app, .exe...)
+        Kept, // left on purpose: other files in the figure folder, the Xbox signing keys
     };
     struct Left
     {
@@ -84,25 +92,27 @@ namespace uninstall
         std::string id;
         std::string name;
         std::filesystem::path folder; // <data>/SSA, <data>/Giants...
-        std::filesystem::path saves;  // its saves folder (<saves>-backup beside it); empty: <folder>/saves
-        bool running = false;         // its lock says it plays now
+        std::filesystem::path saves; // its saves folder (<saves>-backup beside it); empty: <folder>/saves
+        bool running = false; // its lock says it plays now
     };
     struct Environment
     {
         Os os = Os::Linux;
-        std::filesystem::path home;         // the user's home folder, never a target (nor anything that holds it)
-        std::filesystem::path root;         // datadir::Root(): <data>/Skylanders
-        std::filesystem::path launcherData; // Arkeyan Launcher's own data folder (the root unless SKY_LAUNCHER_DATA says otherwise)
+        std::filesystem::path home; // the user's home folder, never a target (nor anything that holds it)
+        std::filesystem::path root; // datadir::Root(): <data>/Skylanders
+        std::filesystem::path
+            launcherData; // Arkeyan Launcher's own data folder (the root unless SKY_LAUNCHER_DATA says otherwise)
         std::vector<std::filesystem::path> oldFolders; // the pre-0.3.1 folders (datadir::OldRoots) that still exist
         std::filesystem::path settingsFile; // launcher.ini
-        std::filesystem::path collection;   // the figure folder
-        std::filesystem::path desktop;      // where the shortcuts are
-        std::filesystem::path launcherSelf; // the .app, .exe or AppImage; empty when it cannot be removed (a build folder)
-        std::filesystem::path trash;        // macOS: where the .app goes (~/.Trash); empty: <home>/.Trash
+        std::filesystem::path collection; // the figure folder
+        std::filesystem::path desktop; // where the shortcuts are
+        std::filesystem::path
+            launcherSelf; // the .app, .exe or AppImage; empty when it cannot be removed (a build folder)
+        std::filesystem::path trash; // macOS: where the .app goes (~/.Trash); empty: <home>/.Trash
         std::vector<GameEntry> games;
         std::vector<std::filesystem::path> discImages; // the images the settings remember
         std::vector<std::filesystem::path> builtGames; // [install.*] runtime= : where the settings say a game was built
-        bool figuresInUse = false;                     // a figure is on a running game's portal
+        bool figuresInUse = false; // a figure is on a running game's portal
     };
 
     // The data folder of each system, from the folders the system gives (pure).
@@ -117,8 +127,8 @@ namespace uninstall
     struct Plan
     {
         std::vector<Item> items;
-        std::vector<Left> left;           // refused before anything runs (shown in the list too)
-        bool refused = false;             // the environment is unsafe: nothing will be removed
+        std::vector<Left> left; // refused before anything runs (shown in the list too)
+        bool refused = false; // the environment is unsafe: nothing will be removed
         std::vector<std::string> running; // names of games that play now; the uninstall waits for them
         bool figuresInUse = false;
         uint64_t Bytes(Group group) const;
@@ -149,8 +159,8 @@ namespace uninstall
     {
         bool ok = false;
         std::vector<std::filesystem::path> paths; // what goes: the launcher, then its .old
-        std::filesystem::path trash;               // macOS: ~/.Trash
-        std::string problem;                       // why not (English, for logs; the UI says it in the player's words)
+        std::filesystem::path trash; // macOS: ~/.Trash
+        std::string problem; // why not (English, for logs; the UI says it in the player's words)
         Why why = Why::Unfit;
     };
     LauncherRemoval PlanLauncherRemoval(const Environment& env);

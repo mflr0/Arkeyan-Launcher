@@ -65,7 +65,8 @@ namespace launcher_ui
         if (error)
             file = original;
         error.clear();
-        if (file.has_filename() && fs::equivalent(file.parent_path(), datadir::FromText(collection::Folder()), error) && !error)
+        if (file.has_filename() && fs::equivalent(file.parent_path(), datadir::FromText(collection::Folder()), error) &&
+            !error)
             return collection::PathOf(datadir::Text(file.filename()));
         return path;
     }
@@ -85,7 +86,8 @@ namespace launcher_ui
 
     bool SeatAccepts(const collection::Seat& seat, const collection::Figure& figure)
     {
-        return figure.toy != nullptr && std::find(seat.accepts.begin(), seat.accepts.end(), figure.toy->category) != seat.accepts.end();
+        return figure.toy != nullptr &&
+               std::find(seat.accepts.begin(), seat.accepts.end(), figure.toy->category) != seat.accepts.end();
     }
 
     std::vector<std::string> ReadSeats(const collection::Game& game, const std::string& file)
@@ -98,7 +100,12 @@ namespace launcher_ui
         std::string lines(text, size);
         SDL_free(text);
 
-        struct Placed { int slot; std::string path; collection::Figure figure; };
+        struct Placed
+        {
+            int slot;
+            std::string path;
+            collection::Figure figure;
+        };
         std::vector<Placed> placed;
         for (size_t begin = 0; begin < lines.size();)
         {
@@ -112,13 +119,15 @@ namespace launcher_ui
                 continue;
             Placed p{ atoi(line.c_str()), Canonical(collection::MigratedPath(line.substr(space + 1))), {} };
             // One toy sits once: the same file on two lines (a hand edit), or two files of one serial, count for the first.
-            bool again = std::any_of(placed.begin(), placed.end(), [&](const Placed& other) { return other.path == p.path; });
+            bool again =
+                std::any_of(placed.begin(), placed.end(), [&](const Placed& other) { return other.path == p.path; });
             if (again || p.path.empty())
                 continue;
             if (collection::Read(p.path, p.figure))
             {
                 uint32_t serial = SerialOf(p.path);
-                again = serial != 0 && std::any_of(placed.begin(), placed.end(), [&](const Placed& other) { return SerialOf(other.path) == serial; });
+                again = serial != 0 && std::any_of(placed.begin(), placed.end(),
+                                           [&](const Placed& other) { return SerialOf(other.path) == serial; });
                 if (!again)
                     placed.push_back(std::move(p));
             }
@@ -148,7 +157,8 @@ namespace launcher_ui
         for (size_t i = 0; i < placed.size(); i++)
         {
             int slot = placed[i].slot;
-            if (slot >= 0 && size_t(slot) < seats.size() && seats[slot].empty() && (placed[i].figure.toy == nullptr || SeatAccepts(game.seats[slot], placed[i].figure)))
+            if (slot >= 0 && size_t(slot) < seats.size() && seats[slot].empty() &&
+                (placed[i].figure.toy == nullptr || SeatAccepts(game.seats[slot], placed[i].figure)))
             {
                 seats[slot] = placed[i].path;
                 done[i] = true;
@@ -183,7 +193,8 @@ namespace launcher_ui
             text += fmt::format("{} {}\n", slot, seats[i]);
             // A swapper's bottom goes in the slot after its top.
             collection::Figure top;
-            if (TwoSlotSeats(game) && i < 2 && collection::Read(seats[i], top) && top.IsSwapTop() && !top.partner.empty())
+            if (TwoSlotSeats(game) && i < 2 && collection::Read(seats[i], top) && top.IsSwapTop() &&
+                !top.partner.empty())
                 text += fmt::format("{} {}\n", slot + 1, collection::PathOf(top.partner));
         }
         // UTF-8 paths (a user name with accents on Windows): FromText, never a narrow std::string, for std::filesystem.
@@ -272,7 +283,7 @@ namespace launcher_ui
             std::string error;
             Json parsed;
             const bool valid = Json::Parse(std::string(data, size), parsed, error) && parsed.IsObject() &&
-                (!parsed.Has("toys") || parsed["toys"].IsArray());
+                               (!parsed.Has("toys") || parsed["toys"].IsArray());
             SDL_free(data);
             if (!valid)
                 return false;
@@ -301,10 +312,7 @@ namespace launcher_ui
 
     // ---- CollectionModel ------------------------------------------------------------------------------------------
 
-    const collection::Game* CollectionModel::Game() const
-    {
-        return collection::Catalogue::Get().FindGame(gameId);
-    }
+    const collection::Game* CollectionModel::Game() const { return collection::Catalogue::Get().FindGame(gameId); }
 
     void CollectionModel::Load()
     {
@@ -347,15 +355,21 @@ namespace launcher_ui
             if (!entry.is_regular_file(error))
                 continue;
             std::string name = datadir::Text(entry.path().filename());
-            signature += fmt::format("{}|{}|{};", name, entry.file_size(error), entry.last_write_time(error).time_since_epoch().count());
+            signature += fmt::format(
+                "{}|{}|{};", name, entry.file_size(error), entry.last_write_time(error).time_since_epoch().count());
             if (name.size() > 5 && name.ends_with(".lock"))
-                signature += collection::GetLock(datadir::Text(entry.path()).substr(0, datadir::Text(entry.path()).size() - 5)).Busy() ? "busy;" : "free;";
+                signature +=
+                    collection::GetLock(datadir::Text(entry.path()).substr(0, datadir::Text(entry.path()).size() - 5))
+                            .Busy()
+                        ? "busy;"
+                        : "free;";
         }
         if (const collection::Game* game = Game())
         {
             std::string session = SessionFile(*game);
             if (!session.empty() && fs::exists(datadir::FromText(session), error))
-                signature += fmt::format("session|{};", fs::last_write_time(datadir::FromText(session), error).time_since_epoch().count());
+                signature += fmt::format(
+                    "session|{};", fs::last_write_time(datadir::FromText(session), error).time_since_epoch().count());
         }
         return signature;
     }
@@ -391,7 +405,8 @@ namespace launcher_ui
         for (const collection::Figure& figure : figures)
         {
             std::error_code error;
-            if (!path.empty() && fs::equivalent(datadir::FromText(figure.path), datadir::FromText(path), error) && !error)
+            if (!path.empty() && fs::equivalent(datadir::FromText(figure.path), datadir::FromText(path), error) &&
+                !error)
                 return &figure;
         }
         return nullptr;
@@ -418,7 +433,8 @@ namespace launcher_ui
     {
         if (!lock.Busy() || lock.game == "launcher")
             return false;
-        return FindGame(lock.game) == nullptr || GameIsRunning(FoldersOf(lock.game)); // not ours: the lock is all there is
+        return FindGame(lock.game) == nullptr ||
+               GameIsRunning(FoldersOf(lock.game)); // not ours: the lock is all there is
     }
 
     std::vector<std::string> CollectionModel::LeftoverLocks() const
@@ -525,7 +541,8 @@ namespace launcher_ui
     bool CollectionModel::DeleteCard(const std::string& path, std::string* error)
     {
         const collection::Figure* figure = Find(path);
-        std::string other = figure != nullptr && !figure->partner.empty() ? collection::PathOf(figure->partner) : std::string();
+        std::string other =
+            figure != nullptr && !figure->partner.empty() ? collection::PathOf(figure->partner) : std::string();
         if (!Delete(path, error))
             return false;
         // Deleting the first half cut the link; the other half goes too, and its seat.
@@ -539,7 +556,8 @@ namespace launcher_ui
         return moved;
     }
 
-    std::vector<collection::Section> CollectionModel::Shelf(const ShelfFilter& filter, std::vector<collection::Figure>& shown, int* hidden) const
+    std::vector<collection::Section> CollectionModel::Shelf(
+        const ShelfFilter& filter, std::vector<collection::Figure>& shown, int* hidden) const
     {
         const collection::Game* game = Game();
         const collection::Catalogue& catalogue = collection::Catalogue::Get();
@@ -553,7 +571,8 @@ namespace launcher_ui
         for (size_t i = 0; i < figures.size(); i++)
         {
             const collection::Figure& figure = figures[i];
-            if (std::find(seated.begin(), seated.end(), figure.path) == seated.end() && collection::UntouchedStarter(figure))
+            if (std::find(seated.begin(), seated.end(), figure.path) == seated.end() &&
+                collection::UntouchedStarter(figure))
             {
                 hiddenStarter[i] = 1;
                 if (hidden != nullptr)
@@ -563,7 +582,8 @@ namespace launcher_ui
             const collection::Toy* toy = figure.toy;
             if (filter.seat >= 0)
             {
-                if (game == nullptr || size_t(filter.seat) >= game->seats.size() || !SeatAccepts(game->seats[filter.seat], figure) ||
+                if (game == nullptr || size_t(filter.seat) >= game->seats.size() ||
+                    !SeatAccepts(game->seats[filter.seat], figure) ||
                     (toy != nullptr && !catalogue.Accepts(game->id, figure.type)))
                     continue;
             }
@@ -633,11 +653,12 @@ namespace launcher_ui
                 *error = Tr("The figure can't be read. Reopen it before saving.");
             return false;
         }
-        return collection::WriteStats(path, MergeEditedStats(now.stats, base, edited, figures::NicknameUtf8(base), nickname), error);
+        return collection::WriteStats(
+            path, MergeEditedStats(now.stats, base, edited, figures::NicknameUtf8(base), nickname), error);
     }
 
-    figures::FigureStats MergeEditedStats(const figures::FigureStats& now, const figures::FigureStats& base, const figures::FigureStats& edited,
-        const std::string& baseNickname, const std::string& nickname)
+    figures::FigureStats MergeEditedStats(const figures::FigureStats& now, const figures::FigureStats& base,
+        const figures::FigureStats& edited, const std::string& baseNickname, const std::string& nickname)
     {
         figures::FigureStats stats = now;
         if (edited.experience != base.experience)

@@ -61,11 +61,14 @@ namespace launcher_files
         {
             ok = std::fwrite(text.data(), 1, text.size(), file) == text.size() && std::fflush(file) == 0;
 #if defined(_WIN32)
-            if (ok) ok = _commit(fd) == 0;
+            if (ok)
+                ok = _commit(fd) == 0;
 #else
-            if (ok) ok = fsync(fd) == 0;
+            if (ok)
+                ok = fsync(fd) == 0;
 #endif
-            if (std::fclose(file) != 0) ok = false;
+            if (std::fclose(file) != 0)
+                ok = false;
         }
         else
         {
@@ -84,7 +87,11 @@ namespace launcher_files
 #if !defined(_WIN32)
                     const fs::path parent = target.parent_path().empty() ? fs::path(".") : target.parent_path();
                     const int directory = open(parent.c_str(), O_RDONLY | O_CLOEXEC);
-                    if (directory >= 0) { fsync(directory); close(directory); }
+                    if (directory >= 0)
+                    {
+                        fsync(directory);
+                        close(directory);
+                    }
 #endif
                     return true;
                 }

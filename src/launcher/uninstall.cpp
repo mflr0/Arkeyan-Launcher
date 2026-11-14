@@ -105,7 +105,8 @@ namespace uninstall
                     return true;
                 std::error_code error;
                 for (const fs::path& image : m_env.discImages)
-                    if (!image.empty() && (path.lexically_normal() == image.lexically_normal() || fs::equivalent(path, image, error)))
+                    if (!image.empty() &&
+                        (path.lexically_normal() == image.lexically_normal() || fs::equivalent(path, image, error)))
                         return true;
                 return false;
             }
@@ -139,8 +140,12 @@ namespace uninstall
             if (directory)
                 return name == "backups" || name == "trash";
             std::string lower = Lower(name);
-            auto ends = [&](const char* suffix) { return lower.size() >= std::strlen(suffix) && lower.compare(lower.size() - std::strlen(suffix), std::strlen(suffix), suffix) == 0; };
-            return lower == "collection.json" || lower == "collection.json.tmp" || ends(".lock") || ends(".sky") || ends(".bin") || ends(".dmp");
+            auto ends = [&](const char* suffix) {
+                return lower.size() >= std::strlen(suffix) &&
+                       lower.compare(lower.size() - std::strlen(suffix), std::strlen(suffix), suffix) == 0;
+            };
+            return lower == "collection.json" || lower == "collection.json.tmp" || ends(".lock") || ends(".sky") ||
+                   ends(".bin") || ends(".dmp");
         }
 
         std::vector<fs::path> CollectionEntries(const fs::path& folder)
@@ -164,7 +169,8 @@ namespace uninstall
         {
             if (const size_t conflict = name.find(".old-"); conflict != std::string::npos)
                 return GroupOfGameEntry(name.substr(0, conflict), regularFile);
-            if (name == "saves" || name == "saves-backup" || name == "portal.txt" || name == "achievements.txt" || name == "playtime.txt")
+            if (name == "saves" || name == "saves-backup" || name == "portal.txt" || name == "achievements.txt" ||
+                name == "playtime.txt")
                 return Group::Saves;
             if (name == "figures" || name == "textures")
                 return Group::Figures;
@@ -172,7 +178,8 @@ namespace uninstall
                 return Group::GameData;
             if (name == "pipelines.bin" || name == "launcher-cache" || name == "portraits")
                 return Group::Caches;
-            if (regularFile && Lower(datadir::Text(datadir::FromText(name).extension())) == ".log" && name.rfind("install", 0) != 0)
+            if (regularFile && Lower(datadir::Text(datadir::FromText(name).extension())) == ".log" &&
+                name.rfind("install", 0) != 0)
                 return Group::Caches;
             return Group::Games;
         }
@@ -199,7 +206,8 @@ namespace uninstall
             if (fs::is_directory(status)) // a macOS .app: a script in Contents/MacOS
             {
                 for (const fs::directory_entry& entry : ListDirectory(path / "Contents" / "MacOS", error))
-                    if (!IsLink(entry.path()) && fs::is_regular_file(entry.path(), error) && HoldsGameArgument(entry.path()))
+                    if (!IsLink(entry.path()) && fs::is_regular_file(entry.path(), error) &&
+                        HoldsGameArgument(entry.path()))
                         return true;
                 return false;
             }
@@ -265,7 +273,8 @@ namespace uninstall
             {
                 // A link inside a game's own folder goes as a link (never followed); any other link is refused.
                 for (const GameEntry& game : env.games)
-                    if (path.parent_path().lexically_normal() == game.folder.lexically_normal() && !IsLink(game.folder) &&
+                    if (path.parent_path().lexically_normal() == game.folder.lexically_normal() &&
+                        !IsLink(game.folder) &&
                         (Inside(game.folder, env.root) || Inside(game.folder, env.launcherData)))
                         return std::nullopt;
                 return Why::Link;
@@ -283,7 +292,8 @@ namespace uninstall
 
         bool RootsSafe(const Environment& env)
         {
-            return SafePath(env.root, env.home) && SafePath(env.launcherData, env.home) && !IsLink(env.root) && !IsLink(env.launcherData);
+            return SafePath(env.root, env.home) && SafePath(env.launcherData, env.home) && !IsLink(env.root) &&
+                   !IsLink(env.launcherData);
         }
     }
 
@@ -303,7 +313,8 @@ namespace uninstall
         switch (os)
         {
         case Os::Windows: return dirs.appData.empty() ? fs::path() : dirs.appData / "Skylanders";
-        case Os::MacOS: return dirs.home.empty() ? fs::path() : dirs.home / "Library" / "Application Support" / "Skylanders";
+        case Os::MacOS:
+            return dirs.home.empty() ? fs::path() : dirs.home / "Library" / "Application Support" / "Skylanders";
         case Os::Linux:
             if (dirs.xdgData.is_absolute())
                 return dirs.xdgData / "Skylanders";
@@ -366,7 +377,8 @@ namespace uninstall
             return plan;
         }
         const Guard guard(env);
-        auto add = [&](Group group, const std::string& game, const fs::path& path, bool declared = false, bool figureFolder = false) {
+        auto add = [&](Group group, const std::string& game, const fs::path& path, bool declared = false,
+                       bool figureFolder = false) {
             if (!Exists(path))
                 return;
             if (auto why = Refuse(path, env, declared))
@@ -406,9 +418,13 @@ namespace uninstall
             for (const fs::directory_entry& entry : ListDirectory(game.folder, error))
             {
                 std::string name = datadir::Text(entry.path().filename());
-                const fs::path backup = game.saves.empty() ? fs::path() : fs::path(game.saves.native() + fs::path("-backup").native());
-                const bool saves = !game.saves.empty() && (IsOrHolds(entry.path(), game.saves) || IsOrHolds(entry.path(), backup));
-                add(saves ? Group::Saves : GroupOfGameEntry(name, fs::is_regular_file(fs::symlink_status(entry.path(), error))), game.id, entry.path());
+                const fs::path backup =
+                    game.saves.empty() ? fs::path() : fs::path(game.saves.native() + fs::path("-backup").native());
+                const bool saves =
+                    !game.saves.empty() && (IsOrHolds(entry.path(), game.saves) || IsOrHolds(entry.path(), backup));
+                add(saves ? Group::Saves
+                          : GroupOfGameEntry(name, fs::is_regular_file(fs::symlink_status(entry.path(), error))),
+                    game.id, entry.path());
             }
             // Saves kept elsewhere than <folder>/saves (SKY_SAVE_DIR): the folder and its backups, if they are ours.
             if (!game.saves.empty())
@@ -467,7 +483,8 @@ namespace uninstall
         {
             if (built.empty())
                 continue;
-            bool ours = std::any_of(env.games.begin(), env.games.end(), [&](const GameEntry& game) { return Inside(built, game.folder); });
+            bool ours = std::any_of(
+                env.games.begin(), env.games.end(), [&](const GameEntry& game) { return Inside(built, game.folder); });
             if (ours)
                 continue;
             plan.left.push_back({ Exists(built) ? Why::Elsewhere : Why::Missing, Group::Games, built, {} });
@@ -579,7 +596,8 @@ namespace uninstall
         if (self.empty())
             return refuse(Why::Unfit, "the launcher's own path is not known");
         if (!SafePath(self, env.home))
-            return refuse(Why::Unsafe, "the path is the filesystem root, the home folder, a folder that holds it, or not absolute");
+            return refuse(Why::Unsafe,
+                "the path is the filesystem root, the home folder, a folder that holds it, or not absolute");
         if (IsLink(self))
             return refuse(Why::Link, "the path is a link");
         if (Inside(self, env.root) || Inside(self, env.launcherData) || Inside(self, env.collection))
@@ -591,7 +609,8 @@ namespace uninstall
         switch (env.os)
         {
         case Os::MacOS:
-            if (extension != ".app" || !fs::is_directory(self, error) || !fs::is_directory(self / "Contents" / "MacOS", error))
+            if (extension != ".app" || !fs::is_directory(self, error) ||
+                !fs::is_directory(self / "Contents" / "MacOS", error))
                 return refuse(Why::Unfit, "not an application bundle");
             removal.trash = env.trash.empty() ? env.home / ".Trash" : env.trash;
             break;
@@ -609,7 +628,8 @@ namespace uninstall
             if (std::distance(resolved.begin(), resolved.end()) < 3)
                 return refuse(Why::Unfit, "a system folder");
             const fs::path top = *std::next(resolved.begin());
-            for (const char* system : { "usr", "bin", "sbin", "lib", "lib64", "etc", "var", "boot", "sys", "proc", "dev", "run", "snap" })
+            for (const char* system :
+                { "usr", "bin", "sbin", "lib", "lib64", "etc", "var", "boot", "sys", "proc", "dev", "run", "snap" })
                 if (top == system)
                     return refuse(Why::Unfit, "a system folder");
             break;
@@ -634,21 +654,20 @@ namespace uninstall
             "while kill -0 \"$pid\" 2>/dev/null && [ \"$n\" -lt 120 ]; do sleep 0.5; n=$((n+1)); done\n";
         if (os == Os::MacOS)
         {
-            script +=
-                "trash=$1; shift\n"
-                "mkdir -p \"$trash\"\n"
-                "for src in \"$@\"; do\n"
-                "  [ -e \"$src\" ] || continue\n"
-                "  name=$(basename \"$src\"); dest=\"$trash/$name\"; i=1\n"
-                "  while [ -e \"$dest\" ]; do\n"
-                "    case \"$name\" in\n"
-                "      *.*) dest=\"$trash/${name%.*} $i.${name##*.}\" ;;\n"
-                "      *) dest=\"$trash/$name $i\" ;;\n"
-                "    esac\n"
-                "    i=$((i+1))\n"
-                "  done\n"
-                "  mv \"$src\" \"$dest\"\n"
-                "done\n";
+            script += "trash=$1; shift\n"
+                      "mkdir -p \"$trash\"\n"
+                      "for src in \"$@\"; do\n"
+                      "  [ -e \"$src\" ] || continue\n"
+                      "  name=$(basename \"$src\"); dest=\"$trash/$name\"; i=1\n"
+                      "  while [ -e \"$dest\" ]; do\n"
+                      "    case \"$name\" in\n"
+                      "      *.*) dest=\"$trash/${name%.*} $i.${name##*.}\" ;;\n"
+                      "      *) dest=\"$trash/$name $i\" ;;\n"
+                      "    esac\n"
+                      "    i=$((i+1))\n"
+                      "  done\n"
+                      "  mv \"$src\" \"$dest\"\n"
+                      "done\n";
         }
         else
             script += "for src in \"$@\"; do rm -f -- \"$src\"; done\n";
@@ -671,12 +690,19 @@ namespace uninstall
         std::string list;
         for (const fs::path& path : removal.paths)
             list += (list.empty() ? "" : ",") + PowerShellQuote(datadir::Text(path));
-        std::string main = PowerShellQuote(removal.paths.empty() ? std::string() : datadir::Text(removal.paths.front()));
+        std::string main =
+            PowerShellQuote(removal.paths.empty() ? std::string() : datadir::Text(removal.paths.front()));
         return "$ErrorActionPreference = 'SilentlyContinue'\n"
-               "Wait-Process -Id " + std::to_string(pid) + " -Timeout 60\n"
+               "Wait-Process -Id " +
+               std::to_string(pid) +
+               " -Timeout 60\n"
                "for ($i = 0; $i -lt 40; $i++) {\n"
-               "  Remove-Item -LiteralPath " + list + " -Force\n"
-               "  if (-not (Test-Path -LiteralPath " + main + ")) { break }\n"
+               "  Remove-Item -LiteralPath " +
+               list +
+               " -Force\n"
+               "  if (-not (Test-Path -LiteralPath " +
+               main +
+               ")) { break }\n"
                "  Start-Sleep -Milliseconds 500\n"
                "}\n";
     }
@@ -684,7 +710,10 @@ namespace uninstall
     std::string EncodeForPowerShell(const std::string& utf8)
     {
         std::vector<uint8_t> bytes; // UTF-16LE
-        auto unit = [&](uint32_t value) { bytes.push_back(uint8_t(value & 0xFF)); bytes.push_back(uint8_t(value >> 8)); };
+        auto unit = [&](uint32_t value) {
+            bytes.push_back(uint8_t(value & 0xFF));
+            bytes.push_back(uint8_t(value >> 8));
+        };
         for (size_t i = 0; i < utf8.size();)
         {
             uint32_t c = uint8_t(utf8[i]);
@@ -706,7 +735,8 @@ namespace uninstall
         std::string out;
         for (size_t i = 0; i < bytes.size(); i += 3)
         {
-            uint32_t block = uint32_t(bytes[i]) << 16 | (i + 1 < bytes.size() ? uint32_t(bytes[i + 1]) << 8 : 0) | (i + 2 < bytes.size() ? bytes[i + 2] : 0);
+            uint32_t block = uint32_t(bytes[i]) << 16 | (i + 1 < bytes.size() ? uint32_t(bytes[i + 1]) << 8 : 0) |
+                             (i + 2 < bytes.size() ? bytes[i + 2] : 0);
             out += Alphabet[(block >> 18) & 63];
             out += Alphabet[(block >> 12) & 63];
             out += i + 1 < bytes.size() ? Alphabet[(block >> 6) & 63] : '=';
@@ -720,8 +750,8 @@ namespace uninstall
         if (!removal.ok || removal.paths.empty())
             return {};
         if (os == Os::Windows)
-            return { "powershell.exe", "-NoProfile", "-NonInteractive", "-WindowStyle", "Hidden", "-ExecutionPolicy", "Bypass",
-                "-EncodedCommand", EncodeForPowerShell(WindowsScript(removal, pid)) };
+            return { "powershell.exe", "-NoProfile", "-NonInteractive", "-WindowStyle", "Hidden", "-ExecutionPolicy",
+                "Bypass", "-EncodedCommand", EncodeForPowerShell(WindowsScript(removal, pid)) };
         std::vector<std::string> command = { "/bin/sh", "-c", PosixScript(os), "sh", std::to_string(pid) };
         if (os == Os::MacOS)
             command.push_back(datadir::Text(removal.trash));
@@ -801,7 +831,8 @@ namespace uninstall
             {
                 if (folder.empty() || !Exists(folder))
                     continue;
-                if (folder == env.root || folder == env.launcherData || Inside(folder, env.root) || Inside(folder, env.launcherData))
+                if (folder == env.root || folder == env.launcherData || Inside(folder, env.root) ||
+                    Inside(folder, env.launcherData))
                     continue;
                 if (std::find(env.oldFolders.begin(), env.oldFolders.end(), folder) == env.oldFolders.end())
                     env.oldFolders.push_back(folder);

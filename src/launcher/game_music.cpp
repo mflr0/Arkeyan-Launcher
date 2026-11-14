@@ -97,7 +97,8 @@ namespace gamemusic
         return folder.empty() ? folder : folder / TrackName;
     }
 
-    bool Extract(const std::string& game, const std::string& image, const std::filesystem::path& skyBuild, const std::string& kitVersion)
+    bool Extract(const std::string& game, const std::string& image, const std::filesystem::path& skyBuild,
+        const std::string& kitVersion)
     {
         const std::filesystem::path file = File(game);
         std::error_code error;
@@ -177,7 +178,8 @@ namespace gamemusic
     {
         if (m_master <= 0 && m_masterTarget <= 0)
             return true;
-        return std::all_of(m_voices.begin(), m_voices.end(), [](const Voice& v) { return v.level <= 0 && v.target <= 0; }) ;
+        return std::all_of(
+            m_voices.begin(), m_voices.end(), [](const Voice& v) { return v.level <= 0 && v.target <= 0; });
     }
 
     float Mixer::GainOf(const std::shared_ptr<const Track>& track) const
@@ -218,7 +220,9 @@ namespace gamemusic
                     voice.position = track.loopStart + std::fmod(voice.position - track.loopStart, length);
             }
         }
-        m_voices.erase(std::remove_if(m_voices.begin(), m_voices.end(), [](const Voice& v) { return v.level <= 0 && v.target <= 0; }), m_voices.end());
+        m_voices.erase(std::remove_if(m_voices.begin(), m_voices.end(),
+                           [](const Voice& v) { return v.level <= 0 && v.target <= 0; }),
+            m_voices.end());
     }
 
     struct Player::Shared
@@ -394,7 +398,7 @@ namespace gamemusic
         {
             m_paused = silent;
             if (silent)
-                {
+            {
                 SDL_PauseAudioStreamDevice(m_stream);
                 SDL_ClearAudioStream(m_stream);
             }

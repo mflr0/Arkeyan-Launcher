@@ -3,7 +3,7 @@ project(ArkeyanLauncher LANGUAGES C CXX)
 if(WIN32)
     enable_language(RC) # the exe's icon, manifest and version (resources/windows/skylauncher.rc.in)
 endif()
-set(LAUNCHER_VERSION "0.9.5" CACHE STRING "Version shown in the app bundle")
+set(LAUNCHER_VERSION "0.9.6" CACHE STRING "Version shown in the app bundle")
 # SKYLAUNCHER_VERSION is the name before 0.6.0: still accepted.
 if(SKYLAUNCHER_VERSION)
     set(LAUNCHER_VERSION "${SKYLAUNCHER_VERSION}")
@@ -11,6 +11,21 @@ endif()
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# Bounds checks in the standard library (operator[], front, back...): a wrong index stops the launcher at once instead of
+# reading another object's memory (issue #45). The fast modes cost almost nothing. MSVC's STL has no such mode here.
+if(NOT MSVC)
+    add_compile_definitions(_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST _GLIBCXX_ASSERTIONS)
+endif()
+# AddressSanitizer and UndefinedBehaviorSanitizer for the tests (CI's sanitizers job): out-of-bounds reads, use after free,
+# overflows. Never for a release build.
+option(SKY_SANITIZE "Build with AddressSanitizer and UndefinedBehaviorSanitizer" OFF)
+if(SKY_SANITIZE AND NOT MSVC)
+    add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer -fno-sanitize-recover=undefined)
+    add_link_options(-fsanitize=address,undefined)
+    # miniz (lib/, not ours) relies on behaviour UBSan reports by design (unaligned loads for speed, zero-byte copies
+    # from a null pointer): it keeps AddressSanitizer only, left as it is upstream.
+    set_source_files_properties(lib/miniz/miniz.c PROPERTIES COMPILE_OPTIONS -fno-sanitize=undefined)
+endif()
 set(BUILD_SHARED_LIBS OFF)
 if(MINGW)
     add_compile_definitions(_WIN32_WINNT=0x0A00) # Windows 10 APIs (CreateFile2), as MSVC's SDK headers default to
@@ -20,6 +35,7 @@ if(WIN32)
 endif()
 if(MSVC)
     add_compile_options(/utf-8) # fmt requires it
+    add_compile_options(/Brepro) # deterministic COFF object timestamps with clang-cl (the release compiler)
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>") # no VC++ runtime to install
 endif()
 
@@ -137,6 +153,7 @@ add_library(ArkeyanLauncherCore STATIC
     src/launcher/ui/components/layout.cpp
     src/launcher/ui/components/feedback.cpp
     src/launcher/ui/components/format.cpp
+    src/launcher/ui/components/navigation_model.cpp
     src/launcher/ui/components/navigation.cpp
     src/launcher/ui/gallery.cpp
     src/launcher/ui/achievements_page.cpp
@@ -179,6 +196,9 @@ add_library(ArkeyanLauncherCore STATIC
 target_sources(ArkeyanLauncherCore PRIVATE
     src/launcher/install_checklist.cpp
     src/launcher/game_run.cpp
+    src/launcher/portal_probe_text.cpp
+    src/launcher/discord_presence.cpp
+    src/launcher/discord_images.cpp
     src/launcher/portal_status.cpp
     src/launcher/profiles.cpp
     src/launcher/game_keys.cpp
@@ -242,7 +262,7 @@ if(WIN32)
     configure_file(resources/windows/skylauncher.rc.in ${CMAKE_BINARY_DIR}/skylauncher.rc @ONLY)
     target_sources(ArkeyanLauncher PRIVATE ${CMAKE_BINARY_DIR}/skylauncher.rc)
     if(MSVC) # clang-cl, the release build: the resource holds the manifest, so the linker must not add its own
-        target_link_options(ArkeyanLauncher PRIVATE /MANIFEST:NO)
+        target_link_options(ArkeyanLauncher PRIVATE /MANIFEST:NO /Brepro /INCREMENTAL:NO)
     endif()
 endif()
 # The bundle id stays the one of the first releases (a new one would only make macOS ask again for folder permissions).
@@ -276,9 +296,15 @@ add_dependencies(ArkeyanLauncherTest FakeArkeyanBuilder ArkeyanLauncher)
 target_compile_definitions(ArkeyanLauncherTest PRIVATE SKYLAUNCHER_FAKE_KIT="${CMAKE_BINARY_DIR}/fake-kit" SKYLAUNCHER_TEST_EXE="$<TARGET_FILE:ArkeyanLauncher>")
 
 # The launcher shell's checks (tests/shell_test.cpp), run by ArkeyanLauncherTest.
-target_sources(ArkeyanLauncherTest PRIVATE tests/shell_test.cpp tests/settings_test.cpp tests/copy_test.cpp tests/portable_test.cpp tests/i18n_test.cpp tests/uninstall_test.cpp tests/text_fit_test.cpp tests/navigation_test.cpp tests/accent_test.cpp tests/music_test.cpp tests/profiles_test.cpp tests/single_instance_test.cpp tests/toybox_link_test.cpp tests/vfs_test.cpp tests/lux_images_test.cpp)
+target_sources(ArkeyanLauncherTest PRIVATE tests/shell_test.cpp tests/portal_text_test.cpp tests/settings_test.cpp tests/copy_test.cpp tests/portable_test.cpp tests/i18n_test.cpp tests/uninstall_test.cpp tests/text_fit_test.cpp tests/navigation_test.cpp tests/accent_test.cpp tests/music_test.cpp tests/profiles_test.cpp tests/single_instance_test.cpp tests/toybox_link_test.cpp tests/vfs_test.cpp tests/lux_images_test.cpp tests/level_names_test.cpp)
 target_compile_definitions(ArkeyanLauncherTest PRIVATE SKYLAUNCHER_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+target_sources(ArkeyanLauncherTest PRIVATE tests/ui_render_test.cpp)
 target_include_directories(ArkeyanLauncherTest PRIVATE lib/miniz)
+
+# The copied portal lines only: no device, runtime or launcher process.
+add_executable(ArkeyanPortalTextTest EXCLUDE_FROM_ALL tests/portal_text_test.cpp src/launcher/portal_probe_text.cpp)
+target_include_directories(ArkeyanPortalTextTest PRIVATE src)
+target_compile_definitions(ArkeyanPortalTextTest PRIVATE PORTAL_TEXT_TEST_STANDALONE)
 
 # Synthetic offscreen timing and frame-pacing regression checks.
 add_executable(ArkeyanLauncherPerf EXCLUDE_FROM_ALL tests/performance_test.cpp)

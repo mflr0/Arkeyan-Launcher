@@ -65,7 +65,9 @@ namespace
     fs::path BundleOf(const fs::path& runtime)
     {
         const fs::path macos = runtime.parent_path(), contents = macos.parent_path(), app = contents.parent_path();
-        return macos.filename() == "MacOS" && contents.filename() == "Contents" && app.extension() == ".app" ? app : fs::path();
+        return macos.filename() == "MacOS" && contents.filename() == "Contents" && app.extension() == ".app"
+                   ? app
+                   : fs::path();
     }
 
     uint64_t TreeSize(const fs::path& path)
@@ -88,8 +90,8 @@ namespace
         for (fs::directory_iterator it(folder, error), end; !error && it != end; it.increment(error))
         {
             const std::string name = datadir::Text(it->path().filename());
-            if (it->is_regular_file(error) && !name.starts_with(".") && !name.ends_with(".lock") && !name.ends_with(".part") &&
-                !name.ends_with(".tmp"))
+            if (it->is_regular_file(error) && !name.starts_with(".") && !name.ends_with(".lock") &&
+                !name.ends_with(".part") && !name.ends_with(".tmp"))
                 files.push_back(it->path());
         }
         std::sort(files.begin(), files.end());
@@ -100,7 +102,8 @@ namespace
     bool Sign(const fs::path& app)
     {
         const std::string path = datadir::Text(app);
-        const char* arguments[] = { "/usr/bin/codesign", "--force", "--sign", "-", "--timestamp=none", path.c_str(), nullptr };
+        const char* arguments[] = { "/usr/bin/codesign", "--force", "--sign", "-", "--timestamp=none", path.c_str(),
+            nullptr };
         SDL_PropertiesID properties = SDL_CreateProperties();
         SDL_SetPointerProperty(properties, SDL_PROP_PROCESS_CREATE_ARGS_POINTER, arguments);
         SDL_SetNumberProperty(properties, SDL_PROP_PROCESS_CREATE_STDIN_NUMBER, SDL_PROCESS_STDIO_NULL);
@@ -118,7 +121,8 @@ namespace
     }
 }
 
-PortableResult ExportPortable(const PortableSpec& spec, const std::atomic<bool>* cancel, const std::function<void(uint64_t, uint64_t)>& progress)
+PortableResult ExportPortable(
+    const PortableSpec& spec, const std::atomic<bool>* cancel, const std::function<void(uint64_t, uint64_t)>& progress)
 {
     using Outcome = PortableResult::Outcome;
     PortableResult result;
@@ -143,7 +147,8 @@ PortableResult ExportPortable(const PortableSpec& spec, const std::atomic<bool>*
     // Never into the installed game's folder: the copy, named like the game, would replace the game it is made from.
     const fs::path installed = bundle.empty() ? spec.runtime.parent_path() : bundle.parent_path();
     {
-        const fs::path relative = fs::weakly_canonical(spec.folder, error).lexically_relative(fs::weakly_canonical(installed, error));
+        const fs::path relative =
+            fs::weakly_canonical(spec.folder, error).lexically_relative(fs::weakly_canonical(installed, error));
         if (error || (!relative.empty() && *relative.begin() != ".."))
             return fail(Tr("choose a folder outside the installed game"));
     }
@@ -208,12 +213,16 @@ PortableResult ExportPortable(const PortableSpec& spec, const std::atomic<bool>*
     for (const auto& [path, entry] : files)
     {
         const DiscFileSystem::Entry* file = entry;
-        ok = ok && writer.Add(portable::GamePrefix + path, file->size, [&](uint64_t position, void* buffer, size_t size) {
-            return size_t(disc.Read(*file, position, buffer, uint32_t(size)));
-        }, why);
+        ok = ok && writer.Add(
+                       portable::GamePrefix + path, file->size,
+                       [&](uint64_t position, void* buffer, size_t size) {
+                           return size_t(disc.Read(*file, position, buffer, uint32_t(size)));
+                       },
+                       why);
         count++;
     }
-    ok = ok && writer.AddText(portable::InfoName, portable::FormatInfo(spec.info), why) && writer.AddText(portable::KeysName, spec.keys, why);
+    ok = ok && writer.AddText(portable::InfoName, portable::FormatInfo(spec.info), why) &&
+         writer.AddText(portable::KeysName, spec.keys, why);
     count += 2;
     if (fs::is_regular_file(icon, error))
     {
@@ -250,7 +259,8 @@ PortableResult ExportPortable(const PortableSpec& spec, const std::atomic<bool>*
         cleanup();
         return fail(Tf("the copy can't be read back: {}", why));
     }
-    fs::permissions(program, fs::perms::owner_exec | fs::perms::group_exec | fs::perms::others_exec, fs::perm_options::add, error);
+    fs::permissions(
+        program, fs::perms::owner_exec | fs::perms::group_exec | fs::perms::others_exec, fs::perm_options::add, error);
 #if defined(__APPLE__)
     if (spec.sign && !Sign(made))
     {
@@ -325,7 +335,8 @@ std::string PortableFailureText(const PortableResult& result)
 {
     using Outcome = PortableResult::Outcome;
     if (result.outcome == Outcome::NotEnoughSpace)
-        return Tf("Not enough space: {} needed, {} free.", LauncherFormatSize(result.needed), LauncherFormatSize(result.available));
+        return Tf("Not enough space: {} needed, {} free.", LauncherFormatSize(result.needed),
+            LauncherFormatSize(result.available));
     if (result.outcome == Outcome::Failed)
         return Tf("Couldn't export the game: {}", result.error);
     return {};

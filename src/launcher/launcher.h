@@ -25,10 +25,10 @@ struct GameRelease
 
 struct GameInfo
 {
-    const char* id;             // settings file section
-    const char* name;           // display name
+    const char* id; // settings file section
+    const char* name; // display name
     std::span<const GameRelease> releases;
-    const char* runtime;        // current executable filename
+    const char* runtime; // current executable filename
     const char* legacyRuntime = nullptr; // accepted for existing installs
 };
 
@@ -43,12 +43,12 @@ enum class GameSourceStatus
     Ok,
     NotFound,
     Unreadable,
-    Folder,         // extracted game folder: the disc reader only reads images for now
-    NotXboxDisc,    // no XDVDFS volume, or the image is cut short before it
+    Folder, // extracted game folder: the disc reader only reads images for now
+    NotXboxDisc, // no XDVDFS volume, or the image is cut short before it
     NotXbox360Game, // XDVDFS volume without default.xex (original Xbox or data disc)
-    Damaged,        // default.xex missing bytes or not an XEX2 executable
-    WrongGame,      // another title ID
-    WrongVersion,   // this title, but a default.xex no runtime was recompiled from
+    Damaged, // default.xex missing bytes or not an XEX2 executable
+    WrongGame, // another title ID
+    WrongVersion, // this title, but a default.xex no runtime was recompiled from
 };
 
 struct GameSourceCheck
@@ -56,7 +56,8 @@ struct GameSourceCheck
     GameSourceStatus status{};
     std::string message; // why the source can't be used, for the player
     std::string xexSha256; // the verified default.xex (Ok only): which installed game belongs to this disc
-    std::string otherGame; // WrongGame, when the disc is another supported game: its id ("This disc is Spyro's Adventure")
+    std::string
+        otherGame; // WrongGame, when the disc is another supported game: its id ("This disc is Spyro's Adventure")
     art::DiscLanguages languages; // the text and voice languages the disc holds (Ok only; empty lists: not known)
     // WrongVersion: what "Copy disc details" puts on the clipboard for a "New disc edition" issue (the game, its ids,
     // region and languages, default.xex's size and SHA-256, the image's size, the launcher's version; nothing else).
@@ -95,6 +96,10 @@ void FreezeLauncherConfig();
 // game built by an older kit reads only the SSA_ names, a newer one the SKY_ names (shared/env.h). The launcher's own environment is
 // not changed. The caller passes it as SDL_PROP_PROCESS_CREATE_ENVIRONMENT_POINTER and destroys it (SDL_DestroyEnvironment).
 // `set`: variables given on top (a game's settings: GameLaunch), each under all its names, replacing what they held.
+// Linux: a launcher started by Steam (a non-Steam game in Game Mode) carries Steam's own libraries in LD_LIBRARY_PATH,
+// which the game's display drivers then load instead of the system's (issue #22). The game gets the library path Steam
+// saved before its own (SYSTEM_LD_LIBRARY_PATH), else the path without Steam's runtime folders; empty: unset.
+std::string GameLibraryPath(const char* libraryPath, const char* systemLibraryPath);
 struct SDL_Environment;
 SDL_Environment* CreateGameEnvironment(const std::vector<std::pair<std::string, std::string>>& set = {});
 // Sets a variable under all its names, replacing what they held.

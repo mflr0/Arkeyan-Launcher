@@ -4,10 +4,12 @@
 // and collection_page.cpp (the figure collection). Nothing outside launcher/ui includes this; launcher_ui.h is the
 // public entry point.
 #include "assets/launcher_assets.h"
+#include "launcher/discord_presence.h"
 #include "launcher/game_copy.h"
 #include "launcher/edition_report.h"
 #include "launcher/portable_export.h"
 #include "launcher/game_install.h"
+#include "launcher/install_checklist.h"
 #include "launcher/game_music.h"
 #include "launcher/game_progress.h"
 #include "launcher/game_keys.h"
@@ -46,7 +48,8 @@ namespace launcher_ui
 
     // ---- Settings file --------------------------------------------------------------------------------------------
 
-    std::string SettingGet(const LauncherConfig& config, std::string_view section, std::string_view key, std::string fallback = {});
+    std::string SettingGet(
+        const LauncherConfig& config, std::string_view section, std::string_view key, std::string fallback = {});
     int SettingInt(const LauncherConfig& config, std::string_view section, std::string_view key, int fallback);
     bool ParseBool(std::string_view value);
 
@@ -58,31 +61,38 @@ namespace launcher_ui
     };
 
     // 30 and 60 only (MaxFrameRate). The older values the runtime reads as 60 ("display", above 60, no limit) show as 60.
-    inline constexpr Choice FpsChoices[] = { { "30", N_("30 (original)") }, { "60", N_("60 (experimental)"), "display 0 120 144 240" } };
+    inline constexpr Choice FpsChoices[] = { { "30", N_("30 (original)") },
+        { "60", N_("60 (experimental)"), "display 0 120 144 240" } };
     // The frame rates a game is offered.
     inline std::span<const Choice> FrameRateChoices(std::string_view gameId)
     {
         (void)gameId;
         return FpsChoices;
     }
-    inline constexpr Choice VolumeChoices[] = { { "0", N_("0%") }, { "10", N_("10%") }, { "20", N_("20%") }, { "30", N_("30%") },
-        { "40", N_("40%") }, { "50", N_("50%") }, { "60", N_("60%") }, { "70", N_("70%") }, { "80", N_("80%") }, { "90", N_("90%") },
+    inline constexpr Choice VolumeChoices[] = { { "0", N_("0%") }, { "10", N_("10%") }, { "20", N_("20%") },
+        { "30", N_("30%") }, { "40", N_("40%") }, { "50", N_("50%") }, { "60", N_("60%") }, { "70", N_("70%") },
+        { "80", N_("80%") }, { "90", N_("90%") },
         { "100", N_("100%") } }; // as FormatPercent writes them: "50%", French "50 %"
-    inline constexpr Choice RumbleChoices[] = { { "off", N_("Off") }, { "low", N_("Low") }, { "normal", N_("Normal") }, { "strong", N_("Strong") } };
+    inline constexpr Choice RumbleChoices[] = { { "off", N_("Off") }, { "low", N_("Low") }, { "normal", N_("Normal") },
+        { "strong", N_("Strong") } };
 
-    inline constexpr Choice AspectChoices[] = { { "auto", N_("Auto (follows the window)") }, { "16:9", N_("16:9 (with bars)") } };
-    inline constexpr Choice ScaleChoices[] = { { "auto", N_("Auto") }, { "1", "x1" }, { "2", "x2" }, { "3", "x3" }, { "4", "x4" },
-        { "5", "x5" }, { "6", "x6" }, { "7", "x7" }, { "8", "x8" }, { "9", "x9" }, { "10", "x10" } };
+    inline constexpr Choice AspectChoices[] = { { "auto", N_("Auto (follows the window)") },
+        { "16:9", N_("16:9 (with bars)") } };
+    inline constexpr Choice ScaleChoices[] = { { "auto", N_("Auto") }, { "1", "x1" }, { "2", "x2" }, { "3", "x3" },
+        { "4", "x4" }, { "5", "x5" }, { "6", "x6" }, { "7", "x7" }, { "8", "x8" }, { "9", "x9" }, { "10", "x10" } };
     inline constexpr Choice GlyphChoices[] = { { "auto", N_("Automatic") }, { "xbox360", "Xbox 360" },
-        { "xboxone", N_("Xbox One / Series"), "xbox" }, { "playstation", "PlayStation" }, { "nintendo", "Nintendo" }, { "keyboard", N_("Keyboard") } };
-    inline constexpr Choice FilterChoices[] = { { "1", N_("Trilinear") }, { "2", N_("Anisotropic 2x") }, { "4", N_("Anisotropic 4x") },
-        { "8", N_("Anisotropic 8x") }, { "16", N_("Anisotropic 16x") } };
+        { "xboxone", N_("Xbox One / Series"), "xbox" }, { "playstation", "PlayStation" }, { "nintendo", "Nintendo" },
+        { "keyboard", N_("Keyboard") } };
+    inline constexpr Choice FilterChoices[] = { { "1", N_("Trilinear") }, { "2", N_("Anisotropic 2x") },
+        { "4", N_("Anisotropic 4x") }, { "8", N_("Anisotropic 8x") }, { "16", N_("Anisotropic 16x") } };
     // The game's FXAA pass (Swap Force, Trap Team): the values are the runtime's edge_smoothing (docs/settings.md).
-    inline constexpr Choice EdgeSmoothingChoices[] = { { "game", N_("Game") }, { "light", N_("Gentle") }, { "off", N_("None") } };
+    inline constexpr Choice EdgeSmoothingChoices[] = { { "game", N_("Game") }, { "light", N_("Gentle") },
+        { "off", N_("None") } };
     // FSR 3's presets (upscaler=fsr3), from the sharpest: the values are the runtime's fsr_quality, the labels AMD's names
     // (docs/settings.md). Native AA renders at full size (FSR as anti-aliasing); Quality, the second, is the default.
-    inline constexpr Choice FsrQualityChoices[] = { { "native", N_("Native AA") }, { "quality", N_("Quality") }, { "balanced", N_("Balanced") },
-        { "performance", N_("Performance") }, { "ultra_performance", N_("Ultra Performance") } };
+    inline constexpr Choice FsrQualityChoices[] = { { "native", N_("Native AA") }, { "quality", N_("Quality") },
+        { "balanced", N_("Balanced") }, { "performance", N_("Performance") },
+        { "ultra_performance", N_("Ultra Performance") } };
     // [<game>.video] gpu_backend, Windows only (the other systems have one graphics API): Direct3D 12 by default, the game
     // starts the other one when the chosen one cannot (docs/settings.md).
     inline constexpr Choice GpuBackendChoices[] = { { "d3d12", "Direct3D 12" }, { "vulkan", "Vulkan" } };
@@ -93,26 +103,29 @@ namespace launcher_ui
 #endif
     // [<game>.audio] speakers: auto is 5.1 when the output device has six channels or more.
     inline constexpr Choice SpeakerChoices[] = { { "auto", N_("Auto") }, { "stereo", N_("Stereo") }, { "5.1", "5.1" } };
-    inline constexpr Choice PortalChoices[] = { { "auto", N_("Automatic detection") }, { "emulated", N_("Virtual (no portal needed)") },
+    inline constexpr Choice PortalChoices[] = { { "auto", N_("Automatic detection") },
+        { "emulated", N_("Virtual (no portal needed)") },
         { "real", N_("Real portal (Wii, PlayStation, Xbox)"), "hid usb" } };
-    inline constexpr Choice LanguageChoices[] = { { "en", "English" }, { "fr", "Français" }, { "de", "Deutsch" }, { "es", "Español" },
-        { "it", "Italiano" }, { "nl", "Nederlands" }, { "sv", "Svenska" }, { "no", "Norsk" }, { "da", "Dansk" }, { "fi", "Suomi" } };
+    inline constexpr Choice LanguageChoices[] = { { "en", "English" }, { "fr", "Français" }, { "de", "Deutsch" },
+        { "es", "Español" }, { "it", "Italiano" }, { "nl", "Nederlands" }, { "sv", "Svenska" }, { "no", "Norsk" },
+        { "da", "Dansk" }, { "fi", "Suomi" } };
     // Giants' disc has twelve text and voice languages: Spanish twice (Spain, Latin America) and Portuguese. Its voices follow the
     // text unless one is chosen (an empty voice_language).
-    inline constexpr Choice GiantsLanguageChoices[] = { { "en", "English" }, { "fr", "Français" }, { "de", "Deutsch" }, { "es", "Español" },
-        { "es-419", "Español (Latinoamérica)" }, { "it", "Italiano" }, { "nl", "Nederlands" }, { "pt", "Português" }, { "sv", "Svenska" },
-        { "no", "Norsk" }, { "da", "Dansk" }, { "fi", "Suomi" } };
+    inline constexpr Choice GiantsLanguageChoices[] = { { "en", "English" }, { "fr", "Français" }, { "de", "Deutsch" },
+        { "es", "Español" }, { "es-419", "Español (Latinoamérica)" }, { "it", "Italiano" }, { "nl", "Nederlands" },
+        { "pt", "Português" }, { "sv", "Svenska" }, { "no", "Norsk" }, { "da", "Dansk" }, { "fi", "Suomi" } };
     // Every language a disc of Swap Force or Trap Team can hold (art::LanguagesOnDisc names them, in this order): Giants' twelve, then
     // the other languages of the engines' list. A name the font cannot draw (Cyrillic, Greek, Japanese, Korean, Chinese) is the
     // launcher's own word for the language, translated; the others are the language's own name, as above.
-    inline constexpr Choice AllLanguageChoices[] = { { "en", "English" }, { "fr", "Français" }, { "de", "Deutsch" }, { "es", "Español" },
-        { "es-419", "Español (Latinoamérica)" }, { "it", "Italiano" }, { "nl", "Nederlands" }, { "pt", "Português" }, { "sv", "Svenska" },
-        { "no", "Norsk" }, { "da", "Dansk" }, { "fi", "Suomi" }, { "pl", "Polski" }, { "ru", N_("Russian") }, { "cs", "Čeština" },
-        { "hu", "Magyar" }, { "tr", "Türkçe" }, { "el", N_("Greek") }, { "ja", N_("Japanese") }, { "ko", N_("Korean") },
-        { "zh", N_("Chinese") } };
-    inline constexpr Choice GiantsVoiceChoices[] = { { "", N_("Same as text") }, { "en", "English" }, { "fr", "Français" }, { "de", "Deutsch" },
-        { "es", "Español" }, { "es-419", "Español (Latinoamérica)" }, { "it", "Italiano" }, { "nl", "Nederlands" }, { "pt", "Português" },
-        { "sv", "Svenska" }, { "no", "Norsk" }, { "da", "Dansk" }, { "fi", "Suomi" } };
+    inline constexpr Choice AllLanguageChoices[] = { { "en", "English" }, { "fr", "Français" }, { "de", "Deutsch" },
+        { "es", "Español" }, { "es-419", "Español (Latinoamérica)" }, { "it", "Italiano" }, { "nl", "Nederlands" },
+        { "pt", "Português" }, { "sv", "Svenska" }, { "no", "Norsk" }, { "da", "Dansk" }, { "fi", "Suomi" },
+        { "pl", "Polski" }, { "ru", N_("Russian") }, { "cs", "Čeština" }, { "hu", "Magyar" }, { "tr", "Türkçe" },
+        { "el", N_("Greek") }, { "ja", N_("Japanese") }, { "ko", N_("Korean") }, { "zh", N_("Chinese") } };
+    inline constexpr Choice GiantsVoiceChoices[] = { { "", N_("Same as text") }, { "en", "English" },
+        { "fr", "Français" }, { "de", "Deutsch" }, { "es", "Español" }, { "es-419", "Español (Latinoamérica)" },
+        { "it", "Italiano" }, { "nl", "Nederlands" }, { "pt", "Português" }, { "sv", "Svenska" }, { "no", "Norsk" },
+        { "da", "Dansk" }, { "fi", "Suomi" } };
 
     inline int ChoiceIndex(std::span<const Choice> choices, const std::string& value, int fallback)
     {
@@ -120,7 +133,8 @@ namespace launcher_ui
             if (value == choices[i].value)
                 return int(i);
         for (size_t i = 0; i < choices.size(); i++)
-            if (choices[i].aliases != nullptr && (" " + std::string(choices[i].aliases) + " ").find(" " + value + " ") != std::string::npos)
+            if (choices[i].aliases != nullptr &&
+                (" " + std::string(choices[i].aliases) + " ").find(" " + value + " ") != std::string::npos)
                 return int(i);
         return fallback;
     }
@@ -175,7 +189,6 @@ namespace launcher_ui
 
     // ---- Drawing --------------------------------------------------------------------------------------------------
 
-
     // ---- Disc verification on a worker thread ---------------------------------------------------------------------
 
     struct VerifyJob
@@ -187,19 +200,38 @@ namespace launcher_ui
         std::string stage;
         GameSourceCheck check;
         TitleMetadata meta;
-        LauncherAssets::Provider assets; // the disc's art and figure pictures, cached here too (4 s on the UI thread before)
+        LauncherAssets::Provider
+            assets; // the disc's art and figure pictures, cached here too (4 s on the UI thread before)
 
         // The game's scenes (art::ExtractScenes), read from the disc after the check: Giants' take a few seconds, and
         // the page already shows the menu painting meanwhile. Stopped at the next scene when the launcher quits.
         std::thread scenes;
         std::atomic<bool> stopScenes{ false };
 
-        ~VerifyJob() { Join(); StopScenes(); }
-        void Join() { if (thread.joinable()) thread.join(); }
-        void StopScenes() { stopScenes = true; if (scenes.joinable()) scenes.join(); }
+        ~VerifyJob()
+        {
+            Join();
+            StopScenes();
+        }
+        void Join()
+        {
+            if (thread.joinable())
+                thread.join();
+        }
+        void StopScenes()
+        {
+            stopScenes = true;
+            if (scenes.joinable())
+                scenes.join();
+        }
         void StartScenes(const std::string& image, const std::string& game);
-        std::string Stage() { std::lock_guard lock(mutex); return stage; }
-        void Start(const std::string& image, const GameInfo& game, const std::filesystem::path& skyBuild = {}, const std::string& kitVersion = {});
+        std::string Stage()
+        {
+            std::lock_guard lock(mutex);
+            return stage;
+        }
+        void Start(const std::string& image, const GameInfo& game, const std::filesystem::path& skyBuild = {},
+            const std::string& kitVersion = {});
     };
 
     // "Test the portal": the runtime's --portal-probe, on a worker thread.
@@ -209,35 +241,94 @@ namespace launcher_ui
         std::atomic<bool> done{ true }, ran{ false }; // `ran`: a result is there to show
         PortalProbeResult result;
         ~ProbeJob() { Join(); }
-        void Join() { if (thread.joinable()) thread.join(); }
+        void Join()
+        {
+            if (thread.joinable())
+                thread.join();
+        }
         void Start(const std::string& runtime)
         {
             Join();
             done = false;
             ran = true;
-            thread = std::thread([this, runtime] { result = RunPortalProbe(runtime); done = true; });
+            thread = std::thread([this, runtime] {
+                result = RunPortalProbe(runtime);
+                done = true;
+            });
         }
     };
 
     // Home is the menu (the SKYLAUNCHER title opens it), Play is the game art and the main button, Collection is the
     // figures (its sidebar row), the gear opens the launcher's Settings, and the game's Settings button (on its Play
     // page) opens that game's own settings.
-    enum class Page { Home, Play, Collection, Settings, GameSettings, Achievements };
-    enum class SettingsTab { Controls, Launcher, Support, About, Profiles };
-    enum class GameTab { Video, Keyboard, Controller, Sound, Language, Disc, Saves, Game };
-    enum class DiscState { None, Verifying, Ready, Failed };
+    enum class Page
+    {
+        Home,
+        Play,
+        Collection,
+        Settings,
+        GameSettings,
+        Achievements
+    };
+    enum class SettingsTab
+    {
+        Controls,
+        Launcher,
+        Support,
+        About,
+        Profiles
+    };
+    enum class GameTab
+    {
+        Video,
+        Keyboard,
+        Controller,
+        Sound,
+        Language,
+        Disc,
+        Saves,
+        Game
+    };
+    enum class DiscState
+    {
+        None,
+        Verifying,
+        Ready,
+        Failed
+    };
     // Everything a game can be in, read from its slot by App::SlotStatus: the one place that decides (docs/launcher_ui.md).
     enum class SlotState
     {
-        NoDisc, Checking, DiscGone, DiscUnreadable, DiscWrong, DiscUnknown, DiscNotGame, DataDamaged,
-        DownloadingTools, Installing, Updating, Finishing, Failed, Interrupted, ReadyToInstall, UpdateAvailable, Ready, Running
+        NoDisc,
+        Checking,
+        DiscGone,
+        DiscUnreadable,
+        DiscWrong,
+        DiscUnknown,
+        DiscNotGame,
+        DataDamaged,
+        DownloadingTools,
+        Installing,
+        Updating,
+        Finishing,
+        Failed,
+        Interrupted,
+        ReadyToInstall,
+        UpdateAvailable,
+        Ready,
+        Running
     };
     // The shape and colour that say a game's state: never the colour alone (the sidebar, Home's cards, the page). IconOf: the
     // state's own icon (a disc, an update, a download...), else the status's.
     ui::Status StatusOf(SlotState state);
     ui::Icon IconOf(SlotState state);
     // Where the keyboard and pad focus goes on the next frame: the sidebar's current row, or the page's first control.
-    enum class FocusTo { None, Sidebar, Page };
+    enum class FocusTo
+    {
+        None,
+        Sidebar,
+        Page
+    };
 
     class App;
 
@@ -251,7 +342,12 @@ namespace launcher_ui
         float aspect = 2; // width / height of that part
 
         explicit operator bool() const { return texture != nullptr; }
-        void Destroy() { if (texture != nullptr) SDL_DestroyTexture(texture); texture = nullptr; }
+        void Destroy()
+        {
+            if (texture != nullptr)
+                SDL_DestroyTexture(texture);
+            texture = nullptr;
+        }
     };
     // Loads a PNG; `crop`: to its opaque bounds; `maxWidth` > 0: averaged down to at most that many pixels wide. Empty if
     // the file can't be read.
@@ -289,32 +385,32 @@ namespace launcher_ui
         TitleMetadata meta;
         LauncherAssets::Provider assets;
         SDL_Texture* icon = nullptr;
-        ArtTexture logo;                   // the game's logo, cropped, from the player's disc once verified (game page)
+        ArtTexture logo; // the game's logo, cropped, from the player's disc once verified (game page)
         // Install state for the verified disc.
         std::optional<InstallKit> kit;
         InstalledGame installed;
-        std::string ownRuntime;    // a runtime the player set up (FindRuntime): no install needed
+        std::string ownRuntime; // a runtime the player set up (FindRuntime): no install needed
         GameInstaller installer;
         // Game settings > Video > Use HD textures (docs/tools/hd_textures.md): the kit's texture step alone, and how the last one ended.
         GameInstaller hdJob;
-        bool hdWatch = false;       // hdJob was started and its end is not handled yet
-        bool hdOn = false;          // it makes the pack (else it removes it)
-        std::string hdMessage;      // why the last one failed, in the launcher's language
-        KitDownloader kitDownload;  // the first step of an install when there is no kit yet
+        bool hdWatch = false; // hdJob was started and its end is not handled yet
+        bool hdOn = false; // it makes the pack (else it removes it)
+        std::string hdMessage; // why the last one failed, in the launcher's language
+        KitDownloader kitDownload; // the first step of an install when there is no kit yet
         // "Find my edition" on a disc of an unknown edition: the kit's report (fetching the kit first when there is none
         // that makes it), shown under the message once copied.
         EditionReportJob editionJob;
         bool editionAfterKit = false; // kitDownload runs for it: the report follows
         std::string editionText;
-        std::string kitError;       // why the downloaded kit can't be used
-        bool kitUsed = false;       // this install started with that download
-        std::string kitTag;         // the release whose kit that download fetches
-        bool skipUpdate = false;    // "Play without updating", until the launcher is closed
+        std::string kitError; // why the downloaded kit can't be used
+        bool kitUsed = false; // this install started with that download
+        std::string kitTag; // the release whose kit that download fetches
+        bool skipUpdate = false; // "Play without updating", until the launcher is closed
         InstallProgress::Step kitStep;
-        std::string installSha;    // the disc being installed
+        std::string installSha; // the disc being installed
         std::string installKitVersion;
-        bool installView = false;  // the progress card replaces the logo
-        bool installLog = false;   // "Show details"
+        bool installView = false; // the progress card replaces the logo
+        bool installLog = false; // "Show details"
         InstallProgress installPast; // an install of an earlier launcher session, read back from its install.log
         uint32_t installPastPid = 0; // its Arkeyan-Builder, if that one may still be running
         uint64_t installPastCheck = 0; // when to look again whether it still runs
@@ -333,7 +429,8 @@ namespace launcher_ui
     class App
     {
     public:
-        App(const GameInfo& game, const std::string& configPath, LauncherConfig& config, const LauncherOptions& options = {});
+        App(const GameInfo& game, const std::string& configPath, LauncherConfig& config,
+            const LauncherOptions& options = {});
         ~App() { Shutdown(); }
         std::string Run();
         const GameInfo& ChosenGame() const { return m_s->game; } // the game that was shown when Run returned
@@ -347,13 +444,14 @@ namespace launcher_ui
             unsigned dot;
             float progress = -1;
             SlotState state = SlotState::NoDisc;
-            std::string button;        // the game page's main button: its label
+            std::string button; // the game page's main button: its label
             bool buttonEnabled = true; // and whether it can be pressed
         };
         SlotLine SlotStatus(GameSlot* slot);
         SlotLine SlotLineOf(GameSlot* slot); // the same, as if no game were running
         float PlayBandH() const; // space reserved only for the pad legend on the game page
-        void DrawPortalStatus(); // "Portal: <model>" or "Portal: not detected", with its tooltip; nothing when HID is unavailable
+        void
+        DrawPortalStatus(); // "Portal: <model>" or "Portal: not detected", with its tooltip; nothing when HID is unavailable
 
     private:
         friend struct ReviewChecks;
@@ -369,17 +467,30 @@ namespace launcher_ui
         void DrawBackdrop();
         void DrawSidebar();
         void DrawHome();
+        struct PlayState
+        {
+            const SlotLine& slot;
+            bool running, stopping, showGame, installing, noDisc, ready, verifying, install, update, detailed;
+        };
         void DrawPlay();
+        std::string DrawPlayHeading(
+            const PlayState& play, const ArtTexture* logo, ImVec2 titleAt, ImVec2 titleSize, ImVec2 at, float leftW);
+        void DrawPlayAction(const PlayState& play, ImVec2 at, float leftW, const std::string& status);
+        void DrawPlayPickers(bool running, ImVec2 at);
+        void DrawPlayHint(const PlayState& play, ImVec2 at, float leftW);
+        void DrawPlayDiscError(float left, float leftW);
+        void DrawPlayDiscActions(const PlayState& play, ImVec2 at, float leftW, float pillY);
+        void DrawPlayProgress(ImVec2 position, ImVec2 available);
         void DrawHeroInstall(ImVec2 at, float width);
         void DrawHeroSteps(ImVec2 at, ImVec2 size);
         void TestHeroScript(uint64_t now);
         void TestHeroNavigation();
-        void DrawSettings();     // the launcher's settings (the gear): Controls, Launcher, Support, About
+        void DrawSettings(); // the launcher's settings (the gear): Controls, Launcher, Support, About
         void DrawControls();
         void DrawLauncherTab();
         void DrawLauncherLanguage(); // Settings > Launcher > Language
-        void UpdateLanguage();       // each frame: the text follows [launcher] language, never the shown game's
-        void DrawSupport();      // support_page.cpp: logs and the problem report
+        void UpdateLanguage(); // each frame: the text follows [launcher] language, never the shown game's
+        void DrawSupport(); // support_page.cpp: logs and the problem report
         // A game's own settings (game_settings_page.cpp), opened from the Settings button on its Play page.
         void DrawGameSettings();
         // A game's achievements and play time (achievements_page.cpp), opened from its Play page.
@@ -409,7 +520,7 @@ namespace launcher_ui
         void DrawGameKeyboard();
         void DrawGameLanguage();
         void DrawGameDisc();
-        void DrawGameData();     // game_data_page.cpp: the Disc tab's "Game data" section
+        void DrawGameData(); // game_data_page.cpp: the Disc tab's "Game data" section
         void StartCopy();
         void FinishCopy();
         void RemoveCopy();
@@ -421,19 +532,19 @@ namespace launcher_ui
         void DrawUpdateAll(ImVec2 right);
         void DrawDataActions();
         void CreateShortcut();
-        void DrawHdTextures();        // the Video tab's "Use HD textures" row: the switch
+        void DrawHdTextures(); // the Video tab's "Use HD textures" row: the switch
         void TestHdTexturesScript(uint64_t now);
-        void DrawHdStatus();          // under the Video list: the work's progress and Stop, or why it failed
+        void DrawHdStatus(); // under the Video list: the work's progress and Stop, or why it failed
         bool HdTexturesOffered() const; // the kit doubles this game's textures from its disc (every game)
         bool HdTexturesWanted(const GameSlot& slot) const;
         void SetHdTextures(bool on);
         void StartHdTextures(bool on);
         void FinishHdTextures();
         bool AnyHdTextures() const;
-        void DrawPortableExport();    // the Game tab's "Portable copy": the button, the message, the progress
+        void DrawPortableExport(); // the Game tab's "Portable copy": the button, the message, the progress
         void StartPortableExport(const std::filesystem::path& folder);
         void FinishPortableExport();
-        void ForgetDisc();       // "Remove the disc": the game forgets its image; the built game and the files stay
+        void ForgetDisc(); // "Remove the disc": the game forgets its image; the built game and the files stay
         void RefreshDataSizes();
         void RunDataAction(const DataResult& result, const char* done); // the toast, and the lists read again
         void RunUninstall(const DataResult& result);
@@ -449,12 +560,14 @@ namespace launcher_ui
         bool DrawTabBar(const char* const* labels, int count, int* current);
         // A settings page's head: the centred column, the title (Display) and, when `back`, the Back button at its right.
         // EndSettingsPage closes the column.
-        void BeginSettingsPage(const char* id, const char* title, bool back, bool focusBack = false); // focusBack: Back is the page's first stop (no tabs)
+        void BeginSettingsPage(const char* id, const char* title, bool back,
+            bool focusBack = false); // focusBack: Back is the page's first stop (no tabs)
         void EndSettingsPage() { EndPageColumn(); }
-        void DrawAbout();        // update_page.cpp: About
-        void DrawUpdates();      // update_page.cpp: check for updates, and the automatic check; in Settings > Launcher
+        void DrawAbout(); // update_page.cpp: About
+        void DrawUpdates(); // update_page.cpp: check for updates, and the automatic check; in Settings > Launcher
         void StartUpdateCheck(bool manual);
         void PollUpdates();
+        bool m_bannerTakesBack = false; // a focused update banner answers B before its page
         float BannerHeight();
         void DrawUpdateBanner(float height);
         void DrawWhatsNew();
@@ -468,8 +581,8 @@ namespace launcher_ui
         void DrawIntegrity();
         void RepairFinding(const IntegrityFinding& finding);
         void ShowFinding(IntegrityFinding finding); // in front of the others, the dialog opened on it
-        bool KitIntact();                           // before an install: false, and the dialog, when the kit lost a file
-        void DrawPortalTest();   // support_page.cpp: the "Test the portal" row, inside an open settings table
+        bool KitIntact(); // before an install: false, and the dialog, when the kit lost a file
+        void DrawPortalTest(); // support_page.cpp: the "Test the portal" row, inside an open settings table
         void DrawPortalResult(); // and what the test found, under the table
         void DrawLogs();
         void OpenProblemReport();
@@ -481,13 +594,17 @@ namespace launcher_ui
         void TestGalleryScript(uint64_t now);
 
         // Pages and focus (docs/launcher_ui.md, "Navigation model"). The sidebar and the page are separate windows, which the
-        // D-pad doesn't cross: LB / RB change the main page, B goes back one step (to Home, then on Home to the sidebar), A on
-        // a sidebar row moves the focus into its page.
+        // D-pad doesn't cross: LB / RB change tabs where present, otherwise the main page. B goes back one step (to Home,
+        // then on Home to the sidebar); A on a sidebar row moves the focus into its page.
         void GoTo(Page page);
         void Back();
         void StepMainPage(int step); // LB -1, RB +1
         void TakeFocus(FocusTo where); // after the item that takes the focus when `where` is asked for
-        void RequestFocus(FocusTo where) { m_focusTo = where; m_focusShow = ImGui::GetIO().NavVisible; }
+        void RequestFocus(FocusTo where)
+        {
+            m_focusTo = where;
+            m_focusShow = ImGui::GetIO().NavVisible;
+        }
 
         // The collection (collection_page.h): its page draws with the widgets below.
         friend class CollectionPage;
@@ -504,10 +621,16 @@ namespace launcher_ui
             bool danger = false;
             float width = ui::height::MainWidth;
         };
-        enum class MainActionHit { None, Main, Settings };
+        enum class MainActionHit
+        {
+            None,
+            Main,
+            Settings
+        };
         MainActionHit DrawMainAction(ImVec2 at, const MainAction& action);
         // A logo inside `size` at `at` (centred, aspect kept), with a soft shadow; `alpha` 0..1.
-        void DrawLogo(ImDrawList* draw, const ArtTexture& logo, ImVec2 at, ImVec2 size, float alpha = 1, bool shadow = true);
+        void DrawLogo(
+            ImDrawList* draw, const ArtTexture& logo, ImVec2 at, ImVec2 size, float alpha = 1, bool shadow = true);
         // A game's mark in a sidebar row: its logo once its disc was read, else its initial on its colour.
         void DrawGameMark(ImDrawList* draw, const LauncherGameEntry& entry, ImVec2 at, ImVec2 size);
         // The logo's arrival on the game page: 0 when it starts falling, 1 once landed (always 1 with reduced motion).
@@ -529,13 +652,14 @@ namespace launcher_ui
         // bottom padding, so the clip rect neither shaves the borders at its edges nor cuts the scrolling content short of the window.
         float m_columnBelow = 0;
         bool m_columnLegend = false;
-        ImVec2 m_columnAt;      // where the column starts (the legend under it)
+        ImVec2 m_columnAt; // where the column starts (the legend under it)
         float m_columnWidth = 0;
         // `legend`: while a pad is in use the column leaves the foot of the page to a PadLegend (A Select, B Back), drawn by EndPageColumn.
         void BeginPageColumn(const char* id, float width, bool alwaysScrollbar = false, bool legend = false);
         void EndPageColumn();
         // A settings row's select: the choices' labels, the value in [section] key; the control column's width.
-        bool SettingSelect(const char* id, const char* section, const char* key, std::span<const Choice> choices, int fallback);
+        bool SettingSelect(
+            const char* id, const char* section, const char* key, std::span<const Choice> choices, int fallback);
         void BeginCard(const char* id, ImVec2 size, ImGuiChildFlags flags = ImGuiChildFlags_None);
         void EndCard();
 
@@ -546,16 +670,20 @@ namespace launcher_ui
         bool Installing() const { return m_s->installer.Running() || m_s->kitDownload.Running(); }
         void StartInstaller();
         void StartKitDownload();
-        void FindEdition();        // "Find my edition"
+        void FindEdition(); // "Find my edition"
         void PollEditionReport();
-        bool KitNeedsFetch(const GameSlot& slot) const; // no kit, one from an older release, or one that can't build the game
-        bool UpdateAvailable() const;                   // the release has a newer version of this game than the one built (docs/updates.md)
+        bool KitNeedsFetch(
+            const GameSlot& slot) const; // no kit, one from an older release, or one that can't build the game
+        bool
+        UpdateAvailable() const; // the release has a newer version of this game than the one built (docs/updates.md)
         bool UpdateAvailable(const GameSlot& slot) const;
         bool AnyGameUpdate() const;
         std::string GameUpdateNote() const;
-        const GameUpdate* PendingUpdate(const GameSlot& slot) const; // the game's entry in the release's games line, if any
-        std::string WantedKitTag(const GameSlot& slot) const;        // the release whose kit INSTALL / UPDATE must be using
-        std::string GameVersion(const GameSlot& slot) const;         // "0.8.2": the built game's, else the kit's, else the release's; "" when unknown
+        const GameUpdate* PendingUpdate(
+            const GameSlot& slot) const; // the game's entry in the release's games line, if any
+        std::string WantedKitTag(const GameSlot& slot) const; // the release whose kit INSTALL / UPDATE must be using
+        std::string GameVersion(const GameSlot& slot)
+            const; // "0.8.2": the built game's, else the kit's, else the release's; "" when unknown
         void StartInstall();
         void PollInstall();
         // "Update all" (Home): the games with an update, one after the other (docs/updates.md).
@@ -564,10 +692,28 @@ namespace launcher_ui
         void CancelUpdateAll();
         void PollUpdateAll();
         bool UpdatingAll() const { return !m_updateAll.queue.empty() || !m_updateAll.current.empty(); }
+        struct InstallAction
+        {
+            const char* label;
+            ui::ButtonOptions options;
+            ImVec2 offset;
+        };
         void DrawInstall(ImVec2 at, ImVec2 size);
-        InstallProgress InstallSnapshot(size_t logTail = 0); // this session's install, else the one read back from its log
+        void DrawInstallTitle(const InstallProgress& progress, float left, float width);
+        void DrawInstallProgress(const InstallChecklist& list, bool running, float width);
+        void DrawInstallChecklist(
+            const InstallChecklist& list, const InstallProgress& progress, float left, float width);
+        void DrawInstallStep(const InstallChecklist::Row& row, bool current, bool running, float left, float width);
+        void DrawInstallMessage(const InstallChecklist& list, const InstallProgress& progress, float width);
+        float PrepareInstallActions(std::vector<InstallAction>& actions, const InstallProgress& progress, float width);
+        void DrawInstallLog(const InstallProgress& progress, ImVec2 at, ImVec2 size, float width, float buttonsH);
+        void DrawInstallActions(const InstallProgress& progress, const std::vector<InstallAction>& actions, ImVec2 at,
+            ImVec2 size, float width, float buttonsH);
+        InstallProgress InstallSnapshot(
+            size_t logTail = 0); // this session's install, else the one read back from its log
         InstallProgress InstallSnapshot(GameSlot& slot, size_t logTail = 0); // the same, for any game's slot
-        void SetInstallState(const std::string& sha, const char* state); // [install.<sha>] state=, for a launcher restart
+        void SetInstallState(
+            const std::string& sha, const char* state); // [install.<sha>] state=, for a launcher restart
 
         void UpdateUiScale(bool resize);
         GameSlot& SlotFor(const GameInfo& game);
@@ -582,7 +728,8 @@ namespace launcher_ui
         void StartVerify(const std::string& path);
         void StartGameDisc(); // the remembered disc image, or the game's copy when it is complete (game_data_page.cpp)
         void FinishVerify();
-        void UseDiscForOtherGame(); // the disc check found the other supported game's disc: switch to it and set the disc
+        void
+        UseDiscForOtherGame(); // the disc check found the other supported game's disc: switch to it and set the disc
         void Browse();
         bool DiscStillThere(); // false, and the disc's line says so, when the verified image is gone
         void Set(const char* section, const char* key, const std::string& value);
@@ -597,7 +744,7 @@ namespace launcher_ui
         void OpenToyboxWindow(); // the launcher: start it for the game running, or bring it to the front
         void RefreshGamepads();
         PadFamily PadFamilyNow() const; // whose button names the Keyboard tab shows (game_keys.h)
-        ui::Glyphs PadGlyphs() const;   // the same family as the pictures of its buttons (never the keyboard)
+        ui::Glyphs PadGlyphs() const; // the same family as the pictures of its buttons (never the keyboard)
         std::vector<std::pair<std::string, std::string>> DeviceOptions() const; // value, label
         std::string CurrentDevice() const;
         std::string DeviceLabel() const;
@@ -618,7 +765,8 @@ namespace launcher_ui
         void TestButtonsScript(uint64_t now);
         void TestRunningScript(uint64_t now);
         void TestPadWalkScript(uint64_t now); // pad_walk.cpp
-        void PlayNow(); // PLAY on the shown game: starts it beside the window (m_startGames), else returns its disc and build
+        void
+        PlayNow(); // PLAY on the shown game: starts it beside the window (m_startGames), else returns its disc and build
         void AutoPlay(); // --play: PLAY as soon as the shown game's disc is checked, if it can
         void PollRequests(); // what a second start asked (single_instance.h): the window to the front, a game to play
         void BringToFront();
@@ -655,54 +803,68 @@ namespace launcher_ui
         Page m_page = Page::Home; // the launcher opens on its menu; the player picks a game in the sidebar
         Page m_backPage = Page::Home; // where Settings and Collection go back to
         FocusTo m_focusTo = FocusTo::Sidebar;
-        bool m_focusShow = false;    // the focus request came from the keyboard or the pad: show the ring
-        bool m_backTaken = false;    // last frame, something else answered B / Escape (a menu, a dialog, a field)
-        bool m_pagesTaken = false;   // last frame, LB / RB were not the pages' (a menu, a dialog, a field)
+        bool m_focusShow = false; // the focus request came from the keyboard or the pad: show the ring
+        bool m_backTaken = false; // last frame, something else answered B / Escape (a menu, a dialog, a field)
+        bool m_pagesTaken = false; // last frame, LB / RB were not the pages' (a menu, a dialog, a field)
         SettingsTab m_tab = SettingsTab::Controls;
         GameTab m_gameTab = GameTab::Video;
         bool m_autoPlay = false; // --play: start the game as soon as it is ready (a desktop shortcut)
         bool m_startGames = false; // PLAY starts the game and the window stays (LauncherOptions)
-        bool m_requests = false;   // LauncherOptions::requests
-        uint64_t m_requestAt = 0;  // when the request file was last looked for
+        bool m_requests = false; // LauncherOptions::requests
+        uint64_t m_requestAt = 0; // when the request file was last looked for
         uint64_t m_raiseUntil = 0; // a minimized window is raised once restored (macOS restores it with an animation)
-        GameSession m_session;     // the game running: one at a time (game_run.h)
+        GameSession m_session; // the game running: one at a time (game_run.h)
         uint64_t m_sessionStart = 0; // SDL_GetTicks when the game started: the time on the game page
         bool m_launchPending = false; // the page theme must finish fading before the process starts
         gamemusic::Player m_music; // the shown game's menu theme, softly (game_music.h)
-        std::string m_sessionIso;  // the disc image it was started with (the crash report names it)
+        // Discord Rich Presence (discord_presence.h): the game it shows ("" in the launcher), since when (unix time), and
+        // what it last read of the game's achievements and portal (SDL_GetTicks for the times).
+        discordpresence::Client m_presence;
+        std::string m_presenceGame;
+        int64_t m_presenceSince = 0;
+        uint64_t m_presenceAt = 0, m_presencePortalAt = 0; // when the achievements and the portal are read again
+        std::string m_presenceAchievements; // "3/50 achievements"
+        int m_presenceFigureType = -1; // the player's figure on the portal, -1: none
+        std::string m_presenceFigureText; // "Eruptor · Level 7"
+        std::string m_presenceLevel; // the level line: its name, "In a level" or "In the menus"; "" when unknown
+        int m_presencePlayers = 0; // 2 while a second player plays
+        std::string m_presencePlayTime; // "34 h 12" in all
+        void UpdatePresence(uint64_t nowMs);
+        bool PresenceOn() const;
+        std::string m_sessionIso; // the disc image it was started with (the crash report names it)
         ProbeJob m_probe;
-        GameLog m_lastRun;           // Support: the run Copy game log carries (LastGameLog)
+        GameLog m_lastRun; // Support: the run Copy game log carries (LastGameLog)
         uint64_t m_lastRunLookAt = 0;
         launcher_portal::Watcher m_portal;
-        bool m_reportOpen = false;      // "Report a problem" shown (support_page.cpp)
+        bool m_reportOpen = false; // "Report a problem" shown (support_page.cpp)
         std::string m_reportText;
 
         // Updates (update_page.cpp).
         UpdateManager m_updates;
-        bool m_updateManual = false;     // the running check was asked for: say the answer, even "up to date"
-        bool m_updateLater = false;      // the player closed the banner for this session
-        bool m_testPlayWithout = false;        // tests: press "Play without updating" on the next frame
+        bool m_updateManual = false; // the running check was asked for: say the answer, even "up to date"
+        bool m_updateLater = false; // the player closed the banner for this session
+        bool m_testPlayWithout = false; // tests: press "Play without updating" on the next frame
         std::vector<GameUpdate> m_gameUpdates; // the games line of the last answered check
         struct UpdateAllRun
         {
             std::vector<std::string> queue; // games still to start
-            std::string current;            // the game being updated
+            std::string current; // the game being updated
             int total = 0, started = 0, failed = 0;
         } m_updateAll;
         bool m_whatsNewOpen = false;
         bool m_defenderNoticeOpen = false;
         std::function<void()> m_defenderThen; // what the player asked for, run on Continue
         IntegrityCheck m_integrity;
-        bool m_integrityPolled = true;                 // the last check's report has been taken
-        std::vector<IntegrityFinding> m_findings;      // what is wrong, the first one in the dialog
-        std::vector<InstallKit> m_checkedKits;         // the kits the check looked at (Repair needs their release)
+        bool m_integrityPolled = true; // the last check's report has been taken
+        std::vector<IntegrityFinding> m_findings; // what is wrong, the first one in the dialog
+        std::vector<InstallKit> m_checkedKits; // the kits the check looked at (Repair needs their release)
         bool m_integrityOpen = false;
-        KitDownloader m_kitRepair;                     // Repair of a kit: its release's kit unpacked over it
+        KitDownloader m_kitRepair; // Repair of a kit: its release's kit unpacked over it
         bool m_kitRepairPolled = true;
-        std::filesystem::path m_kitRepaired;           // the kit just repaired: said so once the check finds it whole
+        std::filesystem::path m_kitRepaired; // the kit just repaired: said so once the check finds it whole
         bool m_updateWasBusy = false;
-        std::string m_updateDoneNote;    // the last answer of a manual check, shown in About
-        float m_bannerH = 0;             // the height the banner takes at the top of the page, this frame
+        std::string m_updateDoneNote; // the last answer of a manual check, shown in About
+        float m_bannerH = 0; // the height the banner takes at the top of the page, this frame
         SDL_Texture* m_github = nullptr;
         SDL_Texture* m_discord = nullptr;
         bool m_dragOver = false;
@@ -711,7 +873,7 @@ namespace launcher_ui
         SDL_GamepadType m_lastPadType = SDL_GAMEPAD_TYPE_UNKNOWN; // the last pad connected
         const GameKey* m_capturing = nullptr; // the key row of the shown game waiting for a key press
         const GameKey* m_mouseCapturing = nullptr; // the mouse row waiting for a click or a wheel tick
-        bool m_mouseArmed = false;                 // the click that started the wait has been released
+        bool m_mouseArmed = false; // the click that started the wait has been released
         const ToyboxKey* m_toyboxCapturing = nullptr; // the Toy Box key row waiting for a key press
 
         // The games opened this session (one slot each), and the one shown. Every slot's jobs are polled; the shown
@@ -733,8 +895,8 @@ namespace launcher_ui
         void PlaceToyboxWindow(); // the window: its saved place and size, its title
         void SaveToyboxPlace();
         void StartToyboxLink();
-        void PollToyboxLink();   // the window: the link's state, the game's answers, a raise request, the end
-        void DrawToyboxPage();   // the window: the Collection page over the whole window
+        void PollToyboxLink(); // the window: the link's state, the game's answers, a raise request, the end
+        void DrawToyboxPage(); // the window: the Collection page over the whole window
         // SKY_LAUNCHER_TEST_TOYBOX="<s>:put <seat> <file>|<s>:off <seat>|<s>:choose <seat>|<s>:shot <name>|<s>:quit", times in
         // seconds after the game answered; shots in SKY_LAUNCHER_TOYBOX_SHOTS (toybox_window.cpp).
         struct ToyboxStep
@@ -749,7 +911,12 @@ namespace launcher_ui
         void RunToyboxScript();
         void ToyboxShot(); // in Frame, once drawn
 
-        enum class UninstallStage { Closed, List, Result };
+        enum class UninstallStage
+        {
+            Closed,
+            List,
+            Result
+        };
         struct UninstallState
         {
             UninstallStage stage = UninstallStage::Closed;
@@ -761,18 +928,22 @@ namespace launcher_ui
             bool launcherScheduled = false;
             uint32_t holdId = 0; // the hold button's ImGui ID, for the screenshot test
         } m_un;
-        bool m_portableAsk = false;     // the portable copy's message is open
-        bool m_uninstalled = false;    // done: the window only shows the result and quits
-        bool m_testUninstall = false;  // SKY_LAUNCHER_TEST_UNINSTALL: the uninstall screens
-        bool m_testKeys = false;       // SKY_LAUNCHER_TEST_KEYS: each game's Keyboard tab, one shot each
-        std::string m_testGameTabs;    // SKY_LAUNCHER_TEST_GAMETABS=<game>: each tab of that game's settings, one shot each
-        int m_testScreens = 0;         // SKY_LAUNCHER_TEST_SCREENS: Home, the game page and its Keyboard tab; 1 with the mouse, 2 with a pad, 3 issue checks
-        bool m_testPadInput = false;   // SKY_LAUNCHER_TEST_INPUT=pad (or SCREENS=pad): any script's shots as with a pad (its legends, the ring)
-        int m_testFocusView = -1;      // the page and tab the last pad focus was given on
-        bool m_testPad = false;        // SKY_LAUNCHER_TEST_PAD: each game's Controller tab, and Swap Force's Game tab
-        bool m_testRunning = false;      // SKY_LAUNCHER_TEST_RUNNING: one game at a time (TestRunningScript)
-        bool m_testHero = false;         // SKY_LAUNCHER_TEST_HERO: four display fixtures, no game or install started
-        bool m_testPadWalk = false;      // SKY_LAUNCHER_TEST_PADWALK: every page and dialog walked with the pad (pad_walk.cpp)
+        bool m_portableAsk = false; // the portable copy's message is open
+        bool m_uninstalled = false; // done: the window only shows the result and quits
+        bool m_testUninstall = false; // SKY_LAUNCHER_TEST_UNINSTALL: the uninstall screens
+        bool m_testKeys = false; // SKY_LAUNCHER_TEST_KEYS: each game's Keyboard tab, one shot each
+        std::string
+            m_testGameTabs; // SKY_LAUNCHER_TEST_GAMETABS=<game>: each tab of that game's settings, one shot each
+        int m_testScreens =
+            0; // SKY_LAUNCHER_TEST_SCREENS: Home, the game page and its Keyboard tab; 1 with the mouse, 2 with a pad, 3 issue checks
+        bool m_testPadInput =
+            false; // SKY_LAUNCHER_TEST_INPUT=pad (or SCREENS=pad): any script's shots as with a pad (its legends, the ring)
+        int m_testFocusView = -1; // the page and tab the last pad focus was given on
+        bool m_testPad = false; // SKY_LAUNCHER_TEST_PAD: each game's Controller tab, and Swap Force's Game tab
+        bool m_testRunning = false; // SKY_LAUNCHER_TEST_RUNNING: one game at a time (TestRunningScript)
+        bool m_testHero = false; // SKY_LAUNCHER_TEST_HERO: four display fixtures, no game or install started
+        bool m_testPadWalk =
+            false; // SKY_LAUNCHER_TEST_PADWALK: every page and dialog walked with the pad (pad_walk.cpp)
         struct PadWalk
         {
             int view = -1, phase = 0, wait = 0, moves = 0, direction = 0, indexAt = -1, pagesStep = 0, stepDir = 0;
@@ -782,14 +953,15 @@ namespace launcher_ui
             std::vector<uint32_t> expected, seen, items;
             std::map<std::pair<uint32_t, int>, uint32_t> edges;
             std::vector<ui::Context::TestStop> frameStops; // the last frame's stops, their top windows and rectangles
-            std::vector<ui::Context::TestStop> stopsAt;    // the stops when the last move was made
-            int disorder = 0;                  // moves out of reading order in this view
-            int discBefore = -1;               // view 13 without a disc image: the disc state it set aside
-            int hover = 0;                     // the collection's pointer-on-a-card check: 0 not started, 1 pointer placed, 2 pad pressed, 3 done
+            std::vector<ui::Context::TestStop> stopsAt; // the stops when the last move was made
+            int disorder = 0; // moves out of reading order in this view
+            int discBefore = -1; // view 13 without a disc image: the disc state it set aside
+            int hover =
+                0; // the collection's pointer-on-a-card check: 0 not started, 1 pointer placed, 2 pad pressed, 3 done
             std::vector<uint32_t> frameLegends; // the last frame's legends, by top window
             std::vector<std::string> disorderNotes;
         } m_walk;
-        int m_testHeroState = -1;        // ready, needs-disc, installing, running
+        int m_testHeroState = -1; // ready, needs-disc, installing, running
         bool m_testHeroNoArt = false;
         std::vector<uint8_t> m_testHeroArtPixels;
         InstallProgress m_testHeroProgress;
@@ -797,18 +969,21 @@ namespace launcher_ui
         std::map<std::pair<uint32_t, int>, uint32_t> m_heroNavEdges;
         int m_heroNavCase = 0, m_heroNavPhase = -1, m_heroNavWarmup = 0, m_heroNavMoves = 0, m_heroNavDirection = 0;
         uint32_t m_heroNavFrom = 0;
-        bool m_testAchievements = false; // SKY_LAUNCHER_TEST_ACHIEVEMENTS: the shown game's page with its play time, then its achievements
-        bool m_testHdTex = false;      // SKY_LAUNCHER_TEST_HDTEX=<game>: the HD textures switch on a built game (TestHdTexturesScript)
-        bool m_testLogo = false;       // SKY_LAUNCHER_TEST_LOGO: each game's page with its logo (from the art already read), one shot each
-        bool m_testScrollEnd = false;  // the uninstall screenshots: scroll the settings column to its end
-        uint64_t m_testHoldAt = 0;     // when the test pressed the hold button (it holds it down for the screenshots)
+        bool m_testAchievements =
+            false; // SKY_LAUNCHER_TEST_ACHIEVEMENTS: the shown game's page with its play time, then its achievements
+        bool m_testHdTex =
+            false; // SKY_LAUNCHER_TEST_HDTEX=<game>: the HD textures switch on a built game (TestHdTexturesScript)
+        bool m_testLogo =
+            false; // SKY_LAUNCHER_TEST_LOGO: each game's page with its logo (from the art already read), one shot each
+        bool m_testScrollEnd = false; // the uninstall screenshots: scroll the settings column to its end
+        uint64_t m_testHoldAt = 0; // when the test pressed the hold button (it holds it down for the screenshots)
 
         // The game page's logo drop: when it began, and what was shown last frame (a new arrival starts it again).
         uint64_t m_logoDropAt = 0;
         const GameSlot* m_logoDropSlot = nullptr;
         bool m_logoDropHad = false; // the logo was there (it may arrive after the page, once the disc is read)
         Page m_lastPage = Page::Home;
-        GameProgress m_progress;           // the shown game's achievements and play time (RefreshProgress)
+        GameProgress m_progress; // the shown game's achievements and play time (RefreshProgress)
         const GameSlot* m_progressSlot = nullptr;
         std::string m_progressLanguage;
         uint64_t m_progressAt = 0;
@@ -822,41 +997,52 @@ namespace launcher_ui
 
         // Screenshot test (SKY_LAUNCHER_SHOTS, SKY_LAUNCHER_TEST_DROP): drives the screens without a player.
         std::string m_shots, m_testDrop;
-        bool m_testUpdate = false;  // SKY_LAUNCHER_TEST_UPDATE: the update screens (SKY_LAUNCHER_UPDATE_URL names a fake release)
-        bool m_testReal = false;    // SKY_LAUNCHER_TEST_INSTALL=real: the real kit, a screenshot every SKY_LAUNCHER_TEST_EVERY seconds
+        bool m_testUpdate =
+            false; // SKY_LAUNCHER_TEST_UPDATE: the update screens (SKY_LAUNCHER_UPDATE_URL names a fake release)
+        bool m_testReal =
+            false; // SKY_LAUNCHER_TEST_INSTALL=real: the real kit, a screenshot every SKY_LAUNCHER_TEST_EVERY seconds
         bool m_testInstall = false; // SKY_LAUNCHER_TEST_INSTALL: the install screens instead
         bool m_testCollection = false; // SKY_LAUNCHER_TEST_COLLECTION: the collection's screens instead
-        bool m_testSeatX = false;      // SKY_LAUNCHER_TEST_SEATX: the X on every seat, by mouse, keyboard and pad
+        bool m_testSeatX = false; // SKY_LAUNCHER_TEST_SEATX: the X on every seat, by mouse, keyboard and pad
         std::vector<std::string> m_testSeats; // the seats the SEATX script restores before each try
-        std::string m_testBuilt;                    // the sidebar test's built game, put back between the states it sets by hand
-        std::map<std::string, std::string> m_drawn; // while testing: what the sidebar, Home and the main button drew ("sidebar:ssa", "home:ssa", "button")
-        bool m_testExperimental = false; // SKY_LAUNCHER_TEST_EXPERIMENTAL=<id> (or the older _TRAPTEAM): a later game's page and Home card
+        std::string m_testBuilt; // the sidebar test's built game, put back between the states it sets by hand
+        std::map<std::string, std::string>
+            m_drawn; // while testing: what the sidebar, Home and the main button drew ("sidebar:ssa", "home:ssa", "button")
+        bool m_testExperimental =
+            false; // SKY_LAUNCHER_TEST_EXPERIMENTAL=<id> (or the older _TRAPTEAM): a later game's page and Home card
         std::string m_testExperimentalGame;
-        bool m_testProfiles = false;     // SKY_LAUNCHER_TEST_PROFILES: the profile button, its menu, the editor, a switch, Settings > Profiles
+        bool m_testProfiles =
+            false; // SKY_LAUNCHER_TEST_PROFILES: the profile button, its menu, the editor, a switch, Settings > Profiles
         bool m_testOpenProfileMenu = false;
         void TestProfilesScript(uint64_t now);
-        bool m_testSidebar = false;    // SKY_LAUNCHER_TEST_SIDEBAR: the sidebar's line through an install and an update (fake kit)
-        bool m_testCopy = false;       // SKY_LAUNCHER_TEST_COPY: copying the game data, playing from it, the wrong-disc button
-        std::string m_testKit;         // SKY_LAUNCHER_TEST_KIT: "old", "giants", "updates" or "offline": the kit that follows the launcher, the game updates (fake release)
-        bool m_testSwitch = false;     // SKY_LAUNCHER_TEST_SWITCH: both games' slots, a switch back and forth, PLAY on each
+        bool m_testSidebar =
+            false; // SKY_LAUNCHER_TEST_SIDEBAR: the sidebar's line through an install and an update (fake kit)
+        bool m_testCopy =
+            false; // SKY_LAUNCHER_TEST_COPY: copying the game data, playing from it, the wrong-disc button
+        std::string
+            m_testKit; // SKY_LAUNCHER_TEST_KIT: "old", "giants", "updates" or "offline": the kit that follows the launcher, the game updates (fake release)
+        bool m_testSwitch = false; // SKY_LAUNCHER_TEST_SWITCH: both games' slots, a switch back and forth, PLAY on each
         int m_testFailures = 0;
         uint64_t m_testBegan = 0;
         std::string m_testSha, m_testPath, m_testRuntime[2];
-        bool m_testNav = false;        // SKY_LAUNCHER_TEST_NAV: keyboard and pad navigation, keys sent to ImGui
+        bool m_testNav = false; // SKY_LAUNCHER_TEST_NAV: keyboard and pad navigation, keys sent to ImGui
         bool m_testControllers = false; // open the controller menu (its screenshot)
-        std::optional<launcher_portal::Status> m_testPortal; // the portal screenshots' chip (SKY_LAUNCHER_TEST_SCREENS=portal)
-        bool m_testButtons = false;     // SKY_LAUNCHER_TEST_BUTTONS: the action button's states, both games
-        bool m_testButtonsOff = false;  // its "disabled" shot: the main button drawn disabled
-        bool m_testGallery = false;     // SKY_LAUNCHER_TEST_GALLERY: the component gallery (gallery.cpp)
-        int m_galleryPage = 0;          // the gallery's page shown
-        std::string m_testShot;         // the next shot's name, for scripts that name their own
-        float m_testUiScale = 0;        // > 0: the UI scale, whatever the display (the button test)
-        ImVec2 m_testMainAt, m_testGearAt; // the action button's two halves' centres, last drawn (where the script points)
+        std::optional<launcher_portal::Status>
+            m_testPortal; // the portal screenshots' chip (SKY_LAUNCHER_TEST_SCREENS=portal)
+        bool m_testButtons = false; // SKY_LAUNCHER_TEST_BUTTONS: the action button's states, both games
+        bool m_testButtonsOff = false; // its "disabled" shot: the main button drawn disabled
+        bool m_testGallery = false; // SKY_LAUNCHER_TEST_GALLERY: the component gallery (gallery.cpp)
+        int m_galleryPage = 0; // the gallery's page shown
+        std::string m_testShot; // the next shot's name, for scripts that name their own
+        float m_testUiScale = 0; // > 0: the UI scale, whatever the display (the button test)
+        ImVec2 m_testMainAt,
+            m_testGearAt; // the action button's two halves' centres, last drawn (where the script points)
         int m_testStep = 0;
         uint64_t m_testAt = 0;
     };
 
-    inline bool App::SettingSelect(const char* id, const char* section, const char* key, std::span<const Choice> choices, int fallback)
+    inline bool App::SettingSelect(
+        const char* id, const char* section, const char* key, std::span<const Choice> choices, int fallback)
     {
         const int index = ChoiceIndex(choices, SettingGet(m_config, section, key), fallback);
         bool changed = false;

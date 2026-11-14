@@ -37,7 +37,7 @@ namespace art
         // Bump when a picture is read or composed differently: the cached pictures (not the portraits) are made again.
         constexpr int CacheVersion =
             8; // 8: Imaginators' logo kept in its cloud of light; 7: Imaginators' logo cut from the title screen's picture (title_cut); 6: Imaginators' logo made transparent; 5: the scenes (<cache>/scenes/); 4: Swap Force's logo from its
-               // lossless 32-bit picture
+        // lossless 32-bit picture
 
         std::string Lower(std::string text)
         {
@@ -247,8 +247,8 @@ namespace art
             plate.rgba.assign(mask.size(), 0);
             for (size_t i = 0; i < mask.size(); i++)
             {
-                float coverage = std::clamp((mask[i] - 0.25f) * 2.0f, 0.0f, 1.0f);       // the edge, antialiased
-                float body = std::clamp((mask[i] - 0.55f) / 0.35f, 0.0f, 1.0f);           // 0 on the rim, 1 inside
+                float coverage = std::clamp((mask[i] - 0.25f) * 2.0f, 0.0f, 1.0f); // the edge, antialiased
+                float body = std::clamp((mask[i] - 0.55f) / 0.35f, 0.0f, 1.0f); // 0 on the rim, 1 inside
                 uint32_t out = uint32_t(coverage * 255 + 0.5f) << 24;
                 for (int shift = 0; shift < 24; shift += 8)
                     out |= uint32_t(float((base >> shift) & 0xFF) * (0.35f + 0.65f * body) + 0.5f) << shift;
@@ -381,6 +381,7 @@ namespace art
             collection::Json upgrades;
             // Imaginators' creation parts' names (game_text.cpp): the manifest's "parts" part as it is.
             collection::Json parts;
+            collection::Json levels;
         };
 
         std::vector<Materials> ReadMaterials(const collection::Json& json)
@@ -438,6 +439,7 @@ namespace art
                     m.artworkMaterials = ReadMaterials(json["artworks"]["materials"]);
                     m.upgrades = json["upgrades"];
                     m.parts = json["parts"];
+                    m.levels = json["levels"];
                     if (!m.game.empty())
                         out.push_back(std::move(m));
                 }
@@ -498,9 +500,10 @@ namespace art
         {
             const std::vector<uint8_t> bytes = StfsFile(disc, package, file);
             int width = 0, height = 0, channels = 0;
-            stbi_uc* pixels = bytes.empty() || bytes.size() > size_t(INT32_MAX)
-                ? nullptr
-                : stbi_load_from_memory(bytes.data(), int(bytes.size()), &width, &height, &channels, 4);
+            stbi_uc* pixels =
+                bytes.empty() || bytes.size() > size_t(INT32_MAX)
+                    ? nullptr
+                    : stbi_load_from_memory(bytes.data(), int(bytes.size()), &width, &height, &channels, 4);
             if (pixels == nullptr)
                 return false;
             out.width = uint32_t(width);
@@ -951,7 +954,8 @@ namespace art
                     const int x = at % w, y = at / w;
                     if (x == 0 || y == 0 || x == w - 1 || y == h - 1)
                         out.edge[id] = 1;
-                    for (const int next : { x > 0 ? at - 1 : -1, x < w - 1 ? at + 1 : -1, y > 0 ? at - w : -1, y < h - 1 ? at + w : -1 })
+                    for (const int next :
+                        { x > 0 ? at - 1 : -1, x < w - 1 ? at + 1 : -1, y > 0 ? at - w : -1, y < h - 1 ? at + w : -1 })
                         if (next >= 0 && on[size_t(next)] && out.label[size_t(next)] < 0)
                             out.label[size_t(next)] = id, stack.push_back(next);
                 }
@@ -973,7 +977,8 @@ namespace art
                 for (const int at : frontier)
                 {
                     const int x = at % w, y = at / w;
-                    for (const int n : { x > 0 ? at - 1 : -1, x < w - 1 ? at + 1 : -1, y > 0 ? at - w : -1, y < h - 1 ? at + w : -1 })
+                    for (const int n :
+                        { x > 0 ? at - 1 : -1, x < w - 1 ? at + 1 : -1, y > 0 ? at - w : -1, y < h - 1 ? at + w : -1 })
                         if (n >= 0 && distance[size_t(n)] < 0)
                             distance[size_t(n)] = step, next.push_back(n);
                 }
@@ -999,7 +1004,8 @@ namespace art
                     largest = std::max(largest, pieces.size[id]);
             std::vector<char> out(wall.size(), 0);
             for (size_t i = 0; i < wall.size(); i++)
-                if (const int id = pieces.label[i]; id >= 0 && !pieces.edge[size_t(id)] && float(pieces.size[size_t(id)]) >= least * float(largest))
+                if (const int id = pieces.label[i];
+                    id >= 0 && !pieces.edge[size_t(id)] && float(pieces.size[size_t(id)]) >= least * float(largest))
                     out[i] = 1;
             return out;
         }
@@ -1079,7 +1085,8 @@ namespace art
         for (int y = 0; y < h; y++)
             for (int x = 0; x < w; x++)
                 if (alpha[size_t(y) * w + x] > 0.03f)
-                    left = std::min(left, x), right = std::max(right, x), top = std::min(top, y), bottom = std::max(bottom, y);
+                    left = std::min(left, x), right = std::max(right, x), top = std::min(top, y),
+                    bottom = std::max(bottom, y);
         if (right < left || bottom < top)
             return {};
         Image cut{ uint32_t(right - left + 1), uint32_t(bottom - top + 1), {} };
@@ -1167,6 +1174,12 @@ namespace art
         return false;
     }
 
+    collection::Json ReadLevelNames(std::string_view game, const Disc& disc)
+    {
+        const Manifest* where = FindManifest(game);
+        return where != nullptr ? ReadLevelNamesFrom(where->levels, disc) : collection::Json::Object();
+    }
+
     Extraction Extract(std::string_view game, const Disc& disc, const std::vector<uint8_t>& titleIconPng, int parts)
     try
     {
@@ -1245,6 +1258,28 @@ namespace art
                 ExtractPartNames(game, where->parts, disc, file);
             }
             result.partNames = std::filesystem::is_regular_file(file, exists);
+        }
+        if ((parts & LevelNames) && where != nullptr && where->levels.IsObject())
+        {
+            std::filesystem::path data = datadir::Game(game);
+            if (!data.empty())
+            {
+                std::filesystem::path file = data / "levels.json";
+                collection::Json cached;
+                std::string text, parseError;
+                {
+                    std::ifstream in(file, std::ios::binary);
+                    text.assign(std::istreambuf_iterator<char>(in), {});
+                }
+                result.levelNames = collection::Json::Parse(text, cached, parseError) &&
+                                    cached["format"].AsInt() == 1 && cached["game"].AsString() == game &&
+                                    cached["reader"].AsInt() == LevelNamesVersion && cached["levels"].IsObject();
+                if (!result.levelNames)
+                {
+                    std::filesystem::create_directories(data, error);
+                    result.levelNames = ExtractLevelNames(game, where->levels, disc, file);
+                }
+            }
         }
         return result;
     }

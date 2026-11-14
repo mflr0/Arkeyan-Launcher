@@ -21,8 +21,15 @@ namespace
 
     int g_failures = 0;
 
-#define I18N_EXPECT(condition) \
-    do { if (!(condition)) { fprintf(stderr, "FAIL %s line %d: %s\n", __FILE__, __LINE__, #condition); g_failures++; } } while (0)
+#define I18N_EXPECT(condition)                                                                                         \
+    do                                                                                                                 \
+    {                                                                                                                  \
+        if (!(condition))                                                                                              \
+        {                                                                                                              \
+            fprintf(stderr, "FAIL %s line %d: %s\n", __FILE__, __LINE__, #condition);                                  \
+            g_failures++;                                                                                              \
+        }                                                                                                              \
+    } while (0)
 
     void Fail(const std::string& message)
     {
@@ -68,16 +75,22 @@ namespace
                     continue;
                 }
                 char c = text[++p];
-                if (c == 'n') out += '\n';
-                else if (c == 't') out += '\t';
+                if (c == 'n')
+                    out += '\n';
+                else if (c == 't')
+                    out += '\t';
                 else if (c == 'x')
                 {
                     int value = 0;
                     while (p + 1 < text.size() && std::isxdigit(static_cast<unsigned char>(text[p + 1])))
-                        value = value * 16 + (std::isdigit(static_cast<unsigned char>(text[p + 1])) ? text[p + 1] - '0' : (std::tolower(text[p + 1]) - 'a' + 10)), p++;
+                        value = value * 16 + (std::isdigit(static_cast<unsigned char>(text[p + 1]))
+                                                     ? text[p + 1] - '0'
+                                                     : (std::tolower(text[p + 1]) - 'a' + 10)),
+                        p++;
                     out += char(value);
                 }
-                else out += c;
+                else
+                    out += c;
             }
             at = p + 1;
             any = true;
@@ -117,7 +130,9 @@ namespace
             {
                 if (IsIdentifier(i > 0 ? text[i - 1] : ' '))
                     continue;
-                size_t length = text.compare(i, 3, "Tr(") == 0 || text.compare(i, 3, "Tf(") == 0 ? 3 : text.compare(i, 3, "N_(") == 0 ? 3 : 0;
+                size_t length = text.compare(i, 3, "Tr(") == 0 || text.compare(i, 3, "Tf(") == 0 ? 3
+                                : text.compare(i, 3, "N_(") == 0                                 ? 3
+                                                                                                 : 0;
                 if (length == 0)
                     continue;
                 size_t at = i + length;
@@ -132,11 +147,11 @@ namespace
     // Calls that put their first argument on the screen: a literal there that doesn't go through Tr is untranslated.
     void CheckNoRawText(const std::vector<fs::path>& files)
     {
-        static const char* const Calls[] = { "PillButton(", "Title(", "BoldText(", "Toast(", "Chip(", "HoldButton(", "SettingRow(",
-            "ui::Button(", "ui::Pill(", "ui::Chip(", "ui::Badge(", "ui::StatusPill(", "ui::Toggle(", "ui::Checkbox(", "ui::Radio(",
-            "ui::ListRow(", "ui::SectionHeader(", "ui::MenuItem(", "ui::Tooltip(",
-            "ImGui::Button(", "ImGui::TextUnformatted(", "ImGui::Selectable(", "ImGui::BeginCombo(", "ImGui::TextWrapped(", "ImGui::SetTooltip(",
-            "ImGui::Text(" };
+        static const char* const Calls[] = { "PillButton(", "Title(", "BoldText(", "Toast(", "Chip(", "HoldButton(",
+            "SettingRow(", "ui::Button(", "ui::Pill(", "ui::Chip(", "ui::Badge(", "ui::StatusPill(", "ui::Toggle(",
+            "ui::Checkbox(", "ui::Radio(", "ui::ListRow(", "ui::SectionHeader(", "ui::MenuItem(", "ui::Tooltip(",
+            "ImGui::Button(", "ImGui::TextUnformatted(", "ImGui::Selectable(", "ImGui::BeginCombo(",
+            "ImGui::TextWrapped(", "ImGui::SetTooltip(", "ImGui::Text(" };
         for (const fs::path& file : files)
         {
             std::string text = Read(file);
@@ -145,7 +160,8 @@ namespace
                 std::string name = call;
                 for (size_t at = text.find(name); at != std::string::npos; at = text.find(name, at + 1))
                 {
-                    if (at > 0 && (IsIdentifier(text[at - 1]) || (text[at - 1] == ':' && name.find("::") == std::string::npos)))
+                    if (at > 0 &&
+                        (IsIdentifier(text[at - 1]) || (text[at - 1] == ':' && name.find("::") == std::string::npos)))
                         continue;
                     size_t p = at + name.size();
                     // BeginCombo's first argument is its id; the shown text is the second.
@@ -158,13 +174,16 @@ namespace
                     }
                     std::string literal;
                     size_t end = p;
-                    if (!ReadLiterals(text, end, literal) || literal.rfind("##", 0) == 0 || literal == "SKYLAUNCHER" || literal == "Skylauncher" || literal == "Arkeyan Launcher" || literal == "ARKEYAN LAUNCHER" || literal == "%s")
+                    if (!ReadLiterals(text, end, literal) || literal.rfind("##", 0) == 0 || literal == "SKYLAUNCHER" ||
+                        literal == "Skylauncher" || literal == "Arkeyan Launcher" || literal == "ARKEYAN LAUNCHER" ||
+                        literal == "%s")
                         continue;
                     bool letters = false;
                     for (char c : literal)
                         letters = letters || std::isalpha(static_cast<unsigned char>(c));
                     if (letters)
-                        Fail(file.filename().string() + ": " + name + "\"" + literal.substr(0, 50) + "\" is not translated (wrap it in Tr)");
+                        Fail(file.filename().string() + ": " + name + "\"" + literal.substr(0, 50) +
+                             "\" is not translated (wrap it in Tr)");
                 }
             }
         }
@@ -178,13 +197,29 @@ namespace
         valid = true;
         for (size_t i = 0; i < text.size(); i++)
         {
-            if (text[i] == '{' && i + 1 < text.size() && text[i + 1] == '{') { i++; continue; }
-            if (text[i] == '}' && i + 1 < text.size() && text[i + 1] == '}') { i++; continue; }
-            if (text[i] == '}') { valid = false; continue; }
+            if (text[i] == '{' && i + 1 < text.size() && text[i + 1] == '{')
+            {
+                i++;
+                continue;
+            }
+            if (text[i] == '}' && i + 1 < text.size() && text[i + 1] == '}')
+            {
+                i++;
+                continue;
+            }
+            if (text[i] == '}')
+            {
+                valid = false;
+                continue;
+            }
             if (text[i] != '{')
                 continue;
             size_t close = text.find('}', i);
-            if (close == std::string::npos) { valid = false; return found; }
+            if (close == std::string::npos)
+            {
+                valid = false;
+                return found;
+            }
             std::string field = text.substr(i + 1, close - i - 1), spec;
             if (size_t colon = field.find(':'); colon != std::string::npos)
             {
@@ -221,6 +256,10 @@ namespace
             if (translation.empty())
                 Fail(name + ": empty translation: " + english.substr(0, 60));
         }
+        // SKY_LAUNCHER_TEST_I18N_MISSING_OK=1 (pull requests in CI): a missing string is a warning; the other languages
+        // are filled before a release (CONTRIBUTING.md), and every other check still fails.
+        const char* missingOk = skyenv::Get("SKY_LAUNCHER_TEST_I18N_MISSING_OK");
+        const bool warnMissing = missingOk != nullptr && std::string(missingOk) == "1";
         int missing = 0;
         for (const std::string& key : keys)
         {
@@ -228,16 +267,23 @@ namespace
             if (it == entries.end())
             {
                 if (missing++ < MaxListed)
-                    Fail(name + ": missing: " + key.substr(0, 80));
+                {
+                    if (warnMissing)
+                        fprintf(stderr, "warning: %s: missing: %s\n", name.c_str(), key.substr(0, 80).c_str());
+                    else
+                        Fail(name + ": missing: " + key.substr(0, 80));
+                }
                 continue;
             }
             // French: a no-break space before : ? ! % (the file's own rule), never a plain space.
             if (catalog.code == "fr")
                 for (const char* mark : { " :", " ?", " !", " %" })
                     if (it->second.find(mark) != std::string::npos)
-                        Fail(name + ": a plain space before '" + std::string(mark + 1) + "' (use a no-break space): " + it->second.substr(0, 60));
+                        Fail(name + ": a plain space before '" + std::string(mark + 1) +
+                             "' (use a no-break space): " + it->second.substr(0, 60));
             bool englishValid, translatedValid;
-            std::map<int, std::string> english = Placeholders(key, englishValid), translated = Placeholders(it->second, translatedValid);
+            std::map<int, std::string> english = Placeholders(key, englishValid),
+                                       translated = Placeholders(it->second, translatedValid);
             if (!translatedValid || english != translated)
                 Fail(name + ": the placeholders differ from the English: " + key.substr(0, 60));
         }
@@ -287,9 +333,9 @@ int I18nChecks()
     I18N_EXPECT(i18n::Tf("Last checked {}", 5) != "Last checked 5");
     // The game's Language tab in French: its rows, their hints and the names of the languages written in the launcher's own words
     // (a language the font can't draw) are French; the names that are each language's own ("English", "Français") stay as they are.
-    for (const char* label : { "Language", "Game text", "Menus, subtitles and on-screen text.", "Game voices", "Spoken lines and cutscenes.",
-             "Game language", "Menus, subtitles, spoken lines and cutscenes.", "Same as text", "System default", "Russian", "Greek",
-             "Japanese", "Korean", "Chinese" })
+    for (const char* label : { "Language", "Game text", "Menus, subtitles and on-screen text.", "Game voices",
+             "Spoken lines and cutscenes.", "Game language", "Menus, subtitles, spoken lines and cutscenes.",
+             "Same as text", "System default", "Russian", "Greek", "Japanese", "Korean", "Chinese" })
         I18N_EXPECT(std::string(i18n::Tr(label)) != label);
     I18N_EXPECT(std::string(i18n::Tr("English")) == "English");
     i18n::SetLanguage("zz"); // a language without a file: English

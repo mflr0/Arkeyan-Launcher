@@ -9,8 +9,15 @@ namespace
 {
     int g_failures = 0;
 
-#define FIT_EXPECT(condition) \
-    do { if (!(condition)) { fprintf(stderr, "FAIL %s line %d: %s\n", __FILE__, __LINE__, #condition); g_failures++; } } while (0)
+#define FIT_EXPECT(condition)                                                                                          \
+    do                                                                                                                 \
+    {                                                                                                                  \
+        if (!(condition))                                                                                              \
+        {                                                                                                              \
+            fprintf(stderr, "FAIL %s line %d: %s\n", __FILE__, __LINE__, #condition);                                  \
+            g_failures++;                                                                                              \
+        }                                                                                                              \
+    } while (0)
 
     float Width(const std::string& text)
     {
@@ -33,7 +40,10 @@ int TextFitChecks()
     FIT_EXPECT(Fit("Downloading the tools 79 %", 4) == "D...");
     FIT_EXPECT(Fit("Downloading the tools 79 %", 3) == "...");
     // Accented text: whole characters, never half of one.
-    FIT_EXPECT(Fit("T\xC3\xA9l\xC3\xA9" "chargement des outils 79 %", 8) == "T\xC3\xA9l\xC3\xA9" "c...");
+    FIT_EXPECT(Fit("T\xC3\xA9l\xC3\xA9"
+                   "chargement des outils 79 %",
+                   8) == "T\xC3\xA9l\xC3\xA9"
+                         "c...");
     FIT_EXPECT(Fit("\xC3\xA9\xC3\xA9\xC3\xA9\xC3\xA9", 3) == "...");
     FIT_EXPECT(Fit("\xC3\xA9\xC3\xA9\xC3\xA9\xC3\xA9", 4) == "\xC3\xA9\xC3\xA9\xC3\xA9\xC3\xA9");
     FIT_EXPECT(Fit("\xE2\x82\xAC\xE2\x82\xAC\xE2\x82\xAC\xE2\x82\xAC\xE2\x82\xAC", 4) == "\xE2\x82\xAC...");
