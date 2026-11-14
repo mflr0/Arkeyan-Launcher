@@ -138,6 +138,9 @@ Change the top	Byt överdel
 Change...	Ändra...
 Changed	Ändrad
 Check at startup	Sök vid start
+Receive betas	Ta emot betor
+Offers test builds of the next version, then the final one.	Erbjuder testversioner av nästa version och sedan den slutliga.
+Beta	Beta
 Check for updates	Sök efter uppdateringar
 Check now	Sök nu
 Checking Arkeyan Launcher	Kontrollerar Arkeyan Launcher

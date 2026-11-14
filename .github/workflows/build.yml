@@ -1,10 +1,11 @@
 name: Build
 
-# Every push to main or feat/** builds Windows, Linux and macOS. Pushing a tag vX.Y.Z (the version in CMakeLists.txt)
-# publishes a release with:
+# Every push to main or feat/** builds Windows, Linux and macOS. Pushing a tag v<version> builds that version and makes a
+# draft release with:
 # ArkeyanLauncher.exe, ArkeyanLauncher-x86_64.AppImage, ArkeyanLauncher-macOS.dmg and ArkeyanLauncher-macOS.zip (the .app), and
-# SHA256SUMS (their SHA-256, which the launcher's updater checks; docs/updates.md). Branches and pull requests only build,
-# with the version in CMakeLists.txt.
+# SHA256SUMS (their SHA-256, which the launcher's updater checks; docs/updates.md). A tag other than vX.Y.Z (v0.9.8b1) is a
+# test build: its release is marked as a pre-release. The draft is published once the game kits are added to it
+# (docs/updates.md, "Releases"). Branches and pull requests only build, with the version in CMakeLists.txt.
 on:
   push:
     branches: [main, 'release-*', 'feat/**']
@@ -182,8 +183,8 @@ jobs:
 
   release:
     needs: [windows, linux, macos]
-    # Only a v* tag publishes, and never a pre-release tag (v1.2.3-beta.1): those are published by hand, marked as pre-releases.
-    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && startsWith(github.ref, 'refs/tags/v') && !contains(github.ref, '-')
+    # Only a v* tag makes a release: a draft, a pre-release when the tag is not vX.Y.Z.
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -199,12 +200,15 @@ jobs:
         run: |
           # The launcher's updater checks every download against this file (docs/updates.md): one line per asset.
           (cd dist && sha256sum ArkeyanLauncher.exe ArkeyanLauncher-x86_64.AppImage ArkeyanLauncher-macOS.dmg ArkeyanLauncher-macOS.zip > SHA256SUMS && cat SHA256SUMS)
+          # A draft (the kits are added before it is published); a test build is a pre-release.
+          kind=(--draft)
+          if ! [[ "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then kind+=(--prerelease); fi
           # The notes are docs/releases/<tag>.md when it exists.
           if [ -f "docs/releases/$VERSION.md" ]; then
-            gh release create "$VERSION" dist/* --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+            gh release create "$VERSION" dist/* "${kind[@]}" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
               --title "Arkeyan Launcher $VERSION" --notes-file "docs/releases/$VERSION.md"
           else
             notes="Built from ${GITHUB_SHA::7}. You need your own copy of the game; see the README."
-            gh release create "$VERSION" dist/* --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+            gh release create "$VERSION" dist/* "${kind[@]}" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
               --title "Arkeyan Launcher $VERSION" --notes "$notes"
           fi

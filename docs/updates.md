@@ -1,7 +1,8 @@
 # Updates
 
 Arkeyan Launcher updates itself from GitHub releases (`src/launcher/updater.{h,cpp}`, the window side in `ui/update_page.cpp`).
-No telemetry: the only request is `GET https://api.github.com/repos/<repo>/releases/latest`, then the asset.
+No telemetry: the only request is `GET https://api.github.com/repos/<repo>/releases/latest` (with "Receive betas" on,
+`/releases?per_page=30` instead), then the asset.
 
 ## Flow
 
@@ -10,7 +11,8 @@ No telemetry: the only request is `GET https://api.github.com/repos/<repo>/relea
    turns the start-up check off. **Offline, or any failure, is silent**: nothing is shown and nothing is asked again until the
    next start.
 2. The tag (`vX.Y.Z`) is compared, as semver, with the built version (`LAUNCHER_VERSION`, the CMake cache variable the CI
-   sets from the tag or run number, shown in About). Pre-releases and tags that aren't versions are never offered.
+   sets from the tag or run number, shown in About). Tags that aren't versions are never offered; test builds only with
+   "Receive betas" on (below).
 3. A **banner** above the page (it pushes the page down 56 px, nothing overlaps): "Update available: vX.Y.Z", **Update now**,
    **What's new** (the release's notes, as written, and its page), **Later** (until the next start).
 4. **Update now**: the asset for this OS is downloaded next to the running program (`.skylauncher-update/`), its SHA-256 is
@@ -64,6 +66,24 @@ large kit. Install file lists and integrity checks already use the same helper.
 A missing checksum list or line refuses the download. A hash mismatch or read failure deletes the downloaded asset;
 cancelling during verification also deletes it. An interrupted transfer fails and removes its `.part` file, without
 installing anything. Curl's retry and redirect handling are unchanged.
+
+## Test builds (betas)
+
+A test build of the next version is tagged `v<X.Y.Z>b<N>` (`v0.9.8b1`) and published as a GitHub **pre-release** with its own
+kits, so it installs and builds games like a final release.
+
+- **Order**: a letter after the numbers starts a pre-release, like `-beta.1`; its numbers compare as numbers
+  (`ParseSemVer`, `CompareSemVer`): `0.9.7 < 0.9.8b1 < 0.9.8b2 < 0.9.8b10 < 0.9.8`.
+- **Receive betas** (Settings > Launcher, `[update] betas`): off, the check reads `/releases/latest`, which GitHub never
+  answers with a pre-release, so only final versions are offered. On, it reads the list of recent releases (drafts left out)
+  and takes the newest version, test build or final (`NewestRelease`): each new test build, then the final version. The
+  games line is read from that same release, whose kit is the one its launcher downloads (`v<launcher version>`).
+- **Default**: off, and on when the running launcher is itself a test build (`IsBetaVersion(LauncherVersion())`) and the
+  player has not chosen. Turned off in a test build, it offers the next final version. Turning it on or off checks again at
+  once when "Check at startup" is on.
+- **Shown**: a **Beta** badge beside the version in the sidebar and in About; the version is the first line of the
+  launcher's output (`launcher: Arkeyan Launcher <version>`) and the second of each game log (`# Arkeyan Launcher
+  <version>`), so a bug report says which build it came from.
 
 ## The game kit
 
@@ -133,11 +153,17 @@ A launcher never builds with a kit older than its own release, and never starts 
 
 1. Bump `LAUNCHER_VERSION` in `CMakeLists.txt` and commit.
 2. Tag the commit `vX.Y.Z` and push the tag.
-3. Wait for the CI: it publishes the release with the launcher assets and `SHA256SUMS`.
+3. Wait for the CI: it makes a **draft** release with the launcher assets and `SHA256SUMS`; a tag other than `vX.Y.Z`
+   (`v0.9.8b1`) is also marked as a **pre-release**.
 4. `tools/release_kit.sh vX.Y.Z skylanders-kit-windows-x64.zip skylanders-kit-macos-arm64.zip` (needs `gh`): uploads the kit zips,
    downloads the release's `SHA256SUMS`, replaces or appends the kit lines and uploads it again with `--clobber`, then puts the
    games line (from the kits' `kit.txt`) at the end of the release's notes. `DRY_RUN=1` prints the new notes and the upload list and
    changes nothing.
+5. Check the draft (the launcher files, the kits, `SHA256SUMS` listing them all, the games line), then publish it:
+   `gh release edit <tag> --draft=false` (a test build stays a pre-release). Players see nothing before this step.
+
+A test build is released the same way from the next version's release branch, tagged `v<X.Y.Z>b<N>`; no code change is
+needed, the CI builds with `-DLAUNCHER_VERSION` from the tag.
 
 A kit-only update is a new release the same way (a new tag, the launcher unchanged in behaviour).
 
@@ -145,14 +171,15 @@ A kit-only update is a new release the same way (a new tag, the launcher unchang
 
 The release job of `.github/workflows/build.yml` attaches `ArkeyanLauncher.exe`, `ArkeyanLauncher-x86_64.AppImage`,
 `ArkeyanLauncher-macOS.dmg`, `ArkeyanLauncher-macOS.zip` and **`SHA256SUMS`**
-(`sha256sum` format, one line per asset, written by the job; the kits are added by `tools/release_kit.sh`). Only a pushed tag `vX.Y.Z` publishes, and it must match `LAUNCHER_VERSION` in `CMakeLists.txt`: bump that first,
-then tag the commit. Branch builds publish nothing.
+(`sha256sum` format, one line per asset, written by the job; the kits are added by `tools/release_kit.sh`). Only a pushed tag
+`v<version>` makes a release, always a **draft**, and a **pre-release** when the tag is not `vX.Y.Z`; the CI builds that
+version (`-DLAUNCHER_VERSION` from the tag). Branch builds publish nothing.
 
 ## Testing
 
 `ArkeyanLauncherTest` builds fake releases in a scratch folder (`latest.json`, assets, `SHA256SUMS`, served as `file://` through
 `SKY_LAUNCHER_UPDATE_URL`): version compare, the JSON, a good download, a damaged one, no `SHA256SUMS`, the swap and its
-rollback, zip path escapes, the kit install (`Arkeyan-Builder` or `SSABuild`), the kit download (a fake release with a kit zip: good, bad hash, missing line, fallback to the latest), the games line (read, skipped entries, absent, comments stripped) and the manager. "The kit follows the launcher" has its own checks (`ArkeyanLauncherTest`; `SKY_LAUNCHER_TEST_KIT_ONLY=1` runs only them; `SKY_LAUNCHER_TEST_LANGUAGE=fr` takes the screenshots in French, the text checks then fail):
+rollback, zip path escapes, the kit install (`Arkeyan-Builder` or `SSABuild`), the kit download (a fake release with a kit zip: good, bad hash, missing line, fallback to the latest), the games line (read, skipped entries, absent, comments stripped), the manager, and the test builds (their order, the list of releases with "Receive betas" on and off, drafts left out). "The kit follows the launcher" has its own checks (`ArkeyanLauncherTest`; `SKY_LAUNCHER_TEST_KIT_ONLY=1` runs only them; `SKY_LAUNCHER_TEST_LANGUAGE=fr` takes the screenshots in French, the text checks then fail):
 `kit.txt` `games=`, the release a kit comes from, a kit next to the launcher against a downloaded one
 (`SKY_LAUNCHER_BASE_PATH` stands in for the folder the launcher is in), then the window against a fake release (a kit next to the
 launcher from an older release, replaced before INSTALL builds; a kit without `giants` and a Giants disc, the right kit first; at

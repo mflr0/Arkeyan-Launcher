@@ -138,6 +138,9 @@ Change the top	Vaihda yläosa
 Change...	Vaihda...
 Changed	Muutettu
 Check at startup	Tarkista käynnistyksessä
+Receive betas	Vastaanota betat
+Offers test builds of the next version, then the final one.	Tarjoaa seuraavan version testiversiot ja sitten lopullisen version.
+Beta	Beta
 Check for updates	Tarkista päivitykset
 Check now	Tarkista nyt
 Checking Arkeyan Launcher	Tarkistetaan: Arkeyan Launcher

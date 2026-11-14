@@ -137,6 +137,9 @@ Change the top	Skift toppen
 Change...	Skift...
 Changed	Ændret
 Check at startup	Kontrollér ved start
+Receive betas	Modtag betaer
+Offers test builds of the next version, then the final one.	Tilbyder testudgaver af den næste version og derefter den endelige.
+Beta	Beta
 Check for updates	Søg efter opdateringer
 Check now	Kontrollér nu
 Checking Arkeyan Launcher	Kontrollerer Arkeyan Launcher

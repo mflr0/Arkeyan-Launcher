@@ -879,6 +879,14 @@ namespace
             IsNewer("v1.0.0", "1.0.0-rc.1") && !IsNewer("v1.0.0-rc.1", "1.0.0") && !IsNewer("nonsense", "1.0.0"));
         SHELL_EXPECT(IsNewer("0.7.0", "0.7.0-beta.1") && !IsNewer("0.7.0-beta.1", "0.7.0"));
         SHELL_EXPECT(ParseSemVer(LauncherVersion()).valid);
+        // Test builds: a letter after the numbers is a pre-release, and its number counts as a number.
+        SHELL_EXPECT(ParseSemVer("v0.9.8b1").patch == 8 && ParseSemVer("v0.9.8b1").pre == "b1");
+        SHELL_EXPECT(IsNewer("0.9.8b2", "0.9.8b1") && IsNewer("0.9.8b10", "0.9.8b2") && IsNewer("v0.9.8", "0.9.8b10"));
+        SHELL_EXPECT(IsNewer("0.9.8b1", "0.9.7") && !IsNewer("0.9.8b1", "0.9.8") && !IsNewer("v0.9.8b2", "0.9.8b2"));
+        SHELL_EXPECT(IsNewer("1.0.0-beta.10", "1.0.0-beta.2") && !IsNewer("1.0.0-beta.2", "1.0.0-beta.10"));
+        SHELL_EXPECT(ParseSemVer("skylanders-kit-windows-x64.zip").pre.empty() && ParseSemVer("1.2.zip").pre.empty());
+        SHELL_EXPECT(IsBetaVersion("0.9.8b1") && IsBetaVersion("1.0.0-rc.1") && !IsBetaVersion("0.9.8") &&
+                     !IsBetaVersion("latest"));
         for (const char* tag : { ".", ".." })
         {
             auto folder = KitFolderFor(scratch / "kits", tag).lexically_normal();
@@ -1129,6 +1137,50 @@ namespace
         manager.Check(settings);
         WaitFor(manager);
         SHELL_EXPECT(manager.Snapshot().checked && manager.Snapshot().games.empty()); // a body without the line
+        // Receive betas: the list of releases, the newest of its test builds and finals; off, the latest final only.
+        // Drafts are never offered.
+        auto releaseJson = [&](const std::string& name, const std::string& tag, bool prerelease, bool draft,
+                               const std::string& notes) {
+            MakeRelease(updates / "list" / name, tag, { { "ArkeyanLauncher.exe", "x" } }, {}, true, notes);
+            std::string json = ReadBytes(updates / "list" / name / "latest.json");
+            json.replace(json.find("\"prerelease\":false"), 18,
+                std::string("\"prerelease\":") + (prerelease ? "true" : "false") +
+                    ",\"draft\":" + (draft ? "true" : "false"));
+            return json;
+        };
+        const std::string finalJson = releaseJson("final", "v99.0.0", false, false, "<!-- games: ssa=9.0.0 -->");
+        WriteBytes(updates / "list" / "latest.json", finalJson);
+        WriteBytes(updates / "list" / "releases.json",
+            "[" + releaseJson("draft", "v99.2.0", false, true, "") + "," +
+                releaseJson("b2", "v99.1.0b2", true, false, "") + "," +
+                releaseJson("b10", "v99.1.0b10", true, false, "<!-- games: ssa=9.1.0 -->") + "," + finalJson + "]");
+        TestSetEnv("SKY_LAUNCHER_UPDATE_URL", FileUrl(updates / "list" / "latest.json").c_str());
+        settings.kitRepo = settings.repo;
+        manager.Check(settings);
+        WaitFor(manager);
+        state = manager.Snapshot();
+        SHELL_EXPECT(state.checked && state.launcherNewer && state.launcher.tag == "v99.0.0" &&
+                     state.games.size() == 1 && state.games[0].kit == "v99.0.0");
+        settings.betas = true;
+        manager.Check(settings);
+        WaitFor(manager);
+        state = manager.Snapshot();
+        SHELL_EXPECT(state.checked && state.launcherNewer && state.launcher.tag == "v99.1.0b10" &&
+                     state.launcher.prerelease && state.games.size() == 1 && state.games[0].version == "9.1.0" &&
+                     state.games[0].kit == "v99.1.0b10");
+        WriteBytes(updates / "list" / "releases.json", "[" + releaseJson("final2", "v99.1.0", false, false, "") + "," +
+                                                           releaseJson("b10", "v99.1.0b10", true, false, "") + "]");
+        manager.Check(settings);
+        WaitFor(manager);
+        SHELL_EXPECT(manager.Snapshot().launcher.tag == "v99.1.0"); // the final version after its test builds
+        WriteBytes(updates / "list" / "releases.json", "{\"message\":\"Not Found\"}");
+        manager.Check(settings);
+        WaitFor(manager);
+        SHELL_EXPECT(
+            !manager.Snapshot().checked && manager.Snapshot().checkError.find("Not Found") != std::string::npos);
+        std::vector<ReleaseInfo> none;
+        SHELL_EXPECT(NewestRelease(none, true) == nullptr);
+        settings = {};
         // The kit download INSTALL starts with: the release of this launcher's tag,
         // else the latest, verified, then found.
         auto setEnv = [](const char* name, const std::string& value) { TestSetEnv(name, value.c_str()); };

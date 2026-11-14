@@ -6,6 +6,7 @@
 #include "launcher/problem_report.h"
 #include "launcher/shortcut.h"
 #include "launcher/single_instance.h"
+#include "launcher/updater.h"
 #include "launcher/ui/launcher_ui.h"
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
@@ -61,6 +62,7 @@ int main(int argc, char** argv)
             return 0;
         }
     }
+    fprintf(stderr, "launcher: Arkeyan Launcher %s\n", LauncherVersion().c_str()); // which build a report came from
     datadir::MigrateOnce(); // the older folders into <data root> (docs/install.md), before any path is used
     std::string configPath = LauncherConfigPath();
     LauncherConfig config = LoadLauncherConfig(configPath);

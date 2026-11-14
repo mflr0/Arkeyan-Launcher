@@ -74,6 +74,9 @@ Carry on copying	Reprendre la copie
 Change disc...	Changer de disque...
 Check now	Vérifier maintenant
 Check at startup	Vérifier au démarrage
+Receive betas	Recevoir les bêtas
+Offers test builds of the next version, then the final one.	Propose les versions de test de la prochaine version, puis la version finale.
+Beta	Bêta
 Checking Arkeyan Launcher	Vérification d'Arkeyan Launcher
 Checking the Xbox 360 executable	Vérification de l'exécutable Xbox 360
 Checking your disc	Vérification du disque

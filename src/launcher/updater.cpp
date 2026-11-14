@@ -243,7 +243,59 @@ SemVer ParseSemVer(std::string_view text)
         size_t end = text.find('+', i);
         version.pre = std::string(text.substr(i + 1, end == std::string_view::npos ? end : end - i - 1));
     }
+    else if (i < text.size() && std::isalpha(static_cast<unsigned char>(text[i])) &&
+             std::isdigit(static_cast<unsigned char>(text[i - 1])))
+    {
+        // A test build's "0.9.8b1": letters then digits right after the numbers, up to the end or a "+".
+        size_t end = i;
+        while (end < text.size() && std::isalpha(static_cast<unsigned char>(text[end])))
+            end++;
+        while (end < text.size() && std::isdigit(static_cast<unsigned char>(text[end])))
+            end++;
+        if (end == text.size() || text[end] == '+')
+            version.pre = std::string(text.substr(i, end - i));
+    }
     return version;
+}
+
+namespace
+{
+    // Runs of digits compare as numbers, the rest as text: "b2" < "b10", "beta.2" < "beta.10", "beta" < "rc".
+    int ComparePre(std::string_view a, std::string_view b)
+    {
+        auto digit = [](char c) { return std::isdigit(static_cast<unsigned char>(c)) != 0; };
+        size_t i = 0, j = 0;
+        while (i < a.size() && j < b.size())
+        {
+            if (digit(a[i]) && digit(b[j]))
+            {
+                size_t ei = i, ej = j;
+                while (ei < a.size() && digit(a[ei]))
+                    ei++;
+                while (ej < b.size() && digit(b[ej]))
+                    ej++;
+                std::string_view na = a.substr(i, ei - i), nb = b.substr(j, ej - j);
+                while (na.size() > 1 && na.front() == '0')
+                    na.remove_prefix(1);
+                while (nb.size() > 1 && nb.front() == '0')
+                    nb.remove_prefix(1);
+                if (na.size() != nb.size())
+                    return na.size() < nb.size() ? -1 : 1;
+                if (int c = na.compare(nb); c != 0)
+                    return c < 0 ? -1 : 1;
+                i = ei;
+                j = ej;
+                continue;
+            }
+            if (a[i] != b[j])
+                return static_cast<unsigned char>(a[i]) < static_cast<unsigned char>(b[j]) ? -1 : 1;
+            i++;
+            j++;
+        }
+        if (i < a.size() || j < b.size())
+            return i < a.size() ? 1 : -1;
+        return 0;
+    }
 }
 
 int CompareSemVer(const SemVer& a, const SemVer& b)
@@ -260,12 +312,35 @@ int CompareSemVer(const SemVer& a, const SemVer& b)
         return 1;  // 1.0.0 is after 1.0.0-beta
     if (b.pre.empty())
         return -1;
-    return a.pre < b.pre ? -1 : 1;
+    return ComparePre(a.pre, b.pre);
 }
 
 std::string LauncherVersion() { return SKYLAUNCHER_VERSION_STRING; }
 
+bool IsBetaVersion(std::string_view version)
+{
+    SemVer parsed = ParseSemVer(version);
+    return parsed.valid && !parsed.pre.empty();
+}
+
 // ---- Releases -----------------------------------------------------------------------------------------------------
+
+namespace
+{
+    void ReadRelease(const JsonValue& root, ReleaseInfo& release)
+    {
+        release = {};
+        release.tag = root["tag_name"].Str();
+        release.name = root["name"].Str();
+        release.notes = root["body"].Str();
+        release.pageUrl = root["html_url"].Str();
+        release.prerelease = root["prerelease"].boolean;
+        const JsonValue& assets = root["assets"];
+        for (size_t i = 0; assets.IsArray() && i < assets.array.size(); i++)
+            release.assets.push_back({ assets[i]["name"].Str(), assets[i]["browser_download_url"].Str(),
+                uint64_t(assets[i]["size"].number) });
+    }
+}
 
 bool ParseRelease(const std::string& json, ReleaseInfo& release, std::string* error)
 {
@@ -284,17 +359,55 @@ bool ParseRelease(const std::string& json, ReleaseInfo& release, std::string* er
                                                 : std::string(Tr("The answer has no release in it"));
         return false;
     }
-    release = {};
-    release.tag = root["tag_name"].Str();
-    release.name = root["name"].Str();
-    release.notes = root["body"].Str();
-    release.pageUrl = root["html_url"].Str();
-    release.prerelease = root["prerelease"].boolean;
-    const JsonValue& assets = root["assets"];
-    for (size_t i = 0; assets.IsArray() && i < assets.array.size(); i++)
-        release.assets.push_back(
-            { assets[i]["name"].Str(), assets[i]["browser_download_url"].Str(), uint64_t(assets[i]["size"].number) });
+    ReadRelease(root, release);
     return true;
+}
+
+bool ParseReleaseList(const std::string& json, std::vector<ReleaseInfo>& releases, std::string* error)
+{
+    releases.clear();
+    JsonValue root;
+    std::string parseError;
+    if (!ParseJson(json, root, &parseError))
+    {
+        if (error != nullptr)
+            *error = Tf("The answer isn't valid JSON ({})", parseError);
+        return false;
+    }
+    if (!root.IsArray())
+    {
+        if (error != nullptr)
+            *error = root["message"].IsString() ? Tf("GitHub says: {}", root["message"].Str())
+                                                : std::string(Tr("The answer has no release in it"));
+        return false;
+    }
+    for (size_t i = 0; i < root.array.size(); i++)
+    {
+        if (root[i]["tag_name"].Str().empty() || root[i]["draft"].boolean)
+            continue;
+        ReleaseInfo release;
+        ReadRelease(root[i], release);
+        releases.push_back(std::move(release));
+    }
+    return true;
+}
+
+const ReleaseInfo* NewestRelease(const std::vector<ReleaseInfo>& releases, bool betas)
+{
+    const ReleaseInfo* best = nullptr;
+    SemVer bestVersion;
+    for (const ReleaseInfo& release : releases)
+    {
+        SemVer version = ParseSemVer(release.tag);
+        if (!version.valid || (!betas && (release.prerelease || !version.pre.empty())))
+            continue;
+        if (best == nullptr || CompareSemVer(version, bestVersion) > 0)
+        {
+            best = &release;
+            bestVersion = version;
+        }
+    }
+    return best;
 }
 
 std::string StripHtmlComments(std::string text)
@@ -415,6 +528,16 @@ std::string LatestReleaseUrl(const std::string& repo)
     if (const char* url = LauncherEnv("SKY_LAUNCHER_UPDATE_URL"); url != nullptr && *url != 0)
         return url;
     return "https://api.github.com/repos/" + repo + "/releases/latest";
+}
+
+std::string ReleaseListUrl(const std::string& repo)
+{
+    if (const char* url = LauncherEnv("SKY_LAUNCHER_UPDATE_URL"); url != nullptr && *url != 0)
+    {
+        std::string base = url;
+        return base.substr(0, base.find_last_of('/') + 1) + "releases.json";
+    }
+    return "https://api.github.com/repos/" + repo + "/releases?per_page=30";
 }
 
 fs::path KitFolderFor(const fs::path& kitRoot, const std::string& tag)
@@ -981,15 +1104,30 @@ void UpdateManager::Check(const Settings& settings)
     }
     m_thread = std::thread([this] {
         fs::path temp = LauncherDataFolder() / "update"; // the player's own folder, not a shared temporary one
+        // Off: the latest final release. "Receive betas": the newest of the recent releases, test builds included.
         auto fetch = [&](const std::string& repo, ReleaseInfo& release, std::string& error) {
-            fs::path file = temp / "latest.json";
-            HttpResult result = HttpDownload(LatestReleaseUrl(repo), file, {}, &m_cancel);
+            fs::path file = temp / (m_settings.betas ? "releases.json" : "latest.json");
+            HttpResult result =
+                HttpDownload(m_settings.betas ? ReleaseListUrl(repo) : LatestReleaseUrl(repo), file, {}, &m_cancel);
             if (!result.ok)
             {
                 error = result.error;
                 return false;
             }
-            if (!ParseRelease(ReadText(file), release, &error))
+            if (m_settings.betas)
+            {
+                std::vector<ReleaseInfo> releases;
+                if (!ParseReleaseList(ReadText(file), releases, &error))
+                    return false;
+                const ReleaseInfo* newest = NewestRelease(releases, true);
+                if (newest == nullptr)
+                {
+                    error = Tr("The answer has no release in it");
+                    return false;
+                }
+                release = *newest;
+            }
+            else if (!ParseRelease(ReadText(file), release, &error))
                 return false;
             release.repo = repo;
             return true;
@@ -1014,7 +1152,8 @@ void UpdateManager::Check(const Settings& settings)
             m_state.phase = Phase::Idle;
             m_state.checked = launcherOk;
             m_state.checkError = launcherOk ? std::string() : error;
-            m_state.launcherNewer = launcherOk && !launcher.prerelease && IsNewer(launcher.tag, LauncherVersion());
+            m_state.launcherNewer =
+                launcherOk && (m_settings.betas || !launcher.prerelease) && IsNewer(launcher.tag, LauncherVersion());
             if (launcherOk)
                 m_state.launcher = launcher;
             m_state.games = std::move(games);
