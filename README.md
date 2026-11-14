@@ -5,7 +5,7 @@
 <a href="https://github.com/mflr0/Arkeyan-Launcher/releases"><img alt="Downloads" src="https://img.shields.io/github/downloads/mflr0/Arkeyan-Launcher/total"></a>
 <a href="https://github.com/mflr0/Arkeyan-Launcher/actions/workflows/build.yml"><img alt="Build" src="https://img.shields.io/github/actions/workflow/status/mflr0/Arkeyan-Launcher/build.yml?branch=main"></a>
 <a href="https://github.com/mflr0/Arkeyan-Launcher/issues"><img alt="Open issues" src="https://img.shields.io/github/issues/mflr0/Arkeyan-Launcher"></a>
-<a href="https://github.com/mflr0/Arkeyan-Launcher/milestone/1"><img alt="Next version" src="https://img.shields.io/github/milestones/progress-percent/mflr0/Arkeyan-Launcher/1?label=0.9.6"></a>
+<a href="https://github.com/mflr0/Arkeyan-Launcher/milestone/5"><img alt="Next version" src="https://img.shields.io/github/milestones/progress-percent/mflr0/Arkeyan-Launcher/5?label=0.9.7"></a>
 <img alt="Platforms" src="https://img.shields.io/badge/platforms-Windows%20%7C%20macOS%20%7C%20Linux-blue">
 <a href="https://discord.gg/UMQY4SAS3F"><img alt="Discord" src="https://img.shields.io/badge/Discord-join-5865F2?logo=discord&logoColor=white"></a>
 <a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/mflr0/Arkeyan-Launcher"></a>
@@ -291,9 +291,12 @@ The developer docs are in `docs/`: `launcher_ui.md` covers the screens and theme
   PlayStation and PC portals work everywhere.
 - Giants: in a maximized window wider than 16:9, the menus can jitter
   ([#78](https://github.com/mflr0/Arkeyan-Launcher/issues/78)); setting Widescreen to 16:9 in the game's settings avoids it.
+- Giants: some water and textures can flicker while a Skylander's ranged attack lights them (Bouncer, Swarm)
+  ([#96](https://github.com/mflr0/Arkeyan-Launcher/issues/96)). Being fixed for 0.9.7.
 - Swap Force: the core seen through the cage in the tutorial's volcano is drawn with dark streaks
   ([#80](https://github.com/mflr0/Arkeyan-Launcher/issues/80)).
-- Trap Team: a real Traptanium portal's speaker has not been tried yet.
+- Trap Team: a Wii Traptanium portal can stop answering until the game restarts
+  ([#99](https://github.com/mflr0/Arkeyan-Launcher/issues/99)). Fixed for 0.9.7.
 - The mouse does nothing in the games' own menus yet: use the keyboard or a controller there.
 - The Mac app is not notarized, and Windows SmartScreen or Defender may warn about the launcher (see
   [Windows Defender alerts](#windows-defender-alerts)).
