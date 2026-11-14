@@ -1735,7 +1735,9 @@ namespace launcher_ui
         {
             const ImVec2 titleAt(left, ImGui::GetCursorScreenPos().y);
             const std::string version = "v" + LauncherVersion();
-            const float versionW = ui::TextSize(ui::TextStyle::Caption, version.c_str(), nullptr, true).x;
+            const bool beta = IsBetaVersion(LauncherVersion());
+            const float versionW = ui::TextSize(ui::TextStyle::Caption, version.c_str(), nullptr, true).x +
+                                   (beta ? ui::space::XS + ui::BadgeSize(Tr("Beta")).x : 0.0f);
             const float room = SidebarW - 2 * ui::space::S - 2 * ui::space::S - versionW - ui::space::XS;
             const float titleSize = ui::FitSize(ui::Ctx().fonts.title, ui::type::Title, "ARKEYAN LAUNCHER", room);
             ImGui::PushFont(ui::Ctx().fonts.title, titleSize);
@@ -1752,11 +1754,16 @@ namespace launcher_ui
             ImGui::PopFont();
             const float baseline = titleAt.y + ui::Baseline(ui::TextStyle::Title, false, titleSize);
             ui::PushText(ui::TextStyle::Caption, true);
-            ui::DrawText(draw,
-                ImVec2(
-                    titleAt.x + titleExtent.x + ui::space::XS, baseline - ui::Baseline(ui::TextStyle::Caption, true)),
-                ui::Col(ui::color::Dim), version.c_str());
+            const ImVec2 versionAt(
+                titleAt.x + titleExtent.x + ui::space::XS, baseline - ui::Baseline(ui::TextStyle::Caption, true));
+            ui::DrawText(draw, versionAt, ui::Col(ui::color::Dim), version.c_str());
             ui::PopText();
+            if (beta) // a test build says so, beside its version
+                ui::DrawBadge(draw,
+                    ImVec2(versionAt.x + ui::TextSize(ui::TextStyle::Caption, version.c_str(), nullptr, true).x +
+                               ui::space::XS,
+                        versionAt.y - ui::space::XXS / 2),
+                    Tr("Beta"), ui::color::Warning);
             // Under it, the tagline; a section's air (L), then the list's overline and the rows.
             float y = titleAt.y + titleExtent.y + ui::space::XXS;
             ui::PushText(ui::TextStyle::Caption);

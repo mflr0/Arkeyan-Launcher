@@ -250,7 +250,7 @@ GameRunResult RunGame(
     }
     result.started = true;
     std::ofstream log(capture, std::ios::binary | std::ios::trunc);
-    log << "# " << runtime << " " << iso << "\n";
+    log << "# " << runtime << " " << iso << "\n# Arkeyan Launcher " << LauncherVersion() << "\n";
     result.exitCode = Drain(
         process,
         [&](const char* data, size_t size) {
@@ -407,7 +407,8 @@ bool GameSession::Spawn(const std::string& game, const GameLaunch& launch, const
     SDL_IOStream* log = SDL_IOFromFile(Utf8(capture).c_str(), "ab");
     if (log != nullptr)
     {
-        const std::string head = fmt::format("# {} {}\n# game {}\n", launch.runtime, iso, game);
+        const std::string head =
+            fmt::format("# {} {}\n# Arkeyan Launcher {}\n# game {}\n", launch.runtime, iso, LauncherVersion(), game);
         SDL_WriteIO(log, head.data(), head.size());
         SDL_FlushIO(log);
     }

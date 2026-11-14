@@ -138,6 +138,9 @@ Change the top	Bytt overdel
 Change...	Endre...
 Changed	Endret
 Check at startup	Se etter ved oppstart
+Receive betas	Motta betaer
+Offers test builds of the next version, then the final one.	Tilbyr testutgaver av neste versjon og deretter den endelige.
+Beta	Beta
 Check for updates	Se etter oppdateringer
 Check now	Se etter nå
 Checking Arkeyan Launcher	Kontrollerer Arkeyan Launcher

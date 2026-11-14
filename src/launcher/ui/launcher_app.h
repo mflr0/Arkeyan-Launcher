@@ -680,6 +680,7 @@ namespace launcher_ui
         bool UpdateAvailable(const GameSlot& slot) const;
         bool AnyGameUpdate() const;
         std::string GameUpdateNote() const;
+        bool ReceiveBetas() const;
         const GameUpdate* PendingUpdate(
             const GameSlot& slot) const; // the game's entry in the release's games line, if any
         std::string WantedKitTag(const GameSlot& slot) const; // the release whose kit INSTALL / UPDATE must be using

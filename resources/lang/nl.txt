@@ -137,6 +137,9 @@ Change the top	Bovenste deel wijzigen
 Change...	Wijzigen...
 Changed	Gewijzigd
 Check at startup	Controleren bij opstarten
+Receive betas	Bèta's ontvangen
+Offers test builds of the next version, then the final one.	Biedt testversies van de volgende versie aan, daarna de definitieve.
+Beta	Bèta
 Check for updates	Controleren op updates
 Check now	Nu controleren
 Checking Arkeyan Launcher	Arkeyan Launcher controleren

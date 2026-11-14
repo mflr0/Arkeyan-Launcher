@@ -18,6 +18,7 @@ launcher saves the file (a comment over a key that is removed goes with it).
 | `launcher` | `runtime` | path | The game runtime to start, if not next to the launcher | n/a |
 | `launcher` | `kit` | folder | The player kit that installs the game, if not next to the launcher (`docs/install.md`) | n/a |
 | `update` | `auto_check` | `0`, `1` | Look for a new Arkeyan Launcher and for game updates at every start (default 1; `docs/updates.md`) | n/a |
+| `update` | `betas` | `0`, `1` | "Receive betas" (Settings > Launcher): offer test builds of the next version, then the final one (default 0, 1 in a test build; `docs/updates.md`, "Test builds") | n/a |
 | `update` | `last_check` | epoch seconds | When the last check ran | n/a |
 | `update` | `repo` | `owner/name` | Where Arkeyan Launcher's releases are (default `mflr0/Arkeyan-Launcher`) | n/a |
 | `update` | `kit_repo` | `owner/name` | Where the player kit's releases, and the games' versions in their notes, are; empty: no game updates | n/a |

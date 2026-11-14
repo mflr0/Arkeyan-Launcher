@@ -55,8 +55,15 @@ namespace launcher_ui
         UpdateManager::Settings settings;
         settings.repo = SettingGet(m_config, "update", "repo", "mflr0/Arkeyan-Launcher");
         settings.kitRepo = SettingGet(m_config, "update", "kit_repo", "mflr0/Arkeyan-Launcher");
+        settings.betas = ReceiveBetas();
         m_updateWasBusy = true;
         m_updates.Check(settings);
+    }
+
+    // "Receive betas": off unless chosen, on by default in a test build (it then offers the next one, and the final version).
+    bool App::ReceiveBetas() const
+    {
+        return ParseBool(SettingGet(m_config, "update", "betas", IsBetaVersion(LauncherVersion()) ? "1" : "0"));
     }
 
     // At the end of a check or an update: remember it, say the answer to a manual check, carry on with the game update.
@@ -407,6 +414,14 @@ namespace launcher_ui
         bool automatic = ParseBool(SettingGet(m_config, "update", "auto_check", "1"));
         if (ui::Toggle("##autocheck", &automatic))
             Set("update", "auto_check", automatic ? "1" : "0");
+        ui::SettingRow(Tr("Receive betas"), Tr("Offers test builds of the next version, then the final one."));
+        bool betas = ReceiveBetas();
+        if (ui::Toggle("##betas", &betas))
+        {
+            Set("update", "betas", betas ? "1" : "0");
+            if (automatic) // asks again at once with the new choice; without checks at startup, Check now does
+                StartUpdateCheck(false);
+        }
         ui::EndSettings();
     }
 
@@ -415,6 +430,11 @@ namespace launcher_ui
         ui::Text(ui::TextStyle::Display, "Arkeyan Launcher", ui::color::AccentFill, -1);
         ui::Text(
             ui::TextStyle::Body, Tf("Version {}, {}", LauncherVersion(), PlatformName()).c_str(), ui::color::InkSoft);
+        if (IsBetaVersion(LauncherVersion()))
+        {
+            ImGui::SameLine(0, ui::space::XS);
+            ui::Badge(Tr("Beta"), ui::color::Warning);
+        }
         ui::Text(
             ui::TextStyle::Body, Tr("Native PC ports of Skylanders. No game code or art: it comes from your disc."));
 

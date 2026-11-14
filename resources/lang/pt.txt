@@ -137,6 +137,9 @@ Change the top	Mudar a parte superior
 Change...	Alterar...
 Changed	Alterado
 Check at startup	Verificar ao iniciar
+Receive betas	Receber betas
+Offers test builds of the next version, then the final one.	Oferece versões de teste da próxima versão e depois a final.
+Beta	Beta
 Check for updates	Procurar atualizações
 Check now	Verificar agora
 Checking Arkeyan Launcher	A verificar o Arkeyan Launcher

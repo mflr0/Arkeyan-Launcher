@@ -16,18 +16,21 @@
 struct SemVer
 {
     int major = 0, minor = 0, patch = 0;
-    std::string pre; // "beta.1": before the release of the same numbers
+    std::string pre; // "beta.1", "b1": before the release of the same numbers
     bool valid = false;
 };
-// "v1.2.3", "1.2", "kit-2.0.1-beta" (the first digits found): invalid when there are none.
+// "v1.2.3", "1.2", "kit-2.0.1-beta", "0.9.8b1" (the first digits found): invalid when there are none.
 SemVer ParseSemVer(std::string_view text);
-int CompareSemVer(const SemVer& a, const SemVer& b); // <0, 0, >0
+// <0, 0, >0. Pre-releases compare their numbers as numbers: 0.9.8b2 < 0.9.8b10 < 0.9.8.
+int CompareSemVer(const SemVer& a, const SemVer& b);
 inline bool IsNewer(std::string_view candidate, std::string_view current)
 {
     SemVer a = ParseSemVer(candidate), b = ParseSemVer(current);
     return a.valid && b.valid && CompareSemVer(a, b) > 0;
 }
-std::string LauncherVersion(); // the built version, "0.1.0"
+std::string LauncherVersion(); // the built version, "0.1.0", or a test build's "0.9.8b1"
+// A test build's version ("0.9.8b1", "1.0.0-rc.1"): shown with a Beta badge, and it receives betas by default.
+bool IsBetaVersion(std::string_view version);
 
 struct ReleaseAsset
 {
@@ -42,6 +45,10 @@ struct ReleaseInfo
     std::vector<ReleaseAsset> assets;
 };
 bool ParseRelease(const std::string& json, ReleaseInfo& release, std::string* error = nullptr);
+// GitHub's list of releases (an array, newest first); drafts are left out.
+bool ParseReleaseList(const std::string& json, std::vector<ReleaseInfo>& releases, std::string* error = nullptr);
+// The newest by version: final releases only, or test builds too with `betas`. Null when none has a version.
+const ReleaseInfo* NewestRelease(const std::vector<ReleaseInfo>& releases, bool betas);
 const ReleaseAsset* FindAsset(const ReleaseInfo& release, std::string_view name);
 // An asset address the launcher downloads: https://github.com/<the repo's owner>/<name>/releases/download/... (the
 // owner's, so a renamed repository still matches). Any address when SKY_LAUNCHER_UPDATE_URL is set (the tests' local
@@ -71,6 +78,9 @@ std::string KitAssetName();
 
 // Where the latest release of "owner/name" is told; SKY_LAUNCHER_UPDATE_URL replaces it (tests, mirrors).
 std::string LatestReleaseUrl(const std::string& repo);
+// Where its recent releases, test builds included, are listed; with SKY_LAUNCHER_UPDATE_URL set, "releases.json" next to
+// that file.
+std::string ReleaseListUrl(const std::string& repo);
 
 struct HttpResult
 {
@@ -175,22 +185,23 @@ public:
     {
         std::string repo = "mflr0/Arkeyan-Launcher";
         std::string kitRepo;            // empty: no game updates (the default is the launcher's own repository)
+        bool betas = false; // test builds too ("Receive betas"): the newest of the latest betas and finals
     };
     struct State
     {
         Phase phase = Phase::Idle;
-        bool checked = false;           // a check has answered
-        std::string checkError;         // why the last check failed
+        bool checked = false; // a check has answered
+        std::string checkError; // why the last check failed
         bool launcherNewer = false;
         ReleaseInfo launcher;
-        ReleaseInfo kit;                // the release that carries the games (its assets' sizes tell the download)
+        ReleaseInfo kit; // the release that carries the games (its assets' sizes tell the download)
         std::vector<GameUpdate>
-            games;  // its notes' games line: what each game's latest version is (empty: none published)
-        std::string doing;              // "launcher" or "kit", what Downloading..Installing is for
-        float progress = -1;            // 0..1 while downloading, -1 when unknown
-        std::string error;              // why Failed
-        bool restartNeeded = false;     // the launcher was replaced: restart to use it
-        std::string note;               // e.g. "The installer was opened: drag Arkeyan Launcher to Applications."
+            games; // its notes' games line: what each game's latest version is (empty: none published)
+        std::string doing; // "launcher" or "kit", what Downloading..Installing is for
+        float progress = -1; // 0..1 while downloading, -1 when unknown
+        std::string error; // why Failed
+        bool restartNeeded = false; // the launcher was replaced: restart to use it
+        std::string note; // e.g. "The installer was opened: drag Arkeyan Launcher to Applications."
     };
 
     ~UpdateManager()
