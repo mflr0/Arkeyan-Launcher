@@ -7,8 +7,8 @@
 #
 # Jobs: format, pr (when TITLE, BASE and HEAD are set: tools/check_pull_request.sh), macos, linux, sanitizers, windows,
 # appimage (added to linux by --dist), run at the same time (--serial: one after the other). A job that passed on the
-# same tree (commits, uncommitted and untracked files, submodule commits, VERSION) is skipped, except pr and with
-# --dist; --force runs it again.
+# same tree (commits, uncommitted and untracked files but the docs, submodule commits, VERSION) is skipped, except pr
+# and with --dist; --force runs it again.
 # --quick runs format and macos (the pre-push hook). --root checks another checkout (tools/ci/check_pr.sh). --dist
 # copies the release files (ArkeyanLauncher.exe, ArkeyanLauncher-x86_64.AppImage, ArkeyanLauncher-macOS.dmg and .zip)
 # there. VERSION=vX.Y.Z builds that version (tools/release_local.sh). Logs: <root>/.scratch/ci/<job>.log.
@@ -40,12 +40,18 @@ mkdir -p "$logs"
 export VERSION=${VERSION:-} SKY_LAUNCHER_TEST_I18N_MISSING_OK=${SKY_LAUNCHER_TEST_I18N_MISSING_OK:-0}
 # The checks run natively (no emulation); the release files are x86_64.
 case $(uname -m) in arm64 | aarch64) native=linux/arm64 ;; *) native=linux/amd64 ;; esac
-# What the jobs check; a job that passed on the same state is skipped.
+# files pathspec...: the tracked and untracked files those match, with their contents.
+files() {
+    git ls-files -s -- "$@"
+    git diff HEAD --binary -- "$@"
+    git ls-files --others --exclude-standard -- "$@"
+    git ls-files -z --others --exclude-standard -- "$@" | xargs -0 git hash-object --
+}
+# What the jobs check; a job that passed on the same state is skipped. The docs change no result: *.md is left out,
+# except the notices the builds ship.
 state=$(cd "$root" && {
-    git rev-parse 'HEAD^{tree}'
-    git diff HEAD --binary
-    git ls-files --others --exclude-standard
-    git ls-files -z --others --exclude-standard | xargs -0 git hash-object --
+    files . ':(exclude,glob)**/*.md'
+    files ':(glob)**/THIRD_PARTY_NOTICES.md'
     git submodule status
     echo "$VERSION $SKY_LAUNCHER_TEST_I18N_MISSING_OK"
 } | shasum | cut -c1-40)

@@ -64,8 +64,8 @@ what you send.
 ## Checks
 On a Mac with Docker, `tools/ci/run.sh` runs everything: the format, the macOS build and tests, and in containers the
 Linux build, the sanitizer build and the Windows build with its tests under Wine, all at the same time (a job that
-fails among them runs again alone; `--serial`: one after the other). A job that already passed on the same files is
-skipped (`--force` runs it again). `--quick` runs the format and the macOS part only;
+fails among them runs again alone; `--serial`: one after the other). A job that already passed on the same files (the docs
+aside) is skipped (`--force` runs it again). `--quick` runs the format and the macOS part only;
 `git config core.hooksPath tools/git-hooks` runs that before each push. Without a Mac, run the
 commands of [Building and testing](#building-and-testing) on your system.
 
