@@ -59,7 +59,7 @@ next to the `.app`) keeps its settings, games, saves and figures in a `data` fol
 
 ## Using AI tools
 Welcome, under the rules of the [Code of Conduct](CODE_OF_CONDUCT.md#contributions-and-ai-tools): you are the author of
-what you send.
+what you send. Don't add generated notes, tool names or co-author lines to commits or files.
 
 ## Checks
 On a Mac with Docker, `tools/ci/run.sh` runs everything: the format, the macOS build and tests, and in containers the
