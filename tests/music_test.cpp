@@ -306,75 +306,64 @@ namespace
         SDL_SetHint(SDL_HINT_AUDIO_DRIVER, "dummy");
         gamemusic::Player player;
         gamemusic::Playback state{ .game = "ssa", .muted = true };
-        auto settle = [&] {
+        // Updates until `done` holds, then returns it: a fade is about 1 s, and 4 s leaves room on a busy CI machine
+        // (1.9 s missed one on macOS CI).
+        auto settle = [&](auto done) {
             player.Update(state);
-            // Long enough for every fade on a busy CI machine (a fade is about 1 s; 1.9 s missed one on macOS CI).
-            const uint64_t until = SDL_GetTicks() + 4000;
-            while (SDL_GetTicks() < until)
-            {
+            for (const uint64_t until = SDL_GetTicks() + 4000; !done() && SDL_GetTicks() < until; player.Update(state))
                 SDL_Delay(20);
-                player.Update(state);
-            }
+            return done();
         };
-        settle();
-        MUSIC_EXPECT(player.FadeComplete() && player.GainForTest("ssa") == 0); // starts muted, no transient
+        auto faded = [&] { return player.FadeComplete(); };
+        auto playing = [&](const char* game) {
+            return [&player, game] { return player.GainForTest(game) > gamemusic::Volume * 0.95f; };
+        };
+        auto silent = [&](const char* game) {
+            return [&player, game] { return player.FadeComplete() && player.GainForTest(game) == 0; };
+        };
+        MUSIC_EXPECT(settle(silent("ssa"))); // starts muted, no transient
         state.muted = false;
-        settle();
-        MUSIC_EXPECT(player.GainForTest("ssa") > gamemusic::Volume * 0.95f);
+        MUSIC_EXPECT(settle(playing("ssa")));
         state.game = "giants";
         player.Update(state);
         SDL_Delay(500);
         MUSIC_EXPECT(player.GainForTest("ssa") > 0 && player.GainForTest("giants") > 0);
-        settle();
-        MUSIC_EXPECT(player.GainForTest("ssa") == 0 && player.GainForTest("giants") > gamemusic::Volume * 0.95f);
+        MUSIC_EXPECT(settle([&] { return player.GainForTest("ssa") == 0 && playing("giants")(); }));
         // Home, Collection and Settings all carry gamePage=false.
         for (int page = 0; page < 3; page++)
         {
             state.gamePage = false;
-            settle();
-            MUSIC_EXPECT(player.FadeComplete() && player.GainForTest("giants") == 0);
+            MUSIC_EXPECT(settle(silent("giants")));
             state.gamePage = true;
-            settle();
-            MUSIC_EXPECT(player.GainForTest("giants") > gamemusic::Volume * 0.95f);
+            MUSIC_EXPECT(settle(playing("giants")));
         }
         state.launching = true;
-        settle();
-        MUSIC_EXPECT(player.FadeComplete()); // only now may the process start
+        MUSIC_EXPECT(settle(faded)); // only now may the process start
         state.launching = false;
         state.running = true;
-        settle();
-        MUSIC_EXPECT(player.FadeComplete());
+        MUSIC_EXPECT(settle(faded));
         state.running = false;
-        settle(); // normal exit
-        MUSIC_EXPECT(player.GainForTest("giants") > gamemusic::Volume * 0.95f);
+        MUSIC_EXPECT(settle(playing("giants"))); // normal exit
         state.running = true;
-        settle();
+        settle(faded);
         state.running = false;
         state.muted = true;
-        settle(); // crash while muted
-        MUSIC_EXPECT(player.FadeComplete());
+        MUSIC_EXPECT(settle(faded)); // crash while muted
         state.muted = false;
-        settle();
-        MUSIC_EXPECT(player.GainForTest("giants") > gamemusic::Volume * 0.95f);
+        MUSIC_EXPECT(settle(playing("giants")));
         state.running = true;
-        settle();
+        settle(faded);
         state.running = false;
-        settle(); // crash while its page is visible
-        MUSIC_EXPECT(player.GainForTest("giants") > gamemusic::Volume * 0.95f);
+        MUSIC_EXPECT(settle(playing("giants"))); // crash while its page is visible
         state.installing = true;
-        settle();
-        MUSIC_EXPECT(player.FadeComplete());
+        MUSIC_EXPECT(settle(faded));
         state.installing = false;
         state.game = "swapforce";
-        settle();
-        MUSIC_EXPECT(player.GainForTest("swapforce") > gamemusic::Volume * 0.95f);
+        MUSIC_EXPECT(settle(playing("swapforce")));
         state.game = "trapteam";
-        settle();
-        MUSIC_EXPECT(
-            player.GainForTest("swapforce") == 0 && player.GainForTest("trapteam") > gamemusic::Volume * 0.95f);
+        MUSIC_EXPECT(settle([&] { return player.GainForTest("swapforce") == 0 && playing("trapteam")(); }));
         state.game = "unavailable";
-        settle();
-        MUSIC_EXPECT(player.FadeComplete() && player.GainForTest("trapteam") == 0);
+        MUSIC_EXPECT(settle(silent("trapteam")));
         std::filesystem::remove(gamemusic::File("ssa"));
         gamemusic::Player missing;
         missing.Update("ssa", false);
