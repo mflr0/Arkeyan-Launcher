@@ -3105,6 +3105,14 @@ static int RunChecks(int argc, char** argv)
         EXPECT(fallback[GameVideoSection("giants")]["fps_auto_fallback"] == "0");
     }
 
+    TestUnsetEnv("SKY_LAUNCHER_WINDOW_TITLE");
+    EXPECT(LauncherWindowTitle() == "Arkeyan Launcher");
+    TestSetEnv("SKY_LAUNCHER_WINDOW_TITLE", "Arkeyan Launcher - 123");
+    EXPECT(LauncherWindowTitle() == "Arkeyan Launcher - 123");
+    TestSetEnv("SKY_LAUNCHER_WINDOW_TITLE", "");
+    EXPECT(LauncherWindowTitle() == "Arkeyan Launcher");
+    TestUnsetEnv("SKY_LAUNCHER_WINDOW_TITLE");
+
     if (!noDisc)
         g_failures += LevelNameDiscChecks();
     if (noDisc)

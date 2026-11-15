@@ -46,6 +46,7 @@ std::string RunLauncherWindow(const GameInfo& game, const std::string& configPat
 std::string LauncherLanguageLabel(const LauncherConfig& config, const GameInfo& game);
 std::string LauncherVoiceLabel(const LauncherConfig& config, const GameInfo& game);
 bool LauncherFullscreen(const LauncherConfig& config);
+std::string LauncherWindowTitle(); // SKY_LAUNCHER_WINDOW_TITLE (a test build), else "Arkeyan Launcher"
 std::string LauncherFormatSize(uint64_t bytes);
 std::string LauncherMiddleEllipsis(std::string_view text, size_t maxCharacters);
 std::string LauncherDisplayName(std::string_view xdbfName, const GameInfo& game);

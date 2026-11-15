@@ -37,6 +37,7 @@ New behaviour needs a test in `tests/`. A bug fix should come with a test that f
 Try your build in **portable mode**, never on your real data: an empty `portable.txt` next to the launcher (on macOS
 next to the `.app`) keeps its settings, games, saves and figures in a `data` folder beside it
 ([docs/install.md](docs/install.md)). `SKY_LAUNCHER_NO_UPDATE_CHECK=1` stops it from looking for updates.
+`SKY_LAUNCHER_WINDOW_TITLE` replaces the window's title, to tell a test build from your own.
 
 ## Code
 - C++20, the style in `.clang-format` (4 spaces, braces on their own line, 120 columns). The checks cover it.

@@ -397,7 +397,7 @@ namespace launcher_ui
         if (ParseBool(SettingGet(m_config, "launcher", "fullscreen")))
             flags |= SDL_WINDOW_FULLSCREEN;
         SDL_PropertiesID properties = SDL_CreateProperties();
-        SDL_SetStringProperty(properties, SDL_PROP_WINDOW_CREATE_TITLE_STRING, "Arkeyan Launcher");
+        SDL_SetStringProperty(properties, SDL_PROP_WINDOW_CREATE_TITLE_STRING, LauncherWindowTitle().c_str());
         SDL_SetNumberProperty(properties, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, int(WindowW));
         SDL_SetNumberProperty(properties, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, int(WindowH));
         SDL_SetNumberProperty(properties, SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER, Sint64(flags));
@@ -5057,6 +5057,12 @@ std::string LauncherVoiceLabel(const LauncherConfig& config, const GameInfo& gam
 bool LauncherFullscreen(const LauncherConfig& config)
 {
     return ParseBool(SettingGet(config, "launcher", "fullscreen", SettingGet(config, "", "fullscreen")));
+}
+
+std::string LauncherWindowTitle()
+{
+    const char* title = LauncherEnv("SKY_LAUNCHER_WINDOW_TITLE");
+    return title != nullptr && *title != '\0' ? title : "Arkeyan Launcher";
 }
 
 std::string LauncherFormatSize(uint64_t bytes)
