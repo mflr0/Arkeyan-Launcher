@@ -1097,6 +1097,7 @@ Open with the game	Avaa pelin kanssa
 Real figure · on the portal	Oikea hahmo · portaalissa
 Start a game first	Käynnistä ensin peli
 The Toy Box in its own window, to keep beside the game	Toy Box omassa ikkunassaan, pelin vieressä
+The other seats: in the Toy Box window	Muut paikat: Toy Box -ikkunassa
 The Toy Box window opens each time you play	Toy Box -ikkuna avautuu aina kun pelaat
 The game cannot read this figure there	Peli ei voi lukea tätä hahmoa siinä
 The game did not find this figure	Peli ei löytänyt tätä hahmoa

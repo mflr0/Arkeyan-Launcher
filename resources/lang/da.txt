@@ -1096,6 +1096,7 @@ Open with the game	Åbn med spillet
 Real figure · on the portal	Rigtig figur · på portalen
 Start a game first	Start et spil først
 The Toy Box in its own window, to keep beside the game	Toy Box i sit eget vindue, ved siden af spillet
+The other seats: in the Toy Box window	De andre pladser: i Toy Box-vinduet
 The Toy Box window opens each time you play	Toy Box-vinduet åbner hver gang du spiller
 The game cannot read this figure there	Spillet kan ikke læse denne figur der
 The game did not find this figure	Spillet fandt ikke denne figur

@@ -218,6 +218,49 @@ namespace
             SHELL_EXPECT(discordpresence::LevelName(levels, "only/de", "fr") == "Raum");
             SHELL_EXPECT(discordpresence::LevelName(levels, "level_9", "en").empty() &&
                          discordpresence::LevelName("not json", "a", "en").empty());
+
+            // Player 1 as the game plays it. A real portal leaves portal.txt as it was (Freeze Blade, type 2003 here):
+            // the game's figure wins, and a difference on two reads in a row means the seats are stale until the game ends.
+            using Toy = discordpresence::Toy;
+            const std::optional<Toy> freezeBlade = Toy{ 2003, 0, 20 };
+            const discordpresence::GameStatus dinoRang =
+                discordpresence::ParseGameStatus("toy=2010\nvariant=0\ntoylevel=7");
+            discordpresence::PlayerOneWatch watch;
+            SHELL_EXPECT(watch.UseSeats() && !watch.RealPortal() && !watch.PlayerOne());
+            watch.Update(dinoRang, freezeBlade);
+            SHELL_EXPECT(watch.PlayerOne() && watch.PlayerOne()->type == 2010 && watch.PlayerOne()->level == 7);
+            SHELL_EXPECT(!watch.UseSeats() && !watch.RealPortal()); // one read: maybe portal.txt is being written
+            watch.Update(dinoRang, freezeBlade);
+            SHELL_EXPECT(watch.RealPortal() && watch.PlayerOne() && watch.PlayerOne()->type == 2010);
+            // The real figure taken off: player 1 is empty, not the stale Freeze Blade.
+            watch.Update(discordpresence::ParseGameStatus("menu=0\nplayers=1\n"), freezeBlade);
+            SHELL_EXPECT(watch.RealPortal() && !watch.PlayerOne() && !watch.UseSeats());
+            watch.Reset();
+            SHELL_EXPECT(watch.UseSeats() && !watch.RealPortal());
+            // The emulated portal: the game's figure is the seat's, whatever its level.
+            watch.Update(discordpresence::ParseGameStatus("toy=2003\nvariant=0\ntoylevel=21"), freezeBlade);
+            watch.Update(discordpresence::ParseGameStatus("toy=2003\nvariant=0\ntoylevel=21"), freezeBlade);
+            SHELL_EXPECT(!watch.RealPortal() && watch.PlayerOne() && watch.PlayerOne()->level == 21);
+            // A seat changed while portal.txt is written: one read differs, the next agrees.
+            watch.Update(dinoRang, freezeBlade);
+            watch.Update(dinoRang, Toy{ 2010, 0, 7 });
+            watch.Update(dinoRang, Toy{ 2010, 0, 7 });
+            SHELL_EXPECT(!watch.RealPortal());
+            // Another variant of the same toy is another figure; an empty seat 1 under a played figure too.
+            watch.Update(discordpresence::ParseGameStatus("toy=2010\nvariant=5635"), Toy{ 2010, 0, {} });
+            watch.Update(discordpresence::ParseGameStatus("toy=2010\nvariant=5635"), std::nullopt);
+            SHELL_EXPECT(watch.RealPortal());
+            // A game from before 0.9.7 never names a figure (or has no presence.txt): the seats stay the source.
+            watch.Reset();
+            for (const char* text : { "level=a\nmenu=0\nplayers=1\n", "" })
+            {
+                watch.Update(discordpresence::ParseGameStatus(text), freezeBlade);
+                watch.Update(discordpresence::ParseGameStatus(text), freezeBlade);
+                SHELL_EXPECT(watch.UseSeats() && !watch.RealPortal() && !watch.PlayerOne());
+            }
+            // A game that names a figure without its variant is not trusted for it.
+            watch.Update(discordpresence::ParseGameStatus("toy=2010\n"), freezeBlade);
+            SHELL_EXPECT(watch.UseSeats() && !watch.PlayerOne());
         }
 
         // An unknown step gets its own row, before "Finishing".

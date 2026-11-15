@@ -3,6 +3,7 @@
 // library's (src/shared/collection); the model is collection_model.cpp; the figure sheet, Add a figure and Manage are
 // in collection_figure.cpp, collection_add.cpp and collection_manage.cpp.
 #include "launcher/ui/launcher_app.h"
+#include "launcher/env.h"
 #include "shared/collection/datadir.h"
 #include "launcher/ui/launcher_ui.h"
 #include "shared/collection/icons.h"
@@ -905,6 +906,7 @@ namespace launcher_ui
     void CollectionPage::TestHeroPortal(bool installing, bool running)
     {
         m_heroFixture = m_heroLoaded = true;
+        m_heroRealPortal = running && LauncherEnv("SKY_LAUNCHER_TEST_HERO_REAL_PORTAL") != nullptr;
         m_model.figures.clear();
         m_model.seats.assign(3, "");
         for (int i = 0; i < (installing ? 1 : 2); i++)
@@ -977,18 +979,49 @@ namespace launcher_ui
         const size_t count = game != nullptr ? game->seats.size() : 0;
         const float rowH =
             count == 0 ? 0 : (at.y + size.y - ui::space::M - rowsY - (count - 1) * ui::space::XS) / count;
+        // A real portal plugged in: the seats of the session file are not on the game's portal. Player 1 as the game
+        // plays it; the other seats are only known to the Toy Box window, over its link.
+        bool realPortal = false;
+        std::optional<discordpresence::Toy> gameToy;
+        if (m_heroFixture)
+        {
+            realPortal = live && m_heroRealPortal;
+            gameToy = discordpresence::Toy{ 19, 0, 12 };
+        }
+        else if (live && m_app.m_portalGame == m_model.gameId)
+        {
+            realPortal = m_app.m_portalWatch.RealPortal();
+            gameToy = m_app.m_portalWatch.PlayerOne();
+        }
+        Figure played;
+        if (realPortal && gameToy)
+        {
+            played.type = gameToy->type;
+            played.variant = gameToy->variant;
+            played.toy = collection::Catalogue::Get().Find(played.type);
+            played.variantInfo = collection::Catalogue::Get().Describe(played.toy, played.variant);
+            played.level = gameToy->level ? int(*gameToy->level) : 0;
+        }
         size_t rowIndex = 0;
         if (game != nullptr)
             for (size_t i = 0; i < game->seats.size(); i++)
             {
+                if (realPortal && game->seats[i].id != "p1")
+                    continue;
                 const float rowY = std::floor(rowsY + rowIndex * (rowH + ui::space::XS));
                 ImGui::SetCursorScreenPos(ImVec2(at.x + ui::space::M, rowY));
                 rowIndex++;
-                const Figure* figure = i < m_model.seats.size() ? m_model.Find(m_model.seats[i]) : nullptr;
+                const Figure* figure = realPortal                 ? (gameToy ? &played : nullptr)
+                                       : i < m_model.seats.size() ? m_model.Find(m_model.seats[i])
+                                                                  : nullptr;
                 const std::string seat = SeatName(i);
-                const std::string name = figure != nullptr ? Name(*figure) : Tf("{} · empty", seat);
+                const std::string name = figure == nullptr ? Tf("{} · empty", seat)
+                                         : realPortal      ? collection::NameIn(*figure, m_model.gameId)
+                                                           : Name(*figure);
                 std::string detail;
-                if (figure != nullptr)
+                if (realPortal && figure != nullptr)
+                    detail = figure->level > 0 ? Tf("{} · {}", seat, Tf("Level {}", figure->level)) : seat;
+                else if (figure != nullptr)
                 {
                     const collection::Card card = CardOf(*figure);
                     const std::string level = m_heroFixture    ? Tf("Level {}", figure->level)
@@ -1016,7 +1049,7 @@ namespace launcher_ui
                     picture.y += (box.y - side) / 2;
                     if (figure != nullptr)
                     {
-                        if (!DrawSwapper(draw, CardOf(*figure), picture, side))
+                        if (realPortal || !DrawSwapper(draw, CardOf(*figure), picture, side))
                             DrawPicture(draw, figure->toy, figure->Kind(), figure->variant, picture, side);
                     }
                     else
@@ -1031,6 +1064,14 @@ namespace launcher_ui
                 }
                 ImGui::PopID();
             }
+        if (realPortal && rowIndex < count)
+        {
+            const float rowY = std::floor(rowsY + rowIndex * (rowH + ui::space::XS));
+            ImGui::SetCursorScreenPos(ImVec2(at.x + ui::space::M,
+                std::round(rowY + std::min(rowH, float(ui::height::Large)) / 2 - ui::CapMiddle(ui::TextStyle::Body))));
+            ui::Text(ui::TextStyle::Body, Tr("The other seats: in the Toy Box window"), ui::color::Dim,
+                size.x - 2 * ui::space::M);
+        }
         ImGui::PopStyleVar();
         ui::EndCard();
     }

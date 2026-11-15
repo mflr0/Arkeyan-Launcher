@@ -833,6 +833,13 @@ namespace launcher_ui
         int m_presencePlayers = 0; // 2 while a second player plays
         std::string m_presencePlayTime; // "34 h 12" in all
         void UpdatePresence(uint64_t nowMs);
+        // The running game's presence.txt, and player 1 as it plays it against the seats of portal.txt (Discord, the Play
+        // page's On the portal card); read again every few seconds, reset when the game ends.
+        std::string m_portalGame;
+        uint64_t m_portalAt = 0;
+        discordpresence::GameStatus m_gameStatus;
+        discordpresence::PlayerOneWatch m_portalWatch;
+        void WatchPortal(uint64_t nowMs);
         bool PresenceOn() const;
         std::string m_sessionIso; // the disc image it was started with (the crash report names it)
         ProbeJob m_probe;

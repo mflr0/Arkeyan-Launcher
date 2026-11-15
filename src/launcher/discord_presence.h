@@ -43,6 +43,34 @@ namespace discordpresence
     };
     GameStatus ParseGameStatus(std::string_view text);
 
+    // A figure by its toy type and variant id, and its level when known.
+    struct Toy
+    {
+        uint16_t type = 0, variant = 0;
+        std::optional<uint32_t> level;
+    };
+
+    // Player 1 as the running game plays it, against the figure the launcher's seats (portal.txt) put on player 1. With a
+    // real portal plugged in, the game neither reads nor writes portal.txt, so those seats are stale: a figure that differs
+    // on two reads in a row (one may fall while the game writes portal.txt) means a real portal, until Reset (the game ends).
+    class PlayerOneWatch
+    {
+    public:
+        void Reset() { *this = {}; }
+        // `status`: the game's presence.txt; `seatOne`: the figure on player 1's seat in portal.txt, none when empty.
+        void Update(const GameStatus& status, const std::optional<Toy>& seatOne);
+        // The figure the game plays as player 1; none when the game reports none (empty, or a game from before 0.9.7).
+        const std::optional<Toy>& PlayerOne() const { return m_playerOne; }
+        bool RealPortal() const { return m_realPortal; } // the seats of portal.txt are not what the game plays
+        // Only the seats tell the figure: the game names none and no real portal was seen.
+        bool UseSeats() const { return !m_playerOne && !m_realPortal; }
+
+    private:
+        std::optional<Toy> m_playerOne;
+        bool m_realPortal = false;
+        bool m_differed = false; // the last read differed
+    };
+
     // The name the game shows for `level`, from its levels.json (docs/level_names.md: "levels": {"<level id>":
     // {"<language>": "<name>"}}), in `language`, else English, else any; empty when unknown.
     std::string LevelName(std::string_view levelsJson, std::string_view level, std::string_view language);

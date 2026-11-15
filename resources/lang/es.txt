@@ -1096,6 +1096,7 @@ Open with the game	Abrir con el juego
 Real figure · on the portal	Figura real · en el portal
 Start a game first	Inicia primero un juego
 The Toy Box in its own window, to keep beside the game	La Toy Box en su propia ventana, junto al juego
+The other seats: in the Toy Box window	Los otros sitios: en la ventana de la Toy Box
 The Toy Box window opens each time you play	La ventana de la Toy Box se abre cada vez que juegas
 The game cannot read this figure there	El juego no puede leer esta figura ahí
 The game did not find this figure	El juego no encontró esta figura
