@@ -6,8 +6,8 @@ be merged. Questions: the [Discord](https://discord.gg/UMQY4SAS3F) or an [issue]
 ## What you can contribute
 - **The launcher**: code, bug fixes, tests, docs, and **translations** (`resources/lang/`).
 - **The game ports** (the runtime, the builder, each game's port, the code and shader translators) are public in the
-  [arkeyan-forge](https://github.com/arkeyan-forge) organization, under the same rules. Problems in a game are reported
-  here, as [issues](https://github.com/mflr0/Arkeyan-Launcher/issues/new/choose), for every repository.
+  [forge](https://github.com/arkeyan-forge/forge), under the same rules. Players report problems in a game here, as
+  [issues](https://github.com/mflr0/Arkeyan-Launcher/issues/new/choose); issues about the ports' code live in the forge.
 - **Never**: anything from a game (disc images, game files, extracted pictures, sounds, text or code) and code copied or
   adapted from another project. Libraries are added only after an issue and the owner's agreement.
 
@@ -19,7 +19,7 @@ be merged. Questions: the [Discord](https://discord.gg/UMQY4SAS3F) or an [issue]
 
 ## Branches
 - `main` is the last release. **Never target it.**
-- `release-X.Y.Z` is the next release (today `release-0.9.6`). **Target it** with your pull request.
+- `release-X.Y.Z` is the next release (today `release-0.9.9`). **Target it** with your pull request.
 - Work in your fork, on a branch of your own (for example `29-xbox-portal-windows`).
 
 ## Building and testing
@@ -58,9 +58,8 @@ next to the `.app`) keeps its settings, games, saves and figures in a `data` fol
 - Pull requests are **squashed** when merged: one commit per pull request.
 
 ## Using AI tools
-You may use them, but you are the author: you must understand every line you send, have built and tested it, and be
-able to explain it in review. Code you can't explain is not merged. Don't add generated notes, tool names or
-co-author lines to commits or files.
+Welcome, under the rules of the [Code of Conduct](CODE_OF_CONDUCT.md#contributions-and-ai-tools): you are the author of
+what you send.
 
 ## Checks
 On a Mac with Docker, `tools/ci/run.sh` runs everything: the format, the macOS build and tests, and in containers the

@@ -307,8 +307,19 @@ script (frame rate, sound, the picture compared with a reference, saves, figures
 levels one by one. The Windows and Linux builds of Spyro's Adventure, Giants and Swap Force are also run in Wine and in a
 container.
 
-Everything here is made for this project: the launcher, the kits and the ports. The reverse engineering, the architecture
-and every design decision are the author's own; AI tools write the code from that design and run the tests.
+Everything here is made for this project: the launcher, the kits and the ports, whose source is the
+[forge](https://github.com/arkeyan-forge/forge).
+
+## Contributing and AI tools
+
+AI tools are welcome in contributions, under one rule: whoever submits a change owns it. Every pull request must be
+understood by its author, who has tested it and can explain any part of it. If a contribution turns out to be a problem
+(a bug, malicious code, a license violation), its author is held solely responsible, never the tool. The project itself
+is developed with the help of AI tools, under the same rule: the reverse engineering, the architecture and every design
+decision are the author's own.
+
+How to send a change: [CONTRIBUTING.md](CONTRIBUTING.md). The full rules, and what happens when they are broken, are in
+the [code of conduct](CODE_OF_CONDUCT.md).
 
 ## Wanted: UI/UX designers
 

@@ -1,7 +1,7 @@
 # Installing the game
 
 Arkeyan Launcher contains no game code. The game is recompiled and built on the player's own machine, from their own disc,
-by `Arkeyan-Builder`, the build driver of the **player kit** (its contract is `docs/release/launcher/kit_contract.md` in the workshop).
+by `Arkeyan-Builder`, the build driver of the **player kit** (its contract is `docs/release/launcher/kit_contract.md` in the forge).
 The launcher finds the kit, runs it, shows its progress and then starts the game it built.
 
 ## The flow
@@ -68,7 +68,7 @@ list Swap Force makes the launcher fetch the right one first, as for Giants).
   disc dropped on Spyro's Adventure says it is another game, and the other way round. The name and icon on the game page come
   from the disc's own XDBF, as for SSA.
 - INSTALL runs the same Arkeyan-Builder with the disc; **Arkeyan-Builder finds the game itself** from `default.xex`'s SHA-256
-  (workshop `docs/release/launcher/kit_contract.md`, "Several games in one kit"). The built apps use the titles
+  (forge `docs/release/launcher/kit_contract.md`, "Several games in one kit"). The built apps use the titles
   `Skylanders Spyro's Adventure`, `Skylanders Giants`, `Skylanders Swap Force` and `Skylanders Trap Team`
   (plus `.app` on macOS or `.exe` on Windows). `GameInfo::runtime` gives the new name and `legacyRuntime` gives
   `SSARecomp`, `SGRecomp`, `SSFRecomp` or `TTRecomp`. Both names are found beside the launcher; recorded 0.8.0, 0.6.1
@@ -288,7 +288,7 @@ extracted, and the next build then failed in an unclear way. Since 0.8.1 the lau
   `integrity` case of the kit flow (`App::TestIntegrityScript`): a kit next to the launcher that lost its `Arkeyan-Builder` is named at
   start, INSTALL is blocked, Repair unpacks the fake release's kit over it, the install writes the game's list, a changed game
   file is named at the next check and Repair builds the game again. The list format and the checker have their own tests in the
-  workshop (`ArkeyanFileListTest`; `src/shared/collection/file_list.*` is a copy).
+  forge (`ArkeyanFileListTest`; `src/shared/collection/file_list.*` is a copy).
 
 ## Linux
 

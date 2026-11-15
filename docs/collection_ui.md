@@ -318,7 +318,7 @@ every player seat of that game (the in-game quick swap wheel, hold Tab or View) 
 | Traps and items | The ordinary variant → plain → family → generated rule |
 
 The launcher and Toy Box already agreed when using the same API. Portraits previously preferred the viewed game,
-large pictures had a separate search and halves searched oldest first. All now use the same selector. The workshop's
+large pictures had a separate search and halves searched oldest first. All now use the same selector. The forge's
 `ArkeyanCollectionTest` covers separate synthetic game caches, variants, sizes and every incomplete-swapper case;
 `ArkeyanLauncherTest --no-disc` checks the synced behavior with synthetic PNGs. No toy family blocks the rule.
 
