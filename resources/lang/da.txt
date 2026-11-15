@@ -137,6 +137,9 @@ Change the top	Skift toppen
 Change...	Skift...
 Changed	Ændret
 Check at startup	Kontrollér ved start
+Receive betas	Modtag betaer
+Offers test builds of the next version, then the final one.	Tilbyder testudgaver af den næste version og derefter den endelige.
+Beta	Beta
 Check for updates	Søg efter opdateringer
 Check now	Kontrollér nu
 Checking Arkeyan Launcher	Kontrollerer Arkeyan Launcher
@@ -1128,3 +1131,9 @@ Command copied	Kommandoen er kopieret
 In the menus	I menuerne
 In a level	På en bane
 {} played	{} spillet
+Copying saves and figures	Copying saves and figures
+Couldn't copy saves and figures	Couldn't copy saves and figures
+Couldn't prepare the game tools	Couldn't prepare the game tools
+Go back to the final release?	Go back to the final release?
+Going back to {}. Saves and figures made with the test build may not open in it. A copy of them is kept.	Going back to {}. Saves and figures made with the test build may not open in it. A copy of them is kept.
+Version {} (the final release)	Version {} (the final release)

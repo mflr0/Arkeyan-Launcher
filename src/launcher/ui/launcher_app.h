@@ -571,6 +571,7 @@ namespace launcher_ui
         float BannerHeight();
         void DrawUpdateBanner(float height);
         void DrawWhatsNew();
+        void DrawDowngrade();
         void UpdateLauncherNow(); // the launcher's own update, after the Defender notice
         // defender_notice.cpp: once, on Windows, before the first install or update; true while it holds `then` back.
         bool DefenderNoticeFirst(std::function<void()> then);
@@ -680,6 +681,7 @@ namespace launcher_ui
         bool UpdateAvailable(const GameSlot& slot) const;
         bool AnyGameUpdate() const;
         std::string GameUpdateNote() const;
+        bool ReceiveBetas() const;
         const GameUpdate* PendingUpdate(
             const GameSlot& slot) const; // the game's entry in the release's games line, if any
         std::string WantedKitTag(const GameSlot& slot) const; // the release whose kit INSTALL / UPDATE must be using
@@ -853,6 +855,7 @@ namespace launcher_ui
             int total = 0, started = 0, failed = 0;
         } m_updateAll;
         bool m_whatsNewOpen = false;
+        bool m_downgradeOpen = false;
         bool m_defenderNoticeOpen = false;
         std::function<void()> m_defenderThen; // what the player asked for, run on Continue
         // A game that stopped unexpectedly (its exit code): the crash dialog, DrawGameStopped (game_stopped.cpp).

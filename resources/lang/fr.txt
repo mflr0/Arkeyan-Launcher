@@ -74,6 +74,9 @@ Carry on copying	Reprendre la copie
 Change disc...	Changer de disque...
 Check now	Vérifier maintenant
 Check at startup	Vérifier au démarrage
+Receive betas	Recevoir les bêtas
+Offers test builds of the next version, then the final one.	Propose les versions de test de la prochaine version, puis la version finale.
+Beta	Bêta
 Checking Arkeyan Launcher	Vérification d'Arkeyan Launcher
 Checking the Xbox 360 executable	Vérification de l'exécutable Xbox 360
 Checking your disc	Vérification du disque
@@ -1158,3 +1161,9 @@ Command copied	Commande copiée
 In the menus	Dans les menus
 In a level	Dans un niveau
 {} played	{} de jeu
+Copying saves and figures	Copying saves and figures
+Couldn't copy saves and figures	Couldn't copy saves and figures
+Couldn't prepare the game tools	Couldn't prepare the game tools
+Go back to the final release?	Go back to the final release?
+Going back to {}. Saves and figures made with the test build may not open in it. A copy of them is kept.	Going back to {}. Saves and figures made with the test build may not open in it. A copy of them is kept.
+Version {} (the final release)	Version {} (the final release)

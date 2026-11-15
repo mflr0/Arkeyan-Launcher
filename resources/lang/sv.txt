@@ -138,6 +138,9 @@ Change the top	Byt överdel
 Change...	Ändra...
 Changed	Ändrad
 Check at startup	Sök vid start
+Receive betas	Ta emot betor
+Offers test builds of the next version, then the final one.	Erbjuder testversioner av nästa version och sedan den slutliga.
+Beta	Beta
 Check for updates	Sök efter uppdateringar
 Check now	Sök nu
 Checking Arkeyan Launcher	Kontrollerar Arkeyan Launcher
@@ -1129,3 +1132,9 @@ Command copied	Kommandot kopierat
 In the menus	I menyerna
 In a level	I en bana
 {} played	{} spelat
+Copying saves and figures	Copying saves and figures
+Couldn't copy saves and figures	Couldn't copy saves and figures
+Couldn't prepare the game tools	Couldn't prepare the game tools
+Go back to the final release?	Go back to the final release?
+Going back to {}. Saves and figures made with the test build may not open in it. A copy of them is kept.	Going back to {}. Saves and figures made with the test build may not open in it. A copy of them is kept.
+Version {} (the final release)	Version {} (the final release)

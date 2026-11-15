@@ -137,6 +137,9 @@ Change the top	Bovenste deel wijzigen
 Change...	Wijzigen...
 Changed	Gewijzigd
 Check at startup	Controleren bij opstarten
+Receive betas	Bèta's ontvangen
+Offers test builds of the next version, then the final one.	Biedt testversies van de volgende versie aan, daarna de definitieve.
+Beta	Bèta
 Check for updates	Controleren op updates
 Check now	Nu controleren
 Checking Arkeyan Launcher	Arkeyan Launcher controleren
@@ -1128,3 +1131,9 @@ Command copied	Opdracht gekopieerd
 In the menus	In de menu's
 In a level	In een level
 {} played	{} gespeeld
+Copying saves and figures	Copying saves and figures
+Couldn't copy saves and figures	Couldn't copy saves and figures
+Couldn't prepare the game tools	Couldn't prepare the game tools
+Go back to the final release?	Go back to the final release?
+Going back to {}. Saves and figures made with the test build may not open in it. A copy of them is kept.	Going back to {}. Saves and figures made with the test build may not open in it. A copy of them is kept.
+Version {} (the final release)	Version {} (the final release)
