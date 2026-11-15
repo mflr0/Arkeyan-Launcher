@@ -1094,6 +1094,7 @@ Open with the game	Mit dem Spiel öffnen
 Real figure · on the portal	Echte Figur · auf dem Portal
 Start a game first	Starte zuerst ein Spiel
 The Toy Box in its own window, to keep beside the game	Die Toy Box in einem eigenen Fenster, neben dem Spiel
+The other seats: in the Toy Box window	Die anderen Plätze: im Toy-Box-Fenster
 The Toy Box window opens each time you play	Das Toy-Box-Fenster öffnet sich bei jedem Spielstart
 The game cannot read this figure there	Das Spiel kann diese Figur dort nicht lesen
 The game did not find this figure	Das Spiel hat diese Figur nicht gefunden

@@ -1232,12 +1232,14 @@ Build with `ninja -j4 -C build ArkeyanLauncher ArkeyanLauncherTest FakeArkeyanBu
 ```sh
 python3 tests/hero_shots.py --disc /absolute/path/to/supported-game.iso
 ```
-The script sets `SKY_LAUNCHER_TEST_HERO=1` and `SKY_LAUNCHER_SHOTS` to `.scratch/shots/hero/`, isolates every data folder in
-`.scratch/hero/`, uses offscreen rendering and bounds the launcher to 150 seconds (only its own process can be stopped).
-`--scratch` and `--shots` select separate directories inside `.scratch/`; `--no-show` captures a running game without a
-window. Run at `--size 1024x720` and `--size 1600x900`, with and without `--no-show`, and with `--language fr` to check the
-translated row. Each running capture checks the action bounds, translated session status and navigation controls:
-the settings button and both pickers must be absent, and Show must match the fixture's window availability.
+The script sets `SKY_LAUNCHER_TEST_HERO=1` and `SKY_LAUNCHER_SHOTS` to `.scratch/shots/hero/`, isolates every data
+folder in `.scratch/hero/`, uses offscreen rendering and bounds the launcher to 150 seconds (only its own process can be
+stopped). `--scratch` and `--shots` select separate directories inside `.scratch/`; `--no-show` captures a running game
+without a window; `SKY_LAUNCHER_TEST_HERO_REAL_PORTAL=1` shows the running card with a real portal plugged in
+(toybox_window.md). Run at `--size 1024x720` and `--size 1600x900`, with and without `--no-show`, and with
+`--language fr` to check the translated row. Each running capture checks the action bounds, translated session status
+and navigation controls: the settings button and both pickers must be absent, and Show must match the fixture's window
+availability.
 Compare the Ready captures with the same size's previous captures to verify its layout remains unchanged.
 It writes `hero-<ready|needs-disc|installing|running>-<art|noart>.png`. The four states and two figures are in-memory display
 fixtures: no game, installer or figure writing runs. Disc verification and the existing art reader still run read-only

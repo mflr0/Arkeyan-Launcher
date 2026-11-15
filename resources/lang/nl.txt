@@ -1096,6 +1096,7 @@ Open with the game	Openen met het spel
 Real figure · on the portal	Echte figuur · op de portal
 Start a game first	Start eerst een spel
 The Toy Box in its own window, to keep beside the game	De Toy Box in een eigen venster, naast het spel
+The other seats: in the Toy Box window	De andere plekken: in het Toy Box-venster
 The Toy Box window opens each time you play	Het Toy Box-venster opent elke keer dat je speelt
 The game cannot read this figure there	Het spel kan deze figuur daar niet lezen
 The game did not find this figure	Het spel vond deze figuur niet

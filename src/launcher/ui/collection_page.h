@@ -123,6 +123,7 @@ namespace launcher_ui
         friend struct ReviewChecks;
         bool m_heroLoaded = false;
         bool m_heroFixture = false;
+        bool m_heroRealPortal = false; // SKY_LAUNCHER_TEST_HERO_REAL_PORTAL: the running fixture with a real portal
         enum class Overlay
         {
             None,
