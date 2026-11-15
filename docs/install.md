@@ -359,4 +359,4 @@ ninja -C build-win64 Arkeyan Launcher
 ```
 
 `build-win64/ArkeyanLauncher.exe` is a single file (fonts built in; only system DLLs and the UCRT, which Windows 10 and
-11 include). CI still builds Windows with clang-cl.
+11 include). Releases are built with clang-cl (`tools/ci/windows.Dockerfile`).

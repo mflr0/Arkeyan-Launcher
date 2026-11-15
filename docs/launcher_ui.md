@@ -1287,7 +1287,7 @@ stand-in executable, opens its Video tab at the bottom, flips the Use HD texture
 `-2-running` and `-3-done` (`-3-failed`, or `-3-stopped` with `SKY_LAUNCHER_TEST_HDTEX_CANCEL=1`); each outcome is checked ("ok hdtex: ...", "FAIL hdtex: ...").
 With the tests' fake kit (`build/fake-kit`, `FAKE_ARKEYAN_BUILDER_FAIL=hdtextures` for a failure) or a real one. A kit that does not know the option ends after `-1-off`.
 `SKY_LAUNCHER_TEST_UPDATE=1` with `SKY_LAUNCHER_UPDATE_URL=file://<fake latest.json>` shows the update screens (`20-` to `24-`).
-`ArkeyanLauncherTest --no-disc <absolute scratch dir>` runs only the checks that need no disc image (the unit parts; the build workflow runs it on
+`ArkeyanLauncherTest --no-disc <absolute scratch dir>` runs only the checks that need no disc image (the unit parts; `tools/ci/run.sh` runs it on
 the three systems); the full run is `ArkeyanLauncherTest <disc> <scratch dir>`.
 Its `SKY_LAUNCHER_TEST_RUNNING=controls` subprocess checks the live session timer, hidden window action, missing running
 pickers and gear, disabled STOP during a delayed clean stop, and the return to Ready, using only a windowless stand-in.

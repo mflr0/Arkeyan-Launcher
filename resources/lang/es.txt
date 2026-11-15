@@ -298,7 +298,7 @@ Eon's Elite	Eon's Elite
 Erase	Borrar
 Escape	Escape
 Event and exclusive	Evento y exclusivo
-Every download is checked against the release's SHA-256 before it runs, and every release is built by GitHub Actions from the public source.	Cada descarga se comprueba con el SHA-256 de la versión antes de ejecutarse, y cada versión la compila GitHub Actions a partir del código público.
+Every download is checked against the release's SHA-256 before it runs, and every release is built from the public source.	Cada descarga se comprueba con el SHA-256 de la versión antes de ejecutarse, y cada versión se compila a partir del código público.
 Everything is removed	Se elimina todo
 Evolved	Evolucionado
 Experience	Experiencia

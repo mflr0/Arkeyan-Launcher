@@ -1065,7 +1065,7 @@ If Windows Defender blocks a file:	Si Windows Defender bloque un fichier :
 2. Open the blocked item, then Actions > Allow on device.	2. Ouvre l'élément bloqué, puis Actions > Autoriser sur l'appareil.
 3. In Virus & threat protection settings, choose Manage settings > Exclusions > Add or remove exclusions > Add an exclusion > Folder, and pick %APPDATA%\\Skylanders\\kit.	3. Dans Paramètres de protection contre les virus et menaces, choisis Gérer les paramètres > Exclusions > Ajouter ou supprimer des exclusions > Ajouter une exclusion > Dossier, puis %APPDATA%\\Skylanders\\kit.
 4. Back here, choose Retry.	4. De retour ici, choisis Réessayer.
-Every download is checked against the release's SHA-256 before it runs, and every release is built by GitHub Actions from the public source.	Chaque téléchargement est vérifié avec le SHA-256 de la version avant de s'exécuter, et chaque version est construite par GitHub Actions à partir du code source public.
+Every download is checked against the release's SHA-256 before it runs, and every release is built from the public source.	Chaque téléchargement est vérifié avec le SHA-256 de la version avant de s'exécuter, et chaque version est construite à partir du code source public.
 Not now	Pas maintenant
 Why this happens	Pourquoi cela arrive
 Continue	Continuer

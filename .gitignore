@@ -7,3 +7,5 @@
 *.xex
 launcher-cache/
 /build-win64/
+/.scratch/
+/build-ci-*/

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Packages the built app (the CI's macOS job, or by hand to try it):
+# Packages the built app (tools/ci/run.sh --dist, or by hand to try it):
 #   tools/package_macos.sh <ArkeyanLauncher.app built by cmake> <icon.svg> <output dir>
 # Writes, in the output dir, the release assets (docs/updates.md):
 #   ArkeyanLauncher-macOS.zip / .dmg      holding "Arkeyan Launcher.app"

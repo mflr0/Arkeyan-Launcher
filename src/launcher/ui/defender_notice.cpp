@@ -66,7 +66,7 @@ namespace launcher_ui
             ImGui::Dummy(ImVec2(0, ui::space::XS));
             ui::Text(ui::TextStyle::Caption,
                 Tr("Every download is checked against the release's SHA-256 before it runs, and every release is built "
-                   "by GitHub Actions from the public source."),
+                   "from the public source."),
                 ui::color::Dim);
             go = ui::ModalActions(&open, Tr("Continue"), Tr("Not now")) == ui::ModalResult::Confirm;
             // Why, at the left of the actions' row.

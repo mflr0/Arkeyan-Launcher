@@ -1,5 +1,5 @@
 #!/bin/sh
-# Checks a pull request (CI; CONTRIBUTING.md): its title is "area: what (#n)" in 72 characters at most (it becomes the
+# Checks a pull request (tools/ci/run.sh; CONTRIBUTING.md): its title is "area: what (#n)" in 72 characters at most (it becomes the
 # squashed commit's message), and every commit carries a Signed-off-by line (the DCO).
 # Locally: TITLE="portal: ... (#29)" BASE=origin/release-0.9.6 HEAD=HEAD tools/check_pull_request.sh
 set -eu

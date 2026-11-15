@@ -298,7 +298,7 @@ Eon's Elite	Eon's Elite
 Erase	Slet
 Escape	Escape
 Event and exclusive	Event og eksklusive
-Every download is checked against the release's SHA-256 before it runs, and every release is built by GitHub Actions from the public source.	Hver overførsel kontrolleres mod udgivelsens SHA-256, før den køres, og hver udgivelse bygges af GitHub Actions ud fra den offentlige kildekode.
+Every download is checked against the release's SHA-256 before it runs, and every release is built from the public source.	Hver overførsel kontrolleres mod udgivelsens SHA-256, før den køres, og hver udgivelse bygges ud fra den offentlige kildekode.
 Everything is removed	Alt fjernes
 Evolved	Udviklet
 Experience	Erfaring

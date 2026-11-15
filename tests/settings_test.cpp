@@ -1141,8 +1141,9 @@ namespace
         if (!linkError)
         {
             GameFolders alias{ linked, linked / "saves" };
-            SETTINGS_EXPECT(
-                !ClearGameCaches(alias).ok && !DeleteGameData(alias).ok && !UninstallGame(alias, config).ok);
+            // Wine does not report its links as links (TestUnderWine).
+            SETTINGS_EXPECT(TestUnderWine() || (!ClearGameCaches(alias).ok && !DeleteGameData(alias).ok &&
+                                                   !UninstallGame(alias, config).ok));
             SETTINGS_EXPECT(
                 fs::exists(outside.saves / "a" / "GLOBAL.DAT") && fs::exists(outside.game / "pipelines.bin"));
         }

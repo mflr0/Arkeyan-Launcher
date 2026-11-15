@@ -1,0 +1,5 @@
+#!/bin/sh
+# Install once per clone: git config core.hooksPath tools/git-hooks
+# The quick checks before a push (tools/ci/run.sh --quick: the format, the macOS build and tests). Skip one push with
+# git push --no-verify; the full run is tools/ci/run.sh.
+exec "$(git rev-parse --show-toplevel)/tools/ci/run.sh" --quick
