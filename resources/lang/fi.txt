@@ -299,7 +299,7 @@ Eon's Elite	Eonin eliitti
 Erase	Pyyhi
 Escape	Escape
 Event and exclusive	Tapahtuma ja yksinoikeus
-Every download is checked against the release's SHA-256 before it runs, and every release is built by GitHub Actions from the public source.	Jokainen lataus tarkistetaan julkaisun SHA-256-tiivisteellä ennen ajoa, ja jokaisen julkaisun rakentaa GitHub Actions julkisesta lähdekoodista.
+Every download is checked against the release's SHA-256 before it runs, and every release is built from the public source.	Jokainen lataus tarkistetaan julkaisun SHA-256-tiivisteellä ennen ajoa, ja jokainen julkaisu rakennetaan julkisesta lähdekoodista.
 Everything is removed	Kaikki poistetaan
 Evolved	Kehittynyt
 Experience	Kokemus

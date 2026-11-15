@@ -10,8 +10,8 @@ No telemetry: the only request is `GET https://api.github.com/repos/<repo>/relea
    the time), unless `[update] auto_check=0`; and on demand in Settings > Launcher > Check now. `SKY_LAUNCHER_NO_UPDATE_CHECK`
    turns the start-up check off. **Offline, or any failure, is silent**: nothing is shown and nothing is asked again until the
    next start.
-2. The tag (`vX.Y.Z`) is compared, as semver, with the built version (`LAUNCHER_VERSION`, the CMake cache variable the CI
-   sets from the tag or run number, shown in About). Tags that aren't versions are never offered; test builds only with
+2. The tag (`vX.Y.Z`) is compared, as semver, with the built version (`LAUNCHER_VERSION`, the CMake cache variable the
+   release build sets from the tag, shown in About). Tags that aren't versions are never offered; test builds only with
    "Receive betas" on (below). A final launcher offers only newer versions. Leaving a test build for the final channel
    offers the latest final whenever it differs, including an older version.
 3. A **banner** above the page (it pushes the page down 56 px, nothing overlaps): "Update available: vX.Y.Z", **Update now**,
@@ -172,10 +172,12 @@ The kit follows the selected channel, and the launcher never starts Arkeyan-Buil
 ## Releasing
 
 1. Bump `LAUNCHER_VERSION` in `CMakeLists.txt` and commit.
-2. Tag the commit `vX.Y.Z` and push the tag.
-3. Wait for the CI: it makes a **draft** release with the launcher assets and `SHA256SUMS`; a tag other than `vX.Y.Z`
-   (`v0.9.8b1`) is also marked as a **pre-release**.
-4. `tools/release_kit.sh vX.Y.Z skylanders-kit-windows-x64.zip skylanders-kit-macos-arm64.zip` (needs `gh`): uploads the kit zips,
+2. Tag the commit `vX.Y.Z`, push the tag and check it out.
+3. `tools/release_local.sh vX.Y.Z --kits <forge checkout>` (a Mac with Docker, `gh`): runs every check of
+   `tools/ci/run.sh` with that version, builds the launcher assets, writes `SHA256SUMS` and makes a **draft** release; a
+   tag other than `vX.Y.Z` (`v0.9.8b1`) is also marked as a **pre-release**. With `--kits`, the forge's
+   `tools/ci/kits_local.sh` then builds the three kits and adds them, as step 4 does.
+4. Kits built elsewhere: `tools/release_kit.sh vX.Y.Z skylanders-kit-windows-x64.zip skylanders-kit-macos-arm64.zip` (needs `gh`): uploads the kit zips,
    downloads the release's `SHA256SUMS`, replaces or appends the kit lines and uploads it again with `--clobber`, then puts the
    games line (from the kits' `kit.txt`) at the end of the release's notes. `DRY_RUN=1` prints the new notes and the upload list and
    changes nothing.
@@ -183,17 +185,18 @@ The kit follows the selected channel, and the launcher never starts Arkeyan-Buil
    `gh release edit <tag> --draft=false` (a test build stays a pre-release). Players see nothing before this step.
 
 A test build is released the same way from the next version's release branch, tagged `v<X.Y.Z>b<N>`; no code change is
-needed, the CI builds with `-DLAUNCHER_VERSION` from the tag.
+needed, `tools/release_local.sh` builds with `-DLAUNCHER_VERSION` from the tag.
 
 A kit-only update is a new release the same way (a new tag, the launcher unchanged in behaviour).
 
-## What the CI must publish
+## What a release must hold
 
-The release job of `.github/workflows/build.yml` attaches `ArkeyanLauncher.exe`, `ArkeyanLauncher-x86_64.AppImage`,
+`tools/release_local.sh` attaches `ArkeyanLauncher.exe`, `ArkeyanLauncher-x86_64.AppImage`,
 `ArkeyanLauncher-macOS.dmg`, `ArkeyanLauncher-macOS.zip` and **`SHA256SUMS`**
-(`sha256sum` format, one line per asset, written by the job; the kits are added by `tools/release_kit.sh`). Only a pushed tag
-`v<version>` makes a release, always a **draft**, and a **pre-release** when the tag is not `vX.Y.Z`; the CI builds that
-version (`-DLAUNCHER_VERSION` from the tag). Branch builds publish nothing.
+(`sha256sum` format, one line per asset, written by the script; the kits are added by the forge's `tools/ci/kits_local.sh`
+or `tools/release_kit.sh`). Only a pushed tag `v<version>` makes a release, always a **draft**, and a **pre-release** when
+the tag is not `vX.Y.Z`; the script builds that version (`-DLAUNCHER_VERSION` from the tag) and stops before GitHub when
+a check fails or a file holds the home folder's path. `tools/ci/run.sh` alone publishes nothing.
 
 ## Testing
 

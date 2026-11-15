@@ -51,7 +51,7 @@ if [[ -n "${DRY_RUN:-}" ]]; then
 fi
 
 gh release download "$tag" --repo "$repo" --pattern SHA256SUMS --dir "$work" \
-    || { echo "release $tag has no SHA256SUMS: wait for the CI to publish it" >&2; exit 1; }
+    || { echo "release $tag has no SHA256SUMS: make the draft with tools/release_local.sh first" >&2; exit 1; }
 
 # Replace or append one line per kit zip, keeping the others as they are.
 for zip in "$@"; do

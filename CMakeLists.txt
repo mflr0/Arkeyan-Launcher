@@ -16,8 +16,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 if(NOT MSVC)
     add_compile_definitions(_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST _GLIBCXX_ASSERTIONS)
 endif()
-# AddressSanitizer and UndefinedBehaviorSanitizer for the tests (CI's sanitizers job): out-of-bounds reads, use after free,
-# overflows. Never for a release build.
+# AddressSanitizer and UndefinedBehaviorSanitizer for the tests (the sanitizers job of tools/ci/run.sh): out-of-bounds
+# reads, use after free, overflows. Never for a release build.
 option(SKY_SANITIZE "Build with AddressSanitizer and UndefinedBehaviorSanitizer" OFF)
 if(SKY_SANITIZE AND NOT MSVC)
     add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer -fno-sanitize-recover=undefined)

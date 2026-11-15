@@ -299,7 +299,7 @@ Eon's Elite	Eon's Elite
 Erase	Rensa
 Escape	Escape
 Event and exclusive	Event och exklusiva
-Every download is checked against the release's SHA-256 before it runs, and every release is built by GitHub Actions from the public source.	Varje nedladdning kontrolleras mot utgåvans SHA-256 innan den körs, och varje utgåva byggs av GitHub Actions från den öppna källkoden.
+Every download is checked against the release's SHA-256 before it runs, and every release is built from the public source.	Varje nedladdning kontrolleras mot utgåvans SHA-256 innan den körs, och varje utgåva byggs från den öppna källkoden.
 Everything is removed	Allt tas bort
 Evolved	Utvecklad
 Experience	Erfarenhet

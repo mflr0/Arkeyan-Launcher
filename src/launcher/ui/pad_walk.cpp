@@ -208,7 +208,7 @@ namespace launcher_ui
         };
         if (m_testBegan == 0)
             m_testBegan = now;
-        // SKY_LAUNCHER_TEST_PADWALK_MINUTES: a longer limit for slow builds (CI's sanitizers job).
+        // SKY_LAUNCHER_TEST_PADWALK_MINUTES: a longer limit for slow builds (the sanitizers job of tools/ci/run.sh).
         static const uint64_t limitMs = [&] {
             const char* minutes = LauncherEnv("SKY_LAUNCHER_TEST_PADWALK_MINUTES");
             const unsigned long long value = minutes != nullptr ? std::strtoull(minutes, nullptr, 10) : 0;
@@ -333,7 +333,7 @@ namespace launcher_ui
                     if (name.ends_with(tab))
                         m_gameTab = value;
                 m_portableAsk = name.starts_with("13-");
-                if (m_portableAsk) // the copy is offered for an installed game with its disc only (CI runs with no disc image)
+                if (m_portableAsk) // the copy is offered for an installed game with its disc only (the checks run with no disc image)
                 {
                     m_s->installed.runtime = "padwalk";
                     w.discBefore = int(m_s->disc);

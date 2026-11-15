@@ -3,7 +3,6 @@
 <p align="center">
 <a href="https://github.com/mflr0/Arkeyan-Launcher/releases/latest"><img alt="Release" src="https://img.shields.io/github/v/release/mflr0/Arkeyan-Launcher"></a>
 <a href="https://github.com/mflr0/Arkeyan-Launcher/releases"><img alt="Downloads" src="https://img.shields.io/github/downloads/mflr0/Arkeyan-Launcher/total"></a>
-<a href="https://github.com/mflr0/Arkeyan-Launcher/actions/workflows/build.yml"><img alt="Build" src="https://img.shields.io/github/actions/workflow/status/mflr0/Arkeyan-Launcher/build.yml?branch=main"></a>
 <a href="https://github.com/mflr0/Arkeyan-Launcher/issues"><img alt="Open issues" src="https://img.shields.io/github/issues/mflr0/Arkeyan-Launcher"></a>
 <a href="https://github.com/mflr0/Arkeyan-Launcher/milestone/6"><img alt="Next version" src="https://img.shields.io/github/milestones/progress-percent/mflr0/Arkeyan-Launcher/6?label=0.9.9"></a>
 <img alt="Platforms" src="https://img.shields.io/badge/platforms-Windows%20%7C%20macOS%20%7C%20Linux-blue">
@@ -264,7 +263,7 @@ Arkeyan Launcher matches that guess on every point:
 
 What you can check, and do:
 
-- The source is all here, and every release is built by GitHub Actions from it (the Actions tab shows each build).
+- The source is all here, and every release is built from it.
 - Every download is checked against the release's SHA-256 before it runs.
 - Restore the file from Windows Security > Protection history (Allow on device), and add an exclusion for
   `%APPDATA%\Skylanders\kit`. Reporting it to Microsoft as a false positive

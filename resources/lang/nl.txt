@@ -298,7 +298,7 @@ Eon's Elite	Eon's Elite
 Erase	Wissen
 Escape	Escape
 Event and exclusive	Event en exclusief
-Every download is checked against the release's SHA-256 before it runs, and every release is built by GitHub Actions from the public source.	Elke download wordt gecontroleerd aan de hand van de SHA-256 van de release voordat hij start, en elke release wordt door GitHub Actions gebouwd uit de openbare broncode.
+Every download is checked against the release's SHA-256 before it runs, and every release is built from the public source.	Elke download wordt gecontroleerd aan de hand van de SHA-256 van de release voordat hij start, en elke release wordt gebouwd uit de openbare broncode.
 Everything is removed	Alles wordt verwijderd
 Evolved	Evolved
 Experience	Ervaring

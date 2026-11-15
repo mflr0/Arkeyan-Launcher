@@ -27,6 +27,22 @@ inline int TestUnsetEnv(const char* name)
 #endif
 }
 
+// Wine (tools/ci/run.sh) refuses a few file operations Windows allows, such as removing a hard link to a running exe.
+inline bool TestUnderWine()
+{
+#ifdef _WIN32
+    static const bool wine = [] {
+        SDL_SharedObject* ntdll = SDL_LoadObject("ntdll.dll");
+        const bool found = ntdll != nullptr && SDL_LoadFunction(ntdll, "wine_get_version") != nullptr;
+        SDL_UnloadObject(ntdll);
+        return found;
+    }();
+    return wine;
+#else
+    return false;
+#endif
+}
+
 // A file:// address for a path: three slashes and forward slashes on Windows ("file:///D:/a/x"), valid inside JSON too.
 inline std::string TestFileUrl(const std::filesystem::path& file)
 {
