@@ -110,7 +110,7 @@ The kit is an asset of the launcher's own release: `skylanders-kit-windows-x64.z
 
 ## Game versions and UPDATE
 
-Each game has its own version, `X.Y.Z`, by completeness (1.0 = the game at 100 %; each fix bumps the last number). The workshop
+Each game has its own version, `X.Y.Z`, by completeness (1.0 = the game at 100 %; each fix bumps the last number). The forge
 keeps it in one place per game (`version=` in the game's `game.txt`), the **kit** carries it (`kit.txt`: `game_version.<id>=0.8.2`,
 and `config/<id>/game.txt`), and the **release** says it in one hidden line at the end of its notes (an HTML comment, so GitHub does not show it):
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Builds a release on this Mac and makes its draft on GitHub (docs/updates.md, "Releases"):
 #
-#   tools/release_local.sh vX.Y.Z [--kits <forge or workshop checkout>]
+#   tools/release_local.sh vX.Y.Z [--kits <forge checkout>]
 #
 # The tag must be pushed and checked out, with a clean tree. Every job of tools/ci/run.sh runs with that version; any
 # failure stops before GitHub is touched. Then SHA256SUMS (which the launcher's updater checks), a check that no file

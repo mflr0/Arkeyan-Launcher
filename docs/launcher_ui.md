@@ -1328,14 +1328,14 @@ the disc is absent. If the kit is first acquired during installation, the next d
 Swap Force's menu scene requests `INTER_Menu_Screen`; its sound-bank object points to the sample named
 `INTER_Results_Screen.wav`. The menu is stereo, despite the adaptive music used elsewhere. Trap Team's
 main title loop is named explicitly in its title archive. These choices follow disc data; listening
-confirmation on a running game remains useful. The workshop's `docs/runtime/host/game_music.md` records
+confirmation on a running game remains useful. The forge's `docs/runtime/host/game_music.md` records
 the evidence and decoder details, including the correction to the old half-silent extraction.
 
 Code: `src/launcher/game_music.{h,cpp}`. `Mixer` owns fades, equal-power cross-fades, resampling and loops.
 `Player` opens one SDL stream lazily, pauses when silent, and follows `Playback` (page, running game,
 install, pending launch, mute). `tests/music_test.cpp` covers these transitions, missing files, extraction,
 the WAV reader and preference persistence. `ArkeyanLauncherTest --no-disc <scratch>` runs them;
-`SKY_LAUNCHER_TEST_MUSIC_ONLY=1` selects them alone. Workshop `ArkeyanBuilderMusicTest` checks all four discs.
+`SKY_LAUNCHER_TEST_MUSIC_ONLY=1` selects them alone. Forge `ArkeyanBuilderMusicTest` checks all four discs.
 All sound tests use `SDL_AUDIO_DRIVER=dummy` and disposable HOME and data paths.
 
 ## Notes
