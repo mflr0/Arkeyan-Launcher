@@ -166,7 +166,8 @@ bool KitOlderThanLauncher(const InstallKit& kit, std::string_view launcherVersio
     return !kit.chosen && IsNewer(launcherVersion, kit.tag.empty() ? kit.release : kit.tag);
 }
 
-std::optional<InstallKit> FindInstallKit(const LauncherConfig& config, std::string_view gameId)
+std::optional<InstallKit> FindInstallKit(
+    const LauncherConfig& config, std::string_view gameId, std::string_view releaseTag)
 {
     auto chosen = [](std::optional<InstallKit> kit) {
         if (kit)
@@ -178,7 +179,7 @@ std::optional<InstallKit> FindInstallKit(const LauncherConfig& config, std::stri
     if (std::string path = Setting(config, "launcher", "kit"); !path.empty())
         return chosen(KitIn(Path(path)));
 
-    // The kits Arkeyan Launcher downloaded (kit/<release tag>/): the newest release.
+    // Prefer the requested channel release when at hand, otherwise the newest downloaded kit.
     std::optional<InstallKit> best;
     SemVer bestTag;
     std::error_code error;
@@ -187,7 +188,7 @@ std::optional<InstallKit> FindInstallKit(const LauncherConfig& config, std::stri
         std::string name = Utf8(entry.path().filename());
         auto kit = entry.is_directory(error) && !name.starts_with(".") ? KitIn(entry.path()) : std::nullopt;
         SemVer tag = ParseSemVer(name);
-        if (kit && (!best || CompareSemVer(tag, bestTag) > 0))
+        if (kit && (!best || name == releaseTag || (best->tag != releaseTag && CompareSemVer(tag, bestTag) > 0)))
         {
             best = kit;
             best->tag = name;
@@ -230,7 +231,7 @@ std::optional<InstallKit> FindInstallKit(const LauncherConfig& config, std::stri
     std::optional<InstallKit> beside = nextToLauncher();
     if (!beside || !best)
         return beside ? beside : best;
-    bool downloadedWins = IsNewer(best->tag, beside->release) || beside->release.empty() ||
+    bool downloadedWins = best->tag == releaseTag || IsNewer(best->tag, beside->release) || beside->release.empty() ||
                           (!gameId.empty() && !beside->Builds(gameId) && best->Builds(gameId));
     return downloadedWins ? best : beside;
 }

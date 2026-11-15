@@ -1722,6 +1722,186 @@ int ExportPortableTool(int argc, char** argv); // tests/portable_test.cpp
 
 // The launcher window switching games in place (App::TestSwitchScript, in an offscreen window): both discs checked, a
 // build of each made by the fake kit, the state of each kept across switches, PLAY returning the shown game's runtime.
+static void ChannelSwitchChecks(const std::filesystem::path& scratch)
+{
+    namespace fs = std::filesystem;
+    const fs::path root = fs::absolute(scratch / "channel-switch");
+    fs::create_directories(root);
+    auto put = [](const fs::path& file, const std::string& text) {
+        fs::create_directories(file.parent_path());
+        std::ofstream(file, std::ios::binary) << text;
+    };
+    auto read = [](const fs::path& file) {
+        std::ifstream stream(file, std::ios::binary);
+        return std::string(std::istreambuf_iterator<char>(stream), {});
+    };
+    auto set = [](const char* key, const std::string& value) { TestSetEnv(key, value.c_str()); };
+    set("SKYLANDERS_DATA", (root / "data").string());
+    set("SKY_LAUNCHER_DATA", (root / "launcher").string());
+    set("SKY_SAVE_DIR", (root / "saves").string());
+    set("SKY_COLLECTION", (root / "collection").string());
+    set("SKY_SETTINGS", (root / "settings.ini").string());
+    set("SKY_LAUNCHER_INI", (root / "launcher.ini").string());
+    set("SKY_LOG", (root / "game.log").string());
+    set("SDL_VIDEO_DRIVER", "offscreen");
+    set("SDL_AUDIO_DRIVER", "disk");
+    set("SKY_LAUNCHER_NO_UPDATE_CHECK", "1");
+    set("SKY_LAUNCHER_LANGUAGE", "en");
+    i18n::SetLanguage("en");
+
+    struct Choice
+    {
+        const char* running;
+        const char* tag;
+        bool betas;
+        bool offer;
+        bool downgrade;
+    };
+    const Choice choices[] = {
+        { "0.9.7", "v0.9.7", false, false, false },
+        { "0.9.8", "v0.9.7", false, false, false },
+        { "0.9.7", "v0.9.8", false, true, false },
+        { "0.9.8b1", "v0.9.7", false, true, true },
+        { "0.9.8b1", "v0.9.8", false, true, false },
+        { "0.9.7", "v0.9.8b1", true, true, false },
+        { "0.9.8b1", "v0.9.8b2", true, true, false },
+        { "0.9.8b1", "v0.9.8", true, true, false },
+        { "0.9.8b2", "v0.9.8b1", true, false, false },
+        { "0.9.8b1", "v0.9.8b1", true, false, false },
+        { "0.9.8b1", "v0.9.8b2", false, false, false },
+        { "0.9.7", "unknown", false, false, false },
+    };
+    for (const Choice& choice : choices)
+    {
+        ReleaseInfo release;
+        release.tag = choice.tag;
+        release.prerelease = IsBetaVersion(choice.tag);
+        const bool offer = OfferLauncherRelease(release, choice.running, choice.betas);
+        EXPECT(offer == choice.offer);
+        EXPECT((offer && IsNewer(choice.running, choice.tag)) == choice.downgrade);
+    }
+    EXPECT(GameNeedsRebuild("0.8.0", "0.8.1"));
+    EXPECT(GameNeedsRebuild("0.8.1", "0.8.0"));
+    EXPECT(GameNeedsRebuild("0.8.0", ""));
+    EXPECT(!GameNeedsRebuild("0.8.0", "0.8.0") && !GameNeedsRebuild("", "0.8.0"));
+    printf("Channel choice: final, test build and rebuild cases checked\n");
+
+    const fs::path kits = DownloadedKitsFolder();
+    for (const char* tag :
+        { "v0.9.7", "v0.9.8b1", "v0.9.8b2", "v0.9.8b10", "v0.9.8", "v0.9.9", "unknown", ".download" })
+        put(kits / tag / "kit.txt", "kept bytes");
+    put(kits / "v99.0.0", "a file, not a kit folder");
+    std::string error;
+    EXPECT(PruneDownloadedKits(kits, "v0.9.8b2", error));
+    for (const char* tag : { "v0.9.7", "v0.9.8b1", "v0.9.8b2", "unknown", ".download" })
+        EXPECT(read(kits / tag / "kit.txt") == "kept bytes");
+    for (const char* tag : { "v0.9.8b10", "v0.9.8", "v0.9.9" })
+        EXPECT(!fs::exists(kits / tag));
+    EXPECT(fs::is_regular_file(kits / "v99.0.0"));
+    EXPECT(PruneDownloadedKits(kits, "v0.9.7", error));
+    EXPECT(!fs::exists(kits / "v0.9.8b1") && !fs::exists(kits / "v0.9.8b2"));
+    EXPECT(read(kits / "v0.9.7" / "kit.txt") == "kept bytes");
+    EXPECT(PruneDownloadedKits(root / "missing", "v0.9.7", error));
+    EXPECT(!PruneDownloadedKits(kits / "v99.0.0", "v0.9.7", error) && !error.empty());
+    printf("Kit pruning: only newer tag folders removed\n");
+    for (const char* tag : { "v0.9.7", "v0.9.8b1" })
+    {
+        fs::remove_all(kits / tag);
+        fs::copy(SKYLAUNCHER_FAKE_KIT, kits / tag, fs::copy_options::recursive);
+        put(kits / tag / "kit.txt", "version=" + std::string(tag).substr(1) + "\ngames=ssa,giants\n");
+    }
+    const auto selected = FindInstallKit({}, "ssa", "v0.9.7");
+    EXPECT(selected && selected->tag == "v0.9.7");
+    EXPECT(FindInstallKit({}, "ssa")->tag == "v0.9.8b1");
+    EXPECT(fs::exists(kits / "v0.9.8b1"));
+
+    const std::vector<std::pair<fs::path, std::string>> originals = {
+        { root / "saves" / "slot" / "GLOBAL.DAT", std::string("save\0bytes", 10) },
+        { root / "collection" / "figure.sky", "figure bytes" },
+        { root / "collection" / "collection.json", "{}" },
+        { root / "launcher" / "SSA" / "saves" / "GLOBAL.DAT", "another save" },
+        { root / "launcher" / "SSA" / "achievements.txt", "progress" },
+        { root / "launcher" / "SSA" / "playtime.txt", "play time" },
+        { root / "data" / "Giants" / "achievements.txt", "other progress" },
+        { root / "data" / "profiles" / "other" / "Collection" / "figure.sky", "other figure" },
+        { root / "data" / "profiles" / "other" / "Giants" / "saves" / "save.dat", "other save" },
+    };
+    for (const auto& [file, text] : originals)
+        put(file, text);
+    const auto paths = DowngradeDataPaths();
+    const std::string suffix = "-before-0.9.7-20261115-120000";
+    EXPECT(CopyDowngradeData(paths, "0.9.7", error, "20261115-120000"));
+    EXPECT(read(root / ("saves" + suffix) / "slot" / "GLOBAL.DAT") == originals[0].second);
+    EXPECT(read(root / ("collection" + suffix) / "figure.sky") == "figure bytes");
+    EXPECT(read(root / ("collection" + suffix) / "collection.json") == "{}");
+    EXPECT(read(root / "launcher" / "SSA" / ("saves" + suffix) / "GLOBAL.DAT") == "another save");
+    EXPECT(read(root / "launcher" / "SSA" / ("achievements.txt" + suffix) / "achievements.txt") == "progress");
+    EXPECT(read(root / "launcher" / "SSA" / ("playtime.txt" + suffix) / "playtime.txt") == "play time");
+    EXPECT(read(root / "data" / "Giants" / ("achievements.txt" + suffix) / "achievements.txt") == "other progress");
+    EXPECT(read(root / "data" / ("profiles" + suffix) / "other" / "Collection" / "figure.sky") == "other figure");
+    EXPECT(read(root / "data" / ("profiles" + suffix) / "other" / "Giants" / "saves" / "save.dat") == "other save");
+    EXPECT(!CopyDowngradeData(paths, "0.9.7", error, "20261115-120000") && !error.empty());
+    EXPECT(!CopyDowngradeData(paths, "../0.9.7", error, "20261115-120001"));
+    for (const auto& [file, text] : originals)
+        EXPECT(read(file) == text);
+    printf("Downgrade copy: saves, figures, progress and profiles copied; originals unchanged; collision refused\n");
+
+    // The manager and the dialog use the running test build, with an older final served locally.
+    if (IsBetaVersion(LauncherVersion()))
+    {
+        const fs::path release = root / "release";
+        put(release / "latest.json", R"({"tag_name":"v0.9.7","prerelease":false,"body":"Final release","assets":[]})");
+        set("SKY_LAUNCHER_UPDATE_URL", TestFileUrl(release / "latest.json"));
+        UpdateManager manager;
+        manager.Check({});
+        while (manager.Busy())
+            SDL_Delay(10);
+        EXPECT(manager.Snapshot().launcherNewer && manager.Snapshot().downgrade);
+        auto datedCopies = [&] {
+            std::set<fs::path> copies;
+            for (const auto& entry : fs::recursive_directory_iterator(root))
+                if (entry.path().filename().string().find("-before-") != std::string::npos)
+                    copies.insert(entry.path());
+            return copies;
+        };
+        const auto beforeCancel = datedCopies();
+        set("SKY_LAUNCHER_SHOTS", (root / "shots").string());
+        set("SKY_LAUNCHER_TEST_UPDATE", "downgrade");
+        {
+            LauncherConfig config;
+            config["update"]["betas"] = "0";
+            launcher_ui::App app(*FindGame("ssa"), (root / "launcher.ini").string(), config);
+            app.Run();
+            EXPECT(app.TestFailures() == 0);
+        }
+        EXPECT(fs::exists(root / "shots" / "channel-downgrade-dialog.png"));
+        EXPECT(datedCopies() == beforeCancel);
+        TestUnsetEnv("SKY_LAUNCHER_TEST_UPDATE");
+        TestUnsetEnv("SKY_LAUNCHER_SHOTS");
+        // Block the copy destination, including the next minute so a clock tick cannot make the test pass by chance.
+        const std::time_t now = std::time(nullptr);
+        for (int seconds = -1; seconds <= 60; seconds++)
+        {
+            const std::time_t time = now + seconds;
+            char stamp[32];
+            std::strftime(stamp, sizeof(stamp), "%Y%m%d-%H%M%S", std::localtime(&time));
+            put(root / ("collection-before-0.9.7-" + std::string(stamp)), "keep the existing copy");
+        }
+        manager.UpdateLauncher();
+        while (manager.Busy())
+            SDL_Delay(10);
+        const auto state = manager.Snapshot();
+        EXPECT(state.phase == UpdateManager::Phase::Failed);
+        EXPECT(state.error == "Couldn't copy saves and figures");
+        EXPECT(!state.restartNeeded && state.note.empty());
+        EXPECT(fs::exists(kits / "v0.9.8b1" / "kit.txt"));
+        for (const auto& [file, text] : originals)
+            EXPECT(read(file) == text);
+        printf("Downgrade manager: copy failure cancelled the update; confirmation dialog screenshot saved\n");
+        TestUnsetEnv("SKY_LAUNCHER_UPDATE_URL");
+    }
+}
+
 static void SwitchChecks(const std::filesystem::path& scratch, const std::string& ssaIso, const std::string& giantsIso)
 {
     auto set = [](const char* name, const std::string& value) {
@@ -2482,6 +2662,12 @@ static void SourceFailureChecks(const std::filesystem::path& scratch)
 
 static int RunChecks(int argc, char** argv)
 {
+    if (argc == 3 && std::string_view(argv[1]) == "--channel-switch")
+    {
+        ChannelSwitchChecks(std::filesystem::path(argv[2]));
+        printf("%d channel switch failures\n", g_failures);
+        return g_failures == 0 ? 0 : 1;
+    }
     if (argc >= 3 && getenv("SKY_LAUNCHER_TEST_LEVEL_NAMES_ONLY") != nullptr)
     {
         int failures = LevelNameChecks(argv[2]) + LuxImageChecks();
@@ -2784,6 +2970,19 @@ static int RunChecks(int argc, char** argv)
     PortalChecks(scratch);
     InstallChecks(scratch, noDisc ? "synthetic.iso" : iso.string());
     g_failures += ShellChecks(scratch);
+    {
+        // A fresh process keeps the collection's fixed location and every data override inside its own scratch folder.
+        const std::string folder = std::filesystem::absolute(scratch).string();
+        const char* arguments[] = { argv[0], "--channel-switch", folder.c_str(), nullptr };
+        SDL_Process* process = SDL_CreateProcess(arguments, false);
+        int code = -1;
+        if (process != nullptr)
+        {
+            SDL_WaitProcess(process, true, &code);
+            SDL_DestroyProcess(process);
+        }
+        EXPECT(code == 0);
+    }
     LauncherControlChecks(scratch);
 #if !defined(_WIN32)
     PadWalkChecks(scratch, noDisc ? std::string() : iso.string());

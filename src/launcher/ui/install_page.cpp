@@ -63,7 +63,7 @@ namespace launcher_ui
 
     void App::RefreshInstall()
     {
-        m_s->kit = FindInstallKit(m_config, m_s->game.id);
+        m_s->kit = FindInstallKit(m_config, m_s->game.id, WantedKitTag(*m_s));
         m_s->installed = FindInstalledGame(m_config, m_s->check.xexSha256);
         m_s->ownRuntime = FindRuntime(m_s->game, m_config);
 
@@ -107,9 +107,7 @@ namespace launcher_ui
         if (slot.disc != DiscState::Ready || slot.installed.runtime.empty() || slot.skipUpdate)
             return false;
         const GameUpdate* pending = PendingUpdate(slot);
-        // A build from before versions (or by a kit that did not say) is older than any published version.
-        return pending != nullptr &&
-               (slot.installed.gameVersion.empty() || IsNewer(pending->version, slot.installed.gameVersion));
+        return pending != nullptr && GameNeedsRebuild(pending->version, slot.installed.gameVersion);
     }
 
     bool App::AnyGameUpdate() const
@@ -130,10 +128,9 @@ namespace launcher_ui
 
     std::string App::WantedKitTag(const GameSlot& slot) const
     {
-        // The launcher's own release; a game whose published version needs a newer release's kit asks for that one.
-        std::string tag = "v" + LauncherVersion();
+        // The channel's games line names the kit, including a return from a test build to a final release.
         const GameUpdate* pending = PendingUpdate(slot);
-        return pending != nullptr && IsNewer(pending->kit, tag) ? pending->kit : tag;
+        return pending != nullptr ? pending->kit : "v" + LauncherVersion();
     }
 
     std::string App::GameVersion(const GameSlot& slot) const
@@ -168,24 +165,25 @@ namespace launcher_ui
             return true;
         if (slot.kit->chosen)
             return false;
-        // Once the launcher's own release was fetched (or the nearest one there is), an older tag is the best there is.
+        // Once the requested release was fetched (or the nearest one there is), an older tag is the best there is.
         std::string tag = WantedKitTag(slot);
         bool fetched = SettingGet(m_config, "update", "kit_fetched") == tag;
-        // A kit at hand (even one fetched under the same tag) that builds an older version than the update offers would
-        // rebuild the same old game and offer the update again, forever: fetch the release's kit again instead.
+        // A kit at hand that builds a different version would repeat the offer after every rebuild: fetch it again.
         if (const GameUpdate* pending = PendingUpdate(slot);
             pending != nullptr && !slot.kit->GameVersion(slot.game.id).empty())
         {
             SemVer kitBuilds = ParseSemVer(slot.kit->GameVersion(slot.game.id)),
                    offered = ParseSemVer(pending->version);
-            // Once per release and version: if that release's own kit still builds the older one, do not download it
+            // Once per release and version: if that release's own kit still builds another version, do not download it
             // again and again (the update then says what it can build).
             const std::string once = tag + " " + slot.game.id + " " + pending->version;
-            if (kitBuilds.valid && offered.valid && CompareSemVer(kitBuilds, offered) < 0 &&
+            if (kitBuilds.valid && offered.valid && CompareSemVer(kitBuilds, offered) != 0 &&
                 SettingGet(m_config, "update", "kit_refetched") != once)
                 return true;
         }
-        return !slot.kit->Builds(slot.game.id) || (KitOlderThanLauncher(*slot.kit, tag) && !fetched);
+        const std::string source = slot.kit->tag.empty() ? slot.kit->release : slot.kit->tag;
+        return !slot.kit->Builds(slot.game.id) ||
+               ((IsNewer(source, tag) || KitOlderThanLauncher(*slot.kit, tag)) && !fetched);
     }
 
     void App::StartInstall()
@@ -335,7 +333,7 @@ namespace launcher_ui
     {
         if (m_s->editionJob.Running() || m_s->kitDownload.Running() || m_s->installer.Running())
             return;
-        m_s->kit = FindInstallKit(m_config, m_s->game.id);
+        m_s->kit = FindInstallKit(m_config, m_s->game.id, WantedKitTag(*m_s));
         if (m_s->kit && m_s->kit->editionReport)
         {
             m_s->editionJob.Start(m_s->kit->ssabuild, m_s->discPath);
@@ -362,7 +360,7 @@ namespace launcher_ui
             {
                 Set("update", "kit_tag", kit.tag);
                 Set("update", "kit_fetched", m_s->kitTag);
-                m_s->kit = FindInstallKit(m_config, m_s->game.id);
+                m_s->kit = FindInstallKit(m_config, m_s->game.id, WantedKitTag(*m_s));
                 if (m_s->kit && m_s->kit->editionReport)
                     m_s->editionJob.Start(m_s->kit->ssabuild, m_s->discPath);
                 else

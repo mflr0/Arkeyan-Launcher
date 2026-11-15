@@ -49,6 +49,9 @@ bool ParseRelease(const std::string& json, ReleaseInfo& release, std::string* er
 bool ParseReleaseList(const std::string& json, std::vector<ReleaseInfo>& releases, std::string* error = nullptr);
 // The newest by version: final releases only, or test builds too with `betas`. Null when none has a version.
 const ReleaseInfo* NewestRelease(const std::vector<ReleaseInfo>& releases, bool betas);
+// Finals keep newer-only updates; leaving a test build for the final channel also permits an older final.
+bool OfferLauncherRelease(const ReleaseInfo& release, std::string_view current, bool betas);
+bool GameNeedsRebuild(std::string_view offered, std::string_view installed);
 const ReleaseAsset* FindAsset(const ReleaseInfo& release, std::string_view name);
 // An asset address the launcher downloads: https://github.com/<the repo's owner>/<name>/releases/download/... (the
 // owner's, so a renamed repository still matches). Any address when SKY_LAUNCHER_UPDATE_URL is set (the tests' local
@@ -166,6 +169,15 @@ private:
     std::atomic<bool> m_running{ false }, m_cancel{ false };
 };
 
+// Remove only downloaded kit directories with valid versions newer than target; a failure stops the update.
+bool PruneDownloadedKits(const std::filesystem::path& root, std::string_view target, std::string& error);
+// Saves, figures and progress known to the launcher, including the other player profiles.
+std::vector<std::filesystem::path> DowngradeDataPaths();
+// Copy each existing source into a new sibling <name>-before-<version>-<YYYYMMDD-HHMMSS> folder.
+// Never overwrite a copy or change a source. A missing source is fine; any read or copy failure returns false.
+bool CopyDowngradeData(const std::vector<std::filesystem::path>& paths, std::string_view version, std::string& error,
+    const std::string& stamp = {});
+
 // ---- The manager the window polls -------------------------------------------------------------------------------------
 
 class UpdateManager
@@ -175,6 +187,7 @@ public:
     {
         Idle,
         Checking,
+        Copying,
         Downloading,
         Verifying,
         Installing,
@@ -192,7 +205,8 @@ public:
         Phase phase = Phase::Idle;
         bool checked = false; // a check has answered
         std::string checkError; // why the last check failed
-        bool launcherNewer = false;
+        bool launcherNewer = false; // the channel has an update to offer, including a return to an older final
+        bool downgrade = false;
         ReleaseInfo launcher;
         ReleaseInfo kit; // the release that carries the games (its assets' sizes tell the download)
         std::vector<GameUpdate>

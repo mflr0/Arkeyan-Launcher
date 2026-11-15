@@ -1,6 +1,7 @@
 // Updates in the window: the check at start, the banner ("Update available" and its progress), What's new, and the About
 // page (version, "Check now", credits and licenses). The logic is in launcher/updater.cpp (docs/updates.md).
 #include "launcher/ui/launcher_app.h"
+#include "launcher/env.h"
 #include "shared/collection/datadir.h"
 #include "launcher/ui/launcher_ui.h"
 #include "launcher/ui/text_fit.h"
@@ -44,7 +45,7 @@ namespace launcher_ui
 
     void App::StartUpdateCheck(bool manual)
     {
-        if (m_updates.Busy())
+        if (m_updates.Busy() || m_downgradeOpen)
             return;
         m_updateManual = manual;
         if (manual)
@@ -79,10 +80,12 @@ namespace launcher_ui
                 if (state.checked)
                     m_gameUpdates = state.games; // offline or failed: silent, the list stays as it was
                 if (m_updateManual)
-                    m_updateDoneNote = !state.checked        ? Tf("Couldn't check: {}", state.checkError)
-                                       : state.launcherNewer ? Tf("Version {} is available.", state.launcher.tag)
-                                       : AnyGameUpdate()     ? GameUpdateNote()
-                                                             : Tr("Arkeyan Launcher is up to date.");
+                    m_updateDoneNote = !state.checked ? Tf("Couldn't check: {}", state.checkError)
+                                       : state.launcherNewer
+                                           ? (state.downgrade ? Tf("Version {} (the final release)", state.launcher.tag)
+                                                              : Tf("Version {} is available.", state.launcher.tag))
+                                       : AnyGameUpdate() ? GameUpdateNote()
+                                                         : Tr("Arkeyan Launcher is up to date.");
             }
         }
     }
@@ -100,8 +103,8 @@ namespace launcher_ui
     {
         UpdateManager::State state = m_updates.Snapshot();
         using Phase = UpdateManager::Phase;
-        bool progress =
-            state.phase == Phase::Downloading || state.phase == Phase::Verifying || state.phase == Phase::Installing;
+        bool progress = state.phase == Phase::Copying || state.phase == Phase::Downloading ||
+                        state.phase == Phase::Verifying || state.phase == Phase::Installing;
         bool offer = state.launcherNewer && !m_updateLater;
         bool shown = progress || state.restartNeeded || (state.phase == Phase::Failed && !state.error.empty()) ||
                      offer || (state.phase == Phase::Done && !state.note.empty());
@@ -135,8 +138,8 @@ namespace launcher_ui
         std::vector<Button> buttons;
         std::string text;
         float barFraction = -1;
-        bool progress =
-            state.phase == Phase::Downloading || state.phase == Phase::Verifying || state.phase == Phase::Installing;
+        bool progress = state.phase == Phase::Copying || state.phase == Phase::Downloading ||
+                        state.phase == Phase::Verifying || state.phase == Phase::Installing;
         enum
         {
             None,
@@ -155,9 +158,10 @@ namespace launcher_ui
         }
         else if (progress)
         {
-            text = state.phase == Phase::Downloading ? Tr("Downloading Arkeyan Launcher")
-                   : state.phase == Phase::Verifying ? Tr("Checking Arkeyan Launcher")
-                                                     : Tr("Installing Arkeyan Launcher");
+            text = state.phase == Phase::Copying       ? Tr("Copying saves and figures")
+                   : state.phase == Phase::Downloading ? Tr("Downloading Arkeyan Launcher")
+                   : state.phase == Phase::Verifying   ? Tr("Checking Arkeyan Launcher")
+                                                       : Tr("Installing Arkeyan Launcher");
             barFraction = state.phase == Phase::Downloading ? state.progress : -1;
             if (state.phase == Phase::Downloading)
                 buttons = { { Tr("Cancel"), false, Cancel } };
@@ -174,7 +178,8 @@ namespace launcher_ui
         }
         else if (state.launcherNewer && !m_updateLater)
         {
-            text = Tf("Update available: {}", state.launcher.tag);
+            text = state.downgrade ? Tf("Version {} (the final release)", state.launcher.tag)
+                                   : Tf("Update available: {}", state.launcher.tag);
             buttons = { { Tr("Update now"), true, UpdateLauncher }, { Tr("What's new"), false, WhatsNew },
                 { Tr("Later"), false, Later } };
         }
@@ -293,10 +298,45 @@ namespace launcher_ui
 
     void App::UpdateLauncherNow()
     {
+        if (m_updates.Busy() || !m_updates.Snapshot().launcherNewer)
+            return;
         if (DefenderNoticeFirst([this] { UpdateLauncherNow(); }))
             return;
+        if (m_updates.Snapshot().downgrade)
+        {
+            m_whatsNewOpen = false;
+            m_downgradeOpen = true;
+            return;
+        }
         m_updates.UpdateLauncher();
         m_updateWasBusy = true;
+    }
+
+    void App::DrawDowngrade()
+    {
+        if (!m_downgradeOpen)
+            return;
+        const auto state = m_updates.Snapshot();
+        bool open = true;
+        if (ui::BeginModal("##downgrade", Tr("Go back to the final release?"), &open, ui::ModalSize::Medium))
+        {
+            ui::Text(ui::TextStyle::Body, Tf("Going back to {}. Saves and figures made with the test build may not "
+                                             "open in it. A copy of them is kept.",
+                                              state.launcher.tag)
+                                              .c_str());
+            ImGui::Dummy(ImVec2(0, ui::space::S));
+            if (ui::ModalActions(&open, Tr("Continue"), Tr("Cancel")) == ui::ModalResult::Confirm)
+            {
+                m_updates.UpdateLauncher();
+                m_updateWasBusy = true;
+            }
+            ui::EndModal();
+        }
+        if (!open)
+        {
+            m_downgradeOpen = false;
+            RequestFocus(FocusTo::Page);
+        }
     }
 
     // The release notes of the update on offer.
@@ -416,11 +456,11 @@ namespace launcher_ui
             Set("update", "auto_check", automatic ? "1" : "0");
         ui::SettingRow(Tr("Receive betas"), Tr("Offers test builds of the next version, then the final one."));
         bool betas = ReceiveBetas();
-        if (ui::Toggle("##betas", &betas))
+        if (ui::Toggle("##betas", &betas, m_updates.Busy()))
         {
             Set("update", "betas", betas ? "1" : "0");
-            if (automatic) // asks again at once with the new choice; without checks at startup, Check now does
-                StartUpdateCheck(false);
+            m_updateLater = false;
+            StartUpdateCheck(false);
         }
         ui::EndSettings();
     }
@@ -469,6 +509,67 @@ namespace launcher_ui
     // before and after a manual check, and a failure.
     void App::TestUpdateScript(uint64_t now)
     {
+        if (const char* mode = LauncherEnv("SKY_LAUNCHER_TEST_UPDATE");
+            mode != nullptr && std::string_view(mode) == "downgrade")
+        {
+            if (m_testBegan == 0)
+                m_testBegan = now;
+            if (now - m_testBegan > 15000)
+            {
+                m_testFailures++;
+                m_running = false;
+                return;
+            }
+            switch (m_testStep)
+            {
+            case 0:
+                if (!m_updates.Snapshot().checked && !m_updates.Busy())
+                    StartUpdateCheck(true);
+                if (m_updates.Snapshot().checked && !m_updates.Busy())
+                    m_testAt = now + 300;
+                break;
+            case 1:
+            {
+                // A channel switch also offers an older game and requests that release's tools.
+                const auto disc = m_s->disc;
+                const auto installed = m_s->installed;
+                const auto kit = m_s->kit;
+                const auto updates = m_gameUpdates;
+                m_s->disc = DiscState::Ready;
+                m_s->installed.runtime = "synthetic";
+                m_s->installed.gameVersion = "0.8.1";
+                m_s->kit = InstallKit{};
+                m_s->kit->tag = "v0.9.8b1";
+                m_s->kit->games = { m_s->game.id };
+                m_gameUpdates = { { m_s->game.id, "0.8.0", "v0.9.7" } };
+                if (!UpdateAvailable() || WantedKitTag(*m_s) != "v0.9.7" || !KitNeedsFetch(*m_s))
+                    m_testFailures++;
+                m_s->installed.gameVersion = "0.8.0";
+                if (UpdateAvailable())
+                    m_testFailures++;
+                m_s->disc = disc;
+                m_s->installed = installed;
+                m_s->kit = kit;
+                m_gameUpdates = updates;
+                UpdateLauncherNow();
+                if (!m_downgradeOpen || m_updates.Busy())
+                    m_testFailures++;
+                m_testAt = now + 300;
+                break;
+            }
+            case 2:
+                ImGui::GetIO().AddKeyEvent(ImGuiKey_Escape, true);
+                ImGui::GetIO().AddKeyEvent(ImGuiKey_Escape, false);
+                m_testAt = now + 300;
+                break;
+            default:
+                if (m_downgradeOpen || m_updates.Busy() || m_updates.Snapshot().phase != UpdateManager::Phase::Idle)
+                    m_testFailures++;
+                m_running = false;
+                break;
+            }
+            return;
+        }
         switch (m_testStep)
         {
         case 0:
