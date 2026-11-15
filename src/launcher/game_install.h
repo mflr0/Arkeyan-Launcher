@@ -53,8 +53,10 @@ std::optional<InstallKit> InstallKitIn(const std::filesystem::path& folder);
 // The kit: SKY_LAUNCHER_KIT, else "[launcher] kit=", else a folder next to the launcher (or its macOS app bundle) named
 // skylanders-kit, ssa-kit, kit, or starting with skylanders-kit or ssa-kit (an unzipped "skylanders-kit-windows-x64") unless a downloaded kit comes from a newer
 // release (or when it cannot build `gameId`, if one is given and the downloaded kit can), else the newest downloaded kit.
+// A requested releaseTag prefers its downloaded kit even when another downloaded kit is newer; chosen kits still win.
 // Empty when none holds Arkeyan-Builder, SkyBuild or SSABuild.
-std::optional<InstallKit> FindInstallKit(const LauncherConfig& config, std::string_view gameId = {});
+std::optional<InstallKit> FindInstallKit(
+    const LauncherConfig& config, std::string_view gameId = {}, std::string_view releaseTag = {});
 
 // A runtime the player set up themselves: SKY_LAUNCHER_RUNTIME, else "[launcher] runtime=" in the settings file, else
 // the game's runtime executable next to the launcher (or inside its macOS app bundle). Empty when none exists.

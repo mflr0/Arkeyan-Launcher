@@ -12,7 +12,8 @@ No telemetry: the only request is `GET https://api.github.com/repos/<repo>/relea
    next start.
 2. The tag (`vX.Y.Z`) is compared, as semver, with the built version (`LAUNCHER_VERSION`, the CMake cache variable the CI
    sets from the tag or run number, shown in About). Tags that aren't versions are never offered; test builds only with
-   "Receive betas" on (below).
+   "Receive betas" on (below). A final launcher offers only newer versions. Leaving a test build for the final channel
+   offers the latest final whenever it differs, including an older version.
 3. A **banner** above the page (it pushes the page down 56 px, nothing overlaps): "Update available: vX.Y.Z", **Update now**,
    **What's new** (the release's notes, as written, and its page), **Later** (until the next start).
 4. **Update now**: the asset for this OS is downloaded next to the running program (`.skylauncher-update/`), its SHA-256 is
@@ -79,8 +80,19 @@ kits, so it installs and builds games like a final release.
   and takes the newest version, test build or final (`NewestRelease`): each new test build, then the final version. The
   games line is read from that same release, whose kit is the one its launcher downloads (`v<launcher version>`).
 - **Default**: off, and on when the running launcher is itself a test build (`IsBetaVersion(LauncherVersion())`) and the
-  player has not chosen. Turned off in a test build, it offers the next final version. Turning it on or off checks again at
-  once when "Check at startup" is on.
+  player has not chosen. Turning it on or off checks again immediately, even when checks at startup are off.
+- **Changing channel**: a final launcher with betas off still offers newer finals only. With betas on, the newest test
+  build or final is offered when newer. Turning betas off in a test build offers the latest final even when it is older:
+  `0.9.8b1` can go back to `0.9.7`. The banner calls it "Version v0.9.7 (the final release)"; the update state marks it as
+  `downgrade`.
+- **Before going back**: Update now opens the launcher's own confirmation dialog, with Continue and Cancel:
+  "Going back to {version}. Saves and figures made with the test build may not open in it. A copy of them is kept."
+  Continue copies the save folders (including save backups), the collection and its metadata, achievements, play time and
+  portal choices, plus the other profiles, into dated sibling folders named `<name>-before-<version>-<YYYYMMDD-HHMMSS>`.
+  This includes the locations selected by `SKY_SAVE_DIR` and `SKY_COLLECTION`, the game's folders in `LauncherDataFolder()`
+  and the shared data folder. A single progress file gets a sibling folder containing that file. Shared or nested sources
+  are copied once. Originals are never moved, overwritten or deleted. Any read or copy failure cancels the update and
+  shows a short error; an existing dated copy is never overwritten. Cancel starts no copy or update.
 - **Shown**: a **Beta** badge beside the version in the sidebar and in About; the version is the first line of the
   launcher's output (`launcher: Arkeyan Launcher <version>`) and the second of each game log (`# Arkeyan Launcher
   <version>`), so a bug report says which build it came from.
@@ -114,11 +126,12 @@ game update. Wherever the notes are shown (What's new) HTML comments are removed
 
 - The version of a **built** game is recorded when it is built (`[install.<sha256>] version=`, from the kit that built it). The
   game's page shows it ("Giants 0.8.2"); before the build it shows the kit's.
-- When the release's version is higher than the built one (a build that recorded none counts as older), the game's main button
+- When the channel's games line gives a version different from the built one (including an older version after changing
+  channel, or a build that recorded none), the game's main button
   reads **UPDATE** and the sidebar says "Update available". Under the button one muted line says the version on offer, the
   download (the kit's size; none when the kit in use is already the right one) and the time ("0.8.2 · 41 MB · ~15 min"), then
   the link **Play without updating** (below). One click fetches the kit of the release
-  `kit` names if the kit in use is older, then rebuilds the game (Arkeyan-Builder is incremental); PLAY is back at the end.
+  `kit` names if the kit in use differs, then rebuilds the game (Arkeyan-Builder is incremental); PLAY is back at the end.
 - **Play without updating**, a small link under that line, under the UPDATE button, plays what is built (offline,
   in a hurry) and sets the offer aside until the launcher is closed.
 - **Update all** (Home): when **two or more** games have an update, a button at the right of the "Library" title updates them
@@ -136,16 +149,23 @@ game update. Wherever the notes are shown (What's new) HTML comments are removed
 
 ## The kit follows the launcher
 
-A launcher never builds with a kit older than its own release, and never starts Arkeyan-Builder on a disc its kit cannot build.
+The kit follows the selected channel, and the launcher never starts Arkeyan-Builder on a disc its kit cannot build.
 (Without this a launcher that updated itself kept the kit next to it, and an old Arkeyan-Builder refused the Giants disc.)
 
-- **Before INSTALL or UPDATE** (never in the background), a missing kit, one from an older release than the launcher's (or than
-  the one the games line names for the game), or one whose `games=` lacks the disc's game makes the checklist start with "Downloading
-  the game tools": the release's kit is fetched, verified as above, into `kit/<tag>/`, then the game is built with it. It is not
+- **Before INSTALL or UPDATE** (never in the background), a missing kit, one from a different release than the channel's
+  games line names (otherwise the launcher's own `v<version>`), or one whose `games=` lacks the disc's game makes the
+  checklist start with "Downloading the game tools": the release's kit is fetched, verified as above, into `kit/<tag>/`,
+  then the game is built with it. It is not
   asked again for the same release (`[update] kit_fetched=<tag>`).
 - **Which release a kit comes from**: the `kit/<tag>/` folder of a downloaded kit, else `version=` in `kit.txt`; a kit that says
-  nothing is left alone. A kit next to the launcher that is older than a downloaded one, or cannot build the game while the
-  downloaded one can, is not used. The kit the player chose with `SKY_LAUNCHER_KIT` or `[launcher] kit=` is never replaced.
+  nothing is left alone. The requested channel release's downloaded kit is preferred even when a newer one is present.
+  A kit next to the launcher that is older than a downloaded one, or cannot build the game while the downloaded one can,
+  is not used. The kit the player chose with `SKY_LAUNCHER_KIT` or `[launcher] kit=` is never replaced.
+- **Before a downgrade is installed**, every downloaded kit directory with a valid tag newer than the target release is
+  removed from `DownloadedKitsFolder()`. Older and equal tags, unversioned folders and files are kept. A removal failure
+  stops the update. This happens after the safety copy and download verification, before replacement (or before opening
+  the installer). An older final launcher's parser may read `v0.9.8b1` as `0.9.8`: leaving that kit behind would make it
+  keep building with the test tools. Kits outside this folder are not pruned.
 - With no published release for the launcher's tag the latest release is used (a build of the development branch), and that is
   then the best there is: `kit_fetched` stops it asking again.
 
@@ -191,3 +211,8 @@ The download checks also verify an empty asset, binary hashes around SHA-256 pad
 checksum line, read failure, cancellation during a transfer and before verification, and a sparse 320 MiB zero-filled
 asset with a known digest. The large source and downloaded files are created in the scratch folder and removed after the
 checks. Download verification and shared file hashing each print their elapsed time.
+
+`ArkeyanLauncherTest --channel-switch <scratch>` checks the channel decisions, rebuilds in either direction, kit pruning,
+and dated copies with untouched originals and copy failures. Built as a test version, it also checks the manager's
+`downgrade` state, that copy failure cancels before installation, and the confirmation through `SKY_LAUNCHER_SHOTS`
+(`channel-downgrade-dialog.png`). Run with all data and settings locations isolated, offscreen video and disk audio.

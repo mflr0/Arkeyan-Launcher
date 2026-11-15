@@ -3,12 +3,19 @@
 #include "launcher/i18n.h"
 #include "launcher/game_install.h"
 #include "launcher/launcher.h"
+#include "shared/collection/collection.h"
+#include "shared/collection/datadir.h"
+#include "shared/collection/progress.h"
+#include "shared/collection/save_backup.h"
+#include "launcher/profiles.h"
 #include "shared/dir_list.h"
 #include "shared/collection/file_list.h"
 #include "shared/mini_json.h"
 #include <SDL3/SDL.h>
 #include <algorithm>
 #include <cctype>
+#include <ctime>
+#include <set>
 #include <fmt/format.h>
 #include <fstream>
 #include <initializer_list>
@@ -1046,6 +1053,175 @@ void KitDownloader::Start(
     });
 }
 
+bool OfferLauncherRelease(const ReleaseInfo& release, std::string_view current, bool betas)
+{
+    const SemVer target = ParseSemVer(release.tag), running = ParseSemVer(current);
+    if (!target.valid || !running.valid || (!betas && (release.prerelease || !target.pre.empty())))
+        return false;
+    const int order = CompareSemVer(target, running);
+    return order > 0 || (!betas && !running.pre.empty() && order != 0);
+}
+
+bool GameNeedsRebuild(std::string_view offered, std::string_view installed)
+{
+    return !offered.empty() && offered != installed;
+}
+
+bool PruneDownloadedKits(const fs::path& root, std::string_view target, std::string& error)
+{
+    error.clear();
+    if (!ParseSemVer(target).valid)
+    {
+        error = Tr("Couldn't prepare the game tools");
+        return false;
+    }
+    std::error_code ec;
+    const auto entries = ListDirectory(root, ec);
+    if (ec == std::errc::no_such_file_or_directory)
+        return true;
+    if (!ec)
+        for (const auto& entry : entries)
+        {
+            const auto status = entry.symlink_status(ec);
+            if (ec)
+                break;
+            const std::string tag = ToUtf8(entry.path().filename());
+            if (fs::is_directory(status) && !tag.starts_with(".") && IsNewer(tag, target))
+            {
+                fs::remove_all(entry.path(), ec);
+                if (ec)
+                    break;
+            }
+        }
+    if (ec)
+        error = Tr("Couldn't prepare the game tools");
+    return !ec;
+}
+
+std::vector<fs::path> DowngradeDataPaths()
+{
+    std::vector<fs::path> paths{ FromUtf8(collection::Folder()), datadir::Root() / "Collection", profiles::Folder() };
+    for (const GameInfo& game : g_games)
+    {
+        paths.push_back(savebackup::Root(game.id));
+        paths.push_back(savebackup::BackupRoot(savebackup::Root(game.id)));
+        for (const fs::path& folder : { progress::Folder(game.id),
+                 LauncherDataFolder() / datadir::GameFolderName(game.id), datadir::Game(game.id) })
+        {
+            paths.push_back(folder / "saves");
+            paths.push_back(folder / "saves-backup");
+            paths.push_back(folder / "achievements.txt");
+            paths.push_back(folder / "playtime.txt");
+            paths.push_back(folder / "portal.txt");
+        }
+    }
+    return paths;
+}
+
+bool CopyDowngradeData(
+    const std::vector<fs::path>& paths, std::string_view version, std::string& error, const std::string& stamp)
+{
+    error.clear();
+    // Only a version can enter the sibling name, never a path from a release answer.
+    if (!ParseSemVer(version).valid || version.find_first_of("/\\") != std::string_view::npos)
+    {
+        error = Tr("Couldn't copy saves and figures");
+        return false;
+    }
+    std::string when = stamp;
+    if (when.empty())
+    {
+        const std::time_t now = std::time(nullptr);
+        char buffer[32];
+        const std::tm* local = std::localtime(&now);
+        if (local != nullptr && std::strftime(buffer, sizeof(buffer), "%Y%m%d-%H%M%S", local) != 0)
+            when = buffer;
+    }
+    std::error_code ec;
+    std::set<fs::path> sources, walking;
+    bool ok = !when.empty() && when.find_first_of("/\\") == std::string::npos;
+    for (const fs::path& source : paths)
+    {
+        if (!ok)
+            break;
+        if (source.empty())
+            continue;
+        const auto status = fs::symlink_status(source, ec);
+        if (ec == std::errc::no_such_file_or_directory)
+        {
+            ec.clear();
+            continue;
+        }
+        if (ec)
+        {
+            ok = false;
+            break;
+        }
+        if (status.type() == fs::file_type::not_found)
+            continue;
+        const fs::path real = fs::canonical(source, ec);
+        if (ec || real == real.root_path())
+        {
+            ok = false;
+            break;
+        }
+        sources.insert(real);
+    }
+    // Copy a shared or nested folder once, before any copies can become part of another source.
+    std::vector<fs::path> roots;
+    for (const auto& source : sources)
+    {
+        bool nested = false;
+        for (fs::path parent = source.parent_path(); !parent.empty() && parent != parent.parent_path();
+            parent = parent.parent_path())
+            if (sources.contains(parent))
+                nested = true;
+        if (!nested)
+            roots.push_back(source);
+    }
+    fs::path writingRoot;
+    // Follow links to keep the bytes themselves; a cycle or an unreadable entry refuses the update.
+    std::function<bool(const fs::path&, const fs::path&)> copy = [&](const fs::path& source, const fs::path& dest) {
+        const auto status = fs::status(source, ec);
+        if (ec)
+            return false;
+        if (fs::is_regular_file(status))
+            return fs::copy_file(source, dest, fs::copy_options::none, ec) && !ec;
+        if (!fs::is_directory(status))
+            return false;
+        const fs::path real = fs::canonical(source, ec);
+        if (ec)
+            return false;
+        const fs::path relative = real.lexically_relative(writingRoot);
+        if ((!relative.empty() && *relative.begin() != "..") || !walking.insert(real).second ||
+            !fs::create_directory(dest, ec) || ec)
+            return false;
+        const auto entries = ListDirectory(source, ec);
+        if (ec)
+            return false;
+        for (const auto& entry : entries)
+            if (!copy(entry.path(), dest / entry.path().filename()))
+                return false;
+        walking.erase(real);
+        return true;
+    };
+    for (const fs::path& source : roots)
+    {
+        if (!ok)
+            break;
+        fs::path destination = source;
+        destination += "-before-" + std::string(version) + "-" + when;
+        writingRoot = destination;
+        if (fs::is_directory(source, ec))
+            ok = !ec && copy(source, destination);
+        else
+            ok = !ec && fs::create_directory(destination, ec) && !ec && copy(source, destination / source.filename());
+    }
+    if (!ok)
+        error = Tr("Couldn't copy saves and figures");
+    return ok;
+}
+
 // ---- The manager --------------------------------------------------------------------------------------------------
 
 void UpdateManager::Join()
@@ -1075,7 +1251,8 @@ void UpdateManager::SetPhase(Phase phase, const char* doing)
 {
     std::lock_guard lock(m_mutex);
     m_state.phase = phase;
-    if (phase == Phase::Downloading || phase == Phase::Verifying || phase == Phase::Installing)
+    if (phase == Phase::Copying || phase == Phase::Downloading || phase == Phase::Verifying ||
+        phase == Phase::Installing)
         m_state.doing = doing;
     if (phase == Phase::Downloading)
         m_state.progress = -1;
@@ -1152,8 +1329,8 @@ void UpdateManager::Check(const Settings& settings)
             m_state.phase = Phase::Idle;
             m_state.checked = launcherOk;
             m_state.checkError = launcherOk ? std::string() : error;
-            m_state.launcherNewer =
-                launcherOk && (m_settings.betas || !launcher.prerelease) && IsNewer(launcher.tag, LauncherVersion());
+            m_state.launcherNewer = launcherOk && OfferLauncherRelease(launcher, LauncherVersion(), m_settings.betas);
+            m_state.downgrade = m_state.launcherNewer && IsNewer(LauncherVersion(), launcher.tag);
             if (launcherOk)
                 m_state.launcher = launcher;
             m_state.games = std::move(games);
@@ -1173,12 +1350,35 @@ void UpdateManager::UpdateLauncher()
     m_cancel = false;
     m_thread = std::thread([this] {
         ReleaseInfo release;
+        bool downgrade = false;
         {
             std::lock_guard lock(m_mutex);
             release = m_state.launcher;
+            downgrade = m_state.downgrade;
             m_state.error.clear();
             m_state.note.clear();
         }
+        if (downgrade)
+        {
+            SetPhase(Phase::Copying, "launcher");
+            std::string error;
+            const std::string version = release.tag.starts_with("v") ? release.tag.substr(1) : release.tag;
+            if (!CopyDowngradeData(DowngradeDataPaths(), version, error))
+            {
+                Fail(error);
+                m_busy = false;
+                return;
+            }
+        }
+        auto prepareKits = [&] {
+            std::string error;
+            if (downgrade && !PruneDownloadedKits(DownloadedKitsFolder(), release.tag, error))
+            {
+                Fail(error);
+                return false;
+            }
+            return true;
+        };
         const std::string assetName = LauncherAssetName();
         auto progress = [&](uint64_t bytes) {
             const ReleaseAsset* asset = FindAsset(release, assetName);
@@ -1199,7 +1399,7 @@ void UpdateManager::UpdateLauncher()
             fs::path dmg = DownloadVerified(release, "ArkeyanLauncher-macOS.dmg", folder, progress, &m_cancel, error);
             if (dmg.empty())
                 Fail(error);
-            else
+            else if (prepareKits())
             {
                 SDL_OpenURL(("file://" + ToUtf8(dmg)).c_str());
                 std::lock_guard lock(m_mutex);
@@ -1212,6 +1412,11 @@ void UpdateManager::UpdateLauncher()
 #else
         if (self.empty())
         {
+            if (!prepareKits())
+            {
+                m_busy = false;
+                return;
+            }
             SDL_OpenURL(release.pageUrl.c_str());
             std::lock_guard lock(m_mutex);
             m_state.phase = Phase::Done;
@@ -1259,6 +1464,12 @@ void UpdateManager::UpdateLauncher()
         fs::permissions(fresh, fs::perms::owner_exec | fs::perms::group_exec | fs::perms::others_exec,
             fs::perm_options::add, fsError);
 #endif
+        if (!prepareKits())
+        {
+            fs::remove_all(folder, fsError);
+            m_busy = false;
+            return;
+        }
         bool ok = ReplaceInPlace(self, fresh, error);
         if (ok)
         {

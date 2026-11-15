@@ -1113,7 +1113,9 @@ namespace
         TestSetEnv("SKY_LAUNCHER_UPDATE_URL", FileUrl(updates / "r4" / "latest.json").c_str());
         manager.Check(settings);
         WaitFor(manager);
-        SHELL_EXPECT(manager.Snapshot().checked && !manager.Snapshot().launcherNewer);
+        SHELL_EXPECT(manager.Snapshot().checked &&
+                     manager.Snapshot().launcherNewer == IsBetaVersion(LauncherVersion()) &&
+                     manager.Snapshot().downgrade == IsBetaVersion(LauncherVersion()));
         TestSetEnv("SKY_LAUNCHER_UPDATE_URL", FileUrl(updates / "none.json").c_str());
         manager.Check(settings);
         WaitFor(manager);
