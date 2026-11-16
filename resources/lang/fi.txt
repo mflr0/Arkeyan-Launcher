@@ -97,7 +97,8 @@ Attack 3 / Back	Hyökkäys 3 / Takaisin
 Aug	elo
 Auto	Auto
 Auto (follows the window)	Auto (seuraa ikkunaa)
-Auto shows more when wide; 16:9 adds bars.	Auto näyttää enemmän leveänä; 16:9 lisää palkit.
+Fill (covers a taller screen)	Täytä (peittää korkeamman näytön)
+Auto shows more when wide; Fill covers a taller screen; 16:9 adds bars.	Auto näyttää enemmän leveänä; Täytä peittää korkeamman näytön; 16:9 lisää palkit.
 Auto-open Toy Box	Toy Boxin automaattiavaus
 Auto: 5.1 when the device has six channels.	Auto: 5.1, kun laitteessa on kuusi kanavaa.
 Automatic	Automaattinen

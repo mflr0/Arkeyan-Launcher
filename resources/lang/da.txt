@@ -96,7 +96,8 @@ Attack 3 / Back	Angreb 3 / Tilbage
 Aug	aug.
 Auto	Auto
 Auto (follows the window)	Auto (følger vinduet)
-Auto shows more when wide; 16:9 adds bars.	Auto viser mere, når vinduet er bredt; 16:9 tilføjer bjælker.
+Fill (covers a taller screen)	Udfyld (dækker en højere skærm)
+Auto shows more when wide; Fill covers a taller screen; 16:9 adds bars.	Auto viser mere, når vinduet er bredt; Udfyld dækker en højere skærm; 16:9 tilføjer bjælker.
 Auto-open Toy Box	Åbn Toy Box automatisk
 Auto: 5.1 when the device has six channels.	Auto: 5.1, når enheden har seks kanaler.
 Automatic	Automatisk
