@@ -908,7 +908,6 @@ VSync	VSync
 Vehicle {}	Voertuig {}
 Vehicles	Voertuigen
 Verified	Geverifieerd
-Verified, {}	Geverifieerd, {}
 Version {} is available.	Versie {} is beschikbaar.
 Version {}, {}	Versie {}, {}
 Versions	Versies
@@ -1158,3 +1157,23 @@ This folder can't be written to	Er kan niet in deze map worden geschreven
 Choose a folder outside the games	Kies een map buiten de spellen
 Choose a folder outside the game tools	Kies een map buiten de spelhulpmiddelen
 The games in {} go too; your other files there stay.	De spellen in {} gaan ook weg; je andere bestanden daar blijven.
+
+# The image check (disc_check.h): the Disc tab's pill, the install's first row, the dialog after a game whose movies did not open.
+Can't read the disc image.	Kan het schijfimage niet lezen.
+Check again	Opnieuw controleren
+Checking files, {}	Bestanden controleren, {}
+Checking the disc	Schijf controleren
+Choose image	Image kiezen
+Copy the disc again, then choose the new image.	Kopieer de schijf opnieuw en kies dan het nieuwe image.
+Damaged copy	Beschadigde kopie
+Disc image damaged	Schijfimage beschadigd
+Every file can be read. No good copy of this edition to compare with.	Elk bestand is leesbaar. Geen goede kopie van deze editie om mee te vergelijken.
+Every file matches a good copy of this disc ({}).	Elk bestand is gelijk aan een goede kopie van deze schijf ({}).
+Good copy, {}	Goede kopie, {}
+Part of the image can't be read.	Een deel van het image is niet leesbaar.
+Readable, {}	Leesbaar, {}
+Some files differ from a good copy of this disc ({}).	Sommige bestanden wijken af van een goede kopie van deze schijf ({}).
+The disc image is damaged.	Het schijfimage is beschadigd.
+The disc image may be damaged	Het schijfimage is misschien beschadigd
+The disc image of {} is damaged	Het schijfimage van {} is beschadigd
+{} couldn't open some of its movies. A damaged copy of the disc does this.	{} kon een paar van zijn filmpjes niet openen. Dat doet een beschadigde kopie van de schijf.

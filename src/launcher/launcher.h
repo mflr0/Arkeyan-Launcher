@@ -21,6 +21,9 @@ struct GameRelease
     // SHA-256 of its loaded image (the decrypted, decompressed executable), lowercase hex. A disc of another edition with
     // this image runs the same game code: only its XEX header (region, media ID, version) differs.
     const char* imageSha256;
+    // The fingerprint of a good copy's files (disccheck::ComputeDigest: the same for every image layout), lowercase hex;
+    // nullptr: no good copy of this edition known. "Check the image" compares with it (disc_check.h).
+    const char* contentSha256 = nullptr;
 };
 
 struct GameInfo
@@ -117,6 +120,9 @@ struct LauncherArguments
     bool help = false;
     bool afterUpdate = false;
     std::string toybox; // --toybox <id>: the Toy Box window of that game, while it runs (docs/toybox_window.md)
+    // --disc-digest <image>: prints the fingerprint of that disc's files (disc_check.h) and exits, for a release's
+    // GameRelease::contentSha256. Not in --help.
+    std::string discDigest;
     std::vector<std::string> unknown;
 };
 LauncherArguments ParseLauncherArguments(int argc, const char* const* argv);

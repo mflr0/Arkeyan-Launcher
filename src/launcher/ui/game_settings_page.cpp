@@ -592,6 +592,8 @@ namespace launcher_ui
         m_s->discPath.clear();
         m_s->discSize = 0;
         m_s->check = {};
+        m_s->discChecked.reset();
+        m_s->discCheckWanted = false;
         m_s->installView = m_s->kitUsed = false;
         m_config[m_s->game.id].erase("iso");
         StoreDiscLanguages(m_config, m_s->game.id, {});
@@ -612,6 +614,9 @@ namespace launcher_ui
             const std::string iso = SettingGet(m_config, m_s->game.id, "iso");
             ui::Text(ui::TextStyle::Body, iso.empty() ? Tr("None chosen.") : filename(iso).c_str());
             ui::Text(ui::TextStyle::Caption, Tr("Not needed: the game plays from its copied data."), ui::color::Dim);
+            ImGui::Dummy(ImVec2(0, ui::space::XXS));
+            DrawDiscCheck(); // of the copy
+            DrawCheckAgain();
         }
         else
         {
@@ -620,9 +625,7 @@ namespace launcher_ui
             const GameInfo* other = nullptr;
             switch (m_s->disc)
             {
-            case DiscState::Ready:
-                ui::StatusPill(ui::Status::Success, Tf("Verified, {}", ui::FormatSize(m_s->discSize)).c_str());
-                break;
+            case DiscState::Ready: DrawDiscCheck(); break;
             case DiscState::Verifying: ui::StatusPill(ui::Status::Busy, (m_s->verify.Stage() + "...").c_str()); break;
             case DiscState::Failed:
                 ui::StatusPill(ui::Status::Error, SlotStatus(m_s).text.c_str());
@@ -644,9 +647,9 @@ namespace launcher_ui
                 ImGui::SameLine(0, ui::space::S);
             }
             ui::ButtonOptions choose;
-            choose.kind = other != nullptr || !m_s->discPath.empty()
+            choose.kind = (other != nullptr || !m_s->discPath.empty()) && !DiscDamaged(*m_s)
                               ? ui::ButtonKind::Secondary
-                              : ui::ButtonKind::Primary; // Primary: the disc to choose
+                              : ui::ButtonKind::Primary; // Primary: the disc to choose (again)
             choose.disabled = busy;
             if (ui::Button(m_s->discPath.empty() ? Tr("Choose...") : Tr("Change..."), choose))
                 Browse();
@@ -667,8 +670,21 @@ namespace launcher_ui
                     Toast(Tr("Couldn't open the folder"), ui::ToastKind::Error);
             }
             ui::Text(ui::TextStyle::Caption, Tr("The file stays where it is."), ui::color::Dim);
+            DrawCheckAgain();
         }
         DrawGameData();
+    }
+
+    // Reads the verified disc again (its kept result forgotten): after the drive had trouble, or a copy was repaired.
+    void App::DrawCheckAgain()
+    {
+        if (m_s->disc != DiscState::Ready)
+            return;
+        ImGui::Dummy(ImVec2(0, ui::space::XXS));
+        ui::ButtonOptions again;
+        again.disabled = DiscChecking(*m_s) || Installing() || m_s->copyJob.Running();
+        if (ui::Button(Tr("Check again"), again))
+            WantDiscCheck(true);
     }
 
     // ---- Saves -------------------------------------------------------------------------------------------------------

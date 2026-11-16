@@ -1713,6 +1713,7 @@ int CopyChecks(const std::filesystem::path& scratch, const std::string& ssaIso,
     const std::string& giantsIso); // tests/copy_test.cpp
 int PortableChecks(const std::filesystem::path& scratch); // tests/portable_test.cpp
 int VfsChecks(const std::filesystem::path& scratch); // tests/vfs_test.cpp
+int DiscCheckChecks(const std::filesystem::path& scratch); // tests/disc_check_test.cpp
 int LevelNameChecks(const std::filesystem::path& root);
 int LevelNameDiscChecks();
 int LuxImageChecks(); // tests/lux_images_test.cpp
@@ -2997,6 +2998,7 @@ static int RunChecks(int argc, char** argv)
     g_failures += UninstallChecks(scratch);
     g_failures += PortableChecks(scratch);
     g_failures += VfsChecks(scratch);
+    g_failures += DiscCheckChecks(scratch);
     LoopingDiscStartChecks(scratch);
     g_failures += LuxImageChecks();
     g_failures += LevelNameChecks(scratch);

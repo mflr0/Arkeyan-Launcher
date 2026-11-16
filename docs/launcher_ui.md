@@ -628,7 +628,10 @@ GitHub issue) and the GitHub link bottom right. The launcher's own language is i
      disc holds"): Russian, Greek, Japanese, Korean and Chinese are named by the launcher's own word (the font has no glyphs for
      them), translated; a code nobody knows in the stored list is ignored.
    - Disc: the image's file name and state; **Choose... / Change...**, **Remove** (the launcher forgets it; the file is not
-     touched), **Show in folder**. Disabled while a check or an install runs.
+     touched), **Show in folder**. Disabled while the disc check or an install runs. Once the disc is verified, its pill is
+     the image check's (docs/install.md, "Image check"): "Checking files, 45 %", then "Good copy", "Readable" (no good copy
+     of this edition to compare with) or "Damaged copy", with one line saying what was found; **Check again** reads it
+     again. When the game plays from its copied data, the same pill is the copy's.
    - Saves: **Open saves folder** and the save backups with Restore (held, refused while the game runs).
    - Game: **Create** (under Desktop shortcut), the folders, the built game with **Reinstall** (held), **Clear caches**,
      **Delete saves and data** (held), **Remove game** (held), each with the size it frees and what it keeps
@@ -736,7 +739,8 @@ disagree; the page's other lines (the disc's status, the install card, the game 
 | the last install failed (no build); the last update failed (a build) | Install failed; Update failed | a crossed circle, red | INSTALL; UPDATE (or PLAY) |
 | the install was interrupted | Interrupted | a pause, blue | INSTALL, or PLAY if built |
 | the copied game data is damaged, and no disc image to fall back on | Game data damaged | a crossed circle, red | CHOOSE DISC |
-| a verified disc, no build yet | Ready to install | a download, blue | INSTALL |
+| the image check found the image damaged (docs/install.md, "Image check"); built or not | Disc image damaged | a crossed circle, red | INSTALL (off); PLAY or UPDATE if built |
+| a verified disc, no build yet; its image check still to finish (INSTALL then waits for it) | Ready to install; Checking the disc | a download, blue | INSTALL |
 | the release has a newer version of the game than the one built (the release's games line), not set aside with "Play without updating" | Update available | an arrow in a circle, blue | UPDATE |
 | verified disc and built (or an own runtime) | Ready to play | a checked circle, green | PLAY |
 | the game is running (started here, or found running: "A game running") | Running | a play triangle, green | RUNNING (off) |

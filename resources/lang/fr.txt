@@ -440,7 +440,6 @@ Updating	Mise à jour
 Use it for {}	L'utiliser pour {}
 VSync	Synchro verticale
 Verified	Vérifié
-Verified, {}	Vérifié, {}
 Version {} is available.	La version {} est disponible.
 Version {}, {}	Version {}, {}
 Video	Vidéo
@@ -1188,3 +1187,23 @@ This folder can't be written to	Impossible d'écrire dans ce dossier
 Choose a folder outside the games	Choisissez un dossier hors des jeux
 Choose a folder outside the game tools	Choisissez un dossier hors des outils du jeu
 The games in {} go too; your other files there stay.	Les jeux dans {} sont aussi supprimés ; vos autres fichiers y restent.
+
+# The image check (disc_check.h): the Disc tab's pill, the install's first row, the dialog after a game whose movies did not open.
+Can't read the disc image.	Impossible de lire l'image disque.
+Check again	Vérifier à nouveau
+Checking files, {}	Vérification des fichiers, {}
+Checking the disc	Vérification du disque
+Choose image	Choisir l'image
+Copy the disc again, then choose the new image.	Copiez à nouveau le disque, puis choisissez la nouvelle image.
+Damaged copy	Copie endommagée
+Disc image damaged	Image disque endommagée
+Every file can be read. No good copy of this edition to compare with.	Tous les fichiers sont lisibles. Aucune bonne copie de cette édition pour comparer.
+Every file matches a good copy of this disc ({}).	Chaque fichier est identique à une bonne copie de ce disque ({}).
+Good copy, {}	Bonne copie, {}
+Part of the image can't be read.	Une partie de l'image est illisible.
+Readable, {}	Lisible, {}
+Some files differ from a good copy of this disc ({}).	Certains fichiers diffèrent d'une bonne copie de ce disque ({}).
+The disc image is damaged.	L'image disque est endommagée.
+The disc image may be damaged	L'image disque est peut-être endommagée
+The disc image of {} is damaged	L'image disque de {} est endommagée
+{} couldn't open some of its movies. A damaged copy of the disc does this.	{} n'a pas pu ouvrir certaines de ses vidéos. Une copie endommagée du disque fait cela.

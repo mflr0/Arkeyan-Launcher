@@ -583,7 +583,7 @@ namespace launcher_ui
     bool App::AnyInstalling() const
     {
         for (const auto& slot : m_slots)
-            if (slot->installer.Running() || slot->kitDownload.Running())
+            if (slot->installer.Running() || slot->kitDownload.Running() || slot->installAfterCheck)
                 return true;
         return false;
     }
@@ -630,6 +630,8 @@ namespace launcher_ui
                 FinishVerify();
             if (m_s->copyJob.Done())
                 FinishCopy();
+            if (m_s->discCheck.Done())
+                FinishDiscCheck();
             if (m_s->portableJob.Done())
                 FinishPortableExport();
             FinishHdTextures();
@@ -638,6 +640,7 @@ namespace launcher_ui
         }
         m_s = shown;
         SetActiveGame(m_s->game.id);
+        RunDiscChecks();
     }
 
     void App::Shutdown()
@@ -966,6 +969,10 @@ namespace launcher_ui
     {
         m_s->disc = DiscState::Verifying;
         m_s->discPath = path;
+        m_s->discChecked.reset(); // the new disc gets its own check once verified
+        m_s->discCheckWanted = false;
+        if (m_s->discCheck.Running() && m_s->discCheck.Path() != path)
+            m_s->discCheck.Cancel();
         m_s->editionText.clear();
         m_s->discSize = 0;
         m_s->fromCopy =
@@ -1022,6 +1029,7 @@ namespace launcher_ui
             Toast(Tr("Couldn't save the settings"), ui::ToastKind::Error);
         m_s->verify.StartScenes(m_s->discPath, m_s->game.id);
         m_s->disc = DiscState::Ready;
+        WantDiscCheck();
         RefreshInstall();
     }
 
@@ -1099,6 +1107,7 @@ namespace launcher_ui
             {
                 m_sessionIso = m_s->discPath;
                 m_sessionStart = SDL_GetTicks();
+                StopDiscChecks(); // the game reads the disc: the check carries on once it has quit
             }
             return;
         }
@@ -1143,6 +1152,8 @@ namespace launcher_ui
             return;
         }
         const GameInfo* game = FindGame(ended->game);
+        if (game != nullptr) // a hang the player ended exits 0 or is stopped here: the movie lines are what tells
+            OfferDiscCheck(*game);
         if (!ended->ours || ended->stopped || ended->exitCode == 0 || game == nullptr)
             return;
         if (!m_shots.empty()) // a screenshot script: no dialog that waits for a click
@@ -1634,7 +1645,7 @@ namespace launcher_ui
         auto line = [](S state, const char* text, unsigned dot, const char* button, bool enabled = true,
                         float progress = -1) { return SlotLine{ text, dot, progress, state, button, enabled }; };
         const bool built = !slot->installed.runtime.empty();
-        if (slot->installer.Running() || slot->kitDownload.Running())
+        if (slot->installer.Running() || slot->kitDownload.Running() || slot->installAfterCheck)
         {
             InstallProgress snapshot = InstallSnapshot(*slot);
             InstallChecklist list = MakeInstallChecklist(snapshot, SDL_GetTicks(), slot->game.id);
@@ -1686,8 +1697,12 @@ namespace launcher_ui
             if (state == InstallProgress::State::Interrupted)
                 return line(S::Interrupted, Tr("Interrupted"), Accent, button);
         }
+        // The image check: a damaged image is never installed; a built game still plays, with the warning.
+        if (DiscDamaged(*slot))
+            return line(S::DiscDamaged, Tr("Disc image damaged"), Danger, button, !NeedsInstall(*slot));
         if (NeedsInstall(*slot))
-            return line(S::ReadyToInstall, Tr("Ready to install"), Accent, button);
+            return line(S::ReadyToInstall, DiscChecking(*slot) ? Tr("Checking the disc") : Tr("Ready to install"),
+                Accent, button);
         if (UpdateAvailable(*slot))
             return line(S::UpdateAvailable, Tr("Update available"), Accent, button);
         return line(S::Ready, Tr("Ready to play"), Ready, button);
@@ -2584,14 +2599,18 @@ namespace launcher_ui
                 Browse();
             ui::Tooltip(m_s->discPath.c_str());
         }
-        if (play.ready && !play.detailed && !play.installing && !play.running && play.install)
+        if (play.ready && !play.detailed && !play.installing && !play.running && (play.install || DiscDamaged(*m_s)))
         {
             ImGui::SetCursorScreenPos(ImVec2(left, pillY + ui::height::Small + ui::space::M));
-            ui::Text(ui::TextStyle::Caption,
-                Tf("Builds the game on your PC: about {} min, {} GB, internet needed once.",
-                    InstallMinutesFor(m_s->game.id), InstallGigabytes)
-                    .c_str(),
-                ui::color::InkSoft, leftW);
+            if (DiscDamaged(*m_s))
+                ui::Text(ui::TextStyle::Caption, Tr("Copy the disc again, then choose the new image."),
+                    ui::color::Danger, leftW);
+            else
+                ui::Text(ui::TextStyle::Caption,
+                    Tf("Builds the game on your PC: about {} min, {} GB, internet needed once.",
+                        InstallMinutesFor(m_s->game.id), InstallGigabytes)
+                        .c_str(),
+                    ui::color::InkSoft, leftW);
         }
         if (play.ready && !play.detailed && !m_s->fromCopy && m_s->copy.state == gamedata::State::Damaged)
         {
@@ -3181,13 +3200,14 @@ namespace launcher_ui
             DrawDefenderNotice();
             DrawGamesFolderMissing();
             DrawGameStopped();
+            DrawDiscOffer();
             DrawToast();
             // Who answers B / Escape next frame: an open menu or dialog, a field being edited, the collection's search or View.
             // LB / RB belong to the pages unless a dialog, a menu or a field has the input.
             m_pagesTaken = ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopupId | ImGuiPopupFlags_AnyPopupLevel) ||
                            ImGui::IsAnyItemActive() || m_toasts.HasFocus() || m_reportOpen || m_whatsNewOpen ||
                            m_downgradeOpen || m_integrityOpen || m_quitPrompt || m_defenderNoticeOpen ||
-                           m_gamesMissingOpen || m_gameStopped.has_value();
+                           m_gamesMissingOpen || m_gameStopped.has_value() || m_discOffer.has_value();
             m_backTaken = m_pagesTaken || (m_page == Page::Collection && m_s->collection->TakesBack());
             m_focusTo = FocusTo::None; // a request no page answered (its item wasn't drawn) is dropped
         }

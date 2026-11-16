@@ -4,6 +4,7 @@
 // and collection_page.cpp (the figure collection). Nothing outside launcher/ui includes this; launcher_ui.h is the
 // public entry point.
 #include "assets/launcher_assets.h"
+#include "launcher/disc_check.h"
 #include "launcher/discord_presence.h"
 #include "launcher/game_copy.h"
 #include "launcher/edition_report.h"
@@ -308,6 +309,7 @@ namespace launcher_ui
         DiscUnknown,
         DiscNotGame,
         DataDamaged,
+        DiscDamaged, // the image check found it damaged (disc_check.h)
         DownloadingTools,
         Installing,
         Updating,
@@ -378,6 +380,15 @@ namespace launcher_ui
         bool fromCopy = false;
         GameCopyJob copyJob;
         std::string copyMessage; // why the last copy didn't finish
+        // The image check (disc_check.h) of the verified disc (its image or its copy): wanted (it runs when its turn
+        // comes: one at a time, never while a game runs), running, its result. An install waits for it (its first row).
+        disccheck::Job discCheck;
+        bool discCheckWanted = false;
+        std::optional<disccheck::Result> discChecked;
+        bool installAfterCheck = false; // INSTALL was pressed before the check's end
+        bool checkUsed = false; // this install started with the check: its row in the checklist
+        InstallProgress::Step checkStep;
+        std::string checkError; // the check found the image damaged: the install stopped there
         // Game settings > Game > Portable copy (portable_export.h): the export running, the last one made, why the last one failed.
         PortableExportJob portableJob;
         std::filesystem::path portablePath;
@@ -533,6 +544,22 @@ namespace launcher_ui
         void StartCopy();
         void FinishCopy();
         void RemoveCopy();
+        // game_data_page.cpp: the image check. Wanted once a disc is verified (its kept result read back when the file
+        // is unchanged), run by RunDiscChecks, shown as the Disc tab's pill; the dialog after a game whose movies didn't
+        // open (OfferDiscCheck, from PollGame).
+        void WantDiscCheck(bool again = false); // again: "Check again", the kept result is forgotten
+        void RunDiscChecks(); // starts the next wanted check (all slots)
+        void StopDiscChecks(); // a game starts: the running check stops and runs again later
+        void FinishDiscCheck();
+        void ContinueAfterCheck(); // an install waiting for the check
+        static bool DiscDamaged(const GameSlot& slot); // checked, and not to be installed or copied
+        static bool DiscChecking(const GameSlot& slot); // verified, the check not done yet
+        void DrawDiscCheck(); // the Disc tab's pill and its line
+        void DrawCheckAgain();
+        void OfferDiscCheck(const GameInfo& game);
+        void DrawDiscOffer();
+        void CancelInstall(); // the install card's Cancel
+        void ContinueInstall(); // StartInstall's end: the kit, then the builder
         void DrawSaveBackups();
         void RefreshSaveBackups();
         void RestoreSaveBackup(const std::string& stamp);
@@ -678,7 +705,10 @@ namespace launcher_ui
         void RefreshInstall();
         bool NeedsInstall() const;
         bool NeedsInstall(const GameSlot& slot) const;
-        bool Installing() const { return m_s->installer.Running() || m_s->kitDownload.Running(); }
+        bool Installing() const
+        {
+            return m_s->installer.Running() || m_s->kitDownload.Running() || m_s->installAfterCheck;
+        }
         void StartInstaller();
         void StartKitDownload();
         void FindEdition(); // "Find my edition"
@@ -724,6 +754,7 @@ namespace launcher_ui
         InstallProgress InstallSnapshot(
             size_t logTail = 0); // this session's install, else the one read back from its log
         InstallProgress InstallSnapshot(GameSlot& slot, size_t logTail = 0); // the same, for any game's slot
+        InstallProgress InstallSnapshotAfterCheck(GameSlot& slot, size_t logTail); // without the image check's row
         void SetInstallState(
             const std::string& sha, const char* state); // [install.<sha>] state=, for a launcher restart
 
@@ -884,6 +915,7 @@ namespace launcher_ui
             int exitCode = 0;
         };
         std::optional<GameStopped> m_gameStopped;
+        std::optional<std::string> m_discOffer; // the game whose disc image may be damaged (DrawDiscOffer)
         IntegrityCheck m_integrity;
         bool m_integrityPolled = true; // the last check's report has been taken
         std::vector<IntegrityFinding> m_findings; // what is wrong, the first one in the dialog

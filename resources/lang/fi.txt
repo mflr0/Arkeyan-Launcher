@@ -909,7 +909,6 @@ VSync	VSync
 Vehicle {}	Ajoneuvo {}
 Vehicles	Ajoneuvot
 Verified	Vahvistettu
-Verified, {}	Vahvistettu, {}
 Version {} is available.	Versio {} on saatavilla.
 Version {}, {}	Versio {}, {}
 Versions	Versiot
@@ -1159,3 +1158,23 @@ This folder can't be written to	Tähän kansioon ei voi kirjoittaa
 Choose a folder outside the games	Valitse kansio pelien ulkopuolelta
 Choose a folder outside the game tools	Valitse kansio pelityökalujen ulkopuolelta
 The games in {} go too; your other files there stay.	Myös kansion {} pelit poistetaan; muut tiedostosi siellä säilyvät.
+
+# The image check (disc_check.h): the Disc tab's pill, the install's first row, the dialog after a game whose movies did not open.
+Can't read the disc image.	Levykuvaa ei voi lukea.
+Check again	Tarkista uudelleen
+Checking files, {}	Tarkistetaan tiedostoja, {}
+Checking the disc	Tarkistetaan levyä
+Choose image	Valitse levykuva
+Copy the disc again, then choose the new image.	Kopioi levy uudelleen ja valitse sitten uusi levykuva.
+Damaged copy	Vioittunut kopio
+Disc image damaged	Levykuva vioittunut
+Every file can be read. No good copy of this edition to compare with.	Kaikki tiedostot voi lukea. Tämän painoksen hyvää kopiota ei ole vertailtavaksi.
+Every file matches a good copy of this disc ({}).	Jokainen tiedosto vastaa levyn hyvää kopiota ({}).
+Good copy, {}	Hyvä kopio, {}
+Part of the image can't be read.	Osaa levykuvasta ei voi lukea.
+Readable, {}	Luettava, {}
+Some files differ from a good copy of this disc ({}).	Jotkin tiedostot eroavat levyn hyvästä kopiosta ({}).
+The disc image is damaged.	Levykuva on vioittunut.
+The disc image may be damaged	Levykuva voi olla vioittunut
+The disc image of {} is damaged	Pelin {} levykuva on vioittunut
+{} couldn't open some of its movies. A damaged copy of the disc does this.	{} ei voinut avata joitakin videoitaan. Näin käy, kun levyn kopio on vioittunut.

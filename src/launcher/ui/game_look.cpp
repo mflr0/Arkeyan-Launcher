@@ -292,10 +292,10 @@ namespace launcher_ui
         if (list.current >= 0)
         {
             const std::string& id = list.rows[size_t(list.current)].id;
-            current = id == "kit" || id == "toolchain" || id == "disc" ? 0
-                      : id == "recompile"                              ? 1
-                      : id == "shaders"                                ? 2
-                                                                       : 3;
+            current = id == "check" || id == "kit" || id == "toolchain" || id == "disc" ? 0
+                      : id == "recompile"                                               ? 1
+                      : id == "shaders"                                                 ? 2
+                                                                                        : 3;
         }
         for (int i = 0; i < 4; i++)
         {
@@ -310,10 +310,7 @@ namespace launcher_ui
         ImGui::SetCursorScreenPos(
             ImVec2(at.x + width - ui::ButtonWidth(Tr("Cancel"), cancel), at.y + 2 * ui::height::Normal));
         if (ui::Button(Tr("Cancel"), cancel))
-        {
-            m_s->installer.Cancel();
-            m_s->kitDownload.Cancel();
-        }
+            CancelInstall();
         TakeFocus(FocusTo::Page);
         ImGui::SetCursorScreenPos(ImVec2(at.x, at.y + 2 * ui::height::Normal));
         if (ui::Button(Tr("Show details"), { .kind = ui::ButtonKind::Ghost, .size = ui::Size::Small }))
