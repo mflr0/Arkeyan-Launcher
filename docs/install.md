@@ -355,7 +355,7 @@ the pause between events (0.05 s).
 ```sh
 cmake -S . -B build-win64 -G Ninja -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/x86_64-w64-mingw32-clang.cmake \
     -DLLVM_MINGW_ROOT=<llvm-mingw release> -DCMAKE_BUILD_TYPE=Release
-ninja -C build-win64 Arkeyan Launcher
+ninja -C build-win64 ArkeyanLauncher
 ```
 
 `build-win64/ArkeyanLauncher.exe` is a single file (fonts built in; only system DLLs and the UCRT, which Windows 10 and

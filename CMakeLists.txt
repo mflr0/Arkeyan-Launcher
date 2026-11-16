@@ -62,6 +62,12 @@ set(SDL_SHARED OFF CACHE BOOL "" FORCE)
 set(SDL_STATIC ON CACHE BOOL "" FORCE)
 set(SDL_TEST_LIBRARY OFF CACHE BOOL "" FORCE)
 add_subdirectory(lib/SDL EXCLUDE_FROM_ALL)
+# SDL drops libdecor silently when its headers are missing, and GNOME then shows the window with no title bar (#121).
+get_directory_property(sdl_wayland DIRECTORY lib/SDL DEFINITION SDL_VIDEO_DRIVER_WAYLAND)
+get_directory_property(sdl_libdecor DIRECTORY lib/SDL DEFINITION HAVE_WAYLAND_LIBDECOR)
+if(sdl_wayland AND SDL_WAYLAND_LIBDECOR AND NOT sdl_libdecor)
+    message(FATAL_ERROR "SDL has Wayland but not libdecor: install libdecor-0-dev (or pass -DSDL_WAYLAND_LIBDECOR=OFF)")
+endif()
 
 # Only the XEX and XDBF readers of XenonUtils: its disassembler (GNU binutils, GPL) is not built or linked.
 set(XENON_ROOT ${CMAKE_SOURCE_DIR}/lib/XenonRecomp)
