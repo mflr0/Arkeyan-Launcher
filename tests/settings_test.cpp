@@ -668,6 +668,28 @@ namespace
             SETTINGS_EXPECT(mice["input"]["key_toybox_add"] == "G"); // PLAY keeps the Toy Box keys
         }
 
+        // The Toy Box keys are a conflict with each other and with any game's key (both flagged, none changed).
+        {
+            LauncherConfig keys;
+            const std::span<const ToyboxKey> toybox = ToyboxKeys();
+            for (const ToyboxKey& key : toybox)
+                SETTINGS_EXPECT(!ToyboxKeyConflict(keys, key));
+            keys["input"]["key_toybox_add"] = "F8";
+            SETTINGS_EXPECT(ToyboxKeyConflict(keys, toybox[1]) && ToyboxKeyConflict(keys, toybox[2]) &&
+                            !ToyboxKeyConflict(keys, toybox[0]));
+            keys["input"]["key_toybox_add"] = "F7";
+            keys["input"]["key_toybox"] = "W"; // SSA's Move up, and every game's
+            SETTINGS_EXPECT(ToyboxKeyConflict(keys, toybox[0]));
+            for (const char* game : { "ssa", "giants", "swapforce", "trapteam", "superchargers", "imaginators" })
+                for (const GameKey& key : GameKeys(game))
+                    SETTINGS_EXPECT(GameKeyConflict(keys, game, key) == (std::string_view(key.action) == "left_up"));
+            keys["ssa.input"]["key_left_up"] = "Up";
+            SETTINGS_EXPECT(ToyboxKeyConflict(keys, toybox[0])); // the other games still have W
+            keys["ssa.input"]["key_a"] = "f7"; // whatever its case
+            SETTINGS_EXPECT(GameKeyConflict(keys, "ssa", GameKeys("ssa")[4]) && ToyboxKeyConflict(keys, toybox[1]));
+            SETTINGS_EXPECT(ToyboxKeyName(keys, toybox[1]) == "F7" && keys["ssa.input"]["key_a"] == "f7");
+        }
+
         // Through the settings file, sections with a dot included.
         fs::path scratch = root / "keys.ini";
         SETTINGS_EXPECT(SaveLauncherConfig(scratch.string(), config));
