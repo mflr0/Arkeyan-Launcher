@@ -54,7 +54,7 @@ launcher saves the file (a comment over a key that is removed goes with it).
 | `video` | `skip_intro_movies` | `0`, `1` | Skip the start-up logos (legal, ATVI, XPEC, Toys for Bob); the story movies still play | yes |
 | `video` | `vsync` | `0`, `1` | Wait for the display's refresh | yes |
 | `video` | `anisotropy` | `1`, `2`, `4`, `8`, `16` | Texture filtering | yes |
-| `video` | `aspect` | `auto` (default), `16:9` | Widescreen: `auto` shows more to the sides on a window wider than 16:9, `16:9` keeps the game's picture with bars | yes |
+| `video` | `aspect` | `auto` (default), `fill`, `16:9` | Widescreen: `auto` shows more to the sides on a window wider than 16:9; `fill` does the same, and on a taller screen (16:10, the Steam Deck) covers it without bars, cutting a little of each side; `16:9` keeps the game's picture with bars | yes |
 | `video` | `texture_packs` | `1` (default), `0` | Use the player's own texture packs, in the game's `textures/` folder (<game> settings > Video > Textures > Custom texture packs). Since 0.9.4 the row, its folder row and Dump textures are greyed, "Coming later", and PLAY starts the game with `texture_packs=0` and `texture_dump=0` (`ApplyGameVideo`), whatever an older version saved | yes |
 | `video` | `texture_dump` | `0` (default), `1` | Write the game's textures as DDS files, for pack makers (<game> settings > Video > Textures > Dump textures; greyed and `0` since 0.9.4: it only serves custom packs, which come later) | yes |
 | `video` | `original_resolution` | `0` (default), `1` | Swap Force only: keep the console's 3D image (1040x620) stretched to the screen instead of the full frame (<game> settings > Video > Original resolution) | yes |

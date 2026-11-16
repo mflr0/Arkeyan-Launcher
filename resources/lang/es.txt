@@ -96,7 +96,8 @@ Attack 3 / Back	Ataque 3 / Atrás
 Aug	ago.
 Auto	Auto
 Auto (follows the window)	Auto (sigue la ventana)
-Auto shows more when wide; 16:9 adds bars.	Auto muestra más si es ancho; 16:9 añade barras.
+Fill (covers a taller screen)	Llenar (cubre una pantalla más alta)
+Auto shows more when wide; Fill covers a taller screen; 16:9 adds bars.	Auto muestra más si es ancho; Llenar cubre una pantalla más alta; 16:9 añade barras.
 Auto-open Toy Box	Toy Box automática
 Auto: 5.1 when the device has six channels.	Auto: 5.1 si el dispositivo tiene seis canales.
 Automatic	Automático

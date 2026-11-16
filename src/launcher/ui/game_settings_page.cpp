@@ -119,7 +119,8 @@ namespace launcher_ui
             ui::SettingRow(Tr("Fullscreen"), nullptr);
             toggle("##fullscreen", "fullscreen", "0");
 
-            ui::SettingRow(Tr("Widescreen"), Tr("Auto shows more when wide; 16:9 adds bars."));
+            ui::SettingRow(
+                Tr("Widescreen"), Tr("Auto shows more when wide; Fill covers a taller screen; 16:9 adds bars."));
             SettingSelect("##aspect", video, "aspect", AspectChoices, 0);
 
             ui::SettingRow(Tr("Frame rate limit"), Tr("Made for 30 FPS; 60 is experimental."));

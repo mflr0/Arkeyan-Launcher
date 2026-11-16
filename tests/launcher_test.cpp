@@ -3489,6 +3489,11 @@ static int RunChecks(int argc, char** argv)
         EXPECT(std::string(launcher_ui::GiantsLanguageChoices[i].value) == giantsCodes[i] &&
                std::string(launcher_ui::GiantsVoiceChoices[i + 1].value) == giantsCodes[i]);
     EXPECT(std::string(launcher_ui::GiantsVoiceChoices[0].value).empty());
+    // Widescreen: the values the game reads for [video] aspect, auto first (the default).
+    const char* const aspectValues[] = { "auto", "fill", "16:9" };
+    EXPECT(std::size(launcher_ui::AspectChoices) == std::size(aspectValues));
+    for (size_t i = 0; i < std::min(std::size(aspectValues), std::size(launcher_ui::AspectChoices)); i++)
+        EXPECT(std::string(launcher_ui::AspectChoices[i].value) == aspectValues[i]);
 
     EXPECT(!LauncherFullscreen(helperConfig));
     helperConfig["launcher"]["fullscreen"] = "YES";

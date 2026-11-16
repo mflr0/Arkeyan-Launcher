@@ -78,7 +78,7 @@ namespace launcher_ui
         { "strong", N_("Strong") } };
 
     inline constexpr Choice AspectChoices[] = { { "auto", N_("Auto (follows the window)") },
-        { "16:9", N_("16:9 (with bars)") } };
+        { "fill", N_("Fill (covers a taller screen)") }, { "16:9", N_("16:9 (with bars)") } };
     inline constexpr Choice ScaleChoices[] = { { "auto", N_("Auto") }, { "1", "x1" }, { "2", "x2" }, { "3", "x3" },
         { "4", "x4" }, { "5", "x5" }, { "6", "x6" }, { "7", "x7" }, { "8", "x8" }, { "9", "x9" }, { "10", "x10" } };
     inline constexpr Choice GlyphChoices[] = { { "auto", N_("Automatic") }, { "xbox360", "Xbox 360" },

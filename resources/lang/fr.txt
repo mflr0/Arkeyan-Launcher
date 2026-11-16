@@ -58,8 +58,9 @@ Anisotropic 8x	Anisotrope 8x
 Keeps textures sharp at an angle.	Garde les textures nettes en biais.
 Auto	Auto
 Auto (follows the window)	Auto (suit la fenêtre)
+Fill (covers a taller screen)	Remplir (couvre un écran plus haut)
 Higher scales need a dedicated graphics card.	Les échelles élevées demandent une carte graphique dédiée.
-Auto shows more when wide; 16:9 adds bars.	Auto montre plus en large ; 16:9 ajoute des bandes.
+Auto shows more when wide; Fill covers a taller screen; 16:9 adds bars.	Auto montre plus en large ; Remplir couvre un écran plus haut ; 16:9 ajoute des bandes.
 Automatic detection	Détection automatique
 Automatic	Automatique
 Back	Retour
