@@ -47,14 +47,16 @@ struct GameFolders
 {
     std::filesystem::path game;  // the game's folder
     std::filesystem::path saves; // its saves (SKY_SAVE_DIR, else <game>/saves); the backups are <saves>-backup
+    // Its built game, textures-hd and gamedata when the Games folder is set (<games folder>/<Game>); empty or `game`: none.
+    std::filesystem::path files;
 };
 GameFolders FoldersOf(std::string_view gameId);
 
 // Sizes shown before anything is deleted.
 struct GameDataSizes
 {
-    uint64_t saves = 0;     // the saves, their backups and the seats of the next session (portal.txt)
-    uint64_t caches = 0;    // the shader cache, the art cache, the portraits, the logs: rebuilt by the game
+    uint64_t saves = 0; // the saves, their backups and the seats of the next session (portal.txt)
+    uint64_t caches = 0; // the shader cache, the art cache, the portraits, the logs: rebuilt by the game
     uint64_t installed = 0; // the built game and the rest of the folder, what uninstalling frees
 };
 GameDataSizes MeasureGameData(const GameFolders& folders);
@@ -71,8 +73,9 @@ DataResult ClearGameCaches(const GameFolders& folders);
 // The saves, their backups, the seats of the next session and the caches. Kept: the built game, the disc, the settings,
 // the textures folder, and the shared figure collection (it is not in the game's folder).
 DataResult DeleteGameData(const GameFolders& folders);
-// The built game and its install logs go; the saves, backups, seats, textures and the art cache stay, so installing again
-// brings the player back to where they were. Also forgets what the settings file knows of the build ([install.<sha>]).
+// The built game and its install logs go, in both folders (`game` and `files`); the saves, backups, seats, textures, the
+// copied game data and the art cache stay, so installing again brings the player back to where they were. Also forgets
+// what the settings file knows of the build ([install.<sha>]).
 DataResult UninstallGame(const GameFolders& folders, LauncherConfig& config);
 
 bool GameIsRunning(const GameFolders& folders);

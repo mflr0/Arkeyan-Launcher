@@ -39,7 +39,7 @@ namespace gamedata
         std::string problem;   // Damaged: the first thing wrong
     };
 
-    // <data>/<Game>/gamedata for a game id ("ssa", "giants").
+    // <games>/<Game>/gamedata for a game id ("ssa", "giants"): datadir::GameFiles, the data folder's <Game> by default.
     std::filesystem::path Folder(std::string_view gameId);
     // Reads the manifest and looks at each file's size (no file is read): cheap enough for every start.
     Status Inspect(const std::filesystem::path& folder);

@@ -221,7 +221,7 @@ std::filesystem::path RuntimeLogFolder()
 {
     if (const char* override = LauncherEnv("SKY_LAUNCHER_LOG_DIR"); override != nullptr && *override != 0) // tests
         return Path(override);
-    return GameInstallFolder({});
+    return GameDataFolder(ActiveGame());
 }
 
 GameRunResult RunGame(
@@ -326,8 +326,13 @@ GameLaunch PrepareGameLaunch(
     passLanguage("SKY_VOICE_LANGUAGE", "voice_language", onDisc.voice, false);
     // A game built before the one data folder would look for its saves and settings in the older folders, which the
     // migration emptied: point it at the new ones until "Update the game" rebuilds it (docs/install.md, "Older builds").
-    const std::filesystem::path gameFolder = GameInstallFolder({});
-    if (IsOlderLayoutBuild(Path(launch.runtime), gameFolder))
+    // The games folder: the game reads its textures-hd and gamedata there (datadir::GameFiles); a game built before it
+    // ignores it and keeps reading them in its data folder, where a move leaves them.
+    if (const std::filesystem::path games = GamesFolder(); !games.empty())
+        launch.variables.emplace_back("SKY_GAMES_DIR", Utf8(games));
+    const std::filesystem::path gameFolder = GameDataFolder(game.id);
+    if (IsOlderLayoutBuild(Path(launch.runtime), GameFilesFolder(game.id), gameFolder) ||
+        IsOlderLayoutBuild(Path(launch.runtime), gameFolder))
     {
         launch.variables.emplace_back("SKY_LAUNCHER_INI", configPath);
         launch.variables.emplace_back("SKY_SAVE_DIR", Utf8(gameFolder / "saves"));

@@ -9,6 +9,7 @@
 #include "launcher/edition_report.h"
 #include "launcher/portable_export.h"
 #include "launcher/game_install.h"
+#include "launcher/games_folder.h"
 #include "launcher/install_checklist.h"
 #include "launcher/game_music.h"
 #include "launcher/game_progress.h"
@@ -488,6 +489,14 @@ namespace launcher_ui
         void DrawSettings(); // the launcher's settings (the gear): Controls, Launcher, Support, About
         void DrawControls();
         void DrawLauncherTab();
+        // The Games folder (games_folder_page.cpp): the setting, the move with its progress and Stop, and the question
+        // asked when the folder is missing at Play or Install.
+        void DrawGamesFolder();
+        void ChooseGamesFolder(const std::filesystem::path& folder);
+        void PollGamesMove();
+        bool GamesBusy() const; // a game runs or builds: the games can't move now
+        bool GamesFolderMissingFirst(std::function<void()> retry);
+        void DrawGamesFolderMissing();
         void DrawLauncherLanguage(); // Settings > Launcher > Language
         void UpdateLanguage(); // each frame: the text follows [launcher] language, never the shown game's
         void DrawSupport(); // support_page.cpp: logs and the problem report
@@ -858,6 +867,9 @@ namespace launcher_ui
         bool m_downgradeOpen = false;
         bool m_defenderNoticeOpen = false;
         std::function<void()> m_defenderThen; // what the player asked for, run on Continue
+        gamesfolder::Mover m_gamesMove;
+        bool m_gamesMissingOpen = false;
+        std::function<void()> m_gamesMissingThen; // Play or Install, asked again on Retry
         // A game that stopped unexpectedly (its exit code): the crash dialog, DrawGameStopped (game_stopped.cpp).
         struct GameStopped
         {

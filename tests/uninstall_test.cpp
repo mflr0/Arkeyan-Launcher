@@ -802,6 +802,70 @@ namespace
     }
 }
 
+namespace
+{
+    // ---- A Games folder on another drive ([launcher] games=) ------------------------------------------------------------
+
+    void GamesFolderChecks(const fs::path& base)
+    {
+        for (const bool alone : { false, true })
+        {
+            Tree tree = MakeTree(base / (alone ? "games-alone" : "games-shared"), Os::Linux);
+            Environment& env = tree.env;
+            const fs::path games = tree.base / "drive" / "Games";
+            Put(games / "SSA" / "SSARecomp.exe", 3000);
+            Put(games / "SSA" / "textures-hd" / "a.dds", 2000);
+            Put(games / "SSA" / "gamedata" / "default.xex", 6000);
+            Put(games / "Giants" / "SGRecomp.exe", 3000);
+            if (!alone)
+            {
+                Put(games / "movies.txt", 10); // the player's own, beside the games: stays
+                Put(games / "Other" / "thing.bin", 10);
+            }
+            fs::remove(tree.root / "SSA" / "SSARecomp.exe");
+            fs::remove_all(tree.root / "SSA" / "gamedata");
+            env.gamesFolder = games;
+            env.games[0].files = games / "SSA";
+            env.games[1].files = games / "Giants";
+            env.builtGames = { games / "SSA" / "SSARecomp.exe", games / "Giants" / "SGRecomp.exe" };
+
+            Plan plan = MakePlan(env);
+            UN_EXPECT(!plan.refused);
+            UN_EXPECT(plan.Bytes(Group::GameData) ==
+                      6000 + 5000); // SSA's copy in the games folder, Giants' in the data folder
+            uint64_t spyro = 0;
+            for (const Item& item : plan.items)
+            {
+                if (item.group == Group::Games && item.game == "ssa")
+                    spyro += item.bytes;
+                UN_EXPECT(item.path.filename() != "movies.txt" && item.path.filename() != "Other");
+            }
+            UN_EXPECT(spyro == 3000 + 2000 + 500 + 200 + 20); // the build and its HD textures, its logs and layout.txt
+            UN_EXPECT(std::none_of(plan.left.begin(), plan.left.end(),
+                [](const Left& left) { return left.why == Why::Elsewhere || left.why == Why::Outside; }));
+
+            Result result = RunUninstall(plan, env, false);
+            UN_EXPECT(!Has(games / "SSA") && !Has(games / "Giants"));
+            UN_EXPECT(Has(tree.root / "SSA" / "saves" / "slot1.sav"));
+            if (alone)
+                UN_EXPECT(!Has(games) && Has(games.parent_path())); // empty at the end: it goes; the drive stays
+            else
+                UN_EXPECT(Has(games / "movies.txt") && Has(games / "Other" / "thing.bin"));
+        }
+
+        // A games folder that is unsafe (the home folder) refuses its part, never the rest of the drive.
+        Tree tree = MakeTree(base / "games-home", Os::Linux);
+        tree.env.gamesFolder = tree.env.home;
+        tree.env.games[0].files = tree.env.home;
+        Put(tree.env.home / "letter.txt", 10);
+        Plan plan = MakePlan(tree.env);
+        for (const Item& item : plan.items)
+            UN_EXPECT(item.path.filename() != "letter.txt");
+        RunUninstall(plan, tree.env, true);
+        UN_EXPECT(Has(tree.env.home / "letter.txt"));
+    }
+}
+
 int UninstallChecks(const fs::path& scratch)
 {
     const fs::path base = scratch / "uninstall";
@@ -815,5 +879,6 @@ int UninstallChecks(const fs::path& scratch)
     RefusalChecks(base);
     LauncherChecks(base);
     MachineChecks(base);
+    GamesFolderChecks(base);
     return g_failures;
 }

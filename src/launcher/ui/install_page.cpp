@@ -75,7 +75,7 @@ namespace launcher_ui
         std::string state = SettingGet(m_config, section, "state");
         if (state != "running" && state != "failed")
             return;
-        m_s->installPast = ReadInstallLog(GameInstallFolder(m_s->check.xexSha256));
+        m_s->installPast = ReadInstallLog(GameDataFolder(m_s->game.id));
         if (m_s->installPast.state == InstallProgress::State::Idle ||
             m_s->installPast.state == InstallProgress::State::Done)
             return;
@@ -196,6 +196,8 @@ namespace launcher_ui
             return;
         }
         if (!UpdatingAll() && DefenderNoticeFirst([this] { StartInstall(); }))
+            return;
+        if (GamesFolderMissingFirst([this] { StartInstall(); })) // an unplugged drive: never built somewhere else
             return;
         if (!DiscStillThere())
             return;
@@ -391,7 +393,8 @@ namespace launcher_ui
             return;
         }
         if (m_s->installer.Start(m_s->kit, m_s->discPath, GameInstallFolder(m_s->installSha),
-                HdTexturesOffered() && HdTexturesWanted(*m_s) && m_s->kit && m_s->kit->hdTextures))
+                HdTexturesOffered() && HdTexturesWanted(*m_s) && m_s->kit && m_s->kit->hdTextures,
+                GameDataFolder(m_s->game.id)))
         {
             auto& section = m_config["install." + m_s->installSha];
             section["pid"] = std::to_string(m_s->installer.ProcessId());
@@ -478,6 +481,9 @@ namespace launcher_ui
             if (const GameUpdate* pending = PendingUpdate(*m_s); version.empty() && pending != nullptr)
                 version = pending->version;
             RecordInstalledGame(m_config, m_s->installSha, progress.runtime, m_s->installKitVersion, version);
+            // A build that reads the games folder: a later move takes its HD textures and game data along.
+            if (m_s->kit && m_s->kit->gamesFolder)
+                m_config["install." + m_s->installSha]["games_folder"] = "1";
             SetInstallState(m_s->installSha, nullptr);
             // What the install wrote, for the file check at the next starts.
             m_integrity.WriteGameList(GameInstallFolder(m_s->installSha), datadir::FromText(progress.runtime));
@@ -871,7 +877,7 @@ namespace launcher_ui
                 Toast(Tr("Log copied"), ui::ToastKind::Success);
             }
             else if ((failed || interrupted) && i == 2)
-                OpenFolder(GameInstallFolder(m_s->installSha));
+                OpenFolder(GameDataFolder(m_s->game.id)); // the install's logs
             else if (running && i == actions.size() - 1)
             {
                 m_s->installer.Cancel();
@@ -968,7 +974,7 @@ namespace launcher_ui
             m_s->check.status = GameSourceStatus::Ok;
             m_s->check.xexSha256 = "install-card-fixture";
             m_s->installSha = m_s->check.xexSha256;
-            m_s->discPath = (GameInstallFolder("") / "disc.iso").string();
+            m_s->discPath = (GameDataFolder(m_s->game.id) / "disc.iso").string();
             m_s->installed = fixture.built ? InstalledGame{ "fixture-runtime", "0.7.1", "0.8.1" } : InstalledGame{};
             if (fixture.state == State::Done)
                 m_s->installed.gameVersion = "0.8.4";
@@ -1120,7 +1126,7 @@ namespace launcher_ui
             if (!m_s->installView)
             {
                 // As if the launcher had been closed during the compile.
-                std::ofstream(GameInstallFolder(m_s->check.xexSha256) / "install.log", std::ios::trunc)
+                std::ofstream(GameDataFolder(m_s->game.id) / "install.log", std::ios::trunc)
                     << "@step toolchain Preparing the compiler\n@step disc Reading the disc\n@step recompile "
                        "Translating the game code\n"
                        "@step shaders Translating the shaders\n@step compile Compiling the game\n@progress 812 2304\n";

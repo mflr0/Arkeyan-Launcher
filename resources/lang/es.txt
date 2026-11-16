@@ -1137,3 +1137,23 @@ Couldn't prepare the game tools	Couldn't prepare the game tools
 Go back to the final release?	Go back to the final release?
 Going back to {}. Saves and figures made with the test build may not open in it. A copy of them is kept.	Going back to {}. Saves and figures made with the test build may not open in it. A copy of them is kept.
 Version {} (the final release)	Version {} (the final release)
+
+# The Games folder (Settings > Launcher)
+Games folder	Carpeta de juegos
+Where every game is built: another drive saves room.	Dónde se instala cada juego: otra unidad ahorra espacio.
+Moving the games: {} of {}	Moviendo los juegos: {} de {}
+Now: {}	Ahora: {}
+Use default	Usar la predeterminada
+Games moved	Juegos movidos
+Move stopped: the games stay where they were	Movimiento detenido: los juegos siguen donde estaban
+Couldn't move the games	No se pudieron mover los juegos
+Couldn't move the games: they stay where they were	No se pudieron mover los juegos: siguen donde estaban
+Not enough free space: {} needed	No hay suficiente espacio libre: se necesitan {}
+Wait for the games to move	Espera a que se muevan los juegos
+Quit the game to move the games	Cierra el juego para mover los juegos
+The games folder isn't there. Plug in the drive, or choose another folder.	La carpeta de juegos no está. Conecta la unidad o elige otra carpeta.
+This folder isn't there	Esta carpeta no está
+This folder can't be written to	No se puede escribir en esta carpeta
+Choose a folder outside the games	Elige una carpeta fuera de los juegos
+Choose a folder outside the game tools	Elige una carpeta fuera de las herramientas del juego
+The games in {} go too; your other files there stay.	Los juegos de {} también se eliminan; tus otros archivos allí se quedan.

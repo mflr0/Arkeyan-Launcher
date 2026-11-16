@@ -52,7 +52,7 @@ namespace launcher_ui
 
         target.started = true; // its own start (below) replaces the first-visit one
         SelectGame(*other);
-        m_s->copy = gamedata::Inspect(gamedata::Folder(m_s->game.id));
+        m_s->copy = gamedata::Inspect(GameFileOf(m_s->game.id, "gamedata"));
         if (m_s->copy.state == gamedata::State::Complete)
         {
             StartGameDisc();
@@ -77,12 +77,13 @@ namespace launcher_ui
     {
         using Outcome = gamedata::CopyResult::Outcome;
         gamedata::CopyResult result = m_s->copyJob.Collect();
-        m_s->copy = gamedata::Inspect(gamedata::Folder(m_s->game.id));
+        m_s->copy = gamedata::Inspect(GameFileOf(m_s->game.id, "gamedata"));
         if (result.outcome == Outcome::Done)
         {
             Toast(Tf("{}: game data copied", m_s->game.name), ui::ToastKind::Success);
             m_s->copyMessage.clear();
-            StartVerify(datadir::Text(gamedata::Folder(m_s->game.id))); // from now on the game plays from the copy
+            StartVerify(
+                datadir::Text(GameFileOf(m_s->game.id, "gamedata"))); // from now on the game plays from the copy
         }
         else if (result.outcome == Outcome::Cancelled)
             Toast(Tr("Copy stopped"));
@@ -97,7 +98,7 @@ namespace launcher_ui
     {
         if (m_s->copyJob.Running())
             return;
-        const std::filesystem::path folder = gamedata::Folder(m_s->game.id);
+        const std::filesystem::path folder = GameFileOf(m_s->game.id, "gamedata");
         const uint64_t size = m_s->copy.total;
         std::string error;
         if (!gamedata::Remove(folder, error))
@@ -162,7 +163,7 @@ namespace launcher_ui
                                  : Tf("Copied: {}, {} files", ui::FormatSize(copy.total), copy.files))
                     .c_str());
             ImGui::Dummy(ImVec2(0, ui::space::XXS));
-            showFolder(gamedata::Folder(m_s->game.id));
+            showFolder(GameFileOf(m_s->game.id, "gamedata"));
             ImGui::SameLine(0, ui::space::S);
             if (ui::Button(Tr("Remove the copy"), remove(Tr("Hold to delete the copy."))))
                 RemoveCopy();
@@ -195,7 +196,7 @@ namespace launcher_ui
             if (ui::Button(Tr("Copy files"), primary(!canCopy)))
                 StartCopy();
             ImGui::SameLine(0, ui::space::S);
-            showFolder(gamedata::Folder(m_s->game.id).parent_path());
+            showFolder(GameFileOf(m_s->game.id, "gamedata").parent_path());
             note(!ready ? Tr("Choose the disc image first.")
                  : m_s->discSize > 0
                      ? Tf("Copies the disc's files ({}). No image needed after.", ui::FormatSize(m_s->discSize))
@@ -244,7 +245,7 @@ namespace launcher_ui
         auto busy = [&](GameSlot& slot) {
             return slot.disc == DiscState::Verifying || slot.copyJob.Running() || slot.installer.Running();
         };
-        const std::string folder = datadir::Text(gamedata::Folder("ssa"));
+        const std::string folder = datadir::Text(GameFileOf("ssa", "gamedata"));
         const std::string giantsIso = LauncherEnv("SKY_LAUNCHER_TEST_COPY_GIANTS_ISO") != nullptr
                                           ? LauncherEnv("SKY_LAUNCHER_TEST_COPY_GIANTS_ISO")
                                           : "";
@@ -444,11 +445,11 @@ namespace launcher_ui
             if (busy(g))
                 return;
             expect(g.copy.state == gamedata::State::Complete && g.fromCopy &&
-                       g.discPath == datadir::Text(gamedata::Folder("giants")),
+                       g.discPath == datadir::Text(GameFileOf("giants", "gamedata")),
                 "Giants plays from its own copy");
             expect(a.copy.state == gamedata::State::None, "SSA's copy is its own");
             std::string error;
-            gamedata::Remove(gamedata::Folder("giants"), error);
+            gamedata::Remove(GameFileOf("giants", "gamedata"), error);
             m_testStep++;
             break;
         }

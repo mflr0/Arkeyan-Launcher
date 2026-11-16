@@ -1,5 +1,6 @@
 // Arkeyan Launcher: shows the launcher; PLAY starts the game runtime from the window, which stays open (game_run.h, GameSession).
 #include "shared/collection/datadir.h"
+#include "launcher/game_install.h"
 #include "launcher/game_run.h"
 #include "launcher/game_settings.h"
 #include "launcher/launcher.h"
@@ -67,6 +68,7 @@ int main(int argc, char** argv)
     std::string configPath = LauncherConfigPath();
     LauncherConfig config = LoadLauncherConfig(configPath);
     MigrateFrameRates(config);
+    ApplyGamesFolder(config); // [launcher] games=: the builder and the games find their files there too
 
     // Shortcuts made by a launcher called Skylauncher start this one and carry its name.
     {

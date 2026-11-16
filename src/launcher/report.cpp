@@ -1,5 +1,6 @@
 #include "shared/runtime_names.h"
 #include "launcher/report.h"
+#include "launcher/game_install.h"
 #include "launcher/game_run.h"
 #include "shared/collection/datadir.h"
 #include <SDL3/SDL.h>
@@ -229,6 +230,8 @@ std::string launcher_report::Redact(const std::string& text, const Identity& ide
     // The disc image's folder first: it often sits inside the home folder.
     if (!identity.isoFolder.empty())
         AddPathRules(rules, identity.isoFolder, "<iso folder>");
+    if (!identity.gamesFolder.empty()) // a drive's name often is the player's
+        AddPathRules(rules, identity.gamesFolder, "<games folder>");
 
     if (!identity.homeFolder.empty())
         AddPathRules(rules, identity.homeFolder, "~");
@@ -284,6 +287,7 @@ launcher_report::Identity launcher_report::CurrentIdentity(const std::string& is
     identity.userName = UserName();
     identity.homeFolder = HomeFolder();
     identity.computerName = HostName();
+    identity.gamesFolder = datadir::Text(GamesFolder());
     if (!iso.empty())
     {
         std::error_code error;

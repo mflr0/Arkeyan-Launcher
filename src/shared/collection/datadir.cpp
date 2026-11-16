@@ -47,9 +47,9 @@ namespace datadir
             return {};
 #else
             if (Set("XDG_DATA_HOME"))
-                return fs::path(std::getenv("XDG_DATA_HOME"));
+                return fs::path(skyenv::Get("XDG_DATA_HOME"));
             if (Set("HOME"))
-                return fs::path(std::getenv("HOME")) / ".local" / "share";
+                return fs::path(skyenv::Get("HOME")) / ".local" / "share";
             return {};
 #endif
         }
@@ -78,10 +78,10 @@ namespace datadir
 
     fs::path Root()
     {
-        if (Set("SKYLANDERS_DATA"))
+        if (const char* data = skyenv::Get("SKYLANDERS_DATA"); data != nullptr && *data != '\0')
         {
             std::error_code error;
-            fs::path path = FromText(std::getenv("SKYLANDERS_DATA"));
+            fs::path path = FromText(data);
             fs::path absolute = fs::absolute(path, error);
             return error ? path : absolute;
         }
@@ -116,6 +116,13 @@ namespace datadir
     {
         if (const char* profile = skyenv::Get("SKY_PROFILE_DIR"); profile != nullptr && *profile != '\0')
             return FromText(profile) / GameFolderName(id);
+        return Game(id);
+    }
+
+    fs::path GameFiles(std::string_view id)
+    {
+        if (const char* games = skyenv::Get("SKY_GAMES_DIR"); games != nullptr && *games != '\0')
+            return FromText(games) / GameFolderName(id);
         return Game(id);
     }
 
@@ -194,7 +201,8 @@ namespace datadir
 #if defined(_WIN32)
         return _wputenv_s(L"SKYLANDERS_DATA", root.wstring().c_str()) == 0;
 #else
-        return setenv("SKYLANDERS_DATA", root.c_str(), 1) == 0;
+        // Called first thing in main, before any thread starts.
+        return setenv("SKYLANDERS_DATA", root.c_str(), 1) == 0; // NOLINT(concurrency-mt-unsafe)
 #endif
     }
 
@@ -508,6 +516,7 @@ namespace datadir
                 std::stable_sort(pairs.begin(), pairs.end(),
                     [](const Move& a, const Move& b) { return a.from.native().size() > b.from.native().size(); });
                 std::vector<std::pair<std::string, fs::path>> table;
+                table.reserve(pairs.size() + m_done.size());
                 for (const Move& pair : pairs)
                     table.emplace_back(Slashes(Text(pair.from)), pair.to);
                 for (const Move& pair : m_done) // moved with a suffix: follow where it really went
@@ -541,7 +550,7 @@ namespace datadir
                             std::string rewritten = Follow(value, table);
                             if (rewritten != value)
                             {
-                                line = line.substr(0, start) + rewritten + line.substr(stop + 1);
+                                line = line.substr(0, start).append(rewritten).append(line.substr(stop + 1));
                                 changed++;
                             }
                         }
