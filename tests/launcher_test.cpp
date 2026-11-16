@@ -421,6 +421,22 @@ namespace
                    !catalogue.Accepts("trapteam", 3440));
         }
 
+        // SuperChargers and Imaginators take a trap on its own seat, and refuse Clown Cruiser and Barrel Blaster.
+        for (const char* id : { "superchargers", "imaginators" })
+        {
+            const collection::Game* game = catalogue.FindGame(id);
+            bool trapSeat = false;
+            for (const collection::Seat& seat : game ? game->seats : std::vector<collection::Seat>())
+            {
+                collection::Figure trap;
+                trap.type = 210;
+                trap.toy = catalogue.Find(trap.type);
+                trapSeat = trapSeat || (seat.id == "trap" && launcher_ui::SeatAccepts(seat, trap));
+            }
+            EXPECT(trapSeat && catalogue.Accepts(id, 210));
+            EXPECT(!catalogue.Accepts(id, 3233) && !catalogue.Accepts(id, 3240));
+        }
+
         // Migration: copied, never moved; a second pass copies nothing.
         dump(legacy / "014 Gill Grunt.sky", 14);
         dump(legacy / "016 Spyro.sky", 16);
