@@ -2,11 +2,13 @@
 #include "launcher/i18n.h"
 #include "launcher/game_names.h"
 #include "launcher/ui/collection_page.h"
+#include "launcher/ui/components/feedback.h"
 #include "launcher/ui/components/lucide.h"
 #include "shared/embedded_fonts.h"
 #include <SDL3/SDL.h>
 #include <imgui_impl_sdlrenderer3.h>
 #include <stb_image_write.h>
+#include <algorithm>
 #include <cmath>
 #include <cstdio>
 #include <filesystem>
@@ -84,6 +86,20 @@ int UiRenderChecks(const std::filesystem::path& scratch)
             expect(ImGui::GetFont() == current && ImGui::GetFontSize() == currentSize,
                 "drawing an icon preserves the surrounding text font");
             ++row;
+        }
+        // A small empty seat (SuperChargers' seven rows) keeps its plus at half the circle, as at full size.
+        {
+            const int first = draw->VtxBuffer.Size;
+            const float seat = 24;
+            ui::DrawEmptySeat(draw, ImVec2(400, 40), seat);
+            float top = 1e9f, bottom = -1e9f;
+            for (int v = first; v < draw->VtxBuffer.Size; v++)
+                if (draw->VtxBuffer[v].col == ui::Col(ui::color::Ink))
+                {
+                    top = std::min(top, draw->VtxBuffer[v].pos.y);
+                    bottom = std::max(bottom, draw->VtxBuffer[v].pos.y);
+                }
+            expect(bottom > top && bottom - top <= seat / 2 + 1, "an empty seat's plus scales with its circle");
         }
         for (const auto& lang : i18n::Languages())
         {

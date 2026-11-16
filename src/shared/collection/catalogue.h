@@ -111,6 +111,7 @@ namespace collection
         int year = 0;
         std::vector<uint16_t> accepts; // toy types the game reads, in the game's order
         std::vector<std::string> acceptsGames; // ...or every toy that first came with these games
+        std::vector<uint16_t> rejects; // platform exclusions, overriding accepts and acceptsGames
         std::map<uint16_t, std::string> names; // the game's internal character names (SSA: portraits)
         std::map<uint16_t, std::string> images; // other toys' pictures among the game's UI images
         // One picture per toy family among the game's UI images (SSA's magic item, location and sidekick icons): the

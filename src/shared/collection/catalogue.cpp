@@ -158,6 +158,8 @@ namespace collection
                 game.accepts.push_back(uint16_t(type.AsInt()));
             for (const Json& id : item["accepts_games"].Items())
                 game.acceptsGames.push_back(id.AsString());
+            for (const Json& type : item["rejects"].Items())
+                game.rejects.push_back(uint16_t(type.AsInt()));
             for (const Json& entry : item["seats"].Items())
             {
                 Seat seat;
@@ -263,6 +265,8 @@ namespace collection
         const Game* game = FindGame(id);
         if (game == nullptr)
             return false;
+        if (std::find(game->rejects.begin(), game->rejects.end(), type) != game->rejects.end())
+            return false;
         if (std::find(game->accepts.begin(), game->accepts.end(), type) != game->accepts.end())
             return true;
         const Toy* toy = Find(type);
@@ -278,7 +282,7 @@ namespace collection
             return toys;
         for (uint16_t type : game->accepts)
         {
-            if (const Toy* toy = Find(type))
+            if (const Toy* toy = Find(type); toy != nullptr && Accepts(id, type))
                 toys.push_back(toy);
         }
         for (const Toy& toy : m_toys)

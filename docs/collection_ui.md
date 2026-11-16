@@ -96,7 +96,9 @@ At the first visit to the page (`CollectionPage::Open`):
 - What the game reads at start is `portal.txt` in its data folder (`SKY_SAVE_DIR` in tests, else the game's folder in
   the data root): `<slot> <path>` lines, rewritten by the game at every change. The launcher writes it with seat *i* in
   slot *i* (`WriteSeats`) and reads it back (`ReadSeats`): a figure goes to its slot's seat when it fits, else to the
-  first seat that takes it (as the Toy Box does). The seats are per game (`catalogue.json` `games[].seats`). Swap Force's
+  first seat that takes it (as the Toy Box does). The seats are per game (`catalogue.json` `games[].seats`):
+  SuperChargers and Imaginators also have a Trap seat (a trap gives a boost in SuperChargers, gold in Imaginators), and
+  their `rejects` keep Clown Cruiser and Barrel Blaster off their vehicle seats. Swap Force's
   portal has six slots (see "Swappers"): `SeatFirstSlot` and `SlotSeat` map the seats to them.
 - **While the game runs** the seats are read-only here, with a **Toy Box window** button beside "<game> is running": the Toy
   Box window is this page, live, the seats changed through the game (`toybox_window.md`).
