@@ -271,16 +271,30 @@ What you can check, and do:
 
 ## Build from source
 
-You need CMake 3.20 or later, Ninja, a C++20 compiler (Clang) and git.
+Every system needs CMake 3.20 or later, Ninja, git and a C++20 Clang. The other libraries (SDL, Dear ImGui, fmt...) are
+submodules in `lib/`, built with the launcher.
 
-On Linux you also need SDL's development packages (Ubuntu and Debian names; the build stops if libdecor is missing,
-since without it GNOME on Wayland shows the window with no title bar):
+**macOS** (Apple Silicon): Xcode, then `brew install cmake ninja`. The `.dmg` (`tools/package_macos.sh`) also needs
+`brew install librsvg`, for the icon.
+
+**Linux** (Ubuntu 22.04 or later; Debian names): the compiler and SDL's development packages. The build stops if
+libdecor is missing, since without it GNOME on Wayland shows the window with no title bar.
 
 ```sh
-sudo apt install pkg-config libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev \
-    libxtst-dev libxkbcommon-dev libwayland-dev wayland-protocols libdecor-0-dev libegl1-mesa-dev libgl1-mesa-dev \
+sudo apt install cmake ninja-build git clang-15 libstdc++-12-dev pkg-config \
+    libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev libxtst-dev \
+    libxkbcommon-dev libwayland-dev wayland-protocols libdecor-0-dev libegl1-mesa-dev libgl1-mesa-dev \
     libgles2-mesa-dev libdbus-1-dev libudev-dev libdrm-dev libgbm-dev
 ```
+
+Configure with `-DCMAKE_C_COMPILER=clang-15 -DCMAKE_CXX_COMPILER=clang++-15`. The AppImage also needs `librsvg2-bin`,
+`libfuse2` and linuxdeploy (`tools/ci/linux.Dockerfile`).
+
+**Windows**: the exe is built from a Mac or a Linux PC, with llvm-mingw
+([Windows build from a Mac](docs/install.md#windows-build-from-a-mac)) or with clang-cl in Docker, as the releases
+(`tools/ci/windows.Dockerfile`, run by `tools/ci/run.sh`). A build on Windows itself has not been tried yet.
+
+The checks (`tools/ci/run.sh`) also need Docker: see [CONTRIBUTING.md](CONTRIBUTING.md#checks).
 
 ```sh
 git clone --recursive https://github.com/mflr0/Arkeyan-Launcher.git
