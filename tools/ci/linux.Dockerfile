@@ -15,7 +15,7 @@ RUN apt-get update && \
         ninja-build cmake pkg-config clang-15 libstdc++-12-dev git rsync curl ca-certificates file python3-pip \
         libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev libxtst-dev \
         libxkbcommon-dev libwayland-dev wayland-protocols libegl1-mesa-dev libgl1-mesa-dev libgles2-mesa-dev \
-        libdbus-1-dev libudev-dev libdrm-dev libgbm-dev librsvg2-bin libfuse2 && \
+        libdecor-0-dev libdbus-1-dev libudev-dev libdrm-dev libgbm-dev librsvg2-bin libfuse2 && \
     rm -rf /var/lib/apt/lists/* && \
     pip3 install --no-cache-dir clang-format==$CLANG_FORMAT && \
     if [ "$TARGETARCH" = amd64 ]; then \
