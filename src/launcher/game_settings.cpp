@@ -129,6 +129,29 @@ namespace
         return paths;
     }
 
+    // The folders a game's build is in: its own, and its folder in the games folder when that one is set and safe (not a
+    // link, not a drive's root, not holding the game's own folder or its saves).
+    fs::path FilesRoot(const GameFolders& folders)
+    {
+        std::error_code error;
+        if (folders.files.empty() || folders.files == folders.game || !Deletable(folders.files) ||
+            fs::is_symlink(fs::symlink_status(folders.files, error)) || !fs::is_directory(folders.files, error) ||
+            Holds(folders.files, folders.game) || Holds(folders.files, folders.saves))
+            return {};
+        return folders.files;
+    }
+
+    std::vector<fs::path> GameRoots(const GameFolders& folders)
+    {
+        std::vector<fs::path> roots;
+        std::error_code error;
+        if (fs::is_directory(folders.game, error))
+            roots.push_back(folders.game);
+        if (fs::path files = FilesRoot(folders); !files.empty())
+            roots.push_back(files);
+        return roots;
+    }
+
     DataResult Refused(const GameFolders& folders)
     {
         DataResult result;
@@ -283,8 +306,10 @@ void MigrateFrameRates(LauncherConfig& config)
 GameFolders FoldersOf(std::string_view gameId)
 {
     GameFolders folders;
-    folders.game = LauncherDataFolder() / datadir::GameFolderName(gameId);
+    folders.game = GameDataFolder(gameId);
     folders.saves = savebackup::Root(gameId);
+    if (const fs::path files = GameFilesFolder(gameId); files != folders.game)
+        folders.files = files;
     return folders;
 }
 
@@ -301,8 +326,8 @@ GameDataSizes MeasureGameData(const GameFolders& folders)
     for (const fs::path& path : CachePaths(folders))
         sizes.caches += BytesOf(path);
     std::error_code error;
-    if (fs::is_directory(folders.game, error))
-        for (const fs::directory_entry& entry : ListDirectory(folders.game, error))
+    for (const fs::path& folder : GameRoots(folders))
+        for (const fs::directory_entry& entry : ListDirectory(folder, error))
         {
             std::string name = datadir::Text(entry.path().filename());
             if (!Named(name, SaveNames) && !Named(name, CacheNames) && !Named(name, KeptNames) &&
@@ -354,8 +379,8 @@ DataResult UninstallGame(const GameFolders& folders, LauncherConfig& config)
         return result;
     }
     std::error_code error;
-    if (fs::is_directory(folders.game, error))
-        for (const fs::directory_entry& entry : ListDirectory(folders.game, error))
+    for (const fs::path& folder : GameRoots(folders))
+        for (const fs::directory_entry& entry : ListDirectory(folder, error))
         {
             std::string name = datadir::Text(entry.path().filename());
             if (PlayerDataName(name, SaveNames) || PlayerDataName(name, KeptNames) || name == "portraits" ||
@@ -364,15 +389,24 @@ DataResult UninstallGame(const GameFolders& folders, LauncherConfig& config)
                 continue;
             Remove(entry.path(), result);
         }
-    // What the settings file knows of a build in this folder: the game is no longer installed.
+    // The game's folder in the games folder goes once nothing is left in it; the games folder itself stays.
+    if (const fs::path files = FilesRoot(folders); !files.empty() && fs::is_empty(files, error))
+        fs::remove(files, error);
+    // What the settings file knows of a build in these folders: the game is no longer installed.
     for (auto section = config.begin(); section != config.end();)
     {
         auto runtime = section->second.find("runtime");
         bool build = section->first.rfind("install.", 0) == 0 && runtime != section->second.end();
         if (build)
         {
-            fs::path relative = datadir::FromText(runtime->second).lexically_relative(folders.game);
-            build = !relative.empty() && *relative.begin() != "..";
+            build = false;
+            for (const fs::path& folder : { folders.game, folders.files })
+            {
+                if (folder.empty())
+                    continue;
+                fs::path relative = datadir::FromText(runtime->second).lexically_relative(folder);
+                build = build || (!relative.empty() && *relative.begin() != "..");
+            }
         }
         section = build ? config.erase(section) : std::next(section);
     }

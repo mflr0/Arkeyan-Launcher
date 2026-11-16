@@ -736,6 +736,7 @@ namespace launcher_ui
             PollUpdateAll();
             PollUpdates();
             PollIntegrity();
+            PollGamesMove();
             PollRequests();
             AutoPlay();
             Frame();
@@ -772,8 +773,8 @@ namespace launcher_ui
         }
         // Something moves: a check, an install's spinner, an update's bar, a held button, a text cursor, a drag, a component's
         // own motion (a spinner, a sliding toggle).
-        if (AnyVerifying() || AnyInstalling() || AnyHdTextures() || m_updates.Busy() || ImGui::IsAnyItemActive() ||
-            ui::Ctx().animating)
+        if (AnyVerifying() || AnyInstalling() || AnyHdTextures() || m_updates.Busy() || m_gamesMove.Running() ||
+            ImGui::IsAnyItemActive() || ui::Ctx().animating)
             return 0;
         if (m_page == Page::Play && m_logoDropAt != 0 &&
             SDL_GetTicks() < m_logoDropAt + uint64_t(LogoDropMs) + 20) // the logo is falling
@@ -968,7 +969,7 @@ namespace launcher_ui
         m_s->editionText.clear();
         m_s->discSize = 0;
         m_s->fromCopy =
-            m_s->copy.state == gamedata::State::Complete && path == datadir::Text(gamedata::Folder(m_s->game.id));
+            m_s->copy.state == gamedata::State::Complete && path == datadir::Text(GameFileOf(m_s->game.id, "gamedata"));
         SDL_PathInfo info;
         if (m_s->fromCopy)
             m_s->discSize = m_s->copy.total;
@@ -1030,7 +1031,7 @@ namespace launcher_ui
         if (m_s->fromCopy)
         {
             // The copy is looked at again (sizes only): it may have been damaged since. The disc image takes over then.
-            m_s->copy = gamedata::Inspect(gamedata::Folder(m_s->game.id));
+            m_s->copy = gamedata::Inspect(GameFileOf(m_s->game.id, "gamedata"));
             if (m_s->copy.state == gamedata::State::Complete)
                 return true;
             m_s->fromCopy = false;
@@ -1062,6 +1063,11 @@ namespace launcher_ui
 
     void App::PlayNow()
     {
+        if (GamesFolderMissingFirst([this] { PlayNow(); }))
+        {
+            m_launchPending = false;
+            return;
+        }
         if (!DiscStillThere())
         {
             m_launchPending = false;
@@ -1655,7 +1661,7 @@ namespace launcher_ui
         if (slot->disc == DiscState::Failed)
         {
             if (slot->copy.state == gamedata::State::Damaged &&
-                slot->discPath == datadir::Text(gamedata::Folder(slot->game.id)))
+                slot->discPath == datadir::Text(GameFileOf(slot->game.id, "gamedata")))
                 return line(S::DataDamaged, Tr("Game data damaged"), Danger, Tr(strings::ChooseDisc));
             switch (slot->check.status)
             {
@@ -2874,6 +2880,9 @@ namespace launcher_ui
             std::filesystem::create_directories(LauncherDataFolder(), error);
             OpenFolder(LauncherDataFolder());
         }
+        ImGui::PushID("##gamesfolder"); // its Show in folder is not the data folder's
+        DrawGamesFolder();
+        ImGui::PopID();
         DrawUninstallSection();
     }
 
@@ -3170,6 +3179,7 @@ namespace launcher_ui
             DrawProblemReport();
             DrawQuitPrompt();
             DrawDefenderNotice();
+            DrawGamesFolderMissing();
             DrawGameStopped();
             DrawToast();
             // Who answers B / Escape next frame: an open menu or dialog, a field being edited, the collection's search or View.
@@ -3177,7 +3187,7 @@ namespace launcher_ui
             m_pagesTaken = ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopupId | ImGuiPopupFlags_AnyPopupLevel) ||
                            ImGui::IsAnyItemActive() || m_toasts.HasFocus() || m_reportOpen || m_whatsNewOpen ||
                            m_downgradeOpen || m_integrityOpen || m_quitPrompt || m_defenderNoticeOpen ||
-                           m_gameStopped.has_value();
+                           m_gamesMissingOpen || m_gameStopped.has_value();
             m_backTaken = m_pagesTaken || (m_page == Page::Collection && m_s->collection->TakesBack());
             m_focusTo = FocusTo::None; // a request no page answered (its item wasn't drawn) is dropped
         }

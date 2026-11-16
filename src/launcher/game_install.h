@@ -32,6 +32,7 @@ struct InstallKit
     bool hdTextures =
         false; // the builder knows --hd-textures (0.9.1 on): its file holds the option's name; an older kit does not
     bool editionReport = false; // the builder knows --edition-report (0.9.5 on): "Find my edition"
+    bool gamesFolder = false; // the builder and the games it builds read SKY_GAMES_DIR (0.9.9 on): the Games folder
 
     bool Builds(std::string_view gameId) const;
     std::string GameVersion(std::string_view gameId) const; // "" when the kit does not say
@@ -70,8 +71,31 @@ std::string FindRuntime(const GameInfo& game, const LauncherConfig& config, bool
 void SetActiveGame(std::string_view id);
 std::string_view ActiveGame();
 
-// Where the active game is built: <data>/SSA or <data>/Giants (datadir::GameFolderName), which also holds the game's
-// saves, settings and log. Never next to the ISO. The argument is unused (one folder per game, whatever its release).
+// The Games folder (Settings > Launcher; docs/install.md, "Games folder"): "[launcher] games=", where each game's built game,
+// HD textures (textures-hd/) and copied game data (gamedata/) go, in <games folder>/<Game>. Empty, and always in portable
+// mode: the data folder, as before. Everything else of a game stays in the data folder (GameDataFolder).
+std::filesystem::path ChosenGamesFolder(const LauncherConfig& config);
+// Makes the setting the launcher's own: SKY_GAMES_DIR (datadir::GameFiles), which the builder and the games it starts
+// inherit, set to the chosen folder, or removed.
+void ApplyGamesFolder(const LauncherConfig& config);
+// The games folder in use (SKY_GAMES_DIR); empty: the data folder.
+std::filesystem::path GamesFolder();
+// It is chosen but not there (an unplugged drive, a deleted folder): nothing is built or started anywhere else.
+bool GamesFolderMissing();
+const char* GamesFolderMissingMessage(); // what to tell the player then, in the launcher's language
+// <data>/<Game>: the saves, settings, figures, portraits, logs, install logs, layout.txt, textures/ and textures-dump/.
+std::filesystem::path GameDataFolder(std::string_view gameId);
+// <games folder>/<Game>, else GameDataFolder: the built game, textures-hd/ and gamedata/.
+std::filesystem::path GameFilesFolder(std::string_view gameId);
+// A game's textures-hd or gamedata: in GameFilesFolder, else in the data folder when only that one holds it (a build from
+// before the games folder keeps them there).
+std::filesystem::path GameFileOf(std::string_view gameId, std::string_view name);
+// The game built for this disc came from a kit that knows the games folder ([install.<sha256>] games_folder=1, kits from
+// 0.9.9 on). An older build reads textures-hd/ and gamedata/ in the data folder only.
+bool BuildKnowsGamesFolder(const LauncherConfig& config, const std::string& xexSha256);
+
+// Where the active game is built: GameFilesFolder of the active game (<data>/SSA, <data>/Giants, or <games folder>/SSA).
+// Never next to the ISO. The argument is unused (one folder per game, whatever its release).
 std::filesystem::path GameInstallFolder(const std::string& xexSha256);
 
 // The game built for a disc, from "[install.<sha256>] runtime= kit= version=". Empty runtime when none was built or it is gone.
@@ -87,15 +111,20 @@ void RecordInstalledGame(LauncherConfig& config, const std::string& xexSha256, c
     const std::string& kitVersion, const std::string& gameVersion = {});
 
 // After a successful install (docs/install.md, "Housekeeping"): the build's work folder (2-3 GB) goes but its logs stay in
-// <game>/install-logs, the kits older than `kitFolder` (a downloaded kit, kit/<release tag>/) go, and so do compiler
-// archives that are already extracted. Never touches a kit that is not under DownloadedKitsFolder().
-void CleanAfterInstall(const std::filesystem::path& gameFolder, const std::filesystem::path& kitFolder);
+// <logFolder>/install-logs (the game's data folder; empty: gameFolder), the kits older than `kitFolder` (a downloaded kit,
+// kit/<release tag>/) go, and so do compiler archives that are already extracted. Never touches a kit that is not under
+// DownloadedKitsFolder().
+void CleanAfterInstall(const std::filesystem::path& gameFolder, const std::filesystem::path& kitFolder,
+    const std::filesystem::path& logFolder = {});
 
 // A game built by a kit up to 0.3.0 still uses the older folders (SSARecomp/...). Installs from 0.3.1 on leave
 // "layout.txt" in the game folder; a runtime under `gameFolder` without it is such an older build, and the launcher
 // then points it at the new places through the variables it already reads (docs/install.md, "Older builds").
+// MarkGameLayout writes layout.txt into the folder it is given: the game's data folder. IsOlderLayoutBuild looks for the
+// runtime under gameFolder and for layout.txt in `dataFolder` (empty: gameFolder).
 void MarkGameLayout(const std::filesystem::path& gameFolder);
-bool IsOlderLayoutBuild(const std::filesystem::path& runtime, const std::filesystem::path& gameFolder);
+bool IsOlderLayoutBuild(const std::filesystem::path& runtime, const std::filesystem::path& gameFolder,
+    const std::filesystem::path& dataFolder = {});
 
 // Rough figures shown before installing.
 // Kit 0.5.0 on an M1 Pro: SSA 193 s, Giants 563 s (4443 shaders instead of 1118); slower PCs take longer.
@@ -153,12 +182,15 @@ public:
     // Starts Arkeyan-Builder; false (and Failed with the reason) when there is no kit or it can't start. False too, and nothing
     // touched, while a build runs: it is stopped with Cancel, never waited for here (this is called on the window's thread).
     // `hdTextures`: also make the game's HD texture pack at the end (--hd-textures auto, docs/tools/hd_textures.md).
+    // `logFolder`: where install.log, install-logs/ and layout.txt go (the game's data folder); empty: `out`.
+    // Refused, with nothing created, while the games folder is missing (GamesFolderMissing).
     bool Start(const std::optional<InstallKit>& kit, const std::string& iso, const std::filesystem::path& out,
-        bool hdTextures = false);
+        bool hdTextures = false, const std::filesystem::path& logFolder = {});
     // The HD texture step alone, for a game already built (no --out): `on` makes the pack, else removes it. Its log is
-    // gameFolder/hd-textures.log, never the install's. Fails to start with a reason when the kit is too old for it.
-    bool StartHdTextures(
-        const std::optional<InstallKit>& kit, const std::string& iso, const std::filesystem::path& gameFolder, bool on);
+    // logFolder/hd-textures.log (the game's data folder), never the install's. Fails to start with a reason when the kit is
+    // too old for it. `olderBuild`: a game built before the games folder, whose pack stays in the data folder.
+    bool StartHdTextures(const std::optional<InstallKit>& kit, const std::string& iso,
+        const std::filesystem::path& logFolder, bool on, bool olderBuild = false);
     // Stops Arkeyan-Builder, the process this installer started, and on Windows the processes it started in turn. Returns at
     // once; the state becomes Cancelled when Arkeyan-Builder has exited.
     void Cancel();
@@ -170,7 +202,7 @@ public:
 
 private:
     bool Launch(const std::optional<InstallKit>& kit, const std::string& iso, const std::filesystem::path& out,
-        const char* hdTextures, bool hdOnly);
+        const char* hdTextures, bool hdOnly, const std::filesystem::path& logFolder, bool olderBuild);
     void Read();
     void Join();
 
@@ -185,4 +217,5 @@ private:
     void* m_job = nullptr; // Windows job object holding Arkeyan-Builder and its compilers
     std::filesystem::path m_logFile;
     std::filesystem::path m_out, m_kitFolder; // the game folder being built and the kit building it
+    std::filesystem::path m_logFolder; // the game's data folder: the install's logs and layout.txt
 };

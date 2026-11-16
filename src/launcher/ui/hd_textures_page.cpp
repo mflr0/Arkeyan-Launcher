@@ -1,6 +1,6 @@
 // A game's HD textures (docs/tools/hd_textures.md): the "Use HD textures" switch in its settings > Video > Textures, the kit's texture
 // step run alone when it is flipped on a built game, and the progress and failure it shows. Off by default ([<game>] hd_textures, which
-// the game reads too: it alone decides whether the game uses <game folder>/textures-hd).
+// the game reads too: it alone decides whether the game uses <game folder>/textures-hd, in the games folder when one is set).
 #include "launcher/env.h"
 #include "launcher/ui/launcher_app.h"
 #include "shared/collection/datadir.h"
@@ -117,7 +117,8 @@ namespace launcher_ui
     void App::StartHdTextures(bool on)
     {
         m_s->kit = FindInstallKit(m_config, m_s->game.id);
-        if (m_s->hdJob.StartHdTextures(m_s->kit, m_s->discPath, GameInstallFolder(m_s->check.xexSha256), on))
+        if (m_s->hdJob.StartHdTextures(m_s->kit, m_s->discPath, GameDataFolder(m_s->game.id), on,
+                !GamesFolder().empty() && !BuildKnowsGamesFolder(m_config, m_s->check.xexSha256)))
         {
             m_s->hdWatch = true;
             m_s->hdOn = on;
@@ -147,7 +148,10 @@ namespace launcher_ui
         {
             Set(m_s->game.id, "hd_textures", "0");
             std::error_code error;
-            std::filesystem::remove_all(GameInstallFolder(m_s->check.xexSha256) / "textures-hd", error);
+            std::filesystem::remove_all(BuildKnowsGamesFolder(m_config, m_s->check.xexSha256)
+                                            ? GameInstallFolder(m_s->check.xexSha256) / "textures-hd"
+                                            : GameFileOf(m_s->game.id, "textures-hd"),
+                error);
         }
         if (progress.state == State::Cancelled)
         {

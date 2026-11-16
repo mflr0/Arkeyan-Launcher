@@ -94,6 +94,8 @@ namespace uninstall
         std::filesystem::path folder; // <data>/SSA, <data>/Giants...
         std::filesystem::path saves; // its saves folder (<saves>-backup beside it); empty: <folder>/saves
         bool running = false; // its lock says it plays now
+        std::filesystem::path
+            files; // its folder in the games folder (<games>/SSA): the built game, textures-hd, gamedata
     };
     struct Environment
     {
@@ -110,6 +112,9 @@ namespace uninstall
             launcherSelf; // the .app, .exe or AppImage; empty when it cannot be removed (a build folder)
         std::filesystem::path trash; // macOS: where the .app goes (~/.Trash); empty: <home>/.Trash
         std::vector<GameEntry> games;
+        // The Games folder ([launcher] games=), empty when it is the data folder: each game's folder in it goes, the rest of
+        // it stays, and it goes itself only when it is empty at the end.
+        std::filesystem::path gamesFolder;
         std::vector<std::filesystem::path> discImages; // the images the settings remember
         std::vector<std::filesystem::path> builtGames; // [install.*] runtime= : where the settings say a game was built
         bool figuresInUse = false; // a figure is on a running game's portal

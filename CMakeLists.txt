@@ -210,6 +210,7 @@ target_sources(ArkeyanLauncherCore PRIVATE
     src/launcher/game_keys.cpp
     src/launcher/game_settings.cpp
     src/launcher/game_copy.cpp
+    src/launcher/games_folder.cpp
     src/launcher/edition_report.cpp
     src/launcher/portable_export.cpp
     src/launcher/shortcut.cpp
@@ -218,6 +219,7 @@ target_sources(ArkeyanLauncherCore PRIVATE
     src/launcher/ui/uninstall_page.cpp
     src/launcher/ui/game_settings_page.cpp
     src/launcher/ui/hd_textures_page.cpp
+    src/launcher/ui/games_folder_page.cpp
     src/launcher/ui/game_data_page.cpp
     src/launcher/report.cpp
     src/launcher/problem_report.cpp

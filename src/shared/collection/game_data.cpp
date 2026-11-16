@@ -105,7 +105,7 @@ namespace gamedata
         }
     }
 
-    fs::path Folder(std::string_view gameId) { return datadir::Game(gameId) / "gamedata"; }
+    fs::path Folder(std::string_view gameId) { return datadir::GameFiles(gameId) / "gamedata"; }
 
     Status Inspect(const fs::path& folder)
     {

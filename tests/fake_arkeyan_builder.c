@@ -9,7 +9,8 @@
  *   FAKE_ARKEYAN_BUILDER_HOLD=<seconds>  wait after the last step, before finishing (to look at a build at 100 %)
  * --hd-textures off|auto: as the real one, a last step "hdtextures" after the build, or alone (no --out) as the only step;
  *   FAKE_ARKEYAN_BUILDER_FAIL=hdtextures fails half way through it, and FAKE_ARKEYAN_BUILDER_HD_MARKER=<file> gets the mode it was asked for.
- * --edition-report <iso>: a fixed report (edition_report). */
+ * --edition-report <iso>: a fixed report (edition_report).
+ * FAKE_ARKEYAN_BUILDER_ENV_MARKER=<file> gets the SKY_GAMES_DIR it was started with (an empty line when unset). */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -118,8 +119,24 @@ static void hd_textures(const char* mode)
     step("hdtextures", "Making HD textures", strcmp(mode, "off") == 0 ? 2 : 40);
 }
 
+/* What the launcher's Games folder told it, for the tests. */
+static void games_folder(void)
+{
+    const char* marker = getenv("FAKE_ARKEYAN_BUILDER_ENV_MARKER");
+    const char* games = getenv("SKY_GAMES_DIR");
+    if (marker == NULL)
+        return;
+    FILE* file = fopen(marker, "wb");
+    if (file != NULL)
+    {
+        fprintf(file, "%s\n", games != NULL ? games : "");
+        fclose(file);
+    }
+}
+
 int main(int argc, char** argv)
 {
+    games_folder();
     if (getenv("FAKE_ARKEYAN_BUILDER_CLOSE_OUTPUT") != NULL)
     {
 #if !defined(_WIN32)

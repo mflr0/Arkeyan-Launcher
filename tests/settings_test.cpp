@@ -8,12 +8,19 @@
 #include "launcher/i18n.h"
 #include "launcher/game_run.h"
 #include "launcher/game_settings.h"
+#include "launcher/games_folder.h"
 #include "launcher/i18n.h"
 #include "launcher/launcher.h"
+#include "launcher/report.h"
 #include "launcher/shortcut.h"
 #include "launcher/ui/launcher_app.h"
 #include "shared/collection/datadir.h"
 #include "shared/collection/save_backup.h"
+#include "shared/collection/game_data.h"
+#include <atomic>
+#if !defined(_WIN32)
+#include <unistd.h>
+#endif
 #include <set>
 #include <SDL3/SDL.h>
 #include <stb_image_write.h>
@@ -1321,6 +1328,294 @@ namespace
     }
 }
 
+namespace
+{
+    // ---- The Games folder ([launcher] games=; docs/install.md, "Games folder") ------------------------------------------
+
+    std::string Value(const char* name)
+    {
+        const char* value = SDL_getenv(name);
+        return value != nullptr ? value : "";
+    }
+
+    bool HasVariable(const GameLaunch& launch, const char* name, const std::string& value)
+    {
+        for (const auto& [key, held] : launch.variables)
+            if (key == name && held == value)
+                return true;
+        return false;
+    }
+
+    // A game built in `files` (its runtime, icon and HD textures) with its data in `data`, recorded in `config`.
+    fs::path BuildIn(LauncherConfig& config, const fs::path& files, const fs::path& data, const std::string& sha,
+        bool knowsGamesFolder)
+    {
+        const fs::path runtime = files / "SSARecomp.app" / "Contents" / "MacOS" / "SSARecomp";
+        Write(runtime, std::string(1000, 'r'));
+        fs::permissions(runtime, fs::perms::owner_exec, fs::perm_options::add);
+        Write(files / "game_icon.png", std::string(30, 'i'));
+        Write(files / "textures-hd" / "a.dds", std::string(2000, 'h'));
+        Write(files / "gamedata" / "default.xex", std::string(3000, 'x'));
+        Write(data / "saves" / "slot.sav", std::string(100, 's'));
+        Write(data / "layout.txt", "data=skylanders\n");
+        Write(data / "install.log", std::string(10, 'l'));
+        Write(data / "textures" / "pack.dds", std::string(60, 't'));
+        Write(data / "portraits" / "p.png", std::string(40, 'q'));
+        config["install." + sha]["runtime"] = datadir::Text(runtime);
+        config["install." + sha]["kit"] = "fake";
+        if (knowsGamesFolder)
+            config["install." + sha]["games_folder"] = "1";
+        config["ssa"]["iso"] = datadir::Text(files / "gamedata");
+        return runtime;
+    }
+
+    void GamesFolderChecks(const fs::path& scratch)
+    {
+        fs::remove_all(scratch);
+        const fs::path data = scratch / "data", games = scratch / "games", other = scratch / "other";
+        fs::create_directories(data);
+        fs::create_directories(games);
+        fs::create_directories(other);
+        const std::string savedData = Value("SKY_LAUNCHER_DATA"), savedRoot = Value("SKYLANDERS_DATA"),
+                          savedSaves = Value("SKY_SAVE_DIR");
+        SetEnv("SKY_LAUNCHER_DATA", data.string());
+        SetEnv("SKYLANDERS_DATA", data.string());
+        SetEnv("SKY_SAVE_DIR", "");
+        SetActiveGame("ssa");
+
+        // Empty: today's layout, everything in <data>/<Game>.
+        LauncherConfig config;
+        ApplyGamesFolder(config);
+        SETTINGS_EXPECT(GamesFolder().empty() && !GamesFolderMissing());
+        SETTINGS_EXPECT(GameInstallFolder({}) == data / "SSA" && GameFilesFolder("giants") == data / "Giants");
+        SETTINGS_EXPECT(datadir::GameFiles("ssa") == datadir::Game("ssa"));
+
+        // Set: the built game goes to <games>/<Game>, the rest stays; the shared code (the game, the builder) agrees.
+        config["launcher"]["games"] = datadir::Text(games);
+        ApplyGamesFolder(config);
+        SETTINGS_EXPECT(GamesFolder() == games && Value("SKY_GAMES_DIR") == datadir::Text(games));
+        SETTINGS_EXPECT(GameInstallFolder({}) == games / "SSA" && GameFilesFolder("giants") == games / "Giants");
+        SETTINGS_EXPECT(GameDataFolder("ssa") == data / "SSA" && FoldersOf("ssa").game == data / "SSA" &&
+                        FoldersOf("ssa").files == games / "SSA");
+        SETTINGS_EXPECT(
+            datadir::GameFiles("ssa") == games / "SSA" && gamedata::Folder("ssa") == games / "SSA" / "gamedata");
+
+        // A support report hides where the games folder is (a drive's name often is the player's).
+        {
+            launcher_report::Identity identity;
+            identity.gamesFolder = "/Volumes/Alice Drive/Games";
+            SETTINGS_EXPECT(launcher_report::Redact("run /Volumes/Alice Drive/Games/SSA/x", identity) ==
+                            "run <games folder>/SSA/x");
+            SETTINGS_EXPECT(launcher_report::CurrentIdentity({}).gamesFolder == datadir::Text(games));
+        }
+
+        // The game PLAY starts gets SKY_GAMES_DIR; a game built here is not an older layout (layout.txt is data side).
+        {
+            LauncherConfig launchConfig = config;
+            const fs::path runtime = BuildIn(launchConfig, games / "SSA", data / "SSA", "aaaa", true);
+            GameLaunch launch = PrepareGameLaunch(
+                *FindGame("ssa"), launchConfig, datadir::Text(scratch / "launch.ini"), datadir::Text(runtime));
+            SETTINGS_EXPECT(!launch.runtime.empty() && HasVariable(launch, "SKY_GAMES_DIR", datadir::Text(games)));
+            SETTINGS_EXPECT(!HasVariable(launch, "SKY_SAVE_DIR", datadir::Text(games / "SSA" / "saves")));
+            SETTINGS_EXPECT(!IsOlderLayoutBuild(runtime, games / "SSA", data / "SSA"));
+            fs::remove_all(games / "SSA");
+            fs::remove_all(data / "SSA");
+        }
+
+        // A build from before the games folder keeps reading textures-hd/ and gamedata/ in the data folder.
+        Write(data / "SSA" / "textures-hd" / "a.dds", "old");
+        SETTINGS_EXPECT(GameFileOf("ssa", "textures-hd") == data / "SSA" / "textures-hd");
+        Write(games / "SSA" / "textures-hd" / "a.dds", "new");
+        SETTINGS_EXPECT(GameFileOf("ssa", "textures-hd") == games / "SSA" / "textures-hd");
+        SETTINGS_EXPECT(GameFileOf("ssa", "gamedata") == games / "SSA" / "gamedata");
+        fs::remove_all(games / "SSA");
+        fs::remove_all(data / "SSA");
+
+        // The folder is gone (an unplugged drive): said, and nothing is built in its place.
+        config["launcher"]["games"] = datadir::Text(scratch / "unplugged");
+        ApplyGamesFolder(config);
+        SETTINGS_EXPECT(
+            GamesFolderMissing() && std::string(GamesFolderMissingMessage()) ==
+                                        "The games folder isn't there. Plug in the drive, or choose another folder.");
+        {
+            GameInstaller installer;
+            const auto kit = InstallKitIn(SKYLAUNCHER_FAKE_KIT);
+            SETTINGS_EXPECT(kit.has_value() && kit->gamesFolder);
+            SETTINGS_EXPECT(
+                !installer.Start(kit, "synthetic.iso", GameInstallFolder({}), false, GameDataFolder("ssa")));
+            const InstallProgress state = installer.Snapshot();
+            SETTINGS_EXPECT(state.startFailed && state.error == GamesFolderMissingMessage());
+            SETTINGS_EXPECT(!fs::exists(scratch / "unplugged") && !fs::exists(data / "SSA" / "install.log"));
+        }
+        config["launcher"]["games"] = datadir::Text(games);
+        ApplyGamesFolder(config);
+        SETTINGS_EXPECT(!GamesFolderMissing());
+
+        // Refused folders: inside a game's folder (either side), the kits, a missing one.
+        fs::create_directories(data / "SSA" / "inside");
+        fs::create_directories(games / "Giants" / "inside");
+        fs::create_directories(data / "kit" / "v1" / "x");
+        SETTINGS_EXPECT(gamesfolder::Check({}) == gamesfolder::Refusal::None);
+        SETTINGS_EXPECT(gamesfolder::Check(other) == gamesfolder::Refusal::None);
+        SETTINGS_EXPECT(gamesfolder::Check(data / "SSA") == gamesfolder::Refusal::InGame);
+        SETTINGS_EXPECT(gamesfolder::Check(data / "SSA" / "inside") == gamesfolder::Refusal::InGame);
+        SETTINGS_EXPECT(gamesfolder::Check(games / "Giants" / "inside") == gamesfolder::Refusal::InGame);
+        SETTINGS_EXPECT(gamesfolder::Check(data / "kit" / "v1" / "x") == gamesfolder::Refusal::InKits);
+        SETTINGS_EXPECT(gamesfolder::Check(scratch / "nowhere") == gamesfolder::Refusal::Missing);
+        SETTINGS_EXPECT(std::string(gamesfolder::RefusalText(gamesfolder::Refusal::InGame)).size() > 0);
+#if !defined(_WIN32)
+        if (geteuid() != 0) // root writes anywhere
+        {
+            fs::create_directories(scratch / "locked");
+            fs::permissions(scratch / "locked", fs::perms::owner_read | fs::perms::owner_exec);
+            SETTINGS_EXPECT(gamesfolder::Check(scratch / "locked") == gamesfolder::Refusal::ReadOnly);
+            fs::permissions(scratch / "locked", fs::perms::owner_all);
+        }
+#endif
+        fs::remove_all(data / "SSA");
+        fs::remove_all(games / "Giants");
+        fs::remove_all(data / "kit");
+
+        // Remove game: that game's files in both folders; the saves, the textures and the copied game data stay.
+        {
+            LauncherConfig removeConfig = config;
+            BuildIn(removeConfig, games / "SSA", data / "SSA", "aaaa", true);
+            Write(games / "SSA" / "notices.txt", "n");
+            DataResult removed = UninstallGame(FoldersOf("ssa"), removeConfig);
+            SETTINGS_EXPECT(removed.ok && removed.freed >= 1000 + 30 + 2000 + 10);
+            SETTINGS_EXPECT(!fs::exists(games / "SSA" / "SSARecomp.app") &&
+                            !fs::exists(games / "SSA" / "game_icon.png") &&
+                            !fs::exists(games / "SSA" / "textures-hd") && !fs::exists(data / "SSA" / "install.log") &&
+                            !fs::exists(data / "SSA" / "layout.txt"));
+            SETTINGS_EXPECT(fs::exists(data / "SSA" / "saves" / "slot.sav") && fs::exists(data / "SSA" / "textures") &&
+                            fs::exists(games / "SSA" / "gamedata" / "default.xex"));
+            SETTINGS_EXPECT(removeConfig.count("install.aaaa") == 0);
+            SETTINGS_EXPECT(MeasureGameData(FoldersOf("ssa")).installed == 0);
+            fs::remove_all(games / "SSA");
+            fs::remove_all(data / "SSA");
+        }
+
+        // The move, data folder -> games folder, renamed (one volume): the built game, textures-hd and gamedata; the rest
+        // stays; the settings point at the new places.
+        const std::atomic<bool> go{ false };
+        {
+            LauncherConfig moveConfig;
+            ApplyGamesFolder(moveConfig);
+            BuildIn(moveConfig, data / "SSA", data / "SSA", "aaaa", true);
+            gamesfolder::Plan plan = gamesfolder::MakePlan(moveConfig, {}, games);
+            SETTINGS_EXPECT(plan.entries.size() == 4 && plan.bytes == 1000 + 30 + 2000 + 3000);
+            gamesfolder::Result result = gamesfolder::Move(plan, {}, go);
+            SETTINGS_EXPECT(result.state == gamesfolder::Result::State::Done);
+            SETTINGS_EXPECT(
+                Read(games / "SSA" / "SSARecomp.app" / "Contents" / "MacOS" / "SSARecomp") == std::string(1000, 'r') &&
+                fs::exists(games / "SSA" / "textures-hd" / "a.dds") &&
+                fs::exists(games / "SSA" / "gamedata" / "default.xex"));
+            SETTINGS_EXPECT(!fs::exists(data / "SSA" / "SSARecomp.app") && !fs::exists(data / "SSA" / "gamedata") &&
+                            fs::exists(data / "SSA" / "saves" / "slot.sav") &&
+                            fs::exists(data / "SSA" / "layout.txt") && fs::exists(data / "SSA" / "install.log") &&
+                            fs::exists(data / "SSA" / "textures") && fs::exists(data / "SSA" / "portraits"));
+            gamesfolder::Record(moveConfig, plan);
+            SETTINGS_EXPECT(moveConfig["launcher"]["games"] == datadir::Text(games));
+            SETTINGS_EXPECT(moveConfig["install.aaaa"]["runtime"] ==
+                            datadir::Text(games / "SSA" / "SSARecomp.app" / "Contents" / "MacOS" / "SSARecomp"));
+            SETTINGS_EXPECT(moveConfig["ssa"]["iso"] == datadir::Text(games / "SSA" / "gamedata"));
+            ApplyGamesFolder(moveConfig);
+
+            // Back again, copied (two volumes): copied, checked, then the old copy deleted; the settings follow.
+            plan = gamesfolder::MakePlan(moveConfig, games, {});
+            SETTINGS_EXPECT(plan.entries.size() == 4);
+            gamesfolder::Options copy;
+            copy.forceCopy = true;
+            uint64_t reported = 0;
+            copy.progress = [&](uint64_t done) { reported = done; };
+            result = gamesfolder::Move(plan, copy, go);
+            SETTINGS_EXPECT(result.state == gamesfolder::Result::State::Done && reported == plan.bytes);
+            SETTINGS_EXPECT(
+                Read(data / "SSA" / "SSARecomp.app" / "Contents" / "MacOS" / "SSARecomp") == std::string(1000, 'r') &&
+                Read(data / "SSA" / "gamedata" / "default.xex") == std::string(3000, 'x'));
+            SETTINGS_EXPECT(!fs::exists(games / "SSA")); // its emptied folder goes, the games folder itself stays
+            SETTINGS_EXPECT(fs::is_directory(games));
+#if !defined(_WIN32)
+            // The copy keeps the game runnable.
+            SETTINGS_EXPECT(
+                (fs::status(data / "SSA" / "SSARecomp.app" / "Contents" / "MacOS" / "SSARecomp").permissions() &
+                    fs::perms::owner_exec) != fs::perms::none);
+#endif
+            gamesfolder::Record(moveConfig, plan);
+            SETTINGS_EXPECT(moveConfig["launcher"].count("games") == 0);
+            SETTINGS_EXPECT(moveConfig["install.aaaa"]["runtime"] ==
+                            datadir::Text(data / "SSA" / "SSARecomp.app" / "Contents" / "MacOS" / "SSARecomp"));
+            SETTINGS_EXPECT(moveConfig["ssa"]["iso"] == datadir::Text(data / "SSA" / "gamedata"));
+
+            // Stopped half way through a copy: the old copy is all there, the new place has nothing.
+            plan = gamesfolder::MakePlan(moveConfig, {}, games);
+            std::atomic<bool> stop{ false };
+            gamesfolder::Options halt;
+            halt.forceCopy = true;
+            halt.progress = [&](uint64_t done) {
+                if (done > 0)
+                    stop = true;
+            };
+            result = gamesfolder::Move(plan, halt, stop);
+            SETTINGS_EXPECT(result.state == gamesfolder::Result::State::Stopped);
+            SETTINGS_EXPECT(
+                Read(data / "SSA" / "SSARecomp.app" / "Contents" / "MacOS" / "SSARecomp") == std::string(1000, 'r') &&
+                Read(data / "SSA" / "textures-hd" / "a.dds") == std::string(2000, 'h') &&
+                Read(data / "SSA" / "gamedata" / "default.xex") == std::string(3000, 'x'));
+            SETTINGS_EXPECT(!fs::exists(games / "SSA") || fs::is_empty(games / "SSA"));
+
+            // Stopped after a rename (one volume): what was renamed comes back.
+            stop = false;
+            gamesfolder::Options renameHalt;
+            renameHalt.progress = [&](uint64_t done) {
+                if (done > 0)
+                    stop = true;
+            };
+            result = gamesfolder::Move(plan, renameHalt, stop);
+            SETTINGS_EXPECT(result.state == gamesfolder::Result::State::Stopped);
+            SETTINGS_EXPECT(fs::exists(data / "SSA" / "SSARecomp.app") && fs::exists(data / "SSA" / "gamedata") &&
+                            fs::exists(data / "SSA" / "textures-hd") && fs::exists(data / "SSA" / "game_icon.png"));
+            SETTINGS_EXPECT(!fs::exists(games / "SSA") || fs::is_empty(games / "SSA"));
+
+            // Not enough room for the copy: nothing is touched.
+            gamesfolder::Options small;
+            small.forceCopy = true;
+            small.freeBytes = 100;
+            result = gamesfolder::Move(plan, small, go);
+            SETTINGS_EXPECT(result.state == gamesfolder::Result::State::NoRoom && result.needed >= plan.bytes);
+            SETTINGS_EXPECT(fs::exists(data / "SSA" / "SSARecomp.app") && !fs::exists(games / "SSA" / "SSARecomp.app"));
+            fs::remove_all(data / "SSA");
+        }
+
+        // A game built before the games folder: its textures-hd/ and gamedata/ stay in the data folder, where it reads them.
+        {
+            LauncherConfig olderConfig;
+            ApplyGamesFolder(olderConfig);
+            BuildIn(olderConfig, data / "SSA", data / "SSA", "bbbb", false);
+            gamesfolder::Plan plan = gamesfolder::MakePlan(olderConfig, {}, games);
+            SETTINGS_EXPECT(plan.entries.size() == 2 && plan.bytes == 1000 + 30);
+            SETTINGS_EXPECT(gamesfolder::Move(plan, {}, go).state == gamesfolder::Result::State::Done);
+            gamesfolder::Record(olderConfig, plan);
+            SETTINGS_EXPECT(fs::exists(games / "SSA" / "SSARecomp.app") && fs::exists(data / "SSA" / "textures-hd") &&
+                            fs::exists(data / "SSA" / "gamedata") && !fs::exists(games / "SSA" / "gamedata"));
+            SETTINGS_EXPECT(olderConfig["ssa"]["iso"] == datadir::Text(data / "SSA" / "gamedata"));
+            ApplyGamesFolder(olderConfig);
+            SETTINGS_EXPECT(GameFileOf("ssa", "textures-hd") == data / "SSA" / "textures-hd");
+            SETTINGS_EXPECT(!BuildKnowsGamesFolder(olderConfig, "bbbb"));
+            fs::remove_all(games / "SSA");
+            fs::remove_all(data / "SSA");
+        }
+
+        ApplyGamesFolder({});
+        SetEnv("SKY_LAUNCHER_DATA", savedData);
+        SetEnv("SKYLANDERS_DATA", savedRoot);
+        SetEnv("SKY_SAVE_DIR", savedSaves);
+        printf(
+            "Games folder: the setting, the builder's and the game's SKY_GAMES_DIR, refusals, a missing folder, Remove "
+            "game in both folders, the move renamed and copied, stopped, short of room, an older build\n");
+    }
+}
+
 int SettingsChecks(const fs::path& scratch)
 {
     fs::create_directories(scratch);
@@ -1333,6 +1628,7 @@ int SettingsChecks(const fs::path& scratch)
     EnvironmentChecks();
     ShortcutChecks(scratch / "shortcut");
     DataChecks(scratch / "datachecks");
+    GamesFolderChecks(scratch / "gamesfolder");
     DiscLanguageChecks(scratch);
     LauncherLanguageChecks(scratch);
     return g_settingsFailures;

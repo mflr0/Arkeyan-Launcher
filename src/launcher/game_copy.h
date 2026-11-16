@@ -20,7 +20,7 @@ struct GameSourcePick
 };
 GameSourcePick PickGameSource(const GameInfo& game, const std::string& iso);
 
-// The copy running in the background. Start reads `image` (a disc image already verified), writes <data>/<Game>/gamedata.
+// The copy running in the background. Start reads `image` (a disc image already verified), writes <games folder>/<Game>/gamedata (GameFileOf).
 class GameCopyJob
 {
 public:

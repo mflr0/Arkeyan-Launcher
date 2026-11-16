@@ -1139,3 +1139,23 @@ Couldn't prepare the game tools	Couldn't prepare the game tools
 Go back to the final release?	Go back to the final release?
 Going back to {}. Saves and figures made with the test build may not open in it. A copy of them is kept.	Going back to {}. Saves and figures made with the test build may not open in it. A copy of them is kept.
 Version {} (the final release)	Version {} (the final release)
+
+# The Games folder (Settings > Launcher)
+Games folder	Spillmappe
+Where every game is built: another drive saves room.	Hvor hvert spill installeres: en annen stasjon sparer plass.
+Moving the games: {} of {}	Flytter spillene: {} av {}
+Now: {}	Nå: {}
+Use default	Bruk standard
+Games moved	Spillene er flyttet
+Move stopped: the games stay where they were	Flyttingen er stoppet: spillene blir der de var
+Couldn't move the games	Kunne ikke flytte spillene
+Couldn't move the games: they stay where they were	Kunne ikke flytte spillene: de blir der de var
+Not enough free space: {} needed	Ikke nok ledig plass: {} trengs
+Wait for the games to move	Vent til spillene er flyttet
+Quit the game to move the games	Avslutt spillet for å flytte spillene
+The games folder isn't there. Plug in the drive, or choose another folder.	Spillmappen er ikke der. Koble til stasjonen, eller velg en annen mappe.
+This folder isn't there	Denne mappen er ikke der
+This folder can't be written to	Kan ikke skrive til denne mappen
+Choose a folder outside the games	Velg en mappe utenfor spillene
+Choose a folder outside the game tools	Velg en mappe utenfor spillverktøyene
+The games in {} go too; your other files there stay.	Spillene i {} fjernes også; de andre filene dine der blir.

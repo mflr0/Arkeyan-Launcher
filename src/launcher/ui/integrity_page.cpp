@@ -38,7 +38,7 @@ namespace launcher_ui
                     targets.push_back({ "kit", folder });
                 }
             }
-            targets.push_back({ game.id, LauncherDataFolder() / datadir::GameFolderName(game.id) });
+            targets.push_back({ game.id, GameFilesFolder(game.id) }); // the built game's file list is beside it
         }
         m_integrity.Start(std::move(targets));
         m_integrityPolled = false;

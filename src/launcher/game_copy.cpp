@@ -1,5 +1,6 @@
 #include "launcher/game_copy.h"
 #include "launcher/env.h"
+#include "launcher/game_install.h"
 #include "launcher/i18n.h"
 #include "launcher/ui/launcher_ui.h"
 #include "shared/collection/datadir.h"
@@ -11,10 +12,10 @@
 GameSourcePick PickGameSource(const GameInfo& game, const std::string& iso)
 {
     GameSourcePick pick;
-    pick.copy = gamedata::Inspect(gamedata::Folder(game.id));
+    pick.copy = gamedata::Inspect(GameFileOf(game.id, "gamedata"));
     if (pick.copy.state == gamedata::State::Complete)
     {
-        pick.path = datadir::Text(gamedata::Folder(game.id));
+        pick.path = datadir::Text(GameFileOf(game.id, "gamedata"));
         pick.copied = true;
     }
     else
@@ -37,6 +38,12 @@ void GameCopyJob::Start(const GameInfo& game, const std::string& image, const st
     m_bytes = m_total = 0;
     m_result = {};
     m_thread = std::thread([this, id = std::string(game.id), image, xexSha256] {
+        if (GamesFolderMissing()) // never made again on the system's disk
+        {
+            m_result.error = GamesFolderMissingMessage();
+            m_done = true;
+            return;
+        }
         DiscFileSystem disc;
         if (!disc.Open(image.c_str()))
         {
@@ -61,7 +68,7 @@ void GameCopyJob::Start(const GameInfo& game, const std::string& image, const st
         };
         if (const char* free = LauncherEnv("SKY_LAUNCHER_COPY_FREE_BYTES")) // tests: the room to assume
             options.freeBytes = std::strtoll(free, nullptr, 10);
-        m_result = gamedata::Copy(source, gamedata::Folder(id), options);
+        m_result = gamedata::Copy(source, GameFileOf(id, "gamedata"), options);
         m_done = true;
     });
 }

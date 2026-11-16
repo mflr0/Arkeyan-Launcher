@@ -10,6 +10,8 @@
 //   <root>/logs/            the launcher's logs, migration.log
 //   <root>/<Game>/          one per game ("SSA"): the built game, its settings, saves, pipelines.bin, portal.txt,
 //                           figures, portraits, launcher-cache and Arkeyan.log (SSARecomp.log from a game built before 0.8.0)
+//   <games>/<Game>/         when SKY_GAMES_DIR is set (the launcher's Games folder): the built game, textures-hd/ and
+//                           gamedata/; the rest stays in <root>/<Game>/
 //
 // <root> is SKYLANDERS_DATA (tests), <program folder>/data when portable.txt is beside the program, else %APPDATA%\Skylanders on Windows, ~/Library/Application
 // Support/Skylanders on macOS and $XDG_DATA_HOME/Skylanders (~/.local/share/Skylanders) elsewhere. Nothing here
@@ -31,6 +33,9 @@ namespace datadir
     // folder for the game, <SKY_PROFILE_DIR>/<Game>, when the launcher set one (a profile other than the first), else the
     // game's own folder (Game).
     std::filesystem::path PlayerGame(std::string_view id = "ssa");
+    // Where a game's big rebuildable files live (textures-hd, the copied game data): <SKY_GAMES_DIR>/<Game> when the
+    // launcher set one (the player's Games folder, on another drive for example), else the game's own folder (Game).
+    std::filesystem::path GameFiles(std::string_view id = "ssa");
     std::filesystem::path LauncherIni();
     std::filesystem::path Kits();
     std::filesystem::path Toolchains();
