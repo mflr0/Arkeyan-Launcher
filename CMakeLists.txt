@@ -151,6 +151,7 @@ add_library(ArkeyanLauncherCore STATIC
     src/launcher/ui/collection_add.cpp
     src/launcher/ui/collection_manage.cpp
     src/launcher/ui/collection_model.cpp
+    src/launcher/ui/picture_loader.cpp
     src/launcher/ui/game_look.cpp
     src/launcher/ui/pad_walk.cpp
     src/launcher/ui/components/core.cpp

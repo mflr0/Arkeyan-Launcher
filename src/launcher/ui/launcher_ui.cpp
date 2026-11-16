@@ -1569,6 +1569,7 @@ namespace launcher_ui
                   v = pageSize.y / (h * scale);
             // The software renderer overflows its fixed-point texture coordinates on a page-sized triangle.
             // Small quads keep the same crop and work at every window size and display density.
+            const float fade = FadeIn(art->readyAt); // over the night sky, as it arrives
             const ImVec2 density = ImGui::GetIO().DisplayFramebufferScale;
             const float tileW = 128 / std::max(1.0f, density.x), tileH = 128 / std::max(1.0f, density.y);
             auto uv = [&](float x, float y) {
@@ -1578,15 +1579,17 @@ namespace launcher_ui
                 for (float x = page.x; x < size.x; x += tileW)
                 {
                     const float right = std::min(x + tileW, size.x), bottom = std::min(y + tileH, size.y);
-                    draw->AddImage(Ref(background), ImVec2(x, y), ImVec2(right, bottom), uv(x, y), uv(right, bottom));
+                    draw->AddImage(Ref(background), ImVec2(x, y), ImVec2(right, bottom), uv(x, y), uv(right, bottom),
+                        ui::Col(0xFFFFFF, fade));
                 }
             // One light dim over the whole painting, the same for every game, so the logo and the text read on pale art.
-            draw->AddRectFilled(page, size, ui::Col(ui::color::Scrim, ArtDim));
+            draw->AddRectFilled(page, size, ui::Col(ui::color::Scrim, ArtDim * fade));
             // Continuous shades across the painting: the title's left and the controls' lower edge.
-            draw->AddRectFilledMultiColor(page, size, ui::Col(ui::color::Scrim, 0.9f), ui::Col(ui::color::Scrim, 0.12f),
-                ui::Col(ui::color::Scrim, 0.12f), ui::Col(ui::color::Scrim, 0.9f));
+            draw->AddRectFilledMultiColor(page, size, ui::Col(ui::color::Scrim, 0.9f * fade),
+                ui::Col(ui::color::Scrim, 0.12f * fade), ui::Col(ui::color::Scrim, 0.12f * fade),
+                ui::Col(ui::color::Scrim, 0.9f * fade));
             draw->AddRectFilledMultiColor(page, size, ui::Col(ui::color::Scrim, 0), ui::Col(ui::color::Scrim, 0),
-                ui::Col(ui::color::Scrim, 0.9f), ui::Col(ui::color::Scrim, 0.9f));
+                ui::Col(ui::color::Scrim, 0.9f * fade), ui::Col(ui::color::Scrim, 0.9f * fade));
             return;
         }
         // The portal's glow, low on the right, and twinkling stars.
@@ -3084,6 +3087,7 @@ namespace launcher_ui
         if (m_shots.empty() &&
             (SDL_GetWindowFlags(m_window) & (SDL_WINDOW_MINIMIZED | SDL_WINDOW_OCCLUDED | SDL_WINDOW_HIDDEN)))
             return;
+        UploadPictures();
         UpdateLanguage();
         ImGui_ImplSDLRenderer3_NewFrame();
         ImGui_ImplSDL3_NewFrame();
@@ -3216,7 +3220,8 @@ namespace launcher_ui
         }
 
         ImGui::Render();
-        const bool shotNow = !m_shots.empty() && m_testAt != 0 && SDL_GetTicks() >= m_testAt;
+        // A picture asked for in this frame is in the next one: the shot waits for it.
+        const bool shotNow = !m_shots.empty() && m_testAt != 0 && SDL_GetTicks() >= m_testAt && !m_pictures.Pending();
         // The pad walk checks focus and legends, which need ImGui's layout, not pixels: in its quick mode only the frames
         // it saves are drawn. Offscreen, SDL draws in software and that drawing was 96 % of the walk's time.
         static const bool quickWalk =
@@ -3277,6 +3282,11 @@ namespace launcher_ui
             m_testStep++;
         }
         SDL_RenderPresent(m_renderer);
+        if (!m_prefetched && m_shots.empty()) // after the first frame is shown
+        {
+            m_prefetched = true;
+            PrefetchArt();
+        }
     }
 
     void App::Screenshot(const char* name)

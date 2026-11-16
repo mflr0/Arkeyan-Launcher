@@ -302,7 +302,8 @@ namespace launcher_ui
                     auto& page = *app.m_s->collection;
                     start = Clock::now();
                     for (const auto& figure : figures)
-                        page.Icon(figure.toy, figure.Kind(), false);
+                        page.Icon(figure.toy, figure.Kind(), false, 0);
+                    app.FinishPictures();
                     printf("cache,%s,%.3f,%.3f,%.3f\n", game.id, Ms(start), Resources().rss / (1024 * 1024),
                         Textures(app));
                 }
@@ -384,8 +385,10 @@ namespace launcher_ui
                 for (const auto& game : g_games)
                 {
                     app.SelectGame(game);
+                    app.m_s->collection->Icon(figures.front().toy, figures.front().Kind(), false, 0);
+                    app.FinishPictures();
                     auto* texture =
-                        app.m_s->collection->Icon(figures.front().toy, figures.front().Kind(), false).texture;
+                        app.m_s->collection->Icon(figures.front().toy, figures.front().Kind(), false, 0).texture;
                     if (!first)
                         first = texture;
                     expect(texture && texture == first, "one picture texture is reused between game slots");
@@ -396,9 +399,12 @@ namespace launcher_ui
                 for (auto& slot : app.m_slots)
                     empty = empty && IconMap(slot->collection->m_icons).empty();
                 expect(empty, "disc refresh invalidates every slot's shared pictures");
-                auto& icon = page.Icon(figures.front().toy, figures.front().Kind(), false);
+                page.Icon(figures.front().toy, figures.front().Kind(), false, 0);
+                page.Icon(figures.back().toy, figures.back().Kind(), false, 0);
+                app.FinishPictures();
+                auto& icon = page.Icon(figures.front().toy, figures.front().Kind(), false, 0);
                 expect(icon.texture != nullptr && !icon.generated, "picture reload preserves the decoded image");
-                SDL_Texture* different = page.Icon(figures.back().toy, figures.back().Kind(), false).texture;
+                SDL_Texture* different = page.Icon(figures.back().toy, figures.back().Kind(), false, 0).texture;
                 expect(different != nullptr && different != icon.texture, "distinct pictures keep distinct textures");
                 return failures ? 1 : 0;
             }
@@ -414,6 +420,9 @@ namespace launcher_ui
             start = Clock::now();
             Tick(app, false);
             printf("time,collection_open_ms,%.3f\n", Ms(start));
+            start = Clock::now();
+            app.FinishPictures();
+            printf("time,collection_pictures_ready_ms,%.3f\n", Ms(start));
             auto& page = *app.m_s->collection;
             if (page.m_model.figures.size() != 500)
                 throw std::runtime_error("expected 500 synthetic figures");

@@ -34,6 +34,11 @@ namespace collection
     // (SSA: the 512 px "versus" picture; Giants has one size, 256 px). Empty when that game has none cached.
     // Folders: SKY_PORTRAITS, else "portraits" in the game's data folder.
     std::string GamePortraitPath(const std::string& gameId, const Toy& toy, uint16_t variant = 0, bool large = false);
+    // The lookups answer from each folder's listing, read once and again when the folder changes (looked at once a second
+    // at most), with one stat for the picture found: any thread may call them. A picture written by SavePng is found at
+    // once, one written otherwise within a second, or at once after ForgetPictureFolders; a deleted one is never returned.
+    void ForgetPictureFolders();
+    size_t PictureFolderListings(); // folders read from the disk so far (for the tests)
 
     // A villain's picture from the game's disc (Game::villains; Trap Team's vault: "captured" is the villain held in a trap,
     // else the one escaped). Empty when it is not cached.

@@ -28,6 +28,7 @@
 #include "launcher/uninstall.h"
 #include "launcher/ui/theme/launcher_theme.h"
 #include "launcher/ui/collection_page.h"
+#include "launcher/ui/picture_loader.h"
 #include "launcher/ui/components/components.h"
 #include "shared/collection/save_backup.h"
 #include <SDL3/SDL.h>
@@ -343,6 +344,8 @@ namespace launcher_ui
         SDL_Texture* texture = nullptr;
         ImVec2 uv0{ 0, 0 }, uv1{ 1, 1 };
         float aspect = 2; // width / height of that part
+        bool pending = false; // still being read by App::m_pictures (CachedArt)
+        uint64_t readyAt = 0; // when it arrived, for its fade (FadeIn); 0: shown whole
 
         explicit operator bool() const { return texture != nullptr; }
         void Destroy()
@@ -355,6 +358,14 @@ namespace launcher_ui
     // Loads a PNG; `crop`: to its opaque bounds; `maxWidth` > 0: averaged down to at most that many pixels wide. Empty if
     // the file can't be read.
     ArtTexture LoadArt(SDL_Renderer* renderer, const std::string& path, bool crop, int maxWidth = 0);
+    // The same, without the texture: what the loader's thread does (picture_loader.h).
+    DecodedPicture DecodeArt(const std::string& path, bool crop, int maxWidth = 0);
+    // A picture's opacity `readyAt` ms after it arrived: a short fade in, whole with reduced motion (readyAt 0). Marks
+    // the frame as animating while it fades.
+    float FadeIn(uint64_t readyAt);
+    inline constexpr const char* FigurePictureKey =
+        "fig "; // App::m_pictures' keys: a figure's picture (CollectionPage)
+    inline constexpr const char* ArtPictureKey = "art "; // a game's backdrop or logo (CachedArt)
     using ui::GradientRect; // a rounded rectangle filled with a vertical gradient (components/core.h)
     // Whether the system asks for less motion (macOS: Reduce motion; Windows: animations off). [launcher] reduce_motion
     // = 1 / 0 overrides it.
@@ -679,6 +690,12 @@ namespace launcher_ui
         // before the game's disc was ever read. The sidebar and Home use them for games not yet shown too.
         const ArtTexture* CachedArt(const char* game, LauncherAssets::Role role, int maxWidth);
         void ForgetCachedArt(const char* game); // its disc was read again
+        // Once a frame, before drawing: the pictures m_pictures finished, made textures within a small time budget (every
+        // one, at once and without a fade, for the screenshot test: FinishPictures).
+        void UploadPictures(bool all = false);
+        void FinishPictures();
+        void
+        PrefetchArt(); // the enabled games' Play page backdrops and logos, so that switching game shows them at once
         // The picture behind a game's page and its Home card: one of the game's cached scenes, picked at random at the
         // first need of this run and kept (never the one of the last run when there are two or more, which settings'
         // `last_scene` records); the disc's menu painting while the scenes are not read yet; empty before any read.
@@ -1052,6 +1069,9 @@ namespace launcher_ui
         std::map<std::string, ArtTexture> m_achievementIcons; // by file
         std::shared_ptr<FigureIconCache> m_figureIcons = std::make_shared<FigureIconCache>();
         std::map<std::string, ArtTexture> m_cachedArt; // CachedArt's, by "<game> <role> <width>"
+        // The figures' pictures and CachedArt's, read off the UI thread; UploadPictures makes the finished ones textures.
+        PictureLoader m_pictures;
+        bool m_prefetched = false; // the games' backdrops and logos asked for once, after the first frame
         std::map<std::string, std::string> m_scene; // SceneOf's pick of this run, by game
 
         ui::Toasts m_toasts; // newest last; drawn at the bottom right, upwards

@@ -56,9 +56,12 @@ namespace launcher_ui
         SDL_Texture* texture = nullptr;
         bool generated = false;
         float width = 0, height = 0; // the picture's own size (an artwork is not square)
+        bool pending = true; // still being read (App::m_pictures): nothing is drawn in its place
+        uint64_t readyAt = 0; // when it arrived, for its fade (FadeIn)
     };
 
-    // One cache per renderer. Game slots often resolve the same fallback picture.
+    // One cache per renderer, shared by the game slots; by toy, variant and use (icon, picture, swapper), so that the
+    // pictures' files are looked up once, on the loader's thread.
     struct FigureIconCache
     {
         std::map<std::string, FigureIconTexture> textures;
@@ -190,8 +193,10 @@ namespace launcher_ui
         bool DrawSwapper(ImDrawList* draw, const collection::Toy* top, uint16_t topVariant,
             const collection::Toy* bottom, uint16_t bottomVariant, ImVec2 at, float box);
         bool DrawSwapper(ImDrawList* draw, const collection::Card& card, ImVec2 at, float box);
+        // The picture's texture once the loader read it (pending and empty until then), asked for on the first call.
         const FigureIconTexture& Icon(
             const collection::Toy* toy, collection::VariantKind kind, bool large, uint16_t variant);
+        void DrawFitted(ImDrawList* draw, const FigureIconTexture& picture, ImVec2 at, float box); // centred in `box`
         // A swapper (Swap Force) is one card: the top stands for it, the bottom is drawn small at its corner.
         collection::Card CardOf(const collection::Figure& figure) const;
         bool Busy(const collection::Figure& figure) const { return CardOf(figure).Busy(); }

@@ -224,55 +224,79 @@ namespace launcher_ui
         textures.clear();
     }
 
-    void CollectionPage::ClearIcons() { m_icons->Clear(); }
+    void CollectionPage::ClearIcons()
+    {
+        m_icons->Clear();
+        m_app.m_pictures.Forget(FigurePictureKey); // what was still being read is read again, from the disc's pictures
+        collection::ForgetPictureFolders(); // the portraits folders were just written
+    }
+
+    namespace
+    {
+        DecodedPicture FromImage(const collection::Image& image)
+        {
+            DecodedPicture picture;
+            if (image.Empty())
+                return picture;
+            picture.rgba.resize(image.rgba.size() * 4);
+            std::memcpy(picture.rgba.data(), image.rgba.data(),
+                picture.rgba.size()); // R, G, B, A in memory on the little-endian systems we run on
+            picture.width = image.width, picture.height = image.height;
+            return picture;
+        }
+
+        // A file's picture; a creation crystal's is the disc's one magenta picture, tinted per element (CrystalPicture).
+        DecodedPicture FilePicture(const collection::Toy& toy, const std::string& path)
+        {
+            if (path.empty())
+                return {};
+            return FromImage(toy.category == collection::Category::CreationCrystal
+                                 ? collection::CrystalPicture(toy, path)
+                                 : collection::LoadPng(path));
+        }
+
+        // On the loader's thread: the newest cached art (independent of the viewed game, shared/collection/icons.h),
+        // else the drawn icon.
+        DecodedPicture IconPicture(
+            const collection::Toy* toy, collection::VariantKind kind, bool large, uint16_t variant)
+        {
+            DecodedPicture picture = toy != nullptr
+                                         ? FilePicture(*toy, collection::PortraitPath({}, *toy, variant, large))
+                                         : DecodedPicture{};
+            if (picture.Empty())
+            {
+                constexpr int Size = 128;
+                picture.rgba = figures::GenerateIcon(toy, kind, Size);
+                picture.width = picture.height = Size;
+                picture.generated = true;
+            }
+            return picture;
+        }
+    }
 
     const FigureIconTexture& CollectionPage::Icon(
         const collection::Toy* toy, collection::VariantKind kind, bool large, uint16_t variant)
     {
-        // The newest cached art, independent of the viewed game (shared/collection/icons.h).
         if (toy != nullptr && variant == 0)
             variant = collection::VariantFor(*toy, kind);
-        std::string path =
-            toy != nullptr ? collection::PortraitPath(m_app.m_s->game.id, *toy, variant, large) : std::string();
-        // A creation crystal: the disc's one magenta picture, tinted per element (CrystalPicture).
-        const bool crystal = toy != nullptr && toy->category == collection::Category::CreationCrystal && !path.empty();
-        std::string key = crystal         ? fmt::format("crystal:{}:{}", toy->type, path)
-                          : !path.empty() ? path
-                                          : fmt::format("gen:{}:{}", toy != nullptr ? toy->type : 0xFFFF, int(kind));
-        auto found = m_icons->textures.find(key);
-        if (found != m_icons->textures.end())
-            return found->second;
-
-        FigureIconTexture icon;
-        if (crystal)
-        {
-            if (collection::Image image = collection::CrystalPicture(*toy, path); !image.Empty())
-            {
-                std::vector<uint8_t> bytes(image.rgba.size() * 4);
-                std::memcpy(bytes.data(), image.rgba.data(),
-                    bytes.size()); // R, G, B, A in memory on the little-endian systems we run on
-                icon.texture = LoadRgba(m_app.m_renderer, bytes, image.width, image.height);
-            }
-        }
-        else if (!path.empty())
-            icon.texture = LoadPngFile(m_app.m_renderer, path);
-        if (icon.texture != nullptr)
-            SDL_GetTextureSize(icon.texture, &icon.width, &icon.height);
-        if (icon.texture == nullptr)
-        {
-            constexpr int Size = 128;
-            icon.texture = LoadRgba(m_app.m_renderer, figures::GenerateIcon(toy, kind, Size), Size, Size);
-            icon.generated = true;
-        }
-        return m_icons->textures[key] = icon;
+        std::string key = fmt::format("{}icon {} {} {} {}", FigurePictureKey, toy != nullptr ? toy->type : 0xFFFF,
+            variant, int(kind), int(large));
+        auto [found, added] = m_icons->textures.try_emplace(key);
+        if (added)
+            m_app.m_pictures.Request(
+                key, [toy, kind, large, variant] { return IconPicture(toy, kind, large, variant); });
+        return found->second;
     }
 
     void CollectionPage::DrawIcon(ImDrawList* draw, const collection::Toy* toy, collection::VariantKind kind, ImVec2 at,
         float size, bool large, uint16_t variant)
     {
         const FigureIconTexture& icon = Icon(toy, kind, large, variant);
-        if (icon.texture != nullptr)
-            draw->AddImage(Ref(icon.texture), at, ImVec2(at.x + size, at.y + size));
+        if (icon.texture == nullptr) // not read yet: the card's own fill
+            return;
+        const float alpha = FadeIn(icon.readyAt);
+        draw->AddImage(Ref(icon.texture), at, ImVec2(at.x + size, at.y + size), ImVec2(0, 0), ImVec2(1, 1),
+            ui::Col(0xFFFFFF, alpha));
         // A drawn icon gets the toy's initials, unless its family has a mark of its own (an item's potion...).
         if (!icon.generated || (toy != nullptr && collection::HasKindGlyph(toy->category)))
             return;
@@ -281,54 +305,43 @@ namespace launcher_ui
         ImVec2 text = ImGui::CalcTextSize(letters.c_str());
         ImVec2 position(at.x + (size - text.x) / 2, at.y + (size - text.y) / 2);
         draw->AddText(ImVec2(position.x + ui::stroke::Hairline, position.y + 2 * ui::stroke::Hairline),
-            ui::Col(ui::color::Scrim, 0.5f), letters.c_str());
-        draw->AddText(position, ui::Col(ui::color::Ink), letters.c_str());
+            ui::Col(ui::color::Scrim, 0.5f * alpha), letters.c_str());
+        draw->AddText(position, ui::Col(ui::color::Ink, alpha), letters.c_str());
         ImGui::PopFont();
+    }
+
+    void CollectionPage::DrawFitted(ImDrawList* draw, const FigureIconTexture& picture, ImVec2 at, float box)
+    {
+        float scale = std::min(box / picture.width, box / picture.height), w = picture.width * scale,
+              h = picture.height * scale;
+        ImVec2 corner(at.x + (box - w) / 2, at.y + (box - h) / 2);
+        draw->AddImage(Ref(picture.texture), corner, ImVec2(corner.x + w, corner.y + h), ImVec2(0, 0), ImVec2(1, 1),
+            ui::Col(0xFFFFFF, FadeIn(picture.readyAt)));
     }
 
     void CollectionPage::DrawPicture(ImDrawList* draw, const collection::Toy* toy, collection::VariantKind kind,
         uint16_t variant, ImVec2 at, float box)
     {
-        std::string path =
-            toy != nullptr ? collection::BestPicturePath(m_app.m_s->game.id, *toy, variant) : std::string();
-        if (path.empty())
+        if (toy == nullptr)
         {
             DrawIcon(draw, toy, kind, at, box, true, variant);
             return;
         }
-        const bool crystal =
-            toy->category == collection::Category::CreationCrystal; // one magenta picture, tinted per element
-        const std::string key = crystal ? fmt::format("crystal:{}:{}", toy->type, path) : path;
-        auto found = m_icons->textures.find(key);
-        if (found == m_icons->textures.end())
-        {
-            FigureIconTexture picture;
-            if (crystal)
-            {
-                if (collection::Image image = collection::CrystalPicture(*toy, path); !image.Empty())
-                {
-                    std::vector<uint8_t> bytes(image.rgba.size() * 4);
-                    std::memcpy(bytes.data(), image.rgba.data(),
-                        bytes.size()); // R, G, B, A in memory on the little-endian systems we run on
-                    picture.texture = LoadRgba(m_app.m_renderer, bytes, image.width, image.height);
-                }
-            }
-            else
-                picture.texture = LoadPngFile(m_app.m_renderer, path);
-            if (picture.texture != nullptr)
-                SDL_GetTextureSize(picture.texture, &picture.width, &picture.height);
-            found = m_icons->textures.emplace(key, picture).first;
-        }
+        std::string key = fmt::format("{}best {} {}", FigurePictureKey, toy->type, variant);
+        auto [found, added] = m_icons->textures.try_emplace(key);
+        if (added)
+            m_app.m_pictures.Request(key, [toy, variant] {
+                return FilePicture(*toy, collection::BestPicturePath({}, *toy, variant));
+            }); // empty without a disc picture: the icon instead
         const FigureIconTexture& picture = found->second;
+        if (picture.pending)
+            return;
         if (picture.texture == nullptr || picture.width <= 0 || picture.height <= 0)
         {
             DrawIcon(draw, toy, kind, at, box, true, variant);
             return;
         }
-        float scale = std::min(box / picture.width, box / picture.height), w = picture.width * scale,
-              h = picture.height * scale;
-        ImVec2 corner(at.x + (box - w) / 2, at.y + (box - h) / 2);
-        draw->AddImage(Ref(picture.texture), corner, ImVec2(corner.x + w, corner.y + h));
+        DrawFitted(draw, picture, at, box);
     }
 
     bool CollectionPage::DrawSwapper(ImDrawList* draw, const collection::Toy* top, uint16_t topVariant,
@@ -336,29 +349,19 @@ namespace launcher_ui
     {
         if (top == nullptr || bottom == nullptr)
             return false;
-        std::string key = fmt::format("swapper:{}:{}:{}:{}", top->type, topVariant, bottom->type, bottomVariant);
-        auto found = m_icons->textures.find(key);
-        if (found == m_icons->textures.end())
-        {
-            FigureIconTexture picture;
-            if (collection::Image image = collection::SwapperPicture(*top, topVariant, *bottom, bottomVariant);
-                !image.Empty())
-            {
-                std::vector<uint8_t> bytes(image.rgba.size() * 4);
-                std::memcpy(bytes.data(), image.rgba.data(),
-                    bytes.size()); // R, G, B, A in memory on the little-endian systems we run on
-                picture.texture = LoadRgba(m_app.m_renderer, bytes, image.width, image.height);
-                picture.width = float(image.width), picture.height = float(image.height);
-            }
-            found = m_icons->textures.emplace(key, picture).first; // no picture is remembered too
-        }
+        std::string key =
+            fmt::format("{}swapper {} {} {} {}", FigurePictureKey, top->type, topVariant, bottom->type, bottomVariant);
+        auto [found, added] = m_icons->textures.try_emplace(key);
+        if (added)
+            m_app.m_pictures.Request(key, [top, topVariant, bottom, bottomVariant] {
+                return FromImage(collection::SwapperPicture(*top, topVariant, *bottom, bottomVariant));
+            }); // no picture is remembered too
         const FigureIconTexture& picture = found->second;
+        if (picture.pending)
+            return true; // nothing yet, and not the fallback either: it would show before the joined halves
         if (picture.texture == nullptr)
             return false;
-        float scale = std::min(box / picture.width, box / picture.height), w = picture.width * scale,
-              h = picture.height * scale;
-        ImVec2 corner(at.x + (box - w) / 2, at.y + (box - h) / 2);
-        draw->AddImage(Ref(picture.texture), corner, ImVec2(corner.x + w, corner.y + h));
+        DrawFitted(draw, picture, at, box);
         return true;
     }
 
@@ -764,7 +767,7 @@ namespace launcher_ui
     {
         if (!m_opened)
             Open();
-        if (m_model.Poll(SDL_GetTicks()))
+        if (m_model.PollInBackground(SDL_GetTicks()))
             m_generation++; // a game wrote a dump, took or released a figure, or quit
         if (m_choosing >= 0 && !m_model.CanEditSeats())
             m_choosing = -1; // a game started meanwhile
@@ -936,7 +939,7 @@ namespace launcher_ui
             m_heroLoaded = true;
         }
         if (!m_heroFixture)
-            m_model.Poll(SDL_GetTicks());
+            m_model.PollInBackground(SDL_GetTicks());
         if (m_model.Game() == nullptr)
             return; // a game the catalogue doesn't list yet has no seats to show
         ImGui::SetCursorScreenPos(at);
@@ -1567,20 +1570,22 @@ namespace launcher_ui
             ui::Text(ui::TextStyle::Body, Name(figure).c_str(), ui::color::Ink, -1);
             ImGui::EndDragDropSource();
         }
-        std::string tip = Name(figure);
-        if (dim)
-            tip += "\n" + Tf("Not for {}", FullGameName(m_model.gameId));
-        else if (busy)
-            tip += "\n" + Tf("On the portal in {}: read-only", LiveGame(figure));
-        else if (m_choosing >= 0)
-            tip += "\n" + Tf("Click: put it on {}", SeatName(size_t(m_choosing)));
-        else
-            tip += std::string("\n") + Tr("Click: sheet · drag to a seat");
         // Under the pointer only, and not while the pad is moving the focus (the pointer rests on a card): the legend says what
-        // the buttons do.
+        // the buttons do. Its text is made for that card only, not for every card on every frame.
         const bool bubble = hovered && !ImGui::GetIO().NavVisible;
         if (bubble)
+        {
+            std::string tip = Name(figure);
+            if (dim)
+                tip += "\n" + Tf("Not for {}", FullGameName(m_model.gameId));
+            else if (busy)
+                tip += "\n" + Tf("On the portal in {}: read-only", LiveGame(figure));
+            else if (m_choosing >= 0)
+                tip += "\n" + Tf("Click: put it on {}", SeatName(size_t(m_choosing)));
+            else
+                tip += std::string("\n") + Tr("Click: sheet · drag to a seat");
             ui::Bubble(tip.c_str(), ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
+        }
         if (hovered && m_app.m_testPadWalk)
             m_app.m_drawn["figure-hover"] = bubble ? "bubble" : "none";
         ImGui::PopID();
