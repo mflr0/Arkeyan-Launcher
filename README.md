@@ -273,6 +273,15 @@ What you can check, and do:
 
 You need CMake 3.20 or later, Ninja, a C++20 compiler (Clang) and git.
 
+On Linux you also need SDL's development packages (Ubuntu and Debian names; the build stops if libdecor is missing,
+since without it GNOME on Wayland shows the window with no title bar):
+
+```sh
+sudo apt install pkg-config libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev \
+    libxtst-dev libxkbcommon-dev libwayland-dev wayland-protocols libdecor-0-dev libegl1-mesa-dev libgl1-mesa-dev \
+    libgles2-mesa-dev libdbus-1-dev libudev-dev libdrm-dev libgbm-dev
+```
+
 ```sh
 git clone --recursive https://github.com/mflr0/Arkeyan-Launcher.git
 cd Arkeyan-Launcher
