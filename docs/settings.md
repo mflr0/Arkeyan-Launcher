@@ -139,7 +139,8 @@ The runtime reads one `[input]` section (`key_<action>=<SDL key name>`), but the
   where none is set; the other `key_` lines follow the copy, or are dropped so the runtime's own default applies. The runtime
   needs no change. Nothing is stored back (the runtime never changes keys).
 - **Reset to defaults** empties the game's copy (every `key_` line of it); the defaults then apply at PLAY.
-- Two rows of one game on the same key are marked (a conflict is only possible inside a game).
+- A key used twice is kept and marked red: two rows of one game, or a row and a Toy Box key (`GameKeyConflict`). The
+  F3 menu's Commands page does the same (it no longer swaps the two keys).
 - **Keys are physical places** (2026-10-28): the runtime reads `key_<action>` as an SDL **scancode** name
   (`SDL_GetScancodeFromName`), so `W` is the key where a US keyboard prints W, which an AZERTY keyboard prints Z. The
   launcher stores the place of the key pressed (`event.key.scancode`, `SDL_GetScancodeName`: `CapturedKeyName`) and shows
@@ -169,7 +170,9 @@ every other action keeps its keys. A button is on one action at a time: putting 
 - The game's F3 menu has the same rows (its Commands page) and writes the same lines.
 - **Settings > Portal > Toy Box keys**: each key is a key cap to click and press, as on the Keyboard tab; the pad's buttons
   beside it (View + Y) are fixed.
-- Tests: `tests/settings_test.cpp` (off by default, the defaults, one button per action, Reset, PLAY, the Toy Box keys).
+- A Toy Box key that another Toy Box key or a key of any game also has is marked red (`ToyboxKeyConflict`).
+- Tests: `tests/settings_test.cpp` (off by default, the defaults, one button per action, Reset, PLAY, the Toy Box keys
+  and their conflicts).
 
 ## Per-game controller
 

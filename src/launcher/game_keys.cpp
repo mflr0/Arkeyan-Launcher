@@ -118,6 +118,12 @@ namespace
         return value == entry->second.end() || value->second.empty() ? nullptr : &value->second;
     }
 
+    // Names of one key place (SDL's lookup ignores case: a hand-edited "f7" is F7).
+    bool SameKey(const std::string& a, const std::string& b)
+    {
+        return SDL_GetScancodeFromName(a.c_str()) == SDL_GetScancodeFromName(b.c_str());
+    }
+
     const GameKey* Row(std::string_view gameId, std::string_view action)
     {
         for (const GameKey& key : GameKeys(gameId))
@@ -243,7 +249,10 @@ bool GameKeyConflict(const LauncherConfig& config, std::string_view gameId, cons
 {
     const std::string name = GameKeyName(config, gameId, key);
     for (const GameKey& other : GameKeys(gameId))
-        if (&other != &key && GameKeyName(config, gameId, other) == name)
+        if (&other != &key && SameKey(GameKeyName(config, gameId, other), name))
+            return true;
+    for (const ToyboxKey& toybox : ToyboxKeys())
+        if (SameKey(ToyboxKeyName(config, toybox), name))
             return true;
     return false;
 }
@@ -462,4 +471,17 @@ std::string ToyboxKeyName(const LauncherConfig& config, const ToyboxKey& key)
 {
     const std::string* value = Find(config, "input", key.line);
     return value != nullptr ? *value : key.fallback;
+}
+
+bool ToyboxKeyConflict(const LauncherConfig& config, const ToyboxKey& key)
+{
+    const std::string name = ToyboxKeyName(config, key);
+    for (const ToyboxKey& other : ToyboxKeys())
+        if (&other != &key && SameKey(ToyboxKeyName(config, other), name))
+            return true;
+    for (const GameInfo& game : g_games)
+        for (const GameKey& row : GameKeys(game.id))
+            if (SameKey(GameKeyName(config, game.id, row), name))
+                return true;
+    return false;
 }

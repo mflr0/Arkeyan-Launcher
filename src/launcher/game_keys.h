@@ -54,7 +54,7 @@ PadFamily PadFamilyFor(std::string_view glyphs, PadFamily seen);
 std::string PadButtonName(const GameKey& key, PadFamily family);
 std::string PadButtonName(
     std::string_view xbox360Name, PadFamily family); // the same, from the 360's name ("RB", "D-pad up")
-// True when another row of the same game has the same key.
+// True when another row of the same game, or a Toy Box key, has the same key.
 bool GameKeyConflict(const LauncherConfig& config, std::string_view gameId, const GameKey& key);
 // Back to the game's defaults: its copy loses every key it had.
 void ResetGameKeys(LauncherConfig& config, std::string_view gameId);
@@ -110,3 +110,5 @@ struct ToyboxKey
 };
 std::span<const ToyboxKey> ToyboxKeys();
 std::string ToyboxKeyName(const LauncherConfig& config, const ToyboxKey& key);
+// True when another Toy Box key, or a key of any game, has the same key.
+bool ToyboxKeyConflict(const LauncherConfig& config, const ToyboxKey& key);

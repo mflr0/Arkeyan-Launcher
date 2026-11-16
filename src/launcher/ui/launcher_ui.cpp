@@ -2730,6 +2730,9 @@ namespace launcher_ui
                 const std::string name = KeyDisplayName(ToyboxKeyName(m_config, key));
                 ui::KeyButtonOptions options;
                 options.capturing = m_toyboxCapturing == &key;
+                options.conflict = ToyboxKeyConflict(m_config, key);
+                if (options.conflict)
+                    options.tooltip = Tr("This key is used by another action");
                 const float keyX =
                     padX - (padColumn > 0 ? ui::space::L : 0) - ui::KeyButtonWidth(name.c_str(), options);
                 ImGui::SetCursorScreenPos(ImVec2(keyX, start.y));
