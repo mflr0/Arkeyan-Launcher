@@ -907,7 +907,6 @@ VSync	VSync
 Vehicle {}	Fahrzeug {}
 Vehicles	Fahrzeuge
 Verified	Geprüft
-Verified, {}	Geprüft, {}
 Version {} is available.	Version {} ist verfügbar.
 Version {}, {}	Version {}, {}
 Versions	Versionen
@@ -1157,3 +1156,23 @@ This folder can't be written to	In diesen Ordner kann nicht geschrieben werden
 Choose a folder outside the games	Wähle einen Ordner außerhalb der Spiele
 Choose a folder outside the game tools	Wähle einen Ordner außerhalb der Spiel-Tools
 The games in {} go too; your other files there stay.	Die Spiele in {} werden auch entfernt; deine anderen Dateien dort bleiben.
+
+# The image check (disc_check.h): the Disc tab's pill, the install's first row, the dialog after a game whose movies did not open.
+Can't read the disc image.	Disc-Abbild nicht lesbar.
+Check again	Erneut prüfen
+Checking files, {}	Prüfe Dateien, {}
+Checking the disc	Prüfe die Disc
+Choose image	Abbild wählen
+Copy the disc again, then choose the new image.	Kopiere die Disc erneut und wähle dann das neue Abbild.
+Damaged copy	Beschädigte Kopie
+Disc image damaged	Disc-Abbild beschädigt
+Every file can be read. No good copy of this edition to compare with.	Jede Datei ist lesbar. Keine gute Kopie dieser Edition zum Vergleich.
+Every file matches a good copy of this disc ({}).	Jede Datei stimmt mit einer guten Kopie dieser Disc überein ({}).
+Good copy, {}	Gute Kopie, {}
+Part of the image can't be read.	Ein Teil des Abbilds ist nicht lesbar.
+Readable, {}	Lesbar, {}
+Some files differ from a good copy of this disc ({}).	Einige Dateien weichen von einer guten Kopie dieser Disc ab ({}).
+The disc image is damaged.	Das Disc-Abbild ist beschädigt.
+The disc image may be damaged	Das Disc-Abbild ist vielleicht beschädigt
+The disc image of {} is damaged	Das Disc-Abbild von {} ist beschädigt
+{} couldn't open some of its movies. A damaged copy of the disc does this.	{} konnte einige seiner Videos nicht öffnen. Das passiert bei einer beschädigten Kopie der Disc.

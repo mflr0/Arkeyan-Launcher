@@ -322,6 +322,46 @@ extracted, and the next build then failed in an unclear way. Since 0.8.1 the lau
   file is named at the next check and Repair builds the game again. The list format and the checker have their own tests in the
   forge (`ArkeyanFileListTest`; `src/shared/collection/file_list.*` is a copy).
 
+### Image check
+
+The disc check reads `default.xex` only, so a damaged image can pass it and then stop a game at its loading screen (issue
+#64: Spyro's Adventure's intro movies failed to open, a fresh copy of the same disc played). Once a disc is verified, the
+launcher reads every file of it and compares them with a good copy of the same edition (issue #73). A damaged image is never
+installed.
+- **What is compared**: the disc's files, not the image file (`disccheck::ComputeDigest`, `src/launcher/disc_check.h`). One
+  SHA-256 over every file sorted by its lowercase path, each as `<path>\0<size>\0<SHA-256 of its bytes>\n`, read in 1 MB
+  blocks. A good disc gives the same fingerprint whatever its image's layout (the whole XGD2 or XGD3 disc, its game partition
+  alone, a trimmed image) and from its copied game data, so no good image is called damaged for its layout. The files are
+  hashed several at once (one worker per core but one, eight at most, the largest files first), through the CPU's SHA-256
+  instructions on Apple silicon (`src/launcher/sha256.cpp`; the portable code elsewhere): Giants (988 files, 8.4 GB) takes
+  2.6 s on an M1 Pro with the image in memory, 42 s on one core without them. From a slow drive, the drive sets the time.
+- **The references**: `GameRelease::contentSha256` in `src/launcher/launcher_games.cpp`, one per edition, matched by the disc's
+  `default.xex` (another edition that only shares the game code has its own files, so no reference). Fingerprints only, never
+  game content. `Arkeyan Launcher --disc-digest <image>` prints one (`<sha256>  <files> files, <bytes> bytes`) for a good image;
+  an edition without one keeps `nullptr`. Today: Giants (USA, Europe). Without a reference every file is still read: a cut or
+  unreadable image is caught, a changed byte is not.
+- **When it runs**: by itself once the disc is verified (its image, or its copy when the game plays from it), one game at a
+  time (an install waiting for it first, then the game shown), never while a game runs (a running check stops when a game
+  starts and runs again after). The fingerprint is kept in the game's section of the settings (`disc_check`, with
+  `disc_check_of`: the file's size and time, or the copy's manifest's, and its path), so an unchanged image is not read again;
+  it is compared again at each start, so a later launcher's new reference applies. **Check again** (Disc tab) forgets it.
+- **What the player sees**: the Disc tab's pill says "Checking files, 45 %", then "Good copy, 8.1 GB" (it matches the
+  reference), "Readable, 8.1 GB" (no reference, every file read) or "Damaged copy" (a file differs, the image is cut short, or
+  it can't be read), with one line under it saying what was found and, when damaged, to copy the disc again. A damaged image
+  also shows a notification.
+- **Install**: INSTALL can be pressed during the check; the install then waits for it, as its first row ("Checking the
+  disc", with Cancel). A damaged image stops it there ("The disc image is damaged.") and greys INSTALL, with "Disc image
+  damaged" as the game's state and the advice to copy the disc again. An update of a built game doesn't wait, and a built game
+  whose image is found damaged still plays, with the same warning. The game data can't be copied from a damaged image, nor
+  before its check.
+- **Offered after a game**: when a game ends (crashed, closed or stopped from the launcher), its log is read (the last 4 MB);
+  a `[bink] open failed` or `[bink] invalid movie header` line opens "The disc image may be damaged", which says to copy the
+  disc again, with **Choose image**. It comes after the crash dialog, if both, and not when that disc matches a good copy. A
+  game stuck on a loading screen with no movie line has nothing to tell it by.
+- **Test**: `DiscCheckChecks` (`tests/disc_check_test.cpp`): invented images in two layouts and a copied folder give one
+  fingerprint, one changed byte or a renamed file another, a cut image names its file, Cancel, the comparison, what can't be
+  installed, the kept fingerprint and its stamp, the log lines.
+
 ## Linux
 
 The kit's zip keeps the Unix modes of `Arkeyan-Builder` and its `bin/` programs, and `InstallKitZip` restores them, so the

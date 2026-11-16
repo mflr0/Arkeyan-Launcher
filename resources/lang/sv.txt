@@ -910,7 +910,6 @@ VSync	VSync
 Vehicle {}	Fordon {}
 Vehicles	Fordon
 Verified	Verifierad
-Verified, {}	Verifierad, {}
 Version {} is available.	Version {} finns.
 Version {}, {}	Version {}, {}
 Versions	Versioner
@@ -1160,3 +1159,23 @@ This folder can't be written to	Det går inte att skriva i den här mappen
 Choose a folder outside the games	Välj en mapp utanför spelen
 Choose a folder outside the game tools	Välj en mapp utanför spelverktygen
 The games in {} go too; your other files there stay.	Spelen i {} tas också bort; dina andra filer där stannar.
+
+# The image check (disc_check.h): the Disc tab's pill, the install's first row, the dialog after a game whose movies did not open.
+Can't read the disc image.	Kan inte läsa skivavbilden.
+Check again	Kontrollera igen
+Checking files, {}	Kontrollerar filer, {}
+Checking the disc	Kontrollerar skivan
+Choose image	Välj avbild
+Copy the disc again, then choose the new image.	Kopiera skivan igen och välj sedan den nya avbilden.
+Damaged copy	Skadad kopia
+Disc image damaged	Skivavbilden är skadad
+Every file can be read. No good copy of this edition to compare with.	Alla filer kan läsas. Ingen bra kopia av den här utgåvan att jämföra med.
+Every file matches a good copy of this disc ({}).	Varje fil stämmer med en bra kopia av skivan ({}).
+Good copy, {}	Bra kopia, {}
+Part of the image can't be read.	En del av avbilden kan inte läsas.
+Readable, {}	Läsbar, {}
+Some files differ from a good copy of this disc ({}).	Några filer skiljer sig från en bra kopia av skivan ({}).
+The disc image is damaged.	Skivavbilden är skadad.
+The disc image may be damaged	Skivavbilden kan vara skadad
+The disc image of {} is damaged	Skivavbilden för {} är skadad
+{} couldn't open some of its movies. A damaged copy of the disc does this.	{} kunde inte öppna några av sina filmer. Så gör en skadad kopia av skivan.

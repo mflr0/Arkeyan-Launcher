@@ -16,6 +16,7 @@ namespace
         float weight[5]; // Spyro's Adventure, Giants, Swap Force, Trap Team (measured shares of an install), other
     };
     constexpr KnownStep KnownSteps[] = {
+        { "check", N_("Checking the disc"), { 4, 4, 4, 4, 4 } }, // only when the install waited for the image check
         { "kit", N_("Downloading the game tools"), { 6, 6, 6, 6, 6 } }, // only when the launcher fetched the kit itself
         { "toolchain", N_("Preparing the compiler"), { 8, 8, 8, 8, 8 } },
         { "disc", N_("Reading the disc"), { 1, 1, 1, 52, 2 } },
@@ -41,11 +42,15 @@ InstallChecklist MakeInstallChecklist(const InstallProgress& progress, uint64_t 
                                                 : 4; // SuperChargers: "other" until measured
     InstallChecklist list;
     std::vector<float> weights;
-    bool downloadedKit = std::any_of(progress.steps.begin(), progress.steps.end(),
-        [](const InstallProgress::Step& step) { return step.id == "kit"; });
+    auto has = [&](std::string_view id) {
+        return std::any_of(progress.steps.begin(), progress.steps.end(),
+            [&](const InstallProgress::Step& step) { return step.id == id; });
+    };
+    const bool downloadedKit = has("kit"), checkedDisc = has("check");
     for (const KnownStep& step : KnownSteps)
     {
-        if (!downloadedKit && std::string_view(step.id) == "kit")
+        if ((!downloadedKit && std::string_view(step.id) == "kit") ||
+            (!checkedDisc && std::string_view(step.id) == "check"))
             continue;
         if (!progress.hdTextures && std::string_view(step.id) == "hdtextures" &&
             std::none_of(progress.steps.begin(), progress.steps.end(),
@@ -210,6 +215,8 @@ std::string InstallFailureHeadline(const InstallChecklist& list, const InstallPr
             c = char(std::tolower(static_cast<unsigned char>(c)));
         return lower.find(text) != std::string::npos;
     };
+    if (list.current >= 0 && list.rows[size_t(list.current)].id == "check")
+        return Tr("The disc image is damaged.");
     if (progress.startFailed || has("kit wasn't found") || has("couldn't start"))
         return Tr("The installer couldn't start.");
     if (has("space") || has("no room") || has("disk full"))

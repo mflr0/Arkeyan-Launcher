@@ -1,7 +1,8 @@
 #include "launcher/game_names.h"
 #include "launcher/launcher.h"
 
-// Hashes identify the player's own default.xex and its loaded image (decrypted, decompressed); they are not game content.
+// Hashes identify the player's own default.xex, its loaded image (decrypted, decompressed) and its files (contentSha256);
+// they are not game content.
 namespace
 {
     const GameRelease SpyrosAdventureReleases[] = {
@@ -14,10 +15,12 @@ namespace
 
     const GameRelease GiantsReleases[] = {
         // Redump "Skylanders - Giants (USA, Europe) (En,Fr,De,Es,It,Nl,Pt,Sv,No,Da,Fi)", XGD3, 8738846720 bytes.
-        // SHA-256 of its default.xex (7020544 bytes), computed from the player's image.
+        // SHA-256 of its default.xex (7020544 bytes), computed from the player's image. Its files' fingerprint (988 files,
+        // 8354790081 bytes): `--disc-digest` on a good image.
         { "USA, Europe", 0x415608DA, 0x52FFE94B, 0x00000002,
             "12d1e29e4f07fbc559bc1a4988dd6bf346c3d16e30cbf862e2683e862f9fc09e",
-            "43a64a6d9795408e48fd39cb655361dc1be4ef9f22f60ddc09621139aa4c4b17" },
+            "43a64a6d9795408e48fd39cb655361dc1be4ef9f22f60ddc09621139aa4c4b17",
+            "6d1f3cfe9bfe3b0106251414b0daf3ba1d6fa91a9129d29c6b9bd528af41fbec" },
     };
 
     const GameRelease SwapForceReleases[] = {

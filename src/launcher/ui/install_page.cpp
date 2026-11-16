@@ -213,6 +213,8 @@ namespace launcher_ui
                 ui::ToastKind::Error); // the player's own kit: not ours to replace
             return;
         }
+        if (NeedsInstall(*m_s) && DiscDamaged(*m_s)) // the button is greyed: a damaged image is never installed
+            return;
         m_s->installSha = m_s->check.xexSha256;
         m_s->installKitVersion = m_s->kit ? m_s->kit->version : std::string();
         m_s->installView = true;
@@ -221,7 +223,23 @@ namespace launcher_ui
         m_s->installPastPid = 0;
         m_s->kitUsed = false;
         m_s->kitError.clear();
+        m_s->checkUsed = false;
+        m_s->checkError.clear();
         m_page = Page::Play;
+        // A first install waits for the image check (its first row); an update rebuilds a game the player already has.
+        if (NeedsInstall(*m_s) && DiscChecking(*m_s))
+        {
+            m_s->checkUsed = m_s->installAfterCheck = true;
+            m_s->checkStep = { "check", "Checking the disc", SDL_GetTicks(), 0 };
+            if (!m_s->discCheck.Running())
+                m_s->discCheckWanted = true;
+            return; // FinishDiscCheck goes on (ContinueAfterCheck)
+        }
+        ContinueInstall();
+    }
+
+    void App::ContinueInstall()
+    {
         if (KitNeedsFetch(*m_s))
         {
             if (const GameUpdate* pending = PendingUpdate(*m_s))
@@ -230,6 +248,17 @@ namespace launcher_ui
         }
         else
             StartInstaller();
+    }
+
+    void App::CancelInstall()
+    {
+        m_s->installer.Cancel();
+        m_s->kitDownload.Cancel();
+        if (m_s->installAfterCheck) // the check goes on for the Disc tab; the install stops here
+        {
+            m_s->installAfterCheck = m_s->checkUsed = m_s->installView = false;
+            Toast(Tr("Installation canceled"), ui::ToastKind::Info);
+        }
     }
 
     // ---- Update all -----------------------------------------------------------------------------------------------------
@@ -406,6 +435,26 @@ namespace launcher_ui
     InstallProgress App::InstallSnapshot(size_t logTail) { return InstallSnapshot(*m_s, logTail); }
 
     InstallProgress App::InstallSnapshot(GameSlot& slot, size_t logTail)
+    {
+        if (!slot.checkUsed)
+            return InstallSnapshotAfterCheck(slot, logTail);
+        if (slot.installAfterCheck || !slot.checkError.empty())
+        {
+            // Still reading the disc, or it found the image damaged: the check's row alone.
+            InstallProgress progress;
+            progress.steps.push_back(slot.checkStep);
+            progress.state = slot.checkError.empty() ? InstallProgress::State::Running : InstallProgress::State::Failed;
+            progress.error = slot.checkError;
+            progress.done = slot.discCheck.Bytes() >> 20; // MB
+            progress.total = slot.discCheck.Total() >> 20;
+            return progress;
+        }
+        InstallProgress progress = InstallSnapshotAfterCheck(slot, logTail);
+        progress.steps.insert(progress.steps.begin(), slot.checkStep);
+        return progress;
+    }
+
+    InstallProgress App::InstallSnapshotAfterCheck(GameSlot& slot, size_t logTail)
     {
         if (slot.kitUsed)
         {
@@ -879,10 +928,7 @@ namespace launcher_ui
             else if ((failed || interrupted) && i == 2)
                 OpenFolder(GameDataFolder(m_s->game.id)); // the install's logs
             else if (running && i == actions.size() - 1)
-            {
-                m_s->installer.Cancel();
-                m_s->kitDownload.Cancel();
-            }
+                CancelInstall();
             else
                 m_s->installLog = !m_s->installLog;
         }

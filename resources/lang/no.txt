@@ -910,7 +910,6 @@ VSync	VSync
 Vehicle {}	Kjøretøy {}
 Vehicles	Kjøretøy
 Verified	Verifisert
-Verified, {}	Verifisert, {}
 Version {} is available.	Versjon {} er tilgjengelig.
 Version {}, {}	Versjon {}, {}
 Versions	Versjoner
@@ -1160,3 +1159,23 @@ This folder can't be written to	Kan ikke skrive til denne mappen
 Choose a folder outside the games	Velg en mappe utenfor spillene
 Choose a folder outside the game tools	Velg en mappe utenfor spillverktøyene
 The games in {} go too; your other files there stay.	Spillene i {} fjernes også; de andre filene dine der blir.
+
+# The image check (disc_check.h): the Disc tab's pill, the install's first row, the dialog after a game whose movies did not open.
+Can't read the disc image.	Kan ikke lese diskbildet.
+Check again	Kontroller igjen
+Checking files, {}	Kontrollerer filer, {}
+Checking the disc	Kontrollerer platen
+Choose image	Velg diskbilde
+Copy the disc again, then choose the new image.	Kopier platen på nytt, og velg det nye diskbildet.
+Damaged copy	Skadet kopi
+Disc image damaged	Diskbildet er skadet
+Every file can be read. No good copy of this edition to compare with.	Alle filene kan leses. Ingen god kopi av denne utgaven å sammenligne med.
+Every file matches a good copy of this disc ({}).	Hver fil stemmer med en god kopi av platen ({}).
+Good copy, {}	God kopi, {}
+Part of the image can't be read.	En del av diskbildet kan ikke leses.
+Readable, {}	Lesbar, {}
+Some files differ from a good copy of this disc ({}).	Noen filer avviker fra en god kopi av platen ({}).
+The disc image is damaged.	Diskbildet er skadet.
+The disc image may be damaged	Diskbildet kan være skadet
+The disc image of {} is damaged	Diskbildet til {} er skadet
+{} couldn't open some of its movies. A damaged copy of the disc does this.	{} kunne ikke åpne noen av filmene sine. Det skjer med en skadet kopi av platen.
