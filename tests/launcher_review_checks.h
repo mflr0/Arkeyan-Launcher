@@ -3,6 +3,7 @@
 #include "launcher/ui/launcher_app.h"
 #include "shared/collection/datadir.h"
 #include <imgui_internal.h>
+#include <thread>
 #if !defined(_WIN32)
 #include <sys/resource.h>
 #include <csignal>
@@ -220,6 +221,78 @@ namespace launcher_ui
                     expect(page.m_model.Find(first) != nullptr && page.m_model.Find(second) != nullptr,
                         "both figures remain after restore");
                 }
+            }
+            else if (mode == "pictures")
+            {
+                // The pictures are read on the loader's thread (picture_loader.h): the page draws nothing in a picture's
+                // place until it is ready, and a card already drawn never looks its picture up again.
+                const fs::path portraits = root / "portraits";
+                fs::create_directories(portraits);
+                set("SKY_PORTRAITS", portraits);
+                const collection::Toy* eruptor = collection::Catalogue::Get().Find(9);
+                expect(eruptor != nullptr, "catalogue toy");
+                if (eruptor == nullptr)
+                    return 1;
+                collection::Image square{ 4, 4, std::vector<uint32_t>(16, 0xFF336699u) };
+                expect(collection::SavePng(square, datadir::Text(portraits / "eruptor.png")), "synthetic portrait");
+                const size_t decoded = app.m_pictures.Decoded();
+                const auto kind = collection::VariantKind::Base;
+                const FigureIconTexture& asked = page.Icon(eruptor, kind, false, 0);
+                expect(asked.pending && asked.texture == nullptr, "a picture is not read on the UI thread");
+                std::thread::id worker;
+                app.m_pictures.Request("check", [&] {
+                    worker = std::this_thread::get_id();
+                    return DecodedPicture{};
+                });
+                app.FinishPictures();
+                expect(worker != std::thread::id() && worker != std::this_thread::get_id(),
+                    "pictures are decoded on the loader's thread");
+                const FigureIconTexture& ready = page.Icon(eruptor, kind, false, 0);
+                expect(!ready.pending && ready.texture != nullptr && !ready.generated && ready.width == 4,
+                    "the loader's picture becomes the card's texture");
+                const size_t listed = collection::PictureFolderListings();
+                bool same = true;
+                for (int i = 0; i < 50; i++)
+                    same = same && page.Icon(eruptor, kind, false, 0).texture == ready.texture;
+                expect(same && app.m_pictures.Decoded() == decoded + 2 && !app.m_pictures.Pending() &&
+                           collection::PictureFolderListings() == listed,
+                    "a card already drawn neither reads nor looks up its picture again");
+                page.ClearIcons(); // the disc's pictures arrived
+                expect(page.Icon(eruptor, kind, false, 0).pending, "cleared pictures are read again");
+                app.FinishPictures();
+                expect(page.Icon(eruptor, kind, false, 0).texture != nullptr, "and come back");
+                // A figure without a disc picture: its drawn icon, also from the loader.
+                const collection::Toy* other = collection::Catalogue::Get().Find(14);
+                expect(other != nullptr && page.Icon(other, kind, false, 0).pending, "drawn icons are queued too");
+                app.FinishPictures();
+                expect(
+                    other != nullptr && page.Icon(other, kind, false, 0).generated, "a drawn icon without a picture");
+                expect(FadeIn(0) == 1 && FadeIn(SDL_GetTicks()) < 0.1f && FadeIn(SDL_GetTicks() - 1000) == 1,
+                    "pictures fade in once");
+                // A logo cut to its opaque part and shrunk, off the UI thread (DecodeArt).
+                collection::Image logo{ 8, 4, std::vector<uint32_t>(32, 0) };
+                for (int y = 1; y < 3; y++)
+                    for (int x = 2; x < 6; x++)
+                        logo.rgba[size_t(y) * 8 + x] = 0xFF0000FFu;
+                expect(collection::SavePng(logo, datadir::Text(root / "logo.png")), "synthetic logo");
+                const DecodedPicture art = DecodeArt(datadir::Text(root / "logo.png"), true, 2);
+                expect(
+                    art.width == 2 && art.height == 1 && art.aspect == 2 && art.rgba.size() == 8 && art.rgba[3] == 255,
+                    "art decoded, cropped and shrunk without a renderer");
+                // The collection read again on a thread when its folder changes.
+                const std::string made = collection::Create(16);
+                const uint64_t later = SDL_GetTicks() + 1'000'000;
+                expect(!page.m_model.PollInBackground(later) && page.m_model.Find(made) == nullptr,
+                    "the reading starts on its own thread");
+                page.m_model.WaitForReload();
+                expect(page.m_model.PollInBackground(later) && page.m_model.Find(made) != nullptr,
+                    "the new figure is swapped in");
+                const std::string another = collection::Create(14);
+                expect(!page.m_model.PollInBackground(later + 2000), "another reading starts");
+                page.m_model.Load(); // the page reloaded meanwhile (a seat set, a figure deleted)
+                page.m_model.WaitForReload();
+                expect(!page.m_model.PollInBackground(later + 2000) && page.m_model.Find(another) != nullptr,
+                    "a reading older than the last load is dropped");
             }
             else if (mode == "sheet")
             {

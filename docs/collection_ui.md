@@ -125,7 +125,9 @@ At the first visit to the page (`CollectionPage::Open`):
   `GameIsRunning`): a live process that merely took over the number of a game that crashed holds nothing, the seats stay
   editable, and Manage > Tidy offers "Mark as not in use · N" (held) for those locks.
 - Refresh: every 1.5 s the model compares a signature of the folder (names, sizes, times of dumps, locks,
-  `collection.json`, the session file) and whether each lock's process still runs; any change reloads the shelf. The
+  `collection.json`, the session file) and whether each lock's process still runs; any change reloads the shelf. Both
+  run on a thread of their own (`CollectionModel::PollInBackground`): the new figures are swapped in on a later frame,
+  and a reading started before the page's own reload (a seat set, a figure deleted) is dropped. The
   launcher window closes when the game starts (`main.cpp`), so this is seen when the launcher is opened beside a running
   game or after it.
 

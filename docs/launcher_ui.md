@@ -927,6 +927,24 @@ already shown doesn't move. `App::IdleWait` draws every frame only while it fall
 Visual effects > Animation effects off), or `[launcher] reduce_motion=1`, the logo is simply there. `reduce_motion=0`
 always animates (`docs/settings.md`).
 
+## Pictures
+Every picture of the figures (cards, seats, the sheet, Add a figure, swappers joined at the waist) and the games' Play
+page backdrops and logos are read, decoded, cropped and shrunk on one thread of their own (`PictureLoader`,
+`picture_loader.h`); the UI thread only makes the finished ones textures, at most ~2 ms of them per frame
+(`App::UploadPictures`), so opening the Collection or scrolling a long shelf never waits for the disk. The newest request
+runs first: what was just scrolled into view.
+- **While a picture is not ready** the card shows its own fill (no picture, no initials), the Play page its night sky,
+  the sidebar the game's initials; the picture **fades in** over 150 ms when it arrives (`FadeIn`), at once with reduced
+  motion. A swapper waits for its joined picture instead of showing the top first.
+- **Keys:** a figure's picture is kept by toy, variant, kind and use (icon, picture, swapper), not by file, so a card
+  already drawn neither reads its file nor looks its path up again; the disc's pictures arriving (`ClearIcons`,
+  `ForgetCachedArt`) drop them and their pending reads. The shared library remembers each portraits folder's listing
+  (`collection_api.md` in the forge).
+- **Prefetch:** after the first frame, the enabled games' backdrops and logos are asked for, so that switching game shows
+  them at once.
+- **The screenshot test** waits for every pending picture before a shot and shows them without the fade
+  (`FinishPictures`).
+
 ## Navigation model
 The pad and the arrow keys have one model, in the components (`components/navigation.{h,cpp}`), so every page, tab, dialog
 and menu behaves the same way, the in-game Toy Box's:

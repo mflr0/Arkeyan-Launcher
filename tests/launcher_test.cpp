@@ -3135,7 +3135,8 @@ static int RunChecks(int argc, char** argv)
         g_failures += LevelNameDiscChecks();
     if (noDisc)
     {
-        for (const char* mode : { "backups", "sheet", "notes", "migration", "catalogue", "data", "uninstall", "paths" })
+        for (const char* mode :
+            { "backups", "sheet", "pictures", "notes", "migration", "catalogue", "data", "uninstall", "paths" })
         {
             const std::string root = (scratch / "review-ui" / mode).string();
             const char* arguments[] = { argv[0], "--review-ui", root.c_str(), mode, nullptr };

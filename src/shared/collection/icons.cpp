@@ -8,6 +8,8 @@
 #include <cstdlib>
 #include <cstring>
 #include <functional>
+#include <map>
+#include <mutex>
 #include "../env.h"
 
 namespace collection
@@ -339,24 +341,130 @@ namespace collection
 
     namespace
     {
-        // The first of `names` cached in the game's portraits folder (SKY_PORTRAITS, else <data>/<Game>/portraits).
+        // What one folder of cached pictures holds, read once: the callers ask for a picture of every visible card on
+        // every frame, and a stat per candidate name was hundreds of filesystem calls per frame.
+        struct PictureFolder
+        {
+            std::map<std::string, std::string> files; // the lower-case name without ".png" -> the file's own name
+            SDL_Time modified = 0; // the folder's time when it was listed
+            uint64_t checkedAt = 0; // SDL_GetTicks of the last look at that time
+            bool settled = false; // listed 3 s after its last change: a coarse clock (FAT: 2 s) shows the next one
+        };
+
+        // Each folder is looked at again at most this often, for the pictures another process writes (the game or the
+        // launcher reading the disc while the other one runs).
+        constexpr uint64_t PictureFolderCheckMs = 1000;
+        constexpr SDL_Time PictureFolderSettleNs = SDL_NS_PER_SECOND * 3;
+
+        std::mutex g_pictureFoldersLock; // the launcher looks pictures up from a loading thread too
+        std::map<std::string, PictureFolder> g_pictureFolders; // by the folder's path, with its trailing separator
+        std::map<std::string, std::string>
+            g_portraitFolders; // datadir::Game(id) + "/portraits/", by game id and data root
+        size_t g_pictureFolderListings = 0;
+
+        // `path` without its trailing separator, for the filesystem calls.
+        std::string Bare(const std::string& path)
+        {
+            return path.size() > 1 && (path.back() == '/' || path.back() == '\\') ? path.substr(0, path.size() - 1)
+                                                                                  : path;
+        }
+
+        void ListPictureFolder(const std::string& path, PictureFolder& folder, uint64_t now)
+        {
+            folder.files.clear();
+            folder.checkedAt = now;
+            SDL_PathInfo info{};
+            folder.modified = SDL_GetPathInfo(Bare(path).c_str(), &info) ? info.modify_time : 0;
+            SDL_Time clock = 0;
+            folder.settled = !SDL_GetCurrentTime(&clock) || clock - folder.modified >= PictureFolderSettleNs;
+            g_pictureFolderListings++;
+            if (info.type != SDL_PATHTYPE_DIRECTORY)
+                return;
+            SDL_EnumerateDirectory(
+                Bare(path).c_str(),
+                [](void* data, const char*, const char* name) {
+                    std::string file = name;
+                    if (file.size() > 4 && Lower(file.substr(file.size() - 4)) == ".png")
+                        static_cast<PictureFolder*>(data)->files.emplace(Lower(file.substr(0, file.size() - 4)), file);
+                    return SDL_ENUM_CONTINUE;
+                },
+                &folder);
+        }
+
+        // The folder's listing, read again when the folder changed since (checked at most once a second): a picture
+        // another process adds is found within a second.
+        PictureFolder& CachedPictureFolder(const std::string& path)
+        {
+            uint64_t now = SDL_GetTicks();
+            auto [it, added] = g_pictureFolders.try_emplace(path);
+            PictureFolder& folder = it->second;
+            if (added)
+                ListPictureFolder(path, folder, now);
+            else if (now - folder.checkedAt >= PictureFolderCheckMs)
+            {
+                SDL_PathInfo info{};
+                SDL_Time modified = SDL_GetPathInfo(Bare(path).c_str(), &info) ? info.modify_time : 0;
+                if (modified != folder.modified || !folder.settled)
+                    ListPictureFolder(path, folder, now);
+                else
+                    folder.checkedAt = now;
+            }
+            return folder;
+        }
+
+        // SKY_PORTRAITS, else <data>/<Game>/portraits; remembered per data root (the path costs an environment read, a
+        // working-folder lookup and, on macOS, a user database lookup).
+        std::string PortraitFolder(const Game& game)
+        {
+            if (const char* portraits = skyenv::Get("SKY_PORTRAITS"))
+                return std::string(portraits) + "/";
+            const char* data = skyenv::Get("SKYLANDERS_DATA");
+            std::string key = game.id + "\n" + (data != nullptr ? data : "");
+            if (auto found = g_portraitFolders.find(key); found != g_portraitFolders.end())
+                return found->second;
+            std::filesystem::path root = datadir::Game(game.id);
+            std::string folder = root.empty() ? std::string() : datadir::Text(root / "portraits") + "/";
+            return g_portraitFolders[key] = folder;
+        }
+
+        // The first of `names` cached in the game's portraits folder (SKY_PORTRAITS, else <data>/<Game>/portraits). A
+        // name may start with a subfolder ("artworks/...").
         std::string FirstCached(const Game& game, const std::vector<std::string>& names)
         {
-            std::string folder;
-            if (const char* portraits = skyenv::Get("SKY_PORTRAITS"))
-                folder = std::string(portraits) + "/";
-            else if (std::filesystem::path data = datadir::Game(game.id); !data.empty())
-                folder = datadir::Text(data / "portraits") + "/";
-            else
+            std::lock_guard<std::mutex> lock(g_pictureFoldersLock);
+            std::string folder = PortraitFolder(game);
+            if (folder.empty())
                 return {};
             for (const std::string& name : names)
             {
-                std::string path = folder + name + ".png";
+                size_t slash = name.rfind('/');
+                std::string sub = slash == std::string::npos ? std::string() : name.substr(0, slash + 1);
+                PictureFolder& listed = CachedPictureFolder(folder + sub);
+                // Any case: the disc's names and the files may differ on a case-insensitive system, as a stat allowed.
+                auto file = listed.files.find(Lower(name.substr(sub.size())));
+                if (file == listed.files.end())
+                    continue;
+                // One stat for the picture found: one deleted since the folder was read is never handed out.
+                std::string path = folder + sub + file->second;
                 if (SDL_GetPathInfo(path.c_str(), nullptr))
                     return path;
+                ListPictureFolder(folder + sub, listed, SDL_GetTicks());
             }
             return {};
         }
+    }
+
+    void ForgetPictureFolders()
+    {
+        std::lock_guard<std::mutex> lock(g_pictureFoldersLock);
+        g_pictureFolders.clear();
+        g_portraitFolders.clear();
+    }
+
+    size_t PictureFolderListings()
+    {
+        std::lock_guard<std::mutex> lock(g_pictureFoldersLock);
+        return g_pictureFolderListings;
     }
 
     std::string GamePortraitPath(const std::string& gameId, const Toy& toy, uint16_t variant, bool large)
@@ -643,6 +751,8 @@ namespace collection
             const_cast<uint32_t*>(image.rgba.data()), image.width * 4);
         bool saved = surface != nullptr && SDL_SavePNG(surface, path.c_str());
         SDL_DestroySurface(surface);
+        if (saved)
+            ForgetPictureFolders(); // the next lookup finds it
         return saved;
     }
 
