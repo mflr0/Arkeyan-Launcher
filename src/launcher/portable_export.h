@@ -32,7 +32,8 @@ struct PortableSpec
 const char* PortableExtension();
 // The file name for a game: its full name without the characters a file name can't hold ("Skylanders Spyro's Adventure").
 std::string PortableName(std::string_view gameId);
-// The game's keys as they are now ([<game>.input], seeded from [input] the way PLAY does it), as the text of keys.ini.
+// The game's keys, pad, mouse and rumble as it plays them ([input] with [<game>.input] over it, every key written), as the
+// text of keys.ini (one [<game>.input] section).
 std::string PortableKeys(const LauncherConfig& config, std::string_view gameId);
 // "20261101-203000", UTC.
 std::string PortableStamp();

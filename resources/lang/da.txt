@@ -409,12 +409,10 @@ Hold to delete saves, backups and caches.	Hold nede for at slette gemte spil, ba
 Hold to delete the built game. Saves are kept.	Hold nede for at slette det byggede spil. Gemte spil beholdes.
 Hold to delete the copy.	Hold nede for at slette kopien.
 Hold to delete the partial copy.	Hold nede for at slette den delvise kopi.
-Hold to give every button its own job back.	Hold nede for at give hver knap sin egen funktion tilbage.
 Hold to mark them as not in use.	Hold nede for at markere dem som ikke i brug.
 Hold to move them to the trash.	Hold nede for at lægge dem i papirkurven.
 Hold to put this copy back.	Hold nede for at lægge denne kopi tilbage.
 Hold to rebuild the game.	Hold nede for at bygge spillet igen.
-Hold to reset every key of this game.	Hold nede for at nulstille alle tasterne i dette spil.
 Hold to restore; your current saves are kept first.	Hold nede for at gendanne; dine nuværende gemte spil gemmes først.
 INSTALL	INSTALLÉR
 INSTALLATION INTERRUPTED	INSTALLATIONEN BLEV AFBRUDT
@@ -692,7 +690,6 @@ Report copied	Rapport kopieret
 Report saved	Rapport gemt
 Report saved: {}	Rapport gemt: {}
 Reset	Nulstil
-Reset to defaults	Nulstil til standard
 Reset to new	Nulstil til ny
 Reset to new...	Nulstil til ny...
 Reset {} to new? Level, gold and upgrades are lost.	Nulstil {} til ny? Niveau, guld og opgraderinger går tabt.
@@ -1178,3 +1175,14 @@ The disc image is damaged.	Diskaftrykket er beskadiget.
 The disc image may be damaged	Diskaftrykket kan være beskadiget
 The disc image of {} is damaged	Diskaftrykket for {} er beskadiget
 {} couldn't open some of its movies. A damaged copy of the disc does this.	{} kunne ikke åbne nogle af sine film. Det sker med en beskadiget kopi af disken.
+
+# The global keys and controller (ui/controls_page.cpp).
+Reset to defaults	Nulstil til standard
+Hold to reset every key of this game.	Hold nede for at nulstille alle tasterne i dette spil.
+Hold to reset every button of this game.	Hold nede for at nulstille alle knapperne i dette spil.
+Use the global setting	Brug den globale indstilling
+Use the default	Brug standarden
+Dimmed values follow Launcher settings.	Nedtonede værdier følger Launcher-indstillinger.
+Games use these unless their own settings change them.	Spillene bruger disse, medmindre deres egne indstillinger ændrer dem.
+Buttons	Knapper
+Stats / Info	Statistik / Info

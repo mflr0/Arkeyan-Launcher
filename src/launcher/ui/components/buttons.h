@@ -74,6 +74,7 @@ namespace ui
     {
         bool capturing = false;
         bool conflict = false;
+        bool inherited = false; // the key comes from the global layout: its name dimmed
         const char* tooltip = nullptr;
     };
     bool KeyButton(const char* id, const char* key, const KeyButtonOptions& options = {});

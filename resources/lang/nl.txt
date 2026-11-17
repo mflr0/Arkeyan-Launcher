@@ -409,12 +409,10 @@ Hold to delete saves, backups and caches.	Houd ingedrukt om savegames, back-ups 
 Hold to delete the built game. Saves are kept.	Houd ingedrukt om het gebouwde spel te verwijderen. Savegames blijven bewaard.
 Hold to delete the copy.	Houd ingedrukt om de kopie te verwijderen.
 Hold to delete the partial copy.	Houd ingedrukt om de gedeeltelijke kopie te verwijderen.
-Hold to give every button its own job back.	Houd ingedrukt om elke knop zijn eigen taak terug te geven.
 Hold to mark them as not in use.	Houd ingedrukt om ze als niet in gebruik te markeren.
 Hold to move them to the trash.	Houd ingedrukt om ze naar de prullenbak te verplaatsen.
 Hold to put this copy back.	Houd ingedrukt om deze kopie terug te zetten.
 Hold to rebuild the game.	Houd ingedrukt om het spel opnieuw te bouwen.
-Hold to reset every key of this game.	Houd ingedrukt om alle toetsen van dit spel te resetten.
 Hold to restore; your current saves are kept first.	Houd ingedrukt om te herstellen; je huidige savegames worden eerst bewaard.
 INSTALL	INSTALLEREN
 INSTALLATION INTERRUPTED	INSTALLATIE ONDERBROKEN
@@ -692,7 +690,6 @@ Report copied	Rapport gekopieerd
 Report saved	Rapport opgeslagen
 Report saved: {}	Rapport opgeslagen: {}
 Reset	Resetten
-Reset to defaults	Terug naar standaard
 Reset to new	Terugzetten naar nieuw
 Reset to new...	Terugzetten naar nieuw...
 Reset {} to new? Level, gold and upgrades are lost.	{} terugzetten naar nieuw? Niveau, goud en upgrades gaan verloren.
@@ -1178,3 +1175,14 @@ The disc image is damaged.	Het schijfimage is beschadigd.
 The disc image may be damaged	Het schijfimage is misschien beschadigd
 The disc image of {} is damaged	Het schijfimage van {} is beschadigd
 {} couldn't open some of its movies. A damaged copy of the disc does this.	{} kon een paar van zijn filmpjes niet openen. Dat doet een beschadigde kopie van de schijf.
+
+# The global keys and controller (ui/controls_page.cpp).
+Reset to defaults	Terug naar standaard
+Hold to reset every key of this game.	Houd ingedrukt om alle toetsen van dit spel te resetten.
+Hold to reset every button of this game.	Houd ingedrukt om alle knoppen van dit spel te resetten.
+Use the global setting	Algemene instelling gebruiken
+Use the default	Standaard gebruiken
+Dimmed values follow Launcher settings.	Gedimde waarden volgen de Launcher-instellingen.
+Games use these unless their own settings change them.	De spellen gebruiken deze, tenzij hun eigen instellingen ze wijzigen.
+Buttons	Knoppen
+Stats / Info	Statistieken / Info

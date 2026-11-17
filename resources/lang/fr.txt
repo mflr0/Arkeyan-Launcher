@@ -314,7 +314,6 @@ Doubles the frames shown; a little more input delay (F3 in game).	Double les ima
 Speakers	Haut-parleurs
 Auto: 5.1 when the device has six channels.	Auto : 5.1 quand l'appareil a six canaux.
 Stereo	Stéréo
-Reset to defaults	Valeurs par défaut
 Resolution scale	Échelle de résolution
 Restart now	Redémarrer maintenant
 Restore	Restaurer
@@ -835,7 +834,6 @@ Accelerate (vehicle)	Accélérer (véhicule)
 My Team	Mon équipe
 Skylander Profile	Profil Skylander
 Pause	Pause
-Hold to reset every key of this game.	Maintenez pour réinitialiser toutes les touches de ce jeu.
 2nd Power	2e pouvoir
 Special Power / Back	Pouvoir spécial / Retour
 Shake / Insert / Swing	Agiter / Insérer / Balancer
@@ -892,7 +890,6 @@ Low	Faibles
 Normal	Normales
 Strong	Fortes
 Controller buttons reset	Boutons de la manette réinitialisés
-Hold to give every button its own job back.	Maintenez pour rendre à chaque bouton son rôle habituel.
 D-pad up	Croix haut
 D-pad down	Croix bas
 D-pad left	Croix gauche
@@ -1208,3 +1205,14 @@ The disc image is damaged.	L'image disque est endommagée.
 The disc image may be damaged	L'image disque est peut-être endommagée
 The disc image of {} is damaged	L'image disque de {} est endommagée
 {} couldn't open some of its movies. A damaged copy of the disc does this.	{} n'a pas pu ouvrir certaines de ses vidéos. Une copie endommagée du disque fait cela.
+
+# The global keys and controller (ui/controls_page.cpp).
+Reset to defaults	Valeurs par défaut
+Hold to reset every key of this game.	Maintenez pour réinitialiser toutes les touches de ce jeu.
+Hold to reset every button of this game.	Maintenez pour réinitialiser tous les boutons de ce jeu.
+Use the global setting	Utiliser le réglage global
+Use the default	Utiliser la valeur par défaut
+Dimmed values follow Launcher settings.	Les valeurs grisées suivent les Réglages du launcher.
+Games use these unless their own settings change them.	Les jeux les utilisent, sauf si leurs propres réglages les changent.
+Buttons	Boutons
+Stats / Info	Stats / Infos

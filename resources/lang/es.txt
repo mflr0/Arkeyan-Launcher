@@ -409,12 +409,10 @@ Hold to delete saves, backups and caches.	Mantén pulsado para borrar partidas, 
 Hold to delete the built game. Saves are kept.	Mantén pulsado para borrar el juego creado. Las partidas se conservan.
 Hold to delete the copy.	Mantén pulsado para borrar la copia.
 Hold to delete the partial copy.	Mantén pulsado para borrar la copia parcial.
-Hold to give every button its own job back.	Mantén pulsado para devolver a cada botón su función.
 Hold to mark them as not in use.	Mantén pulsado para marcarlas como no usadas.
 Hold to move them to the trash.	Mantén pulsado para moverlas a la papelera.
 Hold to put this copy back.	Mantén pulsado para restaurar esta copia.
 Hold to rebuild the game.	Mantén pulsado para recrear el juego.
-Hold to reset every key of this game.	Mantén pulsado para restablecer todas las teclas de este juego.
 Hold to restore; your current saves are kept first.	Mantén pulsado para restaurar; antes se guardan tus partidas actuales.
 INSTALL	INSTALAR
 INSTALLATION INTERRUPTED	INSTALACIÓN INTERRUMPIDA
@@ -692,7 +690,6 @@ Report copied	Informe copiado
 Report saved	Informe guardado
 Report saved: {}	Informe guardado: {}
 Reset	Restablecer
-Reset to defaults	Restablecer valores
 Reset to new	Restablecer a nueva
 Reset to new...	Restablecer a nueva...
 Reset {} to new? Level, gold and upgrades are lost.	¿Restablecer {} a nueva? Se pierden nivel, oro y mejoras.
@@ -1178,3 +1175,14 @@ The disc image is damaged.	La imagen de disco está dañada.
 The disc image may be damaged	La imagen de disco puede estar dañada
 The disc image of {} is damaged	La imagen de disco de {} está dañada
 {} couldn't open some of its movies. A damaged copy of the disc does this.	{} no pudo abrir algunos de sus vídeos. Una copia dañada del disco hace esto.
+
+# The global keys and controller (ui/controls_page.cpp).
+Reset to defaults	Restablecer valores
+Hold to reset every key of this game.	Mantén pulsado para restablecer todas las teclas de este juego.
+Hold to reset every button of this game.	Mantén pulsado para restablecer todos los botones de este juego.
+Use the global setting	Usar el ajuste global
+Use the default	Usar el predeterminado
+Dimmed values follow Launcher settings.	Los valores atenuados siguen los Ajustes del launcher.
+Games use these unless their own settings change them.	Los juegos usan estos salvo que sus propios ajustes los cambien.
+Buttons	Botones
+Stats / Info	Estadísticas / Info

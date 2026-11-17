@@ -242,8 +242,12 @@ namespace ui
         // The value cut with "..." before the chevron, never under it.
         const std::string shown =
             Ellipsize(preview, width - ImGui::GetStyle().FramePadding.x - space::XS - icon::Small - space::S);
+        if (options.inherited)
+            ImGui::PushStyleColor(ImGuiCol_Text, LauncherTheme::Rgb(color::Dim));
         const bool open =
             ImGui::BeginCombo(id, shown.c_str(), ImGuiComboFlags_NoArrowButton | ImGuiComboFlags_HeightLarge);
+        if (options.inherited)
+            ImGui::PopStyleColor();
         if (options.disabled)
             ImGui::EndDisabled();
         if (!open)

@@ -510,6 +510,17 @@ namespace launcher_ui
         void TestHeroNavigation();
         void DrawSettings(); // the launcher's settings (the gear): Controls, Launcher, Support, About
         void DrawControls();
+        // Settings > Controls' global layout every game inherits, under the controller choice (controls_page.cpp).
+        void DrawGlobalControls();
+        void DrawToyboxKeys();
+        // A game's tabs' rows (controls_page.cpp); a key cap and a pad select also draw the global layout's (empty game).
+        void DrawKeyCrosses(const std::string& game, std::span<const GameKey> keys);
+        void DrawKeyRows(const std::string& game, std::span<const GameKey> keys);
+        void DrawKeyCap(const std::string& game, const GameKey& key, const std::string& purpose);
+        void DrawMouseRows(const std::string& game, std::span<const GameKey> keys);
+        void DrawPadSelect(const std::string& game, int button);
+        void DrawPadRows(const std::string& game);
+        void DrawRumbleRows(const std::string& scope);
         void DrawLauncherTab();
         // The Games folder (games_folder_page.cpp): the setting, the move with its progress and Stop, and the question
         // asked when the folder is missing at Play or Install.
@@ -950,8 +961,10 @@ namespace launcher_ui
 
         std::vector<SDL_JoystickID> m_gamepads;
         SDL_GamepadType m_lastPadType = SDL_GAMEPAD_TYPE_UNKNOWN; // the last pad connected
-        const GameKey* m_capturing = nullptr; // the key row of the shown game waiting for a key press
+        const GameKey* m_capturing = nullptr; // the key row waiting for a key press
+        std::string m_captureGame; // whose: a game's own line, empty for the global layout ([input])
         const GameKey* m_mouseCapturing = nullptr; // the mouse row waiting for a click or a wheel tick
+        std::string m_mouseCaptureGame; // the same for the mouse row
         bool m_mouseArmed = false; // the click that started the wait has been released
         const ToyboxKey* m_toyboxCapturing = nullptr; // the Toy Box key row waiting for a key press
 

@@ -409,12 +409,10 @@ Hold to delete saves, backups and caches.	Mantém premido para apagar gravaçõe
 Hold to delete the built game. Saves are kept.	Mantém premido para apagar o jogo criado. As gravações são mantidas.
 Hold to delete the copy.	Mantém premido para apagar a cópia.
 Hold to delete the partial copy.	Mantém premido para apagar a cópia parcial.
-Hold to give every button its own job back.	Mantém premido para devolver a cada botão a sua função.
 Hold to mark them as not in use.	Mantém premido para as marcar como não em uso.
 Hold to move them to the trash.	Mantém premido para as enviar para o lixo.
 Hold to put this copy back.	Mantém premido para repor esta cópia.
 Hold to rebuild the game.	Mantém premido para recriar o jogo.
-Hold to reset every key of this game.	Mantém premido para repor todas as teclas deste jogo.
 Hold to restore; your current saves are kept first.	Mantém premido para restaurar; as gravações atuais são guardadas antes.
 INSTALL	INSTALAR
 INSTALLATION INTERRUPTED	INSTALAÇÃO INTERROMPIDA
@@ -692,7 +690,6 @@ Report copied	Relatório copiado
 Report saved	Relatório guardado
 Report saved: {}	Relatório guardado: {}
 Reset	Repor
-Reset to defaults	Repor predefinições
 Reset to new	Repor como novo
 Reset to new...	Repor como novo...
 Reset {} to new? Level, gold and upgrades are lost.	Repor {} como novo? O nível, o ouro e as melhorias perdem-se.
@@ -1178,3 +1175,14 @@ The disc image is damaged.	A imagem do disco está danificada.
 The disc image may be damaged	A imagem do disco pode estar danificada
 The disc image of {} is damaged	A imagem do disco de {} está danificada
 {} couldn't open some of its movies. A damaged copy of the disc does this.	{} não conseguiu abrir alguns dos seus vídeos. Uma cópia danificada do disco faz isto.
+
+# The global keys and controller (ui/controls_page.cpp).
+Reset to defaults	Repor predefinições
+Hold to reset every key of this game.	Mantém premido para repor todas as teclas deste jogo.
+Hold to reset every button of this game.	Mantém premido para repor todos os botões deste jogo.
+Use the global setting	Usar a definição global
+Use the default	Usar a predefinição
+Dimmed values follow Launcher settings.	Os valores esbatidos seguem as Definições do launcher.
+Games use these unless their own settings change them.	Os jogos usam estas, a menos que as suas definições as alterem.
+Buttons	Botões
+Stats / Info	Estatísticas / Info

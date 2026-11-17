@@ -100,7 +100,7 @@ size. `Small` 16 on a line of Caption or Body text (a state, a pill, a chip, a s
 turns Lucide's loader. The icons come from `resources/fonts/Lucide.ttf`, Lucide's icon font cut down to the icons used and
 built into the executable (`cmake/embed_fonts.cmake`); to add one, put its Lucide name in `tools/lucide_subset.py`'s list, run
 `python3 tools/lucide_subset.py <the lucide-static npm package, untarred>` (it rewrites the font and
-`components/lucide.h`), then map it in `DrawIcon` (`components/core.cpp`). The speaker uses `volume-2` and `volume-x`. Nothing is drawn by hand but the GitHub mark (Lucide
+`components/lucide.h`), then map it in `DrawIcon` (`components/core.cpp`). The speaker uses `volume-2` and `volume-x`; a key or button back to the global one, `rotate-ccw`. Nothing is drawn by hand but the GitHub mark (Lucide
 has no brand marks).
 
 **Text lines** (`ui::CapMiddle`, `ui::CapTop`, `ui::Baseline`). What is centred is the capitals: a line of text beside an
@@ -505,8 +505,13 @@ line ("Choose a key to change it.", or which key is awaited), then the **movemen
 down, left and right beside it: the player's letters, Z Q S D on AZERTY, W A S D on QWERTY) titled "Movement" with the
 stick after it, the **right stick's** as another cross when the game uses it (titled with its action, "Shake / Insert /
 Swing"), a hairline, then a settings row per other action (its name, its pad button as the row's note, the key cap at the
-column's right); a key being changed is the accent with "...", a key two actions share a warning icon and edge; one Danger
-hold "Reset to defaults". The Toy Box keys (Launcher settings > Controls) are key caps in settings rows, two columns at the
+column's right); a key being changed is the accent with "...", a key two actions share a warning icon and edge; a key the game
+does not set itself (it follows the global layout or its default) dimmed (`KeyButtonOptions::inherited`; a list's
+`SelectOptions::inherited`), one it sets in normal text with a reset arrow (an `IconButton` with `Icon::Reset` before the
+control; one beside a cross's title for its four keys); one Danger hold "Reset to defaults". Launcher settings >
+Controls (`ui/controls_page.cpp`) has, under the controller choice, **All games**: one settings table with two control columns
+headed Keyboard and Controller (`ui::BeginSettings` with a second width), a row per shared action (its key cap, its pad button's
+list; a dash where a side has none), then the Mouse switch, the Rumble and the Toy Box keys, never dimmed. The Toy Box keys are key caps in settings rows, two columns at the
 row's right: the keyboard's ("F6 / Tab": either) and the pad's in the pad family's pictures ("View + Y": together; the pad in use
 or chosen, else Xbox's), a dash where the pad has none (F7, F8). The Controller tab names an unchanged button's job "Default".
 Save backups are ListRows (when, files, size) with a Danger hold "Restore" beside each; the update check's last time and the
@@ -612,8 +617,9 @@ GitHub issue) and the GitHub link bottom right. The launcher's own language is i
      disc is not read for textures yet (`docs/tools/hd_textures.md`, [Lux]).
    - Keyboard: one row per action **the game uses**, named as the game names it with the pad button in brackets ("Attack 1 (X)",
      "1st Power / Accept (A)"), two rows a line: the key's button (click it, press a key; Escape cancels), red when another row of
-     the game has the same key, and **Reset to defaults** (held) for this game's keys. The game's own copy, `[<game>.input]`; PLAY puts it
-     in `[input]` (docs/settings.md, "Per-game keyboard keys", which also lists each game's rows and where their names come from).
+     the game or a Toy Box key has the same key, dimmed when the game follows the global layout, with a reset arrow when it sets its
+     own, and **Reset to defaults** (held). The game's own lines, `[<game>.input]`, over the global `[input]` (docs/settings.md,
+     "The global layout and each game's keys", which also lists each game's rows and where their names come from).
    - Sound (0.9.4): volume, speakers (Auto, Stereo, 5.1) and Trap Team's portal sound, `[<game>.audio]` (docs/settings.md).
    - Language: game text and game voices (`[<game>] language`, `voice_language`). Giants' disc has twelve languages for both (English,
      French, German, Spanish, Latin-American Spanish `es-419`, Italian, Dutch, Portuguese, Swedish, Norwegian, Danish, Finnish) and its
@@ -641,9 +647,11 @@ GitHub issue) and the GitHub link bottom right. The launcher's own language is i
 launcher's. Now the gear is only what is the launcher's or is shared, and anything about one game is on that game's page, so
 the two games can differ (30 fps for one, 60 for the other, another disc, deleting one's saves). **The controller, the button
 glyphs and the portal stay in the launcher's settings** because the games read the same `[input]` (device, glyphs) and `[portal]`
-sections and the same hardware: a game page would only show the same values twice. **The keyboard keys moved to the game pages**
-(Keyboard tab) because the games name and use their buttons differently (Giants' X is "Attack 1", Spyro's Adventure's is "Use / Talk"):
-`[<game>.input]` works like `[<game>.video]` (`game_keys.h`).
+sections and the same hardware: a game page would only show the same values twice. **The keys, the mouse and the pad are a global
+layout with each game's own lines over it** (0.9.9): Launcher settings > Controls holds what every game inherits: the actions every game has (All games: the moves, Stats / Info,
+Pause), keyboard and controller side by side. What each game names its own way (Giants' X is "Attack 2", Spyro's Adventure's is
+"2nd Power") is set on that game's Keyboard and Controller tabs, which also change an All games row for that game only
+(`game_keys.h`).
 
 The launcher opens on **Home**, the menu page (the ARKEYAN LAUNCHER title goes back to it): the **library**, a card per
 playable game (its painting from the disc behind its logo, its name and state; the game's colours before its disc was
@@ -1035,7 +1043,7 @@ B and tab bumper behavior; it requires a window and is separate from the standal
   Home is the start page, and its games are the sidebar's rows.
 - **Hold to confirm.** What deletes or overwrites is a red button held for a second (`App::HoldButton`, the state in
   `hold_confirm.h`): Reset and Delete (Figure page), Delete for good (trash), Mark as not in use (a stale lock), Restore
-  (a save backup), Reset to defaults (a game's keyboard), Reinstall, Delete saves and data, Remove game. The fill shows the time; releasing, or the pointer
+  (a save backup), Reset to defaults (a game's keyboard and controller), Reinstall, Delete saves and data, Remove game. The fill shows the time; releasing, or the pointer
   leaving, cancels; it acts once per press; Space, Enter and the pad's A hold it too. The label is a plain verb, the
   instruction is its hint under it (`ui::Button` with `hold`: a timer icon on the button, "Hold to confirm" or the
   button's own sentence on hover, on keyboard and pad focus, and for 2.5 s after a tap too short, so a pad or touch player

@@ -540,8 +540,8 @@ namespace launcher_ui
             if (FindEnabledGame(each.id, m_config) == nullptr)
                 continue;
             SeedGameVideo(m_config, each.id); // each game starts from the video settings the player already had
-            SeedGameInput(m_config, each.id); // and from the keys
         }
+        MigrateInput(m_config); // and the keys of an older launcher become the global layout
     }
 
     // The slot of `game`, made the first time it is asked for.
@@ -568,7 +568,6 @@ namespace launcher_ui
             return;
         m_s = &SlotFor(game);
         SeedGameVideo(m_config, game.id);
-        SeedGameInput(m_config, game.id);
         SetActiveGame(game.id);
         Set("launcher", "game", game.id);
         if (!m_s->started)
@@ -823,7 +822,7 @@ namespace launcher_ui
                 name = CapturedWheelName(event.wheel.y);
             if (!name.empty())
             {
-                SetGameMouseButton(m_config, m_s->game.id, *m_mouseCapturing, name);
+                SetGameMouseButton(m_config, m_mouseCaptureGame, *m_mouseCapturing, name);
                 if (!SaveConfig())
                     Toast(Tr("Couldn't save the settings"), ui::ToastKind::Error);
                 m_mouseCapturing = nullptr;
@@ -837,8 +836,16 @@ namespace launcher_ui
         if (m_capturing != nullptr && event.type == SDL_EVENT_KEY_DOWN)
         {
             if (event.key.key != SDLK_ESCAPE)
-                Set(GameInputSection(m_s->game.id).c_str(), (std::string("key_") + m_capturing->action).c_str(),
-                    CapturedKeyName(event.key.scancode).c_str()); // the key's place: the game reads a scancode
+            {
+                const std::string name =
+                    CapturedKeyName(event.key.scancode); // the key's place: the game reads a scancode
+                if (m_captureGame.empty())
+                    SetGlobalKey(m_config, *m_capturing, name);
+                else
+                    SetGameKey(m_config, m_captureGame, *m_capturing, name);
+                if (!SaveConfig())
+                    Toast(Tr("Couldn't save the settings"), ui::ToastKind::Error);
+            }
             m_capturing = nullptr;
             return;
         }
@@ -1137,6 +1144,7 @@ namespace launcher_ui
             m_config = LoadLauncherConfig(m_configPath);
         else
             TakeBackGameSettings();
+        MigrateInput(m_config); // an older game's F3 menu seeds its section again
         // A crash dialog can wait for acknowledgement; the visible page's theme resumes while it is open too.
         m_music.Update(gamemusic::Playback{ .game = m_s->game.id,
             .gamePage = m_page == Page::Play,
@@ -2662,6 +2670,7 @@ namespace launcher_ui
         ui::Tooltip(Tr(strings::PortalTip));
     }
 
+    // Settings > Controls: the controller, the global layout every game inherits (controls_page.cpp), the portal.
     void App::DrawControls()
     {
         const std::string current = CurrentDevice();
@@ -2685,6 +2694,7 @@ namespace launcher_ui
             SettingSelect("##glyphs", "input", "glyphs", GlyphChoices, 0);
             ui::EndSettings();
         }
+        DrawGlobalControls();
 
         ui::SectionHeader(Tr("Portal of Power"));
         if (ui::BeginSettings("##portal"))
@@ -2699,83 +2709,6 @@ namespace launcher_ui
             ui::EndSettings();
         }
         DrawPortalResult();
-
-        ui::SectionHeader(Tr("Toy Box keys"));
-        if (ui::BeginSettings("##toyboxkeys"))
-        {
-            // Each line: the keyboard's key, changed like the game's keys ([input] key_toybox..., shared by the games; Tab also
-            // opens the Toy Box while its key is F6's default), then the pad's buttons ("View + Y": together) in the pad's own
-            // pictures (the pad in use or chosen, else Xbox's), a dash where the pad has none (adding and clearing figures are
-            // the keyboard's only). The pad's column ends on the control column's edge, the key before it.
-            const std::span<const ToyboxKey> keys = ToyboxKeys();
-            const std::vector<ui::PadButton> buttons[] = { { ui::PadButton::Back, ui::PadButton::North }, {}, {} };
-            const ui::Glyphs glyphs = PadGlyphs();
-            const float joint = ui::space::XS; // on each side of the "+"
-            auto padWidth = [&](const std::vector<ui::PadButton>& pad) {
-                float w = 0;
-                for (size_t i = 0; i < pad.size(); i++)
-                    w += ui::KeyCapWidth(pad[i], glyphs) +
-                         (i > 0 ? 2 * joint + ui::TextSize(ui::TextStyle::Caption, "+").x : 0);
-                return w;
-            };
-            float padColumn = 0;
-            for (const auto& pad : buttons)
-                padColumn = std::max(padColumn, padWidth(pad));
-            for (size_t row = 0; row < keys.size(); row++)
-            {
-                const ToyboxKey& key = keys[row];
-                ui::SettingRow(Tr(key.label), nullptr);
-                ImDrawList* draw = ImGui::GetWindowDrawList();
-                const ImVec2 start = ImGui::GetCursorScreenPos();
-                const float right = start.x + ImGui::GetContentRegionAvail().x, padX = right - padColumn;
-                const float capH = ui::height::Normal,
-                            middle = start.y + std::round(capH / 2); // the key button's middle
-                const std::string name = KeyDisplayName(ToyboxKeyName(m_config, key));
-                ui::KeyButtonOptions options;
-                options.capturing = m_toyboxCapturing == &key;
-                options.conflict = ToyboxKeyConflict(m_config, key);
-                if (options.conflict)
-                    options.tooltip = Tr("This key is used by another action");
-                const float keyX =
-                    padX - (padColumn > 0 ? ui::space::L : 0) - ui::KeyButtonWidth(name.c_str(), options);
-                ImGui::SetCursorScreenPos(ImVec2(keyX, start.y));
-                ImGui::PushID(key.line);
-                if (ui::KeyButton("##toyboxkey", name.c_str(), options))
-                    m_toyboxCapturing = &key;
-                ImGui::PopID();
-                float x = padX;
-                if (!buttons[row].empty())
-                    for (size_t i = 0; i < buttons[row].size(); i++)
-                    {
-                        if (i > 0)
-                        {
-                            ui::PushText(ui::TextStyle::Caption);
-                            ui::DrawText(draw,
-                                ImVec2(x + joint, std::round(middle - ui::CapMiddle(ui::TextStyle::Caption))),
-                                ui::Col(ui::color::Dim), "+");
-                            x += 2 * joint + ImGui::CalcTextSize("+").x;
-                            ui::PopText();
-                        }
-                        x += ui::DrawKeyCap(draw, ImVec2(x, middle), buttons[row][i], glyphs).x;
-                    }
-                else // no pad button for it: a quiet dash in the pad's column
-                {
-                    ui::PushText(ui::TextStyle::Body);
-                    const char* none = "\xE2\x80\x94";
-                    ui::DrawText(draw,
-                        ImVec2(std::round(padX + (padColumn - ImGui::CalcTextSize(none).x) / 2),
-                            std::round(middle - ui::CapMiddle(ui::TextStyle::Body))),
-                        ui::Col(ui::color::Dim), none);
-                    ui::PopText();
-                }
-                ImGui::SetCursorScreenPos(ImVec2(keyX, start.y));
-                ImGui::Dummy(ImVec2(right - keyX, capH));
-            }
-            ui::EndSettings();
-        }
-        if (m_toyboxCapturing != nullptr)
-            ui::Text(ui::TextStyle::Caption,
-                Tf("Press a key for \"{}\" (Escape cancels)", Tr(m_toyboxCapturing->label)).c_str(), ui::color::Ink);
     }
 
     // The pictures of the pad's buttons where the window names them whatever the input in use (the Toy Box keys): the pad in
