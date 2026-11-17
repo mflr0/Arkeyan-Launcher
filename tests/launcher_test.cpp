@@ -3065,10 +3065,12 @@ static int RunChecks(int argc, char** argv)
            trapTeam->releases[1].mediaId == 0x3AF0B6AF);
     const GameInfo* superChargers = FindGame("superchargers");
     EXPECT(superChargers != nullptr && std::string(superChargers->runtime) == "Skylanders SuperChargers" &&
-           std::string(superChargers->name) == "Skylanders: SuperChargers" && superChargers->releases.size() == 1 &&
+           std::string(superChargers->name) == "Skylanders: SuperChargers" && superChargers->releases.size() == 2 &&
            superChargers->releases[0].titleId == 0x4156091F &&
            std::string(superChargers->releases[0].defaultXexSha256) ==
-               "02ff6672d460c9aaa54e69d584af67a7138c6c93cde5e04b0da4284207be7c61");
+               "02ff6672d460c9aaa54e69d584af67a7138c6c93cde5e04b0da4284207be7c61" &&
+           superChargers->releases[1].titleId == 0x4156091F && superChargers->releases[1].mediaId == 0x504D9445 &&
+           std::string(superChargers->releases[1].label) == "Europe (Fr, Nl)");
     const GameInfo* imaginators = FindGame("imaginators");
     EXPECT(imaginators != nullptr && std::string(imaginators->runtime) == "Skylanders Imaginators" &&
            std::string(imaginators->name) == "Skylanders: Imaginators" && imaginators->releases.size() == 1 &&
@@ -3200,18 +3202,20 @@ static int RunChecks(int argc, char** argv)
                art::JoinLanguages(trap.languages.text) == expected &&
                art::JoinLanguages(trap.languages.voice) == expected);
     }
-    // SuperChargers' European disc (SKY_LAUNCHER_TEST_SUPERCHARGERS_ISO) holds English and German, Imaginators' French and Dutch
-    // one (SKY_LAUNCHER_TEST_IMAGINATORS_ISO) French and Dutch: archives/<name>_<code>.pak, text and voices.
-    for (const auto& [variable, id, expected] :
-        { std::tuple{ "SKY_LAUNCHER_TEST_SUPERCHARGERS_ISO", "superchargers", "en,de" },
-            std::tuple{ "SKY_LAUNCHER_TEST_IMAGINATORS_ISO", "imaginators", "fr,nl" } })
+    // SuperChargers' European disc (SKY_LAUNCHER_TEST_SUPERCHARGERS_ISO) holds English and German, its French and Dutch
+    // one (SKY_LAUNCHER_TEST_SUPERCHARGERS_FR_NL_ISO, a release of its own) and Imaginators' French and Dutch one
+    // (SKY_LAUNCHER_TEST_IMAGINATORS_ISO) French and Dutch: archives/<name>_<code>.pak, text and voices.
+    for (const auto& [variable, id, expected, release] :
+        { std::tuple{ "SKY_LAUNCHER_TEST_SUPERCHARGERS_ISO", "superchargers", "en,de", size_t(0) },
+            std::tuple{ "SKY_LAUNCHER_TEST_SUPERCHARGERS_FR_NL_ISO", "superchargers", "fr,nl", size_t(1) },
+            std::tuple{ "SKY_LAUNCHER_TEST_IMAGINATORS_ISO", "imaginators", "fr,nl", size_t(0) } })
         if (const char* later = skyenv::Get(variable))
         {
             GameSourceCheck check = CheckGameSource(later, *FindGame(id));
             printf("%s: %s, text %s, voices %s\n", id, check.message.empty() ? "verified" : check.message.c_str(),
                 art::JoinLanguages(check.languages.text).c_str(), art::JoinLanguages(check.languages.voice).c_str());
-            EXPECT(check.status == GameSourceStatus::Ok &&
-                   check.xexSha256 == FindGame(id)->releases[0].defaultXexSha256 &&
+            EXPECT(check.status == GameSourceStatus::Ok && release < FindGame(id)->releases.size() &&
+                   check.xexSha256 == FindGame(id)->releases[release].defaultXexSha256 &&
                    art::JoinLanguages(check.languages.text) == expected &&
                    art::JoinLanguages(check.languages.voice) == expected);
         }
