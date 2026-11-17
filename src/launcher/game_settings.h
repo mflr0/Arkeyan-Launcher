@@ -24,6 +24,10 @@ const char* DefaultFrameRate(std::string_view gameId);
 // Whether the page offers FSR 3 frame generation for a game: the games' own rule (docs/settings.md): every game, not on
 // Windows (D3D12 is not proven yet). The game greys it in F3 for the same reason.
 bool FrameGenerationOffered(std::string_view gameId);
+// Whether the Game tab offers "Nightmare from the start" ([<game>] nightmare_from_start): the games whose Nightmare is locked
+// until the story is beaten (Swap Force, Trap Team, Imaginators). SuperChargers offers it at once; Spyro's Adventure and Giants
+// have none.
+bool NightmareFromStartOffered(std::string_view gameId);
 // A saved resolution_scale as the game takes it: 1 to 10, else 0 (Auto: missing, "auto", or any value outside the list the page
 // offers). The page shows it and PLAY passes it on, so they agree.
 int ResolutionScaleOf(std::string_view value);

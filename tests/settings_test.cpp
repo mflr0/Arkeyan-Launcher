@@ -432,6 +432,13 @@ namespace
                             speakers(odd) == std::string("auto"));
         }
 
+        // "Nightmare from the start" on the games whose Nightmare waits for the story's end; SuperChargers offers it at
+        // once, Spyro's Adventure and Giants have none.
+        for (std::string_view id : { "swapforce", "trapteam", "imaginators" })
+            SETTINGS_EXPECT(NightmareFromStartOffered(id));
+        for (std::string_view id : { "ssa", "giants", "superchargers", "" })
+            SETTINGS_EXPECT(!NightmareFromStartOffered(id));
+
         // Through the settings file, sections with a dot included.
         fs::path scratch = root / "video.ini";
         SETTINGS_EXPECT(SaveLauncherConfig(scratch.string(), config));

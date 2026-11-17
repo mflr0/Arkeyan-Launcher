@@ -222,6 +222,11 @@ const char* DefaultFrameRate(std::string_view gameId)
     return gameId == "giants" || gameId == "swapforce" ? "60" : "30";
 }
 
+bool NightmareFromStartOffered(std::string_view gameId)
+{
+    return gameId == "swapforce" || gameId == "trapteam" || gameId == "imaginators";
+}
+
 bool FrameGenerationOffered(std::string_view gameId)
 {
     (void)gameId;
