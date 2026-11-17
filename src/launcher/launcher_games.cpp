@@ -50,6 +50,11 @@ namespace
         { "Europe", 0x4156091F, 0x74144F53, 0x00000007,
             "02ff6672d460c9aaa54e69d584af67a7138c6c93cde5e04b0da4284207be7c61",
             "f2c26c0153255c100bd5f1baceec7f2d3f26903f79047a0dc6ceb51d9a8e70bc" },
+        // Redump "Skylanders - SuperChargers (Europe) (Fr,Nl)", 8738846720 bytes: an earlier build with other strings, the
+        // same functions and addresses, so the same game tools build it.
+        { "Europe (Fr, Nl)", 0x4156091F, 0x504D9445, 0x00000004,
+            "c6b1d7a32195ace94f31a49d750b06b01c817ed70ce3a41f3d977d3d80241f10",
+            "467e8e56777fd2379ac5585338968c3a467117c22034bc89d7bfad538c25d8ff" },
     };
 
     const GameRelease ImaginatorsReleases[] = {
