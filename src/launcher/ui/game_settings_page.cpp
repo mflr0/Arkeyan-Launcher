@@ -970,11 +970,9 @@ namespace launcher_ui
             return options;
         };
 
-        // The games whose Nightmare the game locks until the story is beaten (Swap Force, Imaginators): offered at once, the save
-        // is not changed ([<game>] nightmare_from_start). SuperChargers offers it from the start; Giants and SSA have none;
-        // Trap Team locks it in its scripts, which no option reaches yet.
-        const std::string_view id = m_s->game.id;
-        const bool lockedNightmare = id == "swapforce" || id == "imaginators";
+        // The games whose Nightmare the game locks until the story is beaten: offered at once, the save is not changed
+        // ([<game>] nightmare_from_start).
+        const bool lockedNightmare = NightmareFromStartOffered(m_s->game.id);
         if (lockedNightmare)
         {
             ui::SectionHeader(Tr("Difficulty"), nullptr, false);
