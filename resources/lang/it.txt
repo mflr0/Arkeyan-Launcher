@@ -409,12 +409,10 @@ Hold to delete saves, backups and caches.	Tieni premuto per eliminare salvataggi
 Hold to delete the built game. Saves are kept.	Tieni premuto per eliminare il gioco costruito. I salvataggi restano.
 Hold to delete the copy.	Tieni premuto per eliminare la copia.
 Hold to delete the partial copy.	Tieni premuto per eliminare la copia parziale.
-Hold to give every button its own job back.	Tieni premuto per ridare a ogni tasto la sua funzione.
 Hold to mark them as not in use.	Tieni premuto per segnarle come non in uso.
 Hold to move them to the trash.	Tieni premuto per spostarle nel cestino.
 Hold to put this copy back.	Tieni premuto per rimettere a posto questa copia.
 Hold to rebuild the game.	Tieni premuto per ricostruire il gioco.
-Hold to reset every key of this game.	Tieni premuto per reimpostare ogni tasto di questo gioco.
 Hold to restore; your current saves are kept first.	Tieni premuto per ripristinare; prima vengono conservati i salvataggi attuali.
 INSTALL	INSTALLA
 INSTALLATION INTERRUPTED	INSTALLAZIONE INTERROTTA
@@ -692,7 +690,6 @@ Report copied	Rapporto copiato
 Report saved	Rapporto salvato
 Report saved: {}	Rapporto salvato: {}
 Reset	Reimposta
-Reset to defaults	Ripristina predefiniti
 Reset to new	Riporta a nuovo
 Reset to new...	Riporta a nuovo...
 Reset {} to new? Level, gold and upgrades are lost.	Riportare {} a nuovo? Livello, oro e potenziamenti vanno persi.
@@ -1178,3 +1175,14 @@ The disc image is damaged.	L'immagine disco è danneggiata.
 The disc image may be damaged	L'immagine disco potrebbe essere danneggiata
 The disc image of {} is damaged	L'immagine disco di {} è danneggiata
 {} couldn't open some of its movies. A damaged copy of the disc does this.	{} non è riuscito ad aprire alcuni dei suoi video. Succede con una copia danneggiata del disco.
+
+# The global keys and controller (ui/controls_page.cpp).
+Reset to defaults	Ripristina predefiniti
+Hold to reset every key of this game.	Tieni premuto per reimpostare ogni tasto di questo gioco.
+Hold to reset every button of this game.	Tieni premuto per reimpostare ogni pulsante di questo gioco.
+Use the global setting	Usa l'impostazione globale
+Use the default	Usa il predefinito
+Dimmed values follow Launcher settings.	I valori attenuati seguono le Impostazioni del launcher.
+Games use these unless their own settings change them.	I giochi usano questi, a meno che le loro impostazioni non li cambino.
+Buttons	Tasti
+Stats / Info	Statistiche / Info

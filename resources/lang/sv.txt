@@ -410,12 +410,10 @@ Hold to delete saves, backups and caches.	Håll in för att radera sparfiler, s�
 Hold to delete the built game. Saves are kept.	Håll in för att radera det byggda spelet. Sparfiler behålls.
 Hold to delete the copy.	Håll in för att radera kopian.
 Hold to delete the partial copy.	Håll in för att radera den ofullständiga kopian.
-Hold to give every button its own job back.	Håll in för att ge varje knapp sin uppgift tillbaka.
 Hold to mark them as not in use.	Håll in för att markera dem som inte använda.
 Hold to move them to the trash.	Håll in för att flytta dem till papperskorgen.
 Hold to put this copy back.	Håll in för att lägga tillbaka den här kopian.
 Hold to rebuild the game.	Håll in för att bygga om spelet.
-Hold to reset every key of this game.	Håll in för att återställa alla tangenter för det här spelet.
 Hold to restore; your current saves are kept first.	Håll in för att återställa; dina nuvarande sparfiler sparas först.
 INSTALL	INSTALLERA
 INSTALLATION INTERRUPTED	INSTALLATIONEN AVBRÖTS
@@ -693,7 +691,6 @@ Report copied	Rapporten kopierad
 Report saved	Rapporten sparad
 Report saved: {}	Rapporten sparad: {}
 Reset	Nollställ
-Reset to defaults	Återställ till standard
 Reset to new	Nollställ till ny
 Reset to new...	Nollställ till ny...
 Reset {} to new? Level, gold and upgrades are lost.	Nollställa {} till ny? Nivå, guld och uppgraderingar går förlorade.
@@ -1179,3 +1176,14 @@ The disc image is damaged.	Skivavbilden är skadad.
 The disc image may be damaged	Skivavbilden kan vara skadad
 The disc image of {} is damaged	Skivavbilden för {} är skadad
 {} couldn't open some of its movies. A damaged copy of the disc does this.	{} kunde inte öppna några av sina filmer. Så gör en skadad kopia av skivan.
+
+# The global keys and controller (ui/controls_page.cpp).
+Reset to defaults	Återställ till standard
+Hold to reset every key of this game.	Håll in för att återställa alla tangenter för det här spelet.
+Hold to reset every button of this game.	Håll in för att återställa alla knappar för det här spelet.
+Use the global setting	Använd den globala inställningen
+Use the default	Använd standard
+Dimmed values follow Launcher settings.	Nedtonade värden följer Launcherinställningar.
+Games use these unless their own settings change them.	Spelen använder dessa om inte deras egna inställningar ändrar dem.
+Buttons	Knappar
+Stats / Info	Statistik / Info

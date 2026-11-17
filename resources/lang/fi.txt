@@ -410,12 +410,10 @@ Hold to delete saves, backups and caches.	Pidä pohjassa poistaaksesi tallennuks
 Hold to delete the built game. Saves are kept.	Pidä pohjassa poistaaksesi rakennetun pelin. Tallennukset säilyvät.
 Hold to delete the copy.	Pidä pohjassa poistaaksesi kopion.
 Hold to delete the partial copy.	Pidä pohjassa poistaaksesi keskeneräisen kopion.
-Hold to give every button its own job back.	Pidä pohjassa palauttaaksesi kaikkien painikkeiden oletustoiminnot.
 Hold to mark them as not in use.	Pidä pohjassa merkitäksesi ne käyttämättömiksi.
 Hold to move them to the trash.	Pidä pohjassa siirtääksesi ne roskakoriin.
 Hold to put this copy back.	Pidä pohjassa palauttaaksesi tämän kopion.
 Hold to rebuild the game.	Pidä pohjassa rakentaaksesi pelin uudelleen.
-Hold to reset every key of this game.	Pidä pohjassa nollataksesi tämän pelin kaikki näppäimet.
 Hold to restore; your current saves are kept first.	Pidä pohjassa palauttaaksesi; nykyiset tallennuksesi säilytetään ensin.
 INSTALL	ASENNA
 INSTALLATION INTERRUPTED	ASENNUS KESKEYTYI
@@ -693,7 +691,6 @@ Report copied	Raportti kopioitu
 Report saved	Raportti tallennettu
 Report saved: {}	Raportti tallennettu: {}
 Reset	Nollaa
-Reset to defaults	Palauta oletukset
 Reset to new	Nollaa uudeksi
 Reset to new...	Nollaa uudeksi...
 Reset {} to new? Level, gold and upgrades are lost.	Nollataanko {} uudeksi? Taso, kulta ja päivitykset menetetään.
@@ -1179,3 +1176,14 @@ The disc image is damaged.	Levykuva on vioittunut.
 The disc image may be damaged	Levykuva voi olla vioittunut
 The disc image of {} is damaged	Pelin {} levykuva on vioittunut
 {} couldn't open some of its movies. A damaged copy of the disc does this.	{} ei voinut avata joitakin videoitaan. Näin käy, kun levyn kopio on vioittunut.
+
+# The global keys and controller (ui/controls_page.cpp).
+Reset to defaults	Palauta oletukset
+Hold to reset every key of this game.	Pidä pohjassa nollataksesi tämän pelin kaikki näppäimet.
+Hold to reset every button of this game.	Pidä pohjassa nollataksesi tämän pelin kaikki painikkeet.
+Use the global setting	Käytä yleistä asetusta
+Use the default	Käytä oletusta
+Dimmed values follow Launcher settings.	Himmennetyt arvot seuraavat Launcher-asetuksia.
+Games use these unless their own settings change them.	Pelit käyttävät näitä, elleivät niiden omat asetukset muuta niitä.
+Buttons	Painikkeet
+Stats / Info	Tilastot / Tiedot

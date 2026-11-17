@@ -40,4 +40,5 @@ namespace ui::lucide
     constexpr unsigned ExternalLink = 0xE0B9; // external-link
     constexpr unsigned Volume2 = 0xE1AB; // volume-2
     constexpr unsigned VolumeX = 0xE1AC; // volume-x
+    constexpr unsigned RotateCcw = 0xE148; // rotate-ccw
 }

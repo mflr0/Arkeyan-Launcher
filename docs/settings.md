@@ -119,26 +119,49 @@ fourteen keys that belong to a game (`fullscreen`, `resolution_scale`, `fps_limi
 - Since 0.6.2 the launcher does not copy `[video]` back when the game ends: the game's own menu (F3: volume, FPS counter,
   fullscreen, frame rate, and the settings that apply at its next start) writes `[<game>.video]` and `[<game>.audio]` itself,
   and those win over `[video]`, so a copy-back would only undo them. (`StoreGameVideo` stays for the tests.)
-- What the games share stays in its own section: `[input]` (device, glyphs), `[portal]`, and the launcher's
+- What the games share stays in its own section: `[input]` (device, glyphs, the global keys), `[portal]`, and the launcher's
   `[launcher]` and `[update]`. They are in the gear's Settings, not on a game page. The keyboard keys are per game, below.
 
-## Per-game keyboard keys
+## The global layout and each game's keys
 
-The runtime reads one `[input]` section (`key_<action>=<SDL key name>`), but the keys are each game's own: **`[ssa.input]`**,
-**`[giants.input]`**, **`[swapforce.input]`**, **`[trapteam.input]`**, **`[superchargers.input]`** and **`[imaginators.input]`** hold a game's `key_<action>` lines, edited on the game's settings page
-(Keyboard tab). Only the keys are per game: `device`, `gamepad` and `glyphs` stay in `[input]`.
+**`[input]` is the global layout** every game inherits: its `key_<action>`, `pad_<button>`, `rumble_p1` / `rumble_p2`, `mouse`
+and `mouse_<action>` lines. **`[ssa.input]`**, **`[giants.input]`**, **`[swapforce.input]`**, **`[trapteam.input]`**,
+**`[superchargers.input]`** and **`[imaginators.input]`** hold a game's own lines, which win. The runtime reads `[input]`, then the
+game's section; PLAY copies nothing. `device`, `gamepad`, `glyphs` and the Toy Box's keys stay in `[input]` for every game
+(`src/launcher/game_keys.{h,cpp}`, the pages in `ui/controls_page.cpp`).
+
+- **Settings > Controls** shows the global layout under the controller choice. **All games**: a row per action every game has
+  (`SharedAction`: Move up, down, left, right, Stats / Info on Back, Pause on Start), its **Keyboard** key and its
+  **Controller** button side by side; then the pad buttons no game names (the stick clicks, the D-pad, `SharedPadButton`) on the
+  Controller side only. All stored in `[input]`. Then the **Mouse** switch, the **Rumble** of both players, the **Toy Box keys**,
+  and the Portal of Power. A game's own actions (Jump, Attack 1...) are set on that game's tabs only, in `[<game>.input]`.
+- **A game's Keyboard and Controller tabs** list all its rows. A value the game does not set itself (it follows the global layout,
+  or its default) is **dimmed**; one it sets is in normal text with a **reset arrow** (`GameKeyOwn`, `PadOwn`, `RumbleOwn`,
+  `GameMouseOwn`, `GameMouseButtonOwn`): an All games row goes back to the global value, a game's own row to its default.
+  **Reset to defaults** (held) takes every key and mouse line of the game (Keyboard tab), or every pad and rumble line
+  (Controller tab): the All games rows take the global values again, the game's own rows their defaults.
+- A game's value equal to the global one is no line (`SetGameKey`, `SetPadTarget`, `SetRumbleLevel`, `SetGameMouseOn`): the game
+  follows the global layout again.
+- **The upgrade** (`MigrateInput`, the runtime's `commands::Migrate`; once per file, marked by `[input] global=1`). Older launchers
+  copied a game's keys into `[input]` at PLAY (`ApplyGameInput`), so `[input]` held the last game played, and each game had its
+  copy, seeded once from `[input]` (`seeded=1`). Nobody's keys change: `[input]`'s keys of the All games actions become the global
+  ones (Back's too since it is an All games row); a game's line of those equal to it goes; a seeded game that had none (it played with the default) gets the default as its
+  own; the other actions' keys leave `[input]` (a game never seeded gets them as its own, as its first copy would have); `[input]`'s
+  mouse lines, which nothing read, go; a game's pad, rumble and mouse lines equal to the global ones go; `seeded` goes.
+- **An older launcher** reading the upgraded file finds no `seeded`, so it copies `[input]` into each game again: it shows and
+  plays the same keys. Its PLAY then writes that game's keys into `[input]` again; the next start of this launcher (or of the game's
+  F3 menu) does the upgrade again for the sections an older version seeded, and removes the other actions' keys from `[input]`.
+  What stays: `[input]`'s All games keys are those of the last game the older launcher started (the same unless that game had
+  its own). An older launcher does not show the global mouse, pad or rumble lines on a game's tabs, and an older game ignores
+  `[input]`'s mouse lines.
+- **Profiles**: the global layout's lines of `[input]` belong to the player, as the games' sections (`profiles::PersonalKey`).
 
 | Section | Key | Meaning |
 | --- | --- | --- |
-| `<game>.input` | `key_<action>` | The key (an SDL key name) the game's copy gives to an action. Absent: the game's default key. |
-| `<game>.input` | `seeded` | `1` once the copy has been made from `[input]` (an empty copy is not written to the file, so this says it was). |
+| `input` | `key_<action>` | The global key of an All games action (an SDL key name). Absent: the default key. |
+| `<game>.input` | `key_<action>` | The game's own key for an action. Absent: `[input]`'s, else the game's default key. |
+| `input` | `global` | `1` once the file has the global layout (the upgrade's mark). |
 
-- The first time (`SeedGameInput`, when the launcher starts), every game's copy starts from the `key_` lines the player
-  already had in `[input]`, so nobody loses a binding. It never happens again for that game.
-- **PLAY** puts the game's keys in `[input]` (`ApplyGameInput`): the keys it has set; for the actions on its page, its default
-  where none is set; the other `key_` lines follow the copy, or are dropped so the runtime's own default applies. The runtime
-  needs no change. Nothing is stored back (the runtime never changes keys).
-- **Reset to defaults** empties the game's copy (every `key_` line of it); the defaults then apply at PLAY.
 - A key used twice is kept and marked red: two rows of one game, or a row and a Toy Box key (`GameKeyConflict`). The
   F3 menu's Commands page does the same (it no longer swaps the two keys).
 - **Keys are physical places** (2026-10-28): the runtime reads `key_<action>` as an SDL **scancode** name
@@ -156,40 +179,41 @@ The runtime reads one `[input]` section (`key_<action>=<SDL key name>`), but the
 The **Keyboard** tab ends with a **Mouse** section: a switch, **Use the mouse** (off by default), and once it is on a row per action
 (movement included) with its mouse button. Click a row, then press a mouse button or turn the wheel (Escape cancels; the click
 that starts the wait is not the binding). Once on, left click is the game's attack 1 and right click attack 2 (`GameKey::mouse`);
-every other action keeps its keys. A button is on one action at a time: putting it on another takes it from the first.
+every other action keeps its keys. A button is on one action at a time: putting it on another takes it from the first (on the
+game's own line; a game's default gives way by itself). Settings > Controls has only the switch, for every game; a `mouse_` line
+written in `[input]` by hand reaches every game.
 
 | Section | Key | Meaning |
 | --- | --- | --- |
-| `<game>.input` | `mouse` | `1`: the game uses the mouse. Absent or `0`: off, and the game never hides or holds the pointer. |
-| `<game>.input` | `mouse_<action>` | `Mouse Left`, `Mouse Right`, `Mouse Middle`, `Mouse 4`, `Mouse 5`, `Wheel Up`, `Wheel Down`, or `none`. Absent: the game's default (attacks only). |
-| `input` | `key_toybox`, `key_toybox_add`, `key_toybox_clear` | Open the Toy Box, add the next figure, clear the portal: F6, F7, F8 by default (Tab also opens the Toy Box while `key_toybox` is not set). Shared by the games. |
+| `input`, `<game>.input` | `mouse` | `1`: the mouse is used. Absent or `0`: off, and the game never hides or holds the pointer. The game's line wins. |
+| `input`, `<game>.input` | `mouse_<action>` | `Mouse Left`, `Mouse Right`, `Mouse Middle`, `Mouse 4`, `Mouse 5`, `Wheel Up`, `Wheel Down`, or `none`. Absent: the game's default (attacks only). |
+| `input` | `key_toybox`, `key_toybox_add`, `key_toybox_clear` | Open the Toy Box, add the next figure, clear the portal: F6, F7, F8 by default (Tab also opens the Toy Box while `key_toybox` is not set). Shared by the games, never per game. |
 
-- The mouse names share the runtime's key list (ArkeyanRuntime's `host/mouse.h`); the mouse lines are read from the game's section by the
-  runtime itself, so PLAY copies nothing (`ApplyGameInput` keeps `[input]`'s Toy Box keys as they are).
-- **Reset to defaults** also clears the game's `mouse_` lines; the switch stays as it is.
-- The game's F3 menu has the same rows (its Commands page) and writes the same lines.
-- **Settings > Portal > Toy Box keys**: each key is a key cap to click and press, as on the Keyboard tab; the pad's buttons
-  beside it (View + Y) are fixed.
-- A Toy Box key that another Toy Box key or a key of any game also has is marked red (`ToyboxKeyConflict`).
-- Tests: `tests/settings_test.cpp` (off by default, the defaults, one button per action, Reset, PLAY, the Toy Box keys
-  and their conflicts).
+- The mouse names share the runtime's key list (ArkeyanRuntime's `host/mouse.h`).
+- **Reset to defaults** also clears the game's `mouse_` lines and its switch.
+- The game's F3 menu has the same rows (its Commands page) and writes the same lines in the game's section; the Toy Box keys in `[input]`.
+- **Settings > Controls > Toy Box keys**: each key is a key cap to click and press; the pad's buttons beside it (View + Y) are fixed.
+- A Toy Box key that another Toy Box key or a key of any game also has is marked red (`ToyboxKeyConflict`), as an All games key
+  that a game inheriting it has on another row (`GlobalKeyConflict`).
+- Tests: `tests/settings_test.cpp` (off by default, the defaults, one button per action, the global switch, a hand-written `[input]` button, Reset, the
+  Toy Box keys and their conflicts, the upgrade).
 
 ## Per-game controller
 
-The game's settings page has a **Controller** tab beside Keyboard (`src/launcher/game_keys.{h,cpp}`, `ui/game_settings_page.cpp`): each of
+The game's settings page has a **Controller** tab beside Keyboard (`src/launcher/game_keys.{h,cpp}`, `ui/controls_page.cpp`): each of
 the pad's 16 buttons (A B X Y, LB RB LT RT, Start, Back, the two stick clicks, the D-pad's four directions), named as the pad in
 use prints it (the same family as the Keyboard tab's brackets: Cross on a PS5, B on a Switch for the 360's A), has a list that says
 **whose job it does**: its own ("Default", "Par défaut"), another button's (shown with the game's word for that job: "B (Attack 3 / Back)"),
-or Nothing. Below, the **Rumble** of Player 1 and Player 2: Off, Low, Normal, Strong.
+or Nothing. Above, the **Rumble** of Player 1 and Player 2: Off, Low, Normal, Strong.
 
-- Stored in the game's own section, next to its keys: `[<game>.input] pad_<button>=<button>|none` and `rumble_p1` / `rumble_p2`. The
-  button names are the runtime's: `a b x y lb rb lt rt start back ls rs dpad_up dpad_down dpad_left dpad_right`. A button given back its
-  own job loses its line.
-- **The runtime reads them from the game's section itself** (`host/settings.cpp`, with `[input]` as a fallback for a game started
-  without the launcher), so PLAY copies nothing: unlike the keys, nothing is put in `[input]`, and `ApplyGameInput` leaves the lines alone.
+- Stored as the keys are: `pad_<button>=<button>|none` and `rumble_p1` / `rumble_p2` in `[input]` for every game (Settings >
+  Controls), in `[<game>.input]` for one. The button names are the runtime's: `a b x y lb rb lt rt start back ls rs dpad_up
+  dpad_down dpad_left dpad_right`. A button given back the global layout's job loses the game's line.
+- **The runtime reads `[input]`, then the game's section** (`host/settings.cpp`); PLAY copies nothing.
 - They apply to every **real pad**, not to the keyboard (its keys are the Keyboard tab's); the sticks' axes are not remapped; the
   rumble is sent to Player 1's and Player 2's pad. The runtime's docs say how (`docs/runtime/xbox360/input.md`, "Remapping and rumble").
-- **Reset to defaults** (hold) gives every button its own job back; the rumble has its own lists.
+- **Reset to defaults** (hold) gives the All games buttons the global layout's job back, the others their own, and the rumble
+  the global level.
 - Tests: the stored lines, their precedence over nothing, the reset, the names per pad family (`tests/settings_test.cpp`,
   `PadChecks`); screenshots with `SKY_LAUNCHER_TEST_PAD=1` (`pad-ssa`, `pad-giants`, `pad-swapforce`, and Swap Force's Game tab).
 
@@ -208,7 +232,7 @@ names. Xbox 360: A B X Y, Back, Start, LB RB LT RT. Xbox One / Series: View, Men
 Square, Triangle (translated: Croix, Rond, Carré, Triangle), Touchpad (the game's Back: the touchpad's click, or
 Share / Create), Options, L1 R1 L2 R2. PlayStation 3: Select, Start. Nintendo Switch, **by place**: the 360's A (south)
 is the Switch's B, B is A, X is Y, Y is X, Back is -, Start is +, L R ZL ZR. Only the actions the game uses have a row; the other actions keep
-whatever the copy was seeded with (the runtime's default otherwise). The names are English; the French is the disc's own
+the runtime's default. The names are English; the French is the disc's own
 wording (`resources/lang/fr.txt`); the other launcher languages show English until translated. A key's name is shown in the
 player's language where the launcher has one ("Espace", "Entrée", "Retour arrière", "Échap", "Flèche haut"); the stored value
 stays SDL's English name. The sources are each game's disc, read in the running game; nothing from it is in the repository (the
@@ -228,7 +252,7 @@ English and, for Spyro's Adventure, French. The Back button was pressed in play 
 buttons were not seen doing their action. In particular: the shoulders and triggers of Swap Force (`SKY_PRESS` has no `lb`,
 `rb`, `lt`, `rt`, so they could not be pressed; the diagram is the proof); the direction each way of Spyro's Adventure's right
 stick ("Shake/Insert/Swing") takes (`SKY_PRESS` has no right stick); and whether Swap Force or Giants moves a camera with the
-right stick at all (their screens show none, so there are no rows; the seeded keys stay in `[input]`). Giants' French "Infos
+right stick at all (their screens show none, so there are no rows). Giants' French "Infos
 Skylander" and Spyro's Adventure's "Infos du Skylander" share one English key ("Skylander Info"): the launcher shows the second.
 On the French pad names, the Back button reads "Retour" (the Xbox 360 French name), as the action "Retour" of the B button.
 

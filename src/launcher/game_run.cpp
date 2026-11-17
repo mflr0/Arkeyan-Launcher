@@ -286,9 +286,10 @@ GameLaunch PrepareGameLaunch(
             Tf("The game ({}) wasn't found next to Arkeyan Launcher.\n\nPut it in the same folder.", game.runtime);
         return launch;
     }
-    // The video settings of this game are what the runtime reads from [video] (game_settings.h), and its keys from [input].
+    // The video settings of this game are what the runtime reads from [video] (game_settings.h); its keys it reads from
+    // [input] and the game's own [<game>.input] (game_keys.h).
     ApplyGameVideo(config, game.id);
-    ApplyGameInput(config, game.id);
+    MigrateInput(config);
     if (!SaveLauncherConfig(configPath, config))
     {
         launch.runtime.clear();

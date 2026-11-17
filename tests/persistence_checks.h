@@ -23,10 +23,9 @@ inline void ConfigPersistenceChecks(const std::filesystem::path& scratch)
     LauncherConfig config = LoadLauncherConfig(ini.string());
     EXPECT(config[""]["future_root"] == "keep=equals;#text" && config["future.section"]["feature"] == "enabled");
     SeedGameVideo(config, "ssa");
-    SeedGameInput(config, "ssa");
     ApplyGameVideo(config, "ssa");
-    ApplyGameInput(config, "ssa");
-    EXPECT(config["video"]["vsync"] == "0" && config["input"]["key_a"] == "F2");
+    MigrateInput(config);
+    EXPECT(config["video"]["vsync"] == "0" && config["ssa.input"]["key_a"] == "F2" && config["input"]["global"] == "1");
     config["video"]["vsync"] = "1";
     StoreGameVideo(config, "ssa");
     RecordInstalledGame(config, "synthetic", "synthetic-runtime", "new", "1.2.3");

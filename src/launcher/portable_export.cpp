@@ -35,10 +35,19 @@ std::string PortableName(std::string_view gameId)
 std::string PortableKeys(const LauncherConfig& config, std::string_view gameId)
 {
     LauncherConfig keys = config;
-    SeedGameInput(keys, gameId);
+    MigrateInput(keys);
     const std::string section = GameInputSection(gameId);
+    // The global layout with the game's lines over it, every key written: the copy plays the same on another machine.
+    std::map<std::string, std::string> lines;
+    for (const std::string& name : { std::string("input"), section })
+        for (const auto& [key, value] : keys[name])
+            if ((key.starts_with("key_") && !key.starts_with("key_toybox")) || key.starts_with("pad_") ||
+                key.starts_with("rumble_") || key == "mouse" || key.starts_with("mouse_"))
+                lines[key] = value;
+    for (const char* action : InputActions())
+        lines.emplace(std::string("key_") + action, InputDefaultKey(action));
     std::string text = "[" + section + "]\n";
-    for (const auto& [key, value] : keys[section])
+    for (const auto& [key, value] : lines)
         text += key + "=" + value + "\n";
     return text;
 }

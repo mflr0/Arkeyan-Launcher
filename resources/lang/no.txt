@@ -410,12 +410,10 @@ Hold to delete saves, backups and caches.	Hold inne for å slette lagringer, sik
 Hold to delete the built game. Saves are kept.	Hold inne for å slette det byggede spillet. Lagringer beholdes.
 Hold to delete the copy.	Hold inne for å slette kopien.
 Hold to delete the partial copy.	Hold inne for å slette den delvise kopien.
-Hold to give every button its own job back.	Hold inne for å gi hver knapp sin egen oppgave tilbake.
 Hold to mark them as not in use.	Hold inne for å merke dem som ikke i bruk.
 Hold to move them to the trash.	Hold inne for å flytte dem til papirkurven.
 Hold to put this copy back.	Hold inne for å legge denne kopien tilbake.
 Hold to rebuild the game.	Hold inne for å bygge spillet på nytt.
-Hold to reset every key of this game.	Hold inne for å tilbakestille alle taster for dette spillet.
 Hold to restore; your current saves are kept first.	Hold inne for å gjenopprette; dagens lagringer tas vare på først.
 INSTALL	INSTALLER
 INSTALLATION INTERRUPTED	INSTALLASJONEN AVBRUTT
@@ -693,7 +691,6 @@ Report copied	Rapport kopiert
 Report saved	Rapport lagret
 Report saved: {}	Rapport lagret: {}
 Reset	Tilbakestill
-Reset to defaults	Tilbakestill til standard
 Reset to new	Tilbakestill til ny
 Reset to new...	Tilbakestill til ny...
 Reset {} to new? Level, gold and upgrades are lost.	Tilbakestille {} til ny? Nivå, gull og oppgraderinger går tapt.
@@ -1179,3 +1176,14 @@ The disc image is damaged.	Diskbildet er skadet.
 The disc image may be damaged	Diskbildet kan være skadet
 The disc image of {} is damaged	Diskbildet til {} er skadet
 {} couldn't open some of its movies. A damaged copy of the disc does this.	{} kunne ikke åpne noen av filmene sine. Det skjer med en skadet kopi av platen.
+
+# The global keys and controller (ui/controls_page.cpp).
+Reset to defaults	Tilbakestill til standard
+Hold to reset every key of this game.	Hold inne for å tilbakestille alle taster for dette spillet.
+Hold to reset every button of this game.	Hold inne for å tilbakestille alle knapper for dette spillet.
+Use the global setting	Bruk den globale innstillingen
+Use the default	Bruk standard
+Dimmed values follow Launcher settings.	Nedtonede verdier følger Launcher-innstillinger.
+Games use these unless their own settings change them.	Spillene bruker disse, med mindre deres egne innstillinger endrer dem.
+Buttons	Knapper
+Stats / Info	Statistikk / Info

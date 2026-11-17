@@ -32,7 +32,8 @@ in `<data>/Collection/`, its saves in `<data>/<Game>/`, and it keeps the Xbox id
 The launcher's environment for the active profile (`profiles::Environment`): `SKY_PLAYER_NAME`, `SKY_PLAYER_PICTURE`,
 `SKY_PLAYER_XUID`; for a profile other than the first also `SKY_PROFILE_DIR` (its folder, read by `datadir::PlayerGame`)
 and `SKY_COLLECTION`, and `SKY_SETTINGS` pointing at its `game.ini`. A key of the settings file belongs to the player when
-`profiles::PersonalKey` says so: `[<game>.input]`, `[<game>.pad]`, and `[<game>]` `language`, `voice_language`,
+`profiles::PersonalKey` says so: `[<game>.input]`, `[<game>.pad]`, the global layout's lines of `[input]` (`key_` but the
+Toy Box's, `pad_`, `rumble_`, `mouse`, `mouse_`, `global`), and `[<game>]` `language`, `voice_language`,
 `nightmare_from_start`.
 
 ## Tests

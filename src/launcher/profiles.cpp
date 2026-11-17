@@ -301,6 +301,11 @@ namespace profiles
 
     bool PersonalKey(const std::string& section, const std::string& key)
     {
+        // The global layout of the keys, pad, rumble and mouse ([input], game_keys.h); the device, the pad chosen, the glyphs
+        // and the Toy Box's keys are the computer's.
+        if (section == "input")
+            return (key.starts_with("key_") && !key.starts_with("key_toybox")) || key.starts_with("pad_") ||
+                   key.starts_with("rumble_") || key == "mouse" || key.starts_with("mouse_") || key == "global";
         // A game's own sections: "<game>", "<game>.input", "<game>.pad" (and the computer's "<game>.video", "<game>.audio").
         const size_t dot = section.find('.');
         const std::string game = section.substr(0, dot), part = dot == std::string::npos ? "" : section.substr(dot + 1);

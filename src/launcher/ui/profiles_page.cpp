@@ -111,10 +111,8 @@ namespace launcher_ui
         UseProfileEnvironment();
         m_config = ProfileConfig();
         for (const GameInfo& each : g_games)
-        {
             SeedGameVideo(m_config, each.id);
-            SeedGameInput(m_config, each.id);
-        }
+        MigrateInput(m_config);
         // Its Toy Box, saves, achievements and play time: read again where they are needed.
         for (const auto& slot : m_slots)
         {

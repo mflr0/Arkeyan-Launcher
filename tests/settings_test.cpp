@@ -576,43 +576,64 @@ namespace
         SETTINGS_EXPECT(PadButtonName(ssaA, PadFamily::Xbox360) == "A");
         i18n::SetLanguage("en");
 
-        // Seeded once from the player's [input] keys; the other keys of [input] are not copied; the device stays.
+        auto find = [](std::string_view game, std::string_view action) -> const GameKey& {
+            for (const GameKey& key : GameKeys(game))
+                if (action == key.action)
+                    return key;
+            return GameKeys(game)[0];
+        };
+        const char* const games[] = { "ssa", "giants", "swapforce", "trapteam", "superchargers", "imaginators" };
+
+        // "All games": the actions every game has (the moves, Back, Pause), the same words in each but Back's, which the
+        // Controls tab calls "Stats / Info".
+        for (const char* game : games)
+            for (const GameKey& key : GameKeys(game))
+                if (SharedAction(key.action) && std::string_view(key.action) != "back")
+                    SETTINGS_EXPECT(std::string_view(key.label) == find("ssa", key.action).label);
+        for (const char* game : games)
+            SETTINGS_EXPECT(std::string_view(find(game, "back").action) == "back");
+        SETTINGS_EXPECT(SharedAction("left_up") && SharedAction("start") && SharedAction("back") &&
+                        !SharedAction("a") && !SharedAction("right_up"));
+
+        // The global layout: [input] is what every game inherits, a game's own line wins, a key equal to the global one is
+        // no line (the game follows the global layout again); the device and the glyphs stay.
         LauncherConfig config;
-        config["input"] = { { "device", "keyboard" }, { "key_x", "F" }, { "key_dpad_up", "T" },
-            { "glyphs", "keyboard" } };
-        SeedGameInput(config, "ssa");
-        SeedGameInput(config, "giants");
-        SETTINGS_EXPECT(config["ssa.input"]["key_x"] == "F" && config["giants.input"]["key_dpad_up"] == "T");
-        SETTINGS_EXPECT(config["ssa.input"].count("device") == 0 && config["ssa.input"].count("glyphs") == 0);
-        SETTINGS_EXPECT(GameKeyName(config, "ssa", GameKeys("ssa")[5]) == "F"); // ssa's X row
-        config["input"]["key_x"] = "G"; // later changes of [input] (a game was played) never seed a game again
-        SeedGameInput(config, "ssa");
-        SETTINGS_EXPECT(config["ssa.input"]["key_x"] == "F");
-
-        // A game that had nothing to seed is still marked, so [input] (another game's keys by then) does not seed it later.
-        LauncherConfig fresh;
-        SeedGameInput(fresh, "swapforce");
-        fresh["input"]["key_a"] = "Z";
-        SeedGameInput(fresh, "swapforce");
-        SETTINGS_EXPECT(fresh["swapforce.input"].count("key_a") == 0 && fresh["swapforce.input"]["seeded"] == "1");
-
-        // PLAY: the game's keys go to [input]; its defaults fill what it has not set; its unused actions follow the copy or
-        // the runtime's default; the device and the glyph style stay; the other game's copy is not touched.
-        config["ssa.input"]["key_a"] = "J";
-        config["giants.input"]["key_a"] = "K";
-        ApplyGameInput(config, "ssa");
-        SETTINGS_EXPECT(
-            config["input"]["key_a"] == "J" && config["input"]["key_x"] == "F" && config["input"]["key_y"] == "V");
+        config["input"] = { { "device", "keyboard" }, { "key_left_up", "Up" }, { "glyphs", "keyboard" } };
+        const GameKey& up = find("ssa", "left_up");
+        for (const char* game : games)
+            SETTINGS_EXPECT(GameKeyName(config, game, find(game, "left_up")) == "Up" &&
+                            !GameKeyOwn(config, game, find(game, "left_up")));
+        SetGameKey(config, "ssa", up, "Z");
+        SETTINGS_EXPECT(GameKeyName(config, "ssa", up) == "Z" && GameKeyOwn(config, "ssa", up) &&
+                        GameKeyName(config, "giants", find("giants", "left_up")) == "Up");
+        SetGameKey(config, "ssa", up, "up");
+        SETTINGS_EXPECT(!GameKeyOwn(config, "ssa", up) && config["ssa.input"].count("key_left_up") == 0);
+        SetGlobalKey(config, up, "T");
+        SETTINGS_EXPECT(config["input"]["key_left_up"] == "T" && GlobalKeyName(config, up) == "T" &&
+                        GameKeyName(config, "imaginators", find("imaginators", "left_up")) == "T");
         SETTINGS_EXPECT(config["input"]["device"] == "keyboard" && config["input"]["glyphs"] == "keyboard");
-        SETTINGS_EXPECT(config["input"]["key_dpad_up"] == "T" &&
-                        config["input"].count("key_lb") == 0); // an unused action keeps what it was seeded with
-        ApplyGameInput(config, "giants");
-        SETTINGS_EXPECT(config["input"]["key_a"] == "K" && config["input"]["key_x"] == "F" &&
-                        config["input"]["key_dpad_up"] == "T");
-        SETTINGS_EXPECT(config["ssa.input"]["key_a"] == "J" && config["giants.input"]["key_a"] == "K");
+        // A game's own action: its line, back to its default; Reset to defaults takes every line of the game: a shared
+        // row has the global key again, a game's own row its default.
+        SetGameKey(config, "ssa", find("ssa", "a"), "J");
+        SETTINGS_EXPECT(
+            GameKeyName(config, "ssa", find("ssa", "a")) == "J" && GameKeyOwn(config, "ssa", find("ssa", "a")));
+        ClearGameKey(config, "ssa", find("ssa", "a"));
+        SETTINGS_EXPECT(GameKeyName(config, "ssa", find("ssa", "a")) == "Space");
+        SetGameKey(config, "giants", find("giants", "a"), "K");
+        SetGameKey(config, "giants", find("giants", "left_up"), "W");
+        SetGlobalKey(config, find("ssa", "back"), "Delete");
+        SetGameKey(config, "giants", find("giants", "back"), "Tab");
+        SETTINGS_EXPECT(GameKeyName(config, "giants", find("giants", "back")) == "Tab" &&
+                        GameKeyName(config, "ssa", find("ssa", "back")) == "Delete");
+        ResetGameKeys(config, "giants");
+        SETTINGS_EXPECT(GameKeyName(config, "giants", find("giants", "a")) == "Space" &&
+                        GameKeyName(config, "giants", find("giants", "left_up")) == "T" &&
+                        GameKeyName(config, "giants", find("giants", "back")) == "Delete");
+        config["input"].erase("key_back");
 
-        // Two rows of one game on the same key are a conflict, in that game only.
-        config["giants.input"]["key_y"] = "K";
+        // Two rows of one game on the same key are a conflict, in that game only; a global row conflicts with a game that
+        // inherits it.
+        config["giants.input"]["key_y"] = "X";
         const std::span<const GameKey> giants = GameKeys("giants");
         int conflicts = 0;
         for (const GameKey& key : giants)
@@ -620,26 +641,65 @@ namespace
         SETTINGS_EXPECT(conflicts == 2);
         for (const GameKey& key : GameKeys("ssa"))
             SETTINGS_EXPECT(!GameKeyConflict(config, "ssa", key) || std::string_view(key.action) != "y");
+        const GameKey& pause = find("ssa", "start");
+        SETTINGS_EXPECT(!GlobalKeyConflict(config, pause));
+        SetGlobalKey(config, pause, "Space"); // every game's A
+        SETTINGS_EXPECT(GlobalKeyConflict(config, pause) && GameKeyConflict(config, "giants", find("giants", "a")));
+        for (const char* game : games)
+            SetGameKey(config, game, find(game, "start"), "P");
+        SETTINGS_EXPECT(!GlobalKeyConflict(config, pause)); // no game uses it now
+        SetGlobalKey(config, pause, "Return");
 
-        // Reset: the game's copy loses its keys (the marker stays), and PLAY then puts the defaults in [input].
-        ResetGameKeys(config, "giants");
-        SETTINGS_EXPECT(config["giants.input"].count("key_a") == 0 &&
-                        config["giants.input"].count("key_dpad_up") == 0 && config["giants.input"]["seeded"] == "1");
-        SETTINGS_EXPECT(GameKeyName(config, "giants", giants[4]) == "Space");
-        ApplyGameInput(config, "giants");
-        SETTINGS_EXPECT(config["input"]["key_a"] == "Space" && config["input"]["key_y"] == "V" &&
-                        config["input"].count("key_dpad_up") == 0);
+        // The upgrade from an older launcher: PLAY had copied the last game's keys into [input]. "ssa" was seeded (its
+        // Move up as [input] had it, X changed), "giants" never, "swapforce" moved up with W. Nobody's keys change.
+        {
+            LauncherConfig old;
+            old["input"] = { { "device", "auto" }, { "key_a", "Z" }, { "key_left_up", "Up" }, { "key_start", "P" },
+                { "key_back", "Delete" }, { "mouse", "1" }, { "key_toybox", "O" } };
+            old["ssa.input"] = { { "seeded", "1" }, { "key_left_up", "Up" }, { "key_x", "F" }, { "mouse", "0" },
+                { "rumble_p1", "normal" }, { "key_back", "Delete" }, { "pad_back", "back" } };
+            old["swapforce.input"] = { { "seeded", "1" }, { "key_left_up", "W" } };
+            SETTINGS_EXPECT(MigrateInput(old));
+            SETTINGS_EXPECT(
+                old["input"]["global"] == "1" && old["input"]["device"] == "auto" && old["input"]["key_toybox"] == "O");
+            SETTINGS_EXPECT(old["input"].count("key_a") == 0 && old["input"].count("mouse") == 0 &&
+                            old["input"]["key_left_up"] == "Up" && old["input"]["key_start"] == "P");
+            // The game's copy equal to [input] goes; a different key stays; the default it played with is its own now.
+            SETTINGS_EXPECT(old["ssa.input"].count("key_left_up") == 0 && old["ssa.input"]["key_x"] == "F" &&
+                            old["ssa.input"]["key_start"] == "Return" && old["ssa.input"].count("seeded") == 0 &&
+                            old["ssa.input"].count("mouse") == 0 && old["ssa.input"].count("rumble_p1") == 0);
+            SETTINGS_EXPECT(GameKeyName(old, "ssa", find("ssa", "left_up")) == "Up" &&
+                            GameKeyName(old, "ssa", find("ssa", "a")) == "Space" &&
+                            GameKeyName(old, "ssa", find("ssa", "x")) == "F" &&
+                            GameKeyName(old, "ssa", find("ssa", "start")) == "Return");
+            // Never seeded: it would have started from [input].
+            SETTINGS_EXPECT(GameKeyName(old, "giants", find("giants", "a")) == "Z" &&
+                            GameKeyName(old, "giants", find("giants", "start")) == "P" &&
+                            !GameKeyOwn(old, "giants", find("giants", "start")));
+            SETTINGS_EXPECT(old["swapforce.input"]["key_left_up"] == "W" && !GameMouseOn(old, "ssa"));
+            // Back is shared like Pause: [input]'s is the global key, a game's equal line goes, the default a seeded game
+            // played with is its own line, a game never seeded inherits it.
+            SETTINGS_EXPECT(old["input"]["key_back"] == "Delete" && old["ssa.input"].count("key_back") == 0 &&
+                            old["ssa.input"].count("pad_back") == 0 &&
+                            old["swapforce.input"]["key_back"] == "Backspace");
+            SETTINGS_EXPECT(GameKeyName(old, "ssa", find("ssa", "back")) == "Delete" &&
+                            GameKeyName(old, "giants", find("giants", "back")) == "Delete" &&
+                            !GameKeyOwn(old, "giants", find("giants", "back")) &&
+                            GameKeyName(old, "swapforce", find("swapforce", "back")) == "Backspace");
+            SETTINGS_EXPECT(!MigrateInput(old)); // once
+            // An older launcher then seeds a game again and puts its keys in [input]: that section is done again.
+            old["ssa.input"]["seeded"] = "1";
+            old["ssa.input"]["key_left_up"] = "Up";
+            old["input"]["key_a"] = "Space";
+            SETTINGS_EXPECT(MigrateInput(old));
+            SETTINGS_EXPECT(old["ssa.input"].count("key_left_up") == 0 && old["input"].count("key_a") == 0 &&
+                            old["ssa.input"].count("seeded") == 0 && old["ssa.input"]["key_x"] == "F");
+        }
 
-        // The mouse: off by default (no button anywhere), on: attack 1 and 2 on the clicks, one button per action, Reset clears
-        // the lines but not the switch; PLAY never copies the mouse to [input]. The Toy Box keys: [input], F6 F7 F8 by default.
+        // The mouse: off by default (no button anywhere), on: attack 1 and 2 on the clicks, one button per action; the switch
+        // and a hand-edited mouse_ line in [input], a game's own lines over them. The Toy Box keys: [input], F6 F7 F8 by default.
         {
             LauncherConfig mice;
-            auto find = [](std::string_view game, std::string_view action) -> const GameKey& {
-                for (const GameKey& key : GameKeys(game))
-                    if (action == key.action)
-                        return key;
-                return GameKeys(game)[0];
-            };
             for (const char* game : { "ssa", "giants", "swapforce", "trapteam" })
             {
                 SETTINGS_EXPECT(!GameMouseOn(mice, game));
@@ -661,18 +721,28 @@ namespace
                 mice["swapforce.input"]["mouse_left_up"] == "Wheel Up" && MouseDisplayName("Wheel Up") == "Wheel up");
             SETTINGS_EXPECT(CapturedMouseName(SDL_BUTTON_X1) == "Mouse 4" && CapturedMouseName(9).empty() &&
                             CapturedWheelName(-1) == "Wheel Down");
-            ApplyGameInput(mice, "swapforce");
-            for (const auto& [key, value] : mice["input"])
-                SETTINGS_EXPECT(!key.starts_with("mouse"));
             ResetGameKeys(mice, "swapforce");
-            SETTINGS_EXPECT(GameMouseOn(mice, "swapforce") && mice["swapforce.input"].count("mouse_x") == 0 &&
+            SETTINGS_EXPECT(!GameMouseOn(mice, "swapforce") && mice["swapforce.input"].count("mouse_x") == 0);
+            // The global switch: every game; a game's own switch wins; the global value again removes the game's line.
+            SetGameMouseOn(mice, "", true);
+            SETTINGS_EXPECT(GlobalMouseOn(mice) && GameMouseOn(mice, "giants") && GameMouseOn(mice, "swapforce") &&
                             GameMouseName(mice, "swapforce", find("swapforce", "x")) == "Mouse Left");
+            SetGameMouseOn(mice, "giants", false);
+            SETTINGS_EXPECT(!GameMouseOn(mice, "giants") && GameMouseOwn(mice, "giants"));
+            SetGameMouseOn(mice, "giants", true);
+            SETTINGS_EXPECT(GameMouseOn(mice, "giants") && !GameMouseOwn(mice, "giants"));
+            // A mouse_ line in [input] (a hand-edited file) reaches every game; a game's own action on it takes it there only.
+            mice["input"]["mouse_start"] = "Mouse Middle";
+            SETTINGS_EXPECT(GameMouseName(mice, "giants", find("giants", "start")) == "Mouse Middle" &&
+                            GameMouseName(mice, "swapforce", find("swapforce", "start")) == "Mouse Middle");
+            SetGameMouseButton(mice, "swapforce", find("swapforce", "y"), "Mouse Middle");
+            SETTINGS_EXPECT(GameMouseName(mice, "swapforce", find("swapforce", "y")) == "Mouse Middle" &&
+                            GameMouseName(mice, "swapforce", find("swapforce", "start")).empty() &&
+                            GameMouseName(mice, "giants", find("giants", "start")) == "Mouse Middle");
             SETTINGS_EXPECT(ToyboxKeys().size() == 3 && ToyboxKeyName(mice, ToyboxKeys()[0]) == "F6" &&
                             ToyboxKeyName(mice, ToyboxKeys()[2]) == "F8");
             mice["input"]["key_toybox_add"] = "G";
             SETTINGS_EXPECT(ToyboxKeyName(mice, ToyboxKeys()[1]) == "G");
-            ApplyGameInput(mice, "ssa");
-            SETTINGS_EXPECT(mice["input"]["key_toybox_add"] == "G"); // PLAY keeps the Toy Box keys
         }
 
         // The Toy Box keys are a conflict with each other and with any game's key (both flagged, none changed).
@@ -701,10 +771,10 @@ namespace
         fs::path scratch = root / "keys.ini";
         SETTINGS_EXPECT(SaveLauncherConfig(scratch.string(), config));
         LauncherConfig back = LoadLauncherConfig(scratch.string());
-        SETTINGS_EXPECT(back["ssa.input"]["key_a"] == "J" && back["giants.input"]["seeded"] == "1");
+        SETTINGS_EXPECT(back["giants.input"]["key_y"] == "X" && back["input"]["key_left_up"] == "T");
         fs::remove(scratch);
-        printf("Settings: each game's keys are its own (its own actions and names), seeded once, put in [input] at "
-               "PLAY, reset, conflicts\n");
+        printf("Settings: the global layout and each game's own keys (its own actions and names), the upgrade, reset, "
+               "conflicts\n");
     }
 
     // ---- The command line ------------------------------------------------------------------------------------------------
@@ -730,16 +800,44 @@ namespace
         // A button given back its own job loses its line.
         SetPadTarget(config, "giants", 5, 5);
         SETTINGS_EXPECT(config["giants.input"].count("pad_rb") == 0 && PadTarget(config, "giants", 5) == 5);
-        // Reset: every pad_ line of the game goes, its keys and its rumble stay.
+        // Reset to defaults: every pad_ and rumble_ line of the game goes, its keys stay.
         config["giants.input"]["key_a"] = "G";
         config["giants.input"]["rumble_p1"] = "strong";
-        config["giants.input"]["rumble_p2"] = "mighty";
         SetPadTarget(config, "giants", 1, 0);
         ResetPadMap(config, "giants");
         SETTINGS_EXPECT(PadTarget(config, "giants", 1) == 1 && PadTarget(config, "giants", 12) == 12);
-        SETTINGS_EXPECT(config["giants.input"]["key_a"] == "G" && RumbleLevel(config, "giants", 0) == "strong");
+        SETTINGS_EXPECT(config["giants.input"]["key_a"] == "G" && RumbleLevel(config, "giants", 0) == "normal");
+        config["giants.input"]["rumble_p2"] = "mighty";
         SETTINGS_EXPECT(
             RumbleLevel(config, "giants", 1) == "normal"); // an unknown level reads as normal, as the runtime does
+        // The global layout: [input]'s lines reach every game, a game's own wins, the global value again is no line.
+        SETTINGS_EXPECT(SharedPadButton(8) && SharedPadButton(9) && SharedPadButton(10) && SharedPadButton(15) &&
+                        !SharedPadButton(0) && !SharedPadButton(5));
+        // Back does Start's job everywhere; Reset to defaults gives a game's Back the global job again, its A its own.
+        SetGlobalPadTarget(config, 9, 8);
+        SetPadTarget(config, "giants", 9, 0);
+        SetPadTarget(config, "giants", 0, 1);
+        ResetPadMap(config, "giants");
+        SETTINGS_EXPECT(PadTarget(config, "giants", 9) == 8 && PadTarget(config, "giants", 0) == 0);
+        SetGlobalPadTarget(config, 9, 9);
+        SetGlobalPadTarget(config, 8, 9); // Start does Back's job everywhere
+        SETTINGS_EXPECT(config["input"]["pad_start"] == "back" && PadTarget(config, "ssa", 8) == 9 &&
+                        GlobalPadTarget(config, 8) == 9 && !PadOwn(config, "ssa", 8));
+        SetPadTarget(config, "ssa", 8, 8);
+        SETTINGS_EXPECT(PadOwn(config, "ssa", 8) && config["ssa.input"]["pad_start"] == "start" &&
+                        PadTarget(config, "ssa", 8) == 8 && PadTarget(config, "giants", 8) == 9);
+        SetPadTarget(config, "ssa", 8, 9);
+        SETTINGS_EXPECT(!PadOwn(config, "ssa", 8));
+        SetGlobalPadTarget(config, 8, 8);
+        SETTINGS_EXPECT(config["input"].count("pad_start") == 0);
+        SetRumbleLevel(config, "", 0, "low");
+        SETTINGS_EXPECT(RumbleLevel(config, "ssa", 0) == "low" && GlobalRumbleLevel(config, 0) == "low" &&
+                        !RumbleOwn(config, "ssa", 0));
+        SetRumbleLevel(config, "ssa", 0, "off");
+        SETTINGS_EXPECT(RumbleOwn(config, "ssa", 0) && RumbleLevel(config, "ssa", 0) == "off" &&
+                        RumbleLevel(config, "giants", 0) == "low");
+        SetRumbleLevel(config, "ssa", 0, "low");
+        SETTINGS_EXPECT(!RumbleOwn(config, "ssa", 0));
         SETTINGS_EXPECT(std::string_view(RumbleLevels()[0]) == "off" && RumbleLevels().size() == 4);
         // Names: as the pad in use prints them, and the game's word for the button's job.
         SETTINGS_EXPECT(

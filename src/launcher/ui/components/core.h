@@ -187,7 +187,8 @@ namespace ui
         Stop,
         Monitor, // the running game's actions
         Sound,
-        Muted // the speaker, on and crossed
+        Muted, // the speaker, on and crossed
+        Reset // an arrow turning back: a setting back to what it inherits
     };
     void DrawIcon(ImDrawList* draw, Icon icon, ImVec2 centre, float size, ImU32 color);
     // The loader icon turning (an indeterminate wait); still when motion is reduced.
