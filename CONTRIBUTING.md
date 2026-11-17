@@ -52,9 +52,6 @@ next to the `.app`) keeps its settings, games, saves and figures in a `data` fol
 - **One subject per pull request.** Its **title** becomes the merged commit's message, so write it as
   `area: what (#n)`: lower-case area, English, 72 characters at most, the issue number when there is one. For example
   `portal: find the Xbox 360 portal on Windows (#29)`. The checks cover it.
-- **Sign off every commit** (`git commit -s`): it adds `Signed-off-by: Your Name <you@example.com>`, your statement that
-  you wrote the change and can give it under the project's license (the
-  [Developer Certificate of Origin](https://developercertificate.org/)). The checks cover it.
 - Fill in the pull request template: the issue, what you changed, how you tested it, on which system.
 - Pull requests are **squashed** when merged: one commit per pull request.
 
@@ -73,10 +70,10 @@ commands of [Building and testing](#building-and-testing) on your system.
 ## Review and merge
 Every pull request is reviewed. A maintainer runs the checks on it (`tools/ci/check_pr.sh <number>`, which posts the
 result on the pull request), and the owner merges it once they pass (Windows, macOS and Linux builds, the tests, the
-format, the title and sign-offs). Expect questions and change requests: they are about the code, not about you.
+format, the title). Expect questions and change requests: they are about the code, not about you.
 
 ## License and credits
-The project is under the [MIT license](LICENSE). By sending a pull request with signed-off commits, you agree that your
+The project is under the [MIT license](LICENSE). By sending a pull request, you agree that your
 contribution is published under it. Every merged contribution is credited by GitHub name in the release notes of the
 version that ships it, and code contributors are thanked in the README.
 
