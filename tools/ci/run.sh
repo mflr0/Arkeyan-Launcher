@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# The project's checks, run on a Mac (CONTRIBUTING.md, "Checks"): the format, a pull request's title and sign-offs, the
+# The project's checks, run on a Mac (CONTRIBUTING.md, "Checks"): the format, a pull request's title, the
 # macOS build and tests (native), and in Docker containers the Linux build and the sanitizer build (native
 # architecture), the AppImage (amd64, with --dist) and the Windows build (clang-cl, amd64) with its tests under Wine.
 #
