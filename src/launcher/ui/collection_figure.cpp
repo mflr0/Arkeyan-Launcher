@@ -423,6 +423,19 @@ namespace launcher_ui
             badge(Tr("Swapper"), ui::color::Raised);
         else if (f.toy != nullptr)
             badge(CategoryLabel(f.toy->category), ui::color::Raised);
+        if (f.toy != nullptr)
+        {
+            ui::ButtonOptions picture;
+            picture.size = ui::Size::Small;
+            picture.kind = ui::ButtonKind::Ghost;
+            picture.trailing = ui::Icon::ChevronDown;
+            if (ui::Button(Tr("Figure picture"), picture) || m_testMenu == 4)
+            {
+                ui::OpenMenu("##picturemenu");
+                m_testMenu = 0;
+            }
+            DrawPictureMenu(card);
+        }
         ImGui::EndGroup();
 
         // Right: where it is, what it can do, the level and the facts, Details.
@@ -554,6 +567,64 @@ namespace launcher_ui
             DrawDetails(f);
         ImGui::EndGroup();
         DrawConfirm(f);
+    }
+
+    void CollectionPage::DrawPictureMenu(const collection::Card& card)
+    {
+        if (!ui::BeginMenu("##picturemenu"))
+            return;
+        const std::string fallback = collection::PicturesDefault();
+        const std::string everyFigure = fallback == collection::PicturesNewest ? std::string(Tr("Newest game"))
+                                        : collection::Catalogue::Get().FindGame(fallback) != nullptr
+                                            ? FullGameName(fallback)
+                                            : std::string(Tr("Original game"));
+        bool first = true;
+        for (const Figure* half : card.Halves())
+        {
+            if (half == nullptr || half->toy == nullptr)
+                continue;
+            const collection::Toy& toy = *half->toy;
+            const uint16_t variant = half->variant;
+            ImGui::PushID(half->path.c_str());
+            if (!first)
+                ui::MenuSeparator();
+            first = false;
+            if (card.Swapper()) // which half the next rows are for
+                ui::Text(ui::TextStyle::Caption, WithoutHalf(half->variantInfo.name).c_str(), ui::color::Dim, -1);
+            const std::string choice = collection::PictureChoice(toy.type, variant);
+            if (ui::MenuItem(Tf("Default ({})", everyFigure).c_str(), { ui::Icon::None, choice.empty() }))
+                collection::SetPictureChoice(toy.type, variant, "");
+            std::vector<std::string> games = collection::PictureGames(toy, variant);
+            if (!choice.empty() && choice != collection::PictureOwn &&
+                std::find(games.begin(), games.end(), choice) == games.end())
+                games.push_back(choice); // chosen, though its pictures are gone: it can still be unticked
+            for (const std::string& game : games)
+                if (ui::MenuItem(FullGameName(game).c_str(), { ui::Icon::None, choice == game }))
+                    collection::SetPictureChoice(toy.type, variant, game);
+            if (choice == collection::PictureOwn)
+                ui::MenuItem(Tr("My picture"), { ui::Icon::None, true });
+            if (ui::MenuItem(Tr("Choose a picture...")))
+                ChooseOwnPicture(toy.type, variant);
+            if (choice == collection::PictureOwn && ui::MenuItem(Tr("Remove my picture"), { ui::Icon::Trash }))
+                collection::RemoveOwnPicture(toy.type, variant);
+            ImGui::PopID();
+        }
+        ui::EndMenu();
+    }
+
+    void CollectionPage::ChooseOwnPicture(uint16_t type, uint16_t variant)
+    {
+        const std::string path = ChoosePicture(m_app.m_window);
+        if (path.empty())
+            return;
+        const collection::Image image = ReadPicture(path);
+        if (image.Empty())
+        {
+            Toast(Tr("That file is not a picture"), ui::ToastKind::Error);
+            return;
+        }
+        if (!collection::SetOwnPicture(type, variant, image))
+            Toast(Tr("The picture could not be saved"), ui::ToastKind::Error);
     }
 
     // The sheet's menu: the wheel, duplicate, back up, restore, the folder; reset and delete are asked first.

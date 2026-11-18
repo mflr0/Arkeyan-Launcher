@@ -91,18 +91,20 @@ namespace
         return total;
     }
 
-    // The collection's own files: the figures and collection.json; not the locks, the unfinished writes or the backups' folder.
+    // The collection's own files: the figures, collection.json and pictures/ (the figures' picture choices and the
+    // player's own pictures); not the locks, the unfinished writes or the backups' folder.
     std::vector<fs::path> CollectionFiles(const fs::path& folder)
     {
         std::vector<fs::path> files;
         std::error_code error;
-        for (fs::directory_iterator it(folder, error), end; !error && it != end; it.increment(error))
-        {
-            const std::string name = datadir::Text(it->path().filename());
-            if (it->is_regular_file(error) && !name.starts_with(".") && !name.ends_with(".lock") &&
-                !name.ends_with(".part") && !name.ends_with(".tmp"))
-                files.push_back(it->path());
-        }
+        for (const fs::path& from : { folder, folder / "pictures" })
+            for (fs::directory_iterator it(from, error), end; !error && it != end; it.increment(error))
+            {
+                const std::string name = datadir::Text(it->path().filename());
+                if (it->is_regular_file(error) && !name.starts_with(".") && !name.ends_with(".lock") &&
+                    !name.ends_with(".part") && !name.ends_with(".tmp"))
+                    files.push_back(it->path());
+            }
         std::sort(files.begin(), files.end());
         return files;
     }
@@ -245,7 +247,10 @@ PortableResult ExportPortable(
     }
     for (const fs::path& figure : figures)
     {
-        ok = ok && writer.AddFile(portable::CollectionPrefix + datadir::Text(figure.filename()), figure, why);
+        // "pictures/<file>" for a picture: the pack's names use '/' on every system.
+        std::string name = datadir::Text(figure.lexically_relative(spec.collection));
+        std::replace(name.begin(), name.end(), '\\', '/');
+        ok = ok && writer.AddFile(portable::CollectionPrefix + name, figure, why);
         count++;
     }
     ok = ok && writer.Finish(why);

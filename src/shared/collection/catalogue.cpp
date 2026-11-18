@@ -260,6 +260,18 @@ namespace collection
         return nullptr;
     }
 
+    const Game* Catalogue::Origin(const Toy& toy, uint16_t variant) const
+    {
+        const Game* origin = FindGame(toy.game);
+        if (origin == nullptr || variant >> 12 == 0)
+            return origin;
+        const int year = 2011 + int(variant >> 12);
+        for (const Game& game : m_games)
+            if (game.year == year && game.year > origin->year)
+                return &game;
+        return origin;
+    }
+
     bool Catalogue::Accepts(const std::string& id, uint16_t type) const
     {
         const Game* game = FindGame(id);

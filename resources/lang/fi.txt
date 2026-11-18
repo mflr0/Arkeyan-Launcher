@@ -1187,3 +1187,16 @@ Dimmed values follow Launcher settings.	Himmennetyt arvot seuraavat Launcher-ase
 Games use these unless their own settings change them.	Pelit käyttävät näitä, elleivät niiden omat asetukset muuta niitä.
 Buttons	Painikkeet
 Stats / Info	Tilastot / Tiedot
+
+# Figure pictures (Settings > Launcher > Collection, the figure sheet).
+Figure pictures	Hahmojen kuvat
+Which game's pictures the figures show.	Minkä pelin kuvia hahmot näyttävät.
+Original game	Alkuperäinen peli
+Newest game	Uusin peli
+Figure picture	Hahmon kuva
+Default ({})	Oletus ({})
+My picture	Oma kuva
+Choose a picture...	Valitse kuva...
+Remove my picture	Poista oma kuva
+That file is not a picture	Tiedosto ei ole kuva
+The picture could not be saved	Kuvaa ei voitu tallentaa

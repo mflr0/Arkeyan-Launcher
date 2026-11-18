@@ -1187,3 +1187,16 @@ Dimmed values follow Launcher settings.	Nedtonede verdier følger Launcher-innst
 Games use these unless their own settings change them.	Spillene bruker disse, med mindre deres egne innstillinger endrer dem.
 Buttons	Knapper
 Stats / Info	Statistikk / Info
+
+# Figure pictures (Settings > Launcher > Collection, the figure sheet).
+Figure pictures	Figurbilder
+Which game's pictures the figures show.	Hvilket spills bilder figurene viser.
+Original game	Opprinnelig spill
+Newest game	Nyeste spill
+Figure picture	Figurbilde
+Default ({})	Standard ({})
+My picture	Mitt bilde
+Choose a picture...	Velg et bilde...
+Remove my picture	Fjern bildet mitt
+That file is not a picture	Filen er ikke et bilde
+The picture could not be saved	Bildet kunne ikke lagres
