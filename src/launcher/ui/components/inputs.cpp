@@ -436,8 +436,10 @@ namespace ui
         else if (ImGui::IsItemFocused() && !options.disabled)
         {
             int step =
-                (ImGui::IsKeyPressed(ImGuiKey_RightArrow) || ImGui::IsKeyPressed(ImGuiKey_GamepadDpadRight) ? 1 : 0) -
-                (ImGui::IsKeyPressed(ImGuiKey_LeftArrow) || ImGui::IsKeyPressed(ImGuiKey_GamepadDpadLeft) ? 1 : 0);
+                ((ImGui::IsKeyPressed(ImGuiKey_RightArrow) || ImGui::IsKeyPressed(ImGuiKey_GamepadDpadRight) ? 1 : 0) -
+                    (ImGui::IsKeyPressed(ImGuiKey_LeftArrow) || ImGui::IsKeyPressed(ImGuiKey_GamepadDpadLeft) ? 1
+                                                                                                              : 0)) *
+                options.step;
             if (step != 0 && std::clamp(*value + step, min, max) != *value)
             {
                 *value = std::clamp(*value + step, min, max);

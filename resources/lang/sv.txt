@@ -871,8 +871,9 @@ Trash · {}	Papperskorg · {}
 Triangle	Triangel
 Trilinear	Trilinjär
 Trophies	Troféer
-Turn the game music off	Stäng av spelmusiken
-Turn the game music on	Slå på spelmusiken
+Game music	Spelmusik
+Play the music	Spela musiken
+Each game's menu theme, on its page.	Varje spels menytema, på spelets sida.
 Type	Typ
 Ultra Performance	Ultraprestanda
 Frame generation	Bildgenerering

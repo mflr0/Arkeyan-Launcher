@@ -1358,15 +1358,19 @@ pickers and gear, disabled STOP during a delayed clean stop, and the return to R
 repository's working copy (its own HOME, the offscreen driver).
 
 ## Game music
-The visible game's main menu theme plays at `gamemusic::Volume` (0.12 of full scale). A 1.5-second fade brings
-it in; selecting another game cross-fades between their themes. Home, Collection, Settings, achievements
-and game settings are silent. Any install or kit download silences the launcher too.
+The visible game's main menu theme plays at the level of `[launcher] game_music_volume` (0-100, default 50,
+`gamemusic::DefaultVolume`). The gain is `gamemusic::Gain`: 0.12 of full scale at 50 (`DefaultGain`), on a square
+law (0.48 at 100, silent at 0). A level change ramps over at most 50 ms, so dragging the slider never clicks. A
+1.5-second fade brings the theme in; selecting another game cross-fades between their themes. Home, Collection,
+Settings, achievements and game settings are silent. Any install or kit download silences the launcher too.
 
 The speaker sits at the top right over the painting, beside the achievement pill when present, using
-`ui::IconButton` with Lucide's volume and mute glyphs. It controls every game through
-`[launcher] game_music` in `launcher.ini`: on by default, `0` off, remembered across restarts. Muting fades
-out; unmuting fades in. Starting muted is silent immediately. A game without a cached theme shows no
-speaker and no error.
+`ui::IconButton` with Lucide's volume and mute glyphs (mute when off or at 0). It opens a small menu
+(`ui::BeginMenu`, right-aligned) with the **Game music** switch and the level's slider. Settings > Launcher has
+the same two in its **Game music** section. Both set every game through `launcher.ini`: `[launcher] game_music`
+(on by default, `0` off) and `game_music_volume`, remembered across restarts. Moving the slider while the music
+is off turns it back on. Muting fades out; unmuting fades in. Starting muted is silent immediately. The
+slider's keys and the D-pad step by 5. A game without a cached theme shows no speaker and no error.
 
 PLAY fades the theme out before starting a game. The launcher waits for the audio stream to pause and
 clears its queued data; there is one game session. A normal exit, STOP or crash allows the visible game's

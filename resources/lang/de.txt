@@ -868,8 +868,9 @@ Trash · {}	Papierkorb · {}
 Triangle	Dreieck
 Trilinear	Trilinear
 Trophies	Trophäen
-Turn the game music off	Spielmusik ausschalten
-Turn the game music on	Spielmusik einschalten
+Game music	Spielmusik
+Play the music	Musik abspielen
+Each game's menu theme, on its page.	Das Menüthema jedes Spiels, auf seiner Seite.
 Type	Typ
 Ultra Performance	Ultra-Leistung
 Frame generation	Frame Generation

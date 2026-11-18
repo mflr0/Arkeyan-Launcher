@@ -55,6 +55,7 @@ namespace ui
         float width = -1;
         bool disabled = false;
         bool showValue = true;
+        int step = 1; // a key's or the D-pad's
     };
     bool Slider(const char* id, int* value, int min, int max, const SliderOptions& options = {});
 

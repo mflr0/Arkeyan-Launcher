@@ -14,6 +14,7 @@ namespace gamemusic
     namespace
     {
         constexpr uint32_t OutputRate = 48000;
+        constexpr float VolumeRampSeconds = 0.05f; // the whole range: a level change never steps
         constexpr const char* TrackName = "menu_music.wav";
         constexpr const char* NoneName = "menu_music.none";
         constexpr const char* CacheName = "menu_music.kit";
@@ -167,6 +168,14 @@ namespace gamemusic
             m_voices.push_back({ std::move(track), 0, 0, 1 });
     }
 
+    float Gain(int volume)
+    {
+        const float level = float(std::clamp(volume, 0, 100)) / float(DefaultVolume);
+        return DefaultGain * level * level;
+    }
+
+    void Mixer::SetVolume(int volume) { m_gainTarget = Gain(volume); }
+
     void Mixer::Mute(bool muted, bool immediately)
     {
         m_masterTarget = muted ? 0.f : 1.f;
@@ -176,7 +185,7 @@ namespace gamemusic
 
     bool Mixer::Silent() const
     {
-        if (m_master <= 0 && m_masterTarget <= 0)
+        if ((m_master <= 0 && m_masterTarget <= 0) || (m_gain <= 0 && m_gainTarget <= 0))
             return true;
         return std::all_of(
             m_voices.begin(), m_voices.end(), [](const Voice& v) { return v.level <= 0 && v.target <= 0; });
@@ -186,17 +195,19 @@ namespace gamemusic
     {
         for (const Voice& voice : m_voices)
             if (voice.track == track)
-                return Curve(voice.level) * Curve(m_master) * Volume;
+                return Curve(voice.level) * Curve(m_master) * m_gain;
         return 0;
     }
 
     void Mixer::Render(float* out, uint32_t frames)
     {
         const float step = 1.f / (FadeSeconds * float(m_rate));
+        const float gainStep = Gain(100) / (VolumeRampSeconds * float(m_rate));
         for (uint32_t i = 0; i < frames; i++)
         {
             m_master = Toward(m_master, m_masterTarget, step);
-            const float master = Curve(m_master) * Volume / 32768.f;
+            m_gain = Toward(m_gain, m_gainTarget, gainStep);
+            const float master = Curve(m_master) * m_gain / 32768.f;
             for (Voice& voice : m_voices)
             {
                 voice.level = Toward(voice.level, voice.target, step);
@@ -367,7 +378,7 @@ namespace gamemusic
         m_openFailed = m_stream == nullptr;
     }
 
-    void Player::Update(const std::string& game, bool muted)
+    void Player::Update(const std::string& game, bool muted, int volume)
     {
         std::shared_ptr<const Track> wanted;
         if (!game.empty() && HasTrack(game))
@@ -392,6 +403,7 @@ namespace gamemusic
             std::lock_guard lock(m_shared->mutex);
             m_mixer->Play(wanted);
             m_mixer->Mute(muted, muted && m_paused);
+            m_mixer->SetVolume(volume);
             silent = m_mixer->Silent();
         }
         if (silent != m_paused)

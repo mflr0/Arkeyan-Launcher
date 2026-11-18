@@ -870,8 +870,9 @@ Trash · {}	Papelera · {}
 Triangle	Triángulo
 Trilinear	Trilineal
 Trophies	Trofeos
-Turn the game music off	Desactivar la música del juego
-Turn the game music on	Activar la música del juego
+Game music	Música del juego
+Play the music	Reproducir la música
+Each game's menu theme, on its page.	El tema del menú de cada juego, en su página.
 Type	Tipo
 Ultra Performance	Ultra rendimiento
 Frame generation	Generación de fotogramas
