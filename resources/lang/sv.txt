@@ -151,6 +151,9 @@ Checking...	Kontrollerar...
 Chinese	Kinesiska
 Choose	Välj
 Choose a figure for {}	Välj en figur för {}
+Include HD textures	Ta med HD-texturer
+{} with them, {} without.	{} med dem, {} utan.
+Settings: {} FPS · Resolution scale {} · {}	Inställningar: {} FPS · Upplösningsskala {} · {}
 Choose a folder...	Välj en mapp...
 Choose a key to change it.	Välj en tangent för att ändra den.
 Choose a type	Välj en typ

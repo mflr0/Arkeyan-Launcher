@@ -12,7 +12,9 @@
 // the bundle keeps its signed executable as it is). Names use '/' and stay relative.
 //
 // What a portable holds, by name: game/<disc path, lowercase> (the disc's files), portable.txt (Info), keys.ini (the game's
-// [<game>.input] section of launcher.ini), collection/<file> (the player's figures and collection.json), icon.png.
+// [<game>.input] section of launcher.ini), settings.ini (the game's other launcher.ini sections as it played them: video,
+// audio, language, HD textures, the shared [input]), collection/<file> (the player's figures and collection.json), icon.png,
+// and when the player chose them, textures-hd/<hash>.dds (the HD textures, host/texture_pack.h).
 //
 // Plain C++ (no SDL), shared with Arkeyan Launcher (tools/sync_launcher.sh): the launcher writes a pack, the game reads it.
 #include <atomic>
@@ -20,6 +22,7 @@
 #include <cstdio>
 #include <filesystem>
 #include <functional>
+#include <map>
 #include <span>
 #include <string>
 #include <string_view>
@@ -32,6 +35,8 @@ namespace portable
     inline constexpr char CollectionPrefix[] = "collection/";
     inline constexpr char InfoName[] = "portable.txt";
     inline constexpr char KeysName[] = "keys.ini";
+    inline constexpr char SettingsName[] = "settings.ini";
+    inline constexpr char HdTexturesPrefix[] = "textures-hd/";
     inline constexpr char IconName[] = "icon.png";
     inline constexpr size_t TrailerSize = 32;
 
@@ -95,6 +100,13 @@ namespace portable
         uint64_t m_position = 0, m_written = 0;
         std::vector<Entry> m_entries;
     };
+
+    // The sections of an ini text ("[section]", then "key=value" lines; anything else is skipped), as launcher.ini holds them.
+    using IniSections = std::map<std::string, std::map<std::string, std::string>>;
+    IniSections ParseIni(std::string_view text);
+    // Copies each section of `from` that `into` lacks or holds empty; a section `into` already has is left whole (this
+    // machine's settings win). Returns the names copied.
+    std::vector<std::string> AddMissingSections(IniSections& into, const IniSections& from);
 
     // --- First launch of a portable (the game's side) --------------------------------------------------------------------
 

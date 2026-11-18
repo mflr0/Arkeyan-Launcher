@@ -602,7 +602,10 @@ namespace launcher_ui
         exportOptions.icon = ui::Icon::ArrowUp; // out of the launcher, as every export
         exportOptions.disabled = !ready || Installing();
         if (ui::Button(Tf("Export for {}", SystemName()).c_str(), exportOptions))
+        {
             m_portableAsk = true;
+            OpenPortableExport();
+        }
         if (!m_s->portablePath.empty())
         {
             ImGui::SameLine(0, ui::space::S);
@@ -624,13 +627,25 @@ namespace launcher_ui
                 Tr("This copy holds your game. It is for your personal use only: do not share it."), ui::color::Ink);
             ImGui::Dummy(ImVec2(0, ui::space::XS));
             const uint64_t size = m_s->fromCopy ? m_s->copy.total : m_s->discSize;
+            const uint64_t hdBytes = m_s->portableHdBytes;
             ui::Text(ui::TextStyle::Caption,
                 Tf("It plays on {} without the launcher or the disc image, with the same saves and settings as the "
                    "installed game. "
                    "It never updates: to update it, export it again. Up to {}.",
-                    SystemName(), ui::FormatSize(size))
+                    SystemName(), ui::FormatSize(size + (m_s->portableHd ? hdBytes : 0)))
                     .c_str(),
                 ui::color::Dim);
+            ImGui::Dummy(ImVec2(0, ui::space::XS));
+            ui::Text(ui::TextStyle::Caption, m_s->portableSettings.c_str(), ui::color::Dim);
+            // Only once they are made: the copy holds them as they are (off, it is the smaller file).
+            if (hdBytes != 0 && ui::BeginSettings("##portablehd"))
+            {
+                const std::string hint =
+                    Tf("{} with them, {} without.", ui::FormatSize(size + hdBytes), ui::FormatSize(size));
+                ui::SettingRow(Tr("Include HD textures"), hint.c_str());
+                ui::Toggle("##portablehdtoggle", &m_s->portableHd);
+                ui::EndSettings();
+            }
             if (ui::ModalActions(&m_portableAsk, Tr("Choose a folder..."), Tr("Cancel")) == ui::ModalResult::Confirm)
             {
                 m_portableAsk = false;
@@ -646,6 +661,30 @@ namespace launcher_ui
         }
     }
 
+    // What the dialog shows: the HD textures when they are made (the switch off), and the settings the copy carries.
+    void App::OpenPortableExport()
+    {
+        m_s->portableHd = false;
+        m_s->portableHdBytes = HdTexturesOffered() && HdTexturesWanted(*m_s) && !m_s->hdJob.Running()
+                                   ? PortableHdTexturesBytes(HdTexturesFolder())
+                                   : 0;
+        const portable::IniSections settings = portable::ParseIni(PortableSettings(m_config, m_s->game.id, false));
+        auto get = [&](const std::string& section, const char* key) {
+            auto lines = settings.find(section);
+            if (lines == settings.end())
+                return std::string();
+            auto value = lines->second.find(key);
+            return value != lines->second.end() ? value->second : std::string();
+        };
+        const std::string scale = get(GameVideoSection(m_s->game.id), "resolution_scale");
+        LauncherConfig language;
+        if (std::string code = get(m_s->game.id, "language"); !code.empty())
+            language[m_s->game.id]["language"] = code;
+        m_s->portableSettings = Tf("Settings: {} FPS · Resolution scale {} · {}",
+            get(GameVideoSection(m_s->game.id), "fps_limit"),
+            scale.empty() || scale == "auto" ? Tr("Auto") : "x" + scale, LauncherLanguageLabel(language, m_s->game));
+    }
+
     void App::StartPortableExport(const std::filesystem::path& folder)
     {
         if (m_s->installed.runtime.empty() || m_s->disc != DiscState::Ready || Installing() ||
@@ -657,6 +696,10 @@ namespace launcher_ui
         spec.source = m_s->discPath;
         spec.collection = datadir::FromText(m_s->collection->Folder());
         spec.keys = PortableKeys(m_config, m_s->game.id);
+        const bool hd = m_s->portableHd && m_s->portableHdBytes != 0;
+        spec.settings = PortableSettings(m_config, m_s->game.id, hd);
+        if (hd)
+            spec.hdTextures = HdTexturesFolder();
         spec.info = { m_s->game.id, m_s->installed.gameVersion, m_s->installed.kitVersion, m_s->check.xexSha256,
             PortableStamp() };
         spec.folder = folder;

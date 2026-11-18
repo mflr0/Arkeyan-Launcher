@@ -975,6 +975,9 @@ Export for {}	Exporter pour {}
 Export a portable copy	Exporter une copie portable
 This copy holds your game. It is for your personal use only: do not share it.	Cette copie contient votre jeu. Elle est réservée à votre usage personnel : ne la partagez pas.
 It plays on {} without the launcher or the disc image, with the same saves and settings as the installed game. It never updates: to update it, export it again. Up to {}.	Elle se lance sur {} sans le launcher ni l'image disque, avec les mêmes sauvegardes et réglages que le jeu installé. Elle ne se met jamais à jour : pour la mettre à jour, exportez-la de nouveau. Jusqu'à {}.
+Include HD textures	Inclure les textures HD
+{} with them, {} without.	{} avec, {} sans.
+Settings: {} FPS · Resolution scale {} · {}	Réglages : {} FPS · Échelle de résolution {} · {}
 Choose a folder...	Choisir un dossier...
 Portable copy saved: {}	Copie portable enregistrée : {}
 Export stopped	Export arrêté
