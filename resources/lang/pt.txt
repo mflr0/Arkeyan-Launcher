@@ -1186,3 +1186,27 @@ Dimmed values follow Launcher settings.	Os valores esbatidos seguem as Definiç�
 Games use these unless their own settings change them.	Os jogos usam estas, a menos que as suas definições as alterem.
 Buttons	Botões
 Stats / Info	Estatísticas / Info
+
+# Imaginite chests (ui/chests_page.cpp).
+Imaginite chests	Baús de Imaginite
+Chests	Baús
+Chests · {}	Baús · {}
+Reach the Academy once in the game to add chests.	Chegue uma vez à Academia no jogo para adicionar baús.
+Save slot {} · {} in the pile · Room for {} more	Espaço {} · {} na pilha · Cabem mais {}
+Imaginite Chest	Baú de Imaginite
+Copper Chest	Baú de cobre
+Bronze Chest	Baú de bronze
+Silver Chest	Baú de prata
+Gold Chest	Baú de ouro
+Platinum Chest	Baú de platina
+Bronze Mystery Chest	Baú misterioso de bronze
+Silver Mystery Chest	Baú misterioso de prata
+Gold Mystery Chest	Baú misterioso de ouro
+Add 1 chest	Adicionar 1 baú
+Add {} chests	Adicionar {} baús
+Chests added: they appear at the Academy	Baús adicionados: aparecem na Academia
+Couldn't add the chests	Não foi possível adicionar os baús
+They appear the next time this save reaches the Academy.	Aparecem da próxima vez que este save chegar à Academia.
+{} chests waiting for save slot {}	{} baús à espera para o espaço {}
+{} chests waiting	{} baús à espera
+Too late: the game already added them	Tarde demais: o jogo já os adicionou

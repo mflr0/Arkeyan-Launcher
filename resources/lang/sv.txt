@@ -1187,3 +1187,27 @@ Dimmed values follow Launcher settings.	Nedtonade värden följer Launcherinstä
 Games use these unless their own settings change them.	Spelen använder dessa om inte deras egna inställningar ändrar dem.
 Buttons	Knappar
 Stats / Info	Statistik / Info
+
+# Imaginite chests (ui/chests_page.cpp).
+Imaginite chests	Imaginite-kistor
+Chests	Kistor
+Chests · {}	Kistor · {}
+Reach the Academy once in the game to add chests.	Nå Akademin en gång i spelet för att lägga till kistor.
+Save slot {} · {} in the pile · Room for {} more	Sparplats {} · {} i högen · Plats för {} till
+Imaginite Chest	Imaginite-kista
+Copper Chest	Kopparkista
+Bronze Chest	Bronskista
+Silver Chest	Silverkista
+Gold Chest	Guldkista
+Platinum Chest	Platinakista
+Bronze Mystery Chest	Brons-mysteriekista
+Silver Mystery Chest	Silver-mysteriekista
+Gold Mystery Chest	Guld-mysteriekista
+Add 1 chest	Lägg till 1 kista
+Add {} chests	Lägg till {} kistor
+Chests added: they appear at the Academy	Kistor tillagda: de dyker upp på Akademin
+Couldn't add the chests	Kunde inte lägga till kistorna
+They appear the next time this save reaches the Academy.	De dyker upp nästa gång den här sparfilen når Akademin.
+{} chests waiting for save slot {}	{} kistor väntar på sparplats {}
+{} chests waiting	{} kistor väntar
+Too late: the game already added them	För sent: spelet har redan lagt till dem

@@ -1186,3 +1186,27 @@ Dimmed values follow Launcher settings.	Gedimde waarden volgen de Launcher-inste
 Games use these unless their own settings change them.	De spellen gebruiken deze, tenzij hun eigen instellingen ze wijzigen.
 Buttons	Knoppen
 Stats / Info	Statistieken / Info
+
+# Imaginite chests (ui/chests_page.cpp).
+Imaginite chests	Imaginite-kisten
+Chests	Kisten
+Chests · {}	Kisten · {}
+Reach the Academy once in the game to add chests.	Bereik in het spel één keer de Academie om kisten toe te voegen.
+Save slot {} · {} in the pile · Room for {} more	Opslagplek {} · {} op de stapel · Ruimte voor nog {}
+Imaginite Chest	Imaginite-kist
+Copper Chest	Koperen kist
+Bronze Chest	Bronzen kist
+Silver Chest	Zilveren kist
+Gold Chest	Gouden kist
+Platinum Chest	Platina kist
+Bronze Mystery Chest	Bronzen mysteriekist
+Silver Mystery Chest	Zilveren mysteriekist
+Gold Mystery Chest	Gouden mysteriekist
+Add 1 chest	1 kist toevoegen
+Add {} chests	{} kisten toevoegen
+Chests added: they appear at the Academy	Kisten toegevoegd: ze verschijnen in de Academie
+Couldn't add the chests	Kon de kisten niet toevoegen
+They appear the next time this save reaches the Academy.	Ze verschijnen de volgende keer dat deze opslag de Academie bereikt.
+{} chests waiting for save slot {}	{} kisten wachten op opslagplek {}
+{} chests waiting	{} kisten wachten
+Too late: the game already added them	Te laat: het spel heeft ze al toegevoegd

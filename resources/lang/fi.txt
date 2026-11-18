@@ -1187,3 +1187,27 @@ Dimmed values follow Launcher settings.	Himmennetyt arvot seuraavat Launcher-ase
 Games use these unless their own settings change them.	Pelit käyttävät näitä, elleivät niiden omat asetukset muuta niitä.
 Buttons	Painikkeet
 Stats / Info	Tilastot / Tiedot
+
+# Imaginite chests (ui/chests_page.cpp).
+Imaginite chests	Imaginite-arkut
+Chests	Arkut
+Chests · {}	Arkut · {}
+Reach the Academy once in the game to add chests.	Pääse pelissä kerran Akatemiaan lisätäksesi arkkuja.
+Save slot {} · {} in the pile · Room for {} more	Tallennuspaikka {} · {} kasassa · Tilaa vielä {}
+Imaginite Chest	Imaginite-arkku
+Copper Chest	Kupariarkku
+Bronze Chest	Pronssiarkku
+Silver Chest	Hopea-arkku
+Gold Chest	Kulta-arkku
+Platinum Chest	Platina-arkku
+Bronze Mystery Chest	Pronssinen mysteeriarkku
+Silver Mystery Chest	Hopeinen mysteeriarkku
+Gold Mystery Chest	Kultainen mysteeriarkku
+Add 1 chest	Lisää 1 arkku
+Add {} chests	Lisää {} arkkua
+Chests added: they appear at the Academy	Arkut lisätty: ne ilmestyvät Akatemiaan
+Couldn't add the chests	Arkkujen lisääminen epäonnistui
+They appear the next time this save reaches the Academy.	Ne ilmestyvät, kun tämä tallennus seuraavan kerran saapuu Akatemiaan.
+{} chests waiting for save slot {}	{} arkkua odottaa tallennuspaikkaa {}
+{} chests waiting	{} arkkua odottaa
+Too late: the game already added them	Liian myöhään: peli lisäsi ne jo

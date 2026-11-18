@@ -13,6 +13,7 @@
 #include "launcher/games_folder.h"
 #include "launcher/install_checklist.h"
 #include "launcher/game_music.h"
+#include "launcher/game_chests.h"
 #include "launcher/game_progress.h"
 #include "launcher/game_keys.h"
 #include "launcher/game_run.h"
@@ -271,8 +272,14 @@ namespace launcher_ui
         Collection,
         Settings,
         GameSettings,
-        Achievements
+        Achievements,
+        Chests // Imaginite chests (chests_page.cpp)
     };
+    // A page of the shown game opened from its Play page, which closes back to it.
+    constexpr bool GameSubPage(Page page)
+    {
+        return page == Page::GameSettings || page == Page::Achievements || page == Page::Chests;
+    }
     enum class SettingsTab
     {
         Controls,
@@ -496,6 +503,7 @@ namespace launcher_ui
             bool running, stopping, showGame, installing, noDisc, ready, verifying, install, update, detailed;
         };
         void DrawPlay();
+        void DrawChests();
         std::string DrawPlayHeading(
             const PlayState& play, const ArtTexture* logo, ImVec2 titleAt, ImVec2 titleSize, ImVec2 at, float leftW);
         void DrawPlayAction(const PlayState& play, ImVec2 at, float leftW, const std::string& status);
@@ -538,6 +546,8 @@ namespace launcher_ui
         // A game's achievements and play time (achievements_page.cpp), opened from its Play page.
         void DrawAchievements();
         void RefreshProgress(bool force = false);
+        void RefreshChests(bool force = false); // chests_page.cpp
+        void TestChestsScript(uint64_t now);
         // Player profiles (profiles_page.cpp, launcher/profiles.h): the active one's environment and settings.
         void LoadProfiles();
         void UseProfileEnvironment();
@@ -1063,6 +1073,7 @@ namespace launcher_ui
         uint32_t m_heroNavFrom = 0;
         bool m_testAchievements =
             false; // SKY_LAUNCHER_TEST_ACHIEVEMENTS: the shown game's page with its play time, then its achievements
+        bool m_testChests = false; // SKY_LAUNCHER_TEST_CHESTS: the Chests page's screenshots (chests_page.cpp)
         bool m_testHdTex =
             false; // SKY_LAUNCHER_TEST_HDTEX=<game>: the HD textures switch on a built game (TestHdTexturesScript)
         bool m_testLogo =
@@ -1079,6 +1090,10 @@ namespace launcher_ui
         const GameSlot* m_progressSlot = nullptr;
         std::string m_progressLanguage;
         uint64_t m_progressAt = 0;
+        GameChests m_chests; // the shown game's chest pile and waiting chests (RefreshChests)
+        std::vector<int> m_chestCounts; // the Chests page's counters, one per kind
+        const GameSlot* m_chestsSlot = nullptr;
+        uint64_t m_chestsAt = 0;
         std::map<std::string, ArtTexture> m_achievementIcons; // by file
         std::shared_ptr<FigureIconCache> m_figureIcons = std::make_shared<FigureIconCache>();
         std::map<std::string, ArtTexture> m_cachedArt; // CachedArt's, by "<game> <role> <width>"
