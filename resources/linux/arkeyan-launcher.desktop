@@ -3,6 +3,6 @@ Type=Application
 Name=Arkeyan Launcher
 Comment=Launcher for the Skylanders PC ports
 Exec=ArkeyanLauncher
-Icon=skylauncher
+Icon=arkeyan-launcher
 Categories=Game;
 Terminal=false

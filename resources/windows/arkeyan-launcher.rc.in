@@ -1,8 +1,8 @@
 // Resources of the exe (CMakeLists.txt fills in the version).
 // The application manifest (RT_MANIFEST 24, id 1: the process's own).
-1 24 "@CMAKE_SOURCE_DIR@/resources/windows/skylauncher.manifest"
+1 24 "@CMAKE_SOURCE_DIR@/resources/windows/arkeyan-launcher.manifest"
 // The icon of the exe (Explorer, the taskbar before the window opens).
-2 ICON "@CMAKE_SOURCE_DIR@/resources/icons/skylauncher.ico"
+2 ICON "@CMAKE_SOURCE_DIR@/resources/icons/arkeyan-launcher.ico"
 
 1 VERSIONINFO
 FILEVERSION @LAUNCHER_VERSION_PART_0@,@LAUNCHER_VERSION_PART_1@,@LAUNCHER_VERSION_PART_2@,@LAUNCHER_VERSION_PART_3@

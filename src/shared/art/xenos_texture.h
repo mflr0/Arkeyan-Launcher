@@ -2,7 +2,7 @@
 
 // Xbox 360 (Xenos) texture pixels to RGBA: DXT1, DXT3, DXT5, A8R8G8B8 and 8-bit, linear or tiled, in the GPU's byte
 // order. Used for the art read from the player's own disc (docs/runtime/host/game_art.md); nothing is shipped.
-// Shared with Skylauncher (tools/sync_skylauncher.sh): no runtime dependency.
+// Shared with Arkeyan Launcher (tools/sync_launcher.sh): no runtime dependency.
 #include <cstddef>
 #include <cstdint>
 #include <vector>

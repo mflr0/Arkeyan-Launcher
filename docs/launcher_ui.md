@@ -39,7 +39,7 @@ component has becomes a component (or an option of one) first, with its states d
 - `src/launcher/ui/game_look.cpp` - the game page in each game's own look: the main action's options (`DrawMainAction`), the logo's
   arrival (`LogoDrop`, `DrawHeroLogo`), the disc's pictures as textures (`LoadArt`, `CachedArt`), `SystemReducesMotion`.
 - `src/shared/art/` - ArkeyanRuntime's disc picture readers and per-game provider (`game_art`), copied by its
-  `tools/sync_skylauncher.sh`: Xenos textures, SSA's `strm`/APKF, Giants' IGA/IGZ.
+  `tools/sync_launcher.sh`: Xenos textures, SSA's `strm`/APKF, Giants' IGA/IGZ.
 - `src/shared/` - what isn't the launcher's alone: the disc reader (`vfs`: each directory extent is walked once, with bounds on depth, entries and sizes, so a looping or oversized image is refused, "Not an Xbox 360 disc image", never a crash; `tests/vfs_test.cpp`), the platform layer, `stb_impl.cpp`, the embedded fonts
   and the figure engine.
 - `src/shared/collection/` and `src/shared/figures/` - ArkeyanRuntime's collection library (copied by `tools/sync_collection.sh`:
@@ -836,7 +836,7 @@ read from the player's own disc.
   `list.tsv` (each achievement's id, gamerscore, picture id and hidden flag, and its name, unlocked text and locked text in en, fr, de, es, it,
   pt) and one `<picture id>.png` each. The cache holds the `default.xex`'s SHA-256: it is rewritten only when the disc's `default.xex`
   changes (older launchers' caches have no list: the next disc check makes it). Code: `src/shared/collection/achievements.{h,cpp}` (also
-  the runtime's reader: `tools/sync_skylauncher.sh`); counts per disc are in ArkeyanRuntime's `docs/runtime/xbox360/xam.md` (SSA 38, Giants 45,
+  the runtime's reader: `tools/sync_launcher.sh`); counts per disc are in ArkeyanRuntime's `docs/runtime/xbox360/xam.md` (SSA 38, Giants 45,
   Swap Force 39, 1000 G each). "Clear caches" removes it; the next disc check makes it again.
 - **What was unlocked and the play time** are written by the game runtime, not the launcher (`achievements.txt`, `playtime.txt`:
   `docs/settings.md`, "Progress files"). `src/launcher/game_progress.{h,cpp}` joins them with the cached list in the launcher's language (English

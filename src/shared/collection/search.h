@@ -1,6 +1,6 @@
 #pragma once
 
-// The shelf's smart search and sort, shared by the Toy Box and Skylauncher (docs/runtime/host/collection.md "Search and
+// The shelf's smart search and sort, shared by the Toy Box and Arkeyan Launcher (docs/runtime/host/collection.md "Search and
 // sort"): one function says whether a card matches what the player typed, and Shelf cuts a list into the shelf in the
 // player's sort order.
 #include "collection.h"

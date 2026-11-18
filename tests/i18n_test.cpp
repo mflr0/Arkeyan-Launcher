@@ -1,6 +1,6 @@
 // ArkeyanLauncherTest's checks for the launcher's languages: every string the code translates has an entry in every language file
 // (the key coverage test), the entries keep their placeholders, no entry is left over, no visible string is written without
-// Tr, and the language is chosen as docs/translations.md says. Reads the source tree (SKYLAUNCHER_SOURCE_DIR). Called from
+// Tr, and the language is chosen as docs/translations.md says. Reads the source tree (LAUNCHER_SOURCE_DIR). Called from
 // launcher_test.cpp's main; returns the number of failures.
 #include "launcher/i18n.h"
 #include "launcher/env.h"
@@ -174,9 +174,8 @@ namespace
                     }
                     std::string literal;
                     size_t end = p;
-                    if (!ReadLiterals(text, end, literal) || literal.rfind("##", 0) == 0 || literal == "SKYLAUNCHER" ||
-                        literal == "Skylauncher" || literal == "Arkeyan Launcher" || literal == "ARKEYAN LAUNCHER" ||
-                        literal == "%s")
+                    if (!ReadLiterals(text, end, literal) || literal.rfind("##", 0) == 0 || literal == "Skylauncher" ||
+                        literal == "Arkeyan Launcher" || literal == "ARKEYAN LAUNCHER" || literal == "%s")
                         continue;
                     bool letters = false;
                     for (char c : literal)
@@ -298,7 +297,7 @@ namespace
 
 int I18nChecks()
 {
-    const fs::path root = SKYLAUNCHER_SOURCE_DIR;
+    const fs::path root = LAUNCHER_SOURCE_DIR;
     const std::vector<fs::path> sources = SourceFiles(root);
     I18N_EXPECT(sources.size() > 20);
     const std::set<std::string> keys = TranslatedKeys(sources);

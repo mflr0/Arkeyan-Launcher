@@ -19,7 +19,7 @@ namespace collection
     };
 
     // The mark Spyro's Adventure's menus give a toy family (magic items: a potion; adventure packs: a compass; minis and
-    // sidekicks: a paw): a signed distance (negative inside) in a [-1, 1] square, y down. Skylauncher draws it over its
+    // sidekicks: a paw): a signed distance (negative inside) in a [-1, 1] square, y down. Arkeyan Launcher draws it over its
     // own icon shapes, so both apps show the same mark. Other families have none (KindGlyph returns 1).
     bool HasKindGlyph(Category category);
     float KindGlyph(Category category, float x, float y);

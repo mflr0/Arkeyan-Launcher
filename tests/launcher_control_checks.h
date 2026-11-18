@@ -22,7 +22,7 @@ static void LauncherControlChecks(const std::filesystem::path& scratch)
         { "SKY_LAUNCHER_TEST_DROP", "" }, { "SKY_FAKE_GAME_MODE", "slow-close" },
         { "SKY_FAKE_GAME_READY", (root / "ready").string() } });
     SDL_IOStream* log = SDL_IOFromFile((root / "output.log").string().c_str(), "wb");
-    const char* arguments[] = { SKYLAUNCHER_TEST_EXE, nullptr };
+    const char* arguments[] = { LAUNCHER_TEST_EXE, nullptr };
     SDL_PropertiesID properties = SDL_CreateProperties();
     SDL_SetPointerProperty(properties, SDL_PROP_PROCESS_CREATE_ARGS_POINTER, arguments);
     SDL_SetPointerProperty(properties, SDL_PROP_PROCESS_CREATE_ENVIRONMENT_POINTER, environment);

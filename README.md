@@ -1,4 +1,4 @@
-<p align="center"><img src="resources/icons/skylauncher.svg" width="128" alt="Arkeyan Launcher"></p>
+<p align="center"><img src="resources/icons/arkeyan-launcher.svg" width="128" alt="Arkeyan Launcher"></p>
 
 <p align="center">
 <a href="https://github.com/mflr0/Arkeyan-Launcher/releases/latest"><img alt="Release" src="https://img.shields.io/github/v/release/mflr0/Arkeyan-Launcher"></a>

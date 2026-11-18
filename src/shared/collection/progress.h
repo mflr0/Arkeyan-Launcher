@@ -2,7 +2,7 @@
 
 // What a player has done in a game, kept in the game's data folder (docs/getting-started/settings.md): the achievements
 // unlocked (achievements.txt) and the play time (playtime.txt). Plain C++ and the C library only: the runtime writes
-// them, Skylauncher reads them (tools/sync_skylauncher.sh copies this file). Both files are small text files, replaced
+// them, Arkeyan Launcher reads them (tools/sync_launcher.sh copies this file). Both files are small text files, replaced
 // atomically (save_backup.h), so a crash leaves the previous version.
 //
 //   achievements.txt   one line per unlocked achievement: "<id> <unix time>"

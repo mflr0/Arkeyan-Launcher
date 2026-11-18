@@ -1,7 +1,7 @@
 #pragma once
 
 // Which text and voice languages a game's disc holds, decided from the disc's file list and, for the game that needs it, the
-// entry names of two or three of its archives (names only, no file content is read). Skylauncher shows only these in a game's
+// entry names of two or three of its archives (names only, no file content is read). Arkeyan Launcher shows only these in a game's
 // Language settings. Where each game marks a language: docs/engines/lux/languages.md ("What the disc holds").
 #include <functional>
 #include <string>

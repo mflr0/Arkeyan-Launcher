@@ -15,16 +15,16 @@ for size in 16 32 128 256 512; do
     rsvg-convert -w $size -h $size "$svg" -o "$work/icon.iconset/icon_${size}x${size}.png"
     rsvg-convert -w $((size * 2)) -h $((size * 2)) "$svg" -o "$work/icon.iconset/icon_${size}x${size}@2x.png"
 done
-iconutil -c icns "$work/icon.iconset" -o "$work/Skylauncher.icns"
+iconutil -c icns "$work/icon.iconset" -o "$work/ArkeyanLauncher.icns"
 
 # make_app <bundle name>
 make_app() {
     local app="$work/$1/$1.app"
     mkdir -p "$work/$1"
     ditto "$built" "$app"
-    cp "$work/Skylauncher.icns" "$app/Contents/Resources/Skylauncher.icns"
+    cp "$work/ArkeyanLauncher.icns" "$app/Contents/Resources/ArkeyanLauncher.icns"
     local plist="$app/Contents/Info.plist"
-    /usr/libexec/PlistBuddy -c "Set :CFBundleIconFile Skylauncher" "$plist" 2>/dev/null || /usr/libexec/PlistBuddy -c "Add :CFBundleIconFile string Skylauncher" "$plist"
+    /usr/libexec/PlistBuddy -c "Set :CFBundleIconFile ArkeyanLauncher" "$plist" 2>/dev/null || /usr/libexec/PlistBuddy -c "Add :CFBundleIconFile string ArkeyanLauncher" "$plist"
     /usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName 'Arkeyan Launcher'" "$plist" 2>/dev/null || /usr/libexec/PlistBuddy -c "Add :CFBundleDisplayName string 'Arkeyan Launcher'" "$plist"
     /usr/libexec/PlistBuddy -c "Set :CFBundleName 'Arkeyan Launcher'" "$plist" 2>/dev/null || /usr/libexec/PlistBuddy -c "Add :CFBundleName string 'Arkeyan Launcher'" "$plist"
     codesign --force --deep --sign - "$app"   # ad hoc: not notarized, see the README

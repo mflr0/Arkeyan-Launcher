@@ -31,11 +31,11 @@ namespace gamemusic
     // <data>/<Game>/launcher-cache/menu_music.wav; empty when the game has no data folder.
     std::filesystem::path File(const std::string& game);
 
-    // Makes File(game) with the kit's `skyBuild --menu-music` from the disc `image` (a disc image or a copy's folder), if it is
+    // Makes File(game) with the kit's `builder --menu-music` from the disc `image` (a disc image or a copy's folder), if it is
     // missing or was decoded by a different kit build. A kit that cannot (an older one, a game without a theme) is remembered by its `kitVersion` in
     // menu_music.none, so it is asked once, not at every start. True when the file exists afterwards. Blocks (~1 s): run it on
     // the disc check's thread.
-    bool Extract(const std::string& game, const std::string& image, const std::filesystem::path& skyBuild,
+    bool Extract(const std::string& game, const std::string& image, const std::filesystem::path& builder,
         const std::string& kitVersion);
 
     // The fading mixer, apart from any device so that it can be checked: Play() makes `track` the one heard (fading in from

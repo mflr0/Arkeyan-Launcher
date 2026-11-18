@@ -262,7 +262,7 @@ namespace launcher_ui
 
     // ---- Disc verification on a worker thread --------------------------------------------------------------------
 
-    void VerifyJob::Start(const std::string& image, const GameInfo& game, const std::filesystem::path& skyBuild,
+    void VerifyJob::Start(const std::string& image, const GameInfo& game, const std::filesystem::path& builder,
         const std::string& kitVersion)
     {
         Join();
@@ -275,7 +275,7 @@ namespace launcher_ui
             meta = {};
             assets = {};
         }
-        thread = std::thread([this, image, &game, skyBuild, kitVersion] {
+        thread = std::thread([this, image, &game, builder, kitVersion] {
             auto report = [this](float fraction, std::string_view text) {
                 progress = fraction;
                 std::lock_guard lock(mutex);
@@ -304,7 +304,7 @@ namespace launcher_ui
                     art.Init(game.id);
                     art.ExtractFromDisc(disc, metadata);
                     // Its menu theme, decoded by the kit's Arkeyan-Builder (the launcher has no XMA decoder): once, next to the pictures.
-                    gamemusic::Extract(game.id, image, skyBuild, kitVersion);
+                    gamemusic::Extract(game.id, image, builder, kitVersion);
                 }
             }
             {
@@ -995,7 +995,7 @@ namespace launcher_ui
         m_s->logo.Destroy();
         const std::optional<InstallKit> kit = FindInstallKit(m_config, m_s->game.id);
         m_s->verify.Start(
-            path, m_s->game, kit ? kit->ssabuild : std::filesystem::path(), kit ? kit->version : std::string());
+            path, m_s->game, kit ? kit->builder : std::filesystem::path(), kit ? kit->version : std::string());
     }
 
     void App::FinishVerify()
