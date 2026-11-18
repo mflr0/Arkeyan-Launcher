@@ -81,6 +81,9 @@ int PortableChecks(const fs::path& scratch)
     Write(collection / "Spyro.sky.lock", "123");
     Write(collection / "collection.json", "{}");
     Write(collection / "backups" / "Spyro.sky" / "old.sky", "old");
+    Write(collection / "pictures" / "pictures.json", "{}"); // the picture choices and own pictures travel too
+    Write(collection / "pictures" / "16-0.png", "png");
+    Write(collection / "pictures" / "16-0.png.part", "half");
 
     const fs::path hd = root / "textures-hd";
     Write(hd / "00000000000000aa.dds", std::string(3u << 20, 'h'));
@@ -139,9 +142,12 @@ int PortableChecks(const fs::path& scratch)
     std::string error;
     EXPECT(portable::ReadIndex(pack, entries, &error));
     for (const char* name : { "game/default.xex", "game/media/big.arc", "game/media/empty.txt", "portable.txt",
-             "keys.ini", "icon.png", "collection/Spyro.sky", "collection/collection.json" })
+             "keys.ini", "icon.png", "collection/Spyro.sky", "collection/collection.json",
+             "collection/pictures/pictures.json", "collection/pictures/16-0.png" })
         EXPECT(portable::Find(entries, name) != nullptr);
     EXPECT(portable::Find(entries, "collection/Spyro.sky.lock") == nullptr);
+    EXPECT(portable::Find(entries, "collection/pictures/16-0.png.part") == nullptr);
+    EXPECT(portable::Find(entries, "collection/backups/Spyro.sky/old.sky") == nullptr);
     EXPECT(portable::Find(entries, "game/media/big.arc")->size == (5u << 20));
     EXPECT(EntryText(pack, entries, "keys.ini") == spec.keys);
     EXPECT(portable::ParseInfo(EntryText(pack, entries, "portable.txt")).version == "0.9.5");

@@ -38,9 +38,10 @@ The pack holds the disc's files as they are (no padding, no compression), `porta
 `default.xex` fingerprint, the export's time), `keys.ini` (the game's `[<game>.input]` section, as PLAY would apply it),
 `settings.ini` (`PortableSettings`: `[<game>.video]` as PLAY makes `[video]`, every key written, the game's own frame rate
 included; `[<game>.audio]`; `[<game>]` with the languages PLAY would pass, `hd_textures` (`1` only when the copy holds
-them) and `nightmare_from_start`; the shared `[input]`), the collection's figures and `collection.json` (not the locks,
-not the backups), the game's icon and, with the switch on, every `.dds` of the game's `textures-hd` folder as
-`textures-hd/<name>` (where its build reads them: the Games folder when set).
+them) and `nightmare_from_start`; the shared `[input]`), the collection's figures, `collection.json` and `pictures/` (the
+figures' picture choices and the player's own pictures; not the locks, not the backups), the game's icon and, with the
+switch on, every `.dds` of the game's `textures-hd` folder as `textures-hd/<name>` (where its build reads them: the
+Games folder when set).
 
 ## How it is written
 

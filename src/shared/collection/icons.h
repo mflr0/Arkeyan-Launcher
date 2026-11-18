@@ -48,9 +48,40 @@ namespace collection
     // empty when that game has none cached.
     std::string GameKindPicturePath(const std::string& gameId, Category category);
 
-    // The shared picture rule: a variant's own art before plain art, newest cached game first (reverse catalogue
-    // order), then a family picture, then empty for a generated icon. gameId is kept for caller compatibility;
-    // viewing a different game never changes the chosen art. large selects the larger portrait within that game.
+    // --- Which game's pictures (the player's choice; docs/runtime/host/figures.md, "Which picture") ----------------------
+
+    // Kept in the collection folder's pictures/pictures.json with the player's own pictures (pictures/<type>-<variant>.png),
+    // so the choices travel with the collection; the launcher and every game read the same file.
+    inline constexpr char PicturesOrigin[] = "origin"; // the figure's original game (the default)
+    inline constexpr char PicturesNewest[] = "newest"; // the newest game that has one
+    inline constexpr char PictureOwn[] = "own"; // a card's own picture
+    // The choice for every figure: PicturesOrigin (also when unset or unknown), PicturesNewest or a game id.
+    std::string PicturesDefault();
+    bool SetPicturesDefault(const std::string& choice);
+    // One card's choice (a toy type and variant id; a swapper half on its own): empty for the default, a game id, or
+    // PictureOwn while its own picture is there.
+    std::string PictureChoice(uint16_t type, uint16_t variant);
+    // Empty clears it; PictureOwn only through SetOwnPicture. False when the file cannot be written.
+    bool SetPictureChoice(uint16_t type, uint16_t variant, const std::string& choice);
+    // The player's own picture for a card, kept square (transparent margins) and at most OwnPictureSize pixels wide;
+    // the card's choice becomes PictureOwn. RemoveOwnPicture deletes it and goes back to the default.
+    inline constexpr int OwnPictureSize = 512;
+    bool SetOwnPicture(uint16_t type, uint16_t variant, const Image& image, std::string* error = nullptr);
+    bool RemoveOwnPicture(uint16_t type, uint16_t variant);
+    // The card's own picture file, empty when it has none.
+    std::string OwnPicturePath(uint16_t type, uint16_t variant);
+    // The games (catalogue order) with a cached picture of that card, for a list to choose from.
+    std::vector<std::string> PictureGames(const Toy& toy, uint16_t variant);
+    // Changes whenever a choice or an own picture changes, in this process at once, in another one within a second:
+    // a cache of decoded pictures is dropped when it changes. Cheap enough for every frame.
+    uint64_t PictureGeneration();
+
+    // The shared picture rule. The games in order: the card's chosen game (its variant art, then its plain art), then
+    // the default choice's game, then the variant's original game (Catalogue::Origin), the games after it (nearest
+    // first) and the ones before it (nearest first); PicturesNewest puts the newest first instead. Within that order a
+    // variant's own art comes before plain art, then a family picture, then empty for a generated icon. A card's own
+    // picture comes before all of it. gameId is kept for caller compatibility; viewing a different game never changes
+    // the chosen art. large selects the larger portrait within that game.
     // Swapper halves first use their own half art, then whole-figure art (a bottom may use its matching top's).
     std::string PortraitPath(const std::string& gameId, const Toy& toy, uint16_t variant = 0, bool large = false);
     // The same rule, preferring artwork to a portrait within each game, never an older game's plain artwork to a
@@ -58,8 +89,8 @@ namespace collection
     std::string BestPicturePath(const std::string& gameId, const Toy& toy, uint16_t variant = 0);
     // When only the kind is known (the Toy Box, the collection's cards): the toy's one variant of that kind, else 0.
     uint16_t VariantFor(const Toy& toy, VariantKind kind);
-    // A swapper half's newest cached half art (variant before plain), then whole-figure art, then empty for a
-    // generated icon. A bottom's matching top can supply the whole figure. Empty for toys that are not halves.
+    // A swapper half's own picture, else its half art in the same order (variant before plain), then whole-figure
+    // art, then empty for a generated icon. A bottom's matching top can supply the whole figure. Empty for toys that are not halves.
     std::string HalfPicturePath(const Toy& toy, uint16_t variant = 0);
     // `image` cut to its visible pixels (alpha above `minAlpha`: its bounding box); unchanged when none is visible.
     Image CropToVisible(const Image& image, uint8_t minAlpha = 8);
@@ -68,16 +99,16 @@ namespace collection
     // composited over the bottom (straight alpha), the result cut to its visible box. No stacking, no rescaling of a half
     // on its own. Empty when either half has no visible pixel.
     Image JoinHalves(const Image& top, const Image& bottom);
-    // A swapper's picture: its two genuine half images joined in the same newest-first order. Empty when either half has
-    // none, or dedicated variant art would be lost to plain halves (the caller uses the top's picture with the bottom
-    // small in a corner). The same picture in the
+    // A swapper's picture: its two genuine half images joined, each in the picture rule's order. Empty when either half
+    // has none or its own picture, or dedicated variant art would be lost to plain halves (the caller uses the top's
+    // picture with the bottom small in a corner). The same picture in the
     // launcher, the figure sheet, Add a figure, the seats and the Toy Box.
     Image SwapperPicture(const Toy& top, uint16_t topVariant, const Toy& bottom, uint16_t bottomVariant);
     // A creation crystal's picture in its element's colour: the disc has one magenta crystal for the ten elements (the game
     // tints it as it draws), so its magenta glass takes the element's colour here, shade kept. `path`: the picture the
     // caller found (BestPicturePath, PortraitPath). Empty for another toy or without a picture.
     Image CrystalPicture(const Toy& toy, const std::string& path);
-    // PortraitPath with no game being viewed: the newest cached game, as for every other view.
+    // PortraitPath with no game being viewed, as for every other view.
     std::string DiscImagePath(const Toy& toy);
 
     // The picture PortraitPath finds, else the generated one, `size` pixels square, with the badge of `kind`.

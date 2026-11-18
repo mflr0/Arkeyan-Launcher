@@ -396,7 +396,7 @@ namespace launcher_ui
             "52-sort-name", "53-all-swappers", "54-mixed-swapper-sheet", "55-add-swapper-versions", "56-add-no-match",
             "57-manage-menu", "58-figure-menu", "59-put-on-menu", "60-focus-card", "61-focus-seat", "62-trap-sheet",
             "63-trap-edit", "collection-bottom", "64-trapteam-greyed", "65-unknown-type", "66-unknown-named",
-            "67-missing-figure", "68-seat-restored" };
+            "67-missing-figure", "68-seat-restored", "69-picture-menu" };
     }
 
     const char* CollectionPage::TestShotName(int step) { return Shots[std::clamp(step, 0, int(std::size(Shots)) - 1)]; }
@@ -850,6 +850,10 @@ namespace launcher_ui
             Reload();
             break;
         case 49: m_model.SetSeat(1, figureOf(16)); break;
+        case 50: // the sheet's "Figure picture" menu, open
+            OpenFigure(figureOf(14));
+            m_testMenu = 4;
+            break;
         case 46:
         case 47:
             if (std::none_of(

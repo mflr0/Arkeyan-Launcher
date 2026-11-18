@@ -1189,3 +1189,16 @@ Dimmed values follow Launcher settings.	Los valores atenuados siguen los Ajustes
 Games use these unless their own settings change them.	Los juegos usan estos salvo que sus propios ajustes los cambien.
 Buttons	Botones
 Stats / Info	Estadísticas / Info
+
+# Figure pictures (Settings > Launcher > Collection, the figure sheet).
+Figure pictures	Imágenes de las figuras
+Which game's pictures the figures show.	De qué juego son las imágenes de las figuras.
+Original game	Juego original
+Newest game	Juego más reciente
+Figure picture	Imagen de la figura
+Default ({})	Predeterminado ({})
+My picture	Mi imagen
+Choose a picture...	Elegir una imagen...
+Remove my picture	Quitar mi imagen
+That file is not a picture	Ese archivo no es una imagen
+The picture could not be saved	No se pudo guardar la imagen

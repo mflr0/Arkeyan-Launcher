@@ -1187,3 +1187,16 @@ Dimmed values follow Launcher settings.	Abgeblendete Werte folgen den Launcher-E
 Games use these unless their own settings change them.	Die Spiele nutzen diese, außer ihre eigenen Einstellungen ändern sie.
 Buttons	Tasten
 Stats / Info	Werte / Info
+
+# Figure pictures (Settings > Launcher > Collection, the figure sheet).
+Figure pictures	Figurenbilder
+Which game's pictures the figures show.	Aus welchem Spiel die Bilder der Figuren stammen.
+Original game	Ursprüngliches Spiel
+Newest game	Neuestes Spiel
+Figure picture	Figurenbild
+Default ({})	Standard ({})
+My picture	Mein Bild
+Choose a picture...	Bild auswählen...
+Remove my picture	Mein Bild entfernen
+That file is not a picture	Diese Datei ist kein Bild
+The picture could not be saved	Das Bild konnte nicht gespeichert werden

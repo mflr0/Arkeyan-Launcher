@@ -1189,3 +1189,16 @@ Dimmed values follow Launcher settings.	Gedimde waarden volgen de Launcher-inste
 Games use these unless their own settings change them.	De spellen gebruiken deze, tenzij hun eigen instellingen ze wijzigen.
 Buttons	Knoppen
 Stats / Info	Statistieken / Info
+
+# Figure pictures (Settings > Launcher > Collection, the figure sheet).
+Figure pictures	Figuurafbeeldingen
+Which game's pictures the figures show.	Uit welk spel de afbeeldingen van de figuren komen.
+Original game	Oorspronkelijk spel
+Newest game	Nieuwste spel
+Figure picture	Figuurafbeelding
+Default ({})	Standaard ({})
+My picture	Mijn afbeelding
+Choose a picture...	Kies een afbeelding...
+Remove my picture	Mijn afbeelding verwijderen
+That file is not a picture	Dat bestand is geen afbeelding
+The picture could not be saved	De afbeelding kon niet worden opgeslagen
