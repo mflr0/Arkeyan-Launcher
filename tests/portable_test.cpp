@@ -1,13 +1,16 @@
 // "Export a portable copy" (docs/portable.md) on stand-ins: a fake installed game (a bundle on macOS, an executable elsewhere),
 // a folder of disc files, a collection with a lock and a backups folder. The portable's pack holds every disc file, the keys, the
-// figures but not the lock; the executable's own bytes stay; no room, a cancel and a second export (which replaces the first).
+// figures but not the lock, the settings, and the HD textures only when asked (counted in the room); the executable's own
+// bytes stay; no room, a cancel and a second export (which replaces the first).
 // Scratch folders only; no game data. Also --export-portable: the same export of a real installed game, for a manual proof.
 #include "test_env.h"
 #include "launcher/game_install.h"
 #include "launcher/game_keys.h"
+#include "launcher/game_settings.h"
 #include "launcher/portable_export.h"
 #include "shared/collection/datadir.h"
 #include <SDL3/SDL.h>
+#include <algorithm>
 #include <chrono>
 #include <cstdio>
 #include <filesystem>
@@ -82,14 +85,26 @@ int PortableChecks(const fs::path& scratch)
     Write(collection / "pictures" / "16-0.png", "png");
     Write(collection / "pictures" / "16-0.png.part", "half");
 
+    const fs::path hd = root / "textures-hd";
+    Write(hd / "00000000000000aa.dds", std::string(3u << 20, 'h'));
+    Write(hd / "sub" / "00000000000000bb.dds", std::string(1000, 'h'));
+    Write(hd / "notes.txt", "not a texture");
+
     LauncherConfig config;
     config["input"]["key_a"] = "K";
+    config["input"]["glyphs"] = "playstation";
+    config["video"]["fps_limit"] = "60"; // the last game PLAY started, not this one
+    config["ssa.video"]["resolution_scale"] = "2";
+    config["ssa"]["nightmare_from_start"] = "1";
+    config["ssa"]["language"] = "fr";
     PortableSpec spec;
     spec.gameId = "ssa";
     spec.runtime = runtime;
     spec.source = datadir::Text(disc);
     spec.collection = collection;
     spec.keys = PortableKeys(config, "ssa");
+    spec.settings = PortableSettings(config, "ssa", true);
+    spec.hdTextures = hd;
     spec.info = { "ssa", "0.9.5", "0.7.3", "abc", PortableStamp() };
     spec.folder = root / "out";
     spec.name = PortableName("ssa");
@@ -97,6 +112,15 @@ int PortableChecks(const fs::path& scratch)
     EXPECT(spec.name == "Skylanders Spyro's Adventure");
     EXPECT(spec.keys.find("[ssa.input]\n") == 0 && spec.keys.find("key_a=K\n") != std::string::npos);
     EXPECT(spec.info.exported.size() == 15 && spec.info.exported[8] == '-');
+    // The settings as the game plays them: its own frame rate (its default here), never another game's.
+    const portable::IniSections settings = portable::ParseIni(spec.settings);
+    EXPECT(settings.count("ssa.video") == 1 && settings.at("ssa.video").at("resolution_scale") == "2");
+    EXPECT(settings.at("ssa.video").at("fps_limit") == DefaultFrameRate("ssa"));
+    EXPECT(settings.at("ssa").at("language") == "fr" && settings.at("ssa").at("hd_textures") == "1" &&
+           settings.at("ssa").at("nightmare_from_start") == "1");
+    EXPECT(settings.at("input").at("glyphs") == "playstation" && settings.count("video") == 0);
+    EXPECT(portable::ParseIni(PortableSettings(config, "ssa", false)).at("ssa").at("hd_textures") == "0");
+    EXPECT(PortableHdTexturesBytes(hd) == (3u << 20) + 1000 && PortableHdTexturesBytes(root / "none") == 0);
 
     uint64_t lastDone = 0, lastTotal = 0;
     PortableResult result = ExportPortable(spec, nullptr, [&](uint64_t done, uint64_t total) {
@@ -128,6 +152,11 @@ int PortableChecks(const fs::path& scratch)
     EXPECT(EntryText(pack, entries, "keys.ini") == spec.keys);
     EXPECT(portable::ParseInfo(EntryText(pack, entries, "portable.txt")).version == "0.9.5");
     EXPECT(EntryText(pack, entries, "icon.png") == "png");
+    EXPECT(EntryText(pack, entries, "settings.ini") == spec.settings);
+    EXPECT(portable::Find(entries, "textures-hd/00000000000000aa.dds") != nullptr &&
+           portable::Find(entries, "textures-hd/00000000000000aa.dds")->size == (3u << 20));
+    EXPECT(EntryText(pack, entries, "textures-hd/sub/00000000000000bb.dds") == std::string(1000, 'h'));
+    EXPECT(portable::Find(entries, "textures-hd/notes.txt") == nullptr);
     EXPECT(!fs::exists(spec.folder / ("." + spec.name + ".export")));
     const uint64_t firstSize = result.bytes;
     EXPECT(firstSize > (5u << 20));
@@ -146,6 +175,25 @@ int PortableChecks(const fs::path& scratch)
     EXPECT(result.outcome == PortableResult::Outcome::NotEnoughSpace && result.needed > (5u << 20) &&
            result.available == 1000);
     EXPECT(!PortableFailureText(result).empty() && !fs::exists(small.folder / (small.name + PortableExtension())));
+
+    // The HD textures count in the room: what fits without them does not with them.
+    PortableSpec tight = spec;
+    tight.folder = root / "out-tight";
+    tight.freeBytes = int64_t(firstSize - (3u << 20) + (64ull << 20) + 4096);
+    result = ExportPortable(tight);
+    EXPECT(result.outcome == PortableResult::Outcome::NotEnoughSpace && result.needed > uint64_t(tight.freeBytes));
+    tight.hdTextures.clear();
+    result = ExportPortable(tight);
+    EXPECT(result.outcome == PortableResult::Outcome::Done);
+    std::vector<portable::Entry> without;
+    EXPECT(portable::ReadIndex(tight.folder / (tight.name + PortableExtension())
+#if defined(__APPLE__)
+                                   / "Contents" / "Resources" / portable::PackName
+#endif
+        ,
+        without, &error));
+    EXPECT(std::none_of(without.begin(), without.end(),
+        [](const portable::Entry& entry) { return entry.name.starts_with(portable::HdTexturesPrefix); }));
 
     // Cancelled: nothing is left.
     std::atomic<bool> cancel{ true };

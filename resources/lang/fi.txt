@@ -151,6 +151,9 @@ Checking...	Tarkistetaan...
 Chinese	kiina
 Choose	Valitse
 Choose a figure for {}	Valitse hahmo kohteelle {}
+Include HD textures	Sisällytä HD-tekstuurit
+{} with them, {} without.	{} niiden kanssa, {} ilman.
+Settings: {} FPS · Resolution scale {} · {}	Asetukset: {} FPS · Resoluution skaala {} · {}
 Choose a folder...	Valitse kansio...
 Choose a key to change it.	Muuta näppäintä valitsemalla se.
 Choose a type	Valitse tyyppi

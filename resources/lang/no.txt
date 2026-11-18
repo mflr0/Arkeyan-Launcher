@@ -151,6 +151,9 @@ Checking...	Kontrollerer...
 Chinese	Kinesisk
 Choose	Velg
 Choose a figure for {}	Velg en figur: {}
+Include HD textures	Ta med HD-teksturer
+{} with them, {} without.	{} med dem, {} uten.
+Settings: {} FPS · Resolution scale {} · {}	Innstillinger: {} FPS · Oppløsningsskala {} · {}
 Choose a folder...	Velg en mappe...
 Choose a key to change it.	Velg en tast for å endre den.
 Choose a type	Velg en type

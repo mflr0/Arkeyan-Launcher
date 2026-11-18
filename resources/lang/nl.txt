@@ -150,6 +150,9 @@ Checking...	Controleren...
 Chinese	Chinees
 Choose	Kiezen
 Choose a figure for {}	Kies een figuur voor {}
+Include HD textures	HD-textures meenemen
+{} with them, {} without.	{} met, {} zonder.
+Settings: {} FPS · Resolution scale {} · {}	Instellingen: {} FPS · Resolutieschaal {} · {}
 Choose a folder...	Kies een map...
 Choose a key to change it.	Kies een toets om die te wijzigen.
 Choose a type	Kies een type

@@ -150,6 +150,9 @@ Checking...	Comprobando...
 Chinese	Chino
 Choose	Elegir
 Choose a figure for {}	Elige una figura para {}
+Include HD textures	Incluir texturas HD
+{} with them, {} without.	{} con ellas, {} sin ellas.
+Settings: {} FPS · Resolution scale {} · {}	Ajustes: {} FPS · Escala de resolución {} · {}
 Choose a folder...	Elegir una carpeta...
 Choose a key to change it.	Elige una tecla para cambiarla.
 Choose a type	Elige un tipo

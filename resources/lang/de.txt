@@ -148,6 +148,9 @@ Checking...	Prüfung...
 Chinese	Chinesisch
 Choose	Wählen
 Choose a figure for {}	Figur für {} wählen
+Include HD textures	HD-Texturen mitnehmen
+{} with them, {} without.	{} mit ihnen, {} ohne.
+Settings: {} FPS · Resolution scale {} · {}	Einstellungen: {} FPS · Auflösungsfaktor {} · {}
 Choose a folder...	Ordner wählen...
 Choose a key to change it.	Wähle eine Taste, um sie zu ändern.
 Choose a type	Typ wählen

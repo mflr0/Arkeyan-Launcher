@@ -39,6 +39,13 @@ namespace launcher_ui
         return ParseBool(SettingGet(m_config, slot.game.id, "hd_textures", "0"));
     }
 
+    std::filesystem::path App::HdTexturesFolder() const
+    {
+        return BuildKnowsGamesFolder(m_config, m_s->check.xexSha256)
+                   ? GameInstallFolder(m_s->check.xexSha256) / "textures-hd"
+                   : GameFileOf(m_s->game.id, "textures-hd");
+    }
+
     bool App::AnyHdTextures() const
     {
         return std::any_of(m_slots.begin(), m_slots.end(), [](const auto& slot) { return slot->hdJob.Running(); });
@@ -148,10 +155,7 @@ namespace launcher_ui
         {
             Set(m_s->game.id, "hd_textures", "0");
             std::error_code error;
-            std::filesystem::remove_all(BuildKnowsGamesFolder(m_config, m_s->check.xexSha256)
-                                            ? GameInstallFolder(m_s->check.xexSha256) / "textures-hd"
-                                            : GameFileOf(m_s->game.id, "textures-hd"),
-                error);
+            std::filesystem::remove_all(HdTexturesFolder(), error);
         }
         if (progress.state == State::Cancelled)
         {

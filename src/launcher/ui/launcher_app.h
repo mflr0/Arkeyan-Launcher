@@ -409,6 +409,10 @@ namespace launcher_ui
         PortableExportJob portableJob;
         std::filesystem::path portablePath;
         std::string portableMessage;
+        // The export dialog, read when it opens: the HD textures' size (0: none made), the switch, the settings' summary.
+        uint64_t portableHdBytes = 0;
+        bool portableHd = false;
+        std::string portableSettings;
         GameSourceCheck check;
         TitleMetadata meta;
         LauncherAssets::Provider assets;
@@ -601,11 +605,13 @@ namespace launcher_ui
         void DrawHdStatus(); // under the Video list: the work's progress and Stop, or why it failed
         bool HdTexturesOffered() const; // the kit doubles this game's textures from its disc (every game)
         bool HdTexturesWanted(const GameSlot& slot) const;
+        std::filesystem::path HdTexturesFolder() const; // the active game's textures-hd, where its build reads them
         void SetHdTextures(bool on);
         void StartHdTextures(bool on);
         void FinishHdTextures();
         bool AnyHdTextures() const;
         void DrawPortableExport(); // the Game tab's "Portable copy": the button, the message, the progress
+        void OpenPortableExport(); // reads what the export dialog shows
         void StartPortableExport(const std::filesystem::path& folder);
         void FinishPortableExport();
         void ForgetDisc(); // "Remove the disc": the game forgets its image; the built game and the files stay

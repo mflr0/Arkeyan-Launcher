@@ -345,6 +345,44 @@ namespace portable
         return ok;
     }
 
+    IniSections ParseIni(std::string_view text)
+    {
+        IniSections sections;
+        std::string current;
+        bool inSection = false;
+        for (size_t begin = 0; begin < text.size();)
+        {
+            const size_t end = std::min(text.find('\n', begin), text.size());
+            std::string_view line = text.substr(begin, end - begin);
+            begin = end + 1;
+            if (!line.empty() && line.back() == '\r')
+                line.remove_suffix(1);
+            if (line.size() > 2 && line.front() == '[' && line.back() == ']')
+            {
+                current = std::string(line.substr(1, line.size() - 2));
+                sections[current];
+                inSection = true;
+            }
+            else if (size_t equals = line.find('='); inSection && equals != std::string_view::npos && equals > 0)
+                sections[current][std::string(line.substr(0, equals))] = std::string(line.substr(equals + 1));
+        }
+        return sections;
+    }
+
+    std::vector<std::string> AddMissingSections(IniSections& into, const IniSections& from)
+    {
+        std::vector<std::string> added;
+        for (const auto& [name, lines] : from)
+        {
+            auto here = into.find(name);
+            if (lines.empty() || (here != into.end() && !here->second.empty()))
+                continue;
+            into[name] = lines;
+            added.push_back(name);
+        }
+        return added;
+    }
+
     fs::path FirstLaunchMarker(const fs::path& gameFolder, const Info& info)
     {
         std::string stamp;
