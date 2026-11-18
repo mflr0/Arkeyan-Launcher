@@ -858,7 +858,6 @@ Total	Yhteensä
 Touchpad	Kosketuslevy
 Toy	Lelu
 Toy Box	Toy Box
-Toy Box in the game: F6, or View + Y on a controller.	Toy Box pelissä: F6 tai View + Y ohjaimella.
 Toy Box keys	Toy Boxin näppäimet
 Toy type {}	Lelun tyyppi {}
 Translating the game code	Käännetään pelikoodia
@@ -1190,6 +1189,17 @@ Dimmed values follow Launcher settings.	Himmennetyt arvot seuraavat Launcher-ase
 Games use these unless their own settings change them.	Pelit käyttävät näitä, elleivät niiden omat asetukset muuta niitä.
 Buttons	Painikkeet
 Stats / Info	Tilastot / Tiedot
+
+# Controller shortcuts
+Swap wheel	Vaihtopyörä
+Game menu	Pelivalikko
+Hold to open the swap wheel.	Avaa vaihtopyörä pitämällä painettuna.
+Press a button (Escape cancels).	Paina painiketta (Escape peruu).
+Press two buttons in order (Escape cancels).	Paina kahta painiketta järjestyksessä (Escape peruu).
+Press the second button (Escape cancels).	Paina toista painiketta (Escape peruu).
+This button is used by another action	Toinen toiminto käyttää tätä painiketta
+Hold to reset the controller buttons for all games.	Palauta kaikkien pelien ohjainpainikkeet pitämällä painettuna.
+Toy Box in the game: {}, or {} on a controller.	Toy Box pelissä: {} tai {} ohjaimella.
 
 # Figure pictures (Settings > Launcher > Collection, the figure sheet).
 Figure pictures	Hahmojen kuvat

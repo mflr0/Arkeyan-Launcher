@@ -191,7 +191,7 @@ namespace
             const std::string& key = line->first;
             const std::string* global = sharedValue(key);
             bool drop = false;
-            if (key.starts_with("pad_"))
+            if (IsPadRemapLine(key))
                 drop = global != nullptr ? *global == line->second : line->second == key.substr(4);
             else if (key == "rumble_p1" || key == "rumble_p2")
                 drop = line->second == (global != nullptr ? *global : "normal");
@@ -522,9 +522,12 @@ void SetGlobalPadTarget(LauncherConfig& config, int button, int target)
 
 void ResetPadMap(LauncherConfig& config, std::string_view gameId)
 {
-    auto section = config.find(GameInputSection(gameId));
+    auto section = config.find(gameId.empty() ? "input" : GameInputSection(gameId));
     if (section == config.end())
         return;
+    if (gameId.empty())
+        for (const ToyboxPad& binding : ToyboxPads())
+            section->second.erase(binding.line);
     for (int i = 0; i < PadButtonTotal; i++)
         section->second.erase(PadLine(i));
     section->second.erase(RumbleLine(0));
@@ -710,5 +713,80 @@ bool ToyboxKeyConflict(const LauncherConfig& config, const ToyboxKey& key)
         for (const GameKey& row : GameKeys(game.id))
             if (SameKey(GameKeyName(config, game.id, row), name))
                 return true;
+    return false;
+}
+
+namespace
+{
+    constexpr ToyboxPad PadShortcuts[] = { { "pad_wheel", N_("Swap wheel"), { 9, -1 } },
+        { "pad_toybox", N_("Open the Toy Box"), { 9, 3 } }, { "pad_menu", N_("Game menu"), { 9, 8 } } };
+
+    int PhysicalButton(std::string_view name)
+    {
+        for (int i = 0; i < PadButtonTotal; i++)
+            if (name == PadNames[size_t(i)])
+                return i;
+        return -1;
+    }
+}
+
+bool IsPadRemapLine(std::string_view line) { return line.starts_with("pad_") && PhysicalButton(line.substr(4)) >= 0; }
+
+std::span<const ToyboxPad> ToyboxPads() { return PadShortcuts; }
+
+std::array<int, 2> ToyboxPadValue(const LauncherConfig& config, const ToyboxPad& binding)
+{
+    const std::string* value = Find(config, "input", binding.line);
+    if (value == nullptr)
+        return binding.fallback;
+    const size_t plus = value->find('+');
+    if (binding.fallback[1] < 0)
+    {
+        const int button = PhysicalButton(*value);
+        return button < 0 ? binding.fallback : std::array<int, 2>{ button, -1 };
+    }
+    if (plus == std::string::npos)
+        return binding.fallback;
+    const int first = PhysicalButton(std::string_view(*value).substr(0, plus));
+    const int second = PhysicalButton(std::string_view(*value).substr(plus + 1));
+    return first < 0 || second < 0 || first == second ? binding.fallback : std::array<int, 2>{ first, second };
+}
+
+void SetToyboxPad(LauncherConfig& config, const ToyboxPad& binding, std::array<int, 2> buttons)
+{
+    if (buttons[0] < 0 || buttons[0] >= PadButtonTotal ||
+        (binding.fallback[1] < 0 ? buttons[1] != -1
+                                 : buttons[1] < 0 || buttons[1] >= PadButtonTotal || buttons[0] == buttons[1]))
+        return;
+    std::string value = PadNames[size_t(buttons[0])];
+    if (buttons[1] >= 0)
+        value += std::string("+") + PadNames[size_t(buttons[1])];
+    config["input"][binding.line] = value;
+}
+
+std::string ToyboxPadName(const LauncherConfig& config, const ToyboxPad& binding, PadFamily family)
+{
+    const auto buttons = ToyboxPadValue(config, binding);
+    std::string name = PadButtonLabel(buttons[0], family);
+    if (buttons[1] >= 0)
+        name += " + " + PadButtonLabel(buttons[1], family);
+    return name;
+}
+
+bool ToyboxPadConflict(const LauncherConfig& config, const ToyboxPad& binding)
+{
+    const auto buttons = ToyboxPadValue(config, binding);
+    for (size_t i = 0; i < buttons.size(); i++)
+    {
+        const int button = buttons[i];
+        if (button < 0 || (i == 0 && button == 9) || (i == 1 && buttons[0] == 9 && (button == 3 || button == 8)))
+            continue;
+        for (const GameInfo& game : g_games)
+        {
+            const int target = PadTarget(config, game.id, button);
+            if (target >= 0)
+                return true;
+        }
+    }
     return false;
 }

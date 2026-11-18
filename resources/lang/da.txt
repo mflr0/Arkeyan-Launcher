@@ -857,7 +857,6 @@ Total	I alt
 Touchpad	Touchpad
 Toy	Legetøj
 Toy Box	Toy Box
-Toy Box in the game: F6, or View + Y on a controller.	Toy Box i spillet: F6, eller View + Y på en controller.
 Toy Box keys	Toy Box-taster
 Toy type {}	Legetøjstype {}
 Translating the game code	Oversætter spilkoden
@@ -1189,6 +1188,17 @@ Dimmed values follow Launcher settings.	Nedtonede værdier følger Launcher-inds
 Games use these unless their own settings change them.	Spillene bruger disse, medmindre deres egne indstillinger ændrer dem.
 Buttons	Knapper
 Stats / Info	Statistik / Info
+
+# Controller shortcuts
+Swap wheel	Skiftehjul
+Game menu	Spilmenu
+Hold to open the swap wheel.	Hold inde for at åbne skiftehjulet.
+Press a button (Escape cancels).	Tryk på en knap (Escape annullerer).
+Press two buttons in order (Escape cancels).	Tryk på to knapper i rækkefølge (Escape annullerer).
+Press the second button (Escape cancels).	Tryk på den anden knap (Escape annullerer).
+This button is used by another action	En anden handling bruger denne knap
+Hold to reset the controller buttons for all games.	Hold inde for at nulstille controllerknapperne for alle spil.
+Toy Box in the game: {}, or {} on a controller.	Toy Box i spillet: {} eller {} på en controller.
 
 # Figure pictures (Settings > Launcher > Collection, the figure sheet).
 Figure pictures	Figurbilleder

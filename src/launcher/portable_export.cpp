@@ -43,7 +43,7 @@ std::string PortableKeys(const LauncherConfig& config, std::string_view gameId)
     std::map<std::string, std::string> lines;
     for (const std::string& name : { std::string("input"), section })
         for (const auto& [key, value] : keys[name])
-            if ((key.starts_with("key_") && !key.starts_with("key_toybox")) || key.starts_with("pad_") ||
+            if ((key.starts_with("key_") && !key.starts_with("key_toybox")) || IsPadRemapLine(key) ||
                 key.starts_with("rumble_") || key == "mouse" || key.starts_with("mouse_"))
                 lines[key] = value;
     for (const char* action : InputActions())

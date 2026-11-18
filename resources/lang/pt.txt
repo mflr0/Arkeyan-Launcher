@@ -857,7 +857,6 @@ Total	Total
 Touchpad	Touchpad
 Toy	Brinquedo
 Toy Box	Toy Box
-Toy Box in the game: F6, or View + Y on a controller.	Toy Box no jogo: F6, ou View + Y num comando.
 Toy Box keys	Teclas da Toy Box
 Toy type {}	Tipo de brinquedo {}
 Translating the game code	A traduzir o código do jogo
@@ -1189,6 +1188,17 @@ Dimmed values follow Launcher settings.	Os valores esbatidos seguem as Definiç�
 Games use these unless their own settings change them.	Os jogos usam estas, a menos que as suas definições as alterem.
 Buttons	Botões
 Stats / Info	Estatísticas / Info
+
+# Controller shortcuts
+Swap wheel	Roda de troca
+Game menu	Menu do jogo
+Hold to open the swap wheel.	Mantém premido para abrir a roda de troca.
+Press a button (Escape cancels).	Prime um botão (Escape cancela).
+Press two buttons in order (Escape cancels).	Prime dois botões por ordem (Escape cancela).
+Press the second button (Escape cancels).	Prime o segundo botão (Escape cancela).
+This button is used by another action	Outra ação usa este botão
+Hold to reset the controller buttons for all games.	Mantém premido para repor os botões de todos os jogos.
+Toy Box in the game: {}, or {} on a controller.	Toy Box no jogo: {}, ou {} num comando.
 
 # Figure pictures (Settings > Launcher > Collection, the figure sheet).
 Figure pictures	Imagens das figuras
