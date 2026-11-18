@@ -363,6 +363,14 @@ Couldn't download the game tools	Pelityökalujen lataus epäonnistui
 Frame rate limit	Kuvataajuuden raja
 Frees {}. Saves and settings are kept.	Vapauttaa {}. Tallennukset ja asetukset säilyvät.
 Fullscreen	Koko näyttö
+Window size	Ikkunan koko
+{} x {}	{} x {}
+Last used: as it was when the game closed.	Viimeksi käytetty: kuten pelin sulkeutuessa.
+Last used	Viimeksi käytetty
+Custom	Mukautettu
+Width	Leveys
+Height	Korkeus
+{} or more	{} tai enemmän
 Game	Peli
 Game art comes from your own disc.	Pelin grafiikka tulee omalta levyltäsi.
 Game data	Pelin tiedot

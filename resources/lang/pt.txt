@@ -362,6 +362,14 @@ Couldn't download the game tools	Não foi possível transferir as ferramentas do
 Frame rate limit	Limite de imagens por segundo
 Frees {}. Saves and settings are kept.	Liberta {}. As gravações e as definições são mantidas.
 Fullscreen	Ecrã inteiro
+Window size	Tamanho da janela
+{} x {}	{} x {}
+Last used: as it was when the game closed.	Último usado: como estava ao fechar o jogo.
+Last used	Último usado
+Custom	Personalizado
+Width	Largura
+Height	Altura
+{} or more	{} ou mais
 Game	Jogo
 Game art comes from your own disc.	A arte do jogo vem do teu próprio disco.
 Game data	Dados do jogo

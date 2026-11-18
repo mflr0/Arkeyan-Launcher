@@ -360,6 +360,14 @@ Couldn't download the game tools	Spielwerkzeuge konnten nicht geladen werden
 Frame rate limit	Bildratenlimit
 Frees {}. Saves and settings are kept.	Gibt {} frei. Spielstände und Einstellungen bleiben.
 Fullscreen	Vollbild
+Window size	Fenstergröße
+{} x {}	{} x {}
+Last used: as it was when the game closed.	Zuletzt genutzt: wie beim Schließen des Spiels.
+Last used	Zuletzt genutzt
+Custom	Benutzerdefiniert
+Width	Breite
+Height	Höhe
+{} or more	{} oder mehr
 Game	Spiel
 Game art comes from your own disc.	Die Spielgrafik stammt von deiner eigenen Disc.
 Game data	Spieldaten

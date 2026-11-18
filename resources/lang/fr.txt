@@ -173,6 +173,14 @@ Comparing the game code with the supported releases	Comparaison du code du jeu a
 Couldn't download the game tools	Impossible de télécharger les outils de jeu
 Frame rate limit	Limite d'images par seconde
 Fullscreen	Plein écran
+Window size	Taille de la fenêtre
+{} x {}	{} x {}
+Last used: as it was when the game closed.	Dernière utilisée : comme à la fermeture du jeu.
+Last used	Dernière utilisée
+Custom	Personnalisée
+Width	Largeur
+Height	Hauteur
+{} or more	{} ou plus
 Game	Jeu
 Game data	Données du jeu
 Game data damaged	Données du jeu endommagées

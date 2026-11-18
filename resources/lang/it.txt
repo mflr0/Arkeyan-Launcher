@@ -362,6 +362,14 @@ Couldn't download the game tools	Impossibile scaricare gli strumenti del gioco
 Frame rate limit	Limite di frame rate
 Frees {}. Saves and settings are kept.	Libera {}. Salvataggi e impostazioni restano.
 Fullscreen	Schermo intero
+Window size	Dimensione finestra
+{} x {}	{} x {}
+Last used: as it was when the game closed.	Ultima usata: com'era alla chiusura del gioco.
+Last used	Ultima usata
+Custom	Personalizzata
+Width	Larghezza
+Height	Altezza
+{} or more	{} o più
 Game	Gioco
 Game art comes from your own disc.	Le immagini del gioco vengono dal tuo disco.
 Game data	Dati del gioco

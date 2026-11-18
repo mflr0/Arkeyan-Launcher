@@ -363,6 +363,14 @@ Couldn't download the game tools	Kunne ikke laste ned spillverktøyene
 Frame rate limit	Bildefrekvensgrense
 Frees {}. Saves and settings are kept.	Frigjør {}. Lagringer og innstillinger beholdes.
 Fullscreen	Fullskjerm
+Window size	Vindusstørrelse
+{} x {}	{} x {}
+Last used: as it was when the game closed.	Sist brukt: slik det var da spillet ble lukket.
+Last used	Sist brukt
+Custom	Egendefinert
+Width	Bredde
+Height	Høyde
+{} or more	{} eller mer
 Game	Spill
 Game art comes from your own disc.	Spillgrafikken kommer fra din egen plate.
 Game data	Spilldata

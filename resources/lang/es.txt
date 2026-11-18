@@ -362,6 +362,14 @@ Couldn't download the game tools	No se pudieron descargar las herramientas del j
 Frame rate limit	Límite de fotogramas
 Frees {}. Saves and settings are kept.	Libera {}. Se conservan partidas y ajustes.
 Fullscreen	Pantalla completa
+Window size	Tamaño de ventana
+{} x {}	{} x {}
+Last used: as it was when the game closed.	Último usado: como estaba al cerrar el juego.
+Last used	Último usado
+Custom	Personalizado
+Width	Ancho
+Height	Alto
+{} or more	{} o más
 Game	Juego
 Game art comes from your own disc.	Los gráficos del juego salen de tu propio disco.
 Game data	Datos del juego

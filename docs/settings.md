@@ -41,6 +41,7 @@ launcher saves the file (a comment over a key that is removed goes with it).
 | each game | `last_scene` | name of a scene | The background scene of the last start (`docs/launcher_ui.md` "Disc art"): the next start picks another when the game has two or more | n/a |
 | each game | `disc_text_languages`, `disc_voice_languages` | codes joined by commas | Written by the launcher at each disc check: the languages the disc holds, which the Language tab lists (absent: the full list; Swap Force English and French, Trap Team English). Not for editing | no |
 | `video` | `fullscreen` | `0`, `1` | Play in fullscreen | yes (the key is per game: see "Per-game video" below) |
+| `video` | `window_size` | `<width>x<height>`, absent (default) | The game window's size at start when not fullscreen (<game> settings > Video > Window size: Last used, 1280 x 720, 1600 x 900, 1920 x 1080, 2560 x 1440 or Custom, shown while Fullscreen is off). Absent (Last used): the size the window had when the game last closed, which the game writes itself to `[<game>.video] window_last` (not one of the per-game keys: the launcher never copies it), else 1280x720. The game keeps the window inside the screen and at least 640x360 (`WindowSizeOf` raises a smaller value the same way); the 3D resolution stays `resolution_scale`. A shape changed during play shows with bars until the next start | yes |
 | `video` | `resolution_scale` | `auto` (default), `1` to `10` | 3D rendered at this multiple of 1120x704; `auto` picks x1 on integrated GPUs. Any other value is shown as Auto by the page and not passed on by PLAY (`ResolutionScaleOf`) | yes |
 | `video` | `fps_limit` | `30`, `60` | Frame rate cap (the game is made for 30; 60 is experimental; since 0.9.4 nothing above 60: the page lists 30 and 60, a saved `display`, `120`, `144`, `240` or `0` shows as 60 and the game runs it as 60; with automatic fallback enabled, a computer that cannot hold 60 gets a steady 30). `display` is the display's refresh rate up to 60 and is 60 for now; it is a choice, no game's default. A game with no saved frame rate gets 60 (Giants, Swap Force) or 30 (SSA, until its 60 at scale 2 is merged), the value its page shows (`DefaultFrameRate`); PLAY writes it, and a saved value is never changed. Another number goes down to the rate below it. **Giants stops at 60**: its page lists `display`, 30 and 60, and a higher value saved for it (`[giants.video]`) becomes 60 once (`[launcher] giants_cap=1`) | yes |
 | `launcher` | `frame_rates` | `1` | Written once by `MigrateFrameRates`: older versions ran `fps_limit` 0, 120, 144 and 240 as 60, so a file without this key has them changed to 60 in `[video]` and `[<game>.video]` at the first load; a choice made afterwards stays | no |
@@ -92,12 +93,12 @@ Japanese/Japonais, Korean/Coréen, Chinese/Chinois); an unknown code is ignored,
 ## Per-game video
 
 The runtime reads one `[video]` section, but the games do not have to share it. Each game keeps its own copy of the
-fourteen keys that belong to a game (`fullscreen`, `resolution_scale`, `fps_limit`, `skip_intro_movies`, `vsync`,
+seventeen keys that belong to a game (`fullscreen`, `window_size`, `resolution_scale`, `fps_limit`, `skip_intro_movies`, `vsync`,
 `anisotropy`, `aspect`, `texture_packs`, `texture_dump`, `original_resolution`, `show_fps`, `edge_smoothing`, `upscaler`, `fsr_quality`, `fsr_frame_generation`, `gpu_backend`) in **`[ssa.video]`**, **`[giants.video]`**, **`[swapforce.video]`**, **`[trapteam.video]`**, **`[superchargers.video]`** and **`[imaginators.video]`**:
 
 | Section | Key | Meaning |
 | --- | --- | --- |
-| `<game>.video` | the fourteen `video` keys above | The game's own video settings. The game's settings page (Video tab) edits this copy. |
+| `<game>.video` | the seventeen `video` keys above | The game's own video settings. The game's settings page (Video tab) edits this copy. |
 
 - The first time, a game's copy starts from the `[video]` the player already had (`SeedGameVideo`). Trap Team starts at 30 FPS even if the shared limit is 60; later choices are kept.
 - **PLAY** puts the copy of the game that starts into `[video]` (keys it lacks are dropped, so the runtime's defaults apply):

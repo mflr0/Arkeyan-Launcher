@@ -579,6 +579,7 @@ namespace launcher_ui
         std::string m_profileToRemove; // the profile whose removal waits for its confirmation
         const ArtTexture* AchievementIcon(const std::filesystem::path& image);
         void DrawGameVideo();
+        void DrawWindowSize(const char* video); // the Video tab's Window size row, and Custom's width and height
         void DrawGameSound();
         void DrawGameKeyboard();
         void DrawGameLanguage();
@@ -902,6 +903,11 @@ namespace launcher_ui
         bool m_pagesTaken = false; // last frame, LB / RB were not the pages' (a menu, a dialog, a field)
         SettingsTab m_tab = SettingsTab::Controls;
         GameTab m_gameTab = GameTab::Video;
+        // Window size: Custom chosen (it stays shown on a preset value), and the width and height being typed, filled from
+        // the saved value each time it changes (`m_windowSizeShown`).
+        bool m_windowSizeCustom = false;
+        std::string m_windowSizeShown;
+        char m_windowSizeText[2][6] = {};
         bool m_autoPlay = false; // --play: start the game as soon as it is ready (a desktop shortcut)
         bool m_startGames = false; // PLAY starts the game and the window stays (LauncherOptions)
         bool m_requests = false; // LauncherOptions::requests

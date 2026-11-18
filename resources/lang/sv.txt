@@ -363,6 +363,14 @@ Couldn't download the game tools	Kunde inte ladda ner spelverktygen
 Frame rate limit	Bildfrekvensgräns
 Frees {}. Saves and settings are kept.	Frigör {}. Sparfiler och inställningar behålls.
 Fullscreen	Helskärm
+Window size	Fönsterstorlek
+{} x {}	{} x {}
+Last used: as it was when the game closed.	Senast använd: som när spelet stängdes.
+Last used	Senast använd
+Custom	Anpassad
+Width	Bredd
+Height	Höjd
+{} or more	{} eller mer
 Game	Spel
 Game art comes from your own disc.	Spelets grafik kommer från din egen skiva.
 Game data	Speldata

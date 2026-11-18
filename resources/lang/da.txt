@@ -362,6 +362,14 @@ Couldn't download the game tools	Kunne ikke hente spilværktøjerne
 Frame rate limit	Billedhastighedsgrænse
 Frees {}. Saves and settings are kept.	Frigør {}. Gemte spil og indstillinger beholdes.
 Fullscreen	Fuld skærm
+Window size	Vinduesstørrelse
+{} x {}	{} x {}
+Last used: as it was when the game closed.	Senest brugt: som da spillet blev lukket.
+Last used	Senest brugt
+Custom	Brugerdefineret
+Width	Bredde
+Height	Højde
+{} or more	{} eller mere
 Game	Spil
 Game art comes from your own disc.	Spillets grafik kommer fra din egen disk.
 Game data	Spildata

@@ -267,7 +267,22 @@ namespace
         StoreGameVideo(config, "ssa");
         SETTINGS_EXPECT(
             config["ssa.video"]["resolution_scale"] == "3" && config["giants.video"].count("resolution_scale") == 0);
-        SETTINGS_EXPECT(GameVideoSection("giants") == "giants.video" && GameVideoKeys().size() == 16);
+        SETTINGS_EXPECT(GameVideoSection("giants") == "giants.video" && GameVideoKeys().size() == 17);
+
+        // The window size (issue #135): PLAY passes the game's own, an empty one (Last used) leaves [video] without it.
+        config["ssa.video"]["window_size"] = "1600x900";
+        ApplyGameVideo(config, "ssa");
+        SETTINGS_EXPECT(config["video"]["window_size"] == "1600x900");
+        config["ssa.video"].erase("window_size");
+        ApplyGameVideo(config, "ssa");
+        SETTINGS_EXPECT(config["video"].count("window_size") == 0);
+        {
+            int width = 0, height = 0;
+            SETTINGS_EXPECT(WindowSizeOf("1600x900", width, height) && width == 1600 && height == 900);
+            SETTINGS_EXPECT(WindowSizeOf("300x200", width, height) && width == 640 && height == 360);
+            for (const char* odd : { "", "0x0", "abc", "1600", "x900", "1600x", "-1x5", "1600x900x1" })
+                SETTINGS_EXPECT(!WindowSizeOf(odd, width, height));
+        }
 
         // A resolution scale the page does not offer (hand-edited) is shown as Auto and the game gets Auto too (issue #9, S-26).
         SETTINGS_EXPECT(ResolutionScaleOf("3") == 3 && ResolutionScaleOf("10") == 10 &&

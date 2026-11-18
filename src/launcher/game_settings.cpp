@@ -14,7 +14,8 @@ namespace fs = std::filesystem;
 
 namespace
 {
-    constexpr std::array<const char*, 16> VideoKeys = { "fullscreen", "resolution_scale", "fps_limit",
+    // Not window_last: the game writes it in its own section, the launcher leaves it there.
+    constexpr std::array<const char*, 17> VideoKeys = { "fullscreen", "window_size", "resolution_scale", "fps_limit",
         "skip_intro_movies", "vsync", "anisotropy", "aspect", "texture_packs", "texture_dump", "original_resolution",
         "show_fps", "edge_smoothing", "upscaler", "fsr_quality", "fsr_frame_generation", "gpu_backend" };
 
@@ -235,6 +236,24 @@ bool FrameGenerationOffered(std::string_view gameId)
 #else
     return true;
 #endif
+}
+
+bool WindowSizeOf(std::string_view value, int& width, int& height)
+{
+    const size_t x = value.find('x');
+    auto number = [](std::string_view part, int& out) {
+        if (part.empty() || part.size() > 5 ||
+            !std::all_of(part.begin(), part.end(), [](char c) { return c >= '0' && c <= '9'; }))
+            return false;
+        out = std::stoi(std::string(part));
+        return out > 0;
+    };
+    int w = 0, h = 0;
+    if (x == std::string_view::npos || !number(value.substr(0, x), w) || !number(value.substr(x + 1), h))
+        return false;
+    width = std::max(w, MinWindowWidth);
+    height = std::max(h, MinWindowHeight);
+    return true;
 }
 
 int ResolutionScaleOf(std::string_view value)
