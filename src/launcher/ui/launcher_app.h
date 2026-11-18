@@ -483,6 +483,7 @@ namespace launcher_ui
         void Shutdown();
         bool LoadFonts();
         void HandleEvent(const SDL_Event& event);
+        bool CaptureToyboxPad(const SDL_Event& event);
         static int VisibilityWait(int requested, SDL_WindowFlags flags);
         int ContentWait();
         int IdleWait(); // how long the loop may sleep before the next frame, in ms (0: draw now)
@@ -967,6 +968,10 @@ namespace launcher_ui
         std::string m_mouseCaptureGame; // the same for the mouse row
         bool m_mouseArmed = false; // the click that started the wait has been released
         const ToyboxKey* m_toyboxCapturing = nullptr; // the Toy Box key row waiting for a key press
+        const ToyboxPad* m_toyboxPadCapturing = nullptr;
+        int m_toyboxPadFirst = -1;
+        std::array<bool, 2> m_toyboxPadTriggers = {};
+        bool m_toyboxPadBlockInput = false; // captured buttons stay out of navigation until released
 
         // The games opened this session (one slot each), and the one shown. Every slot's jobs are polled; the shown
         // one's state is what the pages draw (m_s).

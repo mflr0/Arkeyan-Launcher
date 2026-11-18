@@ -855,7 +855,6 @@ Total	Totalt
 Touchpad	Pekplatta
 Toy	Figur
 Toy Box	Toy Box
-Toy Box in the game: F6, or View + Y on a controller.	Toy Box i spelet: F6, eller View + Y på en handkontroll.
 Toy Box keys	Toy Box-tangenter
 Toy type {}	Figurtyp {}
 Translating the game code	Översätter spelkoden
@@ -1187,3 +1186,14 @@ Dimmed values follow Launcher settings.	Nedtonade värden följer Launcherinstä
 Games use these unless their own settings change them.	Spelen använder dessa om inte deras egna inställningar ändrar dem.
 Buttons	Knappar
 Stats / Info	Statistik / Info
+
+# Controller shortcuts
+Swap wheel	Byteshjul
+Game menu	Spelmeny
+Hold to open the swap wheel.	Håll inne för att öppna byteshjulet.
+Press a button (Escape cancels).	Tryck på en knapp (Escape avbryter).
+Press two buttons in order (Escape cancels).	Tryck på två knappar i följd (Escape avbryter).
+Press the second button (Escape cancels).	Tryck på den andra knappen (Escape avbryter).
+This button is used by another action	En annan åtgärd använder denna knapp
+Hold to reset the controller buttons for all games.	Håll inne för att återställa kontrollknapparna för alla spel.
+Toy Box in the game: {}, or {} on a controller.	Toy Box i spelet: {} eller {} på en handkontroll.

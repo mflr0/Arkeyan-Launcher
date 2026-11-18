@@ -797,6 +797,8 @@ namespace launcher_ui
     void App::HandleEvent(const SDL_Event& event)
     {
         m_busyFrames = 3;
+        if (CaptureToyboxPad(event))
+            return;
         // A Toy Box key, then a mouse binding, being captured: the next key press, or the next click or wheel tick (after the
         // click that started the wait is released; Escape cancels).
         if (m_toyboxCapturing != nullptr && event.type == SDL_EVENT_KEY_DOWN)
@@ -2557,7 +2559,10 @@ namespace launcher_ui
             ui::Text(ui::TextStyle::Body, Tr("You can set up your portal while you wait."), ui::color::InkSoft, leftW);
         else if (play.running)
         {
-            const char* hint = Tr("Toy Box in the game: F6, or View + Y on a controller.");
+            const std::string shown = Tf("Toy Box in the game: {}, or {} on a controller.",
+                KeyDisplayName(ToyboxKeyName(m_config, ToyboxKeys()[0])),
+                ToyboxPadName(m_config, ToyboxPads()[1], PadFamilyNow()));
+            const char* hint = shown.c_str();
             const float hintSize = ui::FitSize(ui::Ctx().fonts.text, ui::type::Body, hint, leftW);
             ImGui::PushFont(ui::Ctx().fonts.text, hintSize);
             ui::DrawText(draw, ImGui::GetCursorScreenPos(), ui::Col(ui::color::InkSoft), hint);
@@ -2740,6 +2745,7 @@ namespace launcher_ui
         if (change != ui::TabChange::None)
         {
             m_capturing = nullptr;
+            m_toyboxPadCapturing = nullptr;
             m_s->saveBackupsLoaded = m_s->dataSizesLoaded =
                 false; // the saves and the folders may have changed since the tab was open
         }
@@ -2917,6 +2923,7 @@ namespace launcher_ui
             m_backPage = Page::Play;
         m_page = page;
         m_capturing = nullptr;
+        m_toyboxPadCapturing = nullptr;
         RequestFocus(FocusTo::Page);
     }
 
@@ -3023,9 +3030,29 @@ namespace launcher_ui
         UploadPictures();
         UpdateLanguage();
         ImGui_ImplSDLRenderer3_NewFrame();
-        ImGui_ImplSDL3_NewFrame();
-        // The launcher's points are m_uiScale window units: a smaller page, drawn (and its fonts rasterized) denser.
+        // The backend polls pads as well as events: a captured B or bumper must not navigate away.
+        const bool capturingPad = m_toyboxPadCapturing != nullptr || m_toyboxPadBlockInput;
         ImGuiIO& frameIo = ImGui::GetIO();
+        if (capturingPad)
+            frameIo.SetAppAcceptingEvents(false);
+        ImGui_ImplSDL3_NewFrame();
+        if (capturingPad)
+        {
+            frameIo.SetAppAcceptingEvents(true);
+            for (int key = ImGuiKey_GamepadStart; key <= ImGuiKey_GamepadRStickDown; key++)
+                frameIo.AddKeyAnalogEvent(ImGuiKey(key), false, 0);
+            bool held = false;
+            for (SDL_JoystickID id : m_gamepads)
+                if (SDL_Gamepad* pad = SDL_GetGamepadFromID(id))
+                {
+                    for (int button = 0; button < SDL_GAMEPAD_BUTTON_COUNT; button++)
+                        held |= SDL_GetGamepadButton(pad, SDL_GamepadButton(button));
+                    held |= SDL_GetGamepadAxis(pad, SDL_GAMEPAD_AXIS_LEFT_TRIGGER) > 16000 ||
+                            SDL_GetGamepadAxis(pad, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER) > 16000;
+                }
+            m_toyboxPadBlockInput = held;
+        }
+        // The launcher's points are m_uiScale window units: a smaller page, drawn (and its fonts rasterized) denser.
         frameIo.DisplaySize = ImVec2(frameIo.DisplaySize.x / m_uiScale, frameIo.DisplaySize.y / m_uiScale);
         frameIo.DisplayFramebufferScale =
             ImVec2(frameIo.DisplayFramebufferScale.x * m_uiScale, frameIo.DisplayFramebufferScale.y * m_uiScale);

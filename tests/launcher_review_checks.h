@@ -42,6 +42,63 @@ namespace launcher_ui
             LauncherConfig config;
             config["launcher"]["language"] = "en";
             App app(*FindGame("ssa"), LauncherConfigPath(), config);
+            if (mode == "pad-shortcuts")
+            {
+                fs::create_directories(root / "data");
+                const auto pads = ToyboxPads();
+                auto begin = [&](size_t row) {
+                    app.m_toyboxPadCapturing = &pads[row];
+                    app.m_toyboxPadFirst = -1;
+                    app.m_toyboxPadTriggers = {};
+                };
+                auto press = [&](SDL_GamepadButton button) {
+                    SDL_Event event{};
+                    event.type = SDL_EVENT_GAMEPAD_BUTTON_DOWN;
+                    event.gbutton.button = button;
+                    expect(app.CaptureToyboxPad(event), "capture consumes the physical button");
+                };
+                begin(0);
+                press(SDL_GAMEPAD_BUTTON_SOUTH);
+                expect(app.m_config["input"]["pad_wheel"] == "a" && app.m_toyboxPadCapturing == nullptr,
+                    "one button finishes the wheel capture");
+                begin(1);
+                press(SDL_GAMEPAD_BUTTON_BACK);
+                expect(app.m_toyboxPadCapturing != nullptr && app.m_toyboxPadFirst == 9,
+                    "the first button waits for the second");
+                press(SDL_GAMEPAD_BUTTON_BACK);
+                expect(app.m_toyboxPadCapturing != nullptr, "a repeated button cannot make a chord");
+                press(SDL_GAMEPAD_BUTTON_NORTH);
+                expect(app.m_config["input"]["pad_toybox"] == "back+y", "buttons are stored in capture order");
+                begin(2);
+                press(SDL_GAMEPAD_BUTTON_EAST);
+                SDL_Event escape{};
+                escape.type = SDL_EVENT_KEY_DOWN;
+                escape.key.key = SDLK_ESCAPE;
+                expect(app.CaptureToyboxPad(escape) && app.m_toyboxPadCapturing == nullptr &&
+                           app.m_config["input"].count("pad_menu") == 0,
+                    "Escape cancels a partial chord without writing it");
+                begin(2);
+                SDL_Event trigger{};
+                trigger.type = SDL_EVENT_GAMEPAD_AXIS_MOTION;
+                trigger.gaxis.axis = SDL_GAMEPAD_AXIS_LEFT_TRIGGER;
+                trigger.gaxis.value = 24000;
+                app.CaptureToyboxPad(trigger);
+                app.CaptureToyboxPad(trigger);
+                expect(app.m_toyboxPadCapturing != nullptr && app.m_toyboxPadFirst == 6,
+                    "holding a trigger does not supply a second button");
+                trigger.gaxis.axis = SDL_GAMEPAD_AXIS_RIGHT_TRIGGER;
+                app.CaptureToyboxPad(trigger);
+                expect(app.m_config["input"]["pad_menu"] == "lt+rt", "both triggers can be captured");
+                begin(0);
+                SDL_Event lost{};
+                lost.type = SDL_EVENT_WINDOW_FOCUS_LOST;
+                app.CaptureToyboxPad(lost);
+                expect(app.m_toyboxPadCapturing == nullptr && app.m_config["input"]["pad_wheel"] == "a",
+                    "losing focus cancels without changing the binding");
+                expect(LoadLauncherConfig(LauncherConfigPath())["input"]["pad_menu"] == "lt+rt",
+                    "the capture saves the settings file");
+                return failures == 0 ? 0 : 1;
+            }
             if (mode == "paths")
             {
                 const fs::path word = fs::path(u8"donn\u00e9es-\u30c7\u30fc\u30bf");

@@ -943,7 +943,6 @@ Couldn't show the game window.	Impossible d’afficher la fenêtre du jeu.
 Virtual portal	Portail virtuel
 Or drop your .iso on this window. It stays on this computer.	Ou déposez votre .iso sur cette fenêtre. Il reste sur cet ordinateur.
 You can set up your portal while you wait.	Vous pouvez préparer votre portail en attendant.
-Toy Box in the game: F6, or View + Y on a controller.	Toy Box en jeu : F6, ou View + Y sur la manette.
 Three steps	Trois étapes
 Choose your disc	Choisissez votre disque
 About {} min, {} GB	Environ {} min, {} Go
@@ -1216,3 +1215,14 @@ Dimmed values follow Launcher settings.	Les valeurs grisées suivent les Réglag
 Games use these unless their own settings change them.	Les jeux les utilisent, sauf si leurs propres réglages les changent.
 Buttons	Boutons
 Stats / Info	Stats / Infos
+
+# Controller shortcuts
+Swap wheel	Roue de changement
+Game menu	Menu du jeu
+Hold to open the swap wheel.	Maintenez pour ouvrir la roue de changement.
+Press a button (Escape cancels).	Appuyez sur un bouton (Échap annule).
+Press two buttons in order (Escape cancels).	Appuyez sur deux boutons dans l’ordre (Échap annule).
+Press the second button (Escape cancels).	Appuyez sur le second bouton (Échap annule).
+This button is used by another action	Ce bouton est utilisé par une autre action
+Hold to reset the controller buttons for all games.	Maintenez pour réinitialiser les boutons de tous les jeux.
+Toy Box in the game: {}, or {} on a controller.	Toy Box en jeu : {}, ou {} sur la manette.
