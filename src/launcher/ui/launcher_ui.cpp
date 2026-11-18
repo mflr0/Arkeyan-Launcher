@@ -492,6 +492,7 @@ namespace launcher_ui
             m_testGallery = LauncherEnv("SKY_LAUNCHER_TEST_GALLERY") != nullptr;
             m_testPad = LauncherEnv("SKY_LAUNCHER_TEST_PAD") != nullptr;
             m_testAchievements = LauncherEnv("SKY_LAUNCHER_TEST_ACHIEVEMENTS") != nullptr;
+            m_testChests = LauncherEnv("SKY_LAUNCHER_TEST_CHESTS") != nullptr;
             m_testRunning = LauncherEnv("SKY_LAUNCHER_TEST_RUNNING") != nullptr;
             m_testHero = LauncherEnv("SKY_LAUNCHER_TEST_HERO") != nullptr;
             m_testPadWalk = LauncherEnv("SKY_LAUNCHER_TEST_PADWALK") != nullptr;
@@ -1869,8 +1870,7 @@ namespace launcher_ui
             GameSlot* slot = &SlotFor(*FindGame(entry.id));
             // Selected only once the player has picked it: Play is that game's page.
             const bool selected =
-                (m_page == Page::Play || m_page == Page::GameSettings || m_page == Page::Achievements) &&
-                std::string_view(entry.id) == m_s->game.id;
+                (m_page == Page::Play || GameSubPage(m_page)) && std::string_view(entry.id) == m_s->game.id;
             const std::string version = GameVersion(*slot);
             SlotLine line = SlotStatus(slot);
             const ui::Status status = StatusOf(line.state);
@@ -1895,8 +1895,7 @@ namespace launcher_ui
                 GoTo(Page::Play);
             }
             if (std::string_view(entry.id) == m_s->game.id &&
-                (m_page == Page::Play || m_page == Page::Home || m_page == Page::GameSettings ||
-                    m_page == Page::Achievements))
+                (m_page == Page::Play || m_page == Page::Home || GameSubPage(m_page)))
                 TakeFocus(FocusTo::Sidebar);
             if (m_testSidebar || m_testRunning)
                 m_drawn[std::string("sidebar:") + entry.id] = line.text;
@@ -2655,6 +2654,22 @@ namespace launcher_ui
             if (ui::Pill(id.c_str(), progress))
                 GoTo(Page::Achievements);
         }
+        // Imaginite chests: how many wait in the pile of the save played last (Chests page).
+        if (!m_s->installView && ChestsOffered(m_s->game.id) && m_s->disc == DiscState::Ready)
+        {
+            RefreshChests();
+            const std::string label =
+                (m_chests.known ? Tf("Chests · {}", m_chests.pile) : std::string(Tr("Chests"))) + "##chests";
+            ui::PillOptions chests;
+            chests.icon = ui::Icon::Plus;
+            chests.overArt = true;
+            chests.tooltip = Tr("Imaginite chests");
+            musicRight -= ui::PillWidth(label.c_str(), chests);
+            ImGui::SetCursorScreenPos(ImVec2(musicRight, position.y + margin));
+            musicRight -= ui::space::XS;
+            if (ui::Pill(label.c_str(), chests))
+                GoTo(Page::Chests);
+        }
         if (!m_s->installView && m_music.HasTrack(m_s->game.id))
         {
             const bool on = GameMusicOn();
@@ -2958,12 +2973,12 @@ namespace launcher_ui
             return; // nothing else to do in a launcher that has removed itself (and nothing to write back)
         if ((page == Page::Settings || page == Page::Collection) && (m_page == Page::Home || m_page == Page::Play))
             m_backPage = m_page;
-        else if (page == Page::GameSettings || page == Page::Achievements)
-            m_backPage =
-                Page::Play; // a game's settings and achievements are opened from its page, and close back to it
-        else if (page == Page::Settings && (m_page == Page::GameSettings || m_page == Page::Achievements))
+        // A game's settings, achievements and chests open from its page and close back to it.
+        else if (GameSubPage(page))
             m_backPage = Page::Play;
-        else if (page == Page::Collection && (m_page == Page::GameSettings || m_page == Page::Achievements))
+        else if (page == Page::Settings && GameSubPage(m_page))
+            m_backPage = Page::Play;
+        else if (page == Page::Collection && GameSubPage(m_page))
             m_backPage = Page::Play;
         m_page = page;
         m_capturing = nullptr;
@@ -2979,7 +2994,7 @@ namespace launcher_ui
             m_un = {};
         else if (m_page == Page::Settings && m_un.stage == UninstallStage::Result && !m_uninstalled)
             m_un.stage = UninstallStage::Closed;
-        else if (m_page == Page::GameSettings || m_page == Page::Achievements)
+        else if (GameSubPage(m_page))
             GoTo(Page::Play);
         else if (m_page != Page::Home)
             GoTo(Page::Home);
@@ -2998,7 +3013,7 @@ namespace launcher_ui
                 pages.push_back({ Page::Play, FindGame(entry.id) });
         pages.push_back({ Page::Collection, nullptr });
         pages.push_back({ Page::Settings, nullptr });
-        const Page shown = m_page == Page::GameSettings || m_page == Page::Achievements ? Page::Play : m_page;
+        const Page shown = GameSubPage(m_page) ? Page::Play : m_page;
         int at = 0;
         for (size_t i = 0; i < pages.size(); i++)
             if (pages[i].first == shown &&
@@ -3198,6 +3213,7 @@ namespace launcher_ui
             case Page::Settings: DrawSettings(); break;
             case Page::GameSettings: DrawGameSettings(); break;
             case Page::Achievements: DrawAchievements(); break;
+            case Page::Chests: DrawChests(); break;
             }
             ImGui::End();
             ImGui::PopStyleVar();
@@ -3258,7 +3274,7 @@ namespace launcher_ui
                 "05-result" };
             if (m_testPadWalk || m_testExperimental || m_testProfiles || m_testHero || m_testHdTex || m_testButtons ||
                 m_testSidebar || m_testCopy || m_testLogo || m_testKeys || !m_testGameTabs.empty() || m_testPad ||
-                m_testAchievements || m_testRunning || m_testScreens != 0 || !m_testKit.empty())
+                m_testAchievements || m_testChests || m_testRunning || m_testScreens != 0 || !m_testKit.empty())
                 Screenshot(m_testShot.c_str());
             else if (m_testUninstall)
                 Screenshot(UninstallNames[std::min<int>(m_testStep, int(std::size(UninstallNames)) - 1)]);
@@ -4782,6 +4798,11 @@ namespace launcher_ui
             m_gameTab = GameTab::Keyboard;
             m_testShot = fmt::format("keys-{}", Games[m_testStep]);
             m_testAt = now + 600;
+            return;
+        }
+        if (m_testChests)
+        {
+            TestChestsScript(now);
             return;
         }
         if (m_testAchievements)

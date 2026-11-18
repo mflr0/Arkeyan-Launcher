@@ -862,6 +862,33 @@ read from the player's own disc.
 - **Tests**: `ArkeyanLauncherTest` (`AchievementChecks`: rows, hidden ones, the play time texts in English and French; per game's disc in the
   "Disc pictures" part: the cache, the counts, the unlocks and the play time read back, French names differ).
 
+## Imaginite chests
+
+Imaginators only (`ChestsOffered`). The player adds chests to the pile in front of the Skylanders Academy; the game itself adds
+them and saves them, the launcher never edits a save.
+
+- **The files** (the game's player folder, next to `presence.txt`; the format is the shared `src/shared/collection/chests.{h,cpp}`,
+  from ArkeyanRuntime, `tools/sync_launcher.sh`): the game writes `chests.txt` (`slot=` the save slot played last from 0,
+  `pile=` its chests not opened yet, one `pile.<kind>=` per kind, `pile.other=`, `limit=99`) each time a game enters a zone; the
+  launcher writes `chests_add.txt` (`slot=` and one `<kind>=` per kind) atomically. The game claims it by a rename the next time that
+  slot enters the Academy, adds the chests through its own chest award and removes it; a request for another slot waits.
+  `src/launcher/game_chests.{h,cpp}` reads both, adds to the waiting request (taken by a rename first, so a claim by the game at the
+  same moment never adds a chest twice) and cancels it (removes the file).
+- **The kinds**, in this order: Imaginite Chest (the one earned in the levels), Copper, Bronze, Silver, Gold and Platinum Chests (the
+  purchased tiers), and Bronze, Silver and Gold Mystery Chests (the portal toy's).
+- **At most 99 chests**: the pile and the waiting chests together. Room left = 99 - pile - waiting; the game checks the limit again
+  against its pile when it adds them (chests earned since count).
+- **The game page** (Play): a Pill "Chests · 4" (just "Chests" before the game read a pile) at its top right, left of the achievements and
+  the music; shown when the disc is ready, also while the game runs. A click opens the Chests page.
+- **The Chests page** (`ui/chests_page.cpp`; `Page::Chests`, a game sub-page like the achievements: B or Back returns to the game page):
+  one card, "Imaginite chests" over "Save slot 1 · 4 in the pile · Room for 95 more", then one Slider per kind (each up to what the others
+  leave), **Add N chests** (Primary), and "They appear the next time this save reaches the Academy." While chests wait: "N chests
+  waiting" (or "N chests waiting for save slot 2" when another slot was played since, and nothing more can be added) and **Cancel**.
+  Before the game read a pile (no save yet, or the Academy not reached), the sliders are greyed and the line says "Reach the Academy
+  once in the game to add chests." The page reads the files again every second.
+- **Tests**: `ArkeyanLauncherTest` (`ChestsChecks`, `tests/chests_test.cpp`: the room, adding twice, refusals, cancel, a claim by the
+  game during an addition, chests waiting for another slot).
+
 ## Game data (copy the disc's files, no disc image afterwards)
 Game settings > Disc has two sections: **Disc image** (choose, change, remove, show in folder) and **Game data**, which copies the
 disc's files (about the image's size, 8 GB) into `<data>/<Game>/gamedata/` so the disc image is no longer needed. The default is

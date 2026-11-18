@@ -1213,3 +1213,27 @@ Choose a picture...	Valitse kuva...
 Remove my picture	Poista oma kuva
 That file is not a picture	Tiedosto ei ole kuva
 The picture could not be saved	Kuvaa ei voitu tallentaa
+
+# Imaginite chests (ui/chests_page.cpp).
+Imaginite chests	Imaginite-arkut
+Chests	Arkut
+Chests · {}	Arkut · {}
+Reach the Academy once in the game to add chests.	Pääse pelissä kerran Akatemiaan lisätäksesi arkkuja.
+Save slot {} · {} in the pile · Room for {} more	Tallennuspaikka {} · {} kasassa · Tilaa vielä {}
+Imaginite Chest	Imaginite-arkku
+Copper Chest	Kupariarkku
+Bronze Chest	Pronssiarkku
+Silver Chest	Hopea-arkku
+Gold Chest	Kulta-arkku
+Platinum Chest	Platina-arkku
+Bronze Mystery Chest	Pronssinen mysteeriarkku
+Silver Mystery Chest	Hopeinen mysteeriarkku
+Gold Mystery Chest	Kultainen mysteeriarkku
+Add 1 chest	Lisää 1 arkku
+Add {} chests	Lisää {} arkkua
+Chests added: they appear at the Academy	Arkut lisätty: ne ilmestyvät Akatemiaan
+Couldn't add the chests	Arkkujen lisääminen epäonnistui
+They appear the next time this save reaches the Academy.	Ne ilmestyvät, kun tämä tallennus seuraavan kerran saapuu Akatemiaan.
+{} chests waiting for save slot {}	{} arkkua odottaa tallennuspaikkaa {}
+{} chests waiting	{} arkkua odottaa
+Too late: the game already added them	Liian myöhään: peli lisäsi ne jo

@@ -1210,3 +1210,27 @@ Choose a picture...	Bild auswählen...
 Remove my picture	Mein Bild entfernen
 That file is not a picture	Diese Datei ist kein Bild
 The picture could not be saved	Das Bild konnte nicht gespeichert werden
+
+# Imaginite chests (ui/chests_page.cpp).
+Imaginite chests	Imaginite-Kisten
+Chests	Kisten
+Chests · {}	Kisten · {}
+Reach the Academy once in the game to add chests.	Erreiche im Spiel einmal die Akademie, um Kisten hinzuzufügen.
+Save slot {} · {} in the pile · Room for {} more	Speicherplatz {} · {} im Stapel · Platz für {} weitere
+Imaginite Chest	Imaginite-Kiste
+Copper Chest	Kupferkiste
+Bronze Chest	Bronzekiste
+Silver Chest	Silberkiste
+Gold Chest	Goldkiste
+Platinum Chest	Platinkiste
+Bronze Mystery Chest	Bronze-Mysteriumskiste
+Silver Mystery Chest	Silber-Mysteriumskiste
+Gold Mystery Chest	Gold-Mysteriumskiste
+Add 1 chest	1 Kiste hinzufügen
+Add {} chests	{} Kisten hinzufügen
+Chests added: they appear at the Academy	Kisten hinzugefügt: Sie erscheinen in der Akademie
+Couldn't add the chests	Kisten konnten nicht hinzugefügt werden
+They appear the next time this save reaches the Academy.	Sie erscheinen, wenn dieser Spielstand das nächste Mal die Akademie erreicht.
+{} chests waiting for save slot {}	{} Kisten warten auf Speicherplatz {}
+{} chests waiting	{} Kisten warten
+Too late: the game already added them	Zu spät: Das Spiel hat sie schon hinzugefügt

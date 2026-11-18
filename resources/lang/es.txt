@@ -1212,3 +1212,27 @@ Choose a picture...	Elegir una imagen...
 Remove my picture	Quitar mi imagen
 That file is not a picture	Ese archivo no es una imagen
 The picture could not be saved	No se pudo guardar la imagen
+
+# Imaginite chests (ui/chests_page.cpp).
+Imaginite chests	Cofres de Imaginite
+Chests	Cofres
+Chests · {}	Cofres · {}
+Reach the Academy once in the game to add chests.	Llega una vez a la Academia en el juego para añadir cofres.
+Save slot {} · {} in the pile · Room for {} more	Ranura {} · {} en la pila · Caben {} más
+Imaginite Chest	Cofre de Imaginite
+Copper Chest	Cofre de cobre
+Bronze Chest	Cofre de bronce
+Silver Chest	Cofre de plata
+Gold Chest	Cofre de oro
+Platinum Chest	Cofre de platino
+Bronze Mystery Chest	Cofre misterioso de bronce
+Silver Mystery Chest	Cofre misterioso de plata
+Gold Mystery Chest	Cofre misterioso de oro
+Add 1 chest	Añadir 1 cofre
+Add {} chests	Añadir {} cofres
+Chests added: they appear at the Academy	Cofres añadidos: aparecen en la Academia
+Couldn't add the chests	No se pudieron añadir los cofres
+They appear the next time this save reaches the Academy.	Aparecen la próxima vez que esta partida llegue a la Academia.
+{} chests waiting for save slot {}	{} cofres en espera para la ranura {}
+{} chests waiting	{} cofres en espera
+Too late: the game already added them	Demasiado tarde: el juego ya los añadió

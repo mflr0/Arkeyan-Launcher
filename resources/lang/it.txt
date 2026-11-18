@@ -1212,3 +1212,27 @@ Choose a picture...	Scegli un'immagine...
 Remove my picture	Rimuovi la mia immagine
 That file is not a picture	Quel file non è un'immagine
 The picture could not be saved	Impossibile salvare l'immagine
+
+# Imaginite chests (ui/chests_page.cpp).
+Imaginite chests	Forzieri di Imaginite
+Chests	Forzieri
+Chests · {}	Forzieri · {}
+Reach the Academy once in the game to add chests.	Raggiungi una volta l'Accademia nel gioco per aggiungere forzieri.
+Save slot {} · {} in the pile · Room for {} more	Slot {} · {} nella pila · Spazio per altri {}
+Imaginite Chest	Forziere di Imaginite
+Copper Chest	Forziere di rame
+Bronze Chest	Forziere di bronzo
+Silver Chest	Forziere d'argento
+Gold Chest	Forziere d'oro
+Platinum Chest	Forziere di platino
+Bronze Mystery Chest	Forziere misterioso di bronzo
+Silver Mystery Chest	Forziere misterioso d'argento
+Gold Mystery Chest	Forziere misterioso d'oro
+Add 1 chest	Aggiungi 1 forziere
+Add {} chests	Aggiungi {} forzieri
+Chests added: they appear at the Academy	Forzieri aggiunti: compaiono all'Accademia
+Couldn't add the chests	Impossibile aggiungere i forzieri
+They appear the next time this save reaches the Academy.	Compaiono la prossima volta che questo salvataggio raggiunge l'Accademia.
+{} chests waiting for save slot {}	{} forzieri in attesa per lo slot {}
+{} chests waiting	{} forzieri in attesa
+Too late: the game already added them	Troppo tardi: il gioco li ha già aggiunti

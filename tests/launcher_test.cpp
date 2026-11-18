@@ -1757,6 +1757,7 @@ int PortableChecks(const std::filesystem::path& scratch); // tests/portable_test
 int VfsChecks(const std::filesystem::path& scratch); // tests/vfs_test.cpp
 int DiscCheckChecks(const std::filesystem::path& scratch); // tests/disc_check_test.cpp
 int LevelNameChecks(const std::filesystem::path& root);
+int ChestsChecks(const std::filesystem::path& scratch); // tests/chests_test.cpp
 int LevelNameDiscChecks();
 int LuxImageChecks(); // tests/lux_images_test.cpp
 int SingleInstanceChecks(const std::filesystem::path& scratch); // tests/single_instance_test.cpp
@@ -3044,6 +3045,7 @@ static int RunChecks(int argc, char** argv)
     LoopingDiscStartChecks(scratch);
     g_failures += LuxImageChecks();
     g_failures += LevelNameChecks(scratch);
+    g_failures += ChestsChecks(scratch / "chests");
     g_failures += SingleInstanceChecks(scratch / "instance");
     g_failures += ToyboxLinkChecks(scratch / "toybox-link");
     g_failures += I18nChecks();
