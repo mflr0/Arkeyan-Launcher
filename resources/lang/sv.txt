@@ -1197,3 +1197,16 @@ Press the second button (Escape cancels).	Tryck på den andra knappen (Escape av
 This button is used by another action	En annan åtgärd använder denna knapp
 Hold to reset the controller buttons for all games.	Håll inne för att återställa kontrollknapparna för alla spel.
 Toy Box in the game: {}, or {} on a controller.	Toy Box i spelet: {} eller {} på en handkontroll.
+
+# Figure pictures (Settings > Launcher > Collection, the figure sheet).
+Figure pictures	Figurbilder
+Which game's pictures the figures show.	Vilket spels bilder figurerna visar.
+Original game	Ursprungligt spel
+Newest game	Nyaste spelet
+Figure picture	Figurbild
+Default ({})	Standard ({})
+My picture	Min bild
+Choose a picture...	Välj en bild...
+Remove my picture	Ta bort min bild
+That file is not a picture	Filen är ingen bild
+The picture could not be saved	Bilden kunde inte sparas

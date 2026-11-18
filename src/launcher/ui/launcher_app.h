@@ -30,6 +30,7 @@
 #include "launcher/ui/collection_page.h"
 #include "launcher/ui/picture_loader.h"
 #include "launcher/ui/components/components.h"
+#include "shared/collection/icons.h"
 #include "shared/collection/save_backup.h"
 #include <SDL3/SDL.h>
 #include <atomic>
@@ -189,6 +190,10 @@ namespace launcher_ui
     ImTextureRef Ref(SDL_Texture* texture);
     // Opens a folder in Explorer / the Finder / the file manager (a path, not a URL: spaces and accents are fine).
     bool OpenFolder(const std::filesystem::path& folder);
+    // The system's file dialog for one picture (PNG, JPEG); empty when the player cancels.
+    std::string ChoosePicture(SDL_Window* window);
+    // A PNG or JPEG file as RGBA; empty when it is not one.
+    collection::Image ReadPicture(const std::string& path);
 
     // ---- Drawing --------------------------------------------------------------------------------------------------
 
@@ -532,6 +537,7 @@ namespace launcher_ui
         bool GamesFolderMissingFirst(std::function<void()> retry);
         void DrawGamesFolderMissing();
         void DrawLauncherLanguage(); // Settings > Launcher > Language
+        void DrawFigurePictures(); // Settings > Launcher > Collection: which game's pictures the figures show
         void UpdateLanguage(); // each frame: the text follows [launcher] language, never the shown game's
         void DrawSupport(); // support_page.cpp: logs and the problem report
         // A game's own settings (game_settings_page.cpp), opened from the Settings button on its Play page.
@@ -1089,6 +1095,7 @@ namespace launcher_ui
         std::map<std::string, ArtTexture> m_cachedArt; // CachedArt's, by "<game> <role> <width>"
         // The figures' pictures and CachedArt's, read off the UI thread; UploadPictures makes the finished ones textures.
         PictureLoader m_pictures;
+        uint64_t m_pictureGeneration = 0; // collection::PictureGeneration of the figures' pictures read
         bool m_prefetched = false; // the games' backdrops and logos asked for once, after the first frame
         std::map<std::string, std::string> m_scene; // SceneOf's pick of this run, by game
 

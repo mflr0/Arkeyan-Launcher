@@ -33,7 +33,8 @@ While an export runs, Reinstall, Clear caches, Delete saves and Uninstall are di
 
 The pack holds the disc's files as they are (no padding, no compression), `portable.txt` (game, version, kit, the disc's
 `default.xex` fingerprint, the export's time), `keys.ini` (the game's `[<game>.input]` section, as PLAY would apply it),
-the collection's figures and `collection.json` (not the locks, not the backups), and the game's icon.
+the collection's figures, `collection.json` and `pictures/` (the figures' picture choices and the player's own pictures;
+not the locks, not the backups), and the game's icon.
 
 ## How it is written
 

@@ -2833,6 +2833,8 @@ namespace launcher_ui
             }
             ui::EndSettings();
         }
+        ui::SectionHeader(Tr("Collection"));
+        DrawFigurePictures();
         ui::SectionHeader(Tr("Data folder"), Tr(strings::DataFolderHint));
         const std::string dataPath = datadir::Text(LauncherDataFolder()); // in the tooltip, not in the text
         ui::ButtonOptions folder;
@@ -2899,6 +2901,48 @@ namespace launcher_ui
             for (const i18n::Language& language : i18n::Languages())
                 if (ui::SelectOption(language.name.c_str(), language.code == setting))
                     Set("launcher", "language", language.code);
+            ui::EndSelect();
+        }
+        ui::EndSettings();
+    }
+
+    namespace
+    {
+        // A game whose figure pictures were read from its disc: a game to choose them from.
+        bool HasFigurePictures(const std::string& game)
+        {
+            std::error_code error;
+            return std::filesystem::is_directory(datadir::Game(game) / "portraits", error);
+        }
+    }
+
+    // The choice for every figure (shared/collection/icons.h): the original game, the newest one, or one game.
+    // A card can still have its own (the figure's sheet).
+    void App::DrawFigurePictures()
+    {
+        const std::string setting = collection::PicturesDefault();
+        auto label = [](const std::string& choice) {
+            if (choice == collection::PicturesNewest)
+                return std::string(Tr("Newest game"));
+            if (collection::Catalogue::Get().FindGame(choice) != nullptr)
+                return FullGameName(choice);
+            return std::string(Tr("Original game"));
+        };
+        if (!ui::BeginSettings("##figurepictures"))
+            return;
+        ui::SettingRow(Tr("Figure pictures"), Tr("Which game's pictures the figures show."));
+        if (ui::BeginSelect("##figurepictures", label(setting).c_str()))
+        {
+            const bool known =
+                setting == collection::PicturesNewest || collection::Catalogue::Get().FindGame(setting) != nullptr;
+            if (ui::SelectOption(Tr("Original game"), !known))
+                collection::SetPicturesDefault(collection::PicturesOrigin);
+            if (ui::SelectOption(Tr("Newest game"), setting == collection::PicturesNewest))
+                collection::SetPicturesDefault(collection::PicturesNewest);
+            for (const collection::Game& game : collection::Catalogue::Get().Games())
+                if (setting == game.id || HasFigurePictures(game.id))
+                    if (ui::SelectOption(FullGameName(game.id).c_str(), setting == game.id))
+                        collection::SetPicturesDefault(game.id);
             ui::EndSelect();
         }
         ui::EndSettings();

@@ -1226,3 +1226,16 @@ Press the second button (Escape cancels).	Appuyez sur le second bouton (Échap a
 This button is used by another action	Ce bouton est utilisé par une autre action
 Hold to reset the controller buttons for all games.	Maintenez pour réinitialiser les boutons de tous les jeux.
 Toy Box in the game: {}, or {} on a controller.	Toy Box en jeu : {}, ou {} sur la manette.
+
+# Figure pictures (Settings > Launcher > Collection, the figure sheet).
+Figure pictures	Images des figurines
+Which game's pictures the figures show.	Le jeu dont les figurines prennent les images.
+Original game	Jeu d'origine
+Newest game	Jeu le plus récent
+Figure picture	Image de la figurine
+Default ({})	Par défaut ({})
+My picture	Mon image
+Choose a picture...	Choisir une image...
+Remove my picture	Retirer mon image
+That file is not a picture	Ce fichier n'est pas une image
+The picture could not be saved	L'image n'a pas pu être enregistrée

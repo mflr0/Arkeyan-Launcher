@@ -1,9 +1,12 @@
 #include "icons.h"
 #include "collection.h"
 #include "datadir.h"
+#include "json.h"
 #include <SDL3/SDL.h>
 #include <algorithm>
+#include <atomic>
 #include <cctype>
+#include <charconv>
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
@@ -427,14 +430,10 @@ namespace collection
             return g_portraitFolders[key] = folder;
         }
 
-        // The first of `names` cached in the game's portraits folder (SKY_PORTRAITS, else <data>/<Game>/portraits). A
-        // name may start with a subfolder ("artworks/...").
-        std::string FirstCached(const Game& game, const std::vector<std::string>& names)
+        // The first of `names` in `folder` (with its trailing separator), as listed; the caller holds
+        // g_pictureFoldersLock. A name may start with a subfolder ("artworks/...").
+        std::string FirstListed(const std::string& folder, const std::vector<std::string>& names)
         {
-            std::lock_guard<std::mutex> lock(g_pictureFoldersLock);
-            std::string folder = PortraitFolder(game);
-            if (folder.empty())
-                return {};
             for (const std::string& name : names)
             {
                 size_t slash = name.rfind('/');
@@ -452,13 +451,285 @@ namespace collection
             }
             return {};
         }
+
+        // The first of `names` cached in the game's portraits folder (SKY_PORTRAITS, else <data>/<Game>/portraits).
+        std::string FirstCached(const Game& game, const std::vector<std::string>& names)
+        {
+            std::lock_guard<std::mutex> lock(g_pictureFoldersLock);
+            std::string folder = PortraitFolder(game);
+            return folder.empty() ? std::string() : FirstListed(folder, names);
+        }
+
+        // pictures/pictures.json as last read: {"default": "origin" | "newest" | <game id>, "cards": {"<type>:<variant>":
+        // <game id> | "own"}, "revision": <n>}. Looked at again at most once a second, for another process's changes.
+        struct PictureSettings
+        {
+            std::string folder; // the collection folder it was read from
+            std::string fallback = PicturesOrigin;
+            std::map<uint32_t, std::string> cards; // type << 16 | variant -> a game id or PictureOwn
+            int64_t revision = 0;
+            SDL_Time modified = 0;
+            uint64_t checkedAt = 0;
+            bool read = false, settled = false;
+            bool recheck = false; // ForgetPictureFolders: looked at again on the next call
+
+            bool SameChoices(const PictureSettings& other) const
+            {
+                return fallback == other.fallback && cards == other.cards && revision == other.revision;
+            }
+        };
+
+        std::mutex g_pictureSettingsLock;
+        PictureSettings g_pictureSettings;
+        std::atomic<uint64_t> g_pictureGeneration{ 1 };
+
+        std::string PicturesFolder(const std::string& collection) { return collection + "/pictures"; }
+        std::string SettingsPath(const std::string& collection)
+        {
+            return PicturesFolder(collection) + "/pictures.json";
+        }
+        std::string OwnName(uint16_t type, uint16_t variant)
+        {
+            return std::to_string(type) + "-" + std::to_string(variant);
+        }
+
+        void ParseSettings(const std::string& text, PictureSettings& settings)
+        {
+            settings.fallback = PicturesOrigin;
+            settings.cards.clear();
+            settings.revision = 0;
+            Json json;
+            std::string error;
+            if (!Json::Parse(text, json, error) || !json.IsObject())
+                return;
+            if (json["default"].IsString() && !json["default"].AsString().empty())
+                settings.fallback = json["default"].AsString();
+            settings.revision = json["revision"].AsInt();
+            for (const auto& [key, value] : json["cards"].Members())
+            {
+                uint16_t type = 0, variant = 0;
+                const char* end = key.data() + key.size();
+                auto [colon, typeError] = std::from_chars(key.data(), end, type);
+                if (typeError != std::errc() || colon == end || *colon != ':')
+                    continue;
+                auto [last, variantError] = std::from_chars(colon + 1, end, variant);
+                if (variantError == std::errc() && last == end && value.IsString() && !value.AsString().empty())
+                    settings.cards[uint32_t(type) << 16 | variant] = value.AsString();
+            }
+        }
+
+        // Reads the file again into g_pictureSettings (the caller holds g_pictureSettingsLock); a change of the choices
+        // moves the generation on.
+        void ReadSettings(const std::string& collection, uint64_t now)
+        {
+            PictureSettings fresh;
+            fresh.folder = collection;
+            fresh.checkedAt = now;
+            fresh.read = true;
+            const std::string path = SettingsPath(collection);
+            SDL_PathInfo info{};
+            if (SDL_GetPathInfo(path.c_str(), &info))
+            {
+                fresh.modified = info.modify_time;
+                size_t size = 0;
+                if (void* bytes = SDL_LoadFile(path.c_str(), &size))
+                {
+                    ParseSettings(std::string(static_cast<const char*>(bytes), size), fresh);
+                    SDL_free(bytes);
+                }
+            }
+            SDL_Time clock = 0;
+            fresh.settled = !SDL_GetCurrentTime(&clock) || clock - fresh.modified >= PictureFolderSettleNs;
+            // Only a change moves it on: a cache dropped on every move would be dropped again and again (the launcher
+            // forgets the folders when it drops its pictures).
+            if (!g_pictureSettings.read || g_pictureSettings.folder != collection ||
+                !g_pictureSettings.SameChoices(fresh))
+                g_pictureGeneration++;
+            g_pictureSettings = std::move(fresh);
+        }
+
+        // The settings, looked at again when a second has passed (the caller holds g_pictureSettingsLock).
+        const PictureSettings& CurrentSettings()
+        {
+            const uint64_t now = SDL_GetTicks();
+            PictureSettings& settings = g_pictureSettings;
+            if (settings.read && !settings.recheck && now - settings.checkedAt < PictureFolderCheckMs)
+                return settings;
+            const std::string collection = Folder();
+            if (!settings.read || settings.recheck || settings.folder != collection)
+            {
+                ReadSettings(collection, now);
+                return settings;
+            }
+            SDL_PathInfo info{};
+            SDL_Time modified = SDL_GetPathInfo(SettingsPath(collection).c_str(), &info) ? info.modify_time : 0;
+            if (modified != settings.modified || !settings.settled)
+                ReadSettings(collection, now);
+            else
+                settings.checkedAt = now;
+            return settings;
+        }
+
+        // Applies `change` to the file as it is now (another process may have written it) and writes it back whole.
+        template <typename Change>
+        bool UpdateSettings(Change change)
+        {
+            std::lock_guard<std::mutex> lock(g_pictureSettingsLock);
+            const std::string collection = Folder();
+            const std::string path = SettingsPath(collection);
+            Json json = Json::Object();
+            size_t size = 0;
+            if (void* bytes = SDL_LoadFile(path.c_str(), &size))
+            {
+                std::string error;
+                Json parsed;
+                if (Json::Parse(std::string(static_cast<const char*>(bytes), size), parsed, error) && parsed.IsObject())
+                    json = std::move(parsed);
+                SDL_free(bytes);
+            }
+            Json cards = json["cards"].IsObject() ? json["cards"] : Json::Object();
+            std::string fallback = json["default"].IsString() ? json["default"].AsString() : std::string();
+            change(fallback, cards);
+            json.Set("format", 1);
+            json.Set("revision", json["revision"].AsInt() + 1);
+            if (fallback.empty() || fallback == PicturesOrigin)
+                json.Erase("default");
+            else
+                json.Set("default", fallback);
+            json.Set("cards", std::move(cards));
+            SDL_CreateDirectory(PicturesFolder(collection).c_str());
+            // Written beside and renamed over: the other app never reads half a file.
+            const std::string temporary = path + ".part";
+            const std::string text = json.Dump();
+            bool saved = SDL_SaveFile(temporary.c_str(), text.data(), text.size()) &&
+                         SDL_RenamePath(temporary.c_str(), path.c_str());
+            if (!saved)
+                SDL_RemovePath(temporary.c_str());
+            ReadSettings(collection, SDL_GetTicks());
+            return saved;
+        }
+
+        std::string CardKey(uint16_t type, uint16_t variant)
+        {
+            return std::to_string(type) + ":" + std::to_string(variant);
+        }
+
+        // The own picture's file when the card's choice is PictureOwn and the file is there.
+        std::string OwnPictureOf(const PictureSettings& settings, uint16_t type, uint16_t variant)
+        {
+            auto choice = settings.cards.find(uint32_t(type) << 16 | variant);
+            if (choice == settings.cards.end() || choice->second != PictureOwn)
+                return {};
+            std::lock_guard<std::mutex> lock(g_pictureFoldersLock);
+            return FirstListed(PicturesFolder(settings.folder) + "/", { OwnName(type, variant) });
+        }
+    }
+
+    std::string PicturesDefault()
+    {
+        std::lock_guard<std::mutex> lock(g_pictureSettingsLock);
+        return CurrentSettings().fallback;
+    }
+
+    bool SetPicturesDefault(const std::string& choice)
+    {
+        return UpdateSettings([&](std::string& fallback, Json&) { fallback = choice; });
+    }
+
+    std::string PictureChoice(uint16_t type, uint16_t variant)
+    {
+        std::lock_guard<std::mutex> lock(g_pictureSettingsLock);
+        const PictureSettings& settings = CurrentSettings();
+        auto choice = settings.cards.find(uint32_t(type) << 16 | variant);
+        if (choice == settings.cards.end())
+            return {};
+        if (choice->second == PictureOwn && OwnPictureOf(settings, type, variant).empty())
+            return {};
+        return choice->second;
+    }
+
+    bool SetPictureChoice(uint16_t type, uint16_t variant, const std::string& choice)
+    {
+        if (choice == PictureOwn)
+            return false;
+        return UpdateSettings([&](std::string&, Json& cards) {
+            if (choice.empty())
+                cards.Erase(CardKey(type, variant));
+            else
+                cards.Set(CardKey(type, variant), choice);
+        });
+    }
+
+    bool SetOwnPicture(uint16_t type, uint16_t variant, const Image& image, std::string* error)
+    {
+        auto refuse = [&](const char* why) {
+            if (error != nullptr)
+                *error = why;
+            return false;
+        };
+        Image visible = CropToVisible(image);
+        if (visible.Empty() || visible.width <= 0 || visible.height <= 0)
+            return refuse("the picture is empty");
+        // Square, the picture fitted in the middle: the round portraits and the cards draw a square.
+        const int side = std::min(OwnPictureSize, std::max(visible.width, visible.height));
+        const float scale = float(side) / float(std::max(visible.width, visible.height));
+        const int width = std::max(1, int(std::lround(visible.width * scale)));
+        const int height = std::max(1, int(std::lround(visible.height * scale)));
+        Image fitted = Resize(visible, width, height);
+        Image square{ side, side, std::vector<uint32_t>(size_t(side) * size_t(side), 0) };
+        const int x0 = (side - width) / 2, y0 = (side - height) / 2;
+        for (int y = 0; y < height; y++)
+            std::copy_n(fitted.rgba.begin() + size_t(y) * size_t(width), width,
+                square.rgba.begin() + size_t(y + y0) * size_t(side) + size_t(x0));
+        const std::string folder = PicturesFolder(Folder());
+        SDL_CreateDirectory(folder.c_str());
+        const std::string path = folder + "/" + OwnName(type, variant) + ".png";
+        const std::string temporary = path + ".part";
+        if (!SavePng(square, temporary) || !SDL_RenamePath(temporary.c_str(), path.c_str()))
+        {
+            SDL_RemovePath(temporary.c_str());
+            return refuse("the picture cannot be saved in the collection folder");
+        }
+        ForgetPictureFolders();
+        if (!UpdateSettings([&](std::string&, Json& cards) { cards.Set(CardKey(type, variant), PictureOwn); }))
+            return refuse("the collection's picture choices cannot be saved");
+        return true;
+    }
+
+    bool RemoveOwnPicture(uint16_t type, uint16_t variant)
+    {
+        const std::string path = PicturesFolder(Folder()) + "/" + OwnName(type, variant) + ".png";
+        bool removed = !SDL_GetPathInfo(path.c_str(), nullptr) || SDL_RemovePath(path.c_str());
+        ForgetPictureFolders();
+        bool saved = UpdateSettings([&](std::string&, Json& cards) {
+            if (cards[CardKey(type, variant)].AsString() == PictureOwn)
+                cards.Erase(CardKey(type, variant));
+        });
+        return removed && saved;
+    }
+
+    std::string OwnPicturePath(uint16_t type, uint16_t variant)
+    {
+        std::lock_guard<std::mutex> lock(g_pictureSettingsLock);
+        return OwnPictureOf(CurrentSettings(), type, variant);
+    }
+
+    uint64_t PictureGeneration()
+    {
+        std::lock_guard<std::mutex> lock(g_pictureSettingsLock);
+        CurrentSettings();
+        return g_pictureGeneration.load();
     }
 
     void ForgetPictureFolders()
     {
-        std::lock_guard<std::mutex> lock(g_pictureFoldersLock);
-        g_pictureFolders.clear();
-        g_portraitFolders.clear();
+        {
+            std::lock_guard<std::mutex> lock(g_pictureFoldersLock);
+            g_pictureFolders.clear();
+            g_portraitFolders.clear();
+        }
+        std::lock_guard<std::mutex> lock(g_pictureSettingsLock);
+        g_pictureSettings.recheck = true; // the collection folder may have moved (tests, a profile)
     }
 
     size_t PictureFolderListings()
@@ -520,32 +791,76 @@ namespace collection
             JoinedHalf
         };
 
-        // Every UI uses this order: a variant's own art before plain art, newest cached game first.
-        // Half images take precedence for swappers; whole-figure art is never used in a waist composite.
-        std::string PicturePath(const Toy& toy, uint16_t variant, PictureKind kind, bool large)
+        // The games to look in, in order (icons.h, "The shared picture rule"), and the card's own choices.
+        struct PictureOrder
         {
-            const auto& games = Catalogue::Get().Games();
+            std::vector<const Game*> games;
+            const Game* chosen = nullptr; // the card's chosen game, looked in first, plain art included
+            std::string own; // the card's own picture
+        };
+
+        PictureOrder OrderFor(const Toy& toy, uint16_t variant)
+        {
+            const Catalogue& catalogue = Catalogue::Get();
+            const auto& all = catalogue.Games();
+            PictureOrder order;
+            std::string fallback, card;
+            {
+                std::lock_guard<std::mutex> lock(g_pictureSettingsLock);
+                const PictureSettings& settings = CurrentSettings();
+                fallback = settings.fallback;
+                if (auto found = settings.cards.find(uint32_t(toy.type) << 16 | variant); found != settings.cards.end())
+                    card = found->second;
+                if (card == PictureOwn)
+                    order.own = OwnPictureOf(settings, toy.type, variant);
+            }
+            order.games.reserve(all.size());
+            auto add = [&](const Game* game) {
+                if (game != nullptr && std::find(order.games.begin(), order.games.end(), game) == order.games.end())
+                    order.games.push_back(game);
+            };
+            if (card != PictureOwn)
+                order.chosen = catalogue.FindGame(card);
+            if (fallback == PicturesNewest)
+                for (auto game = all.rbegin(); game != all.rend(); ++game)
+                    add(&*game);
+            add(catalogue.FindGame(fallback));
+            const Game* origin = catalogue.Origin(toy, variant);
+            if (origin == nullptr) // a toy of no known game: the newest first, as before there was a choice
+                for (auto game = all.rbegin(); game != all.rend(); ++game)
+                    add(&*game);
+            const size_t at = origin != nullptr ? size_t(origin - all.data()) : 0;
+            for (size_t i = at; i < all.size(); i++)
+                add(&all[i]);
+            for (size_t i = at; i-- > 0;)
+                add(&all[i]);
+            return order;
+        }
+
+        // The pictures of `games`, in that order: a variant's own art before plain art. Half images take precedence for
+        // swappers; whole-figure art is never used in a waist composite.
+        std::string PictureIn(
+            const Toy& toy, uint16_t variant, PictureKind kind, bool large, const std::vector<const Game*>& games)
+        {
             auto mapped = [](const Game& game, const auto& pictures, uint16_t type, uint16_t version,
                               const char* folder = "") -> std::string {
                 auto it = pictures.find(uint32_t(type) << 16 | version);
                 return it == pictures.end() ? std::string() : FirstCached(game, { folder + it->second });
             };
             bool half = toy.category == Category::SwapTop || toy.category == Category::SwapBottom;
-            if (!half && (kind == PictureKind::Half || kind == PictureKind::JoinedHalf))
-                return {};
             const Toy* whole =
                 toy.category == Category::SwapBottom ? Catalogue::Get().Find(MatchingHalf(toy.type)) : nullptr;
             for (int pass = 0; pass < (variant != 0 ? 2 : 1); ++pass)
             {
                 uint16_t version = pass == 0 ? variant : 0;
                 if (half)
-                    for (auto game = games.rbegin(); game != games.rend(); ++game)
+                    for (const Game* game : games)
                         if (std::string path = mapped(*game, game->halves, toy.type, version, "artworks/");
                             !path.empty())
                             return path;
                 if (kind == PictureKind::JoinedHalf)
                     continue;
-                for (auto game = games.rbegin(); game != games.rend(); ++game)
+                for (const Game* game : games)
                     for (const Toy* candidate : { &toy, whole })
                     {
                         if (candidate == nullptr)
@@ -567,9 +882,25 @@ namespace collection
                                 return art;
                     }
             }
+            return {};
+        }
+
+        std::string PicturePath(const Toy& toy, uint16_t variant, PictureKind kind, bool large)
+        {
+            bool half = toy.category == Category::SwapTop || toy.category == Category::SwapBottom;
+            if (!half && (kind == PictureKind::Half || kind == PictureKind::JoinedHalf))
+                return {};
+            const PictureOrder order = OrderFor(toy, variant);
+            if (!order.own.empty())
+                return order.own;
+            if (order.chosen != nullptr)
+                if (std::string path = PictureIn(toy, variant, kind, large, { order.chosen }); !path.empty())
+                    return path;
+            if (std::string path = PictureIn(toy, variant, kind, large, order.games); !path.empty())
+                return path;
             if (kind == PictureKind::JoinedHalf)
                 return {};
-            for (auto game = games.rbegin(); game != games.rend(); ++game)
+            for (const Game* game : order.games)
                 if (std::string path = GameKindPicturePath(game->id, toy.category); !path.empty())
                     return path;
             return {};
@@ -589,6 +920,15 @@ namespace collection
     std::string HalfPicturePath(const Toy& toy, uint16_t variant)
     {
         return PicturePath(toy, variant, PictureKind::Half, true);
+    }
+
+    std::vector<std::string> PictureGames(const Toy& toy, uint16_t variant)
+    {
+        std::vector<std::string> games;
+        for (const Game& game : Catalogue::Get().Games())
+            if (!PictureIn(toy, variant, PictureKind::Best, true, { &game }).empty())
+                games.push_back(game.id);
+        return games;
     }
 
     namespace
@@ -652,6 +992,9 @@ namespace collection
 
     Image SwapperPicture(const Toy& top, uint16_t topVariant, const Toy& bottom, uint16_t bottomVariant)
     {
+        // A player's own picture of a half is a whole picture, not one to join.
+        if (!OwnPicturePath(top.type, topVariant).empty() || !OwnPicturePath(bottom.type, bottomVariant).empty())
+            return {};
         std::string upper = PicturePath(top, topVariant, PictureKind::JoinedHalf, true),
                     lower = PicturePath(bottom, bottomVariant, PictureKind::JoinedHalf, true);
         if (upper.empty() || lower.empty())
