@@ -192,7 +192,18 @@ written in `[input]` by hand reaches every game.
 - The mouse names share the runtime's key list (ArkeyanRuntime's `host/mouse.h`).
 - **Reset to defaults** also clears the game's `mouse_` lines and its switch.
 - The game's F3 menu has the same rows (its Commands page) and writes the same lines in the game's section; the Toy Box keys in `[input]`.
-- **Settings > Controls > Toy Box keys**: each key is a key cap to click and press; the pad's buttons beside it (View + Y) are fixed.
+- **Settings > Controls > All games > Toy Box keys**: click a controller picker, then press one physical button for
+  **Swap wheel**, or two different buttons in order for **Open the Toy Box** and **Game menu** (the in-game F3 menu).
+  Escape cancels. Hold the wheel button to open the wheel; tapping it still performs the game's action. Add and clear
+  figures keep a dash in the controller column. Keyboard bindings remain available beside the controller pickers.
+- These global shortcuts are `[input] pad_wheel=back`, `pad_toybox=back+y`, and `pad_menu=back+start` by default.
+  Missing or invalid values use those defaults. Names are the same sixteen names as controller remaps; chords use `+`
+  between two different names. Game sections cannot override them, and game remaps never move the physical shortcuts.
+- A shortcut is marked red when its physical button performs a game's action in any game, following that game's remaps.
+  Back/View as the wheel or first chord button, Y in Back/View + Y, and Start in Back/View + Start are exempt.
+  Conflicting bindings keep working. The help on the game page follows the chosen buttons and pad family.
+- **Reset to defaults** under the All games controller section clears the global remaps, rumble and these three shortcuts;
+  resetting one game's Controller tab keeps the global shortcuts. Profiles and portable game remaps exclude the shortcuts.
 - A Toy Box key that another Toy Box key or a key of any game also has is marked red (`ToyboxKeyConflict`), as an All games key
   that a game inheriting it has on another row (`GlobalKeyConflict`).
 - Tests: `tests/settings_test.cpp` (off by default, the defaults, one button per action, the global switch, a hand-written `[input]` button, Reset, the

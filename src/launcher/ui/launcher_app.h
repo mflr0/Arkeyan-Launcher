@@ -31,6 +31,7 @@
 #include "launcher/ui/collection_page.h"
 #include "launcher/ui/picture_loader.h"
 #include "launcher/ui/components/components.h"
+#include "shared/collection/icons.h"
 #include "shared/collection/save_backup.h"
 #include <SDL3/SDL.h>
 #include <atomic>
@@ -190,6 +191,10 @@ namespace launcher_ui
     ImTextureRef Ref(SDL_Texture* texture);
     // Opens a folder in Explorer / the Finder / the file manager (a path, not a URL: spaces and accents are fine).
     bool OpenFolder(const std::filesystem::path& folder);
+    // The system's file dialog for one picture (PNG, JPEG); empty when the player cancels.
+    std::string ChoosePicture(SDL_Window* window);
+    // A PNG or JPEG file as RGBA; empty when it is not one.
+    collection::Image ReadPicture(const std::string& path);
 
     // ---- Drawing --------------------------------------------------------------------------------------------------
 
@@ -411,6 +416,10 @@ namespace launcher_ui
         PortableExportJob portableJob;
         std::filesystem::path portablePath;
         std::string portableMessage;
+        // The export dialog, read when it opens: the HD textures' size (0: none made), the switch, the settings' summary.
+        uint64_t portableHdBytes = 0;
+        bool portableHd = false;
+        std::string portableSettings;
         GameSourceCheck check;
         TitleMetadata meta;
         LauncherAssets::Provider assets;
@@ -490,6 +499,7 @@ namespace launcher_ui
         void Shutdown();
         bool LoadFonts();
         void HandleEvent(const SDL_Event& event);
+        bool CaptureToyboxPad(const SDL_Event& event);
         static int VisibilityWait(int requested, SDL_WindowFlags flags);
         int ContentWait();
         int IdleWait(); // how long the loop may sleep before the next frame, in ms (0: draw now)
@@ -539,6 +549,7 @@ namespace launcher_ui
         bool GamesFolderMissingFirst(std::function<void()> retry);
         void DrawGamesFolderMissing();
         void DrawLauncherLanguage(); // Settings > Launcher > Language
+        void DrawFigurePictures(); // Settings > Launcher > Collection: which game's pictures the figures show
         void UpdateLanguage(); // each frame: the text follows [launcher] language, never the shown game's
         void DrawSupport(); // support_page.cpp: logs and the problem report
         // A game's own settings (game_settings_page.cpp), opened from the Settings button on its Play page.
@@ -605,11 +616,13 @@ namespace launcher_ui
         void DrawHdStatus(); // under the Video list: the work's progress and Stop, or why it failed
         bool HdTexturesOffered() const; // the kit doubles this game's textures from its disc (every game)
         bool HdTexturesWanted(const GameSlot& slot) const;
+        std::filesystem::path HdTexturesFolder() const; // the active game's textures-hd, where its build reads them
         void SetHdTextures(bool on);
         void StartHdTextures(bool on);
         void FinishHdTextures();
         bool AnyHdTextures() const;
         void DrawPortableExport(); // the Game tab's "Portable copy": the button, the message, the progress
+        void OpenPortableExport(); // reads what the export dialog shows
         void StartPortableExport(const std::filesystem::path& folder);
         void FinishPortableExport();
         void ForgetDisc(); // "Remove the disc": the game forgets its image; the built game and the files stay
@@ -977,6 +990,10 @@ namespace launcher_ui
         std::string m_mouseCaptureGame; // the same for the mouse row
         bool m_mouseArmed = false; // the click that started the wait has been released
         const ToyboxKey* m_toyboxCapturing = nullptr; // the Toy Box key row waiting for a key press
+        const ToyboxPad* m_toyboxPadCapturing = nullptr;
+        int m_toyboxPadFirst = -1;
+        std::array<bool, 2> m_toyboxPadTriggers = {};
+        bool m_toyboxPadBlockInput = false; // captured buttons stay out of navigation until released
 
         // The games opened this session (one slot each), and the one shown. Every slot's jobs are polled; the shown
         // one's state is what the pages draw (m_s).
@@ -1099,6 +1116,7 @@ namespace launcher_ui
         std::map<std::string, ArtTexture> m_cachedArt; // CachedArt's, by "<game> <role> <width>"
         // The figures' pictures and CachedArt's, read off the UI thread; UploadPictures makes the finished ones textures.
         PictureLoader m_pictures;
+        uint64_t m_pictureGeneration = 0; // collection::PictureGeneration of the figures' pictures read
         bool m_prefetched = false; // the games' backdrops and logos asked for once, after the first frame
         std::map<std::string, std::string> m_scene; // SceneOf's pick of this run, by game
 

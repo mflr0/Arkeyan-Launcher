@@ -1,6 +1,8 @@
 #include "launcher/portable_export.h"
 #include "launcher/game_keys.h"
 #include "launcher/game_names.h"
+#include "launcher/game_run.h"
+#include "launcher/game_settings.h"
 #include "launcher/i18n.h"
 #include "launcher/ui/launcher_ui.h"
 #include "shared/collection/datadir.h"
@@ -41,7 +43,7 @@ std::string PortableKeys(const LauncherConfig& config, std::string_view gameId)
     std::map<std::string, std::string> lines;
     for (const std::string& name : { std::string("input"), section })
         for (const auto& [key, value] : keys[name])
-            if ((key.starts_with("key_") && !key.starts_with("key_toybox")) || key.starts_with("pad_") ||
+            if ((key.starts_with("key_") && !key.starts_with("key_toybox")) || IsPadRemapLine(key) ||
                 key.starts_with("rumble_") || key == "mouse" || key.starts_with("mouse_"))
                 lines[key] = value;
     for (const char* action : InputActions())
@@ -49,6 +51,47 @@ std::string PortableKeys(const LauncherConfig& config, std::string_view gameId)
     std::string text = "[" + section + "]\n";
     for (const auto& [key, value] : lines)
         text += key + "=" + value + "\n";
+    return text;
+}
+
+std::string PortableSettings(const LauncherConfig& config, std::string_view gameId, bool hdTextures)
+{
+    LauncherConfig resolved = config;
+    MigrateInput(resolved);
+    ApplyGameVideo(resolved, gameId);
+    const std::string id(gameId);
+    portable::IniSections out;
+    out[GameVideoSection(gameId)] = resolved["video"];
+    std::map<std::string, std::string> audio = resolved["audio"];
+    for (const auto& [key, value] : resolved[id + ".audio"])
+        audio[key] = value;
+    if (!audio.empty())
+        out[id + ".audio"] = audio;
+    // The languages the copy would get from PLAY: started alone it has no launcher to choose one when none is saved.
+    const std::map<std::string, std::string>& saved = resolved[id];
+    auto get = [&](const char* key) {
+        auto value = saved.find(key);
+        return value != saved.end() ? value->second : std::string();
+    };
+    const art::DiscLanguages onDisc = StoredDiscLanguages(config, gameId);
+    std::map<std::string, std::string>& game = out[id];
+    if (std::string text = GameLanguageToPass(get("language"), onDisc.text, true, i18n::Current()); !text.empty())
+        game["language"] = text;
+    if (std::string voice = GameLanguageToPass(get("voice_language"), onDisc.voice, false, i18n::Current());
+        !voice.empty())
+        game["voice_language"] = voice;
+    game["hd_textures"] = hdTextures ? "1" : "0";
+    if (std::string nightmare = get("nightmare_from_start"); !nightmare.empty())
+        game["nightmare_from_start"] = nightmare;
+    if (!resolved["input"].empty())
+        out["input"] = resolved["input"];
+    std::string text;
+    for (const auto& [name, lines] : out)
+    {
+        text += "[" + name + "]\n";
+        for (const auto& [key, value] : lines)
+            text += key + "=" + value + "\n";
+    }
     return text;
 }
 
@@ -91,18 +134,39 @@ namespace
         return total;
     }
 
-    // The collection's own files: the figures and collection.json; not the locks, the unfinished writes or the backups' folder.
+    // The HD textures an export adds: the folder's .dds files (subfolders included), in a stable order.
+    std::vector<fs::path> HdTextureFiles(const fs::path& folder)
+    {
+        std::vector<fs::path> files;
+        std::error_code error;
+        if (folder.empty() || !fs::is_directory(folder, error))
+            return files;
+        for (fs::recursive_directory_iterator it(folder, error), end; !error && it != end; it.increment(error))
+        {
+            std::string extension = datadir::Text(it->path().extension());
+            std::transform(extension.begin(), extension.end(), extension.begin(),
+                [](unsigned char c) { return char(std::tolower(c)); });
+            if (it->is_regular_file(error) && extension == ".dds")
+                files.push_back(it->path());
+        }
+        std::sort(files.begin(), files.end());
+        return files;
+    }
+
+    // The collection's own files: the figures, collection.json and pictures/ (the figures' picture choices and the
+    // player's own pictures); not the locks, the unfinished writes or the backups' folder.
     std::vector<fs::path> CollectionFiles(const fs::path& folder)
     {
         std::vector<fs::path> files;
         std::error_code error;
-        for (fs::directory_iterator it(folder, error), end; !error && it != end; it.increment(error))
-        {
-            const std::string name = datadir::Text(it->path().filename());
-            if (it->is_regular_file(error) && !name.starts_with(".") && !name.ends_with(".lock") &&
-                !name.ends_with(".part") && !name.ends_with(".tmp"))
-                files.push_back(it->path());
-        }
+        for (const fs::path& from : { folder, folder / "pictures" })
+            for (fs::directory_iterator it(from, error), end; !error && it != end; it.increment(error))
+            {
+                const std::string name = datadir::Text(it->path().filename());
+                if (it->is_regular_file(error) && !name.starts_with(".") && !name.ends_with(".lock") &&
+                    !name.ends_with(".part") && !name.ends_with(".tmp"))
+                    files.push_back(it->path());
+            }
         std::sort(files.begin(), files.end());
         return files;
     }
@@ -128,6 +192,14 @@ namespace
         }
         return code == 0;
     }
+}
+
+uint64_t PortableHdTexturesBytes(const fs::path& folder)
+{
+    uint64_t total = 0;
+    for (const fs::path& file : HdTextureFiles(folder))
+        total += TreeSize(file);
+    return total;
 }
 
 PortableResult ExportPortable(
@@ -162,6 +234,7 @@ PortableResult ExportPortable(
             return fail(Tr("choose a folder outside the installed game"));
     }
     const std::vector<fs::path> figures = CollectionFiles(spec.collection);
+    const std::vector<fs::path> hdTextures = HdTextureFiles(spec.hdTextures);
     const fs::path icon = installed / "game_icon.png";
     const fs::path notices = spec.runtime.parent_path() / "THIRD_PARTY_NOTICES.md"; // the .app holds its own
 
@@ -171,6 +244,8 @@ PortableResult ExportPortable(
         total += entry->size;
     for (const fs::path& figure : figures)
         total += TreeSize(figure);
+    for (const fs::path& texture : hdTextures)
+        total += TreeSize(texture);
     fs::create_directories(spec.folder, error);
     const int64_t room = spec.freeBytes >= 0 ? spec.freeBytes : int64_t(fs::space(spec.folder, error).available);
     if (uint64_t(std::max<int64_t>(room, 0)) < total + Reserve)
@@ -233,6 +308,11 @@ PortableResult ExportPortable(
     ok = ok && writer.AddText(portable::InfoName, portable::FormatInfo(spec.info), why) &&
          writer.AddText(portable::KeysName, spec.keys, why);
     count += 2;
+    if (!spec.settings.empty())
+    {
+        ok = ok && writer.AddText(portable::SettingsName, spec.settings, why);
+        count++;
+    }
     if (fs::is_regular_file(icon, error))
     {
         ok = ok && writer.AddFile(portable::IconName, icon, why);
@@ -245,7 +325,17 @@ PortableResult ExportPortable(
     }
     for (const fs::path& figure : figures)
     {
-        ok = ok && writer.AddFile(portable::CollectionPrefix + datadir::Text(figure.filename()), figure, why);
+        // "pictures/<file>" for a picture: the pack's names use '/' on every system.
+        std::string name = datadir::Text(figure.lexically_relative(spec.collection));
+        std::replace(name.begin(), name.end(), '\\', '/');
+        ok = ok && writer.AddFile(portable::CollectionPrefix + name, figure, why);
+        count++;
+    }
+    for (const fs::path& texture : hdTextures)
+    {
+        std::string name = datadir::Text(texture.lexically_relative(spec.hdTextures));
+        std::replace(name.begin(), name.end(), '\\', '/');
+        ok = ok && writer.AddFile(portable::HdTexturesPrefix + name, texture, why);
         count++;
     }
     ok = ok && writer.Finish(why);

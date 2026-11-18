@@ -293,17 +293,20 @@ namespace
         EXPECT(!FindInstallKit({ { "launcher", { { "kit", (scratch / "nowhere").string() } } } }));
     }
 
-    // The synced picture rule, without discs or player data: the same art on every page and at every icon size.
+    // The synced picture rule, without discs or player data: the same art on every page and at every icon size, the
+    // figure's original game first, and the player's choices (every figure, one card, an own picture).
     void PictureChecks(const std::filesystem::path& scratch)
     {
         namespace fs = std::filesystem;
         std::map<std::string, std::string> saved;
-        for (const char* name : { "SKYLANDERS_DATA", "SKY_PORTRAITS", "SSA_PORTRAITS" })
+        for (const char* name : { "SKYLANDERS_DATA", "SKY_PORTRAITS", "SSA_PORTRAITS", "SKY_COLLECTION" })
             if (const char* value = getenv(name))
                 saved[name] = value;
         TestSetEnv("SKYLANDERS_DATA", (scratch / "picture-data").string().c_str());
+        TestSetEnv("SKY_COLLECTION", (scratch / "picture-collection").string().c_str());
         TestUnsetEnv("SKY_PORTRAITS");
         TestUnsetEnv("SSA_PORTRAITS");
+        collection::ForgetPictureFolders();
         const auto& catalogue = collection::Catalogue::Get();
         const auto* eruptor = catalogue.Find(9);
         const auto* top = catalogue.Find(2004);
@@ -321,22 +324,44 @@ namespace
         };
         if (eruptor != nullptr && top != nullptr && bottom != nullptr)
         {
-            write("ssa", "toy_eruptor_hud", 0xFF0000FFu);
-            write("giants", "artworks/eruptor", 0xFF00FF00u);
+            std::string origin = write("ssa", "toy_eruptor_hud", 0xFF0000FFu);
+            std::string artwork = write("giants", "artworks/eruptor", 0xFF00FF00u);
             std::string newest = write("trapteam", "9_0_eruptor", 0xFFFF0000u);
-            for (const char* game : { "ssa", "giants", "swapforce", "trapteam" })
-            {
-                for (bool large : { false, true })
-                    EXPECT(same(collection::PortraitPath(game, *eruptor, 0, large), newest));
-                EXPECT(same(collection::BestPicturePath(game, *eruptor), newest));
-            }
-            EXPECT(same(collection::DiscImagePath(*eruptor), newest));
-            for (int size : { 32, 128, 256 })
-            {
-                bool fromDisc = false;
-                auto icon = collection::Icon(eruptor, collection::VariantKind::Base, size, &fromDisc);
-                EXPECT(fromDisc && icon.width == size && icon.rgba[size * size / 2] == 0xFFFF0000u);
-            }
+            auto everywhere = [&](const std::string& expected, uint32_t color) {
+                for (const char* game : { "ssa", "giants", "swapforce", "trapteam" })
+                {
+                    for (bool large : { false, true })
+                        EXPECT(same(collection::PortraitPath(game, *eruptor, 0, large), expected));
+                    EXPECT(same(collection::BestPicturePath(game, *eruptor), expected));
+                }
+                EXPECT(same(collection::DiscImagePath(*eruptor), expected));
+                for (int size : { 32, 128, 256 })
+                {
+                    bool fromDisc = false;
+                    auto icon = collection::Icon(eruptor, collection::VariantKind::Base, size, &fromDisc);
+                    EXPECT(fromDisc && icon.width == size && icon.rgba[size * size / 2] == color);
+                }
+            };
+            everywhere(origin, 0xFF0000FFu); // Eruptor came with Spyro's Adventure
+            uint64_t generation = collection::PictureGeneration();
+            EXPECT(collection::SetPicturesDefault(collection::PicturesNewest));
+            EXPECT(collection::PicturesDefault() == collection::PicturesNewest);
+            EXPECT(collection::PictureGeneration() != generation); // the pages read their pictures again
+            everywhere(newest, 0xFFFF0000u);
+            EXPECT(collection::SetPicturesDefault(collection::PicturesOrigin));
+            // One card's game, read back; Giants has only an artwork of it.
+            EXPECT(collection::SetPictureChoice(9, 0, "giants") && collection::PictureChoice(9, 0) == "giants");
+            everywhere(artwork, 0xFF00FF00u);
+            EXPECT((collection::PictureGames(*eruptor, 0) == std::vector<std::string>{ "ssa", "giants", "trapteam" }));
+            // The player's own picture, from a file as the sheet's "Choose a picture..." reads it.
+            const fs::path mine = scratch / "my eruptor.png";
+            EXPECT(collection::SavePng({ 30, 20, std::vector<uint32_t>(600, 0xFFFFFF00u) }, mine.string()));
+            EXPECT(collection::SetOwnPicture(9, 0, launcher_ui::ReadPicture(mine.string())));
+            EXPECT(collection::PictureChoice(9, 0) == collection::PictureOwn);
+            everywhere(collection::OwnPicturePath(9, 0), 0xFFFFFF00u);
+            EXPECT(launcher_ui::ReadPicture((scratch / "not-a-picture.png").string()).Empty());
+            EXPECT(collection::RemoveOwnPicture(9, 0) && collection::PictureChoice(9, 0).empty());
+            everywhere(origin, 0xFF0000FFu);
             std::string variant = write("giants", "eruptor_lightcore", 0xFF00FFFFu);
             EXPECT(same(collection::PortraitPath("ssa", *eruptor, 0x1206), variant));
             EXPECT(same(collection::BestPicturePath("trapteam", *eruptor, 0x1206), variant));
@@ -369,11 +394,12 @@ namespace
                 EXPECT(!figures::GenerateIcon(toy, collection::VariantKind::Base, 64).empty());
             }
         }
-        for (const char* name : { "SKYLANDERS_DATA", "SKY_PORTRAITS", "SSA_PORTRAITS" })
+        for (const char* name : { "SKYLANDERS_DATA", "SKY_PORTRAITS", "SSA_PORTRAITS", "SKY_COLLECTION" })
             if (auto it = saved.find(name); it != saved.end())
                 TestSetEnv(name, it->second.c_str());
             else
                 TestUnsetEnv(name);
+        collection::ForgetPictureFolders();
     }
 
     // The collection: ArkeyanRuntime's library (src/shared/collection) and the launcher's model over it, in a scratch folder

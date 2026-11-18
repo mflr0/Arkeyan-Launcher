@@ -1,6 +1,8 @@
 #pragma once
 
 #include "atomic_write_checks.h"
+#include "launcher/portable_export.h"
+#include "launcher/profiles.h"
 
 inline void ConfigPersistenceChecks(const std::filesystem::path& scratch)
 {
@@ -12,6 +14,88 @@ inline void ConfigPersistenceChecks(const std::filesystem::path& scratch)
         return std::string(std::istreambuf_iterator<char>(in), {});
     };
     const fs::path ini = root / "launcher.ini";
+    {
+        LauncherConfig pad;
+        pad["input"] = { { "pad_wheel", "a" }, { "pad_toybox", "lb+rb" }, { "pad_menu", "lt+rt" }, { "pad_a", "b" },
+            { "rumble_p1", "off" }, { "key_toybox", "F9" } };
+        EXPECT(SaveLauncherConfig(ini.string(), pad));
+        EXPECT(LoadLauncherConfig(ini.string()) == pad);
+        const std::string portable = PortableKeys(pad, "ssa");
+        EXPECT(portable.find("pad_wheel=") == std::string::npos && portable.find("pad_toybox=") == std::string::npos &&
+               portable.find("pad_menu=") == std::string::npos);
+        ResetPadMap(pad, "");
+        EXPECT(pad["input"].count("pad_a") == 0 && pad["input"].count("rumble_p1") == 0);
+        EXPECT(pad["input"].count("pad_wheel") == 0 && pad["input"].count("pad_toybox") == 0 &&
+               pad["input"].count("pad_menu") == 0 && pad["input"]["key_toybox"] == "F9");
+    }
+    {
+        LauncherConfig pad;
+        const auto bindings = ToyboxPads();
+        EXPECT(bindings.size() == 3);
+        const std::array<int, 2> wheel = { 9, -1 }, toybox = { 9, 3 }, menu = { 9, 8 };
+        EXPECT(ToyboxPadValue(pad, bindings[0]) == wheel && ToyboxPadValue(pad, bindings[1]) == toybox &&
+               ToyboxPadValue(pad, bindings[2]) == menu);
+        for (const ToyboxPad& binding : bindings)
+        {
+            EXPECT(!ToyboxPadConflict(pad, binding) && !IsPadRemapLine(binding.line));
+            for (const char* invalid : { "", "unknown", "none", "back+unknown", "back+back", "a+b+x", "+y", "a+" })
+            {
+                pad["input"][binding.line] = invalid;
+                EXPECT(ToyboxPadValue(pad, binding) == binding.fallback);
+            }
+            pad["input"].erase(binding.line);
+        }
+        pad["ssa.input"]["pad_wheel"] = "a"; // a game cannot override these physical buttons
+        EXPECT(ToyboxPadValue(pad, bindings[0]) == wheel);
+        SetToyboxPad(pad, bindings[0], { 0, -1 });
+        SetToyboxPad(pad, bindings[1], { 4, 5 });
+        SetToyboxPad(pad, bindings[2], { 6, 7 });
+        EXPECT(pad["input"]["pad_wheel"] == "a" && pad["input"]["pad_toybox"] == "lb+rb" &&
+               pad["input"]["pad_menu"] == "lt+rt");
+        EXPECT(SaveLauncherConfig(ini.string(), pad));
+        const auto loaded = LoadLauncherConfig(ini.string());
+        for (const ToyboxPad& binding : bindings)
+            EXPECT(ToyboxPadValue(loaded, binding) == ToyboxPadValue(pad, binding));
+        LauncherConfig computer, personal;
+        profiles::Split(pad, computer, personal);
+        for (const ToyboxPad& binding : bindings)
+            EXPECT(computer["input"][binding.line] == pad["input"][binding.line] &&
+                   personal["input"].count(binding.line) == 0);
+        EXPECT(ToyboxPadConflict(pad, bindings[0])); // every game's A is used
+        SetPadTarget(pad, "ssa", 0, -1);
+        EXPECT(ToyboxPadConflict(pad, bindings[0])); // another game still uses A
+        for (const auto& game : g_games)
+            SetPadTarget(pad, game.id, 0, -1);
+        EXPECT(!ToyboxPadConflict(pad, bindings[0]));
+        SetPadTarget(pad, "ssa", 0, 1);
+        EXPECT(ToyboxPadConflict(pad, bindings[0])); // physical A still performs a game's action
+        EXPECT(ToyboxPadName(pad, bindings[0], PadFamily::Xbox360) == "A");
+        SetToyboxPad(pad, bindings[0], { 10, -1 });
+        EXPECT(ToyboxPadConflict(pad, bindings[0])); // stick clicks also have controller rows
+        SetToyboxPad(pad, bindings[0], { 0, -1 });
+        SetToyboxPad(pad, bindings[1], { 9, 0 });
+        EXPECT(ToyboxPadConflict(pad, bindings[1]));
+        ResetPadMap(pad, "ssa");
+        EXPECT(pad["input"]["pad_wheel"] == "a"); // a game's reset leaves the global shortcuts
+        ResetPadMap(pad, "");
+        for (const ToyboxPad& binding : bindings)
+            EXPECT(ToyboxPadValue(pad, binding) == binding.fallback && !ToyboxPadConflict(pad, binding));
+        pad["input"]["pad_wheel"] = "a";
+        pad["ssa.input"]["pad_wheel"] = "a";
+        EXPECT(MigrateInput(pad));
+        EXPECT(pad["input"]["pad_wheel"] == "a" && pad["ssa.input"]["pad_wheel"] == "a");
+        for (const char* button : PadButtons())
+            EXPECT(IsPadRemapLine(std::string("pad_") + button));
+        EXPECT(!IsPadRemapLine("pad_unknown"));
+        for (int button = 0; button < PadButtonTotal; button++)
+        {
+            SetToyboxPad(pad, bindings[0], { button, -1 });
+            EXPECT(ToyboxPadValue(pad, bindings[0])[0] == button);
+            SetToyboxPad(pad, bindings[1], { button, (button + 1) % PadButtonTotal });
+            EXPECT(ToyboxPadValue(pad, bindings[1])[0] == button &&
+                   ToyboxPadValue(pad, bindings[1])[1] == (button + 1) % PadButtonTotal);
+        }
+    }
     {
         std::ofstream(ini, std::ios::binary)
             << "\xEF\xBB\xBF# edited\r\nfuture_root=keep=equals;#text\r\n"

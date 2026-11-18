@@ -15,12 +15,14 @@ and words, a sheet with three main actions. The look is dorydev's: the colours, 
 - `figures/figure_icons.*` is the launcher's: `IconStyle` (outline, fills, badge colours) draws the generated icons for any
   catalogue toy and variant kind; the library's own `collection/icons.*` is not used for drawing, only for
   `PortraitPath` (which disc picture a toy gets).
-- **Pictures.** Every page uses the newest cached game in reverse catalogue order, regardless of the game being
-  viewed. A variant's own picture takes priority over a newer plain picture; otherwise the newest plain picture is
-  used, then a family glyph, then the generated icon. `collection::PortraitPath(game, toy, variant, large)` implements
+- **Pictures.** Every page uses the same game order, regardless of the game being viewed: the player's own picture of
+  the card, the card's chosen game, then the choice for every figure (Settings > Launcher > Collection > **Figure
+  pictures**: Original game, the default; Newest game; or one game whose pictures were read), then the figure's original
+  game (a variant's: the game of its year), the later games, the earlier ones. A variant's own picture takes priority
+  over plain art; then a family glyph, then the generated icon. `collection::PortraitPath(game, toy, variant, large)` implements
   this with `BestPicturePath` and `HalfPicturePath` through one shared selector. Icon sizes choose the same game and
   variant. A large figure view prefers artwork within that game, while an icon prefers its portrait, with artwork as
-  a fallback. Newer plain portraits beat older plain artworks. Known figures pass their exact variant id, including
+  a fallback. A plain portrait from a game earlier in the order beats a plain artwork from a later one. Known figures pass their exact variant id, including
   in the seats and half chooser; a kind alone is resolved with `VariantFor` when the id is unavailable.
   Existing `<data>/<Game>/portraits/` and `portraits/artworks/` files are used as they are: no cache version change or
   re-extraction. Missing pictures are added by the normal disc check. The shared library's `game_art.md` has the full
@@ -57,8 +59,8 @@ A Swap Force swapper is two toys, a top and a bottom, each its own dump. The lib
   top is laid over the bottom and the result is cut to its visible pixels (`collection::SwapperPicture`, `JoinHalves`,
   shared with the game, with a unit test on synthetic images); the result is fitted into the card's square. A matched or a mixed swapper, and each version (Dark, Legendary...), has its own halves.
   When a half has no such picture (the pictures are read from the player's disc, so before the first disc check), the card
-  shows the top's picture with the bottom small at its corner. Each individual half first uses its own newest half
-  picture, then whole-figure art, then its generated icon. A bottom can use its matching top's whole-figure picture
+  shows the top's picture with the bottom small at its corner, as when either half has the player's own picture. Each
+  individual half first uses its own half picture in the order above, then whole-figure art, then its generated icon. A bottom can use its matching top's whole-figure picture
   (Trap Team lists only tops). Whole-figure fallbacks are never joined at the waist; plain halves never replace a dedicated variant picture.
   Neither half is left empty.
 - **Putting it on the portal**: a click on a seat, a drag, or the sheet's "Put on the portal" places **both halves**. The seat
@@ -221,7 +223,13 @@ At the first visit to the page (`CollectionPage::Open`):
   within one second sort by their number. Restore, Reset, Edit and Import write a new file and rename it over the old.
   Names are kept to 200 bytes without reserved Windows names or a trailing dot; a label is trimmed, without control
   characters, 64 bytes at most; a nickname takes well-formed UTF-8 only, without control characters.
-- **Pictures**: `collection::PortraitPath` (the newest cached variant picture, then plain art, then the toy's family
+- **Figure picture** (a Ghost button under the sheet's picture, its menu): **Default (<the choice for every figure>)**,
+  each game with a picture of that card (`PictureGames`), **Choose a picture...** (a PNG or JPEG file; kept square, 512
+  px at most, in the collection's `pictures/` folder so it travels with the figures), **Remove my picture** when it has
+  one. Per card (toy and version: Spyro and Dark Spyro apart); a swapper's sheet lists both halves, each under its name.
+  A change shows at once on every page and in a running game's Toy Box (`PictureGeneration`: the pictures are read
+  again). The screenshot test's `69-picture-menu` shows the menu open.
+- **Pictures**: `collection::PortraitPath` (the variant picture in the order above, then plain art, then the toy's family
   picture from a disc: SSA's potion, compass and paw icons), else `figures::GenerateIcon` (a shape, the element's colour, the
   variant's badge, initials for characters, and the Toy Box's mark for items, packs and sidekicks:
   `collection::KindGlyph`). Never an empty square.

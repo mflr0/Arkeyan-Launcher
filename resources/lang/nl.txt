@@ -150,6 +150,9 @@ Checking...	Controleren...
 Chinese	Chinees
 Choose	Kiezen
 Choose a figure for {}	Kies een figuur voor {}
+Include HD textures	HD-textures meenemen
+{} with them, {} without.	{} met, {} zonder.
+Settings: {} FPS · Resolution scale {} · {}	Instellingen: {} FPS · Resolutieschaal {} · {}
 Choose a folder...	Kies een map...
 Choose a key to change it.	Kies een toets om die te wijzigen.
 Choose a type	Kies een type
@@ -854,7 +857,6 @@ Total	Totaal
 Touchpad	Touchpad
 Toy	Poppetje
 Toy Box	Toy Box
-Toy Box in the game: F6, or View + Y on a controller.	Toy Box in het spel: F6, of View + Y op een controller.
 Toy Box keys	Toy Box-toetsen
 Toy type {}	Type poppetje {}
 Translating the game code	De spelcode vertalen
@@ -1186,6 +1188,30 @@ Dimmed values follow Launcher settings.	Gedimde waarden volgen de Launcher-inste
 Games use these unless their own settings change them.	De spellen gebruiken deze, tenzij hun eigen instellingen ze wijzigen.
 Buttons	Knoppen
 Stats / Info	Statistieken / Info
+
+# Controller shortcuts
+Swap wheel	Wisselwiel
+Game menu	Spelmenu
+Hold to open the swap wheel.	Houd ingedrukt om het wisselwiel te openen.
+Press a button (Escape cancels).	Druk op een knop (Escape annuleert).
+Press two buttons in order (Escape cancels).	Druk na elkaar op twee knoppen (Escape annuleert).
+Press the second button (Escape cancels).	Druk op de tweede knop (Escape annuleert).
+This button is used by another action	Een andere actie gebruikt deze knop
+Hold to reset the controller buttons for all games.	Houd ingedrukt om de controllerknoppen voor alle spellen te herstellen.
+Toy Box in the game: {}, or {} on a controller.	Toy Box in het spel: {}, of {} op een controller.
+
+# Figure pictures (Settings > Launcher > Collection, the figure sheet).
+Figure pictures	Figuurafbeeldingen
+Which game's pictures the figures show.	Uit welk spel de afbeeldingen van de figuren komen.
+Original game	Oorspronkelijk spel
+Newest game	Nieuwste spel
+Figure picture	Figuurafbeelding
+Default ({})	Standaard ({})
+My picture	Mijn afbeelding
+Choose a picture...	Kies een afbeelding...
+Remove my picture	Mijn afbeelding verwijderen
+That file is not a picture	Dat bestand is geen afbeelding
+The picture could not be saved	De afbeelding kon niet worden opgeslagen
 
 # Imaginite chests (ui/chests_page.cpp).
 Imaginite chests	Imaginite-kisten

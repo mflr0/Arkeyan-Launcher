@@ -10,6 +10,7 @@
 #include <SDL3/SDL_gamepad.h>
 #include <SDL3/SDL_scancode.h>
 #include <span>
+#include <array>
 #include <string>
 #include <string_view>
 
@@ -90,6 +91,8 @@ bool MigrateInput(LauncherConfig& config);
 constexpr int PadButtonTotal = 16;
 // The runtime's names of the pad's buttons, in display order: a b x y lb rb lt rt start back ls rs dpad_up .. dpad_right.
 std::span<const char* const> PadButtons();
+// Only the sixteen remap lines, excluding the global physical shortcuts below.
+bool IsPadRemapLine(std::string_view line);
 // The button as the pad in use prints it ("RB", "R1", "R", "D-pad up"), words in the player's language.
 std::string PadButtonLabel(int button, PadFamily family);
 // What the game calls the button's job ("Attack 2"), empty when the game gives it none (the sticks' clicks, the D-pad).
@@ -104,7 +107,7 @@ bool PadOwn(const LauncherConfig& config, std::string_view gameId, int button); 
 // Stores the game's line (the global layout's job removes it).
 void SetPadTarget(LauncherConfig& config, std::string_view gameId, int button, int target);
 void SetGlobalPadTarget(LauncherConfig& config, int button, int target); // [input] (the button's own job: no line)
-// "Reset to defaults" (a game's Controller tab): every pad_ and rumble_ line of the game goes.
+// A game's remaps and rumble go; an empty game resets [input], including the physical shortcuts.
 void ResetPadMap(LauncherConfig& config, std::string_view gameId);
 // The rumble choices, in order, and the player's now (player 0 or 1): the game's, else [input]'s, else normal.
 std::span<const char* const> RumbleLevels();
@@ -147,3 +150,16 @@ std::span<const ToyboxKey> ToyboxKeys();
 std::string ToyboxKeyName(const LauncherConfig& config, const ToyboxKey& key);
 // True when another Toy Box key, or a key of any game, has the same key.
 bool ToyboxKeyConflict(const LauncherConfig& config, const ToyboxKey& key);
+
+// Physical controller shortcuts in [input] only; a negative second button means one held button.
+struct ToyboxPad
+{
+    const char* line;
+    const char* label;
+    std::array<int, 2> fallback;
+};
+std::span<const ToyboxPad> ToyboxPads();
+std::array<int, 2> ToyboxPadValue(const LauncherConfig& config, const ToyboxPad& binding);
+void SetToyboxPad(LauncherConfig& config, const ToyboxPad& binding, std::array<int, 2> buttons);
+std::string ToyboxPadName(const LauncherConfig& config, const ToyboxPad& binding, PadFamily family);
+bool ToyboxPadConflict(const LauncherConfig& config, const ToyboxPad& binding);

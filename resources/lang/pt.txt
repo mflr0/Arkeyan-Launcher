@@ -150,6 +150,9 @@ Checking...	A verificar...
 Chinese	Chinês
 Choose	Escolher
 Choose a figure for {}	Escolhe uma figura para {}
+Include HD textures	Incluir texturas HD
+{} with them, {} without.	{} com elas, {} sem elas.
+Settings: {} FPS · Resolution scale {} · {}	Definições: {} FPS · Escala de resolução {} · {}
 Choose a folder...	Escolher uma pasta...
 Choose a key to change it.	Escolhe uma tecla para a alterar.
 Choose a type	Escolhe um tipo
@@ -854,7 +857,6 @@ Total	Total
 Touchpad	Touchpad
 Toy	Brinquedo
 Toy Box	Toy Box
-Toy Box in the game: F6, or View + Y on a controller.	Toy Box no jogo: F6, ou View + Y num comando.
 Toy Box keys	Teclas da Toy Box
 Toy type {}	Tipo de brinquedo {}
 Translating the game code	A traduzir o código do jogo
@@ -1186,6 +1188,30 @@ Dimmed values follow Launcher settings.	Os valores esbatidos seguem as Definiç�
 Games use these unless their own settings change them.	Os jogos usam estas, a menos que as suas definições as alterem.
 Buttons	Botões
 Stats / Info	Estatísticas / Info
+
+# Controller shortcuts
+Swap wheel	Roda de troca
+Game menu	Menu do jogo
+Hold to open the swap wheel.	Mantém premido para abrir a roda de troca.
+Press a button (Escape cancels).	Prime um botão (Escape cancela).
+Press two buttons in order (Escape cancels).	Prime dois botões por ordem (Escape cancela).
+Press the second button (Escape cancels).	Prime o segundo botão (Escape cancela).
+This button is used by another action	Outra ação usa este botão
+Hold to reset the controller buttons for all games.	Mantém premido para repor os botões de todos os jogos.
+Toy Box in the game: {}, or {} on a controller.	Toy Box no jogo: {}, ou {} num comando.
+
+# Figure pictures (Settings > Launcher > Collection, the figure sheet).
+Figure pictures	Imagens das figuras
+Which game's pictures the figures show.	De que jogo vêm as imagens das figuras.
+Original game	Jogo original
+Newest game	Jogo mais recente
+Figure picture	Imagem da figura
+Default ({})	Predefinição ({})
+My picture	A minha imagem
+Choose a picture...	Escolher uma imagem...
+Remove my picture	Remover a minha imagem
+That file is not a picture	Esse ficheiro não é uma imagem
+The picture could not be saved	Não foi possível guardar a imagem
 
 # Imaginite chests (ui/chests_page.cpp).
 Imaginite chests	Baús de Imaginite

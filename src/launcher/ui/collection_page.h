@@ -155,6 +155,9 @@ namespace launcher_ui
         void DrawOverlay();
         void DrawFigurePage();
         void DrawFigureMenu(const collection::Figure& figure, bool writable);
+        // The sheet's "Figure picture" menu: the default, a game, or the player's own picture, for each half of a swapper.
+        void DrawPictureMenu(const collection::Card& card);
+        void ChooseOwnPicture(uint16_t type, uint16_t variant);
         void DrawConfirm(const collection::Figure& figure);
         void DrawFigureFacts(const collection::Figure& figure);
         void DrawDetails(const collection::Figure& figure);

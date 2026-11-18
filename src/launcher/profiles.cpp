@@ -1,4 +1,5 @@
 #include "launcher/profiles.h"
+#include "launcher/game_keys.h"
 #include "shared/collection/datadir.h"
 #include <algorithm>
 #include <cctype>
@@ -304,7 +305,7 @@ namespace profiles
         // The global layout of the keys, pad, rumble and mouse ([input], game_keys.h); the device, the pad chosen, the glyphs
         // and the Toy Box's keys are the computer's.
         if (section == "input")
-            return (key.starts_with("key_") && !key.starts_with("key_toybox")) || key.starts_with("pad_") ||
+            return (key.starts_with("key_") && !key.starts_with("key_toybox")) || IsPadRemapLine(key) ||
                    key.starts_with("rumble_") || key == "mouse" || key.starts_with("mouse_") || key == "global";
         // A game's own sections: "<game>", "<game>.input", "<game>.pad" (and the computer's "<game>.video", "<game>.audio").
         const size_t dot = section.find('.');

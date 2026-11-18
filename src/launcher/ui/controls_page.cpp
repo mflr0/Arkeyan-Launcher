@@ -167,6 +167,7 @@ namespace launcher_ui
             ImGui::PushID(key.action);
             if (ui::KeyButton("##key", shown(key).c_str(), options))
             {
+                m_toyboxPadCapturing = nullptr;
                 m_capturing = &key;
                 m_captureGame = game;
             }
@@ -264,6 +265,7 @@ namespace launcher_ui
             key.action, shown.c_str(), options, global ? nullptr : ResetTip(own, SharedAction(key.action))))
         {
         case Hit::Pressed:
+            m_toyboxPadCapturing = nullptr;
             m_capturing = &key;
             m_captureGame = game;
             break;
@@ -320,6 +322,7 @@ namespace launcher_ui
             switch (KeyCapControl(id.c_str(), shown.c_str(), options, ResetTip(own, SharedAction(key.action))))
             {
             case Hit::Pressed:
+                m_toyboxPadCapturing = nullptr;
                 m_mouseCapturing = &key;
                 m_mouseCaptureGame = game;
                 m_mouseArmed = false;
@@ -605,82 +608,153 @@ namespace launcher_ui
         DrawToyboxKeys();
     }
 
+    bool App::CaptureToyboxPad(const SDL_Event& event)
+    {
+        if (m_toyboxPadCapturing == nullptr)
+            return false;
+        m_toyboxPadBlockInput = true;
+        if ((event.type == SDL_EVENT_KEY_DOWN && event.key.key == SDLK_ESCAPE) ||
+            event.type == SDL_EVENT_WINDOW_FOCUS_LOST || event.type == SDL_EVENT_GAMEPAD_REMOVED)
+        {
+            m_toyboxPadCapturing = nullptr;
+            return event.type == SDL_EVENT_KEY_DOWN;
+        }
+        int button = -1;
+        if (event.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN)
+        {
+            switch (event.gbutton.button)
+            {
+            case SDL_GAMEPAD_BUTTON_SOUTH: button = 0; break;
+            case SDL_GAMEPAD_BUTTON_EAST: button = 1; break;
+            case SDL_GAMEPAD_BUTTON_WEST: button = 2; break;
+            case SDL_GAMEPAD_BUTTON_NORTH: button = 3; break;
+            case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER: button = 4; break;
+            case SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER: button = 5; break;
+            case SDL_GAMEPAD_BUTTON_START: button = 8; break;
+            case SDL_GAMEPAD_BUTTON_BACK: button = 9; break;
+            case SDL_GAMEPAD_BUTTON_LEFT_STICK: button = 10; break;
+            case SDL_GAMEPAD_BUTTON_RIGHT_STICK: button = 11; break;
+            case SDL_GAMEPAD_BUTTON_DPAD_UP: button = 12; break;
+            case SDL_GAMEPAD_BUTTON_DPAD_DOWN: button = 13; break;
+            case SDL_GAMEPAD_BUTTON_DPAD_LEFT: button = 14; break;
+            case SDL_GAMEPAD_BUTTON_DPAD_RIGHT: button = 15; break;
+            default: break;
+            }
+        }
+        else if (event.type == SDL_EVENT_GAMEPAD_AXIS_MOTION && (event.gaxis.axis == SDL_GAMEPAD_AXIS_LEFT_TRIGGER ||
+                                                                    event.gaxis.axis == SDL_GAMEPAD_AXIS_RIGHT_TRIGGER))
+        {
+            const size_t trigger = event.gaxis.axis == SDL_GAMEPAD_AXIS_LEFT_TRIGGER ? 0 : 1;
+            const bool down = event.gaxis.value > 16000;
+            if (down && !m_toyboxPadTriggers[trigger])
+                button = int(trigger) + 6;
+            m_toyboxPadTriggers[trigger] = down;
+        }
+        if (button >= 0)
+        {
+            if (m_toyboxPadCapturing->fallback[1] >= 0 && m_toyboxPadFirst < 0)
+                m_toyboxPadFirst = button;
+            else if (button != m_toyboxPadFirst)
+            {
+                SetToyboxPad(m_config, *m_toyboxPadCapturing,
+                    m_toyboxPadFirst < 0 ? std::array<int, 2>{ button, -1 }
+                                         : std::array<int, 2>{ m_toyboxPadFirst, button });
+                if (!SaveConfig())
+                    Toast(Tr("Couldn't save the settings"), ui::ToastKind::Error);
+                m_toyboxPadCapturing = nullptr;
+            }
+        }
+        return event.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN || event.type == SDL_EVENT_GAMEPAD_BUTTON_UP ||
+               event.type == SDL_EVENT_GAMEPAD_AXIS_MOTION;
+    }
+
     void App::DrawToyboxKeys()
     {
         ui::SectionHeader(Tr("Toy Box keys"));
-        if (ui::BeginSettings("##toyboxkeys"))
+        const auto keys = ToyboxKeys();
+        const auto pads = ToyboxPads();
+        if (ui::BeginSettings("##toyboxkeys", 170, 250))
         {
-            // Each line: the keyboard's key, changed like the game's keys ([input] key_toybox..., shared by the games; Tab also
-            // opens the Toy Box while its key is F6's default), then the pad's buttons ("View + Y": together) in the pad's own
-            // pictures (the pad in use or chosen, else Xbox's), a dash where the pad has none (adding and clearing figures are
-            // the keyboard's only). The pad's column ends on the control column's edge, the key before it.
-            const std::span<const ToyboxKey> keys = ToyboxKeys();
-            const std::vector<ui::PadButton> buttons[] = { { ui::PadButton::Back, ui::PadButton::North }, {}, {} };
-            const ui::Glyphs glyphs = PadGlyphs();
-            const float joint = ui::space::XS; // on each side of the "+"
-            auto padWidth = [&](const std::vector<ui::PadButton>& pad) {
-                float w = 0;
-                for (size_t i = 0; i < pad.size(); i++)
-                    w += ui::KeyCapWidth(pad[i], glyphs) +
-                         (i > 0 ? 2 * joint + ui::TextSize(ui::TextStyle::Caption, "+").x : 0);
-                return w;
-            };
-            float padColumn = 0;
-            for (const auto& pad : buttons)
-                padColumn = std::max(padColumn, padWidth(pad));
-            for (size_t row = 0; row < keys.size(); row++)
+            // Physical shortcuts stay independent of the games' button remaps.
+            for (int row = 0; row < 5; row++)
             {
-                const ToyboxKey& key = keys[row];
-                ui::SettingRow(Tr(key.label), nullptr);
-                ImDrawList* draw = ImGui::GetWindowDrawList();
-                const ImVec2 start = ImGui::GetCursorScreenPos();
-                const float right = start.x + ImGui::GetContentRegionAvail().x, padX = right - padColumn;
-                const float capH = ui::height::Normal,
-                            middle = start.y + std::round(capH / 2); // the key button's middle
-                const std::string name = KeyDisplayName(ToyboxKeyName(m_config, key));
-                ui::KeyButtonOptions options;
-                options.capturing = m_toyboxCapturing == &key;
-                options.conflict = ToyboxKeyConflict(m_config, key);
-                if (options.conflict)
-                    options.tooltip = Tr("This key is used by another action");
-                const float keyX =
-                    padX - (padColumn > 0 ? ui::space::L : 0) - ui::KeyButtonWidth(name.c_str(), options);
-                ImGui::SetCursorScreenPos(ImVec2(keyX, start.y));
-                ImGui::PushID(key.line);
-                if (ui::KeyButton("##toyboxkey", name.c_str(), options))
-                    m_toyboxCapturing = &key;
-                ImGui::PopID();
-                float x = padX;
-                if (!buttons[row].empty())
-                    for (size_t i = 0; i < buttons[row].size(); i++)
-                    {
-                        if (i > 0)
-                        {
-                            ui::PushText(ui::TextStyle::Caption);
-                            ui::DrawText(draw,
-                                ImVec2(x + joint, std::round(middle - ui::CapMiddle(ui::TextStyle::Caption))),
-                                ui::Col(ui::color::Dim), "+");
-                            x += 2 * joint + ImGui::CalcTextSize("+").x;
-                            ui::PopText();
-                        }
-                        x += ui::DrawKeyCap(draw, ImVec2(x, middle), buttons[row][i], glyphs).x;
-                    }
-                else // no pad button for it: a quiet dash in the pad's column
+                const ToyboxPad* pad = row == 0 ? &pads[0] : row == 1 ? &pads[1] : row == 4 ? &pads[2] : nullptr;
+                const ToyboxKey* key = row >= 1 && row <= 3 ? &keys[size_t(row - 1)] : nullptr;
+                const char* label = key != nullptr ? key->label : pad->label;
+                ui::SettingRow(Tr(label), row == 0 ? Tr("Hold to open the swap wheel.") : nullptr);
+                if (key != nullptr)
                 {
-                    ui::PushText(ui::TextStyle::Body);
-                    ui::DrawText(draw,
-                        ImVec2(std::round(padX + (padColumn - ImGui::CalcTextSize(Dash).x) / 2),
-                            std::round(middle - ui::CapMiddle(ui::TextStyle::Body))),
-                        ui::Col(ui::color::Dim), Dash);
-                    ui::PopText();
+                    ui::KeyButtonOptions options;
+                    options.capturing = m_toyboxCapturing == key;
+                    options.conflict = ToyboxKeyConflict(m_config, *key);
+                    if (options.conflict)
+                        options.tooltip = Tr("This key is used by another action");
+                    const std::string name = KeyDisplayName(ToyboxKeyName(m_config, *key));
+                    if (KeyCapControl(key->line, name.c_str(), options, nullptr) == Hit::Pressed)
+                    {
+                        m_toyboxPadCapturing = nullptr;
+                        m_capturing = nullptr;
+                        m_mouseCapturing = nullptr;
+                        m_toyboxCapturing = key;
+                    }
                 }
-                ImGui::SetCursorScreenPos(ImVec2(keyX, start.y));
-                ImGui::Dummy(ImVec2(right - keyX, capH));
+                else if (row == 4)
+                {
+                    ui::AlignRight(ui::KeyButtonWidth("F3"));
+                    ImGui::BeginDisabled();
+                    ui::KeyButton("##menu-key", "F3");
+                    ImGui::EndDisabled();
+                }
+                else
+                    NoControl(true);
+                ImGui::TableSetColumnIndex(2);
+                if (pad != nullptr)
+                {
+                    ui::KeyButtonOptions options;
+                    options.capturing = m_toyboxPadCapturing == pad;
+                    options.conflict = ToyboxPadConflict(m_config, *pad);
+                    options.tooltip = options.conflict       ? Tr("This button is used by another action")
+                                      : pad->fallback[1] < 0 ? Tr("Press a button (Escape cancels).")
+                                                             : Tr("Press two buttons in order (Escape cancels).");
+                    std::string name = ToyboxPadName(m_config, *pad, PadFamilyNow());
+                    if (options.capturing && m_toyboxPadFirst >= 0)
+                        name = PadButtonLabel(m_toyboxPadFirst, PadFamilyNow()) + " + ...";
+                    if (KeyCapControl(pad->line, name.c_str(), options, nullptr) == Hit::Pressed)
+                    {
+                        m_capturing = nullptr;
+                        m_mouseCapturing = nullptr;
+                        m_toyboxCapturing = nullptr;
+                        m_toyboxPadCapturing = pad;
+                        m_toyboxPadBlockInput = true;
+                        m_toyboxPadFirst = -1;
+                        m_toyboxPadTriggers = {};
+                    }
+                }
+                else
+                    NoControl(true);
             }
             ui::EndSettings();
         }
         if (m_toyboxCapturing != nullptr)
             ui::Text(ui::TextStyle::Caption,
                 Tf("Press a key for \"{}\" (Escape cancels)", Tr(m_toyboxCapturing->label)).c_str(), ui::color::Ink);
+        if (m_toyboxPadCapturing != nullptr)
+            ui::Text(ui::TextStyle::Caption,
+                Tr(m_toyboxPadFirst >= 0                    ? N_("Press the second button (Escape cancels).")
+                    : m_toyboxPadCapturing->fallback[1] < 0 ? N_("Press a button (Escape cancels).")
+                                                            : N_("Press two buttons in order (Escape cancels).")),
+                ui::color::Ink);
+        ui::ButtonOptions reset;
+        reset.kind = ui::ButtonKind::Danger;
+        reset.hold = true;
+        reset.tooltip = Tr("Hold to reset the controller buttons for all games.");
+        if (ui::Button(Tr(strings::ResetKeys), reset))
+        {
+            ResetPadMap(m_config, "");
+            m_toyboxPadCapturing = nullptr;
+            if (!SaveConfig())
+                Toast(Tr("Couldn't save the settings"), ui::ToastKind::Error);
+            Toast(Tr("Controller buttons reset"), ui::ToastKind::Success);
+        }
     }
 }

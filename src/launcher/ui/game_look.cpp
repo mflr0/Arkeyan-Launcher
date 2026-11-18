@@ -4,6 +4,7 @@
 #include "launcher/env.h"
 #include "launcher/install_checklist.h"
 #include "shared/art/game_art.h"
+#include "shared/collection/icons.h"
 #include <SDL3/SDL.h>
 #include <algorithm>
 #include <cmath>
@@ -252,6 +253,16 @@ namespace launcher_ui
         // A texture costs about a millisecond per megapixel to upload: a few a frame keep the frame on time.
         constexpr uint64_t BudgetNs = 2'000'000;
         all = all || !m_shots.empty() || !m_toyboxScript.empty(); // the screenshot tests: every picture, none fading
+        // Other pictures chosen (here, or in a running game's Toy Box): the figures' pictures are read again.
+        if (const uint64_t generation = collection::PictureGeneration(); generation != m_pictureGeneration)
+        {
+            if (m_pictureGeneration != 0)
+            {
+                m_figureIcons->Clear();
+                m_pictures.Forget(FigurePictureKey);
+            }
+            m_pictureGeneration = generation;
+        }
         if (all)
             m_pictures.Wait();
         const uint64_t start = SDL_GetTicksNS();

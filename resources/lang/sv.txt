@@ -151,6 +151,9 @@ Checking...	Kontrollerar...
 Chinese	Kinesiska
 Choose	Välj
 Choose a figure for {}	Välj en figur för {}
+Include HD textures	Ta med HD-texturer
+{} with them, {} without.	{} med dem, {} utan.
+Settings: {} FPS · Resolution scale {} · {}	Inställningar: {} FPS · Upplösningsskala {} · {}
 Choose a folder...	Välj en mapp...
 Choose a key to change it.	Välj en tangent för att ändra den.
 Choose a type	Välj en typ
@@ -855,7 +858,6 @@ Total	Totalt
 Touchpad	Pekplatta
 Toy	Figur
 Toy Box	Toy Box
-Toy Box in the game: F6, or View + Y on a controller.	Toy Box i spelet: F6, eller View + Y på en handkontroll.
 Toy Box keys	Toy Box-tangenter
 Toy type {}	Figurtyp {}
 Translating the game code	Översätter spelkoden
@@ -1187,6 +1189,30 @@ Dimmed values follow Launcher settings.	Nedtonade värden följer Launcherinstä
 Games use these unless their own settings change them.	Spelen använder dessa om inte deras egna inställningar ändrar dem.
 Buttons	Knappar
 Stats / Info	Statistik / Info
+
+# Controller shortcuts
+Swap wheel	Byteshjul
+Game menu	Spelmeny
+Hold to open the swap wheel.	Håll inne för att öppna byteshjulet.
+Press a button (Escape cancels).	Tryck på en knapp (Escape avbryter).
+Press two buttons in order (Escape cancels).	Tryck på två knappar i följd (Escape avbryter).
+Press the second button (Escape cancels).	Tryck på den andra knappen (Escape avbryter).
+This button is used by another action	En annan åtgärd använder denna knapp
+Hold to reset the controller buttons for all games.	Håll inne för att återställa kontrollknapparna för alla spel.
+Toy Box in the game: {}, or {} on a controller.	Toy Box i spelet: {} eller {} på en handkontroll.
+
+# Figure pictures (Settings > Launcher > Collection, the figure sheet).
+Figure pictures	Figurbilder
+Which game's pictures the figures show.	Vilket spels bilder figurerna visar.
+Original game	Ursprungligt spel
+Newest game	Nyaste spelet
+Figure picture	Figurbild
+Default ({})	Standard ({})
+My picture	Min bild
+Choose a picture...	Välj en bild...
+Remove my picture	Ta bort min bild
+That file is not a picture	Filen är ingen bild
+The picture could not be saved	Bilden kunde inte sparas
 
 # Imaginite chests (ui/chests_page.cpp).
 Imaginite chests	Imaginite-kistor

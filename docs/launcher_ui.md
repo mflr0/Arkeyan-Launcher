@@ -512,8 +512,11 @@ control; one beside a cross's title for its four keys); one Danger hold "Reset t
 Controls (`ui/controls_page.cpp`) has, under the controller choice, **All games**: one settings table with two control columns
 headed Keyboard and Controller (`ui::BeginSettings` with a second width), a row per shared action (its key cap, its pad button's
 list; a dash where a side has none), then the Mouse switch, the Rumble and the Toy Box keys, never dimmed. The Toy Box keys are key caps in settings rows, two columns at the
-row's right: the keyboard's ("F6 / Tab": either) and the pad's in the pad family's pictures ("View + Y": together; the pad in use
-or chosen, else Xbox's), a dash where the pad has none (F7, F8). The Controller tab names an unchanged button's job "Default".
+row's right: the keyboard's and physical controller pickers named for the pad in use or chosen, else Xbox's. Swap wheel
+captures one held button; Open the Toy Box and Game menu capture two different buttons in order (Escape cancels).
+Add and clear figures keep a controller dash; Game menu shows its fixed F3 key. A controller shortcut used by a game's
+action is marked red, except the default Back/View, Back/View + Y and Back/View + Start buttons. The section ends with a
+hold Reset to defaults for the global controller buttons, rumble and shortcuts. The Controller tab names an unchanged button's job "Default".
 Save backups are ListRows (when, files, size) with a Danger hold "Restore" beside each; the update check's last time and the
 backups' times use `FormatWhen`. The problem report is `ui::BeginModal(Large)` with `ModalActions` (Close, Save as...) and Copy
 at the left. Uninstall's list is ListRows with the size as `trailing` (not focusable: nobody presses them), "Also delete my saves
@@ -705,7 +708,7 @@ The portal column narrows from 400 to 264 points at small window sizes; longer n
   ends. A game detected by its marker counts from its first observation in this launcher.
   STOP has a filled square icon, a dark red tinted fill and a red outline. Show the game has a monitor icon; the two
   actions sit side by side at the same Large height. There is no settings button in this row and no controller or portal
-  picker while running. The only hint is `Toy Box in the game: F6, or View + Y on a controller.`, fitted onto one line.
+  picker while running. The only hint is `Toy Box in the game: {}, or {} on a controller.`, filled with the chosen key and physical buttons, fitted onto one line.
   The portal panel keeps its existing behavior. Stop addresses only the PID started by
   this launcher: WM_CLOSE on Windows, SIGTERM (SDL's quit event) on macOS and Linux, then a forced end after five seconds.
   Polling keeps the page responsive, returns the page and sidebar to their ready states, and suppresses crash reporting
