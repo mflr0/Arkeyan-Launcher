@@ -224,18 +224,7 @@ namespace launcher_ui
         // A picture file the player chose (PNG or JPEG), as a square: its middle, the largest that fits, at 256 px.
         bool SquarePicture(const std::string& from, const std::filesystem::path& to)
         {
-            collection::Image image = collection::LoadPng(from);
-            if (image.Empty())
-            {
-                int w = 0, h = 0, channels = 0;
-                if (stbi_uc* pixels = stbi_load(from.c_str(), &w, &h, &channels, 4))
-                {
-                    image.width = w, image.height = h;
-                    image.rgba.assign(reinterpret_cast<const uint32_t*>(pixels),
-                        reinterpret_cast<const uint32_t*>(pixels) + size_t(w) * size_t(h));
-                    stbi_image_free(pixels);
-                }
-            }
+            collection::Image image = ReadPicture(from);
             if (image.Empty())
                 return false;
             const int side = std::min(image.width, image.height);
@@ -248,38 +237,54 @@ namespace launcher_ui
             std::filesystem::create_directories(to.parent_path(), error);
             return collection::SavePng(collection::Resize(square, 256, 256), datadir::Text(to));
         }
+    }
 
-        std::string ChoosePicture(SDL_Window* window)
+    collection::Image ReadPicture(const std::string& path)
+    {
+        collection::Image image = collection::LoadPng(path);
+        if (!image.Empty())
+            return image;
+        int w = 0, h = 0, channels = 0;
+        if (stbi_uc* pixels = stbi_load(path.c_str(), &w, &h, &channels, 4))
         {
-            static const SDL_DialogFileFilter filters[] = { { "Image (PNG, JPEG)", "png;jpg;jpeg" } };
-            struct Result
-            {
-                std::atomic<bool> done{ false };
-                std::string path;
-            };
-            Result result;
-            SDL_PropertiesID properties = SDL_CreateProperties();
-            SDL_SetPointerProperty(
-                properties, SDL_PROP_FILE_DIALOG_FILTERS_POINTER, const_cast<SDL_DialogFileFilter*>(filters));
-            SDL_SetNumberProperty(properties, SDL_PROP_FILE_DIALOG_NFILTERS_NUMBER, 1);
-            SDL_SetPointerProperty(properties, SDL_PROP_FILE_DIALOG_WINDOW_POINTER, window);
-            SDL_ShowFileDialogWithProperties(
-                SDL_FILEDIALOG_OPENFILE,
-                [](void* userdata, const char* const* files, int) {
-                    auto* r = static_cast<Result*>(userdata);
-                    if (files != nullptr && files[0] != nullptr)
-                        r->path = files[0];
-                    r->done = true;
-                },
-                &result, properties);
-            SDL_DestroyProperties(properties);
-            while (!result.done)
-            {
-                SDL_PumpEvents();
-                SDL_Delay(10);
-            }
-            return result.path;
+            image.width = w, image.height = h;
+            image.rgba.assign(reinterpret_cast<const uint32_t*>(pixels),
+                reinterpret_cast<const uint32_t*>(pixels) + size_t(w) * size_t(h));
+            stbi_image_free(pixels);
         }
+        return image;
+    }
+
+    std::string ChoosePicture(SDL_Window* window)
+    {
+        static const SDL_DialogFileFilter filters[] = { { "Image (PNG, JPEG)", "png;jpg;jpeg" } };
+        struct Result
+        {
+            std::atomic<bool> done{ false };
+            std::string path;
+        };
+        Result result;
+        SDL_PropertiesID properties = SDL_CreateProperties();
+        SDL_SetPointerProperty(
+            properties, SDL_PROP_FILE_DIALOG_FILTERS_POINTER, const_cast<SDL_DialogFileFilter*>(filters));
+        SDL_SetNumberProperty(properties, SDL_PROP_FILE_DIALOG_NFILTERS_NUMBER, 1);
+        SDL_SetPointerProperty(properties, SDL_PROP_FILE_DIALOG_WINDOW_POINTER, window);
+        SDL_ShowFileDialogWithProperties(
+            SDL_FILEDIALOG_OPENFILE,
+            [](void* userdata, const char* const* files, int) {
+                auto* r = static_cast<Result*>(userdata);
+                if (files != nullptr && files[0] != nullptr)
+                    r->path = files[0];
+                r->done = true;
+            },
+            &result, properties);
+        SDL_DestroyProperties(properties);
+        while (!result.done)
+        {
+            SDL_PumpEvents();
+            SDL_Delay(10);
+        }
+        return result.path;
     }
 
     void App::OpenProfileEditor(const std::string& id)
