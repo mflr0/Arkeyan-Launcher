@@ -870,8 +870,9 @@ Trash · {}	Papirkurv · {}
 Triangle	Trekant
 Trilinear	Trilineær
 Trophies	Trofæer
-Turn the game music off	Slå spilmusikken fra
-Turn the game music on	Slå spilmusikken til
+Game music	Spilmusik
+Play the music	Afspil musikken
+Each game's menu theme, on its page.	Hvert spils menutema, på dets side.
 Type	Type
 Ultra Performance	Ultra-ydeevne
 Frame generation	Billedgenerering

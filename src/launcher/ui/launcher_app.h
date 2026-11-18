@@ -57,6 +57,10 @@ namespace launcher_ui
         const LauncherConfig& config, std::string_view section, std::string_view key, std::string fallback = {});
     int SettingInt(const LauncherConfig& config, std::string_view section, std::string_view key, int fallback);
     bool ParseBool(std::string_view value);
+    // [launcher] game_music_volume, the game pages' theme level: 0-100, gamemusic::DefaultVolume when unset or not a number.
+    int GameMusicVolume(const LauncherConfig& config);
+    // A level chosen is meant to be heard: it turns [launcher] game_music back on too.
+    void SetGameMusicVolume(LauncherConfig& config, int volume);
 
     struct Choice
     {
@@ -736,6 +740,10 @@ namespace launcher_ui
         std::string SceneOf(const char* game);
         bool ReduceMotion() const;
         bool GameMusicOn() const; // [launcher] game_music, on by default
+        // The game music's switch and level, in Settings > Launcher and in the game page's speaker menu.
+        void DrawGameMusicSwitch(const char* label);
+        void DrawGameMusicVolume(float width = -1);
+        static constexpr float MusicMenuWidth = 260;
 
         // A page's centred column (the cursor is at its left): it reaches a few points past each side and over the page's
         // bottom padding, so the clip rect neither shaves the borders at its edges nor cuts the scrolling content short of the window.

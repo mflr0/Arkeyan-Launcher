@@ -1094,7 +1094,7 @@ namespace launcher_ui
         if (!m_music.FadeComplete())
         {
             m_launchPending = true;
-            m_music.Update({}, !GameMusicOn());
+            m_music.Update({}, !GameMusicOn(), GameMusicVolume(m_config));
             return;
         }
         m_launchPending = false;
@@ -1154,7 +1154,8 @@ namespace launcher_ui
             .running = !m_session.Running().empty(),
             .installing = AnyInstalling(),
             .launching = m_launchPending,
-            .muted = !GameMusicOn() });
+            .muted = !GameMusicOn(),
+            .volume = GameMusicVolume(m_config) });
         m_progressAt = 0; // its play time and unlocks are read again
         if (ended->restarted) // gpu_backend=vulkan is in the settings read above
         {
@@ -2672,12 +2673,40 @@ namespace launcher_ui
         }
         if (!m_s->installView && m_music.HasTrack(m_s->game.id))
         {
-            const bool on = GameMusicOn();
+            const bool on = GameMusicOn() && GameMusicVolume(m_config) > 0;
             ImGui::SetCursorScreenPos(ImVec2(musicRight - ui::height::Small, position.y + margin));
-            if (ui::IconButton("##gamemusic", on ? ui::Icon::Sound : ui::Icon::Muted,
-                    on ? Tr("Turn the game music off") : Tr("Turn the game music on"),
+            if (ui::IconButton("##gamemusic", on ? ui::Icon::Sound : ui::Icon::Muted, Tr("Game music"),
                     { .kind = ui::ButtonKind::Secondary, .size = ui::Size::Small, .overArt = true }))
-                Set("launcher", "game_music", on ? "0" : "1");
+                ui::OpenMenu("##gamemusicmenu", { .alignRight = true });
+            ImGui::SetNextWindowSize(ImVec2(MusicMenuWidth, 0));
+            if (ui::BeginMenu("##gamemusicmenu"))
+            {
+                ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(ui::space::S, ui::space::S));
+                ImGui::Indent(ui::space::XS);
+                DrawGameMusicSwitch(fmt::format("{}##gamemusicon", Tr("Game music")).c_str());
+                DrawGameMusicVolume(ImGui::GetContentRegionAvail().x - ui::space::XS);
+                ImGui::Unindent(ui::space::XS);
+                ImGui::PopStyleVar();
+                ui::EndMenu();
+            }
+        }
+    }
+
+    void App::DrawGameMusicSwitch(const char* label)
+    {
+        bool on = GameMusicOn();
+        if (ui::Toggle(label, &on))
+            Set("launcher", "game_music", on ? "1" : "0");
+    }
+
+    void App::DrawGameMusicVolume(float width)
+    {
+        int volume = GameMusicVolume(m_config);
+        if (ui::Slider("##gamemusicvolume", &volume, 0, 100, { .width = width, .step = 5 }))
+        {
+            SetGameMusicVolume(m_config, volume);
+            if (!SaveConfig())
+                Toast(Tr("Couldn't save the settings"), ui::ToastKind::Error);
         }
     }
 
@@ -2835,6 +2864,15 @@ namespace launcher_ui
         DrawLauncherLanguage();
         ui::SectionHeader(Tr("Updates"));
         DrawUpdates();
+        ui::SectionHeader(Tr("Game music"));
+        if (ui::BeginSettings("##gamemusicsettings"))
+        {
+            ui::SettingRow(Tr("Play the music"), Tr("Each game's menu theme, on its page."));
+            DrawGameMusicSwitch("##gamemusicon");
+            ui::SettingRow(Tr("Volume"));
+            DrawGameMusicVolume();
+            ui::EndSettings();
+        }
         ui::SectionHeader(Tr("Discord"));
         if (ui::BeginSettings("##discord"))
         {
@@ -3135,7 +3173,8 @@ namespace launcher_ui
             .running = !m_session.Running().empty(),
             .installing = AnyInstalling(),
             .launching = m_launchPending,
-            .muted = !GameMusicOn() });
+            .muted = !GameMusicOn(),
+            .volume = GameMusicVolume(m_config) });
         if (const int view = int(m_page) * 100 + (m_page == Page::GameSettings  ? int(m_gameTab)
                                                      : m_page == Page::Settings ? int(m_tab)
                                                                                 : 0);

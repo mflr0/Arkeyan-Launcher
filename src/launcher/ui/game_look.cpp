@@ -7,6 +7,7 @@
 #include "shared/collection/icons.h"
 #include <SDL3/SDL.h>
 #include <algorithm>
+#include <charconv>
 #include <cmath>
 #include <cstring>
 #include <fmt/format.h>
@@ -202,6 +203,21 @@ namespace launcher_ui
     }
 
     bool App::GameMusicOn() const { return SettingGet(m_config, "launcher", "game_music", "1") != "0"; }
+
+    int GameMusicVolume(const LauncherConfig& config)
+    {
+        const std::string text = SettingGet(config, "launcher", "game_music_volume");
+        int volume = gamemusic::DefaultVolume;
+        if (std::from_chars(text.data(), text.data() + text.size(), volume).ec != std::errc())
+            return gamemusic::DefaultVolume;
+        return std::clamp(volume, 0, 100);
+    }
+
+    void SetGameMusicVolume(LauncherConfig& config, int volume)
+    {
+        config["launcher"]["game_music_volume"] = std::to_string(std::clamp(volume, 0, 100));
+        config["launcher"]["game_music"] = "1";
+    }
 
     const ArtTexture* App::CachedArt(const char* game, LauncherAssets::Role role, int maxWidth)
     {

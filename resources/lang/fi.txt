@@ -871,8 +871,9 @@ Trash · {}	Roskakori · {}
 Triangle	Kolmio
 Trilinear	Trilineaarinen
 Trophies	Pokaalit
-Turn the game music off	Mykistä pelin musiikki
-Turn the game music on	Laita pelin musiikki päälle
+Game music	Pelin musiikki
+Play the music	Soita musiikki
+Each game's menu theme, on its page.	Kunkin pelin valikkoteema sen sivulla.
 Type	Tyyppi
 Ultra Performance	Ultrasuorituskyky
 Frame generation	Kehysten luonti

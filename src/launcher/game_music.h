@@ -14,12 +14,16 @@ struct SDL_AudioStream;
 namespace gamemusic
 {
     constexpr float FadeSeconds = 1.5f; // in, out, and between two games
-    constexpr float Volume = 0.12f;     // the theme's level under the page: low, a background
+    constexpr int DefaultVolume = 50;   // [launcher] game_music_volume, 0-100
+    constexpr float DefaultGain = 0.12f; // the theme's gain at DefaultVolume: low, a background
+
+    // The gain of a 0-100 level (clamped): DefaultGain at DefaultVolume, on a square law, so that the slider sounds even.
+    float Gain(int volume);
 
     struct Track
     {
         uint32_t rate = 0;
-        std::vector<int16_t> samples;  // stereo, interleaved
+        std::vector<int16_t> samples; // stereo, interleaved
         uint32_t loopStart = 0, loopEnd = 0; // in frames; loopEnd > loopStart
         uint32_t Frames() const { return uint32_t(samples.size() / 2); }
     };
@@ -46,6 +50,7 @@ namespace gamemusic
         explicit Mixer(uint32_t outputRate) : m_rate(outputRate) {}
         void Play(std::shared_ptr<const Track> track);
         void Mute(bool muted, bool immediately = false);
+        void SetVolume(int volume); // reached in a few milliseconds, without a click
         // `frames` stereo float frames, added into `out` (which the caller zeroed).
         void Render(float* out, uint32_t frames);
         bool Silent() const; // nothing audible and nothing to come
@@ -57,12 +62,13 @@ namespace gamemusic
         {
             std::shared_ptr<const Track> track;
             double position = 0; // in the track's frames
-            float level = 0;     // 0..1, towards `target`
+            float level = 0; // 0..1, towards `target`
             float target = 0;
         };
         uint32_t m_rate;
         std::vector<Voice> m_voices;
         float m_master = 1, m_masterTarget = 1;
+        float m_gain = DefaultGain, m_gainTarget = DefaultGain;
     };
 
     struct Playback
@@ -73,6 +79,7 @@ namespace gamemusic
         bool installing = false;
         bool launching = false;
         bool muted = false;
+        int volume = DefaultVolume;
     };
 
     // The page's player: opens SDL audio at the first track it is given, nothing otherwise (a machine without a sound device
@@ -91,13 +98,14 @@ namespace gamemusic
         Player(const Player&) = delete;
         Player& operator=(const Player&) = delete;
 
-        // `game`: the one whose page is shown, "" on the other pages and while a game runs; `muted`: the speaker's setting.
-        void Update(const std::string& game, bool muted);
+        // `game`: the one whose page is shown, "" on the other pages and while a game runs; `muted`, `volume`: the speaker's
+        // settings.
+        void Update(const std::string& game, bool muted, int volume = DefaultVolume);
         void Update(const Playback& state)
         {
             Update(
                 state.gamePage && !state.running && !state.installing && !state.launching ? state.game : std::string(),
-                state.muted);
+                state.muted, state.volume);
         }
         bool HasTrack(const std::string& game); // the game's file is there (read on first ask)
         Mixer& MixerForTest() { return *m_mixer; }
@@ -123,7 +131,7 @@ namespace gamemusic
         SDL_AudioStream* m_stream = nullptr;
         bool m_openFailed = false;
         bool m_paused = true;
-        uint32_t m_output = 0;     // the physical device the stream plays on
+        uint32_t m_output = 0; // the physical device the stream plays on
         std::string m_defaultName; // the system's default when it was chosen
         uint64_t m_nextCheck = 0;
     };

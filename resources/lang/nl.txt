@@ -870,8 +870,9 @@ Trash · {}	Prullenbak · {}
 Triangle	Driehoek
 Trilinear	Trilineair
 Trophies	Trofeeën
-Turn the game music off	Spelmuziek uitzetten
-Turn the game music on	Spelmuziek aanzetten
+Game music	Spelmuziek
+Play the music	Muziek afspelen
+Each game's menu theme, on its page.	Het menuthema van elk spel, op zijn pagina.
 Type	Type
 Ultra Performance	Ultraprestaties
 Frame generation	Framegeneratie

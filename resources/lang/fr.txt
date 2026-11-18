@@ -923,8 +923,9 @@ Discord	Discord
 Show my activity on Discord	Afficher mon activité sur Discord
 The game you play, its achievements and version, or that you are in the launcher.	Le jeu en cours, ses succès et sa version, ou que vous êtes dans le launcher.
 Last played: {}	Dernière partie : {}
-Turn the game music off	Couper la musique des jeux
-Turn the game music on	Remettre la musique des jeux
+Game music	Musique des jeux
+Play the music	Jouer la musique
+Each game's menu theme, on its page.	Le thème du menu de chaque jeu, sur sa page.
 less than a minute	moins d'une minute
 today	aujourd'hui
 yesterday	hier
