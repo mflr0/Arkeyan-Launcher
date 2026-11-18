@@ -119,7 +119,7 @@ without including the above copyright and permission notices.
 
 ## libmspack (LZX decompressor, lzxd.c)
 
-License: GNU LGPL 2.1. Source: `lib/XenonRecomp/thirdparty/libmspack` (nested submodule). The full license text is in `libmspack/COPYING.LIB` there. Skylauncher links it statically; since the complete source of Skylauncher is published, you can rebuild it against a modified libmspack.
+License: GNU LGPL 2.1. Source: `lib/XenonRecomp/thirdparty/libmspack` (nested submodule). The full license text is in `libmspack/COPYING.LIB` there. Arkeyan Launcher links it statically; since the complete source of Arkeyan Launcher is published, you can rebuild it against a modified libmspack.
 
 ## tiny-AES-c
 

@@ -97,7 +97,7 @@ namespace gamemusic
         return folder.empty() ? folder : folder / TrackName;
     }
 
-    bool Extract(const std::string& game, const std::string& image, const std::filesystem::path& skyBuild,
+    bool Extract(const std::string& game, const std::string& image, const std::filesystem::path& builder,
         const std::string& kitVersion)
     {
         const std::filesystem::path file = File(game);
@@ -120,13 +120,13 @@ namespace gamemusic
             if (in && std::getline(in, remembered) && remembered == cacheKey)
                 return cached;
         }
-        if (skyBuild.empty() || !std::filesystem::is_regular_file(skyBuild, error))
+        if (builder.empty() || !std::filesystem::is_regular_file(builder, error))
             return cached; // keep a cached theme offline; a missing kit is retried at the next disc check
         std::filesystem::create_directories(file.parent_path(), error);
 
         const std::filesystem::path refresh = file.parent_path() / "menu_music.new.wav";
         std::filesystem::remove(refresh, error);
-        const std::string program = datadir::Text(skyBuild), disc = image, out = datadir::Text(refresh);
+        const std::string program = datadir::Text(builder), disc = image, out = datadir::Text(refresh);
         const char* arguments[] = { program.c_str(), "--iso", disc.c_str(), "--menu-music", out.c_str(), nullptr };
         SDL_PropertiesID properties = SDL_CreateProperties();
         SDL_SetPointerProperty(properties, SDL_PROP_PROCESS_CREATE_ARGS_POINTER, arguments);

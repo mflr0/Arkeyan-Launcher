@@ -233,7 +233,7 @@ namespace launcher_ui
             std::lock_guard lock(mutex);
             return stage;
         }
-        void Start(const std::string& image, const GameInfo& game, const std::filesystem::path& skyBuild = {},
+        void Start(const std::string& image, const GameInfo& game, const std::filesystem::path& builder = {},
             const std::string& kitVersion = {});
     };
 
@@ -261,7 +261,7 @@ namespace launcher_ui
         }
     };
 
-    // Home is the menu (the SKYLAUNCHER title opens it), Play is the game art and the main button, Collection is the
+    // Home is the menu (the title opens it), Play is the game art and the main button, Collection is the
     // figures (its sidebar row), the gear opens the launcher's Settings, and the game's Settings button (on its Play
     // page) opens that game's own settings.
     enum class Page

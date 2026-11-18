@@ -1,0 +1,41 @@
+# Where the former names stay on purpose (the forge's docs/naming.md says why). One `<path glob> <regex>` per line: a
+# file matching the glob may hold a line the regex finds (`.` for any line). Checked by tools/ci/check_names.py.
+
+# The rename itself and its history
+tools/ci/check_names.py .
+tools/ci/check_names_test.py .
+docs/releases/* .
+docs/figures_overlap.md .
+LICENSE formerly Skylauncher
+resources/windows/arkeyan-launcher.rc.in formerly Skylauncher
+README.md Formerly Skylauncher
+
+# Data folders, logs and work files that installs and the migration depend on
+src/shared/collection/datadir* .
+tests/migration_checks.h .
+src/launcher/uninstall.cpp old\.(ssarecomp|skylauncher)
+* skylauncher-game(\.prev)?\.log|\.skylauncher-update|SSARecomp(\.prev)?\.log|ssabuild-work|ssabuild-ready\.txt
+* <SSARecomp prefs>|<roaming>/SSARecomp/|nested `SSARecomp/`|`Skylauncher/`|LOCALAPPDATA%\\(SSARecomp|Skylauncher)|SSARecomp/(figures|\.\.\.)
+* Application Support/(SSARecomp|Skylauncher)
+tools/sync_collection.sh SSARecomp/host
+
+# Executable, runtime and builder names older installs and kits still carry
+* "SSARecomp(\.exe)?"|`SSARecomp`, `SGRecomp`|SkyBuild|SSABuild|SSARecomp\.(app|exe)
+tests/launcher_test.cpp "SSARecomp|SSARecomp\.exe|SSABuild
+tests/shell_test.cpp .
+tests/settings_test.cpp .
+tests/uninstall_test.cpp .
+
+# What launchers called Skylauncher left: their program names, release assets and shortcuts
+docs/updates.md Skylauncher
+src/launcher/shortcut.cpp Skylauncher
+src/launcher/shortcut.h a launcher called Skylauncher
+src/main.cpp a launcher called Skylauncher
+tests/i18n_test.cpp "Skylauncher"
+
+# Environment and CMake variables: the older spelling is still read
+* SKYLAUNCHER_(\*|<X>|X\b|DATA|SHOTS|REPO|VERSION)|"SKYLAUNCHER_"
+
+# Identities and addresses released launchers depend on
+resources/icons/skylauncher-128.png .
+* io\.github\.mflr0\.skylauncher

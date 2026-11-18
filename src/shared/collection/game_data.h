@@ -2,7 +2,7 @@
 
 // "Copy the game data": the disc's files copied once into the game's folder (<data>/<Game>/gamedata/), so the disc image is no
 // longer needed to play, update or reinstall (docs/runtime/host/game_data.md). Plain C++ (no SDL, no vfs), shared with
-// Skylauncher (tools/sync_skylauncher.sh): the launcher makes the copy, the game reads it.
+// Arkeyan Launcher (tools/sync_launcher.sh): the launcher makes the copy, the game reads it.
 //
 // The folder holds the disc's files under their lowercase disc paths, and gamedata.manifest: the disc's default.xex hash, the
 // list of files with their sizes, and whether the copy finished. A file is copied to "<name>.part", read back and compared

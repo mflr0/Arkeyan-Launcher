@@ -28,10 +28,10 @@ namespace launcher_ui
                 continue;
             if (std::optional<InstallKit> kit = FindInstallKit(m_config, game.id))
             {
-                const std::filesystem::path folder = kit->ssabuild.parent_path();
+                const std::filesystem::path folder = kit->builder.parent_path();
                 bool known = false;
                 for (const InstallKit& checked : m_checkedKits)
-                    known = known || SameFolder(checked.ssabuild.parent_path(), folder);
+                    known = known || SameFolder(checked.builder.parent_path(), folder);
                 if (!known)
                 {
                     m_checkedKits.push_back(*kit);
@@ -88,12 +88,12 @@ namespace launcher_ui
     {
         if (!m_s->kit)
             return true;
-        IntegrityFinding finding = CheckFolder({ "kit", m_s->kit->ssabuild.parent_path() });
+        IntegrityFinding finding = CheckFolder({ "kit", m_s->kit->builder.parent_path() });
         if (finding.problems.empty())
             return true;
         bool known = false;
         for (const InstallKit& checked : m_checkedKits)
-            known = known || SameFolder(checked.ssabuild.parent_path(), finding.folder);
+            known = known || SameFolder(checked.builder.parent_path(), finding.folder);
         if (!known)
             m_checkedKits.push_back(*m_s->kit);
         ShowFinding(std::move(finding));
@@ -111,7 +111,7 @@ namespace launcher_ui
             }
             const InstallKit* kit = nullptr;
             for (const InstallKit& checked : m_checkedKits)
-                if (SameFolder(checked.ssabuild.parent_path(), finding.folder))
+                if (SameFolder(checked.builder.parent_path(), finding.folder))
                     kit = &checked;
             // The release it came from: its kit/<tag>/ folder, else its kit.txt, else the launcher's own.
             const std::string tag = kit != nullptr && !kit->tag.empty()       ? kit->tag
@@ -158,7 +158,7 @@ namespace launcher_ui
         const bool isKit = finding.id == "kit";
         bool chosen = false;
         for (const InstallKit& checked : m_checkedKits)
-            if (SameFolder(checked.ssabuild.parent_path(), finding.folder))
+            if (SameFolder(checked.builder.parent_path(), finding.folder))
                 chosen = checked.chosen;
         const filelist::Problem& first = finding.problems.front();
         const bool missing = first.kind == filelist::Problem::Kind::Missing;

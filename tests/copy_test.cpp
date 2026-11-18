@@ -272,7 +272,7 @@ namespace
         std::string ini = (scratch / "copy.ini").string();
         SetEnv("SKY_LAUNCHER_INI", ini);
         LauncherConfig config;
-        config["launcher"]["kit"] = SKYLAUNCHER_FAKE_KIT;
+        config["launcher"]["kit"] = LAUNCHER_FAKE_KIT;
         config["giants"]["iso"] = standIn.string(); // the wrong disc for Giants
         config["launcher"]["game_music"] =
             "0"; // a menu theme fading out holds PLAY for a moment: the script checks it at once

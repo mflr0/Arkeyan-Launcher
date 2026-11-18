@@ -14,7 +14,7 @@
 // What a portable holds, by name: game/<disc path, lowercase> (the disc's files), portable.txt (Info), keys.ini (the game's
 // [<game>.input] section of launcher.ini), collection/<file> (the player's figures and collection.json), icon.png.
 //
-// Plain C++ (no SDL), shared with Skylauncher (tools/sync_skylauncher.sh): the launcher writes a pack, the game reads it.
+// Plain C++ (no SDL), shared with Arkeyan Launcher (tools/sync_launcher.sh): the launcher writes a pack, the game reads it.
 #include <atomic>
 #include <cstdint>
 #include <cstdio>

@@ -2,7 +2,7 @@
 
 // Each game's own pictures, read from the player's disc and cached as PNG files in the game's data folder: its logo,
 // its background art, its title icon, its toy portraits and (Giants, Swap Force) its large toy artworks. One flow for every game; what differs per game (which
-// archive, which picture) is the table in game_art.cpp. Used by the in-game Toy Box and by Skylauncher (game page,
+// archive, which picture) is the table in game_art.cpp. Used by the in-game Toy Box and by Arkeyan Launcher (game page,
 // sidebar, collection). Nothing is shipped or downloaded. docs/runtime/host/game_art.md.
 #include "xenos_texture.h"
 #include <atomic>
@@ -15,7 +15,7 @@
 
 namespace art
 {
-    // The disc as this file reads it. The runtime's and Skylauncher's DiscFileSystem both fit: ReadFrom(disc).
+    // The disc as this file reads it. The runtime's and Arkeyan Launcher's DiscFileSystem both fit: ReadFrom(disc).
     struct Disc
     {
         std::function<uint64_t(const std::string& path)> size; // 0: no such file

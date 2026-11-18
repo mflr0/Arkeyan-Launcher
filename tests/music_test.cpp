@@ -237,9 +237,9 @@ namespace
         std::filesystem::remove_all(data);
         std::filesystem::create_directories(data);
         DataFolder dataFolder(data);
-        const std::filesystem::path fake = std::filesystem::path(SKYLAUNCHER_FAKE_KIT) / "Arkeyan-Builder"
+        const std::filesystem::path fake = std::filesystem::path(LAUNCHER_FAKE_KIT) / "Arkeyan-Builder"
 #if defined(_WIN32)
-                                                                                         ".exe"
+                                                                                      ".exe"
 #endif
             ;
         const std::string game = "ssa", disc = (scratch / "no-disc.iso").string();

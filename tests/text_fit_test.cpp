@@ -1,4 +1,4 @@
-// SkylauncherTest's checks for the text cut to a width with "..." (launcher/ui/text_fit.h): the text is kept when it fits,
+// ArkeyanLauncherTest's checks for the text cut to a width with "..." (launcher/ui/text_fit.h): the text is kept when it fits,
 // cut by whole characters otherwise, and a width too small for "..." gives an empty text. Measures one unit per UTF-8
 // character. Called from launcher_test.cpp's main; returns the number of failures.
 #include "launcher/ui/text_fit.h"

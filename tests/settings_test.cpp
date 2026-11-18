@@ -1566,7 +1566,7 @@ namespace
                                         "The games folder isn't there. Plug in the drive, or choose another folder.");
         {
             GameInstaller installer;
-            const auto kit = InstallKitIn(SKYLAUNCHER_FAKE_KIT);
+            const auto kit = InstallKitIn(LAUNCHER_FAKE_KIT);
             SETTINGS_EXPECT(kit.has_value() && kit->gamesFolder);
             SETTINGS_EXPECT(
                 !installer.Start(kit, "synthetic.iso", GameInstallFolder({}), false, GameDataFolder("ssa")));

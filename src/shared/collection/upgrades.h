@@ -2,7 +2,7 @@
 
 // What each bit of a figure's upgrade field means, with the names, descriptions and prices the game shows: read from
 // the player's disc at install (art::Extract, art/game_text.cpp) into <data>/<Game>/upgrades.json (game text: never
-// shipped), with a plain fallback ("Upgrade 1"...) when nothing was extracted. For the Toy Box and Skylauncher.
+// shipped), with a plain fallback ("Upgrade 1"...) when nothing was extracted. For the Toy Box and Arkeyan Launcher.
 // docs/runtime/host/figures.md ("Upgrades"), docs/runtime/host/collection.md ("Upgrades").
 #include "catalogue.h"
 #include <filesystem>
@@ -49,7 +49,7 @@ namespace collection
     // A toy type the game defines as another's alternate (Legendary Bash, Dark Spyro) gets its base toy's list.
     UpgradeTable Upgrades(const Toy& toy, const std::string& game, const std::string& language = "en");
 
-    // The Edit sheets' rules (Toy Box and Skylauncher), on the 16-bit field. A path upgrade (bits 6-8, shared by both paths)
+    // The Edit sheets' rules (Toy Box and Arkeyan Launcher), on the 16-bit field. A path upgrade (bits 6-8, shared by both paths)
     // counts as bought only on the path that is chosen; the other path's are shown greyed.
     bool UpgradeBought(uint16_t bits, const Upgrade& upgrade);
     bool UpgradeGreyed(uint16_t bits, const Upgrade& upgrade);

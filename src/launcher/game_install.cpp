@@ -77,20 +77,20 @@ namespace
     std::optional<InstallKit> KitIn(const std::filesystem::path& folder)
     {
         std::error_code error;
-        std::filesystem::path ssabuild;
+        std::filesystem::path builder;
         for (const char* name : BuilderNames)
             if (std::filesystem::is_regular_file(folder / name, error))
             {
-                ssabuild = folder / name;
+                builder = folder / name;
                 break;
             }
         // A kit with its file list whose builder an antivirus took is still this kit: the file check names the file and
         // its Repair puts it back (integrity.h); an install is blocked until then.
-        if (ssabuild.empty() && std::filesystem::is_regular_file(folder / filelist::ListName, error))
-            ssabuild = folder / BuilderNames[0];
-        if (ssabuild.empty())
+        if (builder.empty() && std::filesystem::is_regular_file(folder / filelist::ListName, error))
+            builder = folder / BuilderNames[0];
+        if (builder.empty())
             return {};
-        InstallKit kit{ folder, ssabuild, {}, {} };
+        InstallKit kit{ folder, builder, {}, {} };
         // kit.txt: "key=value" lines; "build" changes with every kit made, "version" with releases.
         std::ifstream file(folder / "kit.txt");
         std::string version;
@@ -120,9 +120,9 @@ namespace
                 }
             }
         }
-        kit.hdTextures = BuilderKnows(ssabuild, "--hd-textures");
-        kit.editionReport = BuilderKnows(ssabuild, "--edition-report");
-        kit.gamesFolder = BuilderKnows(ssabuild, "SKY_GAMES_DIR");
+        kit.hdTextures = BuilderKnows(builder, "--hd-textures");
+        kit.editionReport = BuilderKnows(builder, "--edition-report");
+        kit.gamesFolder = BuilderKnows(builder, "SKY_GAMES_DIR");
         if (kit.games.empty())
             kit.games.push_back("ssa"); // before 0.5.0 a kit builds Spyro's Adventure only and says nothing
         kit.release = version;
@@ -131,8 +131,8 @@ namespace
         if (kit.version.empty())
         {
             // No version file: Arkeyan-Builder's size and date, which change with every kit.
-            auto size = std::filesystem::file_size(ssabuild, error);
-            auto time = std::filesystem::last_write_time(ssabuild, error).time_since_epoch().count();
+            auto size = std::filesystem::file_size(builder, error);
+            auto time = std::filesystem::last_write_time(builder, error).time_since_epoch().count();
             kit.version = fmt::format("{}-{}", uint64_t(size), int64_t(time));
         }
         return kit;
@@ -209,7 +209,7 @@ std::optional<InstallKit> FindInstallKit(
         // An AppImage's base path is its temporary mount: the kit sits beside the AppImage file itself.
         if (const char* image = SDL_getenv("APPIMAGE"); image != nullptr && *image != 0)
             folders.push_back(Path(image).parent_path());
-        // A macOS app's base path is Skylauncher.app/Contents/Resources: the kit sits next to the app.
+        // A macOS app's base path is ArkeyanLauncher.app/Contents/Resources: the kit sits next to the app.
         std::filesystem::path bundle = folders[0].parent_path();
         if (bundle.filename().empty())
             bundle = bundle.parent_path();
@@ -618,7 +618,7 @@ bool GameInstaller::Launch(const std::optional<InstallKit>& kit, const std::stri
         std::filesystem::rename(m_logFile, logs / "install.prev.log", error); // one previous log
     std::ofstream(m_logFile, std::ios::trunc);
 
-    std::string program = Utf8(kit->ssabuild), outText = Utf8(out), kitText = Utf8(kit->folder);
+    std::string program = Utf8(kit->builder), outText = Utf8(out), kitText = Utf8(kit->folder);
     std::vector<const char*> arguments{ program.c_str(), "--iso", iso.c_str() };
     if (!hdOnly) // alone, the step finds the game's folder as the games do
         arguments.insert(arguments.end(), { "--out", outText.c_str() });

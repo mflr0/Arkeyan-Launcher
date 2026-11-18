@@ -367,7 +367,7 @@ namespace launcher_ui
         m_s->kit = FindInstallKit(m_config, m_s->game.id, WantedKitTag(*m_s));
         if (m_s->kit && m_s->kit->editionReport)
         {
-            m_s->editionJob.Start(m_s->kit->ssabuild, m_s->discPath);
+            m_s->editionJob.Start(m_s->kit->builder, m_s->discPath);
             return;
         }
         if (m_s->kit && m_s->kit->chosen) // the player's own kit: not ours to replace
@@ -393,7 +393,7 @@ namespace launcher_ui
                 Set("update", "kit_fetched", m_s->kitTag);
                 m_s->kit = FindInstallKit(m_config, m_s->game.id, WantedKitTag(*m_s));
                 if (m_s->kit && m_s->kit->editionReport)
-                    m_s->editionJob.Start(m_s->kit->ssabuild, m_s->discPath);
+                    m_s->editionJob.Start(m_s->kit->builder, m_s->discPath);
                 else
                     Toast(Tr("These game tools can't find editions: update them"), ui::ToastKind::Error);
             }

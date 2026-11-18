@@ -200,7 +200,7 @@ namespace
         SetActiveGame("ssa");
         EXPECT(GameInstallFolder("abc").filename() == "SSA");
 
-        config["launcher"]["kit"] = SKYLAUNCHER_FAKE_KIT;
+        config["launcher"]["kit"] = LAUNCHER_FAKE_KIT;
         std::optional<InstallKit> kit = FindInstallKit(config);
         EXPECT(kit && kit->version == "fake-1");
         auto run = [&](const char* fail) {
@@ -1825,7 +1825,7 @@ static void ChannelSwitchChecks(const std::filesystem::path& scratch)
     for (const char* tag : { "v0.9.7", "v0.9.8b1" })
     {
         fs::remove_all(kits / tag);
-        fs::copy(SKYLAUNCHER_FAKE_KIT, kits / tag, fs::copy_options::recursive);
+        fs::copy(LAUNCHER_FAKE_KIT, kits / tag, fs::copy_options::recursive);
         put(kits / tag / "kit.txt", "version=" + std::string(tag).substr(1) + "\ngames=ssa,giants\n");
     }
     const auto selected = FindInstallKit({}, "ssa", "v0.9.7");
@@ -1939,7 +1939,7 @@ static void SwitchChecks(const std::filesystem::path& scratch, const std::string
     std::string ini = (scratch / "switch.ini").string();
     set("SKY_LAUNCHER_INI", ini);
     LauncherConfig config;
-    config["launcher"]["kit"] = SKYLAUNCHER_FAKE_KIT;
+    config["launcher"]["kit"] = LAUNCHER_FAKE_KIT;
     config["ssa"]["iso"] = ssaIso;
     config["giants"]["iso"] = giantsIso;
     config["launcher"]["game_music"] =
@@ -1973,7 +1973,7 @@ static void SidebarChecks(const std::filesystem::path& scratch, const std::strin
     std::string ini = (scratch / "sidebar.ini").string();
     set("SKY_LAUNCHER_INI", ini);
     LauncherConfig config;
-    config["launcher"]["kit"] = SKYLAUNCHER_FAKE_KIT;
+    config["launcher"]["kit"] = LAUNCHER_FAKE_KIT;
     config["ssa"]["iso"] = ssaIso;
     config["giants"]["iso"] = giantsIso;
     {
@@ -2033,7 +2033,7 @@ static void KitFlowChecks(const std::filesystem::path& scratch, const std::strin
     fs::path newKit = scratch / "kitflow" / "kit-new";
     fs::remove_all(scratch / "kitflow");
     fs::create_directories(newKit.parent_path());
-    fs::copy(SKYLAUNCHER_FAKE_KIT, newKit, fs::copy_options::recursive);
+    fs::copy(LAUNCHER_FAKE_KIT, newKit, fs::copy_options::recursive);
     SemVer next = ParseSemVer(LauncherVersion());
     std::string nextTag =
         "v" + std::to_string(next.major) + "." + std::to_string(next.minor) + "." + std::to_string(next.patch + 1);
@@ -2043,7 +2043,7 @@ static void KitFlowChecks(const std::filesystem::path& scratch, const std::strin
     MakeKitRelease(scratch / "kitflow" / "release", { "v" + LauncherVersion(), nextTag }, newKit);
     // A release that bumps Giants only: its kit says Giants 0.8.1, its notes say so, and Spyro's Adventure stays at 0.9.0.
     fs::path newerKit = scratch / "kitflow" / "kit-newer";
-    fs::copy(SKYLAUNCHER_FAKE_KIT, newerKit, fs::copy_options::recursive);
+    fs::copy(LAUNCHER_FAKE_KIT, newerKit, fs::copy_options::recursive);
     std::ofstream(newerKit / "kit.txt")
         << "version=" << nextVersion
         << "\nbuild=kit-new\ngames=ssa,giants\ngame_version.ssa=0.9.0\ngame_version.giants=0.8.1\n";
@@ -2061,7 +2061,7 @@ static void KitFlowChecks(const std::filesystem::path& scratch, const std::strin
         fs::remove(kit / filelist::VerifiedName); // a record of this machine's file times is no part of a kit
     };
     fs::path repairedKit = scratch / "kitflow" / "kit-repaired";
-    fs::copy(SKYLAUNCHER_FAKE_KIT, repairedKit, fs::copy_options::recursive);
+    fs::copy(LAUNCHER_FAKE_KIT, repairedKit, fs::copy_options::recursive);
     const std::string ownKitText =
         "version=" + LauncherVersion() + "\nbuild=kit-repaired\ngames=ssa,giants\ngame_version.ssa=0.9.0\n";
     listKit(repairedKit, ownKitText);
@@ -2087,7 +2087,7 @@ static void KitFlowChecks(const std::filesystem::path& scratch, const std::strin
         fs::path root = scratch / "kitflow" / test.mode;
         fs::create_directories(root / "shots");
         fs::create_directories(root / "base");
-        fs::copy(SKYLAUNCHER_FAKE_KIT, root / "base" / "ssa-kit-test", fs::copy_options::recursive);
+        fs::copy(LAUNCHER_FAKE_KIT, root / "base" / "ssa-kit-test", fs::copy_options::recursive);
         std::ofstream(root / "base" / "ssa-kit-test" / "kit.txt")
             << (test.kitText != nullptr
                        ? std::string(test.kitText)
@@ -2156,7 +2156,7 @@ static void SeatXChecks(const std::filesystem::path& scratch)
         (root / "launcher").string() + "' SKY_COLLECTION='" + (root / "collection").string() + "' SKY_SAVE_DIR='" +
         (root / "saves").string() + "' SKY_LAUNCHER_INI='" + (root / "x.ini").string() +
         "' SKY_LAUNCHER_NO_UPDATE_CHECK=1 SKY_LAUNCHER_SHOTS='" + (root / "shots").string() +
-        "' SKY_LAUNCHER_TEST_SEATX=1 '" + SKYLAUNCHER_TEST_EXE + "' > '" + (root / "out.txt").string() + "' 2>&1";
+        "' SKY_LAUNCHER_TEST_SEATX=1 '" + LAUNCHER_TEST_EXE + "' > '" + (root / "out.txt").string() + "' 2>&1";
     EXPECT(std::system(command.c_str()) == 0);
     std::ifstream in(root / "out.txt");
     std::string line;
@@ -2191,7 +2191,7 @@ static void NavChecks(const std::filesystem::path& scratch, const std::string& i
                           (root / "collection").string() + "' SKY_SAVE_DIR='" + (root / "saves").string() +
                           "' SKY_LAUNCHER_INI='" + (root / "x.ini").string() +
                           "' SKY_LAUNCHER_NO_UPDATE_CHECK=1 SKY_LAUNCHER_SHOTS='" + (root / "shots").string() +
-                          "' SKY_LAUNCHER_TEST_DROP='" + quoted + "' SKY_LAUNCHER_TEST_NAV=1 '" + SKYLAUNCHER_TEST_EXE +
+                          "' SKY_LAUNCHER_TEST_DROP='" + quoted + "' SKY_LAUNCHER_TEST_NAV=1 '" + LAUNCHER_TEST_EXE +
                           "' > '" + (root / "out.txt").string() + "' 2>&1";
     EXPECT(std::system(command.c_str()) == 0);
     std::ifstream in(root / "out.txt");
@@ -2233,8 +2233,8 @@ static void LoopingDiscStartChecks(const std::filesystem::path& scratch)
                           (root / "collection").string() + "' SKY_SAVE_DIR='" + (root / "saves").string() +
                           "' SKY_LAUNCHER_INI='" + (root / "x.ini").string() +
                           "' SKY_LAUNCHER_NO_UPDATE_CHECK=1 SKY_LAUNCHER_SHOTS='" + (root / "shots").string() +
-                          "' SKY_LAUNCHER_TEST_EXPERIMENTAL=ssa perl -e 'alarm 120; exec @ARGV' '" +
-                          SKYLAUNCHER_TEST_EXE + "' > '" + (root / "out.txt").string() + "' 2>&1";
+                          "' SKY_LAUNCHER_TEST_EXPERIMENTAL=ssa perl -e 'alarm 120; exec @ARGV' '" + LAUNCHER_TEST_EXE +
+                          "' > '" + (root / "out.txt").string() + "' 2>&1";
     EXPECT(std::system(command.c_str()) == 0); // not killed for its memory, not stopped by the alarm
     std::error_code error;
     EXPECT(std::filesystem::exists(
@@ -2261,7 +2261,7 @@ static void PadWalkChecks(const std::filesystem::path& scratch, const std::strin
         (root / "saves").string() + "' SKY_LAUNCHER_INI='" + (root / "x.ini").string() +
         "' SKY_LAUNCHER_NO_UPDATE_CHECK=1 SKY_LAUNCHER_SHOTS='" + (root / "shots").string() +
         (iso.empty() ? std::string("'") : "' SKY_LAUNCHER_TEST_DROP='" + quoted + "'") +
-        " SKY_LAUNCHER_TEST_PADWALK=quick '" + SKYLAUNCHER_TEST_EXE + "' > '" + (root / "out.txt").string() + "' 2>&1";
+        " SKY_LAUNCHER_TEST_PADWALK=quick '" + LAUNCHER_TEST_EXE + "' > '" + (root / "out.txt").string() + "' 2>&1";
     EXPECT(std::system(command.c_str()) == 0);
     std::ifstream in(root / "out.txt");
     std::string line;
@@ -2302,7 +2302,7 @@ static void RunningChecks(const std::filesystem::path& scratch, const std::strin
                           game.string() + "' SKY_LAUNCHER_INI='" + (root / "x.ini").string() +
                           "' SKY_LAUNCHER_NO_UPDATE_CHECK=1 SKY_LAUNCHER_SHOTS='" + (root / "shots").string() +
                           "' SKY_LAUNCHER_TEST_DROP='" + quoted + "' SKY_LAUNCHER_TEST_RUNNING=1 '" +
-                          SKYLAUNCHER_TEST_EXE + "' > '" + (root / "out.txt").string() + "' 2>&1";
+                          LAUNCHER_TEST_EXE + "' > '" + (root / "out.txt").string() + "' 2>&1";
     EXPECT(std::system(command.c_str()) == 0);
     std::ifstream in(root / "out.txt");
     std::string line;
@@ -2508,7 +2508,7 @@ static void InstallCardChecks(const std::filesystem::path& scratch)
             { "SKY_LAUNCHER_TEST_SIZE", size }, { "SKY_LAUNCHER_TEST_INSTALL", "layout" },
             { "SKY_LAUNCHER_TEST_DROP", "" } });
         SDL_IOStream* log = SDL_IOFromFile((root / "output.log").string().c_str(), "wb");
-        const char* arguments[] = { SKYLAUNCHER_TEST_EXE, nullptr };
+        const char* arguments[] = { LAUNCHER_TEST_EXE, nullptr };
         SDL_PropertiesID properties = SDL_CreateProperties();
         SDL_SetPointerProperty(properties, SDL_PROP_PROCESS_CREATE_ARGS_POINTER, arguments);
         SDL_SetPointerProperty(properties, SDL_PROP_PROCESS_CREATE_ENVIRONMENT_POINTER, environment);
@@ -2653,14 +2653,14 @@ static void SourceFailureChecks(const std::filesystem::path& scratch)
     {
         // "Find my edition": the kit's report, as printed; a builder error comes back as the reason; a kit that has the
         // option says so.
-        const auto kit = InstallKitIn(SKYLAUNCHER_FAKE_KIT);
+        const auto kit = InstallKitIn(LAUNCHER_FAKE_KIT);
         EXPECT(kit && kit->editionReport);
         const std::string image = (scratch / "other_region.iso").string();
-        EditionReport report = kit ? RunEditionReport(kit->ssabuild, image) : EditionReport{};
+        EditionReport report = kit ? RunEditionReport(kit->builder, image) : EditionReport{};
         EXPECT(report.ok && report.text.starts_with("Edition report (") &&
                report.text.ends_with("supported release\n") && report.text.find('@') == std::string::npos);
         TestSetEnv("FAKE_ARKEYAN_BUILDER_FAIL", "edition");
-        report = kit ? RunEditionReport(kit->ssabuild, image) : EditionReport{};
+        report = kit ? RunEditionReport(kit->builder, image) : EditionReport{};
         TestUnsetEnv("FAKE_ARKEYAN_BUILDER_FAIL");
         EXPECT(!report.ok && report.text == "not an Xbox 360 disc image, or the file is incomplete");
         report = RunEditionReport(scratch / "no-builder", image);

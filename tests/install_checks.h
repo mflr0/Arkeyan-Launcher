@@ -23,7 +23,7 @@ inline void InstallLifecycleChecks(const std::filesystem::path& scratch)
     for (const char* key : { "FAKE_ARKEYAN_BUILDER_FAIL", "FAKE_ARKEYAN_BUILDER_FAIL_STEP",
              "FAKE_ARKEYAN_BUILDER_PAUSE_STEP", "FAKE_ARKEYAN_BUILDER_HOLD", "FAKE_ARKEYAN_BUILDER_ENDING" })
         TestUnsetEnv(key);
-    const auto kit = InstallKitIn(SKYLAUNCHER_FAKE_KIT);
+    const auto kit = InstallKitIn(LAUNCHER_FAKE_KIT);
     EXPECT(kit.has_value());
     if (!kit)
         return;
@@ -47,7 +47,7 @@ inline void InstallLifecycleChecks(const std::filesystem::path& scratch)
     EXPECT(state.startFailed && state.error.find("Couldn't create the game folder") != std::string::npos);
     EXPECT(read(root / "blocked") == "keep");
     InstallKit absent = *kit;
-    absent.ssabuild = root / "missing-builder";
+    absent.builder = root / "missing-builder";
     EXPECT(!installer.Start(absent, "synthetic.iso", root / "no-builder"));
     state = installer.Snapshot();
     EXPECT(state.startFailed && state.error.find("Couldn't start the game") != std::string::npos);

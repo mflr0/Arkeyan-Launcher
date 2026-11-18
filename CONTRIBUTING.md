@@ -60,7 +60,8 @@ Welcome, under the rules of the [Code of Conduct](CODE_OF_CONDUCT.md#contributio
 what you send.
 
 ## Checks
-On a Mac with Docker, `tools/ci/run.sh` runs everything: the format, the macOS build and tests, and in containers the
+On a Mac with Docker, `tools/ci/run.sh` runs everything: no former project name outside
+`tools/ci/naming_allow.txt`, the format, the macOS build and tests, and in containers the
 Linux build, the sanitizer build and the Windows build with its tests under Wine, all at the same time (a job that
 fails among them runs again alone; `--serial`: one after the other). A job that already passed on the same files (the docs
 aside) is skipped (`--force` runs it again). `--quick` runs the format and the macOS part only;

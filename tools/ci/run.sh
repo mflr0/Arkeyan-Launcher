@@ -5,10 +5,10 @@
 #
 #   tools/ci/run.sh [--quick] [--only job,job] [--root DIR] [--dist DIR] [--serial] [--force]
 #
-# Jobs: format, pr (when TITLE, BASE and HEAD are set: tools/check_pull_request.sh), macos, linux, sanitizers, windows,
+# Jobs: names (no former name outside tools/ci/naming_allow.txt), format, pr (when TITLE, BASE and HEAD are set: tools/check_pull_request.sh), macos, linux, sanitizers, windows,
 # appimage (added to linux by --dist), run at the same time (--serial: one after the other). A job that passed on the
-# same tree (commits, uncommitted and untracked files but the docs, submodule commits, VERSION) is skipped, except pr
-# and with --dist; --force runs it again.
+# same tree (commits, uncommitted and untracked files but the docs, submodule commits, VERSION) is skipped, except names
+# and pr, and with --dist; --force runs it again.
 # --quick runs format and macos (the pre-push hook). --root checks another checkout (tools/ci/check_pr.sh). --dist
 # copies the release files (ArkeyanLauncher.exe, ArkeyanLauncher-x86_64.AppImage, ArkeyanLauncher-macOS.dmg and .zip)
 # there. VERSION=vX.Y.Z builds that version (tools/release_local.sh). Logs: <root>/.scratch/ci/<job>.log.
@@ -30,7 +30,7 @@ while [ $# -gt 0 ]; do
     esac
     shift
 done
-[ -n "$jobs" ] || jobs=format,pr,macos,linux,sanitizers,windows
+[ -n "$jobs" ] || jobs=names,format,pr,macos,linux,sanitizers,windows
 # The AppImage is a release file: built with --dist.
 case ",$jobs," in *,linux,*) [ -z "$dist" ] || jobs+=,appimage ;; esac
 here=$(cd "$(dirname "$0")" && pwd)
@@ -89,7 +89,7 @@ macos() {
         SKY_LOG="$scratch/env/game.log" "$build/ArkeyanLauncherTest" --no-disc "$scratch/test" || return 1
     rm -rf "$scratch"
     if [ -n "$dist" ]; then
-        "$root/tools/package_macos.sh" "$build/ArkeyanLauncher.app" "$root/resources/icons/skylauncher.svg" "$dist"
+        "$root/tools/package_macos.sh" "$build/ArkeyanLauncher.app" "$root/resources/icons/arkeyan-launcher.svg" "$dist"
     fi
 }
 
@@ -98,6 +98,10 @@ format() {
         docker run --rm -i --platform "$native" -v "$root:/repo:ro" -w /repo "arkeyan-launcher-linux-${native#linux/}" \
             sh -c 'xargs clang-format --dry-run --Werror --style=file' || return 1
     echo "format ok"
+}
+
+names() {
+    python3 -I "$root/tools/ci/check_names.py" --root "$root" && python3 -I "$root/tools/ci/check_names_test.py"
 }
 
 pr() {
@@ -137,7 +141,7 @@ trap 'trap - TERM; kill -TERM 0; exit 130' INT TERM
 names=(); runs=(); pids=()
 for job in ${jobs//,/ }; do
     case $job in
-        format | pr | macos) run=$job ;;
+        names | format | pr | macos) run=$job ;;
         linux | sanitizers) run="container $job linux $native" ;;
         appimage) run="container appimage linux linux/amd64" ;;
         windows) run="container windows windows linux/amd64" ;;
@@ -145,7 +149,7 @@ for job in ${jobs//,/ }; do
     esac
     rm -f "$logs/$job.result" "$logs/$job.parallel.log"
     names+=("$job"); runs+=("$run")
-    if [ $force -eq 0 ] && [ -z "$dist" ] && [ "$job" != pr ] &&
+    if [ $force -eq 0 ] && [ -z "$dist" ] && [ "$job" != pr ] && [ "$job" != names ] &&
         [ "$(cat "$logs/$job.pass" 2>/dev/null)" = "$state" ]; then
         echo "SKIP 0" >"$logs/$job.result"
         pids+=("")

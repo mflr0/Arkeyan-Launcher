@@ -9,7 +9,7 @@ and words, a sheet with three main actions. The look is dorydev's: the colours, 
 ## One engine
 
 - `src/shared/collection/` and `src/shared/figures/` (all but `figure_icons.*`) are ArkeyanRuntime's files, copied by
-  `tools/sync_collection.sh [--check] <ssa-recomp>` (same file list as ArkeyanRuntime's `tools/sync_skylauncher.sh`, into
+  `tools/sync_collection.sh [--check] <ssa-recomp>` (same file list as ArkeyanRuntime's `tools/sync_launcher.sh`, into
   Skylanders' layout). Change them in ArkeyanRecomp, where the tests are, and copy them over. The catalogue
   (`resources/collection/catalogue.json`) is built into the executable (`cmake/embed_file.cmake`).
 - `figures/figure_icons.*` is the launcher's: `IconStyle` (outline, fills, badge colours) draws the generated icons for any

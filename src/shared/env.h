@@ -7,7 +7,7 @@
 //   "SKY_X"          then "SSA_X"                  (games, runtime, Arkeyan-Builder)
 //   "SKY_LAUNCHER_X" then "SKYLAUNCHER_X", then "SSA_LAUNCHER_X"   (launcher; the tail of the chain is the older spellings)
 // A variable that is set, even to an empty text, wins over the older names. Names that never changed (SKYLANDERS_DATA,
-// SDL_*, GIANTS_ISO, ...) are read with plain getenv. The same file is in the launcher's src/shared/ (tools/sync_skylauncher.sh).
+// SDL_*, GIANTS_ISO, ...) are read with plain getenv. The same file is in the launcher's src/shared/ (tools/sync_launcher.sh).
 namespace skyenv
 {
     // The older spellings of a current name, in reading order (at most two; "" for none).

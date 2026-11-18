@@ -1074,7 +1074,7 @@ namespace
                      ReadBytes(kitFolder / "res" / "a.txt") == "a");
         SHELL_EXPECT(!std::filesystem::exists(kitFolder.string() + ".old") &&
                      !std::filesystem::exists(kitFolder.string() + ".new"));
-        MakeZip(zip, { { "readme.txt", "no ssabuild here" } });
+        MakeZip(zip, { { "readme.txt", "no builder here" } });
         SHELL_EXPECT(!InstallKitZip(zip, kitFolder, error) && error.find("kit") != std::string::npos &&
                      ReadBytes(kitFolder / "SSABuild") == "binary");
         MakeZip(zip, { { "../evil.txt", "x" } });
@@ -1117,16 +1117,16 @@ namespace
             SHELL_EXPECT(InstallKitZip(zip, updates / "fresh" / "both-kit", error) &&
                          ReadBytes(updates / "fresh" / "both-kit" / "SSABuild") == "copy");
             // The kit folder is found with either builder and either folder name.
-            std::filesystem::path kitSkyBuild = updates / "kits" / "skylanders-kit-test";
+            std::filesystem::path builderKit = updates / "kits" / "skylanders-kit-test";
 #if defined(_WIN32)
-            WriteBytes(kitSkyBuild / "Arkeyan-Builder.exe", "x");
+            WriteBytes(builderKit / "Arkeyan-Builder.exe", "x");
 #else
-            WriteBytes(kitSkyBuild / "Arkeyan-Builder", "x");
+            WriteBytes(builderKit / "Arkeyan-Builder", "x");
 #endif
-            auto kit = InstallKitIn(kitSkyBuild);
-            SHELL_EXPECT(kit && kit->ssabuild.filename().string().starts_with("Arkeyan-Builder"));
+            auto kit = InstallKitIn(builderKit);
+            SHELL_EXPECT(kit && kit->builder.filename().string().starts_with("Arkeyan-Builder"));
             auto oldKit = InstallKitIn(updates / "game" / "ssa-kit");
-            SHELL_EXPECT(oldKit && oldKit->ssabuild.filename().string().starts_with("SSABuild"));
+            SHELL_EXPECT(oldKit && oldKit->builder.filename().string().starts_with("SSABuild"));
             // A kit up to 0.7.2 has SkyBuild: still installed from its zip and found;
             // Arkeyan-Builder wins beside it.
             MakeZip(zip, { { "skylanders-kit-test/SkyBuild", "older builder" },
@@ -1134,11 +1134,11 @@ namespace
             SHELL_EXPECT(InstallKitZip(zip, updates / "fresh" / "older-kit", error) &&
                          ReadBytes(updates / "fresh" / "older-kit" / "SkyBuild") == "older builder");
             auto olderKit = InstallKitIn(updates / "fresh" / "older-kit");
-            SHELL_EXPECT(olderKit && olderKit->ssabuild.stem() == "SkyBuild");
+            SHELL_EXPECT(olderKit && olderKit->builder.stem() == "SkyBuild");
             WriteBytes(updates / "fresh" / "older-kit" / "Arkeyan-Builder", "x");
             WriteBytes(updates / "fresh" / "older-kit" / "Arkeyan-Builder.exe", "x");
             olderKit = InstallKitIn(updates / "fresh" / "older-kit");
-            SHELL_EXPECT(olderKit && olderKit->ssabuild.stem() == "Arkeyan-Builder");
+            SHELL_EXPECT(olderKit && olderKit->builder.stem() == "Arkeyan-Builder");
         }
 
         // The manager: a check against the fake latest.json, then the kit update from
@@ -1616,7 +1616,7 @@ namespace
         WriteBytes(root / "four" / "Arkeyan-Builder", "x");
         WriteBytes(root / "four" / "Arkeyan-Builder.exe", "x");
         std::optional<InstallKit> four = InstallKitIn(root / "four");
-        SHELL_EXPECT(four && four->Builds("trapteam") && four->ssabuild.stem() == "Arkeyan-Builder");
+        SHELL_EXPECT(four && four->Builds("trapteam") && four->builder.stem() == "Arkeyan-Builder");
 
         // From an older release than the launcher: the kit.txt version, or the
         // folder's release tag; the player's own never.
@@ -1705,7 +1705,7 @@ int ShellChecks(const std::filesystem::path& scratch)
         TestSetEnv("FAKE_ARKEYAN_BUILDER_CLOSE_OUTPUT", "1");
         GameInstaller installer;
         SHELL_EXPECT(
-            installer.Start(InstallKitIn(SKYLAUNCHER_FAKE_KIT), "synthetic.iso", scratch / "closed-output-install"));
+            installer.Start(InstallKitIn(LAUNCHER_FAKE_KIT), "synthetic.iso", scratch / "closed-output-install"));
         SDL_Delay(100);
         const uint64_t started = SDL_GetTicks();
         installer.Cancel();
