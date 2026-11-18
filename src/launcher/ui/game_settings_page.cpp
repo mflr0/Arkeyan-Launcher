@@ -100,6 +100,78 @@ namespace launcher_ui
 
     // ---- Video, sound and language --------------------------------------------------------------------------------------
 
+    // window_size (game_settings.h): Last used (no key), four sizes, or Custom's own width and height.
+    void App::DrawWindowSize(const char* video)
+    {
+        static constexpr std::pair<int, int> Presets[] = { { 1280, 720 }, { 1600, 900 }, { 1920, 1080 },
+            { 2560, 1440 } };
+        const std::string value = SettingGet(m_config, video, "window_size");
+        int width = 0, height = 0;
+        const bool sized = WindowSizeOf(value, width, height);
+        int preset = -1;
+        for (size_t i = 0; i < std::size(Presets); i++)
+            if (value == fmt::format("{}x{}", Presets[i].first, Presets[i].second))
+                preset = int(i);
+        const bool custom = sized && (m_windowSizeCustom || preset < 0);
+        auto sizeText = [](int w, int h) { return Tf("{} x {}", w, h); };
+        auto setSize = [&](int w, int h) { Set(video, "window_size", fmt::format("{}x{}", w, h)); };
+
+        ui::SettingRow(Tr("Window size"), Tr("Last used: as it was when the game closed."));
+        const std::string label = custom        ? std::string(Tr("Custom"))
+                                  : preset >= 0 ? sizeText(Presets[preset].first, Presets[preset].second)
+                                                : std::string(Tr("Last used"));
+        if (ui::BeginSelect("##windowsize", label.c_str()))
+        {
+            if (ui::SelectOption(Tr("Last used"), !sized))
+            {
+                m_windowSizeCustom = false;
+                m_config[video].erase("window_size");
+                if (!SaveConfig())
+                    Toast(Tr("Couldn't save the settings"), ui::ToastKind::Error);
+            }
+            for (size_t i = 0; i < std::size(Presets); i++)
+                if (ui::SelectOption(
+                        fmt::format("{}##size{}", sizeText(Presets[i].first, Presets[i].second), i).c_str(),
+                        !custom && preset == int(i)))
+                {
+                    m_windowSizeCustom = false;
+                    setSize(Presets[i].first, Presets[i].second);
+                }
+            if (ui::SelectOption(Tr("Custom"), custom))
+            {
+                m_windowSizeCustom = true;
+                if (!sized)
+                    setSize(Presets[0].first, Presets[0].second);
+            }
+            ui::EndSelect();
+        }
+        if (!custom)
+            return;
+
+        // Typed digits are saved once the number reaches the minimum; until then the field keeps what is typed.
+        const std::string now = SettingGet(m_config, video, "window_size");
+        if (now != m_windowSizeShown && WindowSizeOf(now, width, height))
+        {
+            m_windowSizeShown = now;
+            snprintf(m_windowSizeText[0], sizeof m_windowSizeText[0], "%d", width);
+            snprintf(m_windowSizeText[1], sizeof m_windowSizeText[1], "%d", height);
+        }
+        ui::TextFieldOptions digits;
+        digits.flags = ImGuiInputTextFlags_CallbackCharFilter;
+        digits.callback = [](ImGuiInputTextCallbackData* data) {
+            return data->EventChar >= '0' && data->EventChar <= '9' ? 0 : 1;
+        };
+        const std::string widthHint = Tf("{} or more", MinWindowWidth), heightHint = Tf("{} or more", MinWindowHeight);
+        ui::SettingRow(Tr("Width"), widthHint.c_str());
+        if (ui::TextField("##windowwidth", m_windowSizeText[0], sizeof m_windowSizeText[0], digits))
+            if (int typed = std::atoi(m_windowSizeText[0]); typed >= MinWindowWidth)
+                setSize(typed, height);
+        ui::SettingRow(Tr("Height"), heightHint.c_str());
+        if (ui::TextField("##windowheight", m_windowSizeText[1], sizeof m_windowSizeText[1], digits))
+            if (int typed = std::atoi(m_windowSizeText[1]); typed >= MinWindowHeight)
+                setSize(width, typed);
+    }
+
     void App::DrawGameVideo()
     {
         const std::string videoSection = GameVideoSection(m_s->game.id);
@@ -116,6 +188,8 @@ namespace launcher_ui
         {
             ui::SettingRow(Tr("Fullscreen"), nullptr);
             toggle("##fullscreen", "fullscreen", "0");
+            if (!ParseBool(SettingGet(m_config, video, "fullscreen", "0")))
+                DrawWindowSize(video);
 
             ui::SettingRow(
                 Tr("Widescreen"), Tr("Auto shows more when wide; Fill covers a taller screen; 16:9 adds bars."));

@@ -362,6 +362,14 @@ Couldn't download the game tools	Kan de speltools niet downloaden
 Frame rate limit	Framerate-limiet
 Frees {}. Saves and settings are kept.	Maakt {} vrij. Savegames en instellingen blijven bewaard.
 Fullscreen	Volledig scherm
+Window size	Venstergrootte
+{} x {}	{} x {}
+Last used: as it was when the game closed.	Laatst gebruikt: zoals bij het sluiten van het spel.
+Last used	Laatst gebruikt
+Custom	Aangepast
+Width	Breedte
+Height	Hoogte
+{} or more	{} of meer
 Game	Spel
 Game art comes from your own disc.	De afbeeldingen van het spel komen van je eigen schijf.
 Game data	Spelgegevens
