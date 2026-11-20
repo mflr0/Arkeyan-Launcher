@@ -11,6 +11,132 @@
 
 namespace ui
 {
+    void DrawPortalMark(ImDrawList* draw, ImVec2 centre, float size, const PortalLook& look, float alpha, float lit)
+    {
+        // Flat shapes on a 40-unit grid, one dark line around them: no glow, no gradient.
+        const float u = size / 40;
+        const ImVec2 o(Snap(centre.x - size / 2), Snap(centre.y - size / 2));
+        auto at = [&](float x, float y) { return ImVec2(o.x + x * u, o.y + y * u); };
+        auto r = [&](float x, float y) { return ImVec2(x * u, y * u); };
+        const float line = std::max(1.0f, size / 22), thin = std::max(1.0f, size / 40);
+        const ImU32 ink = Col(color::Inset, alpha);
+        auto col = [&](unsigned rgb) { return Col(rgb, alpha); };
+        constexpr float Pi = std::numbers::pi_v<float>;
+        // Off, its light is a darker shade of itself; on, it shines, with a flat halo in two steps around the lit part.
+        // Only the brightness moves between the two (Lift keeps the hue), so a fade never passes through another colour.
+        const float glow = std::clamp(lit, 0.0f, 1.0f);
+        const unsigned light = Lift(look.light, -0.4f + 0.6f * glow);
+        auto halo = [&](float y, float rx, float ry) {
+            if (glow <= 0)
+                return;
+            draw->AddEllipseFilled(at(20, y), r(rx + 4, ry + 3.5f), Col(look.light, 0.18f * glow * alpha));
+            draw->AddEllipseFilled(at(20, y), r(rx + 2, ry + 1.8f), Col(look.light, 0.3f * glow * alpha));
+        };
+        auto arc = [&](ImVec2 c, ImVec2 radius, float from, float to, ImU32 colour, float width) {
+            draw->PathEllipticalArcTo(c, radius, 0, from, to);
+            draw->PathStroke(colour, 0, width);
+        };
+        // A point on an ellipse, at `angle` (0 right, Pi / 2 the front).
+        auto on = [&](float cx, float cy, float rx, float ry, float angle) {
+            return at(cx + rx * std::cos(angle), cy + ry * std::sin(angle));
+        };
+        switch (look.shape)
+        {
+        case PortalShape::Stone:
+        {
+            // The base band under the wall, the wall, the rim of blocks, the top.
+            const unsigned wall = Lift(look.body, -0.3f);
+            halo(14, 18, 7);
+            draw->AddEllipseFilled(at(20, 27), r(18.5f, 7), col(look.trim));
+            arc(at(20, 27), r(18.5f, 7), 0, Pi, ink, line);
+            draw->AddEllipseFilled(at(20, 24), r(18, 7), col(wall));
+            draw->AddRectFilled(at(2, 14), at(38, 24), col(wall));
+            draw->AddEllipseFilled(at(20, 14), r(18, 7), col(look.body));
+            draw->AddEllipseFilled(at(20, 14), r(12.5f, 4.5f), col(light));
+            for (float deg : { 35.0f, 62.0f, 118.0f, 145.0f }) // the wall's blocks
+            {
+                const float a = deg * Pi / 180;
+                const ImVec2 top = on(20, 14, 18, 7, a);
+                draw->AddLine(top, ImVec2(top.x, top.y + 10 * u), ink, thin);
+            }
+            for (float deg : { 0.0f, 45.0f, 90.0f, 135.0f, 180.0f, 225.0f, 270.0f, 315.0f }) // the rim's blocks
+            {
+                const float a = deg * Pi / 180;
+                draw->AddLine(on(20, 14, 12.5f, 4.5f, a), on(20, 14, 18, 7, a), ink, thin);
+            }
+            // The glyph on the front block, in the top's light.
+            const ImVec2 glyph[4] = { at(20, 23.5f), at(21.6f, 26.5f), at(20, 29.5f), at(18.4f, 26.5f) };
+            draw->AddConvexPolyFilled(glyph, 4, col(light));
+            draw->AddEllipse(at(20, 14), r(12.5f, 4.5f), ink, 0, 0, thin);
+            arc(at(20, 14), r(18, 7), Pi, 2 * Pi, ink, line);
+            draw->AddLine(at(2, 14), at(2, 24), ink, line);
+            draw->AddLine(at(38, 14), at(38, 24), ink, line);
+            arc(at(20, 24), r(18, 7), 0, Pi, ink, line);
+            break;
+        }
+        case PortalShape::Trap:
+        {
+            // The dark base, the clear ring and its opening, the trap slot at the front with its grille and lamp.
+            const unsigned ring = Lift(look.body, -0.18f);
+            halo(15, 18, 7);
+            draw->AddEllipseFilled(at(20, 26), r(17, 6.5f), col(0x22252B));
+            draw->AddEllipseFilled(at(20, 21), r(18, 7), col(ring));
+            draw->AddRectFilled(at(2, 15), at(38, 21), col(ring));
+            draw->AddEllipseFilled(at(20, 15), r(18, 7), col(look.body));
+            draw->AddEllipseFilled(at(20, 15), r(13, 4.6f), col(Lift(look.trim, -0.75f + 0.45f * glow)));
+            draw->AddEllipse(at(20, 15), r(13, 4.6f), ink, 0, 0, thin);
+            arc(at(20, 15), r(18, 7), Pi, 2 * Pi, ink, line);
+            draw->AddLine(at(2, 15), at(2, 21), ink, line);
+            draw->AddLine(at(38, 15), at(38, 21), ink, line);
+            arc(at(20, 21), r(18, 7), 0, Pi, ink, line);
+            const ImVec2 slot[5] = { at(13.5f, 18), at(26.5f, 18), at(27.5f, 30), at(20, 35.5f), at(12.5f, 30) };
+            draw->AddConvexPolyFilled(slot, 5, col(light));
+            for (float y : { 24.0f, 27.0f, 30.0f })
+                draw->AddLine(at(16, y), at(24, y), ink, thin * 1.5f);
+            draw->AddCircleFilled(at(20, 21), 1.6f * u, col(Lift(look.trim, 0.35f * glow)));
+            draw->AddPolyline(slot, 5, ink, ImDrawFlags_Closed, line);
+            break;
+        }
+        case PortalShape::Engine:
+        case PortalShape::Crystal:
+        {
+            // The pad: its edge, its rim, its dark top; then at the back the engine and its flames, or the crystal.
+            halo(24.5f, 18, 8.5f);
+            draw->AddEllipseFilled(at(20, 27), r(18, 8.5f), col(Lift(look.trim, -0.4f)));
+            draw->AddEllipseFilled(at(20, 24.5f), r(18, 8.5f), col(Lift(look.trim, 0.35f * glow)));
+            draw->AddEllipseFilled(at(20, 24.5f), r(15.5f, 6.8f), col(look.body));
+            arc(at(20, 27), r(18, 8.5f), 0, Pi, ink, line);
+            arc(at(20, 24.5f), r(18, 8.5f), Pi, 2 * Pi, ink, line);
+            draw->AddLine(at(2, 24.5f), at(2, 27), ink, line);
+            draw->AddLine(at(38, 24.5f), at(38, 27), ink, line);
+            if (look.shape == PortalShape::Engine)
+            {
+                for (float side : { -1.0f, 1.0f })
+                {
+                    const ImVec2 flame[3] = { at(20 + side * 7, 9), at(20 + side * 15, 15), at(20 + side * 7, 17) };
+                    draw->AddTriangleFilled(flame[0], flame[1], flame[2], col(light));
+                    draw->AddPolyline(flame, 3, ink, ImDrawFlags_Closed, thin);
+                }
+                draw->AddRectFilled(at(13, 6), at(27, 19), col(0xC9D0D8), 2 * u);
+                draw->AddRectFilled(at(13, 6), at(27, 9), col(0xEEF1F4), 2 * u, ImDrawFlags_RoundCornersTop);
+                for (float x : { 17.0f, 20.0f, 23.0f })
+                    draw->AddLine(at(x, 11), at(x, 17), ink, thin);
+                draw->AddRect(at(13, 6), at(27, 19), ink, 2 * u, 0, line);
+            }
+            else
+            {
+                const ImVec2 crystal[6] = { at(20, 2), at(26, 8), at(26, 17), at(20, 23), at(14, 17), at(14, 8) };
+                draw->AddConvexPolyFilled(crystal, 6, col(light));
+                const ImVec2 shade[4] = { at(20, 2), at(20, 23), at(14, 17), at(14, 8) };
+                draw->AddConvexPolyFilled(shade, 4, col(Lift(look.light, -0.3f)));
+                draw->AddLine(at(20, 2), at(20, 23), ink, thin);
+                draw->AddPolyline(crystal, 6, ink, ImDrawFlags_Closed, line);
+            }
+            break;
+        }
+        }
+    }
+
     void DrawEmptySeat(ImDrawList* draw, ImVec2 at, float size)
     {
         const ImVec2 centre(at.x + size / 2, at.y + size / 2);

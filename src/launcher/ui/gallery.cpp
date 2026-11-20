@@ -536,6 +536,19 @@ namespace launcher_ui
                     ImGui::GetWindowDrawList(), ui::Status(i), ImVec2(at.x + 10 + 32 * float(i), at.y + 10), 14);
             ImGui::Dummy(ImVec2(0, 20));
             ImGui::Dummy(ImVec2(0, ui::space::XS));
+            Caption("A game's mark before its logo is read: each game's portal, then a game to come");
+            at = ImGui::GetCursorScreenPos();
+            {
+                const char* games[] = { "ssa", "giants", "swapforce", "trapteam", "superchargers", "imaginators", "" };
+                for (int i = 0; i < 7; i++)
+                    ui::DrawPortalMark(ImGui::GetWindowDrawList(), ImVec2(at.x + 20 + 52 * float(i), at.y + 20), 40,
+                        PortalOf(games[i]), i == 6 ? 0.35f : 1.0f);
+                for (int i = 0; i < 6; i++) // switched on: the row under the pointer or the focus
+                    ui::DrawPortalMark(ImGui::GetWindowDrawList(), ImVec2(at.x + 20 + 52 * float(i + 8), at.y + 20), 40,
+                        PortalOf(games[i]), 1.0f, 1.0f);
+            }
+            ImGui::Dummy(ImVec2(0, 40));
+            ImGui::Dummy(ImVec2(0, ui::space::XS));
 
             Caption("ProgressBar 0 %, 46 %, 100 % (with its percentage); IndeterminateBar; Spinner");
             const float barW = (ImGui::GetContentRegionAvail().x - 3 * ui::space::L) / 4;

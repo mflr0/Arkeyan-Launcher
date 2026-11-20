@@ -47,6 +47,12 @@
 #include <thread>
 #include <vector>
 
+namespace LauncherTheme
+{
+    // A game's Portal of Power as its mark (game_look.cpp; a game to come gets a plain stone one).
+    ui::PortalLook PortalOf(const char* game);
+}
+
 namespace launcher_ui
 {
     using namespace LauncherTheme;
@@ -720,7 +726,7 @@ namespace launcher_ui
         void DrawLogo(
             ImDrawList* draw, const ArtTexture& logo, ImVec2 at, ImVec2 size, float alpha = 1, bool shadow = true);
         // A game's mark in a sidebar row: its logo once its disc was read, else its initial on its colour.
-        void DrawGameMark(ImDrawList* draw, const LauncherGameEntry& entry, ImVec2 at, ImVec2 size);
+        void DrawGameMark(ImDrawList* draw, const LauncherGameEntry& entry, ImVec2 at, ImVec2 size, float lit = 0);
         // The logo's arrival on the game page: 0 when it starts falling, 1 once landed (always 1 with reduced motion).
         float LogoDrop();
         // The game page's logo inside `size` at `at`, falling in on arrival (LogoDrop), with its shadow.

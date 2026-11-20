@@ -22,6 +22,26 @@
 
 namespace LauncherTheme
 {
+    ui::PortalLook PortalOf(const char* game)
+    {
+        using ui::PortalShape;
+        auto look = [](PortalShape shape, const unsigned (&c)[3]) { return ui::PortalLook{ shape, c[0], c[1], c[2] }; };
+        const std::string_view id = game != nullptr ? game : "";
+        if (id == "ssa")
+            return look(PortalShape::Stone, SsaPortal);
+        if (id == "giants")
+            return look(PortalShape::Stone, GiantsPortal);
+        if (id == "swapforce")
+            return look(PortalShape::Stone, SwapForcePortal);
+        if (id == "trapteam")
+            return look(PortalShape::Trap, TrapTeamPortal);
+        if (id == "superchargers")
+            return look(PortalShape::Engine, SuperChargersPortal);
+        if (id == "imaginators")
+            return look(PortalShape::Crystal, ImaginatorsPortal);
+        return ui::PortalLook{ PortalShape::Stone, 0x59606B, TextDim, PortalBase }; // a game to come
+    }
+
     const GameStyle& StyleOf(const char* game)
     {
         static constexpr GameStyle Launcher = { AccentHover, AccentDark, AccentInk, Accent };

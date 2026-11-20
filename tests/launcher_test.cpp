@@ -3139,6 +3139,20 @@ static int RunChecks(int argc, char** argv)
            !GameKeys("superchargers").empty()); // each its own list (settings_test.cpp)
     EXPECT(LauncherTheme::StyleOf("trapteam").top == LauncherTheme::TrapTeamStyle.top);
     EXPECT(datadir::GameFolderName("trapteam") == "TrapTeam");
+    {
+        // Each game's mark is its own portal: the stone ring for the first three, each lit in its own colour, then the
+        // trap slot, the engine and the crystal; a game to come gets a plain stone one.
+        using LauncherTheme::PortalOf;
+        using ui::PortalShape;
+        EXPECT(PortalOf("ssa").shape == PortalShape::Stone && PortalOf("giants").shape == PortalShape::Stone &&
+               PortalOf("swapforce").shape == PortalShape::Stone);
+        EXPECT(PortalOf("ssa").light != PortalOf("giants").light &&
+               PortalOf("giants").light != PortalOf("swapforce").light);
+        EXPECT(PortalOf("trapteam").shape == PortalShape::Trap &&
+               PortalOf("superchargers").shape == PortalShape::Engine &&
+               PortalOf("imaginators").shape == PortalShape::Crystal);
+        EXPECT(PortalOf("cloudpatrol").shape == PortalShape::Stone && PortalOf(nullptr).shape == PortalShape::Stone);
+    }
 
     // The per-game video contract round-trips the fallback without changing another game's choice.
     {

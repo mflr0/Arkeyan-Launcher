@@ -11,6 +11,28 @@
 namespace ui
 {
     void DrawEmptySeat(ImDrawList* draw, ImVec2 at, float size);
+    // A game's mark before its disc's logo is read: its own Portal of Power, flat, seen from above at an angle, `size`
+    // square around `centre`. Four shapes: the stone ring (Spyro's Adventure, Giants, Swap Force), the ring with the trap
+    // slot (Trap Team), the pad with its engine (SuperChargers) or a crystal (Imaginators).
+    enum class PortalShape
+    {
+        Stone,
+        Trap,
+        Engine,
+        Crystal
+    };
+    struct PortalLook
+    {
+        PortalShape shape;
+        unsigned body; // the stone, the ring or the pad
+        unsigned light; // the lit top, the trap slot, the flames or the crystal
+        unsigned trim; // the base band, the trap's lamp or the pad's rim
+    };
+    // `lit` (0 to 1) switches it on, as a real portal lights up: off, its light is a darker shade of itself; on, it shines,
+    // with a flat halo in two steps around it (the game shown, the row under the pointer or the focus). Only the
+    // brightness changes on the way, never the hue.
+    void DrawPortalMark(
+        ImDrawList* draw, ImVec2 centre, float size, const PortalLook& look, float alpha = 1.0f, float lit = 0.0f);
     // ---- Badge: a word on a card (Legendary, Series 2, P1), not pressable. Its ink is chosen for contrast when 0. ----
     ImVec2 BadgeSize(const char* text);
     ImVec2 DrawBadge(
