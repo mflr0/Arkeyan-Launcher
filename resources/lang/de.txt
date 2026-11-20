@@ -1243,3 +1243,8 @@ They appear the next time this save reaches the Academy.	Sie erscheinen, wenn di
 {} chests waiting for save slot {}	{} Kisten warten auf Speicherplatz {}
 {} chests waiting	{} Kisten warten
 Too late: the game already added them	Zu spät: Das Spiel hat sie schon hinzugefügt
+# Collection: a seat's figure dragged onto a taken player seat
+Swap players?	Spieler tauschen?
+Swap	Tauschen
+{} goes on {}, and {} on {}.	{} kommt auf {} und {} auf {}.
+Players swapped	Spieler getauscht

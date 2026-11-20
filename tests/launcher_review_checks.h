@@ -367,6 +367,65 @@ namespace launcher_ui
                 const auto* figure = page.m_model.Find(swapper.top);
                 expect(figure != nullptr && figure->favourite, "favorite action completed");
             }
+            else if (mode == "drag")
+            {
+                // A dragged figure greys the seats PutOn would refuse, with the same words as its toast; a seat's figure
+                // moves to an empty seat, and two players change places once the question is answered.
+                const std::string gill = collection::Create(14), spyro = collection::Create(16),
+                                  anvil = collection::Create(200);
+                expect(!gill.empty() && !spyro.empty() && !anvil.empty(), "synthetic figures created");
+                page.Reload();
+                const collection::Game* game = page.m_model.Game();
+                expect(game != nullptr && game->seats.size() == 4, "the game's seats");
+                if (game == nullptr)
+                    return 1;
+                for (const std::string& path : { gill, anvil })
+                    for (size_t seat = 0; seat < game->seats.size(); seat++)
+                    {
+                        const collection::Figure* figure = page.m_model.Find(path);
+                        expect(figure != nullptr, "figure found");
+                        if (figure == nullptr)
+                            continue;
+                        const std::string refused = page.Refusal(seat, *figure);
+                        app.m_toasts.Clear();
+                        page.PutOn(seat, path);
+                        const auto& toasts = app.m_toasts.Items();
+                        const bool seated = page.m_model.SeatOf(path) == int(seat);
+                        expect(refused.empty() ? seated : !seated && !toasts.empty() && toasts.back().text == refused,
+                            "the grey and the toast agree");
+                        if (seated)
+                            page.TakeOff(seat);
+                    }
+                const collection::Figure* magic = page.m_model.Find(anvil);
+                expect(magic != nullptr && page.Refusal(0, *magic).find("doesn't go on Player 1") != std::string::npos,
+                    "an item is refused by a player's seat");
+                page.PutOn(0, gill);
+                page.MoveSeat(0, 1);
+                expect(
+                    page.m_model.seats[0].empty() && page.m_model.seats[1] == gill, "a figure moves to an empty seat");
+                page.PutOn(0, spyro);
+                page.MoveSeat(1, 0);
+                expect(page.m_model.seats[0] == spyro && page.m_model.seats[1] == gill && page.m_swapFrom == 1 &&
+                           page.m_swapTo == 0,
+                    "a player onto a taken player seat asks first");
+                app.Frame();
+                items.clear();
+                app.Frame();
+                const uint32_t swap = item("Swap");
+                expect(swap != 0, "the question is asked");
+                if (swap != 0)
+                {
+                    ImGui::ActivateItemByID(swap);
+                    app.Frame();
+                    app.Frame();
+                }
+                expect(page.m_model.seats[0] == gill && page.m_model.seats[1] == spyro && page.m_swapFrom < 0,
+                    "the players change places");
+                page.PutOn(2, anvil);
+                page.MoveSeat(2, 0);
+                expect(page.m_model.seats[0] == gill && page.m_model.seats[2] == anvil && page.m_swapFrom < 0,
+                    "a seat that refuses the figure keeps its own");
+            }
             ui::Ctx().testHeld = 0;
             ui::Ctx().testNavigationItems = nullptr;
             return failures == 0 ? 0 : 1;

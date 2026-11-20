@@ -1275,3 +1275,8 @@ They appear the next time this save reaches the Academy.	Ils apparaissent la pro
 {} chests waiting for save slot {}	{} coffres en attente pour l'emplacement {}
 {} chests waiting	{} coffres en attente
 Too late: the game already added them	Trop tard : le jeu les a déjà ajoutés
+# Collection: a seat's figure dragged onto a taken player seat
+Swap players?	Échanger les joueurs ?
+Swap	Échanger
+{} goes on {}, and {} on {}.	{} va sur {}, et {} sur {}.
+Players swapped	Joueurs échangés

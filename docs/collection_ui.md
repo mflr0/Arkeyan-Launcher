@@ -113,6 +113,11 @@ At the first visit to the page (`CollectionPage::Open`):
   only what Spyro's Adventure reads"; the shelf then shows only what goes there and the game reads; click a figure: it
   goes on the seat ("Player 1: Splash's"), and the choosing ends. Click the seat again, Cancel, B or Escape stops
   choosing. Dragging a card onto a seat also works; a figure already on the other seat moves (it is on one seat only).
+- **Dragging** (#181, as the game's Toy Box): the figure's picture follows the pointer, a little transparent; the seats
+  that would refuse it are greyed out, with the rule of the toast a drop would show (`CollectionPage::Refusal`, shared
+  with `PutOn`), and the seat under the pointer is outlined. A tile dragged onto an empty seat moves there; a player onto
+  a taken player seat asks "Swap players?" (`CollectionModel::SwapSeats`; in the Toy Box window the game's `swap`); onto
+  any other taken seat it replaces that seat's figure, as a card does.
 - **Taking off**: the X on the tile (**fixed** in #9: `SetNextItemAllowOverlap()` before the tile's button lets the X win
   where it is; `SKY_LAUNCHER_TEST_SEATX` checks all four seats by mouse, keyboard and pad), Delete or the pad's X on a
   focused tile (or Delete with the mouse over it), the tile's right-click menu ("Take it off", "Choose another", "Open its

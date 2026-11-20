@@ -118,6 +118,9 @@ namespace launcher_ui
         // Puts the figure on the seat (taking it off any other seat), or clears the seat with an empty path, and writes
         // the session file. False when the seats cannot be changed now or the game cannot read the figure.
         bool SetSeat(size_t seat, const std::string& path);
+        // Exchanges two seats' figures and writes the session file; in the Toy Box window the game swaps its two players.
+        // False when the seats cannot be changed now or a figure does not go on its new seat.
+        bool SwapSeats(size_t a, size_t b);
         int SeatOf(const std::string& path) const; // -1 if on no seat
         // Moves the figure to the trash (collection::Delete), takes it off its seat and reloads. False, with the reason,
         // when the trash refuses it: then nothing has changed.

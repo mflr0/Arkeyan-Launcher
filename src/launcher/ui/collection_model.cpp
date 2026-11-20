@@ -554,6 +554,32 @@ namespace launcher_ui
         return true;
     }
 
+    bool CollectionModel::SwapSeats(size_t a, size_t b)
+    {
+        const collection::Game* game = Game();
+        if (!CanEditSeats() || a == b || a >= seats.size() || b >= seats.size() || a >= game->seats.size() ||
+            b >= game->seats.size())
+            return false;
+        if (live != nullptr)
+            return !RealSeat(a) && !RealSeat(b) && game->seats[a].player != 0 && game->seats[b].player != 0 &&
+                   live->Swap(); // the link swaps the two players only
+        auto next = seats;
+        std::swap(next[a], next[b]);
+        for (size_t seat : { a, b })
+        {
+            if (next[seat].empty())
+                continue;
+            collection::Figure figure;
+            if (!collection::Read(next[seat], figure) || !SeatAccepts(game->seats[seat], figure))
+                return false;
+        }
+        if (!WriteSeats(*game, SessionFile(*game), next))
+            return false;
+        seats = std::move(next);
+        m_signature = Signature();
+        return true;
+    }
+
     int CollectionModel::SeatOf(const std::string& path) const
     {
         if (path.empty())
