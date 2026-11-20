@@ -330,6 +330,7 @@ every player seat of that game (the in-game quick swap wheel, hold Tab or View) 
 | Collection cards and seats, bottom inset, half chooser, Add a figure | `CollectionPage::Icon` / `DrawIcon` → `PortraitPath`, then `figures::GenerateIcon` |
 | Game-page portal panel, figure sheet and version rows | `DrawPicture` → `BestPicturePath`, then `DrawIcon` |
 | Swappers on cards, seats, sheets and Add a figure | `DrawSwapper` → `SwapperPicture`; incomplete art → individual top and bottom icons |
+| A trap holding a villain, on cards, seats and its sheet | `DrawIcon` / `DrawPicture` with `HeldVillain` → `TrapPicture`: the trap's picture with the villain's small at its bottom, centred |
 | In-game Toy Box, including its wheel | `collection::Portrait` / `Icon` / `PortraitPath`; large views use `BestPicturePath`, pairs use `SwapperPicture` |
 | Library icons at any size and disc-image callers | `PortraitPath`, including `DiscImagePath` |
 | Individual swapper halves | `HalfPicturePath` and the other picture APIs share the half → whole → generated order |

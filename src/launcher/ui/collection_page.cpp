@@ -256,11 +256,16 @@ namespace launcher_ui
             return picture;
         }
 
-        // A file's picture; a creation crystal's is the disc's one magenta picture, tinted per element (CrystalPicture).
-        DecodedPicture FilePicture(const collection::Toy& toy, const std::string& path)
+        // A file's picture; a creation crystal's is the disc's one magenta picture, tinted per element (CrystalPicture),
+        // a trap's has the villain it holds at its bottom (TrapPicture).
+        DecodedPicture FilePicture(
+            const collection::Toy& toy, const std::string& path, uint16_t variant = 0, uint16_t villain = 0)
         {
             if (path.empty())
                 return {};
+            if (villain != 0)
+                if (collection::Image held = collection::TrapPicture(toy, variant, villain, path); !held.Empty())
+                    return FromImage(held);
             return FromImage(toy.category == collection::Category::CreationCrystal
                                  ? collection::CrystalPicture(toy, path)
                                  : collection::LoadPng(path));
@@ -269,11 +274,11 @@ namespace launcher_ui
         // On the loader's thread: the newest cached art (independent of the viewed game, shared/collection/icons.h),
         // else the drawn icon.
         DecodedPicture IconPicture(
-            const collection::Toy* toy, collection::VariantKind kind, bool large, uint16_t variant)
+            const collection::Toy* toy, collection::VariantKind kind, bool large, uint16_t variant, uint16_t villain)
         {
-            DecodedPicture picture = toy != nullptr
-                                         ? FilePicture(*toy, collection::PortraitPath({}, *toy, variant, large))
-                                         : DecodedPicture{};
+            DecodedPicture picture =
+                toy != nullptr ? FilePicture(*toy, collection::PortraitPath({}, *toy, variant, large), variant, villain)
+                               : DecodedPicture{};
             if (picture.Empty())
             {
                 constexpr int Size = 128;
@@ -285,24 +290,29 @@ namespace launcher_ui
         }
     }
 
+    uint16_t CollectionPage::HeldVillain(const collection::Figure& figure)
+    {
+        return figure.toy != nullptr && figure.toy->category == collection::Category::Trap ? figure.stats.villain : 0;
+    }
+
     const FigureIconTexture& CollectionPage::Icon(
-        const collection::Toy* toy, collection::VariantKind kind, bool large, uint16_t variant)
+        const collection::Toy* toy, collection::VariantKind kind, bool large, uint16_t variant, uint16_t villain)
     {
         if (toy != nullptr && variant == 0)
             variant = collection::VariantFor(*toy, kind);
-        std::string key = fmt::format("{}icon {} {} {} {}", FigurePictureKey, toy != nullptr ? toy->type : 0xFFFF,
-            variant, int(kind), int(large));
+        std::string key = fmt::format("{}icon {} {} {} {} {}", FigurePictureKey, toy != nullptr ? toy->type : 0xFFFF,
+            variant, int(kind), int(large), villain);
         auto [found, added] = m_icons->textures.try_emplace(key);
         if (added)
             m_app.m_pictures.Request(
-                key, [toy, kind, large, variant] { return IconPicture(toy, kind, large, variant); });
+                key, [toy, kind, large, variant, villain] { return IconPicture(toy, kind, large, variant, villain); });
         return found->second;
     }
 
     void CollectionPage::DrawIcon(ImDrawList* draw, const collection::Toy* toy, collection::VariantKind kind, ImVec2 at,
-        float size, bool large, uint16_t variant)
+        float size, bool large, uint16_t variant, uint16_t villain)
     {
-        const FigureIconTexture& icon = Icon(toy, kind, large, variant);
+        const FigureIconTexture& icon = Icon(toy, kind, large, variant, villain);
         if (icon.texture == nullptr) // not read yet: the card's own fill
             return;
         const float alpha = FadeIn(icon.readyAt);
@@ -331,25 +341,25 @@ namespace launcher_ui
     }
 
     void CollectionPage::DrawPicture(ImDrawList* draw, const collection::Toy* toy, collection::VariantKind kind,
-        uint16_t variant, ImVec2 at, float box)
+        uint16_t variant, ImVec2 at, float box, uint16_t villain)
     {
         if (toy == nullptr)
         {
             DrawIcon(draw, toy, kind, at, box, true, variant);
             return;
         }
-        std::string key = fmt::format("{}best {} {}", FigurePictureKey, toy->type, variant);
+        std::string key = fmt::format("{}best {} {} {}", FigurePictureKey, toy->type, variant, villain);
         auto [found, added] = m_icons->textures.try_emplace(key);
         if (added)
-            m_app.m_pictures.Request(key, [toy, variant] {
-                return FilePicture(*toy, collection::BestPicturePath({}, *toy, variant));
+            m_app.m_pictures.Request(key, [toy, variant, villain] {
+                return FilePicture(*toy, collection::BestPicturePath({}, *toy, variant), variant, villain);
             }); // empty without a disc picture: the icon instead
         const FigureIconTexture& picture = found->second;
         if (picture.pending)
             return;
         if (picture.texture == nullptr || picture.width <= 0 || picture.height <= 0)
         {
-            DrawIcon(draw, toy, kind, at, box, true, variant);
+            DrawIcon(draw, toy, kind, at, box, true, variant, villain);
             return;
         }
         DrawFitted(draw, picture, at, box);
@@ -1150,7 +1160,8 @@ namespace launcher_ui
                     if (figure != nullptr)
                     {
                         if (realPortal || !DrawSwapper(draw, CardOf(*figure), picture, side))
-                            DrawPicture(draw, figure->toy, figure->Kind(), figure->variant, picture, side);
+                            DrawPicture(draw, figure->toy, figure->Kind(), figure->variant, picture, side,
+                                HeldVillain(*figure));
                     }
                     else
                         ui::DrawEmptySeat(draw, picture, side);
@@ -1252,7 +1263,7 @@ namespace launcher_ui
     {
         if (collection::Card card = CardOf(figure); !DrawSwapper(draw, card, at, size))
         {
-            DrawIcon(draw, figure.toy, figure.Kind(), at, size, false, figure.variant);
+            DrawIcon(draw, figure.toy, figure.Kind(), at, size, false, figure.variant, HeldVillain(figure));
             if (card.Swapper())
                 DrawBottom(draw, *card.second, ImVec2(at.x + size * 0.58f, at.y + size * 0.58f), size * 0.42f);
         }
@@ -1757,7 +1768,7 @@ namespace launcher_ui
             ui::radius::Card, 0, seat >= 0 || selected ? ui::stroke::Edge : ui::stroke::Hairline);
         if (collection::Card card = CardOf(figure); !DrawSwapper(draw, card, picture, art))
         {
-            DrawIcon(draw, figure.toy, figure.Kind(), picture, art, false, figure.variant);
+            DrawIcon(draw, figure.toy, figure.Kind(), picture, art, false, figure.variant, HeldVillain(figure));
             { // the busts end flat: fade their foot into the card
                 const ImVec2 top(picture.x, picture.y + art - ui::space::L), foot(picture.x + art, picture.y + art + 1);
                 const ImU32 clear = ui::Col(hovered ? ui::color::Raised : ui::color::Surface, 0),

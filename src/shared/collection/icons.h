@@ -108,6 +108,11 @@ namespace collection
     // tints it as it draws), so its magenta glass takes the element's colour here, shade kept. `path`: the picture the
     // caller found (BestPicturePath, PortraitPath). Empty for another toy or without a picture.
     Image CrystalPicture(const Toy& toy, const std::string& path);
+    // A trap's picture while it holds a villain: the trap's (`path`, as for CrystalPicture) with the villain's captured
+    // picture (VillainPicturePath) small at its bottom, centred, inside the round crop of the Toy Box's portraits. `villain`:
+    // the id the trap stores (1-46, figures::VillainResourceBase below the catalogue's). Empty for another toy, no
+    // villain, a villain with no picture cached or a card with its own picture: the caller keeps the trap's picture.
+    Image TrapPicture(const Toy& trap, uint16_t variant, uint16_t villain, const std::string& path);
     // PortraitPath with no game being viewed, as for every other view.
     std::string DiscImagePath(const Toy& toy);
 

@@ -190,12 +190,13 @@ namespace launcher_ui
         void DrawUnknown();
         void DrawTidy();
         void HandleShortcuts();
+        // `villain`: the one a trap holds (HeldVillain), drawn small over the trap's picture (collection::TrapPicture).
         void DrawIcon(ImDrawList* draw, const collection::Toy* toy, collection::VariantKind kind, ImVec2 at, float size,
-            bool large, uint16_t variant = 0);
+            bool large, uint16_t variant = 0, uint16_t villain = 0);
         // The best picture of a toy (its variant's artwork when the game has one, else a portrait), fitted into the square
         // `box` at `at` and centred; the drawn icon when there is none.
         void DrawPicture(ImDrawList* draw, const collection::Toy* toy, collection::VariantKind kind, uint16_t variant,
-            ImVec2 at, float box);
+            ImVec2 at, float box, uint16_t villain = 0);
         // A swapper's picture, its two halves joined as the game's swap screen shows them (shared/collection/icons.h,
         // SwapperPicture), fitted into the square `box` at `at` and centred. False when a half has no such picture from
         // a disc: the caller draws the top's picture with the bottom small in a corner (DrawBottom).
@@ -203,8 +204,10 @@ namespace launcher_ui
             const collection::Toy* bottom, uint16_t bottomVariant, ImVec2 at, float box);
         bool DrawSwapper(ImDrawList* draw, const collection::Card& card, ImVec2 at, float box);
         // The picture's texture once the loader read it (pending and empty until then), asked for on the first call.
-        const FigureIconTexture& Icon(
-            const collection::Toy* toy, collection::VariantKind kind, bool large, uint16_t variant);
+        const FigureIconTexture& Icon(const collection::Toy* toy, collection::VariantKind kind, bool large,
+            uint16_t variant, uint16_t villain = 0);
+        // The villain a trap holds (its stored id, 1-46), 0 for an empty trap or any other figure.
+        static uint16_t HeldVillain(const collection::Figure& figure);
         void DrawFitted(ImDrawList* draw, const FigureIconTexture& picture, ImVec2 at, float box); // centred in `box`
         // A swapper (Swap Force) is one card: the top stands for it, the bottom is drawn small at its corner.
         collection::Card CardOf(const collection::Figure& figure) const;
