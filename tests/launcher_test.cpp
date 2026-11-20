@@ -386,6 +386,20 @@ namespace
             fs::remove(lower);
             EXPECT(same(collection::HalfPicturePath(*top), whole) && same(collection::HalfPicturePath(*bottom), whole));
             fs::remove(whole);
+            // A Magic Trap holding Chompy Mage: the trap's picture with the villain's at its bottom, centred.
+            if (const auto* trap = catalogue.Find(210); trap != nullptr)
+            {
+                std::string trapPicture = write("trapteam", "210_12290", 0xFFFF0000u);
+                EXPECT(collection::TrapPicture(*trap, 0x3002, 1, trapPicture).Empty()); // no villain picture yet
+                write("trapteam", "1001_villaincaptured", 0xFF00FF00u);
+                collection::ForgetPictureFolders();
+                EXPECT(collection::TrapPicture(*trap, 0x3002, 0, trapPicture).Empty());
+                auto held = collection::TrapPicture(*trap, 0x3002, 1, trapPicture);
+                EXPECT(held.width == 8 && held.rgba.size() == 64 && held.rgba[5 * 8 + 3] == 0xFF00FF00u &&
+                       held.rgba[6 * 8 + 4] == 0xFF00FF00u && held.rgba[0] == 0xFFFF0000u);
+            }
+            else
+                EXPECT(!"no Magic Trap in the catalogue");
             for (const auto* toy : { top, bottom, catalogue.Find(100) })
             {
                 bool fromDisc = true;

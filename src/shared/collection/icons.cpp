@@ -952,6 +952,19 @@ namespace collection
                     out.rgba.begin() + size_t(y - y0) * out.width);
             return out;
         }
+
+        // `top` composited over `bottom`, both straight alpha.
+        uint32_t Over(uint32_t top, uint32_t bottom)
+        {
+            uint32_t at = top >> 24, ab = bottom >> 24;
+            uint32_t a = at * 255 + ab * (255 - at); // alpha x 255
+            if (a == 0)
+                return 0;
+            uint32_t out = ((a + 127) / 255) << 24;
+            for (int shift = 0; shift < 24; shift += 8)
+                out |= ((((top >> shift) & 255) * at * 255 + ((bottom >> shift) & 255) * ab * (255 - at)) / a) << shift;
+            return out;
+        }
     }
 
     Image CropToVisible(const Image& image, uint8_t minAlpha)
@@ -971,20 +984,7 @@ namespace collection
         int width = std::max(top.width, bottom.width), height = std::max(top.height, bottom.height);
         Image upper = Resize(top, width, height), lower = Resize(bottom, width, height);
         for (size_t i = 0; i < lower.rgba.size(); i++)
-        {
-            uint32_t t = upper.rgba[i], b = lower.rgba[i];
-            uint32_t at = t >> 24, ab = b >> 24;
-            uint32_t a = at * 255 + ab * (255 - at); // alpha x 255
-            if (a == 0)
-            {
-                lower.rgba[i] = 0;
-                continue;
-            }
-            uint32_t out = ((a + 127) / 255) << 24;
-            for (int shift = 0; shift < 24; shift += 8)
-                out |= ((((t >> shift) & 255) * at * 255 + ((b >> shift) & 255) * ab * (255 - at)) / a) << shift;
-            lower.rgba[i] = out;
-        }
+            lower.rgba[i] = Over(upper.rgba[i], lower.rgba[i]);
         if (!VisibleBox(lower, 0, box[0], box[1], box[2], box[3]))
             return {};
         return Cut(lower, box[0], box[1], box[2], box[3]);
@@ -1027,6 +1027,36 @@ namespace collection
             };
             texel = (texel & 0xFF000000) | mix(b, tb) << 16 | mix(g, tg) << 8 | mix(r, tr);
         }
+        return picture;
+    }
+
+    Image TrapPicture(const Toy& trap, uint16_t variant, uint16_t villain, const std::string& path)
+    {
+        const Game* game = Catalogue::Get().FindGame(trap.game);
+        if (trap.category != Category::Trap || villain == 0 || path.empty() || game == nullptr ||
+            !OwnPicturePath(trap.type, variant).empty())
+            return {};
+        auto held = std::find_if(game->villains.begin(), game->villains.end(),
+            [&](const Villain& candidate) { return candidate.id == villain + figures::VillainResourceBase; });
+        const std::string villainPath = held != game->villains.end() ? VillainPicturePath(game->id, *held) : "";
+        if (villainPath.empty())
+            return {};
+        Image picture = LoadPng(path), badge = CropToVisible(LoadPng(villainPath));
+        if (picture.Empty() || badge.Empty())
+            return {};
+        // A box of 0.34 of the picture, centred across and at 0.76 down: its corners stay inside the inscribed circle
+        // (0.17^2 + 0.43^2 < 0.5^2).
+        const int box = std::max(1, std::min(picture.width, picture.height) * 34 / 100);
+        const float scale = std::min(float(box) / badge.width, float(box) / badge.height);
+        const int w = std::max(1, int(badge.width * scale)), h = std::max(1, int(badge.height * scale));
+        badge = Resize(badge, w, h);
+        const int x0 = picture.width / 2 - w / 2, y0 = picture.height * 76 / 100 - h / 2;
+        for (int y = 0; y < h; y++)
+            for (int x = 0; x < w; x++)
+            {
+                uint32_t& texel = picture.rgba[size_t(y0 + y) * picture.width + size_t(x0 + x)];
+                texel = Over(badge.rgba[size_t(y) * w + x], texel);
+            }
         return picture;
     }
 

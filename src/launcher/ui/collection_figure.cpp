@@ -397,7 +397,7 @@ namespace launcher_ui
                 draw, card, ImVec2(origin.x + ui::space::XS, origin.y + ui::space::XS), Picture - 2 * ui::space::XS))
         {
             DrawPicture(draw, f.toy, f.Kind(), f.variant, ImVec2(origin.x + ui::space::XS, origin.y + ui::space::XS),
-                Picture - 2 * ui::space::XS);
+                Picture - 2 * ui::space::XS, HeldVillain(f));
             if (card.Swapper())
                 DrawBottom(
                     draw, *card.second, ImVec2(origin.x + Picture * 0.66f, origin.y + Picture * 0.66f), Picture * 0.3f);
