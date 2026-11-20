@@ -23,6 +23,7 @@
 #include "launcher/ui/launcher_app.h"
 #include "launcher/ui/launcher_ui.h"
 #include "launcher/ui/collection_model.h"
+#include "launcher/ui/collection_page.h"
 #include "launcher/ui/hold_confirm.h"
 #include "shared/figures/figure_icons.h"
 #include "shared/vfs.h"
@@ -546,6 +547,16 @@ namespace
         seats = launcher_ui::ReadSeats(ssa, session);
         EXPECT(seats[0] == spyro && seats[2] == anvil);
         EXPECT(launcher_ui::ShortGameName("ssa") == "Spyro's Adventure");
+        // Add a figure's versions say the game each came with (issue #196): Eruptor's Series 2 is Giants', its Volcanic
+        // deco Swap Force's; Crystal Clear Wham-Shell, a same-tag edition, is Spyro's Adventure's.
+        {
+            const collection::Toy& eruptor = *catalogue.Find(9);
+            const collection::Toy& whamShell = *catalogue.Find(13);
+            EXPECT(launcher_ui::VersionSubtitle(eruptor, 0) == "Standard · Spyro's Adventure");
+            EXPECT(launcher_ui::VersionSubtitle(eruptor, 1) == "Series · Giants");
+            EXPECT(launcher_ui::VersionSubtitle(eruptor, 3) == "Alternate deco · Swap Force");
+            EXPECT(launcher_ui::VersionSubtitle(whamShell, 2) == "Crystal Clear · Spyro's Adventure");
+        }
 
         launcher_ui::CollectionModel model;
         model.Load();

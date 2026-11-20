@@ -27,6 +27,9 @@ namespace launcher_ui
     std::string CategoryLabel(collection::Category category);   // the type's name in the launcher's language
     std::string KindLabel(collection::VariantKind kind);        // the version's name in the launcher's language
     bool French();                                              // the launcher shows French
+    // An Add a figure version row's second line, "Series · Giants": its kind and the game it came with. Version 0 is the
+    // toy itself, version i its variants[i - 1].
+    std::string VersionSubtitle(const collection::Toy& toy, size_t version);
     // The library's level, seat, sort and count texts in the launcher's language (the library words them in English and French).
     std::string LevelLabel(const collection::Figure& figure, const std::string& game);
     std::string CardLevelLabel(const collection::Card& card, const std::string& game);

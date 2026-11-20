@@ -303,10 +303,9 @@ namespace launcher_ui
                             : chosen->variants[i - 1].sameTag
                                 ? CountAddOwned(chosen->type, -1, chosen->variants[i - 1].name)
                                 : CountAddOwned(chosen->type, chosen->variants[i - 1].id, {});
-                // A row: the version's picture (the toy's own when it has none), its name, its kind and how many are owned.
+                // A row: the version's picture (the toy's own when it has none), its name, kind and game, owned count.
                 const std::string title = IsSwapper(*chosen) ? WithoutHalf(versions[i].first) : versions[i].first;
-                std::string kind = versions[i].second == collection::VariantKind::Base ? std::string(Tr("Standard"))
-                                                                                       : KindLabel(versions[i].second);
+                std::string kind = VersionSubtitle(*chosen, i);
                 if (i > 0 && PlaysAsPlain(m_addGame, *chosen, chosen->variants[i - 1]))
                     kind +=
                         " · " + Tf("plays as {0} in {1}", IsSwapper(*chosen) ? WithoutHalf(chosen->name) : chosen->name,

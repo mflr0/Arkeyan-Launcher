@@ -196,7 +196,8 @@ At the first visit to the page (`CollectionPage::Open`):
   as the plain toy is not a row, `Catalogue::Read`); the plain toy makes the figure under the id the toy is sold with, and the
   toy's own entry in the catalogue (its `base` kind) is never a second row; the footer holds the optional name, "Put it on Player 1" after a Create, and Close then Create at the right (the dialog stays open after a Create, to make another). A toy with
   versions has a "+3" badge on its card; the panel is titled "Versions", each row with its picture (the toy's own when
-  it has none) and its kind (an unknown kind from a newer `catalogue.json` shows as "Other"); the search also matches
+  it has none), its kind (an unknown kind from a newer `catalogue.json` shows as "Other") and the game it came with
+  ("Series · Giants", `Catalogue::Origin`; a same-tag edition, the toy's own game); the search also matches
   the versions' names ("polar" finds Whirlwind, with Polar Whirlwind chosen).
   The picture of the sheet and of each version row is `collection::BestPicturePath` (the variant's own artwork when the
   game has one; Giants: 99, about 1000x960), fitted into its box by `CollectionPage::DrawPicture`; the shelf's cards

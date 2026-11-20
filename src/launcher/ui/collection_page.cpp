@@ -69,6 +69,17 @@ namespace launcher_ui
         return kind < collection::VariantKind::Count ? Tr(Names[size_t(kind)]) : std::string();
     }
 
+    std::string VersionSubtitle(const collection::Toy& toy, size_t version)
+    {
+        const collection::Variant* variant = version == 0 ? nullptr : &toy.variants[version - 1];
+        std::string text = KindLabel(variant == nullptr ? toy.edition : variant->kind);
+        // A same-tag edition has no id of its own: it came with the toy's game, as the plain toy.
+        const uint16_t id = variant == nullptr ? collection::StandardVariant(toy) : variant->sameTag ? 0 : variant->id;
+        if (const collection::Game* origin = collection::Catalogue::Get().Origin(toy, id))
+            text += " · " + ShortGameName(origin->id);
+        return text;
+    }
+
     bool French() { return i18n::Current() == "fr"; }
 
     namespace
