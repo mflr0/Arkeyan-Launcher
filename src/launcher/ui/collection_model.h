@@ -6,6 +6,7 @@
 #include "shared/collection/search.h"
 #include "shared/toybox_link.h"
 #include <cstdint>
+#include <future>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -100,6 +101,10 @@ namespace launcher_ui
         // Every `interval` ms: reloads when a dump, a lock, collection.json or the session file changed, or a lock's
         // process ended (the game quit). True when it reloaded.
         bool Poll(uint64_t now, uint64_t interval = 1500);
+        // The same, with the folder's look and the reading on a thread of their own (a game writing figures reloads a big
+        // collection often): true on the call that swaps the new figures in, a poll or two later. The page uses this one.
+        bool PollInBackground(uint64_t now, uint64_t interval = 1500);
+        void WaitForReload(); // the background reading done (the checks)
         const collection::Figure* Find(const std::string& path) const;
         // The game holding a figure right now ("ssa"), empty when none: its portal is live, the seats are read-only.
         std::string RunningGame() const;
@@ -113,6 +118,9 @@ namespace launcher_ui
         // Puts the figure on the seat (taking it off any other seat), or clears the seat with an empty path, and writes
         // the session file. False when the seats cannot be changed now or the game cannot read the figure.
         bool SetSeat(size_t seat, const std::string& path);
+        // Exchanges two seats' figures and writes the session file; in the Toy Box window the game swaps its two players.
+        // False when the seats cannot be changed now or a figure does not go on its new seat.
+        bool SwapSeats(size_t a, size_t b);
         int SeatOf(const std::string& path) const; // -1 if on no seat
         // Moves the figure to the trash (collection::Delete), takes it off its seat and reloads. False, with the reason,
         // when the trash refuses it: then nothing has changed.
@@ -131,10 +139,22 @@ namespace launcher_ui
             const ShelfFilter& filter, std::vector<collection::Figure>& shown, int* hidden = nullptr) const;
 
     private:
-        std::string Signature() const;
+        struct Reloaded
+        {
+            std::string signature;
+            bool changed = false;
+            std::vector<collection::Figure> figures;
+            std::vector<std::string> seats;
+            uint64_t loads = 0;
+        };
+        static std::string SignatureOf(const std::string& gameId);
+        std::string Signature() const { return SignatureOf(gameId); }
         void LoadLive(); // seats and liveSeats from the link
+        void Adopt(std::vector<collection::Figure> read, std::vector<std::string> readSeats, std::string signature);
         std::string m_signature;
         uint64_t m_nextPoll = 0;
         uint64_t m_liveGeneration = 0;
+        uint64_t m_loads = 0; // Load calls: a background reading started before the last one is dropped
+        std::future<Reloaded> m_reload;
     };
 }

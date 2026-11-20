@@ -200,7 +200,7 @@ namespace
         SetActiveGame("ssa");
         EXPECT(GameInstallFolder("abc").filename() == "SSA");
 
-        config["launcher"]["kit"] = SKYLAUNCHER_FAKE_KIT;
+        config["launcher"]["kit"] = LAUNCHER_FAKE_KIT;
         std::optional<InstallKit> kit = FindInstallKit(config);
         EXPECT(kit && kit->version == "fake-1");
         auto run = [&](const char* fail) {
@@ -293,17 +293,20 @@ namespace
         EXPECT(!FindInstallKit({ { "launcher", { { "kit", (scratch / "nowhere").string() } } } }));
     }
 
-    // The synced picture rule, without discs or player data: the same art on every page and at every icon size.
+    // The synced picture rule, without discs or player data: the same art on every page and at every icon size, the
+    // figure's original game first, and the player's choices (every figure, one card, an own picture).
     void PictureChecks(const std::filesystem::path& scratch)
     {
         namespace fs = std::filesystem;
         std::map<std::string, std::string> saved;
-        for (const char* name : { "SKYLANDERS_DATA", "SKY_PORTRAITS", "SSA_PORTRAITS" })
+        for (const char* name : { "SKYLANDERS_DATA", "SKY_PORTRAITS", "SSA_PORTRAITS", "SKY_COLLECTION" })
             if (const char* value = getenv(name))
                 saved[name] = value;
         TestSetEnv("SKYLANDERS_DATA", (scratch / "picture-data").string().c_str());
+        TestSetEnv("SKY_COLLECTION", (scratch / "picture-collection").string().c_str());
         TestUnsetEnv("SKY_PORTRAITS");
         TestUnsetEnv("SSA_PORTRAITS");
+        collection::ForgetPictureFolders();
         const auto& catalogue = collection::Catalogue::Get();
         const auto* eruptor = catalogue.Find(9);
         const auto* top = catalogue.Find(2004);
@@ -321,22 +324,44 @@ namespace
         };
         if (eruptor != nullptr && top != nullptr && bottom != nullptr)
         {
-            write("ssa", "toy_eruptor_hud", 0xFF0000FFu);
-            write("giants", "artworks/eruptor", 0xFF00FF00u);
+            std::string origin = write("ssa", "toy_eruptor_hud", 0xFF0000FFu);
+            std::string artwork = write("giants", "artworks/eruptor", 0xFF00FF00u);
             std::string newest = write("trapteam", "9_0_eruptor", 0xFFFF0000u);
-            for (const char* game : { "ssa", "giants", "swapforce", "trapteam" })
-            {
-                for (bool large : { false, true })
-                    EXPECT(same(collection::PortraitPath(game, *eruptor, 0, large), newest));
-                EXPECT(same(collection::BestPicturePath(game, *eruptor), newest));
-            }
-            EXPECT(same(collection::DiscImagePath(*eruptor), newest));
-            for (int size : { 32, 128, 256 })
-            {
-                bool fromDisc = false;
-                auto icon = collection::Icon(eruptor, collection::VariantKind::Base, size, &fromDisc);
-                EXPECT(fromDisc && icon.width == size && icon.rgba[size * size / 2] == 0xFFFF0000u);
-            }
+            auto everywhere = [&](const std::string& expected, uint32_t color) {
+                for (const char* game : { "ssa", "giants", "swapforce", "trapteam" })
+                {
+                    for (bool large : { false, true })
+                        EXPECT(same(collection::PortraitPath(game, *eruptor, 0, large), expected));
+                    EXPECT(same(collection::BestPicturePath(game, *eruptor), expected));
+                }
+                EXPECT(same(collection::DiscImagePath(*eruptor), expected));
+                for (int size : { 32, 128, 256 })
+                {
+                    bool fromDisc = false;
+                    auto icon = collection::Icon(eruptor, collection::VariantKind::Base, size, &fromDisc);
+                    EXPECT(fromDisc && icon.width == size && icon.rgba[size * size / 2] == color);
+                }
+            };
+            everywhere(origin, 0xFF0000FFu); // Eruptor came with Spyro's Adventure
+            uint64_t generation = collection::PictureGeneration();
+            EXPECT(collection::SetPicturesDefault(collection::PicturesNewest));
+            EXPECT(collection::PicturesDefault() == collection::PicturesNewest);
+            EXPECT(collection::PictureGeneration() != generation); // the pages read their pictures again
+            everywhere(newest, 0xFFFF0000u);
+            EXPECT(collection::SetPicturesDefault(collection::PicturesOrigin));
+            // One card's game, read back; Giants has only an artwork of it.
+            EXPECT(collection::SetPictureChoice(9, 0, "giants") && collection::PictureChoice(9, 0) == "giants");
+            everywhere(artwork, 0xFF00FF00u);
+            EXPECT((collection::PictureGames(*eruptor, 0) == std::vector<std::string>{ "ssa", "giants", "trapteam" }));
+            // The player's own picture, from a file as the sheet's "Choose a picture..." reads it.
+            const fs::path mine = scratch / "my eruptor.png";
+            EXPECT(collection::SavePng({ 30, 20, std::vector<uint32_t>(600, 0xFFFFFF00u) }, mine.string()));
+            EXPECT(collection::SetOwnPicture(9, 0, launcher_ui::ReadPicture(mine.string())));
+            EXPECT(collection::PictureChoice(9, 0) == collection::PictureOwn);
+            everywhere(collection::OwnPicturePath(9, 0), 0xFFFFFF00u);
+            EXPECT(launcher_ui::ReadPicture((scratch / "not-a-picture.png").string()).Empty());
+            EXPECT(collection::RemoveOwnPicture(9, 0) && collection::PictureChoice(9, 0).empty());
+            everywhere(origin, 0xFF0000FFu);
             std::string variant = write("giants", "eruptor_lightcore", 0xFF00FFFFu);
             EXPECT(same(collection::PortraitPath("ssa", *eruptor, 0x1206), variant));
             EXPECT(same(collection::BestPicturePath("trapteam", *eruptor, 0x1206), variant));
@@ -369,11 +394,12 @@ namespace
                 EXPECT(!figures::GenerateIcon(toy, collection::VariantKind::Base, 64).empty());
             }
         }
-        for (const char* name : { "SKYLANDERS_DATA", "SKY_PORTRAITS", "SSA_PORTRAITS" })
+        for (const char* name : { "SKYLANDERS_DATA", "SKY_PORTRAITS", "SSA_PORTRAITS", "SKY_COLLECTION" })
             if (auto it = saved.find(name); it != saved.end())
                 TestSetEnv(name, it->second.c_str());
             else
                 TestUnsetEnv(name);
+        collection::ForgetPictureFolders();
     }
 
     // The collection: ArkeyanRuntime's library (src/shared/collection) and the launcher's model over it, in a scratch folder
@@ -419,6 +445,22 @@ namespace
             EXPECT(catalogue.Find(3440) && catalogue.Find(3440)->category == collection::Category::Villain &&
                    catalogue.Accepts("superchargers", 3440) && catalogue.Accepts("imaginators", 3470) &&
                    !catalogue.Accepts("trapteam", 3440));
+        }
+
+        // SuperChargers and Imaginators take a trap on its own seat, and refuse Clown Cruiser and Barrel Blaster.
+        for (const char* id : { "superchargers", "imaginators" })
+        {
+            const collection::Game* game = catalogue.FindGame(id);
+            bool trapSeat = false;
+            for (const collection::Seat& seat : game ? game->seats : std::vector<collection::Seat>())
+            {
+                collection::Figure trap;
+                trap.type = 210;
+                trap.toy = catalogue.Find(trap.type);
+                trapSeat = trapSeat || (seat.id == "trap" && launcher_ui::SeatAccepts(seat, trap));
+            }
+            EXPECT(trapSeat && catalogue.Accepts(id, 210));
+            EXPECT(!catalogue.Accepts(id, 3233) && !catalogue.Accepts(id, 3240));
         }
 
         // Migration: copied, never moved; a second pass copies nothing.
@@ -524,6 +566,11 @@ namespace
                collection::PortalOverviewLine(collection::PortalOverview(ssa, model.seats, names), "none") == "none");
         EXPECT(launcher_ui::ReadSeats(ssa, session) == std::vector<std::string>(4)); // the file names nothing
         EXPECT(model.SetSeat(0, spyro) && model.SetSeat(2, anvil)); // as before, for the checks below
+        // Two players change places, in the session file too; an item never goes on a player's seat (issue #181).
+        EXPECT(model.SetSeat(1, gill) && model.SwapSeats(0, 1) && model.seats[0] == gill && model.seats[1] == spyro);
+        EXPECT(launcher_ui::ReadSeats(ssa, session)[0] == gill && launcher_ui::ReadSeats(ssa, session)[1] == spyro);
+        EXPECT(!model.SwapSeats(0, 2) && model.seats[0] == gill && model.seats[2] == anvil && !model.SwapSeats(1, 1));
+        EXPECT(model.SwapSeats(1, 0) && model.seats[0] == spyro && model.SetSeat(1, ""));
         // A failed write leaves both the on-disk seats and the displayed seats intact.
         {
             const auto beforeSeats = model.seats;
@@ -1713,7 +1760,9 @@ int CopyChecks(const std::filesystem::path& scratch, const std::string& ssaIso,
     const std::string& giantsIso); // tests/copy_test.cpp
 int PortableChecks(const std::filesystem::path& scratch); // tests/portable_test.cpp
 int VfsChecks(const std::filesystem::path& scratch); // tests/vfs_test.cpp
+int DiscCheckChecks(const std::filesystem::path& scratch); // tests/disc_check_test.cpp
 int LevelNameChecks(const std::filesystem::path& root);
+int ChestsChecks(const std::filesystem::path& scratch); // tests/chests_test.cpp
 int LevelNameDiscChecks();
 int LuxImageChecks(); // tests/lux_images_test.cpp
 int SingleInstanceChecks(const std::filesystem::path& scratch); // tests/single_instance_test.cpp
@@ -1808,7 +1857,7 @@ static void ChannelSwitchChecks(const std::filesystem::path& scratch)
     for (const char* tag : { "v0.9.7", "v0.9.8b1" })
     {
         fs::remove_all(kits / tag);
-        fs::copy(SKYLAUNCHER_FAKE_KIT, kits / tag, fs::copy_options::recursive);
+        fs::copy(LAUNCHER_FAKE_KIT, kits / tag, fs::copy_options::recursive);
         put(kits / tag / "kit.txt", "version=" + std::string(tag).substr(1) + "\ngames=ssa,giants\n");
     }
     const auto selected = FindInstallKit({}, "ssa", "v0.9.7");
@@ -1922,7 +1971,7 @@ static void SwitchChecks(const std::filesystem::path& scratch, const std::string
     std::string ini = (scratch / "switch.ini").string();
     set("SKY_LAUNCHER_INI", ini);
     LauncherConfig config;
-    config["launcher"]["kit"] = SKYLAUNCHER_FAKE_KIT;
+    config["launcher"]["kit"] = LAUNCHER_FAKE_KIT;
     config["ssa"]["iso"] = ssaIso;
     config["giants"]["iso"] = giantsIso;
     config["launcher"]["game_music"] =
@@ -1956,7 +2005,7 @@ static void SidebarChecks(const std::filesystem::path& scratch, const std::strin
     std::string ini = (scratch / "sidebar.ini").string();
     set("SKY_LAUNCHER_INI", ini);
     LauncherConfig config;
-    config["launcher"]["kit"] = SKYLAUNCHER_FAKE_KIT;
+    config["launcher"]["kit"] = LAUNCHER_FAKE_KIT;
     config["ssa"]["iso"] = ssaIso;
     config["giants"]["iso"] = giantsIso;
     {
@@ -2016,7 +2065,7 @@ static void KitFlowChecks(const std::filesystem::path& scratch, const std::strin
     fs::path newKit = scratch / "kitflow" / "kit-new";
     fs::remove_all(scratch / "kitflow");
     fs::create_directories(newKit.parent_path());
-    fs::copy(SKYLAUNCHER_FAKE_KIT, newKit, fs::copy_options::recursive);
+    fs::copy(LAUNCHER_FAKE_KIT, newKit, fs::copy_options::recursive);
     SemVer next = ParseSemVer(LauncherVersion());
     std::string nextTag =
         "v" + std::to_string(next.major) + "." + std::to_string(next.minor) + "." + std::to_string(next.patch + 1);
@@ -2026,7 +2075,7 @@ static void KitFlowChecks(const std::filesystem::path& scratch, const std::strin
     MakeKitRelease(scratch / "kitflow" / "release", { "v" + LauncherVersion(), nextTag }, newKit);
     // A release that bumps Giants only: its kit says Giants 0.8.1, its notes say so, and Spyro's Adventure stays at 0.9.0.
     fs::path newerKit = scratch / "kitflow" / "kit-newer";
-    fs::copy(SKYLAUNCHER_FAKE_KIT, newerKit, fs::copy_options::recursive);
+    fs::copy(LAUNCHER_FAKE_KIT, newerKit, fs::copy_options::recursive);
     std::ofstream(newerKit / "kit.txt")
         << "version=" << nextVersion
         << "\nbuild=kit-new\ngames=ssa,giants\ngame_version.ssa=0.9.0\ngame_version.giants=0.8.1\n";
@@ -2044,7 +2093,7 @@ static void KitFlowChecks(const std::filesystem::path& scratch, const std::strin
         fs::remove(kit / filelist::VerifiedName); // a record of this machine's file times is no part of a kit
     };
     fs::path repairedKit = scratch / "kitflow" / "kit-repaired";
-    fs::copy(SKYLAUNCHER_FAKE_KIT, repairedKit, fs::copy_options::recursive);
+    fs::copy(LAUNCHER_FAKE_KIT, repairedKit, fs::copy_options::recursive);
     const std::string ownKitText =
         "version=" + LauncherVersion() + "\nbuild=kit-repaired\ngames=ssa,giants\ngame_version.ssa=0.9.0\n";
     listKit(repairedKit, ownKitText);
@@ -2070,7 +2119,7 @@ static void KitFlowChecks(const std::filesystem::path& scratch, const std::strin
         fs::path root = scratch / "kitflow" / test.mode;
         fs::create_directories(root / "shots");
         fs::create_directories(root / "base");
-        fs::copy(SKYLAUNCHER_FAKE_KIT, root / "base" / "ssa-kit-test", fs::copy_options::recursive);
+        fs::copy(LAUNCHER_FAKE_KIT, root / "base" / "ssa-kit-test", fs::copy_options::recursive);
         std::ofstream(root / "base" / "ssa-kit-test" / "kit.txt")
             << (test.kitText != nullptr
                        ? std::string(test.kitText)
@@ -2139,7 +2188,7 @@ static void SeatXChecks(const std::filesystem::path& scratch)
         (root / "launcher").string() + "' SKY_COLLECTION='" + (root / "collection").string() + "' SKY_SAVE_DIR='" +
         (root / "saves").string() + "' SKY_LAUNCHER_INI='" + (root / "x.ini").string() +
         "' SKY_LAUNCHER_NO_UPDATE_CHECK=1 SKY_LAUNCHER_SHOTS='" + (root / "shots").string() +
-        "' SKY_LAUNCHER_TEST_SEATX=1 '" + SKYLAUNCHER_TEST_EXE + "' > '" + (root / "out.txt").string() + "' 2>&1";
+        "' SKY_LAUNCHER_TEST_SEATX=1 '" + LAUNCHER_TEST_EXE + "' > '" + (root / "out.txt").string() + "' 2>&1";
     EXPECT(std::system(command.c_str()) == 0);
     std::ifstream in(root / "out.txt");
     std::string line;
@@ -2174,7 +2223,7 @@ static void NavChecks(const std::filesystem::path& scratch, const std::string& i
                           (root / "collection").string() + "' SKY_SAVE_DIR='" + (root / "saves").string() +
                           "' SKY_LAUNCHER_INI='" + (root / "x.ini").string() +
                           "' SKY_LAUNCHER_NO_UPDATE_CHECK=1 SKY_LAUNCHER_SHOTS='" + (root / "shots").string() +
-                          "' SKY_LAUNCHER_TEST_DROP='" + quoted + "' SKY_LAUNCHER_TEST_NAV=1 '" + SKYLAUNCHER_TEST_EXE +
+                          "' SKY_LAUNCHER_TEST_DROP='" + quoted + "' SKY_LAUNCHER_TEST_NAV=1 '" + LAUNCHER_TEST_EXE +
                           "' > '" + (root / "out.txt").string() + "' 2>&1";
     EXPECT(std::system(command.c_str()) == 0);
     std::ifstream in(root / "out.txt");
@@ -2216,8 +2265,8 @@ static void LoopingDiscStartChecks(const std::filesystem::path& scratch)
                           (root / "collection").string() + "' SKY_SAVE_DIR='" + (root / "saves").string() +
                           "' SKY_LAUNCHER_INI='" + (root / "x.ini").string() +
                           "' SKY_LAUNCHER_NO_UPDATE_CHECK=1 SKY_LAUNCHER_SHOTS='" + (root / "shots").string() +
-                          "' SKY_LAUNCHER_TEST_EXPERIMENTAL=ssa perl -e 'alarm 120; exec @ARGV' '" +
-                          SKYLAUNCHER_TEST_EXE + "' > '" + (root / "out.txt").string() + "' 2>&1";
+                          "' SKY_LAUNCHER_TEST_EXPERIMENTAL=ssa perl -e 'alarm 120; exec @ARGV' '" + LAUNCHER_TEST_EXE +
+                          "' > '" + (root / "out.txt").string() + "' 2>&1";
     EXPECT(std::system(command.c_str()) == 0); // not killed for its memory, not stopped by the alarm
     std::error_code error;
     EXPECT(std::filesystem::exists(
@@ -2244,7 +2293,7 @@ static void PadWalkChecks(const std::filesystem::path& scratch, const std::strin
         (root / "saves").string() + "' SKY_LAUNCHER_INI='" + (root / "x.ini").string() +
         "' SKY_LAUNCHER_NO_UPDATE_CHECK=1 SKY_LAUNCHER_SHOTS='" + (root / "shots").string() +
         (iso.empty() ? std::string("'") : "' SKY_LAUNCHER_TEST_DROP='" + quoted + "'") +
-        " SKY_LAUNCHER_TEST_PADWALK=quick '" + SKYLAUNCHER_TEST_EXE + "' > '" + (root / "out.txt").string() + "' 2>&1";
+        " SKY_LAUNCHER_TEST_PADWALK=quick '" + LAUNCHER_TEST_EXE + "' > '" + (root / "out.txt").string() + "' 2>&1";
     EXPECT(std::system(command.c_str()) == 0);
     std::ifstream in(root / "out.txt");
     std::string line;
@@ -2285,7 +2334,7 @@ static void RunningChecks(const std::filesystem::path& scratch, const std::strin
                           game.string() + "' SKY_LAUNCHER_INI='" + (root / "x.ini").string() +
                           "' SKY_LAUNCHER_NO_UPDATE_CHECK=1 SKY_LAUNCHER_SHOTS='" + (root / "shots").string() +
                           "' SKY_LAUNCHER_TEST_DROP='" + quoted + "' SKY_LAUNCHER_TEST_RUNNING=1 '" +
-                          SKYLAUNCHER_TEST_EXE + "' > '" + (root / "out.txt").string() + "' 2>&1";
+                          LAUNCHER_TEST_EXE + "' > '" + (root / "out.txt").string() + "' 2>&1";
     EXPECT(std::system(command.c_str()) == 0);
     std::ifstream in(root / "out.txt");
     std::string line;
@@ -2491,7 +2540,7 @@ static void InstallCardChecks(const std::filesystem::path& scratch)
             { "SKY_LAUNCHER_TEST_SIZE", size }, { "SKY_LAUNCHER_TEST_INSTALL", "layout" },
             { "SKY_LAUNCHER_TEST_DROP", "" } });
         SDL_IOStream* log = SDL_IOFromFile((root / "output.log").string().c_str(), "wb");
-        const char* arguments[] = { SKYLAUNCHER_TEST_EXE, nullptr };
+        const char* arguments[] = { LAUNCHER_TEST_EXE, nullptr };
         SDL_PropertiesID properties = SDL_CreateProperties();
         SDL_SetPointerProperty(properties, SDL_PROP_PROCESS_CREATE_ARGS_POINTER, arguments);
         SDL_SetPointerProperty(properties, SDL_PROP_PROCESS_CREATE_ENVIRONMENT_POINTER, environment);
@@ -2636,14 +2685,14 @@ static void SourceFailureChecks(const std::filesystem::path& scratch)
     {
         // "Find my edition": the kit's report, as printed; a builder error comes back as the reason; a kit that has the
         // option says so.
-        const auto kit = InstallKitIn(SKYLAUNCHER_FAKE_KIT);
+        const auto kit = InstallKitIn(LAUNCHER_FAKE_KIT);
         EXPECT(kit && kit->editionReport);
         const std::string image = (scratch / "other_region.iso").string();
-        EditionReport report = kit ? RunEditionReport(kit->ssabuild, image) : EditionReport{};
+        EditionReport report = kit ? RunEditionReport(kit->builder, image) : EditionReport{};
         EXPECT(report.ok && report.text.starts_with("Edition report (") &&
                report.text.ends_with("supported release\n") && report.text.find('@') == std::string::npos);
         TestSetEnv("FAKE_ARKEYAN_BUILDER_FAIL", "edition");
-        report = kit ? RunEditionReport(kit->ssabuild, image) : EditionReport{};
+        report = kit ? RunEditionReport(kit->builder, image) : EditionReport{};
         TestUnsetEnv("FAKE_ARKEYAN_BUILDER_FAIL");
         EXPECT(!report.ok && report.text == "not an Xbox 360 disc image, or the file is incomplete");
         report = RunEditionReport(scratch / "no-builder", image);
@@ -2997,9 +3046,11 @@ static int RunChecks(int argc, char** argv)
     g_failures += UninstallChecks(scratch);
     g_failures += PortableChecks(scratch);
     g_failures += VfsChecks(scratch);
+    g_failures += DiscCheckChecks(scratch);
     LoopingDiscStartChecks(scratch);
     g_failures += LuxImageChecks();
     g_failures += LevelNameChecks(scratch);
+    g_failures += ChestsChecks(scratch / "chests");
     g_failures += SingleInstanceChecks(scratch / "instance");
     g_failures += ToyboxLinkChecks(scratch / "toybox-link");
     g_failures += I18nChecks();
@@ -3047,10 +3098,12 @@ static int RunChecks(int argc, char** argv)
            trapTeam->releases[1].mediaId == 0x3AF0B6AF);
     const GameInfo* superChargers = FindGame("superchargers");
     EXPECT(superChargers != nullptr && std::string(superChargers->runtime) == "Skylanders SuperChargers" &&
-           std::string(superChargers->name) == "Skylanders: SuperChargers" && superChargers->releases.size() == 1 &&
+           std::string(superChargers->name) == "Skylanders: SuperChargers" && superChargers->releases.size() == 2 &&
            superChargers->releases[0].titleId == 0x4156091F &&
            std::string(superChargers->releases[0].defaultXexSha256) ==
-               "02ff6672d460c9aaa54e69d584af67a7138c6c93cde5e04b0da4284207be7c61");
+               "02ff6672d460c9aaa54e69d584af67a7138c6c93cde5e04b0da4284207be7c61" &&
+           superChargers->releases[1].titleId == 0x4156091F && superChargers->releases[1].mediaId == 0x504D9445 &&
+           std::string(superChargers->releases[1].label) == "Europe (Fr, Nl)");
     const GameInfo* imaginators = FindGame("imaginators");
     EXPECT(imaginators != nullptr && std::string(imaginators->runtime) == "Skylanders Imaginators" &&
            std::string(imaginators->name) == "Skylanders: Imaginators" && imaginators->releases.size() == 1 &&
@@ -3105,11 +3158,20 @@ static int RunChecks(int argc, char** argv)
         EXPECT(fallback[GameVideoSection("giants")]["fps_auto_fallback"] == "0");
     }
 
+    TestUnsetEnv("SKY_LAUNCHER_WINDOW_TITLE");
+    EXPECT(LauncherWindowTitle() == "Arkeyan Launcher");
+    TestSetEnv("SKY_LAUNCHER_WINDOW_TITLE", "Arkeyan Launcher - 123");
+    EXPECT(LauncherWindowTitle() == "Arkeyan Launcher - 123");
+    TestSetEnv("SKY_LAUNCHER_WINDOW_TITLE", "");
+    EXPECT(LauncherWindowTitle() == "Arkeyan Launcher");
+    TestUnsetEnv("SKY_LAUNCHER_WINDOW_TITLE");
+
     if (!noDisc)
         g_failures += LevelNameDiscChecks();
     if (noDisc)
     {
-        for (const char* mode : { "backups", "sheet", "notes", "migration", "catalogue", "data", "uninstall", "paths" })
+        for (const char* mode :
+            { "backups", "sheet", "drag", "pictures", "notes", "migration", "catalogue", "data", "uninstall", "paths" })
         {
             const std::string root = (scratch / "review-ui" / mode).string();
             const char* arguments[] = { argv[0], "--review-ui", root.c_str(), mode, nullptr };
@@ -3173,18 +3235,20 @@ static int RunChecks(int argc, char** argv)
                art::JoinLanguages(trap.languages.text) == expected &&
                art::JoinLanguages(trap.languages.voice) == expected);
     }
-    // SuperChargers' European disc (SKY_LAUNCHER_TEST_SUPERCHARGERS_ISO) holds English and German, Imaginators' French and Dutch
-    // one (SKY_LAUNCHER_TEST_IMAGINATORS_ISO) French and Dutch: archives/<name>_<code>.pak, text and voices.
-    for (const auto& [variable, id, expected] :
-        { std::tuple{ "SKY_LAUNCHER_TEST_SUPERCHARGERS_ISO", "superchargers", "en,de" },
-            std::tuple{ "SKY_LAUNCHER_TEST_IMAGINATORS_ISO", "imaginators", "fr,nl" } })
+    // SuperChargers' European disc (SKY_LAUNCHER_TEST_SUPERCHARGERS_ISO) holds English and German, its French and Dutch
+    // one (SKY_LAUNCHER_TEST_SUPERCHARGERS_FR_NL_ISO, a release of its own) and Imaginators' French and Dutch one
+    // (SKY_LAUNCHER_TEST_IMAGINATORS_ISO) French and Dutch: archives/<name>_<code>.pak, text and voices.
+    for (const auto& [variable, id, expected, release] :
+        { std::tuple{ "SKY_LAUNCHER_TEST_SUPERCHARGERS_ISO", "superchargers", "en,de", size_t(0) },
+            std::tuple{ "SKY_LAUNCHER_TEST_SUPERCHARGERS_FR_NL_ISO", "superchargers", "fr,nl", size_t(1) },
+            std::tuple{ "SKY_LAUNCHER_TEST_IMAGINATORS_ISO", "imaginators", "fr,nl", size_t(0) } })
         if (const char* later = skyenv::Get(variable))
         {
             GameSourceCheck check = CheckGameSource(later, *FindGame(id));
             printf("%s: %s, text %s, voices %s\n", id, check.message.empty() ? "verified" : check.message.c_str(),
                 art::JoinLanguages(check.languages.text).c_str(), art::JoinLanguages(check.languages.voice).c_str());
-            EXPECT(check.status == GameSourceStatus::Ok &&
-                   check.xexSha256 == FindGame(id)->releases[0].defaultXexSha256 &&
+            EXPECT(check.status == GameSourceStatus::Ok && release < FindGame(id)->releases.size() &&
+                   check.xexSha256 == FindGame(id)->releases[release].defaultXexSha256 &&
                    art::JoinLanguages(check.languages.text) == expected &&
                    art::JoinLanguages(check.languages.voice) == expected);
         }
@@ -3481,6 +3545,11 @@ static int RunChecks(int argc, char** argv)
         EXPECT(std::string(launcher_ui::GiantsLanguageChoices[i].value) == giantsCodes[i] &&
                std::string(launcher_ui::GiantsVoiceChoices[i + 1].value) == giantsCodes[i]);
     EXPECT(std::string(launcher_ui::GiantsVoiceChoices[0].value).empty());
+    // Widescreen: the values the game reads for [video] aspect, auto first (the default).
+    const char* const aspectValues[] = { "auto", "fill", "16:9" };
+    EXPECT(std::size(launcher_ui::AspectChoices) == std::size(aspectValues));
+    for (size_t i = 0; i < std::min(std::size(aspectValues), std::size(launcher_ui::AspectChoices)); i++)
+        EXPECT(std::string(launcher_ui::AspectChoices[i].value) == aspectValues[i]);
 
     EXPECT(!LauncherFullscreen(helperConfig));
     helperConfig["launcher"]["fullscreen"] = "YES";

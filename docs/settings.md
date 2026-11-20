@@ -14,9 +14,11 @@ launcher saves the file (a comment over a key that is removed goes with it).
 | `launcher` | `language` | empty (the system's language), or a code (`en`, `fr`...) | The language of the launcher's own text, never the game's (`docs/translations.md`): a code that has no file in `resources/lang` shows English. An old `game` (follow the shown game) is read as empty and erased at the next save. The environment variable `SKY_LAUNCHER_LANGUAGE` overrides it (tests, screenshots) | n/a |
 | `launcher` | `reduce_motion` | `auto`, `0`, `1` | The logo's fall on the game page (`docs/launcher_ui.md`): `auto` follows the system (macOS Reduce motion, Windows animation effects), `1` never animates, `0` always does | n/a |
 | `launcher` | `game_music` | `1` (default), `0` | The game page's menu music on or off, for every game: the speaker at the page's top right (`docs/launcher_ui.md`, "Game music") | n/a |
-| `discord` | `presence` | `1` (default), `0` | Discord Rich Presence (Settings > Launcher > Discord > Show my activity on Discord; `src/launcher/discord_presence.cpp`, application 1570426097903083671). No game running: "In the launcher", the time since the launcher opened, the launcher's icon. A game running: line 1 the game's name; line 2 where the player is, from the runtime's `presence.txt` in the game's player folder (`level=`, `menu=`, `players=`): the level's name as the game shows it (`<data>/<Game>/levels.json`, read from the disc), else "In a level" or "In the menus"; the session's time; the large image the game's logo: the application's art asset named after the game's id, given by its permanent address on Discord's CDN (`cdn.discordapp.com/app-assets/<application>/<asset id>.png`, as Vesktop's arRPC does not resolve keys) (`ssa`, `giants`, `swapforce`, `trapteam`, `superchargers`, `imaginators`: the Wikimedia logos on a 1024 square, as Discord crops a wide picture to a square), its hover the achievements (`3/50`), the time played and the version; the small image the player's figure on the portal (the first toy that levels up in `portal.txt`; a real toy on a real portal is not there) by its picture's address on the Skylanders Fandom wiki (`src/launcher/discord_images.cpp`), its hover its name and level, else the launcher's icon (`resources/icons/skylauncher-128.png` on `main`, by address); "2 of 2" while a second player plays; buttons "Arkeyan Launcher" (GitHub) and "Discord". Credits in `THIRD_PARTY_NOTICES.md`. It ends when the launcher closes | n/a |
+| `launcher` | `game_music_volume` | `0`-`100`, `50` (default) | The game music's level, for every game: Settings > Launcher and the speaker's menu. Outside the range: clamped; not a number: 50. Setting it turns `game_music` on | n/a |
+| `discord` | `presence` | `1` (default), `0` | Discord Rich Presence (Settings > Launcher > Discord > Show my activity on Discord; `src/launcher/discord_presence.cpp`, application 1570426097903083671). No game running: "In the launcher", the time since the launcher opened, the launcher's icon. A game running: line 1 the game's name; line 2 where the player is, from the runtime's `presence.txt` in the game's player folder (`level=`, `menu=`, `players=`): the level's name as the game shows it (`<data>/<Game>/levels.json`, read from the disc), else "In a level" or "In the menus"; the session's time; the large image the game's logo: the application's art asset named after the game's id, given by its permanent address on Discord's CDN (`cdn.discordapp.com/app-assets/<application>/<asset id>.png`, as Vesktop's arRPC does not resolve keys) (`ssa`, `giants`, `swapforce`, `trapteam`, `superchargers`, `imaginators`: the Wikimedia logos on a 1024 square, as Discord crops a wide picture to a square), its hover the achievements (`3/50`), the time played and the version; the small image player 1's figure as the game plays it, a real toy on a real portal too (`presence.txt`'s `toy=`, `variant=`, `toylevel=`); only for a game that names none (built before 0.9.7), the first toy that levels up in `portal.txt`, and never once a real portal was seen (below) by its picture's address on the Skylanders Fandom wiki (`src/launcher/discord_images.cpp`), its hover its name and level, else the launcher's icon (`resources/icons/arkeyan-launcher-128.png` on `main`, by address); "2 of 2" while a second player plays; buttons "Arkeyan Launcher" (GitHub) and "Discord". Credits in `THIRD_PARTY_NOTICES.md`. It ends when the launcher closes | n/a |
 | `launcher` | `runtime` | path | The game runtime to start, if not next to the launcher | n/a |
 | `launcher` | `kit` | folder | The player kit that installs the game, if not next to the launcher (`docs/install.md`) | n/a |
+| `launcher` | `games` | folder; empty or absent (default): the data folder | The Games folder (Settings > Launcher > Games folder: **Choose...**, **Show in folder**, **Use default**; hidden in portable mode, where it is ignored): every game's built game, `textures-hd/` and `gamedata/` go in `<folder>/<Game>`, the rest stays in `<data>/<Game>`. Changing it moves them (`docs/install.md`, "Games folder"). The launcher passes it to Arkeyan-Builder and the games as `SKY_GAMES_DIR` (`ApplyGamesFolder`) | yes (`SKY_GAMES_DIR`, games built by kits from 0.9.9) |
 | `update` | `auto_check` | `0`, `1` | Look for a new Arkeyan Launcher and for game updates at every start (default 1; `docs/updates.md`) | n/a |
 | `update` | `betas` | `0`, `1` | "Receive betas" (Settings > Launcher): offer test builds of the next version, then the final one (default 0, 1 in a test build; `docs/updates.md`, "Test builds") | n/a |
 | `update` | `last_check` | epoch seconds | When the last check ran | n/a |
@@ -27,6 +29,7 @@ launcher saves the file (a comment over a key that is removed goes with it).
 | `install.<sha256>` | `runtime` | path | The game the launcher built for the disc whose `default.xex` has this SHA-256 | n/a |
 | `install.<sha256>` | `kit` | text | The kit version it was built with | n/a |
 | `install.<sha256>` | `version` | `0.8.2` | The game's version when it was built (from the kit's `kit.txt`); UPDATE is offered when the release's games line has a higher one | n/a |
+| `install.<sha256>` | `games_folder` | `1` | Built by a kit whose builder and game read `SKY_GAMES_DIR` (0.9.9 on). Without it, the build reads `textures-hd/` and `gamedata/` in the data folder only: a move of the Games folder leaves them there | n/a |
 | `install.<sha256>` | `state`, `pid` | `running`, `failed`; process id | An install that runs or stopped: shown again after a restart | n/a |
 | `ssa` | `iso` | path | The verified disc image | yes |
 | `ssa` | `language` | `en` `fr` `de` `es` `it` `nl` `sv` `no` `da` `fi` | Text language. For every game, empty or absent: the launcher's own language when the disc holds it (the Language tab shows it, the game is started in it; `GameLanguageToPass`), else the game's default; the same for `voice_language` | yes |
@@ -34,11 +37,12 @@ launcher saves the file (a comment over a key that is removed goes with it).
 | `giants` | `language`, `voice_language` | `en` `fr` `de` `es` `es-419` `it` `nl` `pt` `sv` `no` `da` `fi` | Text and voice language (the disc's twelve); `voice_language` empty or absent: the voices follow the text | yes |
 | `swapforce` | `language`, `voice_language` | `en` `fr` (USA, Australia disc) or `es` `it` (Europe disc) | Text and voice language (the disc's two); any language of the list in "Languages a disc holds" below that its disc has | yes |
 | `trapteam` | `language` | the codes of the disc (the English and German disc: `en` `de`; the French and Dutch disc: `fr` `nl`; the list below) | Text **and voice** language: Trap Team's language packs hold both, so the Language tab has one choice (a `voice_language` is ignored) | yes |
-| `swapforce`, `imaginators` | `nightmare_from_start` | `0` (default), `1` | The Nightmare difficulty is offered before the story is beaten; the save is not changed (the game's settings > Game > Difficulty). The other games have no locked difficulty | yes |
-| each game | `hd_textures` | `0` (default), `1` | The HD textures ("Use HD textures" in <game> settings > Video > Textures; every game since 0.9.4, before only Swap Force, Trap Team, SuperChargers and Imaginators), made from the player's disc by the kit's `Arkeyan-Builder --hd-textures auto` into `<game data>/textures-hd/` (2.2 to 4.8 GB: Spyro's Adventure 2.3, Giants 4.8; a few minutes; `docs/tools/hd_textures.md` in the workshop). Flipped on a built game: the step runs alone at once (progress and Stop in <game> settings > Video, under Textures); flipped off: `--hd-textures off` removes the folder. On when the game is installed or updated: the build adds the step. A failed or stopped run puts it back to `0` and removes the half-made folder. Off for a kit that does not know the option (before 0.9.1). The game reads this key itself: it alone decides whether `textures-hd/` is used (`texture_packs` has no say in it since 0.9.4) | no |
+| `swapforce`, `trapteam`, `imaginators` | `nightmare_from_start` | `0` (default), `1` | The Nightmare difficulty is offered before the story is beaten; the save is not changed (the game's settings > Game > Difficulty). The other games have no locked difficulty | yes |
+| each game | `hd_textures` | `0` (default), `1` | The HD textures ("Use HD textures" in <game> settings > Video > Textures; every game since 0.9.4, before only Swap Force, Trap Team, SuperChargers and Imaginators), made from the player's disc by the kit's `Arkeyan-Builder --hd-textures auto` into `<game data>/textures-hd/` (2.2 to 4.8 GB: Spyro's Adventure 2.3, Giants 4.8; a few minutes; `docs/tools/hd_textures.md` in the forge). Flipped on a built game: the step runs alone at once (progress and Stop in <game> settings > Video, under Textures); flipped off: `--hd-textures off` removes the folder. On when the game is installed or updated: the build adds the step. A failed or stopped run puts it back to `0` and removes the half-made folder. Off for a kit that does not know the option (before 0.9.1). The game reads this key itself: it alone decides whether `textures-hd/` is used (`texture_packs` has no say in it since 0.9.4) | no |
 | each game | `last_scene` | name of a scene | The background scene of the last start (`docs/launcher_ui.md` "Disc art"): the next start picks another when the game has two or more | n/a |
 | each game | `disc_text_languages`, `disc_voice_languages` | codes joined by commas | Written by the launcher at each disc check: the languages the disc holds, which the Language tab lists (absent: the full list; Swap Force English and French, Trap Team English). Not for editing | no |
 | `video` | `fullscreen` | `0`, `1` | Play in fullscreen | yes (the key is per game: see "Per-game video" below) |
+| `video` | `window_size` | `<width>x<height>`, absent (default) | The game window's size at start when not fullscreen (<game> settings > Video > Window size: Last used, 1280 x 720, 1600 x 900, 1920 x 1080, 2560 x 1440 or Custom, shown while Fullscreen is off). Absent (Last used): the size the window had when the game last closed, which the game writes itself to `[<game>.video] window_last` (not one of the per-game keys: the launcher never copies it), else 1280x720. The game keeps the window inside the screen and at least 640x360 (`WindowSizeOf` raises a smaller value the same way); the 3D resolution stays `resolution_scale`. A shape changed during play shows with bars until the next start | yes |
 | `video` | `resolution_scale` | `auto` (default), `1` to `10` | 3D rendered at this multiple of 1120x704; `auto` picks x1 on integrated GPUs. Any other value is shown as Auto by the page and not passed on by PLAY (`ResolutionScaleOf`) | yes |
 | `video` | `fps_limit` | `30`, `60` | Frame rate cap (the game is made for 30; 60 is experimental; since 0.9.4 nothing above 60: the page lists 30 and 60, a saved `display`, `120`, `144`, `240` or `0` shows as 60 and the game runs it as 60; with automatic fallback enabled, a computer that cannot hold 60 gets a steady 30). `display` is the display's refresh rate up to 60 and is 60 for now; it is a choice, no game's default. A game with no saved frame rate gets 60 (Giants, Swap Force) or 30 (SSA, until its 60 at scale 2 is merged), the value its page shows (`DefaultFrameRate`); PLAY writes it, and a saved value is never changed. Another number goes down to the rate below it. **Giants stops at 60**: its page lists `display`, 30 and 60, and a higher value saved for it (`[giants.video]`) becomes 60 once (`[launcher] giants_cap=1`) | yes |
 | `launcher` | `frame_rates` | `1` | Written once by `MigrateFrameRates`: older versions ran `fps_limit` 0, 120, 144 and 240 as 60, so a file without this key has them changed to 60 in `[video]` and `[<game>.video]` at the first load; a choice made afterwards stays | no |
@@ -52,7 +56,7 @@ launcher saves the file (a comment over a key that is removed goes with it).
 | `video` | `skip_intro_movies` | `0`, `1` | Skip the start-up logos (legal, ATVI, XPEC, Toys for Bob); the story movies still play | yes |
 | `video` | `vsync` | `0`, `1` | Wait for the display's refresh | yes |
 | `video` | `anisotropy` | `1`, `2`, `4`, `8`, `16` | Texture filtering | yes |
-| `video` | `aspect` | `auto` (default), `16:9` | Widescreen: `auto` shows more to the sides on a window wider than 16:9, `16:9` keeps the game's picture with bars | yes |
+| `video` | `aspect` | `auto` (default), `fill`, `16:9` | Widescreen: `auto` shows more to the sides on a window wider than 16:9; `fill` does the same, and on a taller screen (16:10, the Steam Deck) covers it without bars, cutting a little of each side; `16:9` keeps the game's picture with bars | yes |
 | `video` | `texture_packs` | `1` (default), `0` | Use the player's own texture packs, in the game's `textures/` folder (<game> settings > Video > Textures > Custom texture packs). Since 0.9.4 the row, its folder row and Dump textures are greyed, "Coming later", and PLAY starts the game with `texture_packs=0` and `texture_dump=0` (`ApplyGameVideo`), whatever an older version saved | yes |
 | `video` | `texture_dump` | `0` (default), `1` | Write the game's textures as DDS files, for pack makers (<game> settings > Video > Textures > Dump textures; greyed and `0` since 0.9.4: it only serves custom packs, which come later) | yes |
 | `video` | `original_resolution` | `0` (default), `1` | Swap Force only: keep the console's 3D image (1040x620) stretched to the screen instead of the full frame (<game> settings > Video > Original resolution) | yes |
@@ -78,7 +82,7 @@ the launcher then writes no settings until it is started again.
 
 ## Languages a disc holds
 The Language tab lists what the disc holds (`[<game>] disc_text_languages` / `disc_voice_languages`, written at each disc check by
-`art::LanguagesOnDisc`, `src/shared/art/disc_languages.h`, a copy of the workshop's file with its tests). The codes, in the order of
+`art::LanguagesOnDisc`, `src/shared/art/disc_languages.h`, a copy of the forge's file with its tests). The codes, in the order of
 the lists: `en fr de es es-419 it nl pt sv no da fi pl ru cs hu tr el ja ko zh`. Spyro's Adventure: the `text/<folder>/` and
 `audio/<folder>/voice.bnk` folders. Swap Force: the `<name>_<code>.pak` archives, any code of the list. Giants: always the twelve first
 codes. Trap Team: its files have the same names on every release, so the check reads the entry names of `character/Init_Setup.bld`
@@ -90,12 +94,12 @@ Japanese/Japonais, Korean/Coréen, Chinese/Chinois); an unknown code is ignored,
 ## Per-game video
 
 The runtime reads one `[video]` section, but the games do not have to share it. Each game keeps its own copy of the
-fourteen keys that belong to a game (`fullscreen`, `resolution_scale`, `fps_limit`, `skip_intro_movies`, `vsync`,
+seventeen keys that belong to a game (`fullscreen`, `window_size`, `resolution_scale`, `fps_limit`, `skip_intro_movies`, `vsync`,
 `anisotropy`, `aspect`, `texture_packs`, `texture_dump`, `original_resolution`, `show_fps`, `edge_smoothing`, `upscaler`, `fsr_quality`, `fsr_frame_generation`, `gpu_backend`) in **`[ssa.video]`**, **`[giants.video]`**, **`[swapforce.video]`**, **`[trapteam.video]`**, **`[superchargers.video]`** and **`[imaginators.video]`**:
 
 | Section | Key | Meaning |
 | --- | --- | --- |
-| `<game>.video` | the fourteen `video` keys above | The game's own video settings. The game's settings page (Video tab) edits this copy. |
+| `<game>.video` | the seventeen `video` keys above | The game's own video settings. The game's settings page (Video tab) edits this copy. |
 
 - The first time, a game's copy starts from the `[video]` the player already had (`SeedGameVideo`). Trap Team starts at 30 FPS even if the shared limit is 60; later choices are kept.
 - **PLAY** puts the copy of the game that starts into `[video]` (keys it lacks are dropped, so the runtime's defaults apply):
@@ -117,27 +121,51 @@ fourteen keys that belong to a game (`fullscreen`, `resolution_scale`, `fps_limi
 - Since 0.6.2 the launcher does not copy `[video]` back when the game ends: the game's own menu (F3: volume, FPS counter,
   fullscreen, frame rate, and the settings that apply at its next start) writes `[<game>.video]` and `[<game>.audio]` itself,
   and those win over `[video]`, so a copy-back would only undo them. (`StoreGameVideo` stays for the tests.)
-- What the games share stays in its own section: `[input]` (device, glyphs), `[portal]`, and the launcher's
+- What the games share stays in its own section: `[input]` (device, glyphs, the global keys), `[portal]`, and the launcher's
   `[launcher]` and `[update]`. They are in the gear's Settings, not on a game page. The keyboard keys are per game, below.
 
-## Per-game keyboard keys
+## The global layout and each game's keys
 
-The runtime reads one `[input]` section (`key_<action>=<SDL key name>`), but the keys are each game's own: **`[ssa.input]`**,
-**`[giants.input]`**, **`[swapforce.input]`**, **`[trapteam.input]`**, **`[superchargers.input]`** and **`[imaginators.input]`** hold a game's `key_<action>` lines, edited on the game's settings page
-(Keyboard tab). Only the keys are per game: `device`, `gamepad` and `glyphs` stay in `[input]`.
+**`[input]` is the global layout** every game inherits: its `key_<action>`, `pad_<button>`, `rumble_p1` / `rumble_p2`, `mouse`
+and `mouse_<action>` lines. **`[ssa.input]`**, **`[giants.input]`**, **`[swapforce.input]`**, **`[trapteam.input]`**,
+**`[superchargers.input]`** and **`[imaginators.input]`** hold a game's own lines, which win. The runtime reads `[input]`, then the
+game's section; PLAY copies nothing. `device`, `gamepad`, `glyphs` and the Toy Box's keys stay in `[input]` for every game
+(`src/launcher/game_keys.{h,cpp}`, the pages in `ui/controls_page.cpp`).
+
+- **Settings > Controls** shows the global layout under the controller choice. **All games**: a row per action every game has
+  (`SharedAction`: Move up, down, left, right, Stats / Info on Back, Pause on Start), its **Keyboard** key and its
+  **Controller** button side by side; then the pad buttons no game names (the stick clicks, the D-pad, `SharedPadButton`) on the
+  Controller side only. All stored in `[input]`. Then the **Mouse** switch, the **Rumble** of both players, the **Toy Box keys**,
+  and the Portal of Power. A game's own actions (Jump, Attack 1...) are set on that game's tabs only, in `[<game>.input]`.
+- **A game's Keyboard and Controller tabs** list all its rows. A value the game does not set itself (it follows the global layout,
+  or its default) is **dimmed**; one it sets is in normal text with a **reset arrow** (`GameKeyOwn`, `PadOwn`, `RumbleOwn`,
+  `GameMouseOwn`, `GameMouseButtonOwn`): an All games row goes back to the global value, a game's own row to its default.
+  **Reset to defaults** (held) takes every key and mouse line of the game (Keyboard tab), or every pad and rumble line
+  (Controller tab): the All games rows take the global values again, the game's own rows their defaults.
+- A game's value equal to the global one is no line (`SetGameKey`, `SetPadTarget`, `SetRumbleLevel`, `SetGameMouseOn`): the game
+  follows the global layout again.
+- **The upgrade** (`MigrateInput`, the runtime's `commands::Migrate`; once per file, marked by `[input] global=1`). Older launchers
+  copied a game's keys into `[input]` at PLAY (`ApplyGameInput`), so `[input]` held the last game played, and each game had its
+  copy, seeded once from `[input]` (`seeded=1`). Nobody's keys change: `[input]`'s keys of the All games actions become the global
+  ones (Back's too since it is an All games row); a game's line of those equal to it goes; a seeded game that had none (it played with the default) gets the default as its
+  own; the other actions' keys leave `[input]` (a game never seeded gets them as its own, as its first copy would have); `[input]`'s
+  mouse lines, which nothing read, go; a game's pad, rumble and mouse lines equal to the global ones go; `seeded` goes.
+- **An older launcher** reading the upgraded file finds no `seeded`, so it copies `[input]` into each game again: it shows and
+  plays the same keys. Its PLAY then writes that game's keys into `[input]` again; the next start of this launcher (or of the game's
+  F3 menu) does the upgrade again for the sections an older version seeded, and removes the other actions' keys from `[input]`.
+  What stays: `[input]`'s All games keys are those of the last game the older launcher started (the same unless that game had
+  its own). An older launcher does not show the global mouse, pad or rumble lines on a game's tabs, and an older game ignores
+  `[input]`'s mouse lines.
+- **Profiles**: the global layout's lines of `[input]` belong to the player, as the games' sections (`profiles::PersonalKey`).
 
 | Section | Key | Meaning |
 | --- | --- | --- |
-| `<game>.input` | `key_<action>` | The key (an SDL key name) the game's copy gives to an action. Absent: the game's default key. |
-| `<game>.input` | `seeded` | `1` once the copy has been made from `[input]` (an empty copy is not written to the file, so this says it was). |
+| `input` | `key_<action>` | The global key of an All games action (an SDL key name). Absent: the default key. |
+| `<game>.input` | `key_<action>` | The game's own key for an action. Absent: `[input]`'s, else the game's default key. |
+| `input` | `global` | `1` once the file has the global layout (the upgrade's mark). |
 
-- The first time (`SeedGameInput`, when the launcher starts), every game's copy starts from the `key_` lines the player
-  already had in `[input]`, so nobody loses a binding. It never happens again for that game.
-- **PLAY** puts the game's keys in `[input]` (`ApplyGameInput`): the keys it has set; for the actions on its page, its default
-  where none is set; the other `key_` lines follow the copy, or are dropped so the runtime's own default applies. The runtime
-  needs no change. Nothing is stored back (the runtime never changes keys).
-- **Reset to defaults** empties the game's copy (every `key_` line of it); the defaults then apply at PLAY.
-- Two rows of one game on the same key are marked (a conflict is only possible inside a game).
+- A key used twice is kept and marked red: two rows of one game, or a row and a Toy Box key (`GameKeyConflict`). The
+  F3 menu's Commands page does the same (it no longer swaps the two keys).
 - **Keys are physical places** (2026-10-28): the runtime reads `key_<action>` as an SDL **scancode** name
   (`SDL_GetScancodeFromName`), so `W` is the key where a US keyboard prints W, which an AZERTY keyboard prints Z. The
   launcher stores the place of the key pressed (`event.key.scancode`, `SDL_GetScancodeName`: `CapturedKeyName`) and shows
@@ -153,38 +181,52 @@ The runtime reads one `[input]` section (`key_<action>=<SDL key name>`), but the
 The **Keyboard** tab ends with a **Mouse** section: a switch, **Use the mouse** (off by default), and once it is on a row per action
 (movement included) with its mouse button. Click a row, then press a mouse button or turn the wheel (Escape cancels; the click
 that starts the wait is not the binding). Once on, left click is the game's attack 1 and right click attack 2 (`GameKey::mouse`);
-every other action keeps its keys. A button is on one action at a time: putting it on another takes it from the first.
+every other action keeps its keys. A button is on one action at a time: putting it on another takes it from the first (on the
+game's own line; a game's default gives way by itself). Settings > Controls has only the switch, for every game; a `mouse_` line
+written in `[input]` by hand reaches every game.
 
 | Section | Key | Meaning |
 | --- | --- | --- |
-| `<game>.input` | `mouse` | `1`: the game uses the mouse. Absent or `0`: off, and the game never hides or holds the pointer. |
-| `<game>.input` | `mouse_<action>` | `Mouse Left`, `Mouse Right`, `Mouse Middle`, `Mouse 4`, `Mouse 5`, `Wheel Up`, `Wheel Down`, or `none`. Absent: the game's default (attacks only). |
-| `input` | `key_toybox`, `key_toybox_add`, `key_toybox_clear` | Open the Toy Box, add the next figure, clear the portal: F6, F7, F8 by default (Tab also opens the Toy Box while `key_toybox` is not set). Shared by the games. |
+| `input`, `<game>.input` | `mouse` | `1`: the mouse is used. Absent or `0`: off, and the game never hides or holds the pointer. The game's line wins. |
+| `input`, `<game>.input` | `mouse_<action>` | `Mouse Left`, `Mouse Right`, `Mouse Middle`, `Mouse 4`, `Mouse 5`, `Wheel Up`, `Wheel Down`, or `none`. Absent: the game's default (attacks only). |
+| `input` | `key_toybox`, `key_toybox_add`, `key_toybox_clear` | Open the Toy Box, add the next figure, clear the portal: F6, F7, F8 by default (Tab also opens the Toy Box while `key_toybox` is not set). Shared by the games, never per game. |
 
-- The mouse names share the runtime's key list (ArkeyanRuntime's `host/mouse.h`); the mouse lines are read from the game's section by the
-  runtime itself, so PLAY copies nothing (`ApplyGameInput` keeps `[input]`'s Toy Box keys as they are).
-- **Reset to defaults** also clears the game's `mouse_` lines; the switch stays as it is.
-- The game's F3 menu has the same rows (its Commands page) and writes the same lines.
-- **Settings > Portal > Toy Box keys**: each key is a key cap to click and press, as on the Keyboard tab; the pad's buttons
-  beside it (View + Y) are fixed.
-- Tests: `tests/settings_test.cpp` (off by default, the defaults, one button per action, Reset, PLAY, the Toy Box keys).
+- The mouse names share the runtime's key list (ArkeyanRuntime's `host/mouse.h`).
+- **Reset to defaults** also clears the game's `mouse_` lines and its switch.
+- The game's F3 menu has the same rows (its Commands page) and writes the same lines in the game's section; the Toy Box keys in `[input]`.
+- **Settings > Controls > All games > Toy Box keys**: click a controller picker, then press one physical button for
+  **Swap wheel**, or two different buttons in order for **Open the Toy Box** and **Game menu** (the in-game F3 menu).
+  Escape cancels. Hold the wheel button to open the wheel; tapping it still performs the game's action. Add and clear
+  figures keep a dash in the controller column. Keyboard bindings remain available beside the controller pickers.
+- These global shortcuts are `[input] pad_wheel=back`, `pad_toybox=back+y`, and `pad_menu=back+start` by default.
+  Missing or invalid values use those defaults. Names are the same sixteen names as controller remaps; chords use `+`
+  between two different names. Game sections cannot override them, and game remaps never move the physical shortcuts.
+- A shortcut is marked red when its physical button performs a game's action in any game, following that game's remaps.
+  Back/View as the wheel or first chord button, Y in Back/View + Y, and Start in Back/View + Start are exempt.
+  Conflicting bindings keep working. The help on the game page follows the chosen buttons and pad family.
+- **Reset to defaults** under the All games controller section clears the global remaps, rumble and these three shortcuts;
+  resetting one game's Controller tab keeps the global shortcuts. Profiles and portable game remaps exclude the shortcuts.
+- A Toy Box key that another Toy Box key or a key of any game also has is marked red (`ToyboxKeyConflict`), as an All games key
+  that a game inheriting it has on another row (`GlobalKeyConflict`).
+- Tests: `tests/settings_test.cpp` (off by default, the defaults, one button per action, the global switch, a hand-written `[input]` button, Reset, the
+  Toy Box keys and their conflicts, the upgrade).
 
 ## Per-game controller
 
-The game's settings page has a **Controller** tab beside Keyboard (`src/launcher/game_keys.{h,cpp}`, `ui/game_settings_page.cpp`): each of
+The game's settings page has a **Controller** tab beside Keyboard (`src/launcher/game_keys.{h,cpp}`, `ui/controls_page.cpp`): each of
 the pad's 16 buttons (A B X Y, LB RB LT RT, Start, Back, the two stick clicks, the D-pad's four directions), named as the pad in
 use prints it (the same family as the Keyboard tab's brackets: Cross on a PS5, B on a Switch for the 360's A), has a list that says
 **whose job it does**: its own ("Default", "Par défaut"), another button's (shown with the game's word for that job: "B (Attack 3 / Back)"),
-or Nothing. Below, the **Rumble** of Player 1 and Player 2: Off, Low, Normal, Strong.
+or Nothing. Above, the **Rumble** of Player 1 and Player 2: Off, Low, Normal, Strong.
 
-- Stored in the game's own section, next to its keys: `[<game>.input] pad_<button>=<button>|none` and `rumble_p1` / `rumble_p2`. The
-  button names are the runtime's: `a b x y lb rb lt rt start back ls rs dpad_up dpad_down dpad_left dpad_right`. A button given back its
-  own job loses its line.
-- **The runtime reads them from the game's section itself** (`host/settings.cpp`, with `[input]` as a fallback for a game started
-  without the launcher), so PLAY copies nothing: unlike the keys, nothing is put in `[input]`, and `ApplyGameInput` leaves the lines alone.
+- Stored as the keys are: `pad_<button>=<button>|none` and `rumble_p1` / `rumble_p2` in `[input]` for every game (Settings >
+  Controls), in `[<game>.input]` for one. The button names are the runtime's: `a b x y lb rb lt rt start back ls rs dpad_up
+  dpad_down dpad_left dpad_right`. A button given back the global layout's job loses the game's line.
+- **The runtime reads `[input]`, then the game's section** (`host/settings.cpp`); PLAY copies nothing.
 - They apply to every **real pad**, not to the keyboard (its keys are the Keyboard tab's); the sticks' axes are not remapped; the
   rumble is sent to Player 1's and Player 2's pad. The runtime's docs say how (`docs/runtime/xbox360/input.md`, "Remapping and rumble").
-- **Reset to defaults** (hold) gives every button its own job back; the rumble has its own lists.
+- **Reset to defaults** (hold) gives the All games buttons the global layout's job back, the others their own, and the rumble
+  the global level.
 - Tests: the stored lines, their precedence over nothing, the reset, the names per pad family (`tests/settings_test.cpp`,
   `PadChecks`); screenshots with `SKY_LAUNCHER_TEST_PAD=1` (`pad-ssa`, `pad-giants`, `pad-swapforce`, and Swap Force's Game tab).
 
@@ -203,7 +245,7 @@ names. Xbox 360: A B X Y, Back, Start, LB RB LT RT. Xbox One / Series: View, Men
 Square, Triangle (translated: Croix, Rond, Carré, Triangle), Touchpad (the game's Back: the touchpad's click, or
 Share / Create), Options, L1 R1 L2 R2. PlayStation 3: Select, Start. Nintendo Switch, **by place**: the 360's A (south)
 is the Switch's B, B is A, X is Y, Y is X, Back is -, Start is +, L R ZL ZR. Only the actions the game uses have a row; the other actions keep
-whatever the copy was seeded with (the runtime's default otherwise). The names are English; the French is the disc's own
+the runtime's default. The names are English; the French is the disc's own
 wording (`resources/lang/fr.txt`); the other launcher languages show English until translated. A key's name is shown in the
 player's language where the launcher has one ("Espace", "Entrée", "Retour arrière", "Échap", "Flèche haut"); the stored value
 stays SDL's English name. The sources are each game's disc, read in the running game; nothing from it is in the repository (the
@@ -223,7 +265,7 @@ English and, for Spyro's Adventure, French. The Back button was pressed in play 
 buttons were not seen doing their action. In particular: the shoulders and triggers of Swap Force (`SKY_PRESS` has no `lb`,
 `rb`, `lt`, `rt`, so they could not be pressed; the diagram is the proof); the direction each way of Spyro's Adventure's right
 stick ("Shake/Insert/Swing") takes (`SKY_PRESS` has no right stick); and whether Swap Force or Giants moves a camera with the
-right stick at all (their screens show none, so there are no rows; the seeded keys stay in `[input]`). Giants' French "Infos
+right stick at all (their screens show none, so there are no rows). Giants' French "Infos
 Skylander" and Spyro's Adventure's "Infos du Skylander" share one English key ("Skylander Info"): the launcher shows the second.
 On the French pad names, the Back button reads "Retour" (the Xbox 360 French name), as the action "Retour" of the B button.
 

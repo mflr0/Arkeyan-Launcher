@@ -23,7 +23,7 @@ inline void InstallLifecycleChecks(const std::filesystem::path& scratch)
     for (const char* key : { "FAKE_ARKEYAN_BUILDER_FAIL", "FAKE_ARKEYAN_BUILDER_FAIL_STEP",
              "FAKE_ARKEYAN_BUILDER_PAUSE_STEP", "FAKE_ARKEYAN_BUILDER_HOLD", "FAKE_ARKEYAN_BUILDER_ENDING" })
         TestUnsetEnv(key);
-    const auto kit = InstallKitIn(SKYLAUNCHER_FAKE_KIT);
+    const auto kit = InstallKitIn(LAUNCHER_FAKE_KIT);
     EXPECT(kit.has_value());
     if (!kit)
         return;
@@ -47,7 +47,7 @@ inline void InstallLifecycleChecks(const std::filesystem::path& scratch)
     EXPECT(state.startFailed && state.error.find("Couldn't create the game folder") != std::string::npos);
     EXPECT(read(root / "blocked") == "keep");
     InstallKit absent = *kit;
-    absent.ssabuild = root / "missing-builder";
+    absent.builder = root / "missing-builder";
     EXPECT(!installer.Start(absent, "synthetic.iso", root / "no-builder"));
     state = installer.Snapshot();
     EXPECT(state.startFailed && state.error.find("Couldn't start the game") != std::string::npos);
@@ -170,6 +170,36 @@ inline void InstallLifecycleChecks(const std::filesystem::path& scratch)
         EXPECT(!fs::exists(root / ending / "layout.txt"));
     }
     TestUnsetEnv("FAKE_ARKEYAN_BUILDER_ENDING");
+
+    // The Games folder: the builder gets SKY_GAMES_DIR and builds there; the logs, install-logs/ and layout.txt stay in the
+    // game's data folder. The HD step alone for an older build gets an empty one: its pack stays in the data folder.
+    {
+        const fs::path games = root / "games", data = root / "games-data" / "SSA", marker = root / "games-env.txt";
+        fs::create_directories(games);
+        LauncherConfig config;
+        config["launcher"]["games"] = datadir::Text(games);
+        ApplyGamesFolder(config);
+        EXPECT(kit->gamesFolder);
+        TestSetEnv("FAKE_ARKEYAN_BUILDER_ENV_MARKER", datadir::Text(marker).c_str());
+        const fs::path out = games / "SSA";
+        fs::create_directories(out / "ssabuild-work" / "logs");
+        std::ofstream(out / "ssabuild-work" / "logs" / "compile.log") << "compiled";
+        EXPECT(installer.Start(kit, "synthetic.iso", out, false, data));
+        state = wait(installer);
+        EXPECT(state.state == InstallProgress::State::Done && read(marker) == datadir::Text(games) + "\n");
+        EXPECT(fs::is_regular_file(state.runtime) && datadir::FromText(state.runtime).parent_path() == out);
+        EXPECT(fs::exists(data / "install.log") && fs::exists(data / "layout.txt") &&
+               read(data / "install-logs" / "compile.log") == "compiled");
+        EXPECT(!fs::exists(out / "install.log") && !fs::exists(out / "layout.txt") &&
+               !fs::exists(out / "install-logs") && !fs::exists(out / "ssabuild-work"));
+        EXPECT(ReadInstallLog(data).state == InstallProgress::State::Done);
+        EXPECT(installer.StartHdTextures(kit, "synthetic.iso", data, true, true));
+        state = wait(installer);
+        EXPECT(state.state == InstallProgress::State::Done && read(marker) == "\n" &&
+               fs::exists(data / "hd-textures.log"));
+        TestUnsetEnv("FAKE_ARKEYAN_BUILDER_ENV_MARKER");
+        ApplyGamesFolder({});
+    }
     TestUnsetEnv("FAKE_ARKEYAN_BUILDER_DELAY");
     printf(
         "Install lifecycle: ten interruption/failure/retry boundaries, log recovery and startup/EOF errors checked\n");

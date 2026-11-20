@@ -96,7 +96,8 @@ Attack 3 / Back	Angreb 3 / Tilbage
 Aug	aug.
 Auto	Auto
 Auto (follows the window)	Auto (følger vinduet)
-Auto shows more when wide; 16:9 adds bars.	Auto viser mere, når vinduet er bredt; 16:9 tilføjer bjælker.
+Fill (covers a taller screen)	Udfyld (dækker en højere skærm)
+Auto shows more when wide; Fill covers a taller screen; 16:9 adds bars.	Auto viser mere, når vinduet er bredt; Udfyld dækker en højere skærm; 16:9 tilføjer bjælker.
 Auto-open Toy Box	Åbn Toy Box automatisk
 Auto: 5.1 when the device has six channels.	Auto: 5.1, når enheden har seks kanaler.
 Automatic	Automatisk
@@ -149,6 +150,9 @@ Checking...	Kontrollerer...
 Chinese	Kinesisk
 Choose	Vælg
 Choose a figure for {}	Vælg en figur til {}
+Include HD textures	Medtag HD-teksturer
+{} with them, {} without.	{} med dem, {} uden.
+Settings: {} FPS · Resolution scale {} · {}	Indstillinger: {} FPS · Opløsningsskala {} · {}
 Choose a folder...	Vælg en mappe...
 Choose a key to change it.	Vælg en tast for at ændre den.
 Choose a type	Vælg en type
@@ -358,6 +362,14 @@ Couldn't download the game tools	Kunne ikke hente spilværktøjerne
 Frame rate limit	Billedhastighedsgrænse
 Frees {}. Saves and settings are kept.	Frigør {}. Gemte spil og indstillinger beholdes.
 Fullscreen	Fuld skærm
+Window size	Vinduesstørrelse
+{} x {}	{} x {}
+Last used: as it was when the game closed.	Senest brugt: som da spillet blev lukket.
+Last used	Senest brugt
+Custom	Brugerdefineret
+Width	Bredde
+Height	Højde
+{} or more	{} eller mere
 Game	Spil
 Game art comes from your own disc.	Spillets grafik kommer fra din egen disk.
 Game data	Spildata
@@ -408,12 +420,10 @@ Hold to delete saves, backups and caches.	Hold nede for at slette gemte spil, ba
 Hold to delete the built game. Saves are kept.	Hold nede for at slette det byggede spil. Gemte spil beholdes.
 Hold to delete the copy.	Hold nede for at slette kopien.
 Hold to delete the partial copy.	Hold nede for at slette den delvise kopi.
-Hold to give every button its own job back.	Hold nede for at give hver knap sin egen funktion tilbage.
 Hold to mark them as not in use.	Hold nede for at markere dem som ikke i brug.
 Hold to move them to the trash.	Hold nede for at lægge dem i papirkurven.
 Hold to put this copy back.	Hold nede for at lægge denne kopi tilbage.
 Hold to rebuild the game.	Hold nede for at bygge spillet igen.
-Hold to reset every key of this game.	Hold nede for at nulstille alle tasterne i dette spil.
 Hold to restore; your current saves are kept first.	Hold nede for at gendanne; dine nuværende gemte spil gemmes først.
 INSTALL	INSTALLÉR
 INSTALLATION INTERRUPTED	INSTALLATIONEN BLEV AFBRUDT
@@ -691,7 +701,6 @@ Report copied	Rapport kopieret
 Report saved	Rapport gemt
 Report saved: {}	Rapport gemt: {}
 Reset	Nulstil
-Reset to defaults	Nulstil til standard
 Reset to new	Nulstil til ny
 Reset to new...	Nulstil til ny...
 Reset {} to new? Level, gold and upgrades are lost.	Nulstil {} til ny? Niveau, guld og opgraderinger går tabt.
@@ -856,7 +865,6 @@ Total	I alt
 Touchpad	Touchpad
 Toy	Legetøj
 Toy Box	Toy Box
-Toy Box in the game: F6, or View + Y on a controller.	Toy Box i spillet: F6, eller View + Y på en controller.
 Toy Box keys	Toy Box-taster
 Toy type {}	Legetøjstype {}
 Translating the game code	Oversætter spilkoden
@@ -870,8 +878,9 @@ Trash · {}	Papirkurv · {}
 Triangle	Trekant
 Trilinear	Trilineær
 Trophies	Trofæer
-Turn the game music off	Slå spilmusikken fra
-Turn the game music on	Slå spilmusikken til
+Game music	Spilmusik
+Play the music	Afspil musikken
+Each game's menu theme, on its page.	Hvert spils menutema, på dets side.
 Type	Type
 Ultra Performance	Ultra-ydeevne
 Frame generation	Billedgenerering
@@ -908,7 +917,6 @@ VSync	VSync
 Vehicle {}	Køretøj {}
 Vehicles	Køretøjer
 Verified	Bekræftet
-Verified, {}	Bekræftet, {}
 Version {} is available.	Version {} er tilgængelig.
 Version {}, {}	Version {}, {}
 Versions	Versioner
@@ -1096,6 +1104,7 @@ Open with the game	Åbn med spillet
 Real figure · on the portal	Rigtig figur · på portalen
 Start a game first	Start et spil først
 The Toy Box in its own window, to keep beside the game	Toy Box i sit eget vindue, ved siden af spillet
+The other seats: in the Toy Box window	De andre pladser: i Toy Box-vinduet
 The Toy Box window opens each time you play	Toy Box-vinduet åbner hver gang du spiller
 The game cannot read this figure there	Spillet kan ikke læse denne figur der
 The game did not find this figure	Spillet fandt ikke denne figur
@@ -1137,3 +1146,107 @@ Couldn't prepare the game tools	Couldn't prepare the game tools
 Go back to the final release?	Go back to the final release?
 Going back to {}. Saves and figures made with the test build may not open in it. A copy of them is kept.	Going back to {}. Saves and figures made with the test build may not open in it. A copy of them is kept.
 Version {} (the final release)	Version {} (the final release)
+
+# The Games folder (Settings > Launcher)
+Games folder	Spilmappe
+Where every game is built: another drive saves room.	Hvor hvert spil installeres: et andet drev sparer plads.
+Moving the games: {} of {}	Flytter spillene: {} af {}
+Now: {}	Nu: {}
+Use default	Brug standard
+Games moved	Spillene er flyttet
+Move stopped: the games stay where they were	Flytning stoppet: spillene bliver, hvor de var
+Couldn't move the games	Spillene kunne ikke flyttes
+Couldn't move the games: they stay where they were	Spillene kunne ikke flyttes: de bliver, hvor de var
+Not enough free space: {} needed	Ikke nok ledig plads: {} kræves
+Wait for the games to move	Vent, til spillene er flyttet
+Quit the game to move the games	Luk spillet for at flytte spillene
+The games folder isn't there. Plug in the drive, or choose another folder.	Spilmappen er der ikke. Tilslut drevet, eller vælg en anden mappe.
+This folder isn't there	Denne mappe er der ikke
+This folder can't be written to	Der kan ikke skrives i denne mappe
+Choose a folder outside the games	Vælg en mappe uden for spillene
+Choose a folder outside the game tools	Vælg en mappe uden for spilværktøjerne
+The games in {} go too; your other files there stay.	Spillene i {} fjernes også; dine andre filer der bliver.
+
+# The image check (disc_check.h): the Disc tab's pill, the install's first row, the dialog after a game whose movies did not open.
+Can't read the disc image.	Kan ikke læse diskaftrykket.
+Check again	Kontrollér igen
+Checking files, {}	Kontrollerer filer, {}
+Checking the disc	Kontrollerer disken
+Choose image	Vælg diskaftryk
+Copy the disc again, then choose the new image.	Kopiér disken igen, og vælg så det nye diskaftryk.
+Damaged copy	Beskadiget kopi
+Disc image damaged	Diskaftrykket er beskadiget
+Every file can be read. No good copy of this edition to compare with.	Alle filer kan læses. Ingen god kopi af denne udgave at sammenligne med.
+Every file matches a good copy of this disc ({}).	Hver fil stemmer med en god kopi af disken ({}).
+Good copy, {}	God kopi, {}
+Part of the image can't be read.	En del af diskaftrykket kan ikke læses.
+Readable, {}	Læsbar, {}
+Some files differ from a good copy of this disc ({}).	Nogle filer afviger fra en god kopi af disken ({}).
+The disc image is damaged.	Diskaftrykket er beskadiget.
+The disc image may be damaged	Diskaftrykket kan være beskadiget
+The disc image of {} is damaged	Diskaftrykket for {} er beskadiget
+{} couldn't open some of its movies. A damaged copy of the disc does this.	{} kunne ikke åbne nogle af sine film. Det sker med en beskadiget kopi af disken.
+
+# The global keys and controller (ui/controls_page.cpp).
+Reset to defaults	Nulstil til standard
+Hold to reset every key of this game.	Hold nede for at nulstille alle tasterne i dette spil.
+Hold to reset every button of this game.	Hold nede for at nulstille alle knapperne i dette spil.
+Use the global setting	Brug den globale indstilling
+Use the default	Brug standarden
+Dimmed values follow Launcher settings.	Nedtonede værdier følger Launcher-indstillinger.
+Games use these unless their own settings change them.	Spillene bruger disse, medmindre deres egne indstillinger ændrer dem.
+Buttons	Knapper
+Stats / Info	Statistik / Info
+
+# Controller shortcuts
+Swap wheel	Skiftehjul
+Game menu	Spilmenu
+Hold to open the swap wheel.	Hold inde for at åbne skiftehjulet.
+Press a button (Escape cancels).	Tryk på en knap (Escape annullerer).
+Press two buttons in order (Escape cancels).	Tryk på to knapper i rækkefølge (Escape annullerer).
+Press the second button (Escape cancels).	Tryk på den anden knap (Escape annullerer).
+This button is used by another action	En anden handling bruger denne knap
+Hold to reset the controller buttons for all games.	Hold inde for at nulstille controllerknapperne for alle spil.
+Toy Box in the game: {}, or {} on a controller.	Toy Box i spillet: {} eller {} på en controller.
+
+# Figure pictures (Settings > Launcher > Collection, the figure sheet).
+Figure pictures	Figurbilleder
+Which game's pictures the figures show.	Hvilket spils billeder figurerne viser.
+Original game	Oprindeligt spil
+Newest game	Nyeste spil
+Figure picture	Figurbillede
+Default ({})	Standard ({})
+My picture	Mit billede
+Choose a picture...	Vælg et billede...
+Remove my picture	Fjern mit billede
+That file is not a picture	Filen er ikke et billede
+The picture could not be saved	Billedet kunne ikke gemmes
+
+# Imaginite chests (ui/chests_page.cpp).
+Imaginite chests	Imaginite-kister
+Chests	Kister
+Chests · {}	Kister · {}
+Reach the Academy once in the game to add chests.	Nå Akademiet én gang i spillet for at tilføje kister.
+Save slot {} · {} in the pile · Room for {} more	Gemmeplads {} · {} i bunken · Plads til {} mere
+Imaginite Chest	Imaginite-kiste
+Copper Chest	Kobberkiste
+Bronze Chest	Bronzekiste
+Silver Chest	Sølvkiste
+Gold Chest	Guldkiste
+Platinum Chest	Platinkiste
+Bronze Mystery Chest	Bronze-mysteriekiste
+Silver Mystery Chest	Sølv-mysteriekiste
+Gold Mystery Chest	Guld-mysteriekiste
+Add 1 chest	Tilføj 1 kiste
+Add {} chests	Tilføj {} kister
+Chests added: they appear at the Academy	Kister tilføjet: de dukker op på Akademiet
+Couldn't add the chests	Kunne ikke tilføje kisterne
+They appear the next time this save reaches the Academy.	De dukker op, næste gang dette spil når Akademiet.
+{} chests waiting for save slot {}	{} kister venter på gemmeplads {}
+{} chests waiting	{} kister venter
+Too late: the game already added them	For sent: spillet har allerede tilføjet dem
+# Collection: a seat's figure dragged onto a taken player seat
+Swap players?	Byt spillere?
+Swap	Byt
+{} goes on {}, and {} on {}.	{} går til {} og {} til {}.
+Players swapped	Spillerne byttede plads

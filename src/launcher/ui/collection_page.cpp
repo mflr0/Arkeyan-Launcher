@@ -3,6 +3,7 @@
 // library's (src/shared/collection); the model is collection_model.cpp; the figure sheet, Add a figure and Manage are
 // in collection_figure.cpp, collection_add.cpp and collection_manage.cpp.
 #include "launcher/ui/launcher_app.h"
+#include "launcher/env.h"
 #include "shared/collection/datadir.h"
 #include "launcher/ui/launcher_ui.h"
 #include "shared/collection/icons.h"
@@ -223,55 +224,79 @@ namespace launcher_ui
         textures.clear();
     }
 
-    void CollectionPage::ClearIcons() { m_icons->Clear(); }
+    void CollectionPage::ClearIcons()
+    {
+        m_icons->Clear();
+        m_app.m_pictures.Forget(FigurePictureKey); // what was still being read is read again, from the disc's pictures
+        collection::ForgetPictureFolders(); // the portraits folders were just written
+    }
+
+    namespace
+    {
+        DecodedPicture FromImage(const collection::Image& image)
+        {
+            DecodedPicture picture;
+            if (image.Empty())
+                return picture;
+            picture.rgba.resize(image.rgba.size() * 4);
+            std::memcpy(picture.rgba.data(), image.rgba.data(),
+                picture.rgba.size()); // R, G, B, A in memory on the little-endian systems we run on
+            picture.width = image.width, picture.height = image.height;
+            return picture;
+        }
+
+        // A file's picture; a creation crystal's is the disc's one magenta picture, tinted per element (CrystalPicture).
+        DecodedPicture FilePicture(const collection::Toy& toy, const std::string& path)
+        {
+            if (path.empty())
+                return {};
+            return FromImage(toy.category == collection::Category::CreationCrystal
+                                 ? collection::CrystalPicture(toy, path)
+                                 : collection::LoadPng(path));
+        }
+
+        // On the loader's thread: the newest cached art (independent of the viewed game, shared/collection/icons.h),
+        // else the drawn icon.
+        DecodedPicture IconPicture(
+            const collection::Toy* toy, collection::VariantKind kind, bool large, uint16_t variant)
+        {
+            DecodedPicture picture = toy != nullptr
+                                         ? FilePicture(*toy, collection::PortraitPath({}, *toy, variant, large))
+                                         : DecodedPicture{};
+            if (picture.Empty())
+            {
+                constexpr int Size = 128;
+                picture.rgba = figures::GenerateIcon(toy, kind, Size);
+                picture.width = picture.height = Size;
+                picture.generated = true;
+            }
+            return picture;
+        }
+    }
 
     const FigureIconTexture& CollectionPage::Icon(
         const collection::Toy* toy, collection::VariantKind kind, bool large, uint16_t variant)
     {
-        // The newest cached art, independent of the viewed game (shared/collection/icons.h).
         if (toy != nullptr && variant == 0)
             variant = collection::VariantFor(*toy, kind);
-        std::string path =
-            toy != nullptr ? collection::PortraitPath(m_app.m_s->game.id, *toy, variant, large) : std::string();
-        // A creation crystal: the disc's one magenta picture, tinted per element (CrystalPicture).
-        const bool crystal = toy != nullptr && toy->category == collection::Category::CreationCrystal && !path.empty();
-        std::string key = crystal         ? fmt::format("crystal:{}:{}", toy->type, path)
-                          : !path.empty() ? path
-                                          : fmt::format("gen:{}:{}", toy != nullptr ? toy->type : 0xFFFF, int(kind));
-        auto found = m_icons->textures.find(key);
-        if (found != m_icons->textures.end())
-            return found->second;
-
-        FigureIconTexture icon;
-        if (crystal)
-        {
-            if (collection::Image image = collection::CrystalPicture(*toy, path); !image.Empty())
-            {
-                std::vector<uint8_t> bytes(image.rgba.size() * 4);
-                std::memcpy(bytes.data(), image.rgba.data(),
-                    bytes.size()); // R, G, B, A in memory on the little-endian systems we run on
-                icon.texture = LoadRgba(m_app.m_renderer, bytes, image.width, image.height);
-            }
-        }
-        else if (!path.empty())
-            icon.texture = LoadPngFile(m_app.m_renderer, path);
-        if (icon.texture != nullptr)
-            SDL_GetTextureSize(icon.texture, &icon.width, &icon.height);
-        if (icon.texture == nullptr)
-        {
-            constexpr int Size = 128;
-            icon.texture = LoadRgba(m_app.m_renderer, figures::GenerateIcon(toy, kind, Size), Size, Size);
-            icon.generated = true;
-        }
-        return m_icons->textures[key] = icon;
+        std::string key = fmt::format("{}icon {} {} {} {}", FigurePictureKey, toy != nullptr ? toy->type : 0xFFFF,
+            variant, int(kind), int(large));
+        auto [found, added] = m_icons->textures.try_emplace(key);
+        if (added)
+            m_app.m_pictures.Request(
+                key, [toy, kind, large, variant] { return IconPicture(toy, kind, large, variant); });
+        return found->second;
     }
 
     void CollectionPage::DrawIcon(ImDrawList* draw, const collection::Toy* toy, collection::VariantKind kind, ImVec2 at,
         float size, bool large, uint16_t variant)
     {
         const FigureIconTexture& icon = Icon(toy, kind, large, variant);
-        if (icon.texture != nullptr)
-            draw->AddImage(Ref(icon.texture), at, ImVec2(at.x + size, at.y + size));
+        if (icon.texture == nullptr) // not read yet: the card's own fill
+            return;
+        const float alpha = FadeIn(icon.readyAt);
+        draw->AddImage(Ref(icon.texture), at, ImVec2(at.x + size, at.y + size), ImVec2(0, 0), ImVec2(1, 1),
+            ui::Col(0xFFFFFF, alpha));
         // A drawn icon gets the toy's initials, unless its family has a mark of its own (an item's potion...).
         if (!icon.generated || (toy != nullptr && collection::HasKindGlyph(toy->category)))
             return;
@@ -280,54 +305,43 @@ namespace launcher_ui
         ImVec2 text = ImGui::CalcTextSize(letters.c_str());
         ImVec2 position(at.x + (size - text.x) / 2, at.y + (size - text.y) / 2);
         draw->AddText(ImVec2(position.x + ui::stroke::Hairline, position.y + 2 * ui::stroke::Hairline),
-            ui::Col(ui::color::Scrim, 0.5f), letters.c_str());
-        draw->AddText(position, ui::Col(ui::color::Ink), letters.c_str());
+            ui::Col(ui::color::Scrim, 0.5f * alpha), letters.c_str());
+        draw->AddText(position, ui::Col(ui::color::Ink, alpha), letters.c_str());
         ImGui::PopFont();
+    }
+
+    void CollectionPage::DrawFitted(ImDrawList* draw, const FigureIconTexture& picture, ImVec2 at, float box)
+    {
+        float scale = std::min(box / picture.width, box / picture.height), w = picture.width * scale,
+              h = picture.height * scale;
+        ImVec2 corner(at.x + (box - w) / 2, at.y + (box - h) / 2);
+        draw->AddImage(Ref(picture.texture), corner, ImVec2(corner.x + w, corner.y + h), ImVec2(0, 0), ImVec2(1, 1),
+            ui::Col(0xFFFFFF, FadeIn(picture.readyAt)));
     }
 
     void CollectionPage::DrawPicture(ImDrawList* draw, const collection::Toy* toy, collection::VariantKind kind,
         uint16_t variant, ImVec2 at, float box)
     {
-        std::string path =
-            toy != nullptr ? collection::BestPicturePath(m_app.m_s->game.id, *toy, variant) : std::string();
-        if (path.empty())
+        if (toy == nullptr)
         {
             DrawIcon(draw, toy, kind, at, box, true, variant);
             return;
         }
-        const bool crystal =
-            toy->category == collection::Category::CreationCrystal; // one magenta picture, tinted per element
-        const std::string key = crystal ? fmt::format("crystal:{}:{}", toy->type, path) : path;
-        auto found = m_icons->textures.find(key);
-        if (found == m_icons->textures.end())
-        {
-            FigureIconTexture picture;
-            if (crystal)
-            {
-                if (collection::Image image = collection::CrystalPicture(*toy, path); !image.Empty())
-                {
-                    std::vector<uint8_t> bytes(image.rgba.size() * 4);
-                    std::memcpy(bytes.data(), image.rgba.data(),
-                        bytes.size()); // R, G, B, A in memory on the little-endian systems we run on
-                    picture.texture = LoadRgba(m_app.m_renderer, bytes, image.width, image.height);
-                }
-            }
-            else
-                picture.texture = LoadPngFile(m_app.m_renderer, path);
-            if (picture.texture != nullptr)
-                SDL_GetTextureSize(picture.texture, &picture.width, &picture.height);
-            found = m_icons->textures.emplace(key, picture).first;
-        }
+        std::string key = fmt::format("{}best {} {}", FigurePictureKey, toy->type, variant);
+        auto [found, added] = m_icons->textures.try_emplace(key);
+        if (added)
+            m_app.m_pictures.Request(key, [toy, variant] {
+                return FilePicture(*toy, collection::BestPicturePath({}, *toy, variant));
+            }); // empty without a disc picture: the icon instead
         const FigureIconTexture& picture = found->second;
+        if (picture.pending)
+            return;
         if (picture.texture == nullptr || picture.width <= 0 || picture.height <= 0)
         {
             DrawIcon(draw, toy, kind, at, box, true, variant);
             return;
         }
-        float scale = std::min(box / picture.width, box / picture.height), w = picture.width * scale,
-              h = picture.height * scale;
-        ImVec2 corner(at.x + (box - w) / 2, at.y + (box - h) / 2);
-        draw->AddImage(Ref(picture.texture), corner, ImVec2(corner.x + w, corner.y + h));
+        DrawFitted(draw, picture, at, box);
     }
 
     bool CollectionPage::DrawSwapper(ImDrawList* draw, const collection::Toy* top, uint16_t topVariant,
@@ -335,29 +349,19 @@ namespace launcher_ui
     {
         if (top == nullptr || bottom == nullptr)
             return false;
-        std::string key = fmt::format("swapper:{}:{}:{}:{}", top->type, topVariant, bottom->type, bottomVariant);
-        auto found = m_icons->textures.find(key);
-        if (found == m_icons->textures.end())
-        {
-            FigureIconTexture picture;
-            if (collection::Image image = collection::SwapperPicture(*top, topVariant, *bottom, bottomVariant);
-                !image.Empty())
-            {
-                std::vector<uint8_t> bytes(image.rgba.size() * 4);
-                std::memcpy(bytes.data(), image.rgba.data(),
-                    bytes.size()); // R, G, B, A in memory on the little-endian systems we run on
-                picture.texture = LoadRgba(m_app.m_renderer, bytes, image.width, image.height);
-                picture.width = float(image.width), picture.height = float(image.height);
-            }
-            found = m_icons->textures.emplace(key, picture).first; // no picture is remembered too
-        }
+        std::string key =
+            fmt::format("{}swapper {} {} {} {}", FigurePictureKey, top->type, topVariant, bottom->type, bottomVariant);
+        auto [found, added] = m_icons->textures.try_emplace(key);
+        if (added)
+            m_app.m_pictures.Request(key, [top, topVariant, bottom, bottomVariant] {
+                return FromImage(collection::SwapperPicture(*top, topVariant, *bottom, bottomVariant));
+            }); // no picture is remembered too
         const FigureIconTexture& picture = found->second;
+        if (picture.pending)
+            return true; // nothing yet, and not the fallback either: it would show before the joined halves
         if (picture.texture == nullptr)
             return false;
-        float scale = std::min(box / picture.width, box / picture.height), w = picture.width * scale,
-              h = picture.height * scale;
-        ImVec2 corner(at.x + (box - w) / 2, at.y + (box - h) / 2);
-        draw->AddImage(Ref(picture.texture), corner, ImVec2(corner.x + w, corner.y + h));
+        DrawFitted(draw, picture, at, box);
         return true;
     }
 
@@ -616,42 +620,114 @@ namespace launcher_ui
         m_choosing = seat;
     }
 
+    std::string CollectionPage::Refusal(size_t seat, const Figure& figure, ui::ToastKind* kind) const
+    {
+        const collection::Game* game = m_model.Game();
+        if (kind != nullptr)
+            *kind = ui::ToastKind::Error;
+        if (game == nullptr || seat >= game->seats.size())
+            return Tr("Couldn't write the seats for the next start");
+        if (!m_model.CanEditSeats())
+        {
+            if (kind != nullptr)
+                *kind = ui::ToastKind::Info;
+            return SessionFile(*game).empty() ? Tr("The game isn't installed yet")
+                                              : Tr("The game is running: use its Toy Box");
+        }
+        if (m_model.Incompatible(figure))
+            return Tf("{} is not for {}", Name(figure), FullGameName(m_model.gameId));
+        if (!SeatAccepts(game->seats[seat], figure))
+            return Tf("{} doesn't go on {}", Name(figure), SeatName(seat));
+        if (SeatBusy(figure))
+            return Tf("{} is in use by {}", Name(figure), LiveGame(figure));
+        if (m_model.RealSeat(seat))
+            return Tr("A real figure is there: lift it off the portal first");
+        return {};
+    }
+
     void CollectionPage::PutOn(size_t seat, const std::string& path)
     {
         const collection::Game* game = m_model.Game();
         const Figure* figure = m_model.Find(path);
         if (game == nullptr || figure == nullptr || seat >= game->seats.size())
             return;
-        if (!m_model.CanEditSeats())
+        ui::ToastKind kind = ui::ToastKind::Error;
+        if (const std::string refused = Refusal(seat, *figure, &kind); !refused.empty())
         {
-            Toast(SessionFile(*game).empty() ? Tr("The game isn't installed yet")
-                                             : Tr("The game is running: use its Toy Box"));
-            return;
-        }
-        if (m_model.Incompatible(*figure))
-            Toast(Tf("{} is not for {}", Name(*figure), FullGameName(m_model.gameId)), ui::ToastKind::Error);
-        else if (!SeatAccepts(game->seats[seat], *figure))
-            Toast(Tf("{} doesn't go on {}", Name(*figure), SeatName(seat)), ui::ToastKind::Error);
-        else if (SeatBusy(*figure))
-            Toast(Tf("{} is in use by {}", Name(*figure), LiveGame(*figure)), ui::ToastKind::Error);
-        else if (m_model.RealSeat(seat))
-        {
-            fprintf(stderr, "launcher: Toy Box window: seat %zu holds a real figure: not changed\n", seat);
-            Toast(Tr("A real figure is there: lift it off the portal first"), ui::ToastKind::Error);
-        }
-        else if (m_model.Live() && m_model.SetSeat(seat, path))
-        {
-            m_generation++;
-            m_choosing = -1; // the game answers with its seats (and says so if it cannot)
+            if (m_model.RealSeat(seat) && refused == Tr("A real figure is there: lift it off the portal first"))
+                fprintf(stderr, "launcher: Toy Box window: seat %zu holds a real figure: not changed\n", seat);
+            Toast(refused, kind);
         }
         else if (m_model.SetSeat(seat, path))
         {
             m_generation++;
             m_choosing = -1;
-            Toast(fmt::format("{}: {}", SeatName(seat), Name(*figure)));
+            if (!m_model.Live()) // the game answers with its seats (and says so if it cannot)
+                Toast(fmt::format("{}: {}", SeatName(seat), Name(*figure)));
         }
         else
             Toast(Tr("Couldn't write the seats for the next start"), ui::ToastKind::Error);
+    }
+
+    void CollectionPage::MoveSeat(size_t from, size_t to)
+    {
+        const collection::Game* game = m_model.Game();
+        if (game == nullptr || from == to || from >= m_model.seats.size() || to >= m_model.seats.size() ||
+            to >= game->seats.size())
+            return;
+        const Figure* figure = m_model.Find(m_model.seats[from]);
+        if (figure == nullptr)
+            return;
+        const Figure* other = m_model.seats[to].empty() ? nullptr : m_model.Find(m_model.seats[to]);
+        if (other == nullptr || game->seats[from].player == 0 || game->seats[to].player == 0)
+        {
+            PutOn(to, figure->path); // empty: it moves; any other taken seat: replaced, as by a card
+            return;
+        }
+        ui::ToastKind kind = ui::ToastKind::Error;
+        std::string refused = Refusal(to, *figure, &kind);
+        if (refused.empty())
+            refused = Refusal(from, *other, &kind);
+        if (!refused.empty())
+        {
+            Toast(refused, kind);
+            return;
+        }
+        m_swapFrom = int(from);
+        m_swapTo = int(to);
+    }
+
+    void CollectionPage::DrawSwapQuestion()
+    {
+        if (m_swapFrom < 0)
+            return;
+        const Figure* figure =
+            size_t(m_swapFrom) < m_model.seats.size() ? m_model.Find(m_model.seats[m_swapFrom]) : nullptr;
+        const Figure* other = size_t(m_swapTo) < m_model.seats.size() ? m_model.Find(m_model.seats[m_swapTo]) : nullptr;
+        if (figure == nullptr || other == nullptr) // the seats changed meanwhile (the game, another window)
+        {
+            m_swapFrom = m_swapTo = -1;
+            return;
+        }
+        bool open = true;
+        const std::string body = Tf("{} goes on {}, and {} on {}.", Name(*figure), SeatName(size_t(m_swapTo)),
+            Name(*other), SeatName(size_t(m_swapFrom)));
+        const ui::ModalResult result =
+            ui::ConfirmDialog("##swapplayers", Tr("Swap players?"), body.c_str(), Tr("Swap"), Tr("Cancel"), &open);
+        if (result == ui::ModalResult::None && open)
+            return;
+        const size_t from = size_t(m_swapFrom), to = size_t(m_swapTo);
+        m_swapFrom = m_swapTo = -1;
+        if (result != ui::ModalResult::Confirm)
+            return;
+        if (!m_model.SwapSeats(from, to))
+            Toast(Tr("Couldn't write the seats for the next start"), ui::ToastKind::Error);
+        else
+        {
+            m_generation++;
+            if (!m_model.Live())
+                Toast(Tr("Players swapped"));
+        }
     }
 
     bool CollectionPage::Drop(const std::string& path)
@@ -741,6 +817,19 @@ namespace launcher_ui
         constexpr float ShelfCell = 2 * ui::height::Main; // the narrowest a figure's card gets
         constexpr float ShelfGap = ui::space::XS;
         constexpr float FilterPanel = ui::height::SettingControl + 2 * ui::height::Main;
+        constexpr float RefusedAlpha = 0.35f; // a seat that would refuse the figure being dragged
+        constexpr float DraggedAlpha = 0.75f; // the dragged figure's picture under the pointer
+
+        // What was drawn into `draw` since vertex `from`, at `alpha` of its own opacity.
+        void FadeVertices(ImDrawList* draw, int from, float alpha)
+        {
+            for (int v = from; v < draw->VtxBuffer.Size; v++)
+            {
+                ImU32& col = draw->VtxBuffer[v].col;
+                const ImU32 a = ImU32(float((col >> IM_COL32_A_SHIFT) & 0xFF) * alpha);
+                col = (col & ~IM_COL32_A_MASK) | (a << IM_COL32_A_SHIFT);
+            }
+        }
 
         // A card's fill: the surface (raised under the pointer or the focus) at the elevation's alpha, faded by `fade`.
         ImU32 CardFill(bool raised, float fade = 1)
@@ -763,7 +852,7 @@ namespace launcher_ui
     {
         if (!m_opened)
             Open();
-        if (m_model.Poll(SDL_GetTicks()))
+        if (m_model.PollInBackground(SDL_GetTicks()))
             m_generation++; // a game wrote a dump, took or released a figure, or quit
         if (m_choosing >= 0 && !m_model.CanEditSeats())
             m_choosing = -1; // a game started meanwhile
@@ -802,6 +891,7 @@ namespace launcher_ui
             ui::PageLegend(Tr("Back"), width, true); // with the page's pad actions (HandleShortcuts)
         ImGui::EndChild();
 
+        DrawSwapQuestion();
         DrawOverlay();
     }
 
@@ -905,6 +995,7 @@ namespace launcher_ui
     void CollectionPage::TestHeroPortal(bool installing, bool running)
     {
         m_heroFixture = m_heroLoaded = true;
+        m_heroRealPortal = running && LauncherEnv("SKY_LAUNCHER_TEST_HERO_REAL_PORTAL") != nullptr;
         m_model.figures.clear();
         m_model.seats.assign(3, "");
         for (int i = 0; i < (installing ? 1 : 2); i++)
@@ -934,7 +1025,7 @@ namespace launcher_ui
             m_heroLoaded = true;
         }
         if (!m_heroFixture)
-            m_model.Poll(SDL_GetTicks());
+            m_model.PollInBackground(SDL_GetTicks());
         if (m_model.Game() == nullptr)
             return; // a game the catalogue doesn't list yet has no seats to show
         ImGui::SetCursorScreenPos(at);
@@ -977,18 +1068,49 @@ namespace launcher_ui
         const size_t count = game != nullptr ? game->seats.size() : 0;
         const float rowH =
             count == 0 ? 0 : (at.y + size.y - ui::space::M - rowsY - (count - 1) * ui::space::XS) / count;
+        // A real portal plugged in: the seats of the session file are not on the game's portal. Player 1 as the game
+        // plays it; the other seats are only known to the Toy Box window, over its link.
+        bool realPortal = false;
+        std::optional<discordpresence::Toy> gameToy;
+        if (m_heroFixture)
+        {
+            realPortal = live && m_heroRealPortal;
+            gameToy = discordpresence::Toy{ 19, 0, 12 };
+        }
+        else if (live && m_app.m_portalGame == m_model.gameId)
+        {
+            realPortal = m_app.m_portalWatch.RealPortal();
+            gameToy = m_app.m_portalWatch.PlayerOne();
+        }
+        Figure played;
+        if (realPortal && gameToy)
+        {
+            played.type = gameToy->type;
+            played.variant = gameToy->variant;
+            played.toy = collection::Catalogue::Get().Find(played.type);
+            played.variantInfo = collection::Catalogue::Get().Describe(played.toy, played.variant);
+            played.level = gameToy->level ? int(*gameToy->level) : 0;
+        }
         size_t rowIndex = 0;
         if (game != nullptr)
             for (size_t i = 0; i < game->seats.size(); i++)
             {
+                if (realPortal && game->seats[i].id != "p1")
+                    continue;
                 const float rowY = std::floor(rowsY + rowIndex * (rowH + ui::space::XS));
                 ImGui::SetCursorScreenPos(ImVec2(at.x + ui::space::M, rowY));
                 rowIndex++;
-                const Figure* figure = i < m_model.seats.size() ? m_model.Find(m_model.seats[i]) : nullptr;
+                const Figure* figure = realPortal                 ? (gameToy ? &played : nullptr)
+                                       : i < m_model.seats.size() ? m_model.Find(m_model.seats[i])
+                                                                  : nullptr;
                 const std::string seat = SeatName(i);
-                const std::string name = figure != nullptr ? Name(*figure) : Tf("{} · empty", seat);
+                const std::string name = figure == nullptr ? Tf("{} · empty", seat)
+                                         : realPortal      ? collection::NameIn(*figure, m_model.gameId)
+                                                           : Name(*figure);
                 std::string detail;
-                if (figure != nullptr)
+                if (realPortal && figure != nullptr)
+                    detail = figure->level > 0 ? Tf("{} · {}", seat, Tf("Level {}", figure->level)) : seat;
+                else if (figure != nullptr)
                 {
                     const collection::Card card = CardOf(*figure);
                     const std::string level = m_heroFixture    ? Tf("Level {}", figure->level)
@@ -1016,7 +1138,7 @@ namespace launcher_ui
                     picture.y += (box.y - side) / 2;
                     if (figure != nullptr)
                     {
-                        if (!DrawSwapper(draw, CardOf(*figure), picture, side))
+                        if (realPortal || !DrawSwapper(draw, CardOf(*figure), picture, side))
                             DrawPicture(draw, figure->toy, figure->Kind(), figure->variant, picture, side);
                     }
                     else
@@ -1031,6 +1153,14 @@ namespace launcher_ui
                 }
                 ImGui::PopID();
             }
+        if (realPortal && rowIndex < count)
+        {
+            const float rowY = std::floor(rowsY + rowIndex * (rowH + ui::space::XS));
+            ImGui::SetCursorScreenPos(ImVec2(at.x + ui::space::M,
+                std::round(rowY + std::min(rowH, float(ui::height::Large)) / 2 - ui::CapMiddle(ui::TextStyle::Body))));
+            ui::Text(ui::TextStyle::Body, Tr("The other seats: in the Toy Box window"), ui::color::Dim,
+                size.x - 2 * ui::space::M);
+        }
         ImGui::PopStyleVar();
         ui::EndCard();
     }
@@ -1107,6 +1237,25 @@ namespace launcher_ui
             Tr("Real figure · on the portal"), room);
     }
 
+    void CollectionPage::DrawSeatPicture(ImDrawList* draw, const Figure& figure, ImVec2 at, float size)
+    {
+        if (collection::Card card = CardOf(figure); !DrawSwapper(draw, card, at, size))
+        {
+            DrawIcon(draw, figure.toy, figure.Kind(), at, size, false, figure.variant);
+            if (card.Swapper())
+                DrawBottom(draw, *card.second, ImVec2(at.x + size * 0.58f, at.y + size * 0.58f), size * 0.42f);
+        }
+    }
+
+    void CollectionPage::DrawDragged(const Figure& figure)
+    {
+        ImDrawList* draw = ImGui::GetForegroundDrawList();
+        const ImVec2 pointer = ImGui::GetMousePos();
+        const int first = draw->VtxBuffer.Size;
+        DrawSeatPicture(draw, figure, ImVec2(pointer.x - SeatPicture / 2, pointer.y - SeatPicture / 2), SeatPicture);
+        FadeVertices(draw, first, DraggedAlpha);
+    }
+
     void CollectionPage::DrawSeats(float width)
     {
         const collection::Game* game = m_model.Game();
@@ -1171,6 +1320,20 @@ namespace launcher_ui
         const ImVec2 row = ImGui::GetCursorScreenPos();
         m_navSeat = m_hoverSeat = -1;
         m_crossAt.assign(count, ImVec2(-1, -1));
+        // The figure being dragged (a card, or a seat's), for the seats that would refuse it and the one it is over.
+        const Figure* dragged = nullptr;
+        int draggedFrom = -1;
+        if (const ImGuiPayload* payload = ImGui::GetDragDropPayload())
+        {
+            if (payload->IsDataType("SKYFIG"))
+                dragged = m_model.Find(static_cast<const char*>(payload->Data));
+            else if (payload->IsDataType("SKYSEAT"))
+            {
+                draggedFrom = int(*static_cast<const size_t*>(payload->Data));
+                if (size_t(draggedFrom) < count && !m_model.seats[draggedFrom].empty())
+                    dragged = m_model.Find(m_model.seats[draggedFrom]);
+            }
+        }
         for (size_t i = 0; i < count; i++)
         {
             const ImVec2 at(row.x + float(i) * (w + SeatGap), row.y),
@@ -1189,11 +1352,25 @@ namespace launcher_ui
             const ui::State state = ui::ItemState();
             const bool hovered = state.hovered, nav = ImGui::IsItemFocused();
             ui::FocusRingIf(state, ui::radius::Card);
-            // Dropping a card on a seat puts the figure there.
+            const bool refuses = dragged != nullptr && draggedFrom != int(i) && !Refusal(i, *dragged).empty();
+            // Dropping a card on a seat puts the figure there; a seat's figure moves (MoveSeat).
+            bool target = false;
             if (ImGui::BeginDragDropTarget())
             {
-                if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("SKYFIG"))
-                    PutOn(i, std::string(static_cast<const char*>(payload->Data)));
+                constexpr ImGuiDragDropFlags early =
+                    ImGuiDragDropFlags_AcceptBeforeDelivery | ImGuiDragDropFlags_AcceptNoDrawDefaultRect;
+                if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("SKYFIG", early))
+                {
+                    target = true;
+                    if (payload->IsDelivery())
+                        PutOn(i, std::string(static_cast<const char*>(payload->Data)));
+                }
+                if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("SKYSEAT", early))
+                {
+                    target = *static_cast<const size_t*>(payload->Data) != i;
+                    if (payload->IsDelivery())
+                        MoveSeat(*static_cast<const size_t*>(payload->Data), i);
+                }
                 ImGui::EndDragDropTarget();
             }
             const Figure* figure = m_model.seats[i].empty() ? nullptr : m_model.Find(m_model.seats[i]);
@@ -1202,13 +1379,13 @@ namespace launcher_ui
                 m_navSeat = int(i);
             if (hovered)
                 m_hoverSeat = int(i);
-            // Dragging a figure off its seat, onto the shelf, takes it off.
-            if (occupied && editable && ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
+            // Dragging a figure off its seat, onto the shelf, takes it off; onto another seat, moves it.
+            if (occupied && editable && ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceNoPreviewTooltip))
             {
                 size_t index = i;
                 ImGui::SetDragDropPayload("SKYSEAT", &index, sizeof(index));
-                ui::Text(ui::TextStyle::Body, figure != nullptr ? Name(*figure).c_str() : Tr("Take it off"),
-                    ui::color::Ink, -1);
+                if (figure != nullptr)
+                    DrawDragged(*figure);
                 ImGui::EndDragDropSource();
             }
             const bool menu = ImGui::IsItemClicked(ImGuiMouseButton_Right) && occupied;
@@ -1218,13 +1395,14 @@ namespace launcher_ui
                 m_seatMenu = int(i);
                 ui::OpenMenu("##seatmenu");
             }
-            const bool choosing = m_choosing == int(i);
-            draw->AddRectFilled(at, end, CardFill(choosing || hovered || nav), ui::radius::Card);
+            const bool choosing = m_choosing == int(i), ringed = choosing || target;
+            draw->AddRectFilled(at, end, CardFill(ringed || hovered || nav), ui::radius::Card);
             draw->AddRect(at, end,
-                ui::Col(choosing  ? ui::color::AccentFill
+                ui::Col(ringed    ? ui::color::AccentFill
                         : hovered ? ui::color::Edge
                                   : ui::color::Hairline),
-                ui::radius::Card, 0, choosing ? ui::stroke::Edge : ui::stroke::Hairline);
+                ui::radius::Card, 0, ringed ? ui::stroke::Edge : ui::stroke::Hairline);
+            const int seatVertices = draw->VtxBuffer.Size;
             const ImVec2 picture(at.x + SeatPad, at.y + SeatPad);
             // Three lines beside the picture: the seat (leaving room for the X at the corner), the figure's name, its level.
             const float tx = picture.x + SeatPicture + ui::space::S, room = end.x - tx - SeatPad;
@@ -1240,14 +1418,7 @@ namespace launcher_ui
                 DrawRealSeat(draw, i, at, end);
             else if (occupied && figure != nullptr)
             {
-                if (collection::Card card = CardOf(*figure); !DrawSwapper(draw, card, picture, SeatPicture))
-                {
-                    DrawIcon(draw, figure->toy, figure->Kind(), picture, SeatPicture, false, figure->variant);
-                    if (card.Swapper())
-                        DrawBottom(draw, *card.second,
-                            ImVec2(picture.x + SeatPicture * 0.58f, picture.y + SeatPicture * 0.58f),
-                            SeatPicture * 0.42f);
-                }
+                DrawSeatPicture(draw, *figure, picture, SeatPicture);
                 PutText(draw, ImVec2(tx, second), ui::TextStyle::Body, true, ui::color::Ink, Name(*figure), room);
                 if (std::string detail = Detail(*figure); !detail.empty())
                     PutText(draw, ImVec2(tx, third), ui::TextStyle::Caption, false,
@@ -1271,6 +1442,8 @@ namespace launcher_ui
                                : "",
                     room);
             }
+            if (refuses)
+                FadeVertices(draw, seatVertices, RefusedAlpha);
             if (cross)
             {
                 ImGui::SetCursorScreenPos(ImVec2(end.x - ui::height::Small, at.y));
@@ -1520,26 +1693,28 @@ namespace launcher_ui
             m_hovered = figure.path;
         if (focused)
             m_selected = figure.path;
-        if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
+        if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceNoPreviewTooltip))
         {
             ImGui::SetDragDropPayload("SKYFIG", figure.path.c_str(), figure.path.size() + 1);
-            ui::Text(ui::TextStyle::Body, Name(figure).c_str(), ui::color::Ink, -1);
+            DrawDragged(figure);
             ImGui::EndDragDropSource();
         }
-        std::string tip = Name(figure);
-        if (dim)
-            tip += "\n" + Tf("Not for {}", FullGameName(m_model.gameId));
-        else if (busy)
-            tip += "\n" + Tf("On the portal in {}: read-only", LiveGame(figure));
-        else if (m_choosing >= 0)
-            tip += "\n" + Tf("Click: put it on {}", SeatName(size_t(m_choosing)));
-        else
-            tip += std::string("\n") + Tr("Click: sheet · drag to a seat");
         // Under the pointer only, and not while the pad is moving the focus (the pointer rests on a card): the legend says what
-        // the buttons do.
+        // the buttons do. Its text is made for that card only, not for every card on every frame.
         const bool bubble = hovered && !ImGui::GetIO().NavVisible;
         if (bubble)
+        {
+            std::string tip = Name(figure);
+            if (dim)
+                tip += "\n" + Tf("Not for {}", FullGameName(m_model.gameId));
+            else if (busy)
+                tip += "\n" + Tf("On the portal in {}: read-only", LiveGame(figure));
+            else if (m_choosing >= 0)
+                tip += "\n" + Tf("Click: put it on {}", SeatName(size_t(m_choosing)));
+            else
+                tip += std::string("\n") + Tr("Click: sheet · drag to a seat");
             ui::Bubble(tip.c_str(), ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
+        }
         if (hovered && m_app.m_testPadWalk)
             m_app.m_drawn["figure-hover"] = bubble ? "bubble" : "none";
         ImGui::PopID();

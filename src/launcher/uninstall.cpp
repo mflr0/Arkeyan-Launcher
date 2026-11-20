@@ -265,6 +265,15 @@ namespace uninstall
 
         // Why a target is refused, or nothing. `declared`: a path the environment names itself (the figure folder, the
         // settings file) that may lie outside the data folders, as a test's or a portable setup's does.
+        // A game's folder in the games folder that may be emptied: safe, not a link, and inside the games folder.
+        bool FilesFolderOk(const GameEntry& game, const Environment& env)
+        {
+            return !game.files.empty() && !env.gamesFolder.empty() && SafePath(game.files, env.home) &&
+                   SafePath(env.gamesFolder, env.home) && !IsLink(game.files) && !IsLink(env.gamesFolder) &&
+                   Inside(game.files, env.gamesFolder) && !IsOrHolds(game.files, env.root) &&
+                   !IsOrHolds(game.files, env.launcherData) && !IsOrHolds(game.files, game.folder);
+        }
+
         std::optional<Why> Refuse(const fs::path& path, const Environment& env, bool declared = false)
         {
             if (!SafePath(path, env.home))
@@ -273,12 +282,20 @@ namespace uninstall
             {
                 // A link inside a game's own folder goes as a link (never followed); any other link is refused.
                 for (const GameEntry& game : env.games)
+                {
                     if (path.parent_path().lexically_normal() == game.folder.lexically_normal() &&
                         !IsLink(game.folder) &&
                         (Inside(game.folder, env.root) || Inside(game.folder, env.launcherData)))
                         return std::nullopt;
+                    if (path.parent_path().lexically_normal() == game.files.lexically_normal() &&
+                        FilesFolderOk(game, env))
+                        return std::nullopt;
+                }
                 return Why::Link;
             }
+            for (const GameEntry& game : env.games)
+                if (FilesFolderOk(game, env) && Inside(path, game.files))
+                    return std::nullopt;
             if (declared && (path == env.collection || path == env.settingsFile))
                 return std::nullopt;
             // The pre-0.3.1 folders are roots too; a link standing for one is refused above.
@@ -418,6 +435,8 @@ namespace uninstall
             for (const fs::directory_entry& entry : ListDirectory(game.folder, error))
             {
                 std::string name = datadir::Text(entry.path().filename());
+                if (IsOrHolds(entry.path(), game.files))
+                    continue; // a games folder inside the game's own folder: refused by the settings, never emptied here
                 const fs::path backup =
                     game.saves.empty() ? fs::path() : fs::path(game.saves.native() + fs::path("-backup").native());
                 const bool saves =
@@ -433,6 +452,26 @@ namespace uninstall
                 fs::path backup = game.saves;
                 backup += "-backup";
                 add(Group::Saves, game.id, backup);
+            }
+        }
+
+        // Each game's folder in the games folder: the built game, its HD textures and its game data. The rest of the
+        // games folder is the player's.
+        for (const GameEntry& game : env.games)
+        {
+            std::error_code error;
+            if (game.files.empty() || !Exists(game.files) ||
+                game.files.lexically_normal() == game.folder.lexically_normal())
+                continue;
+            if (!FilesFolderOk(game, env))
+            {
+                plan.left.push_back({ IsLink(game.files) ? Why::Link : Why::Unsafe, Group::Games, game.files, {} });
+                continue;
+            }
+            for (const fs::directory_entry& entry : ListDirectory(game.files, error))
+            {
+                const std::string name = datadir::Text(entry.path().filename());
+                add(name == "gamedata" ? Group::GameData : Group::Games, game.id, entry.path());
             }
         }
 
@@ -483,8 +522,9 @@ namespace uninstall
         {
             if (built.empty())
                 continue;
-            bool ours = std::any_of(
-                env.games.begin(), env.games.end(), [&](const GameEntry& game) { return Inside(built, game.folder); });
+            bool ours = std::any_of(env.games.begin(), env.games.end(), [&](const GameEntry& game) {
+                return Inside(built, game.folder) || (FilesFolderOk(game, env) && Inside(built, game.files));
+            });
             if (ours)
                 continue;
             plan.left.push_back({ Exists(built) ? Why::Elsewhere : Why::Missing, Group::Games, built, {} });
@@ -569,8 +609,15 @@ namespace uninstall
         // stays.
         std::error_code error;
         for (const GameEntry& game : env.games)
+        {
             if (!Refuse(game.folder, env) && Exists(game.folder))
                 fs::remove(game.folder, error);
+            if (FilesFolderOk(game, env) && Exists(game.files))
+                fs::remove(game.files, error);
+        }
+        if (!env.gamesFolder.empty() && SafePath(env.gamesFolder, env.home) && !IsLink(env.gamesFolder) &&
+            Exists(env.gamesFolder))
+            fs::remove(env.gamesFolder, error); // only when nothing of the player's is left in it
         for (const fs::path& base : { env.launcherData, env.root })
             if (SafePath(base, env.home) && Exists(base))
                 fs::remove(base, error);
@@ -807,6 +854,7 @@ namespace uninstall
         env.home = home != nullptr ? datadir::FromText(home) : fs::path();
         env.root = datadir::Root();
         env.launcherData = LauncherDataFolder();
+        env.gamesFolder = GamesFolder();
         env.settingsFile = datadir::FromText(LauncherConfigPath());
         env.collection = datadir::FromText(collection::Folder());
         env.desktop = DesktopFolder();
@@ -841,7 +889,7 @@ namespace uninstall
         for (const GameInfo& info : g_games)
         {
             GameFolders folders = FoldersOf(info.id);
-            GameEntry game{ info.id, info.name, folders.game, folders.saves, GameIsRunning(folders) };
+            GameEntry game{ info.id, info.name, folders.game, folders.saves, GameIsRunning(folders), folders.files };
             env.games.push_back(game);
             if (auto section = config.find(info.id); section != config.end())
                 if (auto iso = section->second.find("iso"); iso != section->second.end() && !iso->second.empty())

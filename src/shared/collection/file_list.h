@@ -3,8 +3,8 @@
 // The list of a folder's files and their SHA-256, and the check that they are all still there, unchanged
 // (docs/release/launcher/kit_contract.md, "File list"). The player kit carries one (tools/make_kit.sh); the launcher writes
 // one into a game's folder when its install ends. An antivirus that quarantines or "cleans" one of these files is then
-// named to the player instead of breaking a build or a game later. Plain C++ (no SDL), shared with Skylauncher
-// (tools/sync_skylauncher.sh).
+// named to the player instead of breaking a build or a game later. Plain C++ (no SDL), shared with Arkeyan Launcher
+// (tools/sync_launcher.sh).
 //
 // The list, files.sha256, is what `shasum -a 256` prints: one "<64 lowercase hex>  <path>" line per file, paths relative to
 // the folder with '/' on every platform, UTF-8; empty lines and lines starting with '#' are skipped. Files that are not in

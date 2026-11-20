@@ -335,6 +335,7 @@ namespace ui
             case Icon::Monitor: break;
             case Icon::Sound: return lucide::Volume2;
             case Icon::Muted: return lucide::VolumeX;
+            case Icon::Reset: return lucide::RotateCcw;
             }
             return 0;
         }

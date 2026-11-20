@@ -2,7 +2,7 @@
 
 // [Lux] The UI pictures of Spyro's Adventure's disc: "strm" files (one zlib stream) holding APKF texture packages.
 // Layout found by inspecting uigameimage.str, uiimage.str and ui/<lang>/startmenu.str (docs/runtime/host/figures.md,
-// docs/runtime/host/game_art.md). Shared with Skylauncher: no runtime dependency.
+// docs/runtime/host/game_art.md). Shared with Arkeyan Launcher: no runtime dependency.
 #include "xenos_texture.h"
 #include <cstdint>
 #include <functional>

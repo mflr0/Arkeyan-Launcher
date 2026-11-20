@@ -97,7 +97,8 @@ Attack 3 / Back	Attack 3 / Tillbaka
 Aug	aug.
 Auto	Auto
 Auto (follows the window)	Auto (följer fönstret)
-Auto shows more when wide; 16:9 adds bars.	Auto visar mer i bredd; 16:9 lägger till kanter.
+Fill (covers a taller screen)	Fyll (täcker en högre skärm)
+Auto shows more when wide; Fill covers a taller screen; 16:9 adds bars.	Auto visar mer i bredd; Fyll täcker en högre skärm; 16:9 lägger till kanter.
 Auto-open Toy Box	Öppna Toy Box automatiskt
 Auto: 5.1 when the device has six channels.	Auto: 5.1 när enheten har sex kanaler.
 Automatic	Automatisk
@@ -150,6 +151,9 @@ Checking...	Kontrollerar...
 Chinese	Kinesiska
 Choose	Välj
 Choose a figure for {}	Välj en figur för {}
+Include HD textures	Ta med HD-texturer
+{} with them, {} without.	{} med dem, {} utan.
+Settings: {} FPS · Resolution scale {} · {}	Inställningar: {} FPS · Upplösningsskala {} · {}
 Choose a folder...	Välj en mapp...
 Choose a key to change it.	Välj en tangent för att ändra den.
 Choose a type	Välj en typ
@@ -359,6 +363,14 @@ Couldn't download the game tools	Kunde inte ladda ner spelverktygen
 Frame rate limit	Bildfrekvensgräns
 Frees {}. Saves and settings are kept.	Frigör {}. Sparfiler och inställningar behålls.
 Fullscreen	Helskärm
+Window size	Fönsterstorlek
+{} x {}	{} x {}
+Last used: as it was when the game closed.	Senast använd: som när spelet stängdes.
+Last used	Senast använd
+Custom	Anpassad
+Width	Bredd
+Height	Höjd
+{} or more	{} eller mer
 Game	Spel
 Game art comes from your own disc.	Spelets grafik kommer från din egen skiva.
 Game data	Speldata
@@ -409,12 +421,10 @@ Hold to delete saves, backups and caches.	Håll in för att radera sparfiler, s�
 Hold to delete the built game. Saves are kept.	Håll in för att radera det byggda spelet. Sparfiler behålls.
 Hold to delete the copy.	Håll in för att radera kopian.
 Hold to delete the partial copy.	Håll in för att radera den ofullständiga kopian.
-Hold to give every button its own job back.	Håll in för att ge varje knapp sin uppgift tillbaka.
 Hold to mark them as not in use.	Håll in för att markera dem som inte använda.
 Hold to move them to the trash.	Håll in för att flytta dem till papperskorgen.
 Hold to put this copy back.	Håll in för att lägga tillbaka den här kopian.
 Hold to rebuild the game.	Håll in för att bygga om spelet.
-Hold to reset every key of this game.	Håll in för att återställa alla tangenter för det här spelet.
 Hold to restore; your current saves are kept first.	Håll in för att återställa; dina nuvarande sparfiler sparas först.
 INSTALL	INSTALLERA
 INSTALLATION INTERRUPTED	INSTALLATIONEN AVBRÖTS
@@ -692,7 +702,6 @@ Report copied	Rapporten kopierad
 Report saved	Rapporten sparad
 Report saved: {}	Rapporten sparad: {}
 Reset	Nollställ
-Reset to defaults	Återställ till standard
 Reset to new	Nollställ till ny
 Reset to new...	Nollställ till ny...
 Reset {} to new? Level, gold and upgrades are lost.	Nollställa {} till ny? Nivå, guld och uppgraderingar går förlorade.
@@ -857,7 +866,6 @@ Total	Totalt
 Touchpad	Pekplatta
 Toy	Figur
 Toy Box	Toy Box
-Toy Box in the game: F6, or View + Y on a controller.	Toy Box i spelet: F6, eller View + Y på en handkontroll.
 Toy Box keys	Toy Box-tangenter
 Toy type {}	Figurtyp {}
 Translating the game code	Översätter spelkoden
@@ -871,8 +879,9 @@ Trash · {}	Papperskorg · {}
 Triangle	Triangel
 Trilinear	Trilinjär
 Trophies	Troféer
-Turn the game music off	Stäng av spelmusiken
-Turn the game music on	Slå på spelmusiken
+Game music	Spelmusik
+Play the music	Spela musiken
+Each game's menu theme, on its page.	Varje spels menytema, på spelets sida.
 Type	Typ
 Ultra Performance	Ultraprestanda
 Frame generation	Bildgenerering
@@ -909,7 +918,6 @@ VSync	VSync
 Vehicle {}	Fordon {}
 Vehicles	Fordon
 Verified	Verifierad
-Verified, {}	Verifierad, {}
 Version {} is available.	Version {} finns.
 Version {}, {}	Version {}, {}
 Versions	Versioner
@@ -1097,6 +1105,7 @@ Open with the game	Öppna med spelet
 Real figure · on the portal	Riktig figur · på portalen
 Start a game first	Starta ett spel först
 The Toy Box in its own window, to keep beside the game	Toy Box i ett eget fönster, bredvid spelet
+The other seats: in the Toy Box window	De andra platserna: i Toy Box-fönstret
 The Toy Box window opens each time you play	Toy Box-fönstret öppnas varje gång du spelar
 The game cannot read this figure there	Spelet kan inte läsa den här figuren där
 The game did not find this figure	Spelet hittade inte den här figuren
@@ -1138,3 +1147,107 @@ Couldn't prepare the game tools	Couldn't prepare the game tools
 Go back to the final release?	Go back to the final release?
 Going back to {}. Saves and figures made with the test build may not open in it. A copy of them is kept.	Going back to {}. Saves and figures made with the test build may not open in it. A copy of them is kept.
 Version {} (the final release)	Version {} (the final release)
+
+# The Games folder (Settings > Launcher)
+Games folder	Spelmapp
+Where every game is built: another drive saves room.	Där varje spel installeras: en annan enhet sparar utrymme.
+Moving the games: {} of {}	Flyttar spelen: {} av {}
+Now: {}	Nu: {}
+Use default	Använd standard
+Games moved	Spelen flyttade
+Move stopped: the games stay where they were	Flytten stoppad: spelen stannar där de var
+Couldn't move the games	Kunde inte flytta spelen
+Couldn't move the games: they stay where they were	Kunde inte flytta spelen: de stannar där de var
+Not enough free space: {} needed	Inte tillräckligt med ledigt utrymme: {} behövs
+Wait for the games to move	Vänta tills spelen har flyttats
+Quit the game to move the games	Avsluta spelet för att flytta spelen
+The games folder isn't there. Plug in the drive, or choose another folder.	Spelmappen finns inte. Anslut enheten eller välj en annan mapp.
+This folder isn't there	Den här mappen finns inte
+This folder can't be written to	Det går inte att skriva i den här mappen
+Choose a folder outside the games	Välj en mapp utanför spelen
+Choose a folder outside the game tools	Välj en mapp utanför spelverktygen
+The games in {} go too; your other files there stay.	Spelen i {} tas också bort; dina andra filer där stannar.
+
+# The image check (disc_check.h): the Disc tab's pill, the install's first row, the dialog after a game whose movies did not open.
+Can't read the disc image.	Kan inte läsa skivavbilden.
+Check again	Kontrollera igen
+Checking files, {}	Kontrollerar filer, {}
+Checking the disc	Kontrollerar skivan
+Choose image	Välj avbild
+Copy the disc again, then choose the new image.	Kopiera skivan igen och välj sedan den nya avbilden.
+Damaged copy	Skadad kopia
+Disc image damaged	Skivavbilden är skadad
+Every file can be read. No good copy of this edition to compare with.	Alla filer kan läsas. Ingen bra kopia av den här utgåvan att jämföra med.
+Every file matches a good copy of this disc ({}).	Varje fil stämmer med en bra kopia av skivan ({}).
+Good copy, {}	Bra kopia, {}
+Part of the image can't be read.	En del av avbilden kan inte läsas.
+Readable, {}	Läsbar, {}
+Some files differ from a good copy of this disc ({}).	Några filer skiljer sig från en bra kopia av skivan ({}).
+The disc image is damaged.	Skivavbilden är skadad.
+The disc image may be damaged	Skivavbilden kan vara skadad
+The disc image of {} is damaged	Skivavbilden för {} är skadad
+{} couldn't open some of its movies. A damaged copy of the disc does this.	{} kunde inte öppna några av sina filmer. Så gör en skadad kopia av skivan.
+
+# The global keys and controller (ui/controls_page.cpp).
+Reset to defaults	Återställ till standard
+Hold to reset every key of this game.	Håll in för att återställa alla tangenter för det här spelet.
+Hold to reset every button of this game.	Håll in för att återställa alla knappar för det här spelet.
+Use the global setting	Använd den globala inställningen
+Use the default	Använd standard
+Dimmed values follow Launcher settings.	Nedtonade värden följer Launcherinställningar.
+Games use these unless their own settings change them.	Spelen använder dessa om inte deras egna inställningar ändrar dem.
+Buttons	Knappar
+Stats / Info	Statistik / Info
+
+# Controller shortcuts
+Swap wheel	Byteshjul
+Game menu	Spelmeny
+Hold to open the swap wheel.	Håll inne för att öppna byteshjulet.
+Press a button (Escape cancels).	Tryck på en knapp (Escape avbryter).
+Press two buttons in order (Escape cancels).	Tryck på två knappar i följd (Escape avbryter).
+Press the second button (Escape cancels).	Tryck på den andra knappen (Escape avbryter).
+This button is used by another action	En annan åtgärd använder denna knapp
+Hold to reset the controller buttons for all games.	Håll inne för att återställa kontrollknapparna för alla spel.
+Toy Box in the game: {}, or {} on a controller.	Toy Box i spelet: {} eller {} på en handkontroll.
+
+# Figure pictures (Settings > Launcher > Collection, the figure sheet).
+Figure pictures	Figurbilder
+Which game's pictures the figures show.	Vilket spels bilder figurerna visar.
+Original game	Ursprungligt spel
+Newest game	Nyaste spelet
+Figure picture	Figurbild
+Default ({})	Standard ({})
+My picture	Min bild
+Choose a picture...	Välj en bild...
+Remove my picture	Ta bort min bild
+That file is not a picture	Filen är ingen bild
+The picture could not be saved	Bilden kunde inte sparas
+
+# Imaginite chests (ui/chests_page.cpp).
+Imaginite chests	Imaginite-kistor
+Chests	Kistor
+Chests · {}	Kistor · {}
+Reach the Academy once in the game to add chests.	Nå Akademin en gång i spelet för att lägga till kistor.
+Save slot {} · {} in the pile · Room for {} more	Sparplats {} · {} i högen · Plats för {} till
+Imaginite Chest	Imaginite-kista
+Copper Chest	Kopparkista
+Bronze Chest	Bronskista
+Silver Chest	Silverkista
+Gold Chest	Guldkista
+Platinum Chest	Platinakista
+Bronze Mystery Chest	Brons-mysteriekista
+Silver Mystery Chest	Silver-mysteriekista
+Gold Mystery Chest	Guld-mysteriekista
+Add 1 chest	Lägg till 1 kista
+Add {} chests	Lägg till {} kistor
+Chests added: they appear at the Academy	Kistor tillagda: de dyker upp på Akademin
+Couldn't add the chests	Kunde inte lägga till kistorna
+They appear the next time this save reaches the Academy.	De dyker upp nästa gång den här sparfilen når Akademin.
+{} chests waiting for save slot {}	{} kistor väntar på sparplats {}
+{} chests waiting	{} kistor väntar
+Too late: the game already added them	För sent: spelet har redan lagt till dem
+# Collection: a seat's figure dragged onto a taken player seat
+Swap players?	Byta spelare?
+Swap	Byt
+{} goes on {}, and {} on {}.	{} går till {} och {} till {}.
+Players swapped	Spelarna bytte plats

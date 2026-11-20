@@ -1,4 +1,4 @@
-<p align="center"><img src="resources/icons/skylauncher.svg" width="128" alt="Arkeyan Launcher"></p>
+<p align="center"><img src="resources/icons/arkeyan-launcher.svg" width="128" alt="Arkeyan Launcher"></p>
 
 <p align="center">
 <a href="https://github.com/mflr0/Arkeyan-Launcher/releases/latest"><img alt="Release" src="https://img.shields.io/github/v/release/mflr0/Arkeyan-Launcher"></a>
@@ -126,7 +126,7 @@ Xbox 360 discs only.
 | Giants | USA, Europe | English, French, German, Spanish, Italian, Dutch, Portuguese, Swedish, Norwegian, Danish, Finnish |
 | Swap Force | USA, Australia, Europe | English, French, Spanish, Italian |
 | Trap Team | Europe, USA | English, German, French, Dutch |
-| SuperChargers | Europe | English, German |
+| SuperChargers | Europe | English, German, French, Dutch |
 | Imaginators | Europe, USA | French, Dutch |
 
 Another edition whose game code is the same as a supported one (only the disc's header differs: another region, media ID or version) is accepted as that edition. Any other edition is refused with a message. If you have one, click **Find my edition** under that message: the game tools read your disc and copy a short report (its IDs, region, languages and fingerprints, and which addresses of the game they found in it). Open a [New disc edition](https://github.com/mflr0/Arkeyan-Launcher/issues/new?template=new_disc_edition.yml) issue and paste it. Never attach the disc image or game files.
@@ -271,7 +271,30 @@ What you can check, and do:
 
 ## Build from source
 
-You need CMake 3.20 or later, Ninja, a C++20 compiler (Clang) and git.
+Every system needs CMake 3.20 or later, Ninja, git and a C++20 Clang. The other libraries (SDL, Dear ImGui, fmt...) are
+submodules in `lib/`, built with the launcher.
+
+**macOS** (Apple Silicon): Xcode, then `brew install cmake ninja`. The `.dmg` (`tools/package_macos.sh`) also needs
+`brew install librsvg`, for the icon.
+
+**Linux** (Ubuntu 22.04 or later; Debian names): the compiler and SDL's development packages. The build stops if
+libdecor is missing, since without it GNOME on Wayland shows the window with no title bar.
+
+```sh
+sudo apt install cmake ninja-build git clang-15 libstdc++-12-dev pkg-config \
+    libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev libxtst-dev \
+    libxkbcommon-dev libwayland-dev wayland-protocols libdecor-0-dev libegl1-mesa-dev libgl1-mesa-dev \
+    libgles2-mesa-dev libdbus-1-dev libudev-dev libdrm-dev libgbm-dev
+```
+
+Configure with `-DCMAKE_C_COMPILER=clang-15 -DCMAKE_CXX_COMPILER=clang++-15`. The AppImage also needs `librsvg2-bin`,
+`libfuse2` and linuxdeploy (`tools/ci/linux.Dockerfile`).
+
+**Windows**: the exe is built from a Mac or a Linux PC, with llvm-mingw
+([Windows build from a Mac](docs/install.md#windows-build-from-a-mac)) or with clang-cl in Docker, as the releases
+(`tools/ci/windows.Dockerfile`, run by `tools/ci/run.sh`). A build on Windows itself has not been tried yet.
+
+The checks (`tools/ci/run.sh`) also need Docker: see [CONTRIBUTING.md](CONTRIBUTING.md#checks).
 
 ```sh
 git clone --recursive https://github.com/mflr0/Arkeyan-Launcher.git
@@ -307,8 +330,19 @@ script (frame rate, sound, the picture compared with a reference, saves, figures
 levels one by one. The Windows and Linux builds of Spyro's Adventure, Giants and Swap Force are also run in Wine and in a
 container.
 
-Everything here is made for this project: the launcher, the kits and the ports. The reverse engineering, the architecture
-and every design decision are the author's own; AI tools write the code from that design and run the tests.
+Everything here is made for this project: the launcher, the kits and the ports, whose source is the
+[forge](https://github.com/arkeyan-forge/forge).
+
+## Contributing and AI tools
+
+AI tools are welcome in contributions, under one rule: whoever submits a change owns it. Every pull request must be
+understood by its author, who has tested it and can explain any part of it. If a contribution turns out to be a problem
+(a bug, malicious code, a license violation), its author is held solely responsible, never the tool. The project itself
+is developed with the help of AI tools, under the same rule: the reverse engineering, the architecture and every design
+decision are the author's own.
+
+How to send a change: [CONTRIBUTING.md](CONTRIBUTING.md). The full rules, and what happens when they are broken, are in
+the [code of conduct](CODE_OF_CONDUCT.md).
 
 ## Wanted: UI/UX designers
 

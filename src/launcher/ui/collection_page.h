@@ -56,9 +56,12 @@ namespace launcher_ui
         SDL_Texture* texture = nullptr;
         bool generated = false;
         float width = 0, height = 0; // the picture's own size (an artwork is not square)
+        bool pending = true; // still being read (App::m_pictures): nothing is drawn in its place
+        uint64_t readyAt = 0; // when it arrived, for its fade (FadeIn)
     };
 
-    // One cache per renderer. Game slots often resolve the same fallback picture.
+    // One cache per renderer, shared by the game slots; by toy, variant and use (icon, picture, swapper), so that the
+    // pictures' files are looked up once, on the loader's thread.
     struct FigureIconCache
     {
         std::map<std::string, FigureIconTexture> textures;
@@ -102,7 +105,10 @@ namespace launcher_ui
         bool Drop(const std::string& path);
         std::string Folder() const;
         // B / Escape belongs to the page: an overlay is open, a seat is being chosen for, or a search is typed.
-        bool TakesBack() const { return m_overlay != Overlay::None || m_choosing >= 0 || m_search[0] != 0; }
+        bool TakesBack() const
+        {
+            return m_overlay != Overlay::None || m_choosing >= 0 || m_search[0] != 0 || m_swapFrom >= 0;
+        }
 
         // SKY_LAUNCHER_TEST_SEATX: the X of every seat, pressed by mouse, keyboard and pad (App::TestSeatXScript).
         std::vector<std::string> TestSeats() const { return m_model.seats; }
@@ -123,6 +129,7 @@ namespace launcher_ui
         friend struct ReviewChecks;
         bool m_heroLoaded = false;
         bool m_heroFixture = false;
+        bool m_heroRealPortal = false; // SKY_LAUNCHER_TEST_HERO_REAL_PORTAL: the running fixture with a real portal
         enum class Overlay
         {
             None,
@@ -151,6 +158,9 @@ namespace launcher_ui
         void DrawOverlay();
         void DrawFigurePage();
         void DrawFigureMenu(const collection::Figure& figure, bool writable);
+        // The sheet's "Figure picture" menu: the default, a game, or the player's own picture, for each half of a swapper.
+        void DrawPictureMenu(const collection::Card& card);
+        void ChooseOwnPicture(uint16_t type, uint16_t variant);
         void DrawConfirm(const collection::Figure& figure);
         void DrawFigureFacts(const collection::Figure& figure);
         void DrawDetails(const collection::Figure& figure);
@@ -189,8 +199,10 @@ namespace launcher_ui
         bool DrawSwapper(ImDrawList* draw, const collection::Toy* top, uint16_t topVariant,
             const collection::Toy* bottom, uint16_t bottomVariant, ImVec2 at, float box);
         bool DrawSwapper(ImDrawList* draw, const collection::Card& card, ImVec2 at, float box);
+        // The picture's texture once the loader read it (pending and empty until then), asked for on the first call.
         const FigureIconTexture& Icon(
             const collection::Toy* toy, collection::VariantKind kind, bool large, uint16_t variant);
+        void DrawFitted(ImDrawList* draw, const FigureIconTexture& picture, ImVec2 at, float box); // centred in `box`
         // A swapper (Swap Force) is one card: the top stands for it, the bottom is drawn small at its corner.
         collection::Card CardOf(const collection::Figure& figure) const;
         bool Busy(const collection::Figure& figure) const { return CardOf(figure).Busy(); }
@@ -214,6 +226,15 @@ namespace launcher_ui
         const std::vector<BackupRow>& Backups(const std::string& figure);
 
         void PutOn(size_t seat, const std::string& path);
+        // Why the seat would not take the figure now, as PutOn says it (`kind`: its toast's); empty when it would. The
+        // seats grey out by it while a figure is dragged, so the hint and the toast never disagree.
+        std::string Refusal(size_t seat, const collection::Figure& figure, ui::ToastKind* kind = nullptr) const;
+        // A seat's figure dropped on another seat: it moves there; onto a taken player seat, "Swap players?" first.
+        void MoveSeat(size_t from, size_t to);
+        void DrawSwapQuestion();
+        // A seated figure's picture (a swapper's halves joined), `size` square at `at`.
+        void DrawSeatPicture(ImDrawList* draw, const collection::Figure& figure, ImVec2 at, float size);
+        void DrawDragged(const collection::Figure& figure); // its picture under the pointer, while it is dragged
         void OpenFigure(const std::string& path);
         void Import(const std::vector<std::string>& paths);
         void ExportTo(const std::vector<std::string>& paths);
@@ -251,6 +272,7 @@ namespace launcher_ui
         int m_focusSeat = -1; // focus this seat next frame (the screenshot test),
         bool m_focusCard = false; // or the shelf's first card
         int m_seatMenu = -1; // the seat whose right-click menu is open
+        int m_swapFrom = -1, m_swapTo = -1; // the players "Swap players?" asks about; -1: no question
         std::string m_selected; // the card with the focus
         std::string m_toggleFavourite; // the card whose star was clicked this frame (HandleShortcuts applies it)
         std::string m_hovered; // the card under the mouse or the focus (X: its sheet)

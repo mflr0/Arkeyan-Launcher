@@ -8,12 +8,19 @@
 #include "launcher/i18n.h"
 #include "launcher/game_run.h"
 #include "launcher/game_settings.h"
+#include "launcher/games_folder.h"
 #include "launcher/i18n.h"
 #include "launcher/launcher.h"
+#include "launcher/report.h"
 #include "launcher/shortcut.h"
 #include "launcher/ui/launcher_app.h"
 #include "shared/collection/datadir.h"
 #include "shared/collection/save_backup.h"
+#include "shared/collection/game_data.h"
+#include <atomic>
+#if !defined(_WIN32)
+#include <unistd.h>
+#endif
 #include <set>
 #include <SDL3/SDL.h>
 #include <stb_image_write.h>
@@ -260,7 +267,22 @@ namespace
         StoreGameVideo(config, "ssa");
         SETTINGS_EXPECT(
             config["ssa.video"]["resolution_scale"] == "3" && config["giants.video"].count("resolution_scale") == 0);
-        SETTINGS_EXPECT(GameVideoSection("giants") == "giants.video" && GameVideoKeys().size() == 16);
+        SETTINGS_EXPECT(GameVideoSection("giants") == "giants.video" && GameVideoKeys().size() == 17);
+
+        // The window size (issue #135): PLAY passes the game's own, an empty one (Last used) leaves [video] without it.
+        config["ssa.video"]["window_size"] = "1600x900";
+        ApplyGameVideo(config, "ssa");
+        SETTINGS_EXPECT(config["video"]["window_size"] == "1600x900");
+        config["ssa.video"].erase("window_size");
+        ApplyGameVideo(config, "ssa");
+        SETTINGS_EXPECT(config["video"].count("window_size") == 0);
+        {
+            int width = 0, height = 0;
+            SETTINGS_EXPECT(WindowSizeOf("1600x900", width, height) && width == 1600 && height == 900);
+            SETTINGS_EXPECT(WindowSizeOf("300x200", width, height) && width == 640 && height == 360);
+            for (const char* odd : { "", "0x0", "abc", "1600", "x900", "1600x", "-1x5", "1600x900x1" })
+                SETTINGS_EXPECT(!WindowSizeOf(odd, width, height));
+        }
 
         // A resolution scale the page does not offer (hand-edited) is shown as Auto and the game gets Auto too (issue #9, S-26).
         SETTINGS_EXPECT(ResolutionScaleOf("3") == 3 && ResolutionScaleOf("10") == 10 &&
@@ -425,6 +447,13 @@ namespace
                             speakers(odd) == std::string("auto"));
         }
 
+        // "Nightmare from the start" on the games whose Nightmare waits for the story's end; SuperChargers offers it at
+        // once, Spyro's Adventure and Giants have none.
+        for (std::string_view id : { "swapforce", "trapteam", "imaginators" })
+            SETTINGS_EXPECT(NightmareFromStartOffered(id));
+        for (std::string_view id : { "ssa", "giants", "superchargers", "" })
+            SETTINGS_EXPECT(!NightmareFromStartOffered(id));
+
         // Through the settings file, sections with a dot included.
         fs::path scratch = root / "video.ini";
         SETTINGS_EXPECT(SaveLauncherConfig(scratch.string(), config));
@@ -562,43 +591,64 @@ namespace
         SETTINGS_EXPECT(PadButtonName(ssaA, PadFamily::Xbox360) == "A");
         i18n::SetLanguage("en");
 
-        // Seeded once from the player's [input] keys; the other keys of [input] are not copied; the device stays.
+        auto find = [](std::string_view game, std::string_view action) -> const GameKey& {
+            for (const GameKey& key : GameKeys(game))
+                if (action == key.action)
+                    return key;
+            return GameKeys(game)[0];
+        };
+        const char* const games[] = { "ssa", "giants", "swapforce", "trapteam", "superchargers", "imaginators" };
+
+        // "All games": the actions every game has (the moves, Back, Pause), the same words in each but Back's, which the
+        // Controls tab calls "Stats / Info".
+        for (const char* game : games)
+            for (const GameKey& key : GameKeys(game))
+                if (SharedAction(key.action) && std::string_view(key.action) != "back")
+                    SETTINGS_EXPECT(std::string_view(key.label) == find("ssa", key.action).label);
+        for (const char* game : games)
+            SETTINGS_EXPECT(std::string_view(find(game, "back").action) == "back");
+        SETTINGS_EXPECT(SharedAction("left_up") && SharedAction("start") && SharedAction("back") &&
+                        !SharedAction("a") && !SharedAction("right_up"));
+
+        // The global layout: [input] is what every game inherits, a game's own line wins, a key equal to the global one is
+        // no line (the game follows the global layout again); the device and the glyphs stay.
         LauncherConfig config;
-        config["input"] = { { "device", "keyboard" }, { "key_x", "F" }, { "key_dpad_up", "T" },
-            { "glyphs", "keyboard" } };
-        SeedGameInput(config, "ssa");
-        SeedGameInput(config, "giants");
-        SETTINGS_EXPECT(config["ssa.input"]["key_x"] == "F" && config["giants.input"]["key_dpad_up"] == "T");
-        SETTINGS_EXPECT(config["ssa.input"].count("device") == 0 && config["ssa.input"].count("glyphs") == 0);
-        SETTINGS_EXPECT(GameKeyName(config, "ssa", GameKeys("ssa")[5]) == "F"); // ssa's X row
-        config["input"]["key_x"] = "G"; // later changes of [input] (a game was played) never seed a game again
-        SeedGameInput(config, "ssa");
-        SETTINGS_EXPECT(config["ssa.input"]["key_x"] == "F");
-
-        // A game that had nothing to seed is still marked, so [input] (another game's keys by then) does not seed it later.
-        LauncherConfig fresh;
-        SeedGameInput(fresh, "swapforce");
-        fresh["input"]["key_a"] = "Z";
-        SeedGameInput(fresh, "swapforce");
-        SETTINGS_EXPECT(fresh["swapforce.input"].count("key_a") == 0 && fresh["swapforce.input"]["seeded"] == "1");
-
-        // PLAY: the game's keys go to [input]; its defaults fill what it has not set; its unused actions follow the copy or
-        // the runtime's default; the device and the glyph style stay; the other game's copy is not touched.
-        config["ssa.input"]["key_a"] = "J";
-        config["giants.input"]["key_a"] = "K";
-        ApplyGameInput(config, "ssa");
-        SETTINGS_EXPECT(
-            config["input"]["key_a"] == "J" && config["input"]["key_x"] == "F" && config["input"]["key_y"] == "V");
+        config["input"] = { { "device", "keyboard" }, { "key_left_up", "Up" }, { "glyphs", "keyboard" } };
+        const GameKey& up = find("ssa", "left_up");
+        for (const char* game : games)
+            SETTINGS_EXPECT(GameKeyName(config, game, find(game, "left_up")) == "Up" &&
+                            !GameKeyOwn(config, game, find(game, "left_up")));
+        SetGameKey(config, "ssa", up, "Z");
+        SETTINGS_EXPECT(GameKeyName(config, "ssa", up) == "Z" && GameKeyOwn(config, "ssa", up) &&
+                        GameKeyName(config, "giants", find("giants", "left_up")) == "Up");
+        SetGameKey(config, "ssa", up, "up");
+        SETTINGS_EXPECT(!GameKeyOwn(config, "ssa", up) && config["ssa.input"].count("key_left_up") == 0);
+        SetGlobalKey(config, up, "T");
+        SETTINGS_EXPECT(config["input"]["key_left_up"] == "T" && GlobalKeyName(config, up) == "T" &&
+                        GameKeyName(config, "imaginators", find("imaginators", "left_up")) == "T");
         SETTINGS_EXPECT(config["input"]["device"] == "keyboard" && config["input"]["glyphs"] == "keyboard");
-        SETTINGS_EXPECT(config["input"]["key_dpad_up"] == "T" &&
-                        config["input"].count("key_lb") == 0); // an unused action keeps what it was seeded with
-        ApplyGameInput(config, "giants");
-        SETTINGS_EXPECT(config["input"]["key_a"] == "K" && config["input"]["key_x"] == "F" &&
-                        config["input"]["key_dpad_up"] == "T");
-        SETTINGS_EXPECT(config["ssa.input"]["key_a"] == "J" && config["giants.input"]["key_a"] == "K");
+        // A game's own action: its line, back to its default; Reset to defaults takes every line of the game: a shared
+        // row has the global key again, a game's own row its default.
+        SetGameKey(config, "ssa", find("ssa", "a"), "J");
+        SETTINGS_EXPECT(
+            GameKeyName(config, "ssa", find("ssa", "a")) == "J" && GameKeyOwn(config, "ssa", find("ssa", "a")));
+        ClearGameKey(config, "ssa", find("ssa", "a"));
+        SETTINGS_EXPECT(GameKeyName(config, "ssa", find("ssa", "a")) == "Space");
+        SetGameKey(config, "giants", find("giants", "a"), "K");
+        SetGameKey(config, "giants", find("giants", "left_up"), "W");
+        SetGlobalKey(config, find("ssa", "back"), "Delete");
+        SetGameKey(config, "giants", find("giants", "back"), "Tab");
+        SETTINGS_EXPECT(GameKeyName(config, "giants", find("giants", "back")) == "Tab" &&
+                        GameKeyName(config, "ssa", find("ssa", "back")) == "Delete");
+        ResetGameKeys(config, "giants");
+        SETTINGS_EXPECT(GameKeyName(config, "giants", find("giants", "a")) == "Space" &&
+                        GameKeyName(config, "giants", find("giants", "left_up")) == "T" &&
+                        GameKeyName(config, "giants", find("giants", "back")) == "Delete");
+        config["input"].erase("key_back");
 
-        // Two rows of one game on the same key are a conflict, in that game only.
-        config["giants.input"]["key_y"] = "K";
+        // Two rows of one game on the same key are a conflict, in that game only; a global row conflicts with a game that
+        // inherits it.
+        config["giants.input"]["key_y"] = "X";
         const std::span<const GameKey> giants = GameKeys("giants");
         int conflicts = 0;
         for (const GameKey& key : giants)
@@ -606,26 +656,65 @@ namespace
         SETTINGS_EXPECT(conflicts == 2);
         for (const GameKey& key : GameKeys("ssa"))
             SETTINGS_EXPECT(!GameKeyConflict(config, "ssa", key) || std::string_view(key.action) != "y");
+        const GameKey& pause = find("ssa", "start");
+        SETTINGS_EXPECT(!GlobalKeyConflict(config, pause));
+        SetGlobalKey(config, pause, "Space"); // every game's A
+        SETTINGS_EXPECT(GlobalKeyConflict(config, pause) && GameKeyConflict(config, "giants", find("giants", "a")));
+        for (const char* game : games)
+            SetGameKey(config, game, find(game, "start"), "P");
+        SETTINGS_EXPECT(!GlobalKeyConflict(config, pause)); // no game uses it now
+        SetGlobalKey(config, pause, "Return");
 
-        // Reset: the game's copy loses its keys (the marker stays), and PLAY then puts the defaults in [input].
-        ResetGameKeys(config, "giants");
-        SETTINGS_EXPECT(config["giants.input"].count("key_a") == 0 &&
-                        config["giants.input"].count("key_dpad_up") == 0 && config["giants.input"]["seeded"] == "1");
-        SETTINGS_EXPECT(GameKeyName(config, "giants", giants[4]) == "Space");
-        ApplyGameInput(config, "giants");
-        SETTINGS_EXPECT(config["input"]["key_a"] == "Space" && config["input"]["key_y"] == "V" &&
-                        config["input"].count("key_dpad_up") == 0);
+        // The upgrade from an older launcher: PLAY had copied the last game's keys into [input]. "ssa" was seeded (its
+        // Move up as [input] had it, X changed), "giants" never, "swapforce" moved up with W. Nobody's keys change.
+        {
+            LauncherConfig old;
+            old["input"] = { { "device", "auto" }, { "key_a", "Z" }, { "key_left_up", "Up" }, { "key_start", "P" },
+                { "key_back", "Delete" }, { "mouse", "1" }, { "key_toybox", "O" } };
+            old["ssa.input"] = { { "seeded", "1" }, { "key_left_up", "Up" }, { "key_x", "F" }, { "mouse", "0" },
+                { "rumble_p1", "normal" }, { "key_back", "Delete" }, { "pad_back", "back" } };
+            old["swapforce.input"] = { { "seeded", "1" }, { "key_left_up", "W" } };
+            SETTINGS_EXPECT(MigrateInput(old));
+            SETTINGS_EXPECT(
+                old["input"]["global"] == "1" && old["input"]["device"] == "auto" && old["input"]["key_toybox"] == "O");
+            SETTINGS_EXPECT(old["input"].count("key_a") == 0 && old["input"].count("mouse") == 0 &&
+                            old["input"]["key_left_up"] == "Up" && old["input"]["key_start"] == "P");
+            // The game's copy equal to [input] goes; a different key stays; the default it played with is its own now.
+            SETTINGS_EXPECT(old["ssa.input"].count("key_left_up") == 0 && old["ssa.input"]["key_x"] == "F" &&
+                            old["ssa.input"]["key_start"] == "Return" && old["ssa.input"].count("seeded") == 0 &&
+                            old["ssa.input"].count("mouse") == 0 && old["ssa.input"].count("rumble_p1") == 0);
+            SETTINGS_EXPECT(GameKeyName(old, "ssa", find("ssa", "left_up")) == "Up" &&
+                            GameKeyName(old, "ssa", find("ssa", "a")) == "Space" &&
+                            GameKeyName(old, "ssa", find("ssa", "x")) == "F" &&
+                            GameKeyName(old, "ssa", find("ssa", "start")) == "Return");
+            // Never seeded: it would have started from [input].
+            SETTINGS_EXPECT(GameKeyName(old, "giants", find("giants", "a")) == "Z" &&
+                            GameKeyName(old, "giants", find("giants", "start")) == "P" &&
+                            !GameKeyOwn(old, "giants", find("giants", "start")));
+            SETTINGS_EXPECT(old["swapforce.input"]["key_left_up"] == "W" && !GameMouseOn(old, "ssa"));
+            // Back is shared like Pause: [input]'s is the global key, a game's equal line goes, the default a seeded game
+            // played with is its own line, a game never seeded inherits it.
+            SETTINGS_EXPECT(old["input"]["key_back"] == "Delete" && old["ssa.input"].count("key_back") == 0 &&
+                            old["ssa.input"].count("pad_back") == 0 &&
+                            old["swapforce.input"]["key_back"] == "Backspace");
+            SETTINGS_EXPECT(GameKeyName(old, "ssa", find("ssa", "back")) == "Delete" &&
+                            GameKeyName(old, "giants", find("giants", "back")) == "Delete" &&
+                            !GameKeyOwn(old, "giants", find("giants", "back")) &&
+                            GameKeyName(old, "swapforce", find("swapforce", "back")) == "Backspace");
+            SETTINGS_EXPECT(!MigrateInput(old)); // once
+            // An older launcher then seeds a game again and puts its keys in [input]: that section is done again.
+            old["ssa.input"]["seeded"] = "1";
+            old["ssa.input"]["key_left_up"] = "Up";
+            old["input"]["key_a"] = "Space";
+            SETTINGS_EXPECT(MigrateInput(old));
+            SETTINGS_EXPECT(old["ssa.input"].count("key_left_up") == 0 && old["input"].count("key_a") == 0 &&
+                            old["ssa.input"].count("seeded") == 0 && old["ssa.input"]["key_x"] == "F");
+        }
 
-        // The mouse: off by default (no button anywhere), on: attack 1 and 2 on the clicks, one button per action, Reset clears
-        // the lines but not the switch; PLAY never copies the mouse to [input]. The Toy Box keys: [input], F6 F7 F8 by default.
+        // The mouse: off by default (no button anywhere), on: attack 1 and 2 on the clicks, one button per action; the switch
+        // and a hand-edited mouse_ line in [input], a game's own lines over them. The Toy Box keys: [input], F6 F7 F8 by default.
         {
             LauncherConfig mice;
-            auto find = [](std::string_view game, std::string_view action) -> const GameKey& {
-                for (const GameKey& key : GameKeys(game))
-                    if (action == key.action)
-                        return key;
-                return GameKeys(game)[0];
-            };
             for (const char* game : { "ssa", "giants", "swapforce", "trapteam" })
             {
                 SETTINGS_EXPECT(!GameMouseOn(mice, game));
@@ -647,28 +736,60 @@ namespace
                 mice["swapforce.input"]["mouse_left_up"] == "Wheel Up" && MouseDisplayName("Wheel Up") == "Wheel up");
             SETTINGS_EXPECT(CapturedMouseName(SDL_BUTTON_X1) == "Mouse 4" && CapturedMouseName(9).empty() &&
                             CapturedWheelName(-1) == "Wheel Down");
-            ApplyGameInput(mice, "swapforce");
-            for (const auto& [key, value] : mice["input"])
-                SETTINGS_EXPECT(!key.starts_with("mouse"));
             ResetGameKeys(mice, "swapforce");
-            SETTINGS_EXPECT(GameMouseOn(mice, "swapforce") && mice["swapforce.input"].count("mouse_x") == 0 &&
+            SETTINGS_EXPECT(!GameMouseOn(mice, "swapforce") && mice["swapforce.input"].count("mouse_x") == 0);
+            // The global switch: every game; a game's own switch wins; the global value again removes the game's line.
+            SetGameMouseOn(mice, "", true);
+            SETTINGS_EXPECT(GlobalMouseOn(mice) && GameMouseOn(mice, "giants") && GameMouseOn(mice, "swapforce") &&
                             GameMouseName(mice, "swapforce", find("swapforce", "x")) == "Mouse Left");
+            SetGameMouseOn(mice, "giants", false);
+            SETTINGS_EXPECT(!GameMouseOn(mice, "giants") && GameMouseOwn(mice, "giants"));
+            SetGameMouseOn(mice, "giants", true);
+            SETTINGS_EXPECT(GameMouseOn(mice, "giants") && !GameMouseOwn(mice, "giants"));
+            // A mouse_ line in [input] (a hand-edited file) reaches every game; a game's own action on it takes it there only.
+            mice["input"]["mouse_start"] = "Mouse Middle";
+            SETTINGS_EXPECT(GameMouseName(mice, "giants", find("giants", "start")) == "Mouse Middle" &&
+                            GameMouseName(mice, "swapforce", find("swapforce", "start")) == "Mouse Middle");
+            SetGameMouseButton(mice, "swapforce", find("swapforce", "y"), "Mouse Middle");
+            SETTINGS_EXPECT(GameMouseName(mice, "swapforce", find("swapforce", "y")) == "Mouse Middle" &&
+                            GameMouseName(mice, "swapforce", find("swapforce", "start")).empty() &&
+                            GameMouseName(mice, "giants", find("giants", "start")) == "Mouse Middle");
             SETTINGS_EXPECT(ToyboxKeys().size() == 3 && ToyboxKeyName(mice, ToyboxKeys()[0]) == "F6" &&
                             ToyboxKeyName(mice, ToyboxKeys()[2]) == "F8");
             mice["input"]["key_toybox_add"] = "G";
             SETTINGS_EXPECT(ToyboxKeyName(mice, ToyboxKeys()[1]) == "G");
-            ApplyGameInput(mice, "ssa");
-            SETTINGS_EXPECT(mice["input"]["key_toybox_add"] == "G"); // PLAY keeps the Toy Box keys
+        }
+
+        // The Toy Box keys are a conflict with each other and with any game's key (both flagged, none changed).
+        {
+            LauncherConfig keys;
+            const std::span<const ToyboxKey> toybox = ToyboxKeys();
+            for (const ToyboxKey& key : toybox)
+                SETTINGS_EXPECT(!ToyboxKeyConflict(keys, key));
+            keys["input"]["key_toybox_add"] = "F8";
+            SETTINGS_EXPECT(ToyboxKeyConflict(keys, toybox[1]) && ToyboxKeyConflict(keys, toybox[2]) &&
+                            !ToyboxKeyConflict(keys, toybox[0]));
+            keys["input"]["key_toybox_add"] = "F7";
+            keys["input"]["key_toybox"] = "W"; // SSA's Move up, and every game's
+            SETTINGS_EXPECT(ToyboxKeyConflict(keys, toybox[0]));
+            for (const char* game : { "ssa", "giants", "swapforce", "trapteam", "superchargers", "imaginators" })
+                for (const GameKey& key : GameKeys(game))
+                    SETTINGS_EXPECT(GameKeyConflict(keys, game, key) == (std::string_view(key.action) == "left_up"));
+            keys["ssa.input"]["key_left_up"] = "Up";
+            SETTINGS_EXPECT(ToyboxKeyConflict(keys, toybox[0])); // the other games still have W
+            keys["ssa.input"]["key_a"] = "f7"; // whatever its case
+            SETTINGS_EXPECT(GameKeyConflict(keys, "ssa", GameKeys("ssa")[4]) && ToyboxKeyConflict(keys, toybox[1]));
+            SETTINGS_EXPECT(ToyboxKeyName(keys, toybox[1]) == "F7" && keys["ssa.input"]["key_a"] == "f7");
         }
 
         // Through the settings file, sections with a dot included.
         fs::path scratch = root / "keys.ini";
         SETTINGS_EXPECT(SaveLauncherConfig(scratch.string(), config));
         LauncherConfig back = LoadLauncherConfig(scratch.string());
-        SETTINGS_EXPECT(back["ssa.input"]["key_a"] == "J" && back["giants.input"]["seeded"] == "1");
+        SETTINGS_EXPECT(back["giants.input"]["key_y"] == "X" && back["input"]["key_left_up"] == "T");
         fs::remove(scratch);
-        printf("Settings: each game's keys are its own (its own actions and names), seeded once, put in [input] at "
-               "PLAY, reset, conflicts\n");
+        printf("Settings: the global layout and each game's own keys (its own actions and names), the upgrade, reset, "
+               "conflicts\n");
     }
 
     // ---- The command line ------------------------------------------------------------------------------------------------
@@ -694,16 +815,44 @@ namespace
         // A button given back its own job loses its line.
         SetPadTarget(config, "giants", 5, 5);
         SETTINGS_EXPECT(config["giants.input"].count("pad_rb") == 0 && PadTarget(config, "giants", 5) == 5);
-        // Reset: every pad_ line of the game goes, its keys and its rumble stay.
+        // Reset to defaults: every pad_ and rumble_ line of the game goes, its keys stay.
         config["giants.input"]["key_a"] = "G";
         config["giants.input"]["rumble_p1"] = "strong";
-        config["giants.input"]["rumble_p2"] = "mighty";
         SetPadTarget(config, "giants", 1, 0);
         ResetPadMap(config, "giants");
         SETTINGS_EXPECT(PadTarget(config, "giants", 1) == 1 && PadTarget(config, "giants", 12) == 12);
-        SETTINGS_EXPECT(config["giants.input"]["key_a"] == "G" && RumbleLevel(config, "giants", 0) == "strong");
+        SETTINGS_EXPECT(config["giants.input"]["key_a"] == "G" && RumbleLevel(config, "giants", 0) == "normal");
+        config["giants.input"]["rumble_p2"] = "mighty";
         SETTINGS_EXPECT(
             RumbleLevel(config, "giants", 1) == "normal"); // an unknown level reads as normal, as the runtime does
+        // The global layout: [input]'s lines reach every game, a game's own wins, the global value again is no line.
+        SETTINGS_EXPECT(SharedPadButton(8) && SharedPadButton(9) && SharedPadButton(10) && SharedPadButton(15) &&
+                        !SharedPadButton(0) && !SharedPadButton(5));
+        // Back does Start's job everywhere; Reset to defaults gives a game's Back the global job again, its A its own.
+        SetGlobalPadTarget(config, 9, 8);
+        SetPadTarget(config, "giants", 9, 0);
+        SetPadTarget(config, "giants", 0, 1);
+        ResetPadMap(config, "giants");
+        SETTINGS_EXPECT(PadTarget(config, "giants", 9) == 8 && PadTarget(config, "giants", 0) == 0);
+        SetGlobalPadTarget(config, 9, 9);
+        SetGlobalPadTarget(config, 8, 9); // Start does Back's job everywhere
+        SETTINGS_EXPECT(config["input"]["pad_start"] == "back" && PadTarget(config, "ssa", 8) == 9 &&
+                        GlobalPadTarget(config, 8) == 9 && !PadOwn(config, "ssa", 8));
+        SetPadTarget(config, "ssa", 8, 8);
+        SETTINGS_EXPECT(PadOwn(config, "ssa", 8) && config["ssa.input"]["pad_start"] == "start" &&
+                        PadTarget(config, "ssa", 8) == 8 && PadTarget(config, "giants", 8) == 9);
+        SetPadTarget(config, "ssa", 8, 9);
+        SETTINGS_EXPECT(!PadOwn(config, "ssa", 8));
+        SetGlobalPadTarget(config, 8, 8);
+        SETTINGS_EXPECT(config["input"].count("pad_start") == 0);
+        SetRumbleLevel(config, "", 0, "low");
+        SETTINGS_EXPECT(RumbleLevel(config, "ssa", 0) == "low" && GlobalRumbleLevel(config, 0) == "low" &&
+                        !RumbleOwn(config, "ssa", 0));
+        SetRumbleLevel(config, "ssa", 0, "off");
+        SETTINGS_EXPECT(RumbleOwn(config, "ssa", 0) && RumbleLevel(config, "ssa", 0) == "off" &&
+                        RumbleLevel(config, "giants", 0) == "low");
+        SetRumbleLevel(config, "ssa", 0, "low");
+        SETTINGS_EXPECT(!RumbleOwn(config, "ssa", 0));
         SETTINGS_EXPECT(std::string_view(RumbleLevels()[0]) == "off" && RumbleLevels().size() == 4);
         // Names: as the pad in use prints them, and the game's word for the button's job.
         SETTINGS_EXPECT(
@@ -1321,6 +1470,294 @@ namespace
     }
 }
 
+namespace
+{
+    // ---- The Games folder ([launcher] games=; docs/install.md, "Games folder") ------------------------------------------
+
+    std::string Value(const char* name)
+    {
+        const char* value = SDL_getenv(name);
+        return value != nullptr ? value : "";
+    }
+
+    bool HasVariable(const GameLaunch& launch, const char* name, const std::string& value)
+    {
+        for (const auto& [key, held] : launch.variables)
+            if (key == name && held == value)
+                return true;
+        return false;
+    }
+
+    // A game built in `files` (its runtime, icon and HD textures) with its data in `data`, recorded in `config`.
+    fs::path BuildIn(LauncherConfig& config, const fs::path& files, const fs::path& data, const std::string& sha,
+        bool knowsGamesFolder)
+    {
+        const fs::path runtime = files / "SSARecomp.app" / "Contents" / "MacOS" / "SSARecomp";
+        Write(runtime, std::string(1000, 'r'));
+        fs::permissions(runtime, fs::perms::owner_exec, fs::perm_options::add);
+        Write(files / "game_icon.png", std::string(30, 'i'));
+        Write(files / "textures-hd" / "a.dds", std::string(2000, 'h'));
+        Write(files / "gamedata" / "default.xex", std::string(3000, 'x'));
+        Write(data / "saves" / "slot.sav", std::string(100, 's'));
+        Write(data / "layout.txt", "data=skylanders\n");
+        Write(data / "install.log", std::string(10, 'l'));
+        Write(data / "textures" / "pack.dds", std::string(60, 't'));
+        Write(data / "portraits" / "p.png", std::string(40, 'q'));
+        config["install." + sha]["runtime"] = datadir::Text(runtime);
+        config["install." + sha]["kit"] = "fake";
+        if (knowsGamesFolder)
+            config["install." + sha]["games_folder"] = "1";
+        config["ssa"]["iso"] = datadir::Text(files / "gamedata");
+        return runtime;
+    }
+
+    void GamesFolderChecks(const fs::path& scratch)
+    {
+        fs::remove_all(scratch);
+        const fs::path data = scratch / "data", games = scratch / "games", other = scratch / "other";
+        fs::create_directories(data);
+        fs::create_directories(games);
+        fs::create_directories(other);
+        const std::string savedData = Value("SKY_LAUNCHER_DATA"), savedRoot = Value("SKYLANDERS_DATA"),
+                          savedSaves = Value("SKY_SAVE_DIR");
+        SetEnv("SKY_LAUNCHER_DATA", data.string());
+        SetEnv("SKYLANDERS_DATA", data.string());
+        SetEnv("SKY_SAVE_DIR", "");
+        SetActiveGame("ssa");
+
+        // Empty: today's layout, everything in <data>/<Game>.
+        LauncherConfig config;
+        ApplyGamesFolder(config);
+        SETTINGS_EXPECT(GamesFolder().empty() && !GamesFolderMissing());
+        SETTINGS_EXPECT(GameInstallFolder({}) == data / "SSA" && GameFilesFolder("giants") == data / "Giants");
+        SETTINGS_EXPECT(datadir::GameFiles("ssa") == datadir::Game("ssa"));
+
+        // Set: the built game goes to <games>/<Game>, the rest stays; the shared code (the game, the builder) agrees.
+        config["launcher"]["games"] = datadir::Text(games);
+        ApplyGamesFolder(config);
+        SETTINGS_EXPECT(GamesFolder() == games && Value("SKY_GAMES_DIR") == datadir::Text(games));
+        SETTINGS_EXPECT(GameInstallFolder({}) == games / "SSA" && GameFilesFolder("giants") == games / "Giants");
+        SETTINGS_EXPECT(GameDataFolder("ssa") == data / "SSA" && FoldersOf("ssa").game == data / "SSA" &&
+                        FoldersOf("ssa").files == games / "SSA");
+        SETTINGS_EXPECT(
+            datadir::GameFiles("ssa") == games / "SSA" && gamedata::Folder("ssa") == games / "SSA" / "gamedata");
+
+        // A support report hides where the games folder is (a drive's name often is the player's).
+        {
+            launcher_report::Identity identity;
+            identity.gamesFolder = "/Volumes/Alice Drive/Games";
+            SETTINGS_EXPECT(launcher_report::Redact("run /Volumes/Alice Drive/Games/SSA/x", identity) ==
+                            "run <games folder>/SSA/x");
+            SETTINGS_EXPECT(launcher_report::CurrentIdentity({}).gamesFolder == datadir::Text(games));
+        }
+
+        // The game PLAY starts gets SKY_GAMES_DIR; a game built here is not an older layout (layout.txt is data side).
+        {
+            LauncherConfig launchConfig = config;
+            const fs::path runtime = BuildIn(launchConfig, games / "SSA", data / "SSA", "aaaa", true);
+            GameLaunch launch = PrepareGameLaunch(
+                *FindGame("ssa"), launchConfig, datadir::Text(scratch / "launch.ini"), datadir::Text(runtime));
+            SETTINGS_EXPECT(!launch.runtime.empty() && HasVariable(launch, "SKY_GAMES_DIR", datadir::Text(games)));
+            SETTINGS_EXPECT(!HasVariable(launch, "SKY_SAVE_DIR", datadir::Text(games / "SSA" / "saves")));
+            SETTINGS_EXPECT(!IsOlderLayoutBuild(runtime, games / "SSA", data / "SSA"));
+            fs::remove_all(games / "SSA");
+            fs::remove_all(data / "SSA");
+        }
+
+        // A build from before the games folder keeps reading textures-hd/ and gamedata/ in the data folder.
+        Write(data / "SSA" / "textures-hd" / "a.dds", "old");
+        SETTINGS_EXPECT(GameFileOf("ssa", "textures-hd") == data / "SSA" / "textures-hd");
+        Write(games / "SSA" / "textures-hd" / "a.dds", "new");
+        SETTINGS_EXPECT(GameFileOf("ssa", "textures-hd") == games / "SSA" / "textures-hd");
+        SETTINGS_EXPECT(GameFileOf("ssa", "gamedata") == games / "SSA" / "gamedata");
+        fs::remove_all(games / "SSA");
+        fs::remove_all(data / "SSA");
+
+        // The folder is gone (an unplugged drive): said, and nothing is built in its place.
+        config["launcher"]["games"] = datadir::Text(scratch / "unplugged");
+        ApplyGamesFolder(config);
+        SETTINGS_EXPECT(
+            GamesFolderMissing() && std::string(GamesFolderMissingMessage()) ==
+                                        "The games folder isn't there. Plug in the drive, or choose another folder.");
+        {
+            GameInstaller installer;
+            const auto kit = InstallKitIn(LAUNCHER_FAKE_KIT);
+            SETTINGS_EXPECT(kit.has_value() && kit->gamesFolder);
+            SETTINGS_EXPECT(
+                !installer.Start(kit, "synthetic.iso", GameInstallFolder({}), false, GameDataFolder("ssa")));
+            const InstallProgress state = installer.Snapshot();
+            SETTINGS_EXPECT(state.startFailed && state.error == GamesFolderMissingMessage());
+            SETTINGS_EXPECT(!fs::exists(scratch / "unplugged") && !fs::exists(data / "SSA" / "install.log"));
+        }
+        config["launcher"]["games"] = datadir::Text(games);
+        ApplyGamesFolder(config);
+        SETTINGS_EXPECT(!GamesFolderMissing());
+
+        // Refused folders: inside a game's folder (either side), the kits, a missing one.
+        fs::create_directories(data / "SSA" / "inside");
+        fs::create_directories(games / "Giants" / "inside");
+        fs::create_directories(data / "kit" / "v1" / "x");
+        SETTINGS_EXPECT(gamesfolder::Check({}) == gamesfolder::Refusal::None);
+        SETTINGS_EXPECT(gamesfolder::Check(other) == gamesfolder::Refusal::None);
+        SETTINGS_EXPECT(gamesfolder::Check(data / "SSA") == gamesfolder::Refusal::InGame);
+        SETTINGS_EXPECT(gamesfolder::Check(data / "SSA" / "inside") == gamesfolder::Refusal::InGame);
+        SETTINGS_EXPECT(gamesfolder::Check(games / "Giants" / "inside") == gamesfolder::Refusal::InGame);
+        SETTINGS_EXPECT(gamesfolder::Check(data / "kit" / "v1" / "x") == gamesfolder::Refusal::InKits);
+        SETTINGS_EXPECT(gamesfolder::Check(scratch / "nowhere") == gamesfolder::Refusal::Missing);
+        SETTINGS_EXPECT(std::string(gamesfolder::RefusalText(gamesfolder::Refusal::InGame)).size() > 0);
+#if !defined(_WIN32)
+        if (geteuid() != 0) // root writes anywhere
+        {
+            fs::create_directories(scratch / "locked");
+            fs::permissions(scratch / "locked", fs::perms::owner_read | fs::perms::owner_exec);
+            SETTINGS_EXPECT(gamesfolder::Check(scratch / "locked") == gamesfolder::Refusal::ReadOnly);
+            fs::permissions(scratch / "locked", fs::perms::owner_all);
+        }
+#endif
+        fs::remove_all(data / "SSA");
+        fs::remove_all(games / "Giants");
+        fs::remove_all(data / "kit");
+
+        // Remove game: that game's files in both folders; the saves, the textures and the copied game data stay.
+        {
+            LauncherConfig removeConfig = config;
+            BuildIn(removeConfig, games / "SSA", data / "SSA", "aaaa", true);
+            Write(games / "SSA" / "notices.txt", "n");
+            DataResult removed = UninstallGame(FoldersOf("ssa"), removeConfig);
+            SETTINGS_EXPECT(removed.ok && removed.freed >= 1000 + 30 + 2000 + 10);
+            SETTINGS_EXPECT(!fs::exists(games / "SSA" / "SSARecomp.app") &&
+                            !fs::exists(games / "SSA" / "game_icon.png") &&
+                            !fs::exists(games / "SSA" / "textures-hd") && !fs::exists(data / "SSA" / "install.log") &&
+                            !fs::exists(data / "SSA" / "layout.txt"));
+            SETTINGS_EXPECT(fs::exists(data / "SSA" / "saves" / "slot.sav") && fs::exists(data / "SSA" / "textures") &&
+                            fs::exists(games / "SSA" / "gamedata" / "default.xex"));
+            SETTINGS_EXPECT(removeConfig.count("install.aaaa") == 0);
+            SETTINGS_EXPECT(MeasureGameData(FoldersOf("ssa")).installed == 0);
+            fs::remove_all(games / "SSA");
+            fs::remove_all(data / "SSA");
+        }
+
+        // The move, data folder -> games folder, renamed (one volume): the built game, textures-hd and gamedata; the rest
+        // stays; the settings point at the new places.
+        const std::atomic<bool> go{ false };
+        {
+            LauncherConfig moveConfig;
+            ApplyGamesFolder(moveConfig);
+            BuildIn(moveConfig, data / "SSA", data / "SSA", "aaaa", true);
+            gamesfolder::Plan plan = gamesfolder::MakePlan(moveConfig, {}, games);
+            SETTINGS_EXPECT(plan.entries.size() == 4 && plan.bytes == 1000 + 30 + 2000 + 3000);
+            gamesfolder::Result result = gamesfolder::Move(plan, {}, go);
+            SETTINGS_EXPECT(result.state == gamesfolder::Result::State::Done);
+            SETTINGS_EXPECT(
+                Read(games / "SSA" / "SSARecomp.app" / "Contents" / "MacOS" / "SSARecomp") == std::string(1000, 'r') &&
+                fs::exists(games / "SSA" / "textures-hd" / "a.dds") &&
+                fs::exists(games / "SSA" / "gamedata" / "default.xex"));
+            SETTINGS_EXPECT(!fs::exists(data / "SSA" / "SSARecomp.app") && !fs::exists(data / "SSA" / "gamedata") &&
+                            fs::exists(data / "SSA" / "saves" / "slot.sav") &&
+                            fs::exists(data / "SSA" / "layout.txt") && fs::exists(data / "SSA" / "install.log") &&
+                            fs::exists(data / "SSA" / "textures") && fs::exists(data / "SSA" / "portraits"));
+            gamesfolder::Record(moveConfig, plan);
+            SETTINGS_EXPECT(moveConfig["launcher"]["games"] == datadir::Text(games));
+            SETTINGS_EXPECT(moveConfig["install.aaaa"]["runtime"] ==
+                            datadir::Text(games / "SSA" / "SSARecomp.app" / "Contents" / "MacOS" / "SSARecomp"));
+            SETTINGS_EXPECT(moveConfig["ssa"]["iso"] == datadir::Text(games / "SSA" / "gamedata"));
+            ApplyGamesFolder(moveConfig);
+
+            // Back again, copied (two volumes): copied, checked, then the old copy deleted; the settings follow.
+            plan = gamesfolder::MakePlan(moveConfig, games, {});
+            SETTINGS_EXPECT(plan.entries.size() == 4);
+            gamesfolder::Options copy;
+            copy.forceCopy = true;
+            uint64_t reported = 0;
+            copy.progress = [&](uint64_t done) { reported = done; };
+            result = gamesfolder::Move(plan, copy, go);
+            SETTINGS_EXPECT(result.state == gamesfolder::Result::State::Done && reported == plan.bytes);
+            SETTINGS_EXPECT(
+                Read(data / "SSA" / "SSARecomp.app" / "Contents" / "MacOS" / "SSARecomp") == std::string(1000, 'r') &&
+                Read(data / "SSA" / "gamedata" / "default.xex") == std::string(3000, 'x'));
+            SETTINGS_EXPECT(!fs::exists(games / "SSA")); // its emptied folder goes, the games folder itself stays
+            SETTINGS_EXPECT(fs::is_directory(games));
+#if !defined(_WIN32)
+            // The copy keeps the game runnable.
+            SETTINGS_EXPECT(
+                (fs::status(data / "SSA" / "SSARecomp.app" / "Contents" / "MacOS" / "SSARecomp").permissions() &
+                    fs::perms::owner_exec) != fs::perms::none);
+#endif
+            gamesfolder::Record(moveConfig, plan);
+            SETTINGS_EXPECT(moveConfig["launcher"].count("games") == 0);
+            SETTINGS_EXPECT(moveConfig["install.aaaa"]["runtime"] ==
+                            datadir::Text(data / "SSA" / "SSARecomp.app" / "Contents" / "MacOS" / "SSARecomp"));
+            SETTINGS_EXPECT(moveConfig["ssa"]["iso"] == datadir::Text(data / "SSA" / "gamedata"));
+
+            // Stopped half way through a copy: the old copy is all there, the new place has nothing.
+            plan = gamesfolder::MakePlan(moveConfig, {}, games);
+            std::atomic<bool> stop{ false };
+            gamesfolder::Options halt;
+            halt.forceCopy = true;
+            halt.progress = [&](uint64_t done) {
+                if (done > 0)
+                    stop = true;
+            };
+            result = gamesfolder::Move(plan, halt, stop);
+            SETTINGS_EXPECT(result.state == gamesfolder::Result::State::Stopped);
+            SETTINGS_EXPECT(
+                Read(data / "SSA" / "SSARecomp.app" / "Contents" / "MacOS" / "SSARecomp") == std::string(1000, 'r') &&
+                Read(data / "SSA" / "textures-hd" / "a.dds") == std::string(2000, 'h') &&
+                Read(data / "SSA" / "gamedata" / "default.xex") == std::string(3000, 'x'));
+            SETTINGS_EXPECT(!fs::exists(games / "SSA") || fs::is_empty(games / "SSA"));
+
+            // Stopped after a rename (one volume): what was renamed comes back.
+            stop = false;
+            gamesfolder::Options renameHalt;
+            renameHalt.progress = [&](uint64_t done) {
+                if (done > 0)
+                    stop = true;
+            };
+            result = gamesfolder::Move(plan, renameHalt, stop);
+            SETTINGS_EXPECT(result.state == gamesfolder::Result::State::Stopped);
+            SETTINGS_EXPECT(fs::exists(data / "SSA" / "SSARecomp.app") && fs::exists(data / "SSA" / "gamedata") &&
+                            fs::exists(data / "SSA" / "textures-hd") && fs::exists(data / "SSA" / "game_icon.png"));
+            SETTINGS_EXPECT(!fs::exists(games / "SSA") || fs::is_empty(games / "SSA"));
+
+            // Not enough room for the copy: nothing is touched.
+            gamesfolder::Options small;
+            small.forceCopy = true;
+            small.freeBytes = 100;
+            result = gamesfolder::Move(plan, small, go);
+            SETTINGS_EXPECT(result.state == gamesfolder::Result::State::NoRoom && result.needed >= plan.bytes);
+            SETTINGS_EXPECT(fs::exists(data / "SSA" / "SSARecomp.app") && !fs::exists(games / "SSA" / "SSARecomp.app"));
+            fs::remove_all(data / "SSA");
+        }
+
+        // A game built before the games folder: its textures-hd/ and gamedata/ stay in the data folder, where it reads them.
+        {
+            LauncherConfig olderConfig;
+            ApplyGamesFolder(olderConfig);
+            BuildIn(olderConfig, data / "SSA", data / "SSA", "bbbb", false);
+            gamesfolder::Plan plan = gamesfolder::MakePlan(olderConfig, {}, games);
+            SETTINGS_EXPECT(plan.entries.size() == 2 && plan.bytes == 1000 + 30);
+            SETTINGS_EXPECT(gamesfolder::Move(plan, {}, go).state == gamesfolder::Result::State::Done);
+            gamesfolder::Record(olderConfig, plan);
+            SETTINGS_EXPECT(fs::exists(games / "SSA" / "SSARecomp.app") && fs::exists(data / "SSA" / "textures-hd") &&
+                            fs::exists(data / "SSA" / "gamedata") && !fs::exists(games / "SSA" / "gamedata"));
+            SETTINGS_EXPECT(olderConfig["ssa"]["iso"] == datadir::Text(data / "SSA" / "gamedata"));
+            ApplyGamesFolder(olderConfig);
+            SETTINGS_EXPECT(GameFileOf("ssa", "textures-hd") == data / "SSA" / "textures-hd");
+            SETTINGS_EXPECT(!BuildKnowsGamesFolder(olderConfig, "bbbb"));
+            fs::remove_all(games / "SSA");
+            fs::remove_all(data / "SSA");
+        }
+
+        ApplyGamesFolder({});
+        SetEnv("SKY_LAUNCHER_DATA", savedData);
+        SetEnv("SKYLANDERS_DATA", savedRoot);
+        SetEnv("SKY_SAVE_DIR", savedSaves);
+        printf(
+            "Games folder: the setting, the builder's and the game's SKY_GAMES_DIR, refusals, a missing folder, Remove "
+            "game in both folders, the move renamed and copied, stopped, short of room, an older build\n");
+    }
+}
+
 int SettingsChecks(const fs::path& scratch)
 {
     fs::create_directories(scratch);
@@ -1333,6 +1770,7 @@ int SettingsChecks(const fs::path& scratch)
     EnvironmentChecks();
     ShortcutChecks(scratch / "shortcut");
     DataChecks(scratch / "datachecks");
+    GamesFolderChecks(scratch / "gamesfolder");
     DiscLanguageChecks(scratch);
     LauncherLanguageChecks(scratch);
     return g_settingsFailures;

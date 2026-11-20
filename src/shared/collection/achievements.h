@@ -3,8 +3,8 @@
 // A game's achievements as the player's own default.xex holds them: the title's XDBF resource lists each achievement
 // (id, name, descriptions, gamerscore, picture) with its texts in every console language. Read on the player's machine
 // and kept in memory (or in the launcher's cache): nothing from the disc is in git. Bounds-checked: the file comes from
-// the player. The runtime answers the games' achievement calls from it and Skylauncher lists it; the same file is in
-// both (tools/sync_skylauncher.sh).
+// the player. The runtime answers the games' achievement calls from it and Arkeyan Launcher lists it; the same file is in
+// both (tools/sync_launcher.sh).
 #include <cstddef>
 #include <cstdint>
 #include <filesystem>
@@ -51,7 +51,7 @@ namespace achievements
 
     // --- The launcher's cache ----------------------------------------------------------------------------------------
     //
-    // Skylauncher reads the list once, when it checks the disc, and keeps it in a folder of the game's data (never in git):
+    // Arkeyan Launcher reads the list once, when it checks the disc, and keeps it in a folder of the game's data (never in git):
     // list.tsv (the achievements with their texts in the cached languages: en, fr, de, es, it, pt) and one <image id>.png
     // each. `key` is any text that changes with the disc (the default.xex's SHA-256): a cache with the same key is kept.
     bool CacheIsCurrent(const std::filesystem::path& folder, std::string_view key);

@@ -9,18 +9,20 @@ and words, a sheet with three main actions. The look is dorydev's: the colours, 
 ## One engine
 
 - `src/shared/collection/` and `src/shared/figures/` (all but `figure_icons.*`) are ArkeyanRuntime's files, copied by
-  `tools/sync_collection.sh [--check] <ssa-recomp>` (same file list as ArkeyanRuntime's `tools/sync_skylauncher.sh`, into
+  `tools/sync_collection.sh [--check] <ssa-recomp>` (same file list as ArkeyanRuntime's `tools/sync_launcher.sh`, into
   Skylanders' layout). Change them in ArkeyanRecomp, where the tests are, and copy them over. The catalogue
   (`resources/collection/catalogue.json`) is built into the executable (`cmake/embed_file.cmake`).
 - `figures/figure_icons.*` is the launcher's: `IconStyle` (outline, fills, badge colours) draws the generated icons for any
   catalogue toy and variant kind; the library's own `collection/icons.*` is not used for drawing, only for
   `PortraitPath` (which disc picture a toy gets).
-- **Pictures.** Every page uses the newest cached game in reverse catalogue order, regardless of the game being
-  viewed. A variant's own picture takes priority over a newer plain picture; otherwise the newest plain picture is
-  used, then a family glyph, then the generated icon. `collection::PortraitPath(game, toy, variant, large)` implements
+- **Pictures.** Every page uses the same game order, regardless of the game being viewed: the player's own picture of
+  the card, the card's chosen game, then the choice for every figure (Settings > Launcher > Collection > **Figure
+  pictures**: Original game, the default; Newest game; or one game whose pictures were read), then the figure's original
+  game (a variant's: the game of its year), the later games, the earlier ones. A variant's own picture takes priority
+  over plain art; then a family glyph, then the generated icon. `collection::PortraitPath(game, toy, variant, large)` implements
   this with `BestPicturePath` and `HalfPicturePath` through one shared selector. Icon sizes choose the same game and
   variant. A large figure view prefers artwork within that game, while an icon prefers its portrait, with artwork as
-  a fallback. Newer plain portraits beat older plain artworks. Known figures pass their exact variant id, including
+  a fallback. A plain portrait from a game earlier in the order beats a plain artwork from a later one. Known figures pass their exact variant id, including
   in the seats and half chooser; a kind alone is resolved with `VariantFor` when the id is unavailable.
   Existing `<data>/<Game>/portraits/` and `portraits/artworks/` files are used as they are: no cache version change or
   re-extraction. Missing pictures are added by the normal disc check. The shared library's `game_art.md` has the full
@@ -57,8 +59,8 @@ A Swap Force swapper is two toys, a top and a bottom, each its own dump. The lib
   top is laid over the bottom and the result is cut to its visible pixels (`collection::SwapperPicture`, `JoinHalves`,
   shared with the game, with a unit test on synthetic images); the result is fitted into the card's square. A matched or a mixed swapper, and each version (Dark, Legendary...), has its own halves.
   When a half has no such picture (the pictures are read from the player's disc, so before the first disc check), the card
-  shows the top's picture with the bottom small at its corner. Each individual half first uses its own newest half
-  picture, then whole-figure art, then its generated icon. A bottom can use its matching top's whole-figure picture
+  shows the top's picture with the bottom small at its corner, as when either half has the player's own picture. Each
+  individual half first uses its own half picture in the order above, then whole-figure art, then its generated icon. A bottom can use its matching top's whole-figure picture
   (Trap Team lists only tops). Whole-figure fallbacks are never joined at the waist; plain halves never replace a dedicated variant picture.
   Neither half is left empty.
 - **Putting it on the portal**: a click on a seat, a drag, or the sheet's "Put on the portal" places **both halves**. The seat
@@ -96,7 +98,9 @@ At the first visit to the page (`CollectionPage::Open`):
 - What the game reads at start is `portal.txt` in its data folder (`SKY_SAVE_DIR` in tests, else the game's folder in
   the data root): `<slot> <path>` lines, rewritten by the game at every change. The launcher writes it with seat *i* in
   slot *i* (`WriteSeats`) and reads it back (`ReadSeats`): a figure goes to its slot's seat when it fits, else to the
-  first seat that takes it (as the Toy Box does). The seats are per game (`catalogue.json` `games[].seats`). Swap Force's
+  first seat that takes it (as the Toy Box does). The seats are per game (`catalogue.json` `games[].seats`):
+  SuperChargers and Imaginators also have a Trap seat (a trap gives a boost in SuperChargers, gold in Imaginators), and
+  their `rejects` keep Clown Cruiser and Barrel Blaster off their vehicle seats. Swap Force's
   portal has six slots (see "Swappers"): `SeatFirstSlot` and `SlotSeat` map the seats to them.
 - **While the game runs** the seats are read-only here, with a **Toy Box window** button beside "<game> is running": the Toy
   Box window is this page, live, the seats changed through the game (`toybox_window.md`).
@@ -109,6 +113,11 @@ At the first visit to the page (`CollectionPage::Open`):
   only what Spyro's Adventure reads"; the shelf then shows only what goes there and the game reads; click a figure: it
   goes on the seat ("Player 1: Splash's"), and the choosing ends. Click the seat again, Cancel, B or Escape stops
   choosing. Dragging a card onto a seat also works; a figure already on the other seat moves (it is on one seat only).
+- **Dragging** (#181, as the game's Toy Box): the figure's picture follows the pointer, a little transparent; the seats
+  that would refuse it are greyed out, with the rule of the toast a drop would show (`CollectionPage::Refusal`, shared
+  with `PutOn`), and the seat under the pointer is outlined. A tile dragged onto an empty seat moves there; a player onto
+  a taken player seat asks "Swap players?" (`CollectionModel::SwapSeats`; in the Toy Box window the game's `swap`); onto
+  any other taken seat it replaces that seat's figure, as a card does.
 - **Taking off**: the X on the tile (**fixed** in #9: `SetNextItemAllowOverlap()` before the tile's button lets the X win
   where it is; `SKY_LAUNCHER_TEST_SEATX` checks all four seats by mouse, keyboard and pad), Delete or the pad's X on a
   focused tile (or Delete with the mouse over it), the tile's right-click menu ("Take it off", "Choose another", "Open its
@@ -123,7 +132,9 @@ At the first visit to the page (`CollectionPage::Open`):
   `GameIsRunning`): a live process that merely took over the number of a game that crashed holds nothing, the seats stay
   editable, and Manage > Tidy offers "Mark as not in use · N" (held) for those locks.
 - Refresh: every 1.5 s the model compares a signature of the folder (names, sizes, times of dumps, locks,
-  `collection.json`, the session file) and whether each lock's process still runs; any change reloads the shelf. The
+  `collection.json`, the session file) and whether each lock's process still runs; any change reloads the shelf. Both
+  run on a thread of their own (`CollectionModel::PollInBackground`): the new figures are swapped in on a later frame,
+  and a reading started before the page's own reload (a seat set, a figure deleted) is dropped. The
   launcher window closes when the game starts (`main.cpp`), so this is seen when the launcher is opened beside a running
   game or after it.
 
@@ -217,7 +228,13 @@ At the first visit to the page (`CollectionPage::Open`):
   within one second sort by their number. Restore, Reset, Edit and Import write a new file and rename it over the old.
   Names are kept to 200 bytes without reserved Windows names or a trailing dot; a label is trimmed, without control
   characters, 64 bytes at most; a nickname takes well-formed UTF-8 only, without control characters.
-- **Pictures**: `collection::PortraitPath` (the newest cached variant picture, then plain art, then the toy's family
+- **Figure picture** (a Ghost button under the sheet's picture, its menu): **Default (<the choice for every figure>)**,
+  each game with a picture of that card (`PictureGames`), **Choose a picture...** (a PNG or JPEG file; kept square, 512
+  px at most, in the collection's `pictures/` folder so it travels with the figures), **Remove my picture** when it has
+  one. Per card (toy and version: Spyro and Dark Spyro apart); a swapper's sheet lists both halves, each under its name.
+  A change shows at once on every page and in a running game's Toy Box (`PictureGeneration`: the pictures are read
+  again). The screenshot test's `69-picture-menu` shows the menu open.
+- **Pictures**: `collection::PortraitPath` (the variant picture in the order above, then plain art, then the toy's family
   picture from a disc: SSA's potion, compass and paw icons), else `figures::GenerateIcon` (a shape, the element's colour, the
   variant's badge, initials for characters, and the Toy Box's mark for items, packs and sidekicks:
   `collection::KindGlyph`). Never an empty square.
@@ -318,7 +335,7 @@ every player seat of that game (the in-game quick swap wheel, hold Tab or View) 
 | Traps and items | The ordinary variant → plain → family → generated rule |
 
 The launcher and Toy Box already agreed when using the same API. Portraits previously preferred the viewed game,
-large pictures had a separate search and halves searched oldest first. All now use the same selector. The workshop's
+large pictures had a separate search and halves searched oldest first. All now use the same selector. The forge's
 `ArkeyanCollectionTest` covers separate synthetic game caches, variants, sizes and every incomplete-swapper case;
 `ArkeyanLauncherTest --no-disc` checks the synced behavior with synthetic PNGs. No toy family blocks the rule.
 

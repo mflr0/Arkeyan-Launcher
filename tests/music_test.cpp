@@ -1,10 +1,11 @@
 // ArkeyanLauncherTest's checks for the game page's music (launcher/game_music.h): the WAV reader, the mixer's fades and loop
 // (no device), the extraction through the kit's Arkeyan-Builder (the fake one), and the player on SDL's dummy audio driver. Called from
-// launcher_test.cpp's main; returns the number of failures. The real themes are checked in the workshop (ArkeyanBuilderMusicTest).
+// launcher_test.cpp's main; returns the number of failures. The real themes are checked in the forge (ArkeyanBuilderMusicTest).
 #include "test_env.h"
 #include "launcher/game_music.h"
 #include "launcher/launcher.h"
 #include "launcher/game_settings.h"
+#include "launcher/ui/launcher_app.h"
 #include <SDL3/SDL.h>
 #include <chrono>
 #include <cmath>
@@ -150,7 +151,7 @@ namespace
     void MixerChecks()
     {
         using gamemusic::FadeSeconds;
-        using gamemusic::Volume;
+        constexpr float Volume = gamemusic::DefaultGain;
         auto a = Flat(16384), b = Flat(16384);
         {
             // Fades in from nothing over FadeSeconds, then stays at the volume.
@@ -231,15 +232,69 @@ namespace
         }
     }
 
+    // The level: 0-100, 50 the old fixed level, changed without a step, 0 silent; the setting, kept, unmutes.
+    void VolumeChecks(const std::filesystem::path& scratch)
+    {
+        using gamemusic::Gain;
+        MUSIC_EXPECT(Gain(0) == 0 && std::fabs(Gain(gamemusic::DefaultVolume) - gamemusic::DefaultGain) < 1e-6f);
+        MUSIC_EXPECT(std::fabs(Gain(100) - 4 * gamemusic::DefaultGain) < 1e-6f && Gain(25) < Gain(50) / 2);
+        MUSIC_EXPECT(Gain(-5) == 0 && Gain(150) == Gain(100));
+        auto a = Flat(16384);
+        {
+            gamemusic::Mixer mixer(48000);
+            mixer.SetVolume(80);
+            mixer.Play(a);
+            Run(mixer, gamemusic::FadeSeconds + 0.1);
+            MUSIC_EXPECT(std::fabs(mixer.GainOf(a) - Gain(80)) < 1e-4f);
+            // Louder: a ramp of a few milliseconds, never a step (a click while the slider is dragged).
+            mixer.SetVolume(100);
+            std::vector<float> out(9600, 0.f);
+            mixer.Render(out.data(), 4800);
+            float jump = std::fabs(out[0] - Gain(80) * 0.5f);
+            for (size_t i = 2; i < out.size(); i += 2)
+                jump = std::max(jump, std::fabs(out[i] - out[i - 2]));
+            MUSIC_EXPECT(jump < 1e-3f);
+            MUSIC_EXPECT(std::fabs(out[out.size() - 2] - Gain(100) * 0.5f) < 1e-4f);
+            MUSIC_EXPECT(std::fabs(mixer.GainOf(a) - Gain(100)) < 1e-4f);
+            // 0: nothing heard, the device may pause; a level again brings it back.
+            mixer.SetVolume(0);
+            Run(mixer, 0.2);
+            MUSIC_EXPECT(mixer.Silent() && mixer.GainOf(a) == 0);
+            mixer.SetVolume(30);
+            MUSIC_EXPECT(!mixer.Silent());
+            Run(mixer, 0.2);
+            MUSIC_EXPECT(std::fabs(mixer.GainOf(a) - Gain(30)) < 1e-4f);
+        }
+        using launcher_ui::GameMusicVolume;
+        LauncherConfig config;
+        MUSIC_EXPECT(GameMusicVolume(config) == gamemusic::DefaultVolume);
+        for (const auto& [text, value] : std::vector<std::pair<std::string, int>>{
+                 { "70", 70 }, { "0", 0 }, { "100", 100 }, { "-3", 0 }, { "250", 100 }, { "loud", 50 }, { "", 50 } })
+        {
+            config["launcher"]["game_music_volume"] = text;
+            MUSIC_EXPECT(GameMusicVolume(config) == value);
+        }
+        // A level chosen while muted is meant to be heard.
+        config["launcher"]["game_music"] = "0";
+        launcher_ui::SetGameMusicVolume(config, 35);
+        MUSIC_EXPECT(config["launcher"]["game_music"] == "1" && GameMusicVolume(config) == 35);
+        launcher_ui::SetGameMusicVolume(config, 140);
+        MUSIC_EXPECT(config["launcher"]["game_music_volume"] == "100");
+        const auto ini = scratch / "music-volume.ini";
+        launcher_ui::SetGameMusicVolume(config, 20);
+        MUSIC_EXPECT(SaveLauncherConfig(ini.string(), config));
+        MUSIC_EXPECT(GameMusicVolume(LoadLauncherConfig(ini.string())) == 20);
+    }
+
     void ExtractChecks(const std::filesystem::path& scratch)
     {
         const std::filesystem::path data = scratch / "music-data";
         std::filesystem::remove_all(data);
         std::filesystem::create_directories(data);
         DataFolder dataFolder(data);
-        const std::filesystem::path fake = std::filesystem::path(SKYLAUNCHER_FAKE_KIT) / "Arkeyan-Builder"
+        const std::filesystem::path fake = std::filesystem::path(LAUNCHER_FAKE_KIT) / "Arkeyan-Builder"
 #if defined(_WIN32)
-                                                                                         ".exe"
+                                                                                      ".exe"
 #endif
             ;
         const std::string game = "ssa", disc = (scratch / "no-disc.iso").string();
@@ -306,75 +361,64 @@ namespace
         SDL_SetHint(SDL_HINT_AUDIO_DRIVER, "dummy");
         gamemusic::Player player;
         gamemusic::Playback state{ .game = "ssa", .muted = true };
-        auto settle = [&] {
+        // Updates until `done` holds, then returns it: a fade is about 1 s, and 4 s leaves room on a busy CI machine
+        // (1.9 s missed one on macOS CI).
+        auto settle = [&](auto done) {
             player.Update(state);
-            // Long enough for every fade on a busy CI machine (a fade is about 1 s; 1.9 s missed one on macOS CI).
-            const uint64_t until = SDL_GetTicks() + 4000;
-            while (SDL_GetTicks() < until)
-            {
+            for (const uint64_t until = SDL_GetTicks() + 4000; !done() && SDL_GetTicks() < until; player.Update(state))
                 SDL_Delay(20);
-                player.Update(state);
-            }
+            return done();
         };
-        settle();
-        MUSIC_EXPECT(player.FadeComplete() && player.GainForTest("ssa") == 0); // starts muted, no transient
+        auto faded = [&] { return player.FadeComplete(); };
+        auto playing = [&](const char* game) {
+            return [&player, game] { return player.GainForTest(game) > gamemusic::DefaultGain * 0.95f; };
+        };
+        auto silent = [&](const char* game) {
+            return [&player, game] { return player.FadeComplete() && player.GainForTest(game) == 0; };
+        };
+        MUSIC_EXPECT(settle(silent("ssa"))); // starts muted, no transient
         state.muted = false;
-        settle();
-        MUSIC_EXPECT(player.GainForTest("ssa") > gamemusic::Volume * 0.95f);
+        MUSIC_EXPECT(settle(playing("ssa")));
         state.game = "giants";
         player.Update(state);
         SDL_Delay(500);
         MUSIC_EXPECT(player.GainForTest("ssa") > 0 && player.GainForTest("giants") > 0);
-        settle();
-        MUSIC_EXPECT(player.GainForTest("ssa") == 0 && player.GainForTest("giants") > gamemusic::Volume * 0.95f);
+        MUSIC_EXPECT(settle([&] { return player.GainForTest("ssa") == 0 && playing("giants")(); }));
         // Home, Collection and Settings all carry gamePage=false.
         for (int page = 0; page < 3; page++)
         {
             state.gamePage = false;
-            settle();
-            MUSIC_EXPECT(player.FadeComplete() && player.GainForTest("giants") == 0);
+            MUSIC_EXPECT(settle(silent("giants")));
             state.gamePage = true;
-            settle();
-            MUSIC_EXPECT(player.GainForTest("giants") > gamemusic::Volume * 0.95f);
+            MUSIC_EXPECT(settle(playing("giants")));
         }
         state.launching = true;
-        settle();
-        MUSIC_EXPECT(player.FadeComplete()); // only now may the process start
+        MUSIC_EXPECT(settle(faded)); // only now may the process start
         state.launching = false;
         state.running = true;
-        settle();
-        MUSIC_EXPECT(player.FadeComplete());
+        MUSIC_EXPECT(settle(faded));
         state.running = false;
-        settle(); // normal exit
-        MUSIC_EXPECT(player.GainForTest("giants") > gamemusic::Volume * 0.95f);
+        MUSIC_EXPECT(settle(playing("giants"))); // normal exit
         state.running = true;
-        settle();
+        settle(faded);
         state.running = false;
         state.muted = true;
-        settle(); // crash while muted
-        MUSIC_EXPECT(player.FadeComplete());
+        MUSIC_EXPECT(settle(faded)); // crash while muted
         state.muted = false;
-        settle();
-        MUSIC_EXPECT(player.GainForTest("giants") > gamemusic::Volume * 0.95f);
+        MUSIC_EXPECT(settle(playing("giants")));
         state.running = true;
-        settle();
+        settle(faded);
         state.running = false;
-        settle(); // crash while its page is visible
-        MUSIC_EXPECT(player.GainForTest("giants") > gamemusic::Volume * 0.95f);
+        MUSIC_EXPECT(settle(playing("giants"))); // crash while its page is visible
         state.installing = true;
-        settle();
-        MUSIC_EXPECT(player.FadeComplete());
+        MUSIC_EXPECT(settle(faded));
         state.installing = false;
         state.game = "swapforce";
-        settle();
-        MUSIC_EXPECT(player.GainForTest("swapforce") > gamemusic::Volume * 0.95f);
+        MUSIC_EXPECT(settle(playing("swapforce")));
         state.game = "trapteam";
-        settle();
-        MUSIC_EXPECT(
-            player.GainForTest("swapforce") == 0 && player.GainForTest("trapteam") > gamemusic::Volume * 0.95f);
+        MUSIC_EXPECT(settle([&] { return player.GainForTest("swapforce") == 0 && playing("trapteam")(); }));
         state.game = "unavailable";
-        settle();
-        MUSIC_EXPECT(player.FadeComplete() && player.GainForTest("trapteam") == 0);
+        MUSIC_EXPECT(settle(silent("trapteam")));
         std::filesystem::remove(gamemusic::File("ssa"));
         gamemusic::Player missing;
         missing.Update("ssa", false);
@@ -415,7 +459,7 @@ namespace
             std::this_thread::sleep_for(std::chrono::milliseconds(500));
             player.Update("ssa", false);
             const float gain = player.GainForTest("ssa");
-            MUSIC_EXPECT(gain > 0 && gain < gamemusic::Volume); // fading in, in real time, through the device
+            MUSIC_EXPECT(gain > 0 && gain < gamemusic::DefaultGain); // fading in, in real time, through the device
             std::ofstream(file, std::ios::binary | std::ios::trunc) << "not a WAV";
             SDL_Delay(1100);
             MUSIC_EXPECT(!player.HasTrack("ssa")); // the existing cached track was replaced
@@ -452,6 +496,7 @@ int MusicChecks(const std::filesystem::path& scratch)
     g_failures = 0;
     ReaderChecks();
     MixerChecks();
+    VolumeChecks(scratch);
     OutputChecks();
     ExtractChecks(scratch);
     PlayerChecks(scratch);

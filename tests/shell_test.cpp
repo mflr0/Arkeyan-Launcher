@@ -218,6 +218,49 @@ namespace
             SHELL_EXPECT(discordpresence::LevelName(levels, "only/de", "fr") == "Raum");
             SHELL_EXPECT(discordpresence::LevelName(levels, "level_9", "en").empty() &&
                          discordpresence::LevelName("not json", "a", "en").empty());
+
+            // Player 1 as the game plays it. A real portal leaves portal.txt as it was (Freeze Blade, type 2003 here):
+            // the game's figure wins, and a difference on two reads in a row means the seats are stale until the game ends.
+            using Toy = discordpresence::Toy;
+            const std::optional<Toy> freezeBlade = Toy{ 2003, 0, 20 };
+            const discordpresence::GameStatus dinoRang =
+                discordpresence::ParseGameStatus("toy=2010\nvariant=0\ntoylevel=7");
+            discordpresence::PlayerOneWatch watch;
+            SHELL_EXPECT(watch.UseSeats() && !watch.RealPortal() && !watch.PlayerOne());
+            watch.Update(dinoRang, freezeBlade);
+            SHELL_EXPECT(watch.PlayerOne() && watch.PlayerOne()->type == 2010 && watch.PlayerOne()->level == 7);
+            SHELL_EXPECT(!watch.UseSeats() && !watch.RealPortal()); // one read: maybe portal.txt is being written
+            watch.Update(dinoRang, freezeBlade);
+            SHELL_EXPECT(watch.RealPortal() && watch.PlayerOne() && watch.PlayerOne()->type == 2010);
+            // The real figure taken off: player 1 is empty, not the stale Freeze Blade.
+            watch.Update(discordpresence::ParseGameStatus("menu=0\nplayers=1\n"), freezeBlade);
+            SHELL_EXPECT(watch.RealPortal() && !watch.PlayerOne() && !watch.UseSeats());
+            watch.Reset();
+            SHELL_EXPECT(watch.UseSeats() && !watch.RealPortal());
+            // The emulated portal: the game's figure is the seat's, whatever its level.
+            watch.Update(discordpresence::ParseGameStatus("toy=2003\nvariant=0\ntoylevel=21"), freezeBlade);
+            watch.Update(discordpresence::ParseGameStatus("toy=2003\nvariant=0\ntoylevel=21"), freezeBlade);
+            SHELL_EXPECT(!watch.RealPortal() && watch.PlayerOne() && watch.PlayerOne()->level == 21);
+            // A seat changed while portal.txt is written: one read differs, the next agrees.
+            watch.Update(dinoRang, freezeBlade);
+            watch.Update(dinoRang, Toy{ 2010, 0, 7 });
+            watch.Update(dinoRang, Toy{ 2010, 0, 7 });
+            SHELL_EXPECT(!watch.RealPortal());
+            // Another variant of the same toy is another figure; an empty seat 1 under a played figure too.
+            watch.Update(discordpresence::ParseGameStatus("toy=2010\nvariant=5635"), Toy{ 2010, 0, {} });
+            watch.Update(discordpresence::ParseGameStatus("toy=2010\nvariant=5635"), std::nullopt);
+            SHELL_EXPECT(watch.RealPortal());
+            // A game from before 0.9.7 never names a figure (or has no presence.txt): the seats stay the source.
+            watch.Reset();
+            for (const char* text : { "level=a\nmenu=0\nplayers=1\n", "" })
+            {
+                watch.Update(discordpresence::ParseGameStatus(text), freezeBlade);
+                watch.Update(discordpresence::ParseGameStatus(text), freezeBlade);
+                SHELL_EXPECT(watch.UseSeats() && !watch.RealPortal() && !watch.PlayerOne());
+            }
+            // A game that names a figure without its variant is not trusted for it.
+            watch.Update(discordpresence::ParseGameStatus("toy=2010\n"), freezeBlade);
+            SHELL_EXPECT(watch.UseSeats() && !watch.PlayerOne());
         }
 
         // An unknown step gets its own row, before "Finishing".
@@ -1031,7 +1074,7 @@ namespace
                      ReadBytes(kitFolder / "res" / "a.txt") == "a");
         SHELL_EXPECT(!std::filesystem::exists(kitFolder.string() + ".old") &&
                      !std::filesystem::exists(kitFolder.string() + ".new"));
-        MakeZip(zip, { { "readme.txt", "no ssabuild here" } });
+        MakeZip(zip, { { "readme.txt", "no builder here" } });
         SHELL_EXPECT(!InstallKitZip(zip, kitFolder, error) && error.find("kit") != std::string::npos &&
                      ReadBytes(kitFolder / "SSABuild") == "binary");
         MakeZip(zip, { { "../evil.txt", "x" } });
@@ -1074,16 +1117,16 @@ namespace
             SHELL_EXPECT(InstallKitZip(zip, updates / "fresh" / "both-kit", error) &&
                          ReadBytes(updates / "fresh" / "both-kit" / "SSABuild") == "copy");
             // The kit folder is found with either builder and either folder name.
-            std::filesystem::path kitSkyBuild = updates / "kits" / "skylanders-kit-test";
+            std::filesystem::path builderKit = updates / "kits" / "skylanders-kit-test";
 #if defined(_WIN32)
-            WriteBytes(kitSkyBuild / "Arkeyan-Builder.exe", "x");
+            WriteBytes(builderKit / "Arkeyan-Builder.exe", "x");
 #else
-            WriteBytes(kitSkyBuild / "Arkeyan-Builder", "x");
+            WriteBytes(builderKit / "Arkeyan-Builder", "x");
 #endif
-            auto kit = InstallKitIn(kitSkyBuild);
-            SHELL_EXPECT(kit && kit->ssabuild.filename().string().starts_with("Arkeyan-Builder"));
+            auto kit = InstallKitIn(builderKit);
+            SHELL_EXPECT(kit && kit->builder.filename().string().starts_with("Arkeyan-Builder"));
             auto oldKit = InstallKitIn(updates / "game" / "ssa-kit");
-            SHELL_EXPECT(oldKit && oldKit->ssabuild.filename().string().starts_with("SSABuild"));
+            SHELL_EXPECT(oldKit && oldKit->builder.filename().string().starts_with("SSABuild"));
             // A kit up to 0.7.2 has SkyBuild: still installed from its zip and found;
             // Arkeyan-Builder wins beside it.
             MakeZip(zip, { { "skylanders-kit-test/SkyBuild", "older builder" },
@@ -1091,11 +1134,11 @@ namespace
             SHELL_EXPECT(InstallKitZip(zip, updates / "fresh" / "older-kit", error) &&
                          ReadBytes(updates / "fresh" / "older-kit" / "SkyBuild") == "older builder");
             auto olderKit = InstallKitIn(updates / "fresh" / "older-kit");
-            SHELL_EXPECT(olderKit && olderKit->ssabuild.stem() == "SkyBuild");
+            SHELL_EXPECT(olderKit && olderKit->builder.stem() == "SkyBuild");
             WriteBytes(updates / "fresh" / "older-kit" / "Arkeyan-Builder", "x");
             WriteBytes(updates / "fresh" / "older-kit" / "Arkeyan-Builder.exe", "x");
             olderKit = InstallKitIn(updates / "fresh" / "older-kit");
-            SHELL_EXPECT(olderKit && olderKit->ssabuild.stem() == "Arkeyan-Builder");
+            SHELL_EXPECT(olderKit && olderKit->builder.stem() == "Arkeyan-Builder");
         }
 
         // The manager: a check against the fake latest.json, then the kit update from
@@ -1573,7 +1616,7 @@ namespace
         WriteBytes(root / "four" / "Arkeyan-Builder", "x");
         WriteBytes(root / "four" / "Arkeyan-Builder.exe", "x");
         std::optional<InstallKit> four = InstallKitIn(root / "four");
-        SHELL_EXPECT(four && four->Builds("trapteam") && four->ssabuild.stem() == "Arkeyan-Builder");
+        SHELL_EXPECT(four && four->Builds("trapteam") && four->builder.stem() == "Arkeyan-Builder");
 
         // From an older release than the launcher: the kit.txt version, or the
         // folder's release tag; the player's own never.
@@ -1662,7 +1705,7 @@ int ShellChecks(const std::filesystem::path& scratch)
         TestSetEnv("FAKE_ARKEYAN_BUILDER_CLOSE_OUTPUT", "1");
         GameInstaller installer;
         SHELL_EXPECT(
-            installer.Start(InstallKitIn(SKYLAUNCHER_FAKE_KIT), "synthetic.iso", scratch / "closed-output-install"));
+            installer.Start(InstallKitIn(LAUNCHER_FAKE_KIT), "synthetic.iso", scratch / "closed-output-install"));
         SDL_Delay(100);
         const uint64_t started = SDL_GetTicks();
         installer.Cancel();

@@ -7,6 +7,7 @@
 #include "shared/collection/file_list.h"
 #include <SDL3/SDL.h>
 #include <algorithm>
+#include <cstdlib>
 #include <fmt/format.h>
 #include <fstream>
 
@@ -76,20 +77,20 @@ namespace
     std::optional<InstallKit> KitIn(const std::filesystem::path& folder)
     {
         std::error_code error;
-        std::filesystem::path ssabuild;
+        std::filesystem::path builder;
         for (const char* name : BuilderNames)
             if (std::filesystem::is_regular_file(folder / name, error))
             {
-                ssabuild = folder / name;
+                builder = folder / name;
                 break;
             }
         // A kit with its file list whose builder an antivirus took is still this kit: the file check names the file and
         // its Repair puts it back (integrity.h); an install is blocked until then.
-        if (ssabuild.empty() && std::filesystem::is_regular_file(folder / filelist::ListName, error))
-            ssabuild = folder / BuilderNames[0];
-        if (ssabuild.empty())
+        if (builder.empty() && std::filesystem::is_regular_file(folder / filelist::ListName, error))
+            builder = folder / BuilderNames[0];
+        if (builder.empty())
             return {};
-        InstallKit kit{ folder, ssabuild, {}, {} };
+        InstallKit kit{ folder, builder, {}, {} };
         // kit.txt: "key=value" lines; "build" changes with every kit made, "version" with releases.
         std::ifstream file(folder / "kit.txt");
         std::string version;
@@ -119,8 +120,9 @@ namespace
                 }
             }
         }
-        kit.hdTextures = BuilderKnows(ssabuild, "--hd-textures");
-        kit.editionReport = BuilderKnows(ssabuild, "--edition-report");
+        kit.hdTextures = BuilderKnows(builder, "--hd-textures");
+        kit.editionReport = BuilderKnows(builder, "--edition-report");
+        kit.gamesFolder = BuilderKnows(builder, "SKY_GAMES_DIR");
         if (kit.games.empty())
             kit.games.push_back("ssa"); // before 0.5.0 a kit builds Spyro's Adventure only and says nothing
         kit.release = version;
@@ -129,8 +131,8 @@ namespace
         if (kit.version.empty())
         {
             // No version file: Arkeyan-Builder's size and date, which change with every kit.
-            auto size = std::filesystem::file_size(ssabuild, error);
-            auto time = std::filesystem::last_write_time(ssabuild, error).time_since_epoch().count();
+            auto size = std::filesystem::file_size(builder, error);
+            auto time = std::filesystem::last_write_time(builder, error).time_since_epoch().count();
             kit.version = fmt::format("{}-{}", uint64_t(size), int64_t(time));
         }
         return kit;
@@ -207,7 +209,7 @@ std::optional<InstallKit> FindInstallKit(
         // An AppImage's base path is its temporary mount: the kit sits beside the AppImage file itself.
         if (const char* image = SDL_getenv("APPIMAGE"); image != nullptr && *image != 0)
             folders.push_back(Path(image).parent_path());
-        // A macOS app's base path is Skylauncher.app/Contents/Resources: the kit sits next to the app.
+        // A macOS app's base path is ArkeyanLauncher.app/Contents/Resources: the kit sits next to the app.
         std::filesystem::path bundle = folders[0].parent_path();
         if (bundle.filename().empty())
             bundle = bundle.parent_path();
@@ -319,10 +321,85 @@ namespace
 void SetActiveGame(std::string_view id) { g_activeGame = id; }
 std::string_view ActiveGame() { return g_activeGame; }
 
+std::filesystem::path ChosenGamesFolder(const LauncherConfig& config)
+{
+    if (!datadir::PortableRoot(datadir::ProgramFolder()).empty())
+        return {}; // a portable launcher keeps everything beside it
+    return Path(Setting(config, "launcher", "games"));
+}
+
+void ApplyGamesFolder(const LauncherConfig& config)
+{
+    const std::string folder = Utf8(ChosenGamesFolder(config));
+    // Both environments: the launcher reads SDL's, the shared folder code (datadir::GameFiles) the C library's.
+    if (folder.empty())
+        UnsetGameVariable("SKY_GAMES_DIR");
+    else
+    {
+        SetGameVariable("SKY_GAMES_DIR", folder.c_str());
+        SDL_SetEnvironmentVariable(SDL_GetEnvironment(), "SKY_GAMES_DIR", folder.c_str(), true);
+    }
+#if defined(_WIN32)
+    _putenv_s("SKY_GAMES_DIR", folder.c_str());
+    _putenv_s("SSA_GAMES_DIR", folder.c_str());
+#else
+    for (const char* name : { "SKY_GAMES_DIR", "SSA_GAMES_DIR" })
+        if (folder.empty())
+            unsetenv(name);
+        else
+            setenv(name, folder.c_str(), 1);
+#endif
+}
+
+std::filesystem::path GamesFolder()
+{
+    if (const char* folder = LauncherEnv("SKY_GAMES_DIR"); folder != nullptr && *folder != 0)
+        return Path(folder);
+    return {};
+}
+
+bool GamesFolderMissing()
+{
+    const std::filesystem::path folder = GamesFolder();
+    std::error_code error;
+    return !folder.empty() && !std::filesystem::is_directory(folder, error);
+}
+
+const char* GamesFolderMissingMessage()
+{
+    return Tr("The games folder isn't there. Plug in the drive, or choose another folder.");
+}
+
+std::filesystem::path GameDataFolder(std::string_view gameId)
+{
+    return LauncherDataFolder() / datadir::GameFolderName(gameId);
+}
+
+std::filesystem::path GameFilesFolder(std::string_view gameId)
+{
+    const std::filesystem::path games = GamesFolder();
+    return games.empty() ? GameDataFolder(gameId) : games / datadir::GameFolderName(gameId);
+}
+
+std::filesystem::path GameFileOf(std::string_view gameId, std::string_view name)
+{
+    const std::filesystem::path files = GameFilesFolder(gameId) / Path(std::string(name)),
+                                data = GameDataFolder(gameId) / Path(std::string(name));
+    std::error_code error;
+    if (!std::filesystem::exists(files, error) && std::filesystem::exists(data, error))
+        return data;
+    return files;
+}
+
+bool BuildKnowsGamesFolder(const LauncherConfig& config, const std::string& xexSha256)
+{
+    return !xexSha256.empty() && Setting(config, InstallSection(xexSha256), "games_folder") == "1";
+}
+
 std::filesystem::path GameInstallFolder(const std::string&)
 {
-    // One folder per game, whatever the disc's release: the built game and its data are in it (docs/install.md).
-    return LauncherDataFolder() / datadir::GameFolderName(g_activeGame);
+    // One folder per game, whatever the disc's release: the built game is in it (docs/install.md).
+    return GameFilesFolder(g_activeGame);
 }
 
 InstalledGame FindInstalledGame(const LauncherConfig& config, const std::string& xexSha256)
@@ -416,7 +493,8 @@ InstallProgress ReadInstallLog(const std::filesystem::path& gameFolder)
     return progress;
 }
 
-void CleanAfterInstall(const std::filesystem::path& gameFolder, const std::filesystem::path& kitFolder)
+void CleanAfterInstall(const std::filesystem::path& gameFolder, const std::filesystem::path& kitFolder,
+    const std::filesystem::path& logFolder)
 {
     namespace fs = std::filesystem;
     std::error_code error;
@@ -426,7 +504,7 @@ void CleanAfterInstall(const std::filesystem::path& gameFolder, const std::files
         fs::path work = gameFolder / name;
         if (!fs::is_directory(work, error))
             continue;
-        fs::path kept = gameFolder / "install-logs";
+        fs::path kept = (logFolder.empty() ? gameFolder : logFolder) / "install-logs";
         if (fs::exists(work / "logs", error) && fs::is_directory(work / "logs", error))
         {
             fs::remove_all(kept, error);
@@ -462,13 +540,14 @@ void MarkGameLayout(const std::filesystem::path& gameFolder)
     std::ofstream(gameFolder / "layout.txt", std::ios::binary | std::ios::trunc) << "data=skylanders\n";
 }
 
-bool IsOlderLayoutBuild(const std::filesystem::path& runtime, const std::filesystem::path& gameFolder)
+bool IsOlderLayoutBuild(const std::filesystem::path& runtime, const std::filesystem::path& gameFolder,
+    const std::filesystem::path& dataFolder)
 {
     std::error_code error;
     std::filesystem::path relative = runtime.lexically_normal().lexically_relative(gameFolder.lexically_normal());
     if (relative.empty() || *relative.begin() == "..")
         return false; // not a game the launcher built: a runtime set up by the player
-    return !std::filesystem::exists(gameFolder / "layout.txt", error);
+    return !std::filesystem::exists((dataFolder.empty() ? gameFolder : dataFolder) / "layout.txt", error);
 }
 
 GameInstaller::~GameInstaller()
@@ -477,21 +556,23 @@ GameInstaller::~GameInstaller()
     Join();
 }
 
-bool GameInstaller::Start(
-    const std::optional<InstallKit>& kit, const std::string& iso, const std::filesystem::path& out, bool hdTextures)
+bool GameInstaller::Start(const std::optional<InstallKit>& kit, const std::string& iso,
+    const std::filesystem::path& out, bool hdTextures, const std::filesystem::path& logFolder)
 {
-    return Launch(kit, iso, out, hdTextures ? "auto" : nullptr, false);
+    return Launch(kit, iso, out, hdTextures ? "auto" : nullptr, false, logFolder, false);
 }
 
-bool GameInstaller::StartHdTextures(
-    const std::optional<InstallKit>& kit, const std::string& iso, const std::filesystem::path& gameFolder, bool on)
+bool GameInstaller::StartHdTextures(const std::optional<InstallKit>& kit, const std::string& iso,
+    const std::filesystem::path& logFolder, bool on, bool olderBuild)
 {
-    return Launch(kit, iso, gameFolder, on ? "auto" : "off", true);
+    return Launch(kit, iso, logFolder, on ? "auto" : "off", true, logFolder, olderBuild);
 }
 
-// `hdTextures`: the --hd-textures mode to pass, else none. `hdOnly`: that step alone, `out` being the game's folder.
+// `hdTextures`: the --hd-textures mode to pass, else none. `hdOnly`: that step alone, `out` being the game's data folder.
+// `olderBuild`: the step alone for a game built before the games folder, whose pack stays in the data folder.
 bool GameInstaller::Launch(const std::optional<InstallKit>& kit, const std::string& iso,
-    const std::filesystem::path& out, const char* hdTextures, bool hdOnly)
+    const std::filesystem::path& out, const char* hdTextures, bool hdOnly, const std::filesystem::path& logFolder,
+    bool olderBuild)
 {
     if (m_running)
         return false;
@@ -519,18 +600,25 @@ bool GameInstaller::Launch(const std::optional<InstallKit>& kit, const std::stri
             Tr("Game kit not found. Put the skylanders-kit folder next to Arkeyan Launcher, then press Retry."));
     if (hdTextures != nullptr && !kit->hdTextures)
         return fail(Tr("These game tools can't make the HD textures. Update them first."));
+    // An unplugged drive: its folder would be made again on the system's disk, and the game built there unseen.
+    if (GamesFolderMissing() && !olderBuild)
+        return fail(GamesFolderMissingMessage());
+    const std::filesystem::path logs = logFolder.empty() ? out : logFolder;
     std::error_code error;
     std::filesystem::create_directories(out, error);
+    if (!error)
+        std::filesystem::create_directories(logs, error);
     if (error)
         return fail(Tf("Couldn't create the game folder: {}", error.message()));
-    m_logFile = out / (hdOnly ? "hd-textures.log" : "install.log");
+    m_logFile = logs / (hdOnly ? "hd-textures.log" : "install.log");
     m_out = out;
+    m_logFolder = logs;
     m_kitFolder = kit->folder;
     if (!hdOnly)
-        std::filesystem::rename(m_logFile, out / "install.prev.log", error); // one previous log
+        std::filesystem::rename(m_logFile, logs / "install.prev.log", error); // one previous log
     std::ofstream(m_logFile, std::ios::trunc);
 
-    std::string program = Utf8(kit->ssabuild), outText = Utf8(out), kitText = Utf8(kit->folder);
+    std::string program = Utf8(kit->builder), outText = Utf8(out), kitText = Utf8(kit->folder);
     std::vector<const char*> arguments{ program.c_str(), "--iso", iso.c_str() };
     if (!hdOnly) // alone, the step finds the game's folder as the games do
         arguments.insert(arguments.end(), { "--out", outText.c_str() });
@@ -547,8 +635,14 @@ bool GameInstaller::Launch(const std::optional<InstallKit>& kit, const std::stri
         arguments.insert(arguments.end(), { "--toolchain", toolchainText.c_str() });
 #endif
     arguments.push_back(nullptr);
-    SDL_Environment* environment =
-        CreateGameEnvironment(); // a builder of an older kit reads the SSA_ names, a newer one the SKY_ names
+    // A builder of an older kit reads the SSA_ names, a newer one the SKY_ names. The games folder is passed as it is now;
+    // for a game built before it, the HD step alone keeps the pack in the data folder, where that game reads it.
+    std::vector<std::pair<std::string, std::string>> variables;
+    if (olderBuild)
+        variables.emplace_back("SKY_GAMES_DIR", "");
+    else if (const std::filesystem::path games = GamesFolder(); !games.empty())
+        variables.emplace_back("SKY_GAMES_DIR", Utf8(games));
+    SDL_Environment* environment = CreateGameEnvironment(variables);
     SDL_PropertiesID properties = SDL_CreateProperties();
     if (environment != nullptr)
         SDL_SetPointerProperty(properties, SDL_PROP_PROCESS_CREATE_ENVIRONMENT_POINTER, environment);
@@ -647,8 +741,8 @@ void GameInstaller::Read()
     }
     if (succeeded && !m_hdOnly)
     {
-        CleanAfterInstall(m_out, m_kitFolder);
-        MarkGameLayout(m_out);
+        CleanAfterInstall(m_out, m_kitFolder, m_logFolder);
+        MarkGameLayout(m_logFolder);
     }
 
     std::lock_guard lock(m_mutex);

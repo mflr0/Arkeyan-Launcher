@@ -34,6 +34,7 @@ namespace ui
     {
         float width = -1; // < 0: the available width
         bool disabled = false;
+        bool inherited = false; // the value comes from elsewhere (the global layout): the closed box's text dimmed
     };
     bool BeginSelect(const char* id, const char* preview, const SelectOptions& options = {});
     float SelectWidth(const char* longest); // a select as narrow as can show `longest` uncut
@@ -54,6 +55,7 @@ namespace ui
         float width = -1;
         bool disabled = false;
         bool showValue = true;
+        int step = 1; // a key's or the D-pad's
     };
     bool Slider(const char* id, int* value, int min, int max, const SliderOptions& options = {});
 

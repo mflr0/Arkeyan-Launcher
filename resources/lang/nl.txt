@@ -96,7 +96,8 @@ Attack 3 / Back	Aanval 3 / Terug
 Aug	aug.
 Auto	Auto
 Auto (follows the window)	Auto (volgt het venster)
-Auto shows more when wide; 16:9 adds bars.	Auto toont meer bij een breed scherm; 16:9 voegt balken toe.
+Fill (covers a taller screen)	Vullen (vult een hoger scherm)
+Auto shows more when wide; Fill covers a taller screen; 16:9 adds bars.	Auto toont meer bij een breed scherm; Vullen vult een hoger scherm; 16:9 voegt balken toe.
 Auto-open Toy Box	Toy Box automatisch openen
 Auto: 5.1 when the device has six channels.	Auto: 5.1 als het apparaat zes kanalen heeft.
 Automatic	Automatisch
@@ -149,6 +150,9 @@ Checking...	Controleren...
 Chinese	Chinees
 Choose	Kiezen
 Choose a figure for {}	Kies een figuur voor {}
+Include HD textures	HD-textures meenemen
+{} with them, {} without.	{} met, {} zonder.
+Settings: {} FPS · Resolution scale {} · {}	Instellingen: {} FPS · Resolutieschaal {} · {}
 Choose a folder...	Kies een map...
 Choose a key to change it.	Kies een toets om die te wijzigen.
 Choose a type	Kies een type
@@ -358,6 +362,14 @@ Couldn't download the game tools	Kan de speltools niet downloaden
 Frame rate limit	Framerate-limiet
 Frees {}. Saves and settings are kept.	Maakt {} vrij. Savegames en instellingen blijven bewaard.
 Fullscreen	Volledig scherm
+Window size	Venstergrootte
+{} x {}	{} x {}
+Last used: as it was when the game closed.	Laatst gebruikt: zoals bij het sluiten van het spel.
+Last used	Laatst gebruikt
+Custom	Aangepast
+Width	Breedte
+Height	Hoogte
+{} or more	{} of meer
 Game	Spel
 Game art comes from your own disc.	De afbeeldingen van het spel komen van je eigen schijf.
 Game data	Spelgegevens
@@ -408,12 +420,10 @@ Hold to delete saves, backups and caches.	Houd ingedrukt om savegames, back-ups 
 Hold to delete the built game. Saves are kept.	Houd ingedrukt om het gebouwde spel te verwijderen. Savegames blijven bewaard.
 Hold to delete the copy.	Houd ingedrukt om de kopie te verwijderen.
 Hold to delete the partial copy.	Houd ingedrukt om de gedeeltelijke kopie te verwijderen.
-Hold to give every button its own job back.	Houd ingedrukt om elke knop zijn eigen taak terug te geven.
 Hold to mark them as not in use.	Houd ingedrukt om ze als niet in gebruik te markeren.
 Hold to move them to the trash.	Houd ingedrukt om ze naar de prullenbak te verplaatsen.
 Hold to put this copy back.	Houd ingedrukt om deze kopie terug te zetten.
 Hold to rebuild the game.	Houd ingedrukt om het spel opnieuw te bouwen.
-Hold to reset every key of this game.	Houd ingedrukt om alle toetsen van dit spel te resetten.
 Hold to restore; your current saves are kept first.	Houd ingedrukt om te herstellen; je huidige savegames worden eerst bewaard.
 INSTALL	INSTALLEREN
 INSTALLATION INTERRUPTED	INSTALLATIE ONDERBROKEN
@@ -691,7 +701,6 @@ Report copied	Rapport gekopieerd
 Report saved	Rapport opgeslagen
 Report saved: {}	Rapport opgeslagen: {}
 Reset	Resetten
-Reset to defaults	Terug naar standaard
 Reset to new	Terugzetten naar nieuw
 Reset to new...	Terugzetten naar nieuw...
 Reset {} to new? Level, gold and upgrades are lost.	{} terugzetten naar nieuw? Niveau, goud en upgrades gaan verloren.
@@ -856,7 +865,6 @@ Total	Totaal
 Touchpad	Touchpad
 Toy	Poppetje
 Toy Box	Toy Box
-Toy Box in the game: F6, or View + Y on a controller.	Toy Box in het spel: F6, of View + Y op een controller.
 Toy Box keys	Toy Box-toetsen
 Toy type {}	Type poppetje {}
 Translating the game code	De spelcode vertalen
@@ -870,8 +878,9 @@ Trash · {}	Prullenbak · {}
 Triangle	Driehoek
 Trilinear	Trilineair
 Trophies	Trofeeën
-Turn the game music off	Spelmuziek uitzetten
-Turn the game music on	Spelmuziek aanzetten
+Game music	Spelmuziek
+Play the music	Muziek afspelen
+Each game's menu theme, on its page.	Het menuthema van elk spel, op zijn pagina.
 Type	Type
 Ultra Performance	Ultraprestaties
 Frame generation	Framegeneratie
@@ -908,7 +917,6 @@ VSync	VSync
 Vehicle {}	Voertuig {}
 Vehicles	Voertuigen
 Verified	Geverifieerd
-Verified, {}	Geverifieerd, {}
 Version {} is available.	Versie {} is beschikbaar.
 Version {}, {}	Versie {}, {}
 Versions	Versies
@@ -1096,6 +1104,7 @@ Open with the game	Openen met het spel
 Real figure · on the portal	Echte figuur · op de portal
 Start a game first	Start eerst een spel
 The Toy Box in its own window, to keep beside the game	De Toy Box in een eigen venster, naast het spel
+The other seats: in the Toy Box window	De andere plekken: in het Toy Box-venster
 The Toy Box window opens each time you play	Het Toy Box-venster opent elke keer dat je speelt
 The game cannot read this figure there	Het spel kan deze figuur daar niet lezen
 The game did not find this figure	Het spel vond deze figuur niet
@@ -1137,3 +1146,107 @@ Couldn't prepare the game tools	Couldn't prepare the game tools
 Go back to the final release?	Go back to the final release?
 Going back to {}. Saves and figures made with the test build may not open in it. A copy of them is kept.	Going back to {}. Saves and figures made with the test build may not open in it. A copy of them is kept.
 Version {} (the final release)	Version {} (the final release)
+
+# The Games folder (Settings > Launcher)
+Games folder	Spellenmap
+Where every game is built: another drive saves room.	Waar elk spel wordt geïnstalleerd: een andere schijf bespaart ruimte.
+Moving the games: {} of {}	Spellen verplaatsen: {} van {}
+Now: {}	Nu: {}
+Use default	Standaard gebruiken
+Games moved	Spellen verplaatst
+Move stopped: the games stay where they were	Verplaatsen gestopt: de spellen blijven waar ze waren
+Couldn't move the games	Kan de spellen niet verplaatsen
+Couldn't move the games: they stay where they were	Kan de spellen niet verplaatsen: ze blijven waar ze waren
+Not enough free space: {} needed	Niet genoeg vrije ruimte: {} nodig
+Wait for the games to move	Wacht tot de spellen verplaatst zijn
+Quit the game to move the games	Sluit het spel af om de spellen te verplaatsen
+The games folder isn't there. Plug in the drive, or choose another folder.	De spellenmap is er niet. Sluit de schijf aan of kies een andere map.
+This folder isn't there	Deze map is er niet
+This folder can't be written to	Er kan niet in deze map worden geschreven
+Choose a folder outside the games	Kies een map buiten de spellen
+Choose a folder outside the game tools	Kies een map buiten de spelhulpmiddelen
+The games in {} go too; your other files there stay.	De spellen in {} gaan ook weg; je andere bestanden daar blijven.
+
+# The image check (disc_check.h): the Disc tab's pill, the install's first row, the dialog after a game whose movies did not open.
+Can't read the disc image.	Kan het schijfimage niet lezen.
+Check again	Opnieuw controleren
+Checking files, {}	Bestanden controleren, {}
+Checking the disc	Schijf controleren
+Choose image	Image kiezen
+Copy the disc again, then choose the new image.	Kopieer de schijf opnieuw en kies dan het nieuwe image.
+Damaged copy	Beschadigde kopie
+Disc image damaged	Schijfimage beschadigd
+Every file can be read. No good copy of this edition to compare with.	Elk bestand is leesbaar. Geen goede kopie van deze editie om mee te vergelijken.
+Every file matches a good copy of this disc ({}).	Elk bestand is gelijk aan een goede kopie van deze schijf ({}).
+Good copy, {}	Goede kopie, {}
+Part of the image can't be read.	Een deel van het image is niet leesbaar.
+Readable, {}	Leesbaar, {}
+Some files differ from a good copy of this disc ({}).	Sommige bestanden wijken af van een goede kopie van deze schijf ({}).
+The disc image is damaged.	Het schijfimage is beschadigd.
+The disc image may be damaged	Het schijfimage is misschien beschadigd
+The disc image of {} is damaged	Het schijfimage van {} is beschadigd
+{} couldn't open some of its movies. A damaged copy of the disc does this.	{} kon een paar van zijn filmpjes niet openen. Dat doet een beschadigde kopie van de schijf.
+
+# The global keys and controller (ui/controls_page.cpp).
+Reset to defaults	Terug naar standaard
+Hold to reset every key of this game.	Houd ingedrukt om alle toetsen van dit spel te resetten.
+Hold to reset every button of this game.	Houd ingedrukt om alle knoppen van dit spel te resetten.
+Use the global setting	Algemene instelling gebruiken
+Use the default	Standaard gebruiken
+Dimmed values follow Launcher settings.	Gedimde waarden volgen de Launcher-instellingen.
+Games use these unless their own settings change them.	De spellen gebruiken deze, tenzij hun eigen instellingen ze wijzigen.
+Buttons	Knoppen
+Stats / Info	Statistieken / Info
+
+# Controller shortcuts
+Swap wheel	Wisselwiel
+Game menu	Spelmenu
+Hold to open the swap wheel.	Houd ingedrukt om het wisselwiel te openen.
+Press a button (Escape cancels).	Druk op een knop (Escape annuleert).
+Press two buttons in order (Escape cancels).	Druk na elkaar op twee knoppen (Escape annuleert).
+Press the second button (Escape cancels).	Druk op de tweede knop (Escape annuleert).
+This button is used by another action	Een andere actie gebruikt deze knop
+Hold to reset the controller buttons for all games.	Houd ingedrukt om de controllerknoppen voor alle spellen te herstellen.
+Toy Box in the game: {}, or {} on a controller.	Toy Box in het spel: {}, of {} op een controller.
+
+# Figure pictures (Settings > Launcher > Collection, the figure sheet).
+Figure pictures	Figuurafbeeldingen
+Which game's pictures the figures show.	Uit welk spel de afbeeldingen van de figuren komen.
+Original game	Oorspronkelijk spel
+Newest game	Nieuwste spel
+Figure picture	Figuurafbeelding
+Default ({})	Standaard ({})
+My picture	Mijn afbeelding
+Choose a picture...	Kies een afbeelding...
+Remove my picture	Mijn afbeelding verwijderen
+That file is not a picture	Dat bestand is geen afbeelding
+The picture could not be saved	De afbeelding kon niet worden opgeslagen
+
+# Imaginite chests (ui/chests_page.cpp).
+Imaginite chests	Imaginite-kisten
+Chests	Kisten
+Chests · {}	Kisten · {}
+Reach the Academy once in the game to add chests.	Bereik in het spel één keer de Academie om kisten toe te voegen.
+Save slot {} · {} in the pile · Room for {} more	Opslagplek {} · {} op de stapel · Ruimte voor nog {}
+Imaginite Chest	Imaginite-kist
+Copper Chest	Koperen kist
+Bronze Chest	Bronzen kist
+Silver Chest	Zilveren kist
+Gold Chest	Gouden kist
+Platinum Chest	Platina kist
+Bronze Mystery Chest	Bronzen mysteriekist
+Silver Mystery Chest	Zilveren mysteriekist
+Gold Mystery Chest	Gouden mysteriekist
+Add 1 chest	1 kist toevoegen
+Add {} chests	{} kisten toevoegen
+Chests added: they appear at the Academy	Kisten toegevoegd: ze verschijnen in de Academie
+Couldn't add the chests	Kon de kisten niet toevoegen
+They appear the next time this save reaches the Academy.	Ze verschijnen de volgende keer dat deze opslag de Academie bereikt.
+{} chests waiting for save slot {}	{} kisten wachten op opslagplek {}
+{} chests waiting	{} kisten wachten
+Too late: the game already added them	Te laat: het spel heeft ze al toegevoegd
+# Collection: a seat's figure dragged onto a taken player seat
+Swap players?	Spelers wisselen?
+Swap	Wisselen
+{} goes on {}, and {} on {}.	{} gaat naar {} en {} naar {}.
+Players swapped	Spelers gewisseld

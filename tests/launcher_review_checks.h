@@ -3,6 +3,7 @@
 #include "launcher/ui/launcher_app.h"
 #include "shared/collection/datadir.h"
 #include <imgui_internal.h>
+#include <thread>
 #if !defined(_WIN32)
 #include <sys/resource.h>
 #include <csignal>
@@ -41,6 +42,63 @@ namespace launcher_ui
             LauncherConfig config;
             config["launcher"]["language"] = "en";
             App app(*FindGame("ssa"), LauncherConfigPath(), config);
+            if (mode == "pad-shortcuts")
+            {
+                fs::create_directories(root / "data");
+                const auto pads = ToyboxPads();
+                auto begin = [&](size_t row) {
+                    app.m_toyboxPadCapturing = &pads[row];
+                    app.m_toyboxPadFirst = -1;
+                    app.m_toyboxPadTriggers = {};
+                };
+                auto press = [&](SDL_GamepadButton button) {
+                    SDL_Event event{};
+                    event.type = SDL_EVENT_GAMEPAD_BUTTON_DOWN;
+                    event.gbutton.button = button;
+                    expect(app.CaptureToyboxPad(event), "capture consumes the physical button");
+                };
+                begin(0);
+                press(SDL_GAMEPAD_BUTTON_SOUTH);
+                expect(app.m_config["input"]["pad_wheel"] == "a" && app.m_toyboxPadCapturing == nullptr,
+                    "one button finishes the wheel capture");
+                begin(1);
+                press(SDL_GAMEPAD_BUTTON_BACK);
+                expect(app.m_toyboxPadCapturing != nullptr && app.m_toyboxPadFirst == 9,
+                    "the first button waits for the second");
+                press(SDL_GAMEPAD_BUTTON_BACK);
+                expect(app.m_toyboxPadCapturing != nullptr, "a repeated button cannot make a chord");
+                press(SDL_GAMEPAD_BUTTON_NORTH);
+                expect(app.m_config["input"]["pad_toybox"] == "back+y", "buttons are stored in capture order");
+                begin(2);
+                press(SDL_GAMEPAD_BUTTON_EAST);
+                SDL_Event escape{};
+                escape.type = SDL_EVENT_KEY_DOWN;
+                escape.key.key = SDLK_ESCAPE;
+                expect(app.CaptureToyboxPad(escape) && app.m_toyboxPadCapturing == nullptr &&
+                           app.m_config["input"].count("pad_menu") == 0,
+                    "Escape cancels a partial chord without writing it");
+                begin(2);
+                SDL_Event trigger{};
+                trigger.type = SDL_EVENT_GAMEPAD_AXIS_MOTION;
+                trigger.gaxis.axis = SDL_GAMEPAD_AXIS_LEFT_TRIGGER;
+                trigger.gaxis.value = 24000;
+                app.CaptureToyboxPad(trigger);
+                app.CaptureToyboxPad(trigger);
+                expect(app.m_toyboxPadCapturing != nullptr && app.m_toyboxPadFirst == 6,
+                    "holding a trigger does not supply a second button");
+                trigger.gaxis.axis = SDL_GAMEPAD_AXIS_RIGHT_TRIGGER;
+                app.CaptureToyboxPad(trigger);
+                expect(app.m_config["input"]["pad_menu"] == "lt+rt", "both triggers can be captured");
+                begin(0);
+                SDL_Event lost{};
+                lost.type = SDL_EVENT_WINDOW_FOCUS_LOST;
+                app.CaptureToyboxPad(lost);
+                expect(app.m_toyboxPadCapturing == nullptr && app.m_config["input"]["pad_wheel"] == "a",
+                    "losing focus cancels without changing the binding");
+                expect(LoadLauncherConfig(LauncherConfigPath())["input"]["pad_menu"] == "lt+rt",
+                    "the capture saves the settings file");
+                return failures == 0 ? 0 : 1;
+            }
             if (mode == "paths")
             {
                 const fs::path word = fs::path(u8"donn\u00e9es-\u30c7\u30fc\u30bf");
@@ -221,6 +279,78 @@ namespace launcher_ui
                         "both figures remain after restore");
                 }
             }
+            else if (mode == "pictures")
+            {
+                // The pictures are read on the loader's thread (picture_loader.h): the page draws nothing in a picture's
+                // place until it is ready, and a card already drawn never looks its picture up again.
+                const fs::path portraits = root / "portraits";
+                fs::create_directories(portraits);
+                set("SKY_PORTRAITS", portraits);
+                const collection::Toy* eruptor = collection::Catalogue::Get().Find(9);
+                expect(eruptor != nullptr, "catalogue toy");
+                if (eruptor == nullptr)
+                    return 1;
+                collection::Image square{ 4, 4, std::vector<uint32_t>(16, 0xFF336699u) };
+                expect(collection::SavePng(square, datadir::Text(portraits / "eruptor.png")), "synthetic portrait");
+                const size_t decoded = app.m_pictures.Decoded();
+                const auto kind = collection::VariantKind::Base;
+                const FigureIconTexture& asked = page.Icon(eruptor, kind, false, 0);
+                expect(asked.pending && asked.texture == nullptr, "a picture is not read on the UI thread");
+                std::thread::id worker;
+                app.m_pictures.Request("check", [&] {
+                    worker = std::this_thread::get_id();
+                    return DecodedPicture{};
+                });
+                app.FinishPictures();
+                expect(worker != std::thread::id() && worker != std::this_thread::get_id(),
+                    "pictures are decoded on the loader's thread");
+                const FigureIconTexture& ready = page.Icon(eruptor, kind, false, 0);
+                expect(!ready.pending && ready.texture != nullptr && !ready.generated && ready.width == 4,
+                    "the loader's picture becomes the card's texture");
+                const size_t listed = collection::PictureFolderListings();
+                bool same = true;
+                for (int i = 0; i < 50; i++)
+                    same = same && page.Icon(eruptor, kind, false, 0).texture == ready.texture;
+                expect(same && app.m_pictures.Decoded() == decoded + 2 && !app.m_pictures.Pending() &&
+                           collection::PictureFolderListings() == listed,
+                    "a card already drawn neither reads nor looks up its picture again");
+                page.ClearIcons(); // the disc's pictures arrived
+                expect(page.Icon(eruptor, kind, false, 0).pending, "cleared pictures are read again");
+                app.FinishPictures();
+                expect(page.Icon(eruptor, kind, false, 0).texture != nullptr, "and come back");
+                // A figure without a disc picture: its drawn icon, also from the loader.
+                const collection::Toy* other = collection::Catalogue::Get().Find(14);
+                expect(other != nullptr && page.Icon(other, kind, false, 0).pending, "drawn icons are queued too");
+                app.FinishPictures();
+                expect(
+                    other != nullptr && page.Icon(other, kind, false, 0).generated, "a drawn icon without a picture");
+                expect(FadeIn(0) == 1 && FadeIn(SDL_GetTicks()) < 0.1f && FadeIn(SDL_GetTicks() - 1000) == 1,
+                    "pictures fade in once");
+                // A logo cut to its opaque part and shrunk, off the UI thread (DecodeArt).
+                collection::Image logo{ 8, 4, std::vector<uint32_t>(32, 0) };
+                for (int y = 1; y < 3; y++)
+                    for (int x = 2; x < 6; x++)
+                        logo.rgba[size_t(y) * 8 + x] = 0xFF0000FFu;
+                expect(collection::SavePng(logo, datadir::Text(root / "logo.png")), "synthetic logo");
+                const DecodedPicture art = DecodeArt(datadir::Text(root / "logo.png"), true, 2);
+                expect(
+                    art.width == 2 && art.height == 1 && art.aspect == 2 && art.rgba.size() == 8 && art.rgba[3] == 255,
+                    "art decoded, cropped and shrunk without a renderer");
+                // The collection read again on a thread when its folder changes.
+                const std::string made = collection::Create(16);
+                const uint64_t later = SDL_GetTicks() + 1'000'000;
+                expect(!page.m_model.PollInBackground(later) && page.m_model.Find(made) == nullptr,
+                    "the reading starts on its own thread");
+                page.m_model.WaitForReload();
+                expect(page.m_model.PollInBackground(later) && page.m_model.Find(made) != nullptr,
+                    "the new figure is swapped in");
+                const std::string another = collection::Create(14);
+                expect(!page.m_model.PollInBackground(later + 2000), "another reading starts");
+                page.m_model.Load(); // the page reloaded meanwhile (a seat set, a figure deleted)
+                page.m_model.WaitForReload();
+                expect(!page.m_model.PollInBackground(later + 2000) && page.m_model.Find(another) != nullptr,
+                    "a reading older than the last load is dropped");
+            }
             else if (mode == "sheet")
             {
                 const auto swapper = collection::CreateSwapper(2003, 1003);
@@ -236,6 +366,65 @@ namespace launcher_ui
                 app.Frame(); // The rest of the sheet still draws this swapper's bottom after the reload.
                 const auto* figure = page.m_model.Find(swapper.top);
                 expect(figure != nullptr && figure->favourite, "favorite action completed");
+            }
+            else if (mode == "drag")
+            {
+                // A dragged figure greys the seats PutOn would refuse, with the same words as its toast; a seat's figure
+                // moves to an empty seat, and two players change places once the question is answered.
+                const std::string gill = collection::Create(14), spyro = collection::Create(16),
+                                  anvil = collection::Create(200);
+                expect(!gill.empty() && !spyro.empty() && !anvil.empty(), "synthetic figures created");
+                page.Reload();
+                const collection::Game* game = page.m_model.Game();
+                expect(game != nullptr && game->seats.size() == 4, "the game's seats");
+                if (game == nullptr)
+                    return 1;
+                for (const std::string& path : { gill, anvil })
+                    for (size_t seat = 0; seat < game->seats.size(); seat++)
+                    {
+                        const collection::Figure* figure = page.m_model.Find(path);
+                        expect(figure != nullptr, "figure found");
+                        if (figure == nullptr)
+                            continue;
+                        const std::string refused = page.Refusal(seat, *figure);
+                        app.m_toasts.Clear();
+                        page.PutOn(seat, path);
+                        const auto& toasts = app.m_toasts.Items();
+                        const bool seated = page.m_model.SeatOf(path) == int(seat);
+                        expect(refused.empty() ? seated : !seated && !toasts.empty() && toasts.back().text == refused,
+                            "the grey and the toast agree");
+                        if (seated)
+                            page.TakeOff(seat);
+                    }
+                const collection::Figure* magic = page.m_model.Find(anvil);
+                expect(magic != nullptr && page.Refusal(0, *magic).find("doesn't go on Player 1") != std::string::npos,
+                    "an item is refused by a player's seat");
+                page.PutOn(0, gill);
+                page.MoveSeat(0, 1);
+                expect(
+                    page.m_model.seats[0].empty() && page.m_model.seats[1] == gill, "a figure moves to an empty seat");
+                page.PutOn(0, spyro);
+                page.MoveSeat(1, 0);
+                expect(page.m_model.seats[0] == spyro && page.m_model.seats[1] == gill && page.m_swapFrom == 1 &&
+                           page.m_swapTo == 0,
+                    "a player onto a taken player seat asks first");
+                app.Frame();
+                items.clear();
+                app.Frame();
+                const uint32_t swap = item("Swap");
+                expect(swap != 0, "the question is asked");
+                if (swap != 0)
+                {
+                    ImGui::ActivateItemByID(swap);
+                    app.Frame();
+                    app.Frame();
+                }
+                expect(page.m_model.seats[0] == gill && page.m_model.seats[1] == spyro && page.m_swapFrom < 0,
+                    "the players change places");
+                page.PutOn(2, anvil);
+                page.MoveSeat(2, 0);
+                expect(page.m_model.seats[0] == gill && page.m_model.seats[2] == anvil && page.m_swapFrom < 0,
+                    "a seat that refuses the figure keeps its own");
             }
             ui::Ctx().testHeld = 0;
             ui::Ctx().testNavigationItems = nullptr;

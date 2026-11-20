@@ -1,7 +1,7 @@
 #pragma once
 
 // Saves that cannot be lost: atomic save writes, the previous versions kept as backups, and restoring one of them.
-// Shared by the game and Skylauncher (tools/sync_collection.sh, next to datadir); plain C++ and the C library only, so
+// Shared by the game and Arkeyan Launcher (tools/sync_collection.sh, next to datadir); plain C++ and the C library only, so
 // no SDL and no game data.
 //
 // Layout, for a saves folder <saves> (<root>/SSA/saves, or SKY_SAVE_DIR):

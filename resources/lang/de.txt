@@ -94,7 +94,8 @@ Attack 3 / Back	Angriff 3 / Zurück
 Aug	Aug.
 Auto	Auto
 Auto (follows the window)	Auto (folgt dem Fenster)
-Auto shows more when wide; 16:9 adds bars.	Auto zeigt bei Breite mehr; 16:9 fügt Balken hinzu.
+Fill (covers a taller screen)	Füllen (deckt einen höheren Bildschirm ab)
+Auto shows more when wide; Fill covers a taller screen; 16:9 adds bars.	Auto zeigt bei Breite mehr; Füllen deckt einen höheren Bildschirm ab; 16:9 fügt Balken hinzu.
 Auto-open Toy Box	Toy Box automatisch öffnen
 Auto: 5.1 when the device has six channels.	Auto: 5.1, wenn das Gerät sechs Kanäle hat.
 Automatic	Automatisch
@@ -147,6 +148,9 @@ Checking...	Prüfung...
 Chinese	Chinesisch
 Choose	Wählen
 Choose a figure for {}	Figur für {} wählen
+Include HD textures	HD-Texturen mitnehmen
+{} with them, {} without.	{} mit ihnen, {} ohne.
+Settings: {} FPS · Resolution scale {} · {}	Einstellungen: {} FPS · Auflösungsfaktor {} · {}
 Choose a folder...	Ordner wählen...
 Choose a key to change it.	Wähle eine Taste, um sie zu ändern.
 Choose a type	Typ wählen
@@ -356,6 +360,14 @@ Couldn't download the game tools	Spielwerkzeuge konnten nicht geladen werden
 Frame rate limit	Bildratenlimit
 Frees {}. Saves and settings are kept.	Gibt {} frei. Spielstände und Einstellungen bleiben.
 Fullscreen	Vollbild
+Window size	Fenstergröße
+{} x {}	{} x {}
+Last used: as it was when the game closed.	Zuletzt genutzt: wie beim Schließen des Spiels.
+Last used	Zuletzt genutzt
+Custom	Benutzerdefiniert
+Width	Breite
+Height	Höhe
+{} or more	{} oder mehr
 Game	Spiel
 Game art comes from your own disc.	Die Spielgrafik stammt von deiner eigenen Disc.
 Game data	Spieldaten
@@ -406,12 +418,10 @@ Hold to delete saves, backups and caches.	Halte gedrückt, um Spielstände, Sich
 Hold to delete the built game. Saves are kept.	Halte gedrückt, um das gebaute Spiel zu löschen. Spielstände bleiben.
 Hold to delete the copy.	Halte gedrückt, um die Kopie zu löschen.
 Hold to delete the partial copy.	Halte gedrückt, um die unvollständige Kopie zu löschen.
-Hold to give every button its own job back.	Halte gedrückt, um jeder Taste ihre eigene Aufgabe zurückzugeben.
 Hold to mark them as not in use.	Halte gedrückt, um sie als nicht benutzt zu markieren.
 Hold to move them to the trash.	Halte gedrückt, um sie in den Papierkorb zu legen.
 Hold to put this copy back.	Halte gedrückt, um diese Kopie zurückzulegen.
 Hold to rebuild the game.	Halte gedrückt, um das Spiel neu zu bauen.
-Hold to reset every key of this game.	Halte gedrückt, um alle Tasten dieses Spiels zurückzusetzen.
 Hold to restore; your current saves are kept first.	Halte gedrückt, um wiederherzustellen; deine aktuellen Spielstände werden vorher gesichert.
 INSTALL	INSTALLIEREN
 INSTALLATION INTERRUPTED	INSTALLATION UNTERBROCHEN
@@ -689,7 +699,6 @@ Report copied	Bericht kopiert
 Report saved	Bericht gespeichert
 Report saved: {}	Bericht gespeichert: {}
 Reset	Zurücksetzen
-Reset to defaults	Auf Standard zurücksetzen
 Reset to new	Auf neu zurücksetzen
 Reset to new...	Auf neu zurücksetzen...
 Reset {} to new? Level, gold and upgrades are lost.	{} auf neu zurücksetzen? Stufe, Gold und Verbesserungen gehen verloren.
@@ -854,7 +863,6 @@ Total	Gesamt
 Touchpad	Touchpad
 Toy	Figur
 Toy Box	Toy Box
-Toy Box in the game: F6, or View + Y on a controller.	Toy Box im Spiel: F6 oder Ansicht + Y am Controller.
 Toy Box keys	Toy-Box-Tasten
 Toy type {}	Figurentyp {}
 Translating the game code	Spielcode wird übersetzt
@@ -868,8 +876,9 @@ Trash · {}	Papierkorb · {}
 Triangle	Dreieck
 Trilinear	Trilinear
 Trophies	Trophäen
-Turn the game music off	Spielmusik ausschalten
-Turn the game music on	Spielmusik einschalten
+Game music	Spielmusik
+Play the music	Musik abspielen
+Each game's menu theme, on its page.	Das Menüthema jedes Spiels, auf seiner Seite.
 Type	Typ
 Ultra Performance	Ultra-Leistung
 Frame generation	Frame Generation
@@ -906,7 +915,6 @@ VSync	VSync
 Vehicle {}	Fahrzeug {}
 Vehicles	Fahrzeuge
 Verified	Geprüft
-Verified, {}	Geprüft, {}
 Version {} is available.	Version {} ist verfügbar.
 Version {}, {}	Version {}, {}
 Versions	Versionen
@@ -1094,6 +1102,7 @@ Open with the game	Mit dem Spiel öffnen
 Real figure · on the portal	Echte Figur · auf dem Portal
 Start a game first	Starte zuerst ein Spiel
 The Toy Box in its own window, to keep beside the game	Die Toy Box in einem eigenen Fenster, neben dem Spiel
+The other seats: in the Toy Box window	Die anderen Plätze: im Toy-Box-Fenster
 The Toy Box window opens each time you play	Das Toy-Box-Fenster öffnet sich bei jedem Spielstart
 The game cannot read this figure there	Das Spiel kann diese Figur dort nicht lesen
 The game did not find this figure	Das Spiel hat diese Figur nicht gefunden
@@ -1135,3 +1144,107 @@ Couldn't prepare the game tools	Couldn't prepare the game tools
 Go back to the final release?	Go back to the final release?
 Going back to {}. Saves and figures made with the test build may not open in it. A copy of them is kept.	Going back to {}. Saves and figures made with the test build may not open in it. A copy of them is kept.
 Version {} (the final release)	Version {} (the final release)
+
+# The Games folder (Settings > Launcher)
+Games folder	Spieleordner
+Where every game is built: another drive saves room.	Wo jedes Spiel installiert wird: Ein anderes Laufwerk spart Platz.
+Moving the games: {} of {}	Spiele werden verschoben: {} von {}
+Now: {}	Aktuell: {}
+Use default	Standard verwenden
+Games moved	Spiele verschoben
+Move stopped: the games stay where they were	Verschieben gestoppt: Die Spiele bleiben, wo sie waren
+Couldn't move the games	Die Spiele konnten nicht verschoben werden
+Couldn't move the games: they stay where they were	Die Spiele konnten nicht verschoben werden: Sie bleiben, wo sie waren
+Not enough free space: {} needed	Nicht genug freier Speicher: {} benötigt
+Wait for the games to move	Warte, bis die Spiele verschoben sind
+Quit the game to move the games	Beende das Spiel, um die Spiele zu verschieben
+The games folder isn't there. Plug in the drive, or choose another folder.	Der Spieleordner ist nicht da. Schließe das Laufwerk an oder wähle einen anderen Ordner.
+This folder isn't there	Dieser Ordner ist nicht da
+This folder can't be written to	In diesen Ordner kann nicht geschrieben werden
+Choose a folder outside the games	Wähle einen Ordner außerhalb der Spiele
+Choose a folder outside the game tools	Wähle einen Ordner außerhalb der Spiel-Tools
+The games in {} go too; your other files there stay.	Die Spiele in {} werden auch entfernt; deine anderen Dateien dort bleiben.
+
+# The image check (disc_check.h): the Disc tab's pill, the install's first row, the dialog after a game whose movies did not open.
+Can't read the disc image.	Disc-Abbild nicht lesbar.
+Check again	Erneut prüfen
+Checking files, {}	Prüfe Dateien, {}
+Checking the disc	Prüfe die Disc
+Choose image	Abbild wählen
+Copy the disc again, then choose the new image.	Kopiere die Disc erneut und wähle dann das neue Abbild.
+Damaged copy	Beschädigte Kopie
+Disc image damaged	Disc-Abbild beschädigt
+Every file can be read. No good copy of this edition to compare with.	Jede Datei ist lesbar. Keine gute Kopie dieser Edition zum Vergleich.
+Every file matches a good copy of this disc ({}).	Jede Datei stimmt mit einer guten Kopie dieser Disc überein ({}).
+Good copy, {}	Gute Kopie, {}
+Part of the image can't be read.	Ein Teil des Abbilds ist nicht lesbar.
+Readable, {}	Lesbar, {}
+Some files differ from a good copy of this disc ({}).	Einige Dateien weichen von einer guten Kopie dieser Disc ab ({}).
+The disc image is damaged.	Das Disc-Abbild ist beschädigt.
+The disc image may be damaged	Das Disc-Abbild ist vielleicht beschädigt
+The disc image of {} is damaged	Das Disc-Abbild von {} ist beschädigt
+{} couldn't open some of its movies. A damaged copy of the disc does this.	{} konnte einige seiner Videos nicht öffnen. Das passiert bei einer beschädigten Kopie der Disc.
+
+# The global keys and controller (ui/controls_page.cpp).
+Reset to defaults	Auf Standard zurücksetzen
+Hold to reset every key of this game.	Halte gedrückt, um alle Tasten dieses Spiels zurückzusetzen.
+Hold to reset every button of this game.	Halte gedrückt, um alle Controller-Tasten dieses Spiels zurückzusetzen.
+Use the global setting	Globale Einstellung verwenden
+Use the default	Standard verwenden
+Dimmed values follow Launcher settings.	Abgeblendete Werte folgen den Launcher-Einstellungen.
+Games use these unless their own settings change them.	Die Spiele nutzen diese, außer ihre eigenen Einstellungen ändern sie.
+Buttons	Tasten
+Stats / Info	Werte / Info
+
+# Controller shortcuts
+Swap wheel	Wechselrad
+Game menu	Spielmenü
+Hold to open the swap wheel.	Gedrückt halten, um das Wechselrad zu öffnen.
+Press a button (Escape cancels).	Eine Taste drücken (Escape bricht ab).
+Press two buttons in order (Escape cancels).	Zwei Tasten nacheinander drücken (Escape bricht ab).
+Press the second button (Escape cancels).	Die zweite Taste drücken (Escape bricht ab).
+This button is used by another action	Diese Taste wird von einer anderen Aktion verwendet
+Hold to reset the controller buttons for all games.	Gedrückt halten, um die Controller-Tasten für alle Spiele zurückzusetzen.
+Toy Box in the game: {}, or {} on a controller.	Toy Box im Spiel: {} oder {} am Controller.
+
+# Figure pictures (Settings > Launcher > Collection, the figure sheet).
+Figure pictures	Figurenbilder
+Which game's pictures the figures show.	Aus welchem Spiel die Bilder der Figuren stammen.
+Original game	Ursprüngliches Spiel
+Newest game	Neuestes Spiel
+Figure picture	Figurenbild
+Default ({})	Standard ({})
+My picture	Mein Bild
+Choose a picture...	Bild auswählen...
+Remove my picture	Mein Bild entfernen
+That file is not a picture	Diese Datei ist kein Bild
+The picture could not be saved	Das Bild konnte nicht gespeichert werden
+
+# Imaginite chests (ui/chests_page.cpp).
+Imaginite chests	Imaginite-Kisten
+Chests	Kisten
+Chests · {}	Kisten · {}
+Reach the Academy once in the game to add chests.	Erreiche im Spiel einmal die Akademie, um Kisten hinzuzufügen.
+Save slot {} · {} in the pile · Room for {} more	Speicherplatz {} · {} im Stapel · Platz für {} weitere
+Imaginite Chest	Imaginite-Kiste
+Copper Chest	Kupferkiste
+Bronze Chest	Bronzekiste
+Silver Chest	Silberkiste
+Gold Chest	Goldkiste
+Platinum Chest	Platinkiste
+Bronze Mystery Chest	Bronze-Mysteriumskiste
+Silver Mystery Chest	Silber-Mysteriumskiste
+Gold Mystery Chest	Gold-Mysteriumskiste
+Add 1 chest	1 Kiste hinzufügen
+Add {} chests	{} Kisten hinzufügen
+Chests added: they appear at the Academy	Kisten hinzugefügt: Sie erscheinen in der Akademie
+Couldn't add the chests	Kisten konnten nicht hinzugefügt werden
+They appear the next time this save reaches the Academy.	Sie erscheinen, wenn dieser Spielstand das nächste Mal die Akademie erreicht.
+{} chests waiting for save slot {}	{} Kisten warten auf Speicherplatz {}
+{} chests waiting	{} Kisten warten
+Too late: the game already added them	Zu spät: Das Spiel hat sie schon hinzugefügt
+# Collection: a seat's figure dragged onto a taken player seat
+Swap players?	Spieler tauschen?
+Swap	Tauschen
+{} goes on {}, and {} on {}.	{} kommt auf {} und {} auf {}.
+Players swapped	Spieler getauscht

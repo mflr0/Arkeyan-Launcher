@@ -75,7 +75,7 @@ namespace launcher_ui
         std::string state = SettingGet(m_config, section, "state");
         if (state != "running" && state != "failed")
             return;
-        m_s->installPast = ReadInstallLog(GameInstallFolder(m_s->check.xexSha256));
+        m_s->installPast = ReadInstallLog(GameDataFolder(m_s->game.id));
         if (m_s->installPast.state == InstallProgress::State::Idle ||
             m_s->installPast.state == InstallProgress::State::Done)
             return;
@@ -197,6 +197,8 @@ namespace launcher_ui
         }
         if (!UpdatingAll() && DefenderNoticeFirst([this] { StartInstall(); }))
             return;
+        if (GamesFolderMissingFirst([this] { StartInstall(); })) // an unplugged drive: never built somewhere else
+            return;
         if (!DiscStillThere())
             return;
         if (m_session.Running() == m_s->game.id) // its build can't be replaced while it runs
@@ -211,6 +213,8 @@ namespace launcher_ui
                 ui::ToastKind::Error); // the player's own kit: not ours to replace
             return;
         }
+        if (NeedsInstall(*m_s) && DiscDamaged(*m_s)) // the button is greyed: a damaged image is never installed
+            return;
         m_s->installSha = m_s->check.xexSha256;
         m_s->installKitVersion = m_s->kit ? m_s->kit->version : std::string();
         m_s->installView = true;
@@ -219,7 +223,23 @@ namespace launcher_ui
         m_s->installPastPid = 0;
         m_s->kitUsed = false;
         m_s->kitError.clear();
+        m_s->checkUsed = false;
+        m_s->checkError.clear();
         m_page = Page::Play;
+        // A first install waits for the image check (its first row); an update rebuilds a game the player already has.
+        if (NeedsInstall(*m_s) && DiscChecking(*m_s))
+        {
+            m_s->checkUsed = m_s->installAfterCheck = true;
+            m_s->checkStep = { "check", "Checking the disc", SDL_GetTicks(), 0 };
+            if (!m_s->discCheck.Running())
+                m_s->discCheckWanted = true;
+            return; // FinishDiscCheck goes on (ContinueAfterCheck)
+        }
+        ContinueInstall();
+    }
+
+    void App::ContinueInstall()
+    {
         if (KitNeedsFetch(*m_s))
         {
             if (const GameUpdate* pending = PendingUpdate(*m_s))
@@ -228,6 +248,17 @@ namespace launcher_ui
         }
         else
             StartInstaller();
+    }
+
+    void App::CancelInstall()
+    {
+        m_s->installer.Cancel();
+        m_s->kitDownload.Cancel();
+        if (m_s->installAfterCheck) // the check goes on for the Disc tab; the install stops here
+        {
+            m_s->installAfterCheck = m_s->checkUsed = m_s->installView = false;
+            Toast(Tr("Installation canceled"), ui::ToastKind::Info);
+        }
     }
 
     // ---- Update all -----------------------------------------------------------------------------------------------------
@@ -336,7 +367,7 @@ namespace launcher_ui
         m_s->kit = FindInstallKit(m_config, m_s->game.id, WantedKitTag(*m_s));
         if (m_s->kit && m_s->kit->editionReport)
         {
-            m_s->editionJob.Start(m_s->kit->ssabuild, m_s->discPath);
+            m_s->editionJob.Start(m_s->kit->builder, m_s->discPath);
             return;
         }
         if (m_s->kit && m_s->kit->chosen) // the player's own kit: not ours to replace
@@ -362,7 +393,7 @@ namespace launcher_ui
                 Set("update", "kit_fetched", m_s->kitTag);
                 m_s->kit = FindInstallKit(m_config, m_s->game.id, WantedKitTag(*m_s));
                 if (m_s->kit && m_s->kit->editionReport)
-                    m_s->editionJob.Start(m_s->kit->ssabuild, m_s->discPath);
+                    m_s->editionJob.Start(m_s->kit->builder, m_s->discPath);
                 else
                     Toast(Tr("These game tools can't find editions: update them"), ui::ToastKind::Error);
             }
@@ -391,7 +422,8 @@ namespace launcher_ui
             return;
         }
         if (m_s->installer.Start(m_s->kit, m_s->discPath, GameInstallFolder(m_s->installSha),
-                HdTexturesOffered() && HdTexturesWanted(*m_s) && m_s->kit && m_s->kit->hdTextures))
+                HdTexturesOffered() && HdTexturesWanted(*m_s) && m_s->kit && m_s->kit->hdTextures,
+                GameDataFolder(m_s->game.id)))
         {
             auto& section = m_config["install." + m_s->installSha];
             section["pid"] = std::to_string(m_s->installer.ProcessId());
@@ -403,6 +435,26 @@ namespace launcher_ui
     InstallProgress App::InstallSnapshot(size_t logTail) { return InstallSnapshot(*m_s, logTail); }
 
     InstallProgress App::InstallSnapshot(GameSlot& slot, size_t logTail)
+    {
+        if (!slot.checkUsed)
+            return InstallSnapshotAfterCheck(slot, logTail);
+        if (slot.installAfterCheck || !slot.checkError.empty())
+        {
+            // Still reading the disc, or it found the image damaged: the check's row alone.
+            InstallProgress progress;
+            progress.steps.push_back(slot.checkStep);
+            progress.state = slot.checkError.empty() ? InstallProgress::State::Running : InstallProgress::State::Failed;
+            progress.error = slot.checkError;
+            progress.done = slot.discCheck.Bytes() >> 20; // MB
+            progress.total = slot.discCheck.Total() >> 20;
+            return progress;
+        }
+        InstallProgress progress = InstallSnapshotAfterCheck(slot, logTail);
+        progress.steps.insert(progress.steps.begin(), slot.checkStep);
+        return progress;
+    }
+
+    InstallProgress App::InstallSnapshotAfterCheck(GameSlot& slot, size_t logTail)
     {
         if (slot.kitUsed)
         {
@@ -478,6 +530,9 @@ namespace launcher_ui
             if (const GameUpdate* pending = PendingUpdate(*m_s); version.empty() && pending != nullptr)
                 version = pending->version;
             RecordInstalledGame(m_config, m_s->installSha, progress.runtime, m_s->installKitVersion, version);
+            // A build that reads the games folder: a later move takes its HD textures and game data along.
+            if (m_s->kit && m_s->kit->gamesFolder)
+                m_config["install." + m_s->installSha]["games_folder"] = "1";
             SetInstallState(m_s->installSha, nullptr);
             // What the install wrote, for the file check at the next starts.
             m_integrity.WriteGameList(GameInstallFolder(m_s->installSha), datadir::FromText(progress.runtime));
@@ -871,12 +926,9 @@ namespace launcher_ui
                 Toast(Tr("Log copied"), ui::ToastKind::Success);
             }
             else if ((failed || interrupted) && i == 2)
-                OpenFolder(GameInstallFolder(m_s->installSha));
+                OpenFolder(GameDataFolder(m_s->game.id)); // the install's logs
             else if (running && i == actions.size() - 1)
-            {
-                m_s->installer.Cancel();
-                m_s->kitDownload.Cancel();
-            }
+                CancelInstall();
             else
                 m_s->installLog = !m_s->installLog;
         }
@@ -968,7 +1020,7 @@ namespace launcher_ui
             m_s->check.status = GameSourceStatus::Ok;
             m_s->check.xexSha256 = "install-card-fixture";
             m_s->installSha = m_s->check.xexSha256;
-            m_s->discPath = (GameInstallFolder("") / "disc.iso").string();
+            m_s->discPath = (GameDataFolder(m_s->game.id) / "disc.iso").string();
             m_s->installed = fixture.built ? InstalledGame{ "fixture-runtime", "0.7.1", "0.8.1" } : InstalledGame{};
             if (fixture.state == State::Done)
                 m_s->installed.gameVersion = "0.8.4";
@@ -1120,7 +1172,7 @@ namespace launcher_ui
             if (!m_s->installView)
             {
                 // As if the launcher had been closed during the compile.
-                std::ofstream(GameInstallFolder(m_s->check.xexSha256) / "install.log", std::ios::trunc)
+                std::ofstream(GameDataFolder(m_s->game.id) / "install.log", std::ios::trunc)
                     << "@step toolchain Preparing the compiler\n@step disc Reading the disc\n@step recompile "
                        "Translating the game code\n"
                        "@step shaders Translating the shaders\n@step compile Compiling the game\n@progress 812 2304\n";

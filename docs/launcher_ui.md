@@ -39,7 +39,7 @@ component has becomes a component (or an option of one) first, with its states d
 - `src/launcher/ui/game_look.cpp` - the game page in each game's own look: the main action's options (`DrawMainAction`), the logo's
   arrival (`LogoDrop`, `DrawHeroLogo`), the disc's pictures as textures (`LoadArt`, `CachedArt`), `SystemReducesMotion`.
 - `src/shared/art/` - ArkeyanRuntime's disc picture readers and per-game provider (`game_art`), copied by its
-  `tools/sync_skylauncher.sh`: Xenos textures, SSA's `strm`/APKF, Giants' IGA/IGZ.
+  `tools/sync_launcher.sh`: Xenos textures, SSA's `strm`/APKF, Giants' IGA/IGZ.
 - `src/shared/` - what isn't the launcher's alone: the disc reader (`vfs`: each directory extent is walked once, with bounds on depth, entries and sizes, so a looping or oversized image is refused, "Not an Xbox 360 disc image", never a crash; `tests/vfs_test.cpp`), the platform layer, `stb_impl.cpp`, the embedded fonts
   and the figure engine.
 - `src/shared/collection/` and `src/shared/figures/` - ArkeyanRuntime's collection library (copied by `tools/sync_collection.sh`:
@@ -100,7 +100,7 @@ size. `Small` 16 on a line of Caption or Body text (a state, a pill, a chip, a s
 turns Lucide's loader. The icons come from `resources/fonts/Lucide.ttf`, Lucide's icon font cut down to the icons used and
 built into the executable (`cmake/embed_fonts.cmake`); to add one, put its Lucide name in `tools/lucide_subset.py`'s list, run
 `python3 tools/lucide_subset.py <the lucide-static npm package, untarred>` (it rewrites the font and
-`components/lucide.h`), then map it in `DrawIcon` (`components/core.cpp`). The speaker uses `volume-2` and `volume-x`. Nothing is drawn by hand but the GitHub mark (Lucide
+`components/lucide.h`), then map it in `DrawIcon` (`components/core.cpp`). The speaker uses `volume-2` and `volume-x`; a key or button back to the global one, `rotate-ccw`. Nothing is drawn by hand but the GitHub mark (Lucide
 has no brand marks).
 
 **Text lines** (`ui::CapMiddle`, `ui::CapTop`, `ui::Baseline`). What is centred is the capitals: a line of text beside an
@@ -505,10 +505,18 @@ line ("Choose a key to change it.", or which key is awaited), then the **movemen
 down, left and right beside it: the player's letters, Z Q S D on AZERTY, W A S D on QWERTY) titled "Movement" with the
 stick after it, the **right stick's** as another cross when the game uses it (titled with its action, "Shake / Insert /
 Swing"), a hairline, then a settings row per other action (its name, its pad button as the row's note, the key cap at the
-column's right); a key being changed is the accent with "...", a key two actions share a warning icon and edge; one Danger
-hold "Reset to defaults". The Toy Box keys (Launcher settings > Controls) are key caps in settings rows, two columns at the
-row's right: the keyboard's ("F6 / Tab": either) and the pad's in the pad family's pictures ("View + Y": together; the pad in use
-or chosen, else Xbox's), a dash where the pad has none (F7, F8). The Controller tab names an unchanged button's job "Default".
+column's right); a key being changed is the accent with "...", a key two actions share a warning icon and edge; a key the game
+does not set itself (it follows the global layout or its default) dimmed (`KeyButtonOptions::inherited`; a list's
+`SelectOptions::inherited`), one it sets in normal text with a reset arrow (an `IconButton` with `Icon::Reset` before the
+control; one beside a cross's title for its four keys); one Danger hold "Reset to defaults". Launcher settings >
+Controls (`ui/controls_page.cpp`) has, under the controller choice, **All games**: one settings table with two control columns
+headed Keyboard and Controller (`ui::BeginSettings` with a second width), a row per shared action (its key cap, its pad button's
+list; a dash where a side has none), then the Mouse switch, the Rumble and the Toy Box keys, never dimmed. The Toy Box keys are key caps in settings rows, two columns at the
+row's right: the keyboard's and physical controller pickers named for the pad in use or chosen, else Xbox's. Swap wheel
+captures one held button; Open the Toy Box and Game menu capture two different buttons in order (Escape cancels).
+Add and clear figures keep a controller dash; Game menu shows its fixed F3 key. A controller shortcut used by a game's
+action is marked red, except the default Back/View, Back/View + Y and Back/View + Start buttons. The section ends with a
+hold Reset to defaults for the global controller buttons, rumble and shortcuts. The Controller tab names an unchanged button's job "Default".
 Save backups are ListRows (when, files, size) with a Danger hold "Restore" beside each; the update check's last time and the
 backups' times use `FormatWhen`. The problem report is `ui::BeginModal(Large)` with `ModalActions` (Close, Save as...) and Copy
 at the left. Uninstall's list is ListRows with the size as `trailing` (not focusable: nobody presses them), "Also delete my saves
@@ -612,8 +620,9 @@ GitHub issue) and the GitHub link bottom right. The launcher's own language is i
      disc is not read for textures yet (`docs/tools/hd_textures.md`, [Lux]).
    - Keyboard: one row per action **the game uses**, named as the game names it with the pad button in brackets ("Attack 1 (X)",
      "1st Power / Accept (A)"), two rows a line: the key's button (click it, press a key; Escape cancels), red when another row of
-     the game has the same key, and **Reset to defaults** (held) for this game's keys. The game's own copy, `[<game>.input]`; PLAY puts it
-     in `[input]` (docs/settings.md, "Per-game keyboard keys", which also lists each game's rows and where their names come from).
+     the game or a Toy Box key has the same key, dimmed when the game follows the global layout, with a reset arrow when it sets its
+     own, and **Reset to defaults** (held). The game's own lines, `[<game>.input]`, over the global `[input]` (docs/settings.md,
+     "The global layout and each game's keys", which also lists each game's rows and where their names come from).
    - Sound (0.9.4): volume, speakers (Auto, Stereo, 5.1) and Trap Team's portal sound, `[<game>.audio]` (docs/settings.md).
    - Language: game text and game voices (`[<game>] language`, `voice_language`). Giants' disc has twelve languages for both (English,
      French, German, Spanish, Latin-American Spanish `es-419`, Italian, Dutch, Portuguese, Swedish, Norwegian, Danish, Finnish) and its
@@ -628,7 +637,10 @@ GitHub issue) and the GitHub link bottom right. The launcher's own language is i
      disc holds"): Russian, Greek, Japanese, Korean and Chinese are named by the launcher's own word (the font has no glyphs for
      them), translated; a code nobody knows in the stored list is ignored.
    - Disc: the image's file name and state; **Choose... / Change...**, **Remove** (the launcher forgets it; the file is not
-     touched), **Show in folder**. Disabled while a check or an install runs.
+     touched), **Show in folder**. Disabled while the disc check or an install runs. Once the disc is verified, its pill is
+     the image check's (docs/install.md, "Image check"): "Checking files, 45 %", then "Good copy", "Readable" (no good copy
+     of this edition to compare with) or "Damaged copy", with one line saying what was found; **Check again** reads it
+     again. When the game plays from its copied data, the same pill is the copy's.
    - Saves: **Open saves folder** and the save backups with Restore (held, refused while the game runs).
    - Game: **Create** (under Desktop shortcut), the folders, the built game with **Reinstall** (held), **Clear caches**,
      **Delete saves and data** (held), **Remove game** (held), each with the size it frees and what it keeps
@@ -638,9 +650,11 @@ GitHub issue) and the GitHub link bottom right. The launcher's own language is i
 launcher's. Now the gear is only what is the launcher's or is shared, and anything about one game is on that game's page, so
 the two games can differ (30 fps for one, 60 for the other, another disc, deleting one's saves). **The controller, the button
 glyphs and the portal stay in the launcher's settings** because the games read the same `[input]` (device, glyphs) and `[portal]`
-sections and the same hardware: a game page would only show the same values twice. **The keyboard keys moved to the game pages**
-(Keyboard tab) because the games name and use their buttons differently (Giants' X is "Attack 1", Spyro's Adventure's is "Use / Talk"):
-`[<game>.input]` works like `[<game>.video]` (`game_keys.h`).
+sections and the same hardware: a game page would only show the same values twice. **The keys, the mouse and the pad are a global
+layout with each game's own lines over it** (0.9.9): Launcher settings > Controls holds what every game inherits: the actions every game has (All games: the moves, Stats / Info,
+Pause), keyboard and controller side by side. What each game names its own way (Giants' X is "Attack 2", Spyro's Adventure's is
+"2nd Power") is set on that game's Keyboard and Controller tabs, which also change an All games row for that game only
+(`game_keys.h`).
 
 The launcher opens on **Home**, the menu page (the ARKEYAN LAUNCHER title goes back to it): the **library**, a card per
 playable game (its painting from the disc behind its logo, its name and state; the game's colours before its disc was
@@ -694,7 +708,7 @@ The portal column narrows from 400 to 264 points at small window sizes; longer n
   ends. A game detected by its marker counts from its first observation in this launcher.
   STOP has a filled square icon, a dark red tinted fill and a red outline. Show the game has a monitor icon; the two
   actions sit side by side at the same Large height. There is no settings button in this row and no controller or portal
-  picker while running. The only hint is `Toy Box in the game: F6, or View + Y on a controller.`, fitted onto one line.
+  picker while running. The only hint is `Toy Box in the game: {}, or {} on a controller.`, filled with the chosen key and physical buttons, fitted onto one line.
   The portal panel keeps its existing behavior. Stop addresses only the PID started by
   this launcher: WM_CLOSE on Windows, SIGTERM (SDL's quit event) on macOS and Linux, then a forced end after five seconds.
   Polling keeps the page responsive, returns the page and sidebar to their ready states, and suppresses crash reporting
@@ -736,7 +750,8 @@ disagree; the page's other lines (the disc's status, the install card, the game 
 | the last install failed (no build); the last update failed (a build) | Install failed; Update failed | a crossed circle, red | INSTALL; UPDATE (or PLAY) |
 | the install was interrupted | Interrupted | a pause, blue | INSTALL, or PLAY if built |
 | the copied game data is damaged, and no disc image to fall back on | Game data damaged | a crossed circle, red | CHOOSE DISC |
-| a verified disc, no build yet | Ready to install | a download, blue | INSTALL |
+| the image check found the image damaged (docs/install.md, "Image check"); built or not | Disc image damaged | a crossed circle, red | INSTALL (off); PLAY or UPDATE if built |
+| a verified disc, no build yet; its image check still to finish (INSTALL then waits for it) | Ready to install; Checking the disc | a download, blue | INSTALL |
 | the release has a newer version of the game than the one built (the release's games line), not set aside with "Play without updating" | Update available | an arrow in a circle, blue | UPDATE |
 | verified disc and built (or an own runtime) | Ready to play | a checked circle, green | PLAY |
 | the game is running (started here, or found running: "A game running") | Running | a play triangle, green | RUNNING (off) |
@@ -824,7 +839,7 @@ read from the player's own disc.
   `list.tsv` (each achievement's id, gamerscore, picture id and hidden flag, and its name, unlocked text and locked text in en, fr, de, es, it,
   pt) and one `<picture id>.png` each. The cache holds the `default.xex`'s SHA-256: it is rewritten only when the disc's `default.xex`
   changes (older launchers' caches have no list: the next disc check makes it). Code: `src/shared/collection/achievements.{h,cpp}` (also
-  the runtime's reader: `tools/sync_skylauncher.sh`); counts per disc are in ArkeyanRuntime's `docs/runtime/xbox360/xam.md` (SSA 38, Giants 45,
+  the runtime's reader: `tools/sync_launcher.sh`); counts per disc are in ArkeyanRuntime's `docs/runtime/xbox360/xam.md` (SSA 38, Giants 45,
   Swap Force 39, 1000 G each). "Clear caches" removes it; the next disc check makes it again.
 - **What was unlocked and the play time** are written by the game runtime, not the launcher (`achievements.txt`, `playtime.txt`:
   `docs/settings.md`, "Progress files"). `src/launcher/game_progress.{h,cpp}` joins them with the cached list in the launcher's language (English
@@ -846,6 +861,33 @@ read from the player's own disc.
   `achievements-1-game`, `achievements-2-list` and `achievements-3-end`.
 - **Tests**: `ArkeyanLauncherTest` (`AchievementChecks`: rows, hidden ones, the play time texts in English and French; per game's disc in the
   "Disc pictures" part: the cache, the counts, the unlocks and the play time read back, French names differ).
+
+## Imaginite chests
+
+Imaginators only (`ChestsOffered`). The player adds chests to the pile in front of the Skylanders Academy; the game itself adds
+them and saves them, the launcher never edits a save.
+
+- **The files** (the game's player folder, next to `presence.txt`; the format is the shared `src/shared/collection/chests.{h,cpp}`,
+  from ArkeyanRuntime, `tools/sync_launcher.sh`): the game writes `chests.txt` (`slot=` the save slot played last from 0,
+  `pile=` its chests not opened yet, one `pile.<kind>=` per kind, `pile.other=`, `limit=99`) each time a game enters a zone; the
+  launcher writes `chests_add.txt` (`slot=` and one `<kind>=` per kind) atomically. The game claims it by a rename the next time that
+  slot enters the Academy, adds the chests through its own chest award and removes it; a request for another slot waits.
+  `src/launcher/game_chests.{h,cpp}` reads both, adds to the waiting request (taken by a rename first, so a claim by the game at the
+  same moment never adds a chest twice) and cancels it (removes the file).
+- **The kinds**, in this order: Imaginite Chest (the one earned in the levels), Copper, Bronze, Silver, Gold and Platinum Chests (the
+  purchased tiers), and Bronze, Silver and Gold Mystery Chests (the portal toy's).
+- **At most 99 chests**: the pile and the waiting chests together. Room left = 99 - pile - waiting; the game checks the limit again
+  against its pile when it adds them (chests earned since count).
+- **The game page** (Play): a Pill "Chests · 4" (just "Chests" before the game read a pile) at its top right, left of the achievements and
+  the music; shown when the disc is ready, also while the game runs. A click opens the Chests page.
+- **The Chests page** (`ui/chests_page.cpp`; `Page::Chests`, a game sub-page like the achievements: B or Back returns to the game page):
+  one card, "Imaginite chests" over "Save slot 1 · 4 in the pile · Room for 95 more", then one Slider per kind (each up to what the others
+  leave), **Add N chests** (Primary), and "They appear the next time this save reaches the Academy." While chests wait: "N chests
+  waiting" (or "N chests waiting for save slot 2" when another slot was played since, and nothing more can be added) and **Cancel**.
+  Before the game read a pile (no save yet, or the Academy not reached), the sliders are greyed and the line says "Reach the Academy
+  once in the game to add chests." The page reads the files again every second.
+- **Tests**: `ArkeyanLauncherTest` (`ChestsChecks`, `tests/chests_test.cpp`: the room, adding twice, refusals, cancel, a claim by the
+  game during an addition, chests waiting for another slot).
 
 ## Game data (copy the disc's files, no disc image afterwards)
 Game settings > Disc has two sections: **Disc image** (choose, change, remove, show in folder) and **Game data**, which copies the
@@ -922,6 +964,24 @@ already shown doesn't move. `App::IdleWait` draws every frame only while it fall
 **Reduced motion:** with the system's setting (macOS: Accessibility > Display > Reduce motion; Windows: Accessibility >
 Visual effects > Animation effects off), or `[launcher] reduce_motion=1`, the logo is simply there. `reduce_motion=0`
 always animates (`docs/settings.md`).
+
+## Pictures
+Every picture of the figures (cards, seats, the sheet, Add a figure, swappers joined at the waist) and the games' Play
+page backdrops and logos are read, decoded, cropped and shrunk on one thread of their own (`PictureLoader`,
+`picture_loader.h`); the UI thread only makes the finished ones textures, at most ~2 ms of them per frame
+(`App::UploadPictures`), so opening the Collection or scrolling a long shelf never waits for the disk. The newest request
+runs first: what was just scrolled into view.
+- **While a picture is not ready** the card shows its own fill (no picture, no initials), the Play page its night sky,
+  the sidebar the game's initials; the picture **fades in** over 150 ms when it arrives (`FadeIn`), at once with reduced
+  motion. A swapper waits for its joined picture instead of showing the top first.
+- **Keys:** a figure's picture is kept by toy, variant, kind and use (icon, picture, swapper), not by file, so a card
+  already drawn neither reads its file nor looks its path up again; the disc's pictures arriving (`ClearIcons`,
+  `ForgetCachedArt`) drop them and their pending reads. The shared library remembers each portraits folder's listing
+  (`collection_api.md` in the forge).
+- **Prefetch:** after the first frame, the enabled games' backdrops and logos are asked for, so that switching game shows
+  them at once.
+- **The screenshot test** waits for every pending picture before a shot and shows them without the fade
+  (`FinishPictures`).
 
 ## Navigation model
 The pad and the arrow keys have one model, in the components (`components/navigation.{h,cpp}`), so every page, tab, dialog
@@ -1013,7 +1073,7 @@ B and tab bumper behavior; it requires a window and is separate from the standal
   Home is the start page, and its games are the sidebar's rows.
 - **Hold to confirm.** What deletes or overwrites is a red button held for a second (`App::HoldButton`, the state in
   `hold_confirm.h`): Reset and Delete (Figure page), Delete for good (trash), Mark as not in use (a stale lock), Restore
-  (a save backup), Reset to defaults (a game's keyboard), Reinstall, Delete saves and data, Remove game. The fill shows the time; releasing, or the pointer
+  (a save backup), Reset to defaults (a game's keyboard and controller), Reinstall, Delete saves and data, Remove game. The fill shows the time; releasing, or the pointer
   leaving, cancels; it acts once per press; Space, Enter and the pad's A hold it too. The label is a plain verb, the
   instruction is its hint under it (`ui::Button` with `hold`: a timer icon on the button, "Hold to confirm" or the
   button's own sentence on hover, on keyboard and pad focus, and for 2.5 s after a tap too short, so a pad or touch player
@@ -1232,12 +1292,14 @@ Build with `ninja -j4 -C build ArkeyanLauncher ArkeyanLauncherTest FakeArkeyanBu
 ```sh
 python3 tests/hero_shots.py --disc /absolute/path/to/supported-game.iso
 ```
-The script sets `SKY_LAUNCHER_TEST_HERO=1` and `SKY_LAUNCHER_SHOTS` to `.scratch/shots/hero/`, isolates every data folder in
-`.scratch/hero/`, uses offscreen rendering and bounds the launcher to 150 seconds (only its own process can be stopped).
-`--scratch` and `--shots` select separate directories inside `.scratch/`; `--no-show` captures a running game without a
-window. Run at `--size 1024x720` and `--size 1600x900`, with and without `--no-show`, and with `--language fr` to check the
-translated row. Each running capture checks the action bounds, translated session status and navigation controls:
-the settings button and both pickers must be absent, and Show must match the fixture's window availability.
+The script sets `SKY_LAUNCHER_TEST_HERO=1` and `SKY_LAUNCHER_SHOTS` to `.scratch/shots/hero/`, isolates every data
+folder in `.scratch/hero/`, uses offscreen rendering and bounds the launcher to 150 seconds (only its own process can be
+stopped). `--scratch` and `--shots` select separate directories inside `.scratch/`; `--no-show` captures a running game
+without a window; `SKY_LAUNCHER_TEST_HERO_REAL_PORTAL=1` shows the running card with a real portal plugged in
+(toybox_window.md). Run at `--size 1024x720` and `--size 1600x900`, with and without `--no-show`, and with
+`--language fr` to check the translated row. Each running capture checks the action bounds, translated session status
+and navigation controls: the settings button and both pickers must be absent, and Show must match the fixture's window
+availability.
 Compare the Ready captures with the same size's previous captures to verify its layout remains unchanged.
 It writes `hero-<ready|needs-disc|installing|running>-<art|noart>.png`. The four states and two figures are in-memory display
 fixtures: no game, installer or figure writing runs. Disc verification and the existing art reader still run read-only
@@ -1296,15 +1358,19 @@ pickers and gear, disabled STOP during a delayed clean stop, and the return to R
 repository's working copy (its own HOME, the offscreen driver).
 
 ## Game music
-The visible game's main menu theme plays at `gamemusic::Volume` (0.12 of full scale). A 1.5-second fade brings
-it in; selecting another game cross-fades between their themes. Home, Collection, Settings, achievements
-and game settings are silent. Any install or kit download silences the launcher too.
+The visible game's main menu theme plays at the level of `[launcher] game_music_volume` (0-100, default 50,
+`gamemusic::DefaultVolume`). The gain is `gamemusic::Gain`: 0.12 of full scale at 50 (`DefaultGain`), on a square
+law (0.48 at 100, silent at 0). A level change ramps over at most 50 ms, so dragging the slider never clicks. A
+1.5-second fade brings the theme in; selecting another game cross-fades between their themes. Home, Collection,
+Settings, achievements and game settings are silent. Any install or kit download silences the launcher too.
 
 The speaker sits at the top right over the painting, beside the achievement pill when present, using
-`ui::IconButton` with Lucide's volume and mute glyphs. It controls every game through
-`[launcher] game_music` in `launcher.ini`: on by default, `0` off, remembered across restarts. Muting fades
-out; unmuting fades in. Starting muted is silent immediately. A game without a cached theme shows no
-speaker and no error.
+`ui::IconButton` with Lucide's volume and mute glyphs (mute when off or at 0). It opens a small menu
+(`ui::BeginMenu`, right-aligned) with the **Game music** switch and the level's slider. Settings > Launcher has
+the same two in its **Game music** section. Both set every game through `launcher.ini`: `[launcher] game_music`
+(on by default, `0` off) and `game_music_volume`, remembered across restarts. Moving the slider while the music
+is off turns it back on. Muting fades out; unmuting fades in. Starting muted is silent immediately. The
+slider's keys and the D-pad step by 5. A game without a cached theme shows no speaker and no error.
 
 PLAY fades the theme out before starting a game. The launcher waits for the audio stream to pause and
 clears its queued data; there is one game session. A normal exit, STOP or crash allows the visible game's
@@ -1328,14 +1394,14 @@ the disc is absent. If the kit is first acquired during installation, the next d
 Swap Force's menu scene requests `INTER_Menu_Screen`; its sound-bank object points to the sample named
 `INTER_Results_Screen.wav`. The menu is stereo, despite the adaptive music used elsewhere. Trap Team's
 main title loop is named explicitly in its title archive. These choices follow disc data; listening
-confirmation on a running game remains useful. The workshop's `docs/runtime/host/game_music.md` records
+confirmation on a running game remains useful. The forge's `docs/runtime/host/game_music.md` records
 the evidence and decoder details, including the correction to the old half-silent extraction.
 
 Code: `src/launcher/game_music.{h,cpp}`. `Mixer` owns fades, equal-power cross-fades, resampling and loops.
 `Player` opens one SDL stream lazily, pauses when silent, and follows `Playback` (page, running game,
 install, pending launch, mute). `tests/music_test.cpp` covers these transitions, missing files, extraction,
 the WAV reader and preference persistence. `ArkeyanLauncherTest --no-disc <scratch>` runs them;
-`SKY_LAUNCHER_TEST_MUSIC_ONLY=1` selects them alone. Workshop `ArkeyanBuilderMusicTest` checks all four discs.
+`SKY_LAUNCHER_TEST_MUSIC_ONLY=1` selects them alone. Forge `ArkeyanBuilderMusicTest` checks all four discs.
 All sound tests use `SDL_AUDIO_DRIVER=dummy` and disposable HOME and data paths.
 
 ## Notes

@@ -8,6 +8,11 @@ shows the same seats.
 ## Opening it
 - **While a game runs:** the Play page's **On the portal** card has **Toy Box window**; the Collection page has the same
   button beside "<game> is running". Pressed again while the window is open, it brings the window to the front.
+- **With a real portal plugged in**, the game neither reads nor writes `portal.txt`, so the card cannot show its seats. Every
+  3 seconds the launcher compares player 1 in the game's `presence.txt` with player 1 in `portal.txt`
+  (`discordpresence::PlayerOneWatch`): two different reads in a row mean a real portal until the game ends. The card then
+  shows player 1 as the game plays it (empty when the figure is lifted) and "The other seats: in the Toy Box window"; Discord
+  uses the same player 1 (settings.md, `[discord]`).
 - **With every game:** tick **Open with the game** at the top of the window. From then on the launcher opens it each time it
   starts a game. Kept in `toybox-window.ini` in the launcher's data folder, with the window's place and size.
 - It closes by itself when the game ends. It comes back where it was, on the same monitor (a monitor no longer there puts it
@@ -21,7 +26,8 @@ shows the same seats.
   the portal", read only: lift it off the portal to change it), or nothing.
 - Put a figure on a seat as on the Collection page: drop its card on the seat, or click the seat and pick a card, or the
   sheet's **Put on the portal**. A figure on the other player's seat swaps the players. Take it off with the seat's X, its
-  menu, Delete, or by dragging it to the shelf. What the game refuses comes back as a message ("The portal is full",
+  menu, Delete, or by dragging it to the shelf; drag it onto another seat to move it there (two players: "Swap
+  players?", then the game's `swap`). What the game refuses comes back as a message ("The portal is full",
   "Another program is using this figure"...).
 - Keyboard, mouse and controller work as on the Collection page; the look is the launcher's. The controller and the keyboard
   go to the window that has the focus (the game's or this one), never to both: click the game to play again.

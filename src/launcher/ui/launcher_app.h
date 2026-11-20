@@ -4,13 +4,16 @@
 // and collection_page.cpp (the figure collection). Nothing outside launcher/ui includes this; launcher_ui.h is the
 // public entry point.
 #include "assets/launcher_assets.h"
+#include "launcher/disc_check.h"
 #include "launcher/discord_presence.h"
 #include "launcher/game_copy.h"
 #include "launcher/edition_report.h"
 #include "launcher/portable_export.h"
 #include "launcher/game_install.h"
+#include "launcher/games_folder.h"
 #include "launcher/install_checklist.h"
 #include "launcher/game_music.h"
+#include "launcher/game_chests.h"
 #include "launcher/game_progress.h"
 #include "launcher/game_keys.h"
 #include "launcher/game_run.h"
@@ -26,7 +29,9 @@
 #include "launcher/uninstall.h"
 #include "launcher/ui/theme/launcher_theme.h"
 #include "launcher/ui/collection_page.h"
+#include "launcher/ui/picture_loader.h"
 #include "launcher/ui/components/components.h"
+#include "shared/collection/icons.h"
 #include "shared/collection/save_backup.h"
 #include <SDL3/SDL.h>
 #include <atomic>
@@ -52,6 +57,10 @@ namespace launcher_ui
         const LauncherConfig& config, std::string_view section, std::string_view key, std::string fallback = {});
     int SettingInt(const LauncherConfig& config, std::string_view section, std::string_view key, int fallback);
     bool ParseBool(std::string_view value);
+    // [launcher] game_music_volume, the game pages' theme level: 0-100, gamemusic::DefaultVolume when unset or not a number.
+    int GameMusicVolume(const LauncherConfig& config);
+    // A level chosen is meant to be heard: it turns [launcher] game_music back on too.
+    void SetGameMusicVolume(LauncherConfig& config, int volume);
 
     struct Choice
     {
@@ -77,7 +86,7 @@ namespace launcher_ui
         { "strong", N_("Strong") } };
 
     inline constexpr Choice AspectChoices[] = { { "auto", N_("Auto (follows the window)") },
-        { "16:9", N_("16:9 (with bars)") } };
+        { "fill", N_("Fill (covers a taller screen)") }, { "16:9", N_("16:9 (with bars)") } };
     inline constexpr Choice ScaleChoices[] = { { "auto", N_("Auto") }, { "1", "x1" }, { "2", "x2" }, { "3", "x3" },
         { "4", "x4" }, { "5", "x5" }, { "6", "x6" }, { "7", "x7" }, { "8", "x8" }, { "9", "x9" }, { "10", "x10" } };
     inline constexpr Choice GlyphChoices[] = { { "auto", N_("Automatic") }, { "xbox360", "Xbox 360" },
@@ -186,6 +195,10 @@ namespace launcher_ui
     ImTextureRef Ref(SDL_Texture* texture);
     // Opens a folder in Explorer / the Finder / the file manager (a path, not a URL: spaces and accents are fine).
     bool OpenFolder(const std::filesystem::path& folder);
+    // The system's file dialog for one picture (PNG, JPEG); empty when the player cancels.
+    std::string ChoosePicture(SDL_Window* window);
+    // A PNG or JPEG file as RGBA; empty when it is not one.
+    collection::Image ReadPicture(const std::string& path);
 
     // ---- Drawing --------------------------------------------------------------------------------------------------
 
@@ -230,7 +243,7 @@ namespace launcher_ui
             std::lock_guard lock(mutex);
             return stage;
         }
-        void Start(const std::string& image, const GameInfo& game, const std::filesystem::path& skyBuild = {},
+        void Start(const std::string& image, const GameInfo& game, const std::filesystem::path& builder = {},
             const std::string& kitVersion = {});
     };
 
@@ -258,7 +271,7 @@ namespace launcher_ui
         }
     };
 
-    // Home is the menu (the SKYLAUNCHER title opens it), Play is the game art and the main button, Collection is the
+    // Home is the menu (the title opens it), Play is the game art and the main button, Collection is the
     // figures (its sidebar row), the gear opens the launcher's Settings, and the game's Settings button (on its Play
     // page) opens that game's own settings.
     enum class Page
@@ -268,8 +281,14 @@ namespace launcher_ui
         Collection,
         Settings,
         GameSettings,
-        Achievements
+        Achievements,
+        Chests // Imaginite chests (chests_page.cpp)
     };
+    // A page of the shown game opened from its Play page, which closes back to it.
+    constexpr bool GameSubPage(Page page)
+    {
+        return page == Page::GameSettings || page == Page::Achievements || page == Page::Chests;
+    }
     enum class SettingsTab
     {
         Controls,
@@ -307,6 +326,7 @@ namespace launcher_ui
         DiscUnknown,
         DiscNotGame,
         DataDamaged,
+        DiscDamaged, // the image check found it damaged (disc_check.h)
         DownloadingTools,
         Installing,
         Updating,
@@ -340,6 +360,8 @@ namespace launcher_ui
         SDL_Texture* texture = nullptr;
         ImVec2 uv0{ 0, 0 }, uv1{ 1, 1 };
         float aspect = 2; // width / height of that part
+        bool pending = false; // still being read by App::m_pictures (CachedArt)
+        uint64_t readyAt = 0; // when it arrived, for its fade (FadeIn); 0: shown whole
 
         explicit operator bool() const { return texture != nullptr; }
         void Destroy()
@@ -352,6 +374,14 @@ namespace launcher_ui
     // Loads a PNG; `crop`: to its opaque bounds; `maxWidth` > 0: averaged down to at most that many pixels wide. Empty if
     // the file can't be read.
     ArtTexture LoadArt(SDL_Renderer* renderer, const std::string& path, bool crop, int maxWidth = 0);
+    // The same, without the texture: what the loader's thread does (picture_loader.h).
+    DecodedPicture DecodeArt(const std::string& path, bool crop, int maxWidth = 0);
+    // A picture's opacity `readyAt` ms after it arrived: a short fade in, whole with reduced motion (readyAt 0). Marks
+    // the frame as animating while it fades.
+    float FadeIn(uint64_t readyAt);
+    inline constexpr const char* FigurePictureKey =
+        "fig "; // App::m_pictures' keys: a figure's picture (CollectionPage)
+    inline constexpr const char* ArtPictureKey = "art "; // a game's backdrop or logo (CachedArt)
     using ui::GradientRect; // a rounded rectangle filled with a vertical gradient (components/core.h)
     // Whether the system asks for less motion (macOS: Reduce motion; Windows: animations off). [launcher] reduce_motion
     // = 1 / 0 overrides it.
@@ -377,10 +407,23 @@ namespace launcher_ui
         bool fromCopy = false;
         GameCopyJob copyJob;
         std::string copyMessage; // why the last copy didn't finish
+        // The image check (disc_check.h) of the verified disc (its image or its copy): wanted (it runs when its turn
+        // comes: one at a time, never while a game runs), running, its result. An install waits for it (its first row).
+        disccheck::Job discCheck;
+        bool discCheckWanted = false;
+        std::optional<disccheck::Result> discChecked;
+        bool installAfterCheck = false; // INSTALL was pressed before the check's end
+        bool checkUsed = false; // this install started with the check: its row in the checklist
+        InstallProgress::Step checkStep;
+        std::string checkError; // the check found the image damaged: the install stopped there
         // Game settings > Game > Portable copy (portable_export.h): the export running, the last one made, why the last one failed.
         PortableExportJob portableJob;
         std::filesystem::path portablePath;
         std::string portableMessage;
+        // The export dialog, read when it opens: the HD textures' size (0: none made), the switch, the settings' summary.
+        uint64_t portableHdBytes = 0;
+        bool portableHd = false;
+        std::string portableSettings;
         GameSourceCheck check;
         TitleMetadata meta;
         LauncherAssets::Provider assets;
@@ -460,6 +503,7 @@ namespace launcher_ui
         void Shutdown();
         bool LoadFonts();
         void HandleEvent(const SDL_Event& event);
+        bool CaptureToyboxPad(const SDL_Event& event);
         static int VisibilityWait(int requested, SDL_WindowFlags flags);
         int ContentWait();
         int IdleWait(); // how long the loop may sleep before the next frame, in ms (0: draw now)
@@ -473,6 +517,7 @@ namespace launcher_ui
             bool running, stopping, showGame, installing, noDisc, ready, verifying, install, update, detailed;
         };
         void DrawPlay();
+        void DrawChests();
         std::string DrawPlayHeading(
             const PlayState& play, const ArtTexture* logo, ImVec2 titleAt, ImVec2 titleSize, ImVec2 at, float leftW);
         void DrawPlayAction(const PlayState& play, ImVec2 at, float leftW, const std::string& status);
@@ -487,8 +532,28 @@ namespace launcher_ui
         void TestHeroNavigation();
         void DrawSettings(); // the launcher's settings (the gear): Controls, Launcher, Support, About
         void DrawControls();
+        // Settings > Controls' global layout every game inherits, under the controller choice (controls_page.cpp).
+        void DrawGlobalControls();
+        void DrawToyboxKeys();
+        // A game's tabs' rows (controls_page.cpp); a key cap and a pad select also draw the global layout's (empty game).
+        void DrawKeyCrosses(const std::string& game, std::span<const GameKey> keys);
+        void DrawKeyRows(const std::string& game, std::span<const GameKey> keys);
+        void DrawKeyCap(const std::string& game, const GameKey& key, const std::string& purpose);
+        void DrawMouseRows(const std::string& game, std::span<const GameKey> keys);
+        void DrawPadSelect(const std::string& game, int button);
+        void DrawPadRows(const std::string& game);
+        void DrawRumbleRows(const std::string& scope);
         void DrawLauncherTab();
+        // The Games folder (games_folder_page.cpp): the setting, the move with its progress and Stop, and the question
+        // asked when the folder is missing at Play or Install.
+        void DrawGamesFolder();
+        void ChooseGamesFolder(const std::filesystem::path& folder);
+        void PollGamesMove();
+        bool GamesBusy() const; // a game runs or builds: the games can't move now
+        bool GamesFolderMissingFirst(std::function<void()> retry);
+        void DrawGamesFolderMissing();
         void DrawLauncherLanguage(); // Settings > Launcher > Language
+        void DrawFigurePictures(); // Settings > Launcher > Collection: which game's pictures the figures show
         void UpdateLanguage(); // each frame: the text follows [launcher] language, never the shown game's
         void DrawSupport(); // support_page.cpp: logs and the problem report
         // A game's own settings (game_settings_page.cpp), opened from the Settings button on its Play page.
@@ -496,6 +561,8 @@ namespace launcher_ui
         // A game's achievements and play time (achievements_page.cpp), opened from its Play page.
         void DrawAchievements();
         void RefreshProgress(bool force = false);
+        void RefreshChests(bool force = false); // chests_page.cpp
+        void TestChestsScript(uint64_t now);
         // Player profiles (profiles_page.cpp, launcher/profiles.h): the active one's environment and settings.
         void LoadProfiles();
         void UseProfileEnvironment();
@@ -516,6 +583,7 @@ namespace launcher_ui
         std::string m_profileToRemove; // the profile whose removal waits for its confirmation
         const ArtTexture* AchievementIcon(const std::filesystem::path& image);
         void DrawGameVideo();
+        void DrawWindowSize(const char* video); // the Video tab's Window size row, and Custom's width and height
         void DrawGameSound();
         void DrawGameKeyboard();
         void DrawGameLanguage();
@@ -524,6 +592,22 @@ namespace launcher_ui
         void StartCopy();
         void FinishCopy();
         void RemoveCopy();
+        // game_data_page.cpp: the image check. Wanted once a disc is verified (its kept result read back when the file
+        // is unchanged), run by RunDiscChecks, shown as the Disc tab's pill; the dialog after a game whose movies didn't
+        // open (OfferDiscCheck, from PollGame).
+        void WantDiscCheck(bool again = false); // again: "Check again", the kept result is forgotten
+        void RunDiscChecks(); // starts the next wanted check (all slots)
+        void StopDiscChecks(); // a game starts: the running check stops and runs again later
+        void FinishDiscCheck();
+        void ContinueAfterCheck(); // an install waiting for the check
+        static bool DiscDamaged(const GameSlot& slot); // checked, and not to be installed or copied
+        static bool DiscChecking(const GameSlot& slot); // verified, the check not done yet
+        void DrawDiscCheck(); // the Disc tab's pill and its line
+        void DrawCheckAgain();
+        void OfferDiscCheck(const GameInfo& game);
+        void DrawDiscOffer();
+        void CancelInstall(); // the install card's Cancel
+        void ContinueInstall(); // StartInstall's end: the kit, then the builder
         void DrawSaveBackups();
         void RefreshSaveBackups();
         void RestoreSaveBackup(const std::string& stamp);
@@ -537,11 +621,13 @@ namespace launcher_ui
         void DrawHdStatus(); // under the Video list: the work's progress and Stop, or why it failed
         bool HdTexturesOffered() const; // the kit doubles this game's textures from its disc (every game)
         bool HdTexturesWanted(const GameSlot& slot) const;
+        std::filesystem::path HdTexturesFolder() const; // the active game's textures-hd, where its build reads them
         void SetHdTextures(bool on);
         void StartHdTextures(bool on);
         void FinishHdTextures();
         bool AnyHdTextures() const;
         void DrawPortableExport(); // the Game tab's "Portable copy": the button, the message, the progress
+        void OpenPortableExport(); // reads what the export dialog shows
         void StartPortableExport(const std::filesystem::path& folder);
         void FinishPortableExport();
         void ForgetDisc(); // "Remove the disc": the game forgets its image; the built game and the files stay
@@ -643,12 +729,22 @@ namespace launcher_ui
         // before the game's disc was ever read. The sidebar and Home use them for games not yet shown too.
         const ArtTexture* CachedArt(const char* game, LauncherAssets::Role role, int maxWidth);
         void ForgetCachedArt(const char* game); // its disc was read again
+        // Once a frame, before drawing: the pictures m_pictures finished, made textures within a small time budget (every
+        // one, at once and without a fade, for the screenshot test: FinishPictures).
+        void UploadPictures(bool all = false);
+        void FinishPictures();
+        void
+        PrefetchArt(); // the enabled games' Play page backdrops and logos, so that switching game shows them at once
         // The picture behind a game's page and its Home card: one of the game's cached scenes, picked at random at the
         // first need of this run and kept (never the one of the last run when there are two or more, which settings'
         // `last_scene` records); the disc's menu painting while the scenes are not read yet; empty before any read.
         std::string SceneOf(const char* game);
         bool ReduceMotion() const;
         bool GameMusicOn() const; // [launcher] game_music, on by default
+        // The game music's switch and level, in Settings > Launcher and in the game page's speaker menu.
+        void DrawGameMusicSwitch(const char* label);
+        void DrawGameMusicVolume(float width = -1);
+        static constexpr float MusicMenuWidth = 260;
 
         // A page's centred column (the cursor is at its left): it reaches a few points past each side and over the page's
         // bottom padding, so the clip rect neither shaves the borders at its edges nor cuts the scrolling content short of the window.
@@ -669,7 +765,10 @@ namespace launcher_ui
         void RefreshInstall();
         bool NeedsInstall() const;
         bool NeedsInstall(const GameSlot& slot) const;
-        bool Installing() const { return m_s->installer.Running() || m_s->kitDownload.Running(); }
+        bool Installing() const
+        {
+            return m_s->installer.Running() || m_s->kitDownload.Running() || m_s->installAfterCheck;
+        }
         void StartInstaller();
         void StartKitDownload();
         void FindEdition(); // "Find my edition"
@@ -715,6 +814,7 @@ namespace launcher_ui
         InstallProgress InstallSnapshot(
             size_t logTail = 0); // this session's install, else the one read back from its log
         InstallProgress InstallSnapshot(GameSlot& slot, size_t logTail = 0); // the same, for any game's slot
+        InstallProgress InstallSnapshotAfterCheck(GameSlot& slot, size_t logTail); // without the image check's row
         void SetInstallState(
             const std::string& sha, const char* state); // [install.<sha>] state=, for a launcher restart
 
@@ -811,6 +911,11 @@ namespace launcher_ui
         bool m_pagesTaken = false; // last frame, LB / RB were not the pages' (a menu, a dialog, a field)
         SettingsTab m_tab = SettingsTab::Controls;
         GameTab m_gameTab = GameTab::Video;
+        // Window size: Custom chosen (it stays shown on a preset value), and the width and height being typed, filled from
+        // the saved value each time it changes (`m_windowSizeShown`).
+        bool m_windowSizeCustom = false;
+        std::string m_windowSizeShown;
+        char m_windowSizeText[2][6] = {};
         bool m_autoPlay = false; // --play: start the game as soon as it is ready (a desktop shortcut)
         bool m_startGames = false; // PLAY starts the game and the window stays (LauncherOptions)
         bool m_requests = false; // LauncherOptions::requests
@@ -833,6 +938,13 @@ namespace launcher_ui
         int m_presencePlayers = 0; // 2 while a second player plays
         std::string m_presencePlayTime; // "34 h 12" in all
         void UpdatePresence(uint64_t nowMs);
+        // The running game's presence.txt, and player 1 as it plays it against the seats of portal.txt (Discord, the Play
+        // page's On the portal card); read again every few seconds, reset when the game ends.
+        std::string m_portalGame;
+        uint64_t m_portalAt = 0;
+        discordpresence::GameStatus m_gameStatus;
+        discordpresence::PlayerOneWatch m_portalWatch;
+        void WatchPortal(uint64_t nowMs);
         bool PresenceOn() const;
         std::string m_sessionIso; // the disc image it was started with (the crash report names it)
         ProbeJob m_probe;
@@ -858,6 +970,9 @@ namespace launcher_ui
         bool m_downgradeOpen = false;
         bool m_defenderNoticeOpen = false;
         std::function<void()> m_defenderThen; // what the player asked for, run on Continue
+        gamesfolder::Mover m_gamesMove;
+        bool m_gamesMissingOpen = false;
+        std::function<void()> m_gamesMissingThen; // Play or Install, asked again on Retry
         // A game that stopped unexpectedly (its exit code): the crash dialog, DrawGameStopped (game_stopped.cpp).
         struct GameStopped
         {
@@ -865,6 +980,7 @@ namespace launcher_ui
             int exitCode = 0;
         };
         std::optional<GameStopped> m_gameStopped;
+        std::optional<std::string> m_discOffer; // the game whose disc image may be damaged (DrawDiscOffer)
         IntegrityCheck m_integrity;
         bool m_integrityPolled = true; // the last check's report has been taken
         std::vector<IntegrityFinding> m_findings; // what is wrong, the first one in the dialog
@@ -882,10 +998,16 @@ namespace launcher_ui
 
         std::vector<SDL_JoystickID> m_gamepads;
         SDL_GamepadType m_lastPadType = SDL_GAMEPAD_TYPE_UNKNOWN; // the last pad connected
-        const GameKey* m_capturing = nullptr; // the key row of the shown game waiting for a key press
+        const GameKey* m_capturing = nullptr; // the key row waiting for a key press
+        std::string m_captureGame; // whose: a game's own line, empty for the global layout ([input])
         const GameKey* m_mouseCapturing = nullptr; // the mouse row waiting for a click or a wheel tick
+        std::string m_mouseCaptureGame; // the same for the mouse row
         bool m_mouseArmed = false; // the click that started the wait has been released
         const ToyboxKey* m_toyboxCapturing = nullptr; // the Toy Box key row waiting for a key press
+        const ToyboxPad* m_toyboxPadCapturing = nullptr;
+        int m_toyboxPadFirst = -1;
+        std::array<bool, 2> m_toyboxPadTriggers = {};
+        bool m_toyboxPadBlockInput = false; // captured buttons stay out of navigation until released
 
         // The games opened this session (one slot each), and the one shown. Every slot's jobs are polled; the shown
         // one's state is what the pages draw (m_s).
@@ -982,6 +1104,7 @@ namespace launcher_ui
         uint32_t m_heroNavFrom = 0;
         bool m_testAchievements =
             false; // SKY_LAUNCHER_TEST_ACHIEVEMENTS: the shown game's page with its play time, then its achievements
+        bool m_testChests = false; // SKY_LAUNCHER_TEST_CHESTS: the Chests page's screenshots (chests_page.cpp)
         bool m_testHdTex =
             false; // SKY_LAUNCHER_TEST_HDTEX=<game>: the HD textures switch on a built game (TestHdTexturesScript)
         bool m_testLogo =
@@ -998,9 +1121,17 @@ namespace launcher_ui
         const GameSlot* m_progressSlot = nullptr;
         std::string m_progressLanguage;
         uint64_t m_progressAt = 0;
+        GameChests m_chests; // the shown game's chest pile and waiting chests (RefreshChests)
+        std::vector<int> m_chestCounts; // the Chests page's counters, one per kind
+        const GameSlot* m_chestsSlot = nullptr;
+        uint64_t m_chestsAt = 0;
         std::map<std::string, ArtTexture> m_achievementIcons; // by file
         std::shared_ptr<FigureIconCache> m_figureIcons = std::make_shared<FigureIconCache>();
         std::map<std::string, ArtTexture> m_cachedArt; // CachedArt's, by "<game> <role> <width>"
+        // The figures' pictures and CachedArt's, read off the UI thread; UploadPictures makes the finished ones textures.
+        PictureLoader m_pictures;
+        uint64_t m_pictureGeneration = 0; // collection::PictureGeneration of the figures' pictures read
+        bool m_prefetched = false; // the games' backdrops and logos asked for once, after the first frame
         std::map<std::string, std::string> m_scene; // SceneOf's pick of this run, by game
 
         ui::Toasts m_toasts; // newest last; drawn at the bottom right, upwards

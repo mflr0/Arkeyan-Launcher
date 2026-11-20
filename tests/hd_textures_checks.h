@@ -28,7 +28,7 @@ inline void HdTexturesChecks(const std::filesystem::path& scratch)
         { "FAKE_ARKEYAN_BUILDER_FAIL", "FAKE_ARKEYAN_BUILDER_FAIL_STEP", "FAKE_ARKEYAN_BUILDER_PAUSE_STEP",
             "FAKE_ARKEYAN_BUILDER_HOLD", "FAKE_ARKEYAN_BUILDER_ENDING", "FAKE_ARKEYAN_BUILDER_HD_MARKER" })
         TestUnsetEnv(key);
-    const auto kit = InstallKitIn(SKYLAUNCHER_FAKE_KIT);
+    const auto kit = InstallKitIn(LAUNCHER_FAKE_KIT);
     EXPECT(kit.has_value());
     if (!kit)
         return;

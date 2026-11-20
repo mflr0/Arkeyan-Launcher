@@ -21,7 +21,7 @@ namespace ui
             draw->PathArcTo(centre, r, angle, angle + std::numbers::pi_v<float> / 20);
             draw->PathStroke(Col(color::Edge), 0, stroke::Edge);
         }
-        DrawIcon(draw, Icon::Plus, centre, icon::Normal, Col(color::Ink));
+        DrawIcon(draw, Icon::Plus, centre, std::min(float(icon::Normal), size / 2), Col(color::Ink));
     }
     namespace
     {

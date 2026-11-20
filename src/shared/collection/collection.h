@@ -96,7 +96,7 @@ namespace collection
 
     // Whether a toy keeps a level and gold (characters, minis and sidekicks), unlike items, adventure packs and traps.
     bool HasProgress(const Figure& figure);
-    // The level a card shows for `game`, the same in the Toy Box and Skylauncher: "Level 6"; "Level 10 (15)" when the
+    // The level a card shows for `game`, the same in the Toy Box and Arkeyan Launcher: "Level 6"; "Level 10 (15)" when the
     // figure's own level is above the game's cap (a figure Giants took to 15, shown in Spyro's Adventure); "New" for a
     // character never played; "Unreadable" for a damaged one; empty for toys without progress. French with `french`.
     // A creation crystal shows its class and level instead ("Ninja · Level 14", "Virtual · ..." when made here without the
@@ -195,7 +195,7 @@ namespace collection
     // A swapper is a top (2000-2015, SwapTop) and a bottom (1000-1015, SwapBottom), each a dump of its own, linked by a
     // "partner" entry on both in collection.json. The link follows Rename, goes to the trash with a deleted half and comes
     // back with it (Undelete), and is never used unless both sides agree (Figure::partner). A half without a link stays a
-    // card of its own. Games and Skylauncher show a linked pair as ONE card.
+    // card of its own. Games and Arkeyan Launcher show a linked pair as ONE card.
     //
     // Links the two dumps (one top, one bottom, either order). Each one's earlier partner is left unlinked, a card of its
     // own. Refused unless one is a top and the other a bottom, and while a game uses any of the four.
@@ -316,7 +316,7 @@ namespace collection
     bool SetWheelSkipped(const std::string& game, const std::string& seat, const std::vector<std::string>& files);
 
     // "On the wheel" (the player's own wheel, docs/runtime/host/toybox_ux.md section 5): a figure pinned on a place of the
-    // wheel of every player seat of `game` that reads it (the Toy Box and Skylauncher's sheet toggle it). Adding takes the
+    // wheel of every player seat of `game` that reads it (the Toy Box and Arkeyan Launcher's sheet toggle it). Adding takes the
     // first empty place, else the first place the recents filled (a pinned place stays); false when the game does not read
     // the figure, or all eight places are pinned. Removing empties its places and keeps the recents from bringing it back.
     bool OnWheel(const std::string& game, const std::string& file);
@@ -364,7 +364,7 @@ namespace collection
         std::vector<size_t>
             items; // indices into the list; a linked swapper is its top's index only (the bottom is left out)
     };
-    // Sections of `list` for `game`. Smart is the shelf (Toy Box and Skylauncher alike): one section where every figure
+    // Sections of `list` for `game`. Smart is the shelf (Toy Box and Arkeyan Launcher alike): one section where every figure
     // shows once, favourites first, then the figures `game` took (newest first), then by element and category, a
     // character's variants next to it. The other groupings cut the list by element, game, category, series, level or
     // name. Every grouping ends with Unknown toys and the toys the game does not read (Foreign; none when `game` is

@@ -11,6 +11,7 @@
 #include "shared/collection/json.h"
 #include <SDL3/SDL.h>
 #include <algorithm>
+#include <chrono>
 #include <cctype>
 #include <cstdlib>
 #include <cstring>
@@ -316,16 +317,27 @@ namespace launcher_ui
 
     void CollectionModel::Load()
     {
-        figures = collection::List();
+        m_loads++;
+        std::vector<collection::Figure> read = collection::List();
         const collection::Game* game = Game();
+        std::vector<std::string> readSeats;
+        if (live == nullptr && game != nullptr)
+            readSeats = ReadSeats(*game, SessionFile(*game));
+        Adopt(std::move(read), std::move(readSeats), Signature());
+    }
+
+    void CollectionModel::Adopt(
+        std::vector<collection::Figure> read, std::vector<std::string> readSeats, std::string signature)
+    {
+        figures = std::move(read);
         if (live != nullptr)
             LoadLive();
         else
-            seats = game != nullptr ? ReadSeats(*game, SessionFile(*game)) : std::vector<std::string>{};
+            seats = std::move(readSeats);
         for (std::string& seat : seats)
             if (const collection::Figure* figure = Find(seat))
                 seat = figure->path;
-        m_signature = Signature();
+        m_signature = std::move(signature);
     }
 
     void CollectionModel::LoadLive()
@@ -344,7 +356,7 @@ namespace launcher_ui
             }
     }
 
-    std::string CollectionModel::Signature() const
+    std::string CollectionModel::SignatureOf(const std::string& gameId)
     {
         // Names, sizes and times of the folder's files (dumps, locks, collection.json), the session file's time, and
         // whether each lock's process still runs: a game that quits leaves its locks behind (docs/collection.md).
@@ -364,7 +376,7 @@ namespace launcher_ui
                         ? "busy;"
                         : "free;";
         }
-        if (const collection::Game* game = Game())
+        if (const collection::Game* game = collection::Catalogue::Get().FindGame(gameId))
         {
             std::string session = SessionFile(*game);
             if (!session.empty() && fs::exists(datadir::FromText(session), error))
@@ -389,6 +401,48 @@ namespace launcher_ui
             return false;
         Load();
         return true;
+    }
+
+    bool CollectionModel::PollInBackground(uint64_t now, uint64_t interval)
+    {
+        if (live != nullptr && live->Generation() != m_liveGeneration)
+        {
+            LoadLive();
+            return true;
+        }
+        if (m_reload.valid())
+        {
+            if (m_reload.wait_for(std::chrono::seconds(0)) != std::future_status::ready)
+                return false;
+            Reloaded read = m_reload.get();
+            if (!read.changed || read.loads != m_loads) // unchanged, or loaded since it started
+                return false;
+            Adopt(std::move(read.figures), std::move(read.seats), std::move(read.signature));
+            return true;
+        }
+        if (now < m_nextPoll)
+            return false;
+        m_nextPoll = now + interval;
+        m_reload = std::async(
+            std::launch::async, [gameId = gameId, known = m_signature, loads = m_loads, withSeats = live == nullptr] {
+                Reloaded read;
+                read.loads = loads;
+                read.signature = SignatureOf(gameId);
+                if (read.signature == known)
+                    return read;
+                read.changed = true;
+                read.figures = collection::List();
+                if (const collection::Game* game = collection::Catalogue::Get().FindGame(gameId); withSeats && game)
+                    read.seats = ReadSeats(*game, SessionFile(*game));
+                return read;
+            });
+        return false;
+    }
+
+    void CollectionModel::WaitForReload()
+    {
+        if (m_reload.valid())
+            m_reload.wait();
     }
 
     const collection::Figure* CollectionModel::Find(const std::string& path) const
@@ -494,6 +548,32 @@ namespace launcher_ui
         }
         next[seat] = spelled;
         if (!WriteSeats(*Game(), SessionFile(*Game()), next))
+            return false;
+        seats = std::move(next);
+        m_signature = Signature();
+        return true;
+    }
+
+    bool CollectionModel::SwapSeats(size_t a, size_t b)
+    {
+        const collection::Game* game = Game();
+        if (!CanEditSeats() || a == b || a >= seats.size() || b >= seats.size() || a >= game->seats.size() ||
+            b >= game->seats.size())
+            return false;
+        if (live != nullptr)
+            return !RealSeat(a) && !RealSeat(b) && game->seats[a].player != 0 && game->seats[b].player != 0 &&
+                   live->Swap(); // the link swaps the two players only
+        auto next = seats;
+        std::swap(next[a], next[b]);
+        for (size_t seat : { a, b })
+        {
+            if (next[seat].empty())
+                continue;
+            collection::Figure figure;
+            if (!collection::Read(next[seat], figure) || !SeatAccepts(game->seats[seat], figure))
+                return false;
+        }
+        if (!WriteSeats(*game, SessionFile(*game), next))
             return false;
         seats = std::move(next);
         m_signature = Signature();

@@ -1,7 +1,7 @@
 # Installing the game
 
 Arkeyan Launcher contains no game code. The game is recompiled and built on the player's own machine, from their own disc,
-by `Arkeyan-Builder`, the build driver of the **player kit** (its contract is `docs/release/launcher/kit_contract.md` in the workshop).
+by `Arkeyan-Builder`, the build driver of the **player kit** (its contract is `docs/release/launcher/kit_contract.md` in the forge).
 The launcher finds the kit, runs it, shows its progress and then starts the game it built.
 
 ## The flow
@@ -68,7 +68,7 @@ list Swap Force makes the launcher fetch the right one first, as for Giants).
   disc dropped on Spyro's Adventure says it is another game, and the other way round. The name and icon on the game page come
   from the disc's own XDBF, as for SSA.
 - INSTALL runs the same Arkeyan-Builder with the disc; **Arkeyan-Builder finds the game itself** from `default.xex`'s SHA-256
-  (workshop `docs/release/launcher/kit_contract.md`, "Several games in one kit"). The built apps use the titles
+  (forge `docs/release/launcher/kit_contract.md`, "Several games in one kit"). The built apps use the titles
   `Skylanders Spyro's Adventure`, `Skylanders Giants`, `Skylanders Swap Force` and `Skylanders Trap Team`
   (plus `.app` on macOS or `.exe` on Windows). `GameInfo::runtime` gives the new name and `legacyRuntime` gives
   `SSARecomp`, `SGRecomp`, `SSFRecomp` or `TTRecomp`. Both names are found beside the launcher; recorded 0.8.0, 0.6.1
@@ -102,7 +102,7 @@ list Swap Force makes the launcher fetch the right one first, as for Giants).
 | The kit | `SKY_LAUNCHER_KIT`, else `[launcher] kit=` in `launcher.ini`, else next to the launcher (next to the `.app` on macOS): `skylanders-kit/`, `ssa-kit/`, `kit/`, or a folder whose name starts with `skylanders-kit` or `ssa-kit` (an unzipped `skylanders-kit-windows-x64`), else the newest `kit/<release tag>/` Arkeyan Launcher downloaded into its data folder. A downloaded kit from a newer release than the one next to the launcher (by its `kit.txt` `version=`), or the only one that builds the game, wins over it. It must hold `Arkeyan-Builder` (`Arkeyan-Builder.exe`), or `SSABuild` (`SSABuild.exe`) in a kit made for 0.4.x launchers. |
 | The kit's version | `build=` (else `version=`) in the kit's `kit.txt`, else Arkeyan-Builder's size and date |
 | What the kit builds, its release | `games=` in `kit.txt` (none: `ssa`); its release is the `kit/<tag>/` folder it was downloaded to, else `version=` |
-| The built game | `<data>/SSA` (see below). Never next to the ISO. |
+| The built game | `<data>/SSA`, or `<games folder>/SSA` when the Games folder is set (see below). Never next to the ISO. |
 | What was built | `[install.<sha256>]` in `launcher.ini`: `runtime=` (the `@done` path), `kit=` (the kit version it was built with) |
 
 Which runtime PLAY starts: `SKY_LAUNCHER_RUNTIME`, else the game built for this disc, else `[launcher] runtime=`, else
@@ -126,7 +126,36 @@ The launcher, the game and Arkeyan-Builder keep everything under one root per OS
 | `kit/<release tag>/` | the kits the launcher downloaded |
 | `toolchains/` | the compiler Arkeyan-Builder downloads (Windows) |
 | `logs/` | `skylauncher-game.log` (+ `.prev.log`) and `migration.log` |
-| `SSA/` | the built game (`Skylanders Spyro's Adventure.app` / `Skylanders Spyro's Adventure.exe`, `install.log` + `install.prev.log`, `install-logs/`), and its data: `saves/`, `saves-backup/`, `pipelines.bin`, `portal.txt`, `achievements.txt`, `playtime.txt`, `figures/`, `portraits/`, `launcher-cache/`, `SSARecomp.log` (+ `.prev.log`). Giants has its own folder, `Giants/`, with the same layout (`Skylanders Giants.app` / `Skylanders Giants.exe`). |
+| `SSA/` | the built game (`Skylanders Spyro's Adventure.app` / `Skylanders Spyro's Adventure.exe`, `game_icon.*`, `fonts/`, `files.sha256`), `textures-hd/` and `gamedata/` unless the Games folder is set; `install.log` + `install.prev.log`, `install-logs/`, `layout.txt`, and its data: `saves/`, `saves-backup/`, `pipelines.bin`, `portal.txt`, `achievements.txt`, `playtime.txt`, `figures/`, `portraits/`, `launcher-cache/`, `textures/`, `textures-dump/`, `SSARecomp.log` (+ `.prev.log`). Giants has its own folder, `Giants/`, with the same layout (`Skylanders Giants.app` / `Skylanders Giants.exe`). |
+
+### Games folder
+
+Settings > Launcher > **Games folder** (`[launcher] games=`, hidden in portable mode) puts the big rebuildable files of every
+game on another drive: `<games folder>/<Game>` holds the built game (what `--out` builds: the runtime or its `.app`, the
+icons, `THIRD_PARTY_NOTICES.md`, `fonts/`, `files.sha256`, the build's work folder), `textures-hd/` and `gamedata/`.
+Everything else stays in `<data>/<Game>` (table above): saves, settings, figures, portraits, logs, `install.log`,
+`install-logs/`, `layout.txt`, `textures/`, `textures-dump/`; the kits and `launcher.ini` stay in the data folder. Empty is
+today's layout. The launcher sets `SKY_GAMES_DIR` for itself, Arkeyan-Builder and the games it starts
+(`ApplyGamesFolder`); `datadir::GameFiles` (shared) answers `<SKY_GAMES_DIR>/<Game>` for the game and the builder.
+`GameFilesFolder` and `GameDataFolder` (`game_install.h`) are the two sides in the launcher.
+
+- **Choosing a folder moves the games** (`src/launcher/games_folder.{h,cpp}`, the window's part `ui/games_folder_page.cpp`),
+  with a bar and Stop; nothing is rebuilt. Disabled while a game runs, installs, makes its HD textures, checks a disc or
+  exports a portable copy. Refused: a folder that is missing or read-only, inside a game's folder (either side) or inside
+  the downloaded kits (`gamesfolder::Check`). The data folder itself means the default. Free space is checked first for
+  what must be copied. Each entry is renamed when both places are on one volume, else copied, checked byte for byte, and
+  only then deleted (like `datadir::Migrate`); every entry is staged as `.<name>.moving` beside its place until all are
+  there, so a stop or a failure renames back what moved and deletes the copies: the old place keeps everything. Then
+  every path of `launcher.ini` into a moved entry (`[install.<sha256>] runtime=`, `[<game>] iso=` of the copied game data)
+  is rewritten and `games=` saved (`gamesfolder::Record`). A game's emptied folder in the old games folder goes.
+- **Older builds**: a game built by a kit before 0.9.9 reads `textures-hd/` and `gamedata/` in the data folder only. A
+  build records `[install.<sha256>] games_folder=1` when its kit's builder reads `SKY_GAMES_DIR` (`InstallKit::gamesFolder`);
+  without it, a move leaves those two in place, the launcher keeps looking for them there (`GameFileOf`), and the HD step
+  alone is started with an empty `SKY_GAMES_DIR`.
+- **A missing folder** (an unplugged drive, a deleted folder) at Play or Install: a dialog says "The games folder isn't
+  there. Plug in the drive, or choose another folder." with **Retry** and **Use default** (the setting goes; the games on
+  the drive are not touched). The builder, the HD step and the game data copy refuse to start while it is missing
+  (`GamesFolderMissing`), so nothing is ever built in its place on the system's disk.
 
 **Environment variables.** The launcher reads `SKY_LAUNCHER_<X>` (its own: `SKY_LAUNCHER_DATA`, `SKY_LAUNCHER_INI`, `SKY_LAUNCHER_KIT`...)
 and `SKY_<X>` (shared with the games and Arkeyan-Builder: `SKY_COLLECTION`, `SKY_SAVE_DIR`, `SKY_SETTINGS`...), then the names of earlier
@@ -182,7 +211,7 @@ Restore uses) and **disabled while the game installs**. The sizes shown next to 
 | --- | --- | --- |
 | **Clear caches** (plain button) | `pipelines.bin` (shader cache), `launcher-cache/` (the disc's art), `portraits/`, the game's `*.log` | everything else: the saves too |
 | **Delete saves and data** (held a second) | the saves (`saves/`, or `SKY_SAVE_DIR`), `saves-backup/`, `portal.txt` (the seats of the next session), `achievements.txt` and `playtime.txt` (the unlocked achievements and the play time: they go with the saves), and the caches above | the built game, the disc image, the settings in `launcher.ini`, `textures/`, `figures/`, the shared figure collection |
-| **Remove game** (held a second) | the built game (the game’s `.app` or `.exe`, its libraries and shaders), `install.log` and `install-logs/`, `pipelines.bin`, the game's logs; and `[install.<sha256>]` in `launcher.ini`, so the Play page offers INSTALL again | the saves and their backups, `portal.txt`, `achievements.txt`, `playtime.txt`, `textures/`, `figures/`, `launcher-cache/`, `portraits/`, the disc image, the settings |
+| **Remove game** (held a second) | the built game (the game’s `.app` or `.exe`, its libraries and shaders), `install.log` and `install-logs/`, `pipelines.bin`, the game's logs, `textures-hd/`, in the data folder and in the Games folder (whose `<Game>` folder goes once empty); and `[install.<sha256>]` in `launcher.ini`, so the Play page offers INSTALL again | the saves and their backups, `portal.txt`, `achievements.txt`, `playtime.txt`, `textures/`, `figures/`, `launcher-cache/`, `portraits/`, the disc image, the settings |
 | **Reinstall** (held a second) | nothing is deleted: Arkeyan-Builder builds again (incremental) | all of it |
 
 After an uninstall the disc is still known, so INSTALL builds the game again and the saves are where they were. To remove
@@ -201,8 +230,8 @@ a **plan** that only measures, then the run), the window is `ui/uninstall_page.c
 
 | Goes | What it is |
 | --- | --- |
-| Games | each game's folder (`SSA/`, `Giants/`, `SwapForce/`) but the player's data below: the built game, its install logs, `layout.txt`, the shortcut icon |
-| Game data copies | `<Game>/gamedata/` |
+| Games | each game's folder (`SSA/`, `Giants/`, `SwapForce/`) but the player's data below: the built game, its install logs, `layout.txt`, the shortcut icon; and each game's folder in the Games folder (the built game, `textures-hd/`) |
+| Game data copies | `<Game>/gamedata/`, in the data folder or the Games folder |
 | Game tools | `kit/` and `toolchains/` |
 | Caches and logs | `pipelines.bin`, `launcher-cache/`, `portraits/`, the games' `*.log`, `logs/` |
 | Settings | `launcher.ini` (the remembered discs go with it) |
@@ -213,10 +242,13 @@ a **plan** that only measures, then the run), the window is `ui/uninstall_page.c
 **What is never removed**: the disc images (a path `[<game>] iso=` remembers, and any `.iso` / `.xiso` file, wherever it is, even in a game's folder:
 the folder stays around it and the result says so); a game the player moved out of its folder (the settings' `[install.*] runtime=` is outside the games'
 folders: said, not touched); other files in the data folder or in the figure folder (said as "Other files in the figures folder stay"); the
-older-layout folders of before 0.3.1, which the first start moved (`datadir::MigrateOnce`); the data folder itself unless it is empty at the end.
+older-layout folders of before 0.3.1, which the first start moved (`datadir::MigrateOnce`); the data folder itself unless it is empty at the end;
+in the Games folder, anything that is not in a game's `<Game>` folder (the list names the folder: "The games in Games go too; your other files there
+stay."), and the Games folder itself unless it is empty at the end. A Games folder that fails the path rules below (the home folder, a link...) is left.
 
 **Safety, because it deletes** (all in `uninstall.cpp`, and checked again at run time, so a plan cannot be forged):
-- Targets come only from the `Environment`: the data root (`datadir::Root()`), Arkeyan Launcher's data folder (`SKY_LAUNCHER_DATA`), each game's folder,
+- Targets come only from the `Environment`: the data root (`datadir::Root()`), Arkeyan Launcher's data folder (`SKY_LAUNCHER_DATA`), each game's folder
+  and its folder in the Games folder (`gamesFolder`, `GameEntry::files`: strictly inside it, never holding the data folders),
   the shared figure folder, the settings file, the Desktop shortcuts and the launcher. Nothing is searched for.
 - A path must be absolute, without `..`, not the filesystem root nor a folder straight under it, not the home folder nor a folder that holds it, not a
   link, and strictly inside the data root or the launcher's data folder (links resolved). The figure folder and the settings file may be
@@ -247,7 +279,7 @@ macOS together with `SKY_LAUNCHER_UNINSTALL_TRASH`).
 
 ### Housekeeping
 
-After a **successful** install: `arkeyan-work/` (or `ssabuild-work/` from an older kit; 2-3 GB) is deleted and its `logs/` kept as `install-logs/` (an update
+After a **successful** install: `arkeyan-work/` (or `ssabuild-work/` from an older kit; 2-3 GB) is deleted and its `logs/` kept as `install-logs/` in the game's data folder (an update
 therefore rebuilds everything); the kits in `kit/` older than the one that built the game are deleted; a compiler archive
 (`toolchains/*.zip`) whose extracted copy is ready is deleted. Each log keeps one previous run (`.prev.log`). The art
 cache `<Game>/launcher-cache` holds three pictures (logo, background, title icon; `docs/launcher_ui.md`, "Disc art") and the
@@ -288,7 +320,47 @@ extracted, and the next build then failed in an unclear way. Since 0.8.1 the lau
   `integrity` case of the kit flow (`App::TestIntegrityScript`): a kit next to the launcher that lost its `Arkeyan-Builder` is named at
   start, INSTALL is blocked, Repair unpacks the fake release's kit over it, the install writes the game's list, a changed game
   file is named at the next check and Repair builds the game again. The list format and the checker have their own tests in the
-  workshop (`ArkeyanFileListTest`; `src/shared/collection/file_list.*` is a copy).
+  forge (`ArkeyanFileListTest`; `src/shared/collection/file_list.*` is a copy).
+
+### Image check
+
+The disc check reads `default.xex` only, so a damaged image can pass it and then stop a game at its loading screen (issue
+#64: Spyro's Adventure's intro movies failed to open, a fresh copy of the same disc played). Once a disc is verified, the
+launcher reads every file of it and compares them with a good copy of the same edition (issue #73). A damaged image is never
+installed.
+- **What is compared**: the disc's files, not the image file (`disccheck::ComputeDigest`, `src/launcher/disc_check.h`). One
+  SHA-256 over every file sorted by its lowercase path, each as `<path>\0<size>\0<SHA-256 of its bytes>\n`, read in 1 MB
+  blocks. A good disc gives the same fingerprint whatever its image's layout (the whole XGD2 or XGD3 disc, its game partition
+  alone, a trimmed image) and from its copied game data, so no good image is called damaged for its layout. The files are
+  hashed several at once (one worker per core but one, eight at most, the largest files first), through the CPU's SHA-256
+  instructions on Apple silicon (`src/launcher/sha256.cpp`; the portable code elsewhere): Giants (988 files, 8.4 GB) takes
+  2.6 s on an M1 Pro with the image in memory, 42 s on one core without them. From a slow drive, the drive sets the time.
+- **The references**: `GameRelease::contentSha256` in `src/launcher/launcher_games.cpp`, one per edition, matched by the disc's
+  `default.xex` (another edition that only shares the game code has its own files, so no reference). Fingerprints only, never
+  game content. `Arkeyan Launcher --disc-digest <image>` prints one (`<sha256>  <files> files, <bytes> bytes`) for a good image;
+  an edition without one keeps `nullptr`. Today: Giants (USA, Europe). Without a reference every file is still read: a cut or
+  unreadable image is caught, a changed byte is not.
+- **When it runs**: by itself once the disc is verified (its image, or its copy when the game plays from it), one game at a
+  time (an install waiting for it first, then the game shown), never while a game runs (a running check stops when a game
+  starts and runs again after). The fingerprint is kept in the game's section of the settings (`disc_check`, with
+  `disc_check_of`: the file's size and time, or the copy's manifest's, and its path), so an unchanged image is not read again;
+  it is compared again at each start, so a later launcher's new reference applies. **Check again** (Disc tab) forgets it.
+- **What the player sees**: the Disc tab's pill says "Checking files, 45 %", then "Good copy, 8.1 GB" (it matches the
+  reference), "Readable, 8.1 GB" (no reference, every file read) or "Damaged copy" (a file differs, the image is cut short, or
+  it can't be read), with one line under it saying what was found and, when damaged, to copy the disc again. A damaged image
+  also shows a notification.
+- **Install**: INSTALL can be pressed during the check; the install then waits for it, as its first row ("Checking the
+  disc", with Cancel). A damaged image stops it there ("The disc image is damaged.") and greys INSTALL, with "Disc image
+  damaged" as the game's state and the advice to copy the disc again. An update of a built game doesn't wait, and a built game
+  whose image is found damaged still plays, with the same warning. The game data can't be copied from a damaged image, nor
+  before its check.
+- **Offered after a game**: when a game ends (crashed, closed or stopped from the launcher), its log is read (the last 4 MB);
+  a `[bink] open failed` or `[bink] invalid movie header` line opens "The disc image may be damaged", which says to copy the
+  disc again, with **Choose image**. It comes after the crash dialog, if both, and not when that disc matches a good copy. A
+  game stuck on a loading screen with no movie line has nothing to tell it by.
+- **Test**: `DiscCheckChecks` (`tests/disc_check_test.cpp`): invented images in two layouts and a copied folder give one
+  fingerprint, one changed byte or a renamed file another, a cut image names its file, Cancel, the comparison, what can't be
+  installed, the kept fingerprint and its stamp, the log lines.
 
 ## Linux
 
@@ -355,7 +427,7 @@ the pause between events (0.05 s).
 ```sh
 cmake -S . -B build-win64 -G Ninja -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/x86_64-w64-mingw32-clang.cmake \
     -DLLVM_MINGW_ROOT=<llvm-mingw release> -DCMAKE_BUILD_TYPE=Release
-ninja -C build-win64 Arkeyan Launcher
+ninja -C build-win64 ArkeyanLauncher
 ```
 
 `build-win64/ArkeyanLauncher.exe` is a single file (fonts built in; only system DLLs and the UCRT, which Windows 10 and

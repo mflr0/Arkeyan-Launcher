@@ -2,7 +2,7 @@
 
 // "Copy the game data": the disc's files copied once into the game's folder (<data>/<Game>/gamedata/), so the disc image is no
 // longer needed to play, update or reinstall (docs/runtime/host/game_data.md). Plain C++ (no SDL, no vfs), shared with
-// Skylauncher (tools/sync_skylauncher.sh): the launcher makes the copy, the game reads it.
+// Arkeyan Launcher (tools/sync_launcher.sh): the launcher makes the copy, the game reads it.
 //
 // The folder holds the disc's files under their lowercase disc paths, and gamedata.manifest: the disc's default.xex hash, the
 // list of files with their sizes, and whether the copy finished. A file is copied to "<name>.part", read back and compared
@@ -39,7 +39,7 @@ namespace gamedata
         std::string problem;   // Damaged: the first thing wrong
     };
 
-    // <data>/<Game>/gamedata for a game id ("ssa", "giants").
+    // <games>/<Game>/gamedata for a game id ("ssa", "giants"): datadir::GameFiles, the data folder's <Game> by default.
     std::filesystem::path Folder(std::string_view gameId);
     // Reads the manifest and looks at each file's size (no file is read): cheap enough for every start.
     Status Inspect(const std::filesystem::path& folder);

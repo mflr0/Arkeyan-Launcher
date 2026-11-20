@@ -1,7 +1,7 @@
 #pragma once
 
-// "Export a portable copy" (docs/portable.md): the installed game with its disc's files, its keys and the player's figures, as
-// one file for the system in use: <name>.app on macOS (a bundle: the files in Contents/Resources/game.skypack, the bundle signed
+// "Export a portable copy" (docs/portable.md): the installed game with its disc's files, its keys, its settings, the player's
+// figures and, when chosen, its HD textures, as one file for the system in use: <name>.app on macOS (a bundle: the files in Contents/Resources/game.skypack, the bundle signed
 // again), <name>.exe on Windows and <name>.AppImage on Linux (the pack after the executable, which the system never loads). The
 // pack's format is shared/collection/portable_pack.h; the game reads it. No UI: ArkeyanLauncherTest runs it on scratch folders.
 #include "launcher/launcher.h"
@@ -21,6 +21,8 @@ struct PortableSpec
     std::string source;               // the verified disc image, or the copy of the game data
     std::filesystem::path collection; // the player's figures
     std::string keys;                 // the game's [<game>.input] section, as PortableKeys writes it
+    std::string settings;             // settings.ini, as PortableSettings writes it; empty: none
+    std::filesystem::path hdTextures; // the game's textures-hd folder, to include its .dds files; empty: none
     portable::Info info;
     std::filesystem::path folder;     // where the portable goes
     std::string name;                 // its file name without the extension
@@ -32,8 +34,15 @@ struct PortableSpec
 const char* PortableExtension();
 // The file name for a game: its full name without the characters a file name can't hold ("Skylanders Spyro's Adventure").
 std::string PortableName(std::string_view gameId);
-// The game's keys as they are now ([<game>.input], seeded from [input] the way PLAY does it), as the text of keys.ini.
+// The game's keys, pad, mouse and rumble as it plays them ([input] with [<game>.input] over it, every key written), as the
+// text of keys.ini (one [<game>.input] section).
 std::string PortableKeys(const LauncherConfig& config, std::string_view gameId);
+// The game's other settings as it plays them, as the text of settings.ini: [<game>.video] ([video] as PLAY makes it, every
+// key written), [<game>.audio], [<game>] (the languages PLAY would pass, hd_textures = `hdTextures`, nightmare_from_start)
+// and the shared [input]. The copy adds each section to a computer that has none for it.
+std::string PortableSettings(const LauncherConfig& config, std::string_view gameId, bool hdTextures);
+// The bytes of the HD textures in a textures-hd folder (its .dds files), as an export would add them; 0 when there are none.
+uint64_t PortableHdTexturesBytes(const std::filesystem::path& folder);
 // "20261101-203000", UTC.
 std::string PortableStamp();
 

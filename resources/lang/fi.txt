@@ -97,7 +97,8 @@ Attack 3 / Back	Hyökkäys 3 / Takaisin
 Aug	elo
 Auto	Auto
 Auto (follows the window)	Auto (seuraa ikkunaa)
-Auto shows more when wide; 16:9 adds bars.	Auto näyttää enemmän leveänä; 16:9 lisää palkit.
+Fill (covers a taller screen)	Täytä (peittää korkeamman näytön)
+Auto shows more when wide; Fill covers a taller screen; 16:9 adds bars.	Auto näyttää enemmän leveänä; Täytä peittää korkeamman näytön; 16:9 lisää palkit.
 Auto-open Toy Box	Toy Boxin automaattiavaus
 Auto: 5.1 when the device has six channels.	Auto: 5.1, kun laitteessa on kuusi kanavaa.
 Automatic	Automaattinen
@@ -150,6 +151,9 @@ Checking...	Tarkistetaan...
 Chinese	kiina
 Choose	Valitse
 Choose a figure for {}	Valitse hahmo kohteelle {}
+Include HD textures	Sisällytä HD-tekstuurit
+{} with them, {} without.	{} niiden kanssa, {} ilman.
+Settings: {} FPS · Resolution scale {} · {}	Asetukset: {} FPS · Resoluution skaala {} · {}
 Choose a folder...	Valitse kansio...
 Choose a key to change it.	Muuta näppäintä valitsemalla se.
 Choose a type	Valitse tyyppi
@@ -359,6 +363,14 @@ Couldn't download the game tools	Pelityökalujen lataus epäonnistui
 Frame rate limit	Kuvataajuuden raja
 Frees {}. Saves and settings are kept.	Vapauttaa {}. Tallennukset ja asetukset säilyvät.
 Fullscreen	Koko näyttö
+Window size	Ikkunan koko
+{} x {}	{} x {}
+Last used: as it was when the game closed.	Viimeksi käytetty: kuten pelin sulkeutuessa.
+Last used	Viimeksi käytetty
+Custom	Mukautettu
+Width	Leveys
+Height	Korkeus
+{} or more	{} tai enemmän
 Game	Peli
 Game art comes from your own disc.	Pelin grafiikka tulee omalta levyltäsi.
 Game data	Pelin tiedot
@@ -409,12 +421,10 @@ Hold to delete saves, backups and caches.	Pidä pohjassa poistaaksesi tallennuks
 Hold to delete the built game. Saves are kept.	Pidä pohjassa poistaaksesi rakennetun pelin. Tallennukset säilyvät.
 Hold to delete the copy.	Pidä pohjassa poistaaksesi kopion.
 Hold to delete the partial copy.	Pidä pohjassa poistaaksesi keskeneräisen kopion.
-Hold to give every button its own job back.	Pidä pohjassa palauttaaksesi kaikkien painikkeiden oletustoiminnot.
 Hold to mark them as not in use.	Pidä pohjassa merkitäksesi ne käyttämättömiksi.
 Hold to move them to the trash.	Pidä pohjassa siirtääksesi ne roskakoriin.
 Hold to put this copy back.	Pidä pohjassa palauttaaksesi tämän kopion.
 Hold to rebuild the game.	Pidä pohjassa rakentaaksesi pelin uudelleen.
-Hold to reset every key of this game.	Pidä pohjassa nollataksesi tämän pelin kaikki näppäimet.
 Hold to restore; your current saves are kept first.	Pidä pohjassa palauttaaksesi; nykyiset tallennuksesi säilytetään ensin.
 INSTALL	ASENNA
 INSTALLATION INTERRUPTED	ASENNUS KESKEYTYI
@@ -692,7 +702,6 @@ Report copied	Raportti kopioitu
 Report saved	Raportti tallennettu
 Report saved: {}	Raportti tallennettu: {}
 Reset	Nollaa
-Reset to defaults	Palauta oletukset
 Reset to new	Nollaa uudeksi
 Reset to new...	Nollaa uudeksi...
 Reset {} to new? Level, gold and upgrades are lost.	Nollataanko {} uudeksi? Taso, kulta ja päivitykset menetetään.
@@ -857,7 +866,6 @@ Total	Yhteensä
 Touchpad	Kosketuslevy
 Toy	Lelu
 Toy Box	Toy Box
-Toy Box in the game: F6, or View + Y on a controller.	Toy Box pelissä: F6 tai View + Y ohjaimella.
 Toy Box keys	Toy Boxin näppäimet
 Toy type {}	Lelun tyyppi {}
 Translating the game code	Käännetään pelikoodia
@@ -871,8 +879,9 @@ Trash · {}	Roskakori · {}
 Triangle	Kolmio
 Trilinear	Trilineaarinen
 Trophies	Pokaalit
-Turn the game music off	Mykistä pelin musiikki
-Turn the game music on	Laita pelin musiikki päälle
+Game music	Pelin musiikki
+Play the music	Soita musiikki
+Each game's menu theme, on its page.	Kunkin pelin valikkoteema sen sivulla.
 Type	Tyyppi
 Ultra Performance	Ultrasuorituskyky
 Frame generation	Kehysten luonti
@@ -909,7 +918,6 @@ VSync	VSync
 Vehicle {}	Ajoneuvo {}
 Vehicles	Ajoneuvot
 Verified	Vahvistettu
-Verified, {}	Vahvistettu, {}
 Version {} is available.	Versio {} on saatavilla.
 Version {}, {}	Versio {}, {}
 Versions	Versiot
@@ -1097,6 +1105,7 @@ Open with the game	Avaa pelin kanssa
 Real figure · on the portal	Oikea hahmo · portaalissa
 Start a game first	Käynnistä ensin peli
 The Toy Box in its own window, to keep beside the game	Toy Box omassa ikkunassaan, pelin vieressä
+The other seats: in the Toy Box window	Muut paikat: Toy Box -ikkunassa
 The Toy Box window opens each time you play	Toy Box -ikkuna avautuu aina kun pelaat
 The game cannot read this figure there	Peli ei voi lukea tätä hahmoa siinä
 The game did not find this figure	Peli ei löytänyt tätä hahmoa
@@ -1138,3 +1147,107 @@ Couldn't prepare the game tools	Couldn't prepare the game tools
 Go back to the final release?	Go back to the final release?
 Going back to {}. Saves and figures made with the test build may not open in it. A copy of them is kept.	Going back to {}. Saves and figures made with the test build may not open in it. A copy of them is kept.
 Version {} (the final release)	Version {} (the final release)
+
+# The Games folder (Settings > Launcher)
+Games folder	Pelikansio
+Where every game is built: another drive saves room.	Mihin jokainen peli asennetaan: toinen asema säästää tilaa.
+Moving the games: {} of {}	Siirretään pelejä: {}/{}
+Now: {}	Nyt: {}
+Use default	Käytä oletusta
+Games moved	Pelit siirretty
+Move stopped: the games stay where they were	Siirto pysäytetty: pelit jäävät paikoilleen
+Couldn't move the games	Pelejä ei voitu siirtää
+Couldn't move the games: they stay where they were	Pelejä ei voitu siirtää: ne jäävät paikoilleen
+Not enough free space: {} needed	Ei tarpeeksi vapaata tilaa: tarvitaan {}
+Wait for the games to move	Odota, että pelit on siirretty
+Quit the game to move the games	Lopeta peli siirtääksesi pelit
+The games folder isn't there. Plug in the drive, or choose another folder.	Pelikansiota ei löydy. Liitä asema tai valitse toinen kansio.
+This folder isn't there	Tätä kansiota ei löydy
+This folder can't be written to	Tähän kansioon ei voi kirjoittaa
+Choose a folder outside the games	Valitse kansio pelien ulkopuolelta
+Choose a folder outside the game tools	Valitse kansio pelityökalujen ulkopuolelta
+The games in {} go too; your other files there stay.	Myös kansion {} pelit poistetaan; muut tiedostosi siellä säilyvät.
+
+# The image check (disc_check.h): the Disc tab's pill, the install's first row, the dialog after a game whose movies did not open.
+Can't read the disc image.	Levykuvaa ei voi lukea.
+Check again	Tarkista uudelleen
+Checking files, {}	Tarkistetaan tiedostoja, {}
+Checking the disc	Tarkistetaan levyä
+Choose image	Valitse levykuva
+Copy the disc again, then choose the new image.	Kopioi levy uudelleen ja valitse sitten uusi levykuva.
+Damaged copy	Vioittunut kopio
+Disc image damaged	Levykuva vioittunut
+Every file can be read. No good copy of this edition to compare with.	Kaikki tiedostot voi lukea. Tämän painoksen hyvää kopiota ei ole vertailtavaksi.
+Every file matches a good copy of this disc ({}).	Jokainen tiedosto vastaa levyn hyvää kopiota ({}).
+Good copy, {}	Hyvä kopio, {}
+Part of the image can't be read.	Osaa levykuvasta ei voi lukea.
+Readable, {}	Luettava, {}
+Some files differ from a good copy of this disc ({}).	Jotkin tiedostot eroavat levyn hyvästä kopiosta ({}).
+The disc image is damaged.	Levykuva on vioittunut.
+The disc image may be damaged	Levykuva voi olla vioittunut
+The disc image of {} is damaged	Pelin {} levykuva on vioittunut
+{} couldn't open some of its movies. A damaged copy of the disc does this.	{} ei voinut avata joitakin videoitaan. Näin käy, kun levyn kopio on vioittunut.
+
+# The global keys and controller (ui/controls_page.cpp).
+Reset to defaults	Palauta oletukset
+Hold to reset every key of this game.	Pidä pohjassa nollataksesi tämän pelin kaikki näppäimet.
+Hold to reset every button of this game.	Pidä pohjassa nollataksesi tämän pelin kaikki painikkeet.
+Use the global setting	Käytä yleistä asetusta
+Use the default	Käytä oletusta
+Dimmed values follow Launcher settings.	Himmennetyt arvot seuraavat Launcher-asetuksia.
+Games use these unless their own settings change them.	Pelit käyttävät näitä, elleivät niiden omat asetukset muuta niitä.
+Buttons	Painikkeet
+Stats / Info	Tilastot / Tiedot
+
+# Controller shortcuts
+Swap wheel	Vaihtopyörä
+Game menu	Pelivalikko
+Hold to open the swap wheel.	Avaa vaihtopyörä pitämällä painettuna.
+Press a button (Escape cancels).	Paina painiketta (Escape peruu).
+Press two buttons in order (Escape cancels).	Paina kahta painiketta järjestyksessä (Escape peruu).
+Press the second button (Escape cancels).	Paina toista painiketta (Escape peruu).
+This button is used by another action	Toinen toiminto käyttää tätä painiketta
+Hold to reset the controller buttons for all games.	Palauta kaikkien pelien ohjainpainikkeet pitämällä painettuna.
+Toy Box in the game: {}, or {} on a controller.	Toy Box pelissä: {} tai {} ohjaimella.
+
+# Figure pictures (Settings > Launcher > Collection, the figure sheet).
+Figure pictures	Hahmojen kuvat
+Which game's pictures the figures show.	Minkä pelin kuvia hahmot näyttävät.
+Original game	Alkuperäinen peli
+Newest game	Uusin peli
+Figure picture	Hahmon kuva
+Default ({})	Oletus ({})
+My picture	Oma kuva
+Choose a picture...	Valitse kuva...
+Remove my picture	Poista oma kuva
+That file is not a picture	Tiedosto ei ole kuva
+The picture could not be saved	Kuvaa ei voitu tallentaa
+
+# Imaginite chests (ui/chests_page.cpp).
+Imaginite chests	Imaginite-arkut
+Chests	Arkut
+Chests · {}	Arkut · {}
+Reach the Academy once in the game to add chests.	Pääse pelissä kerran Akatemiaan lisätäksesi arkkuja.
+Save slot {} · {} in the pile · Room for {} more	Tallennuspaikka {} · {} kasassa · Tilaa vielä {}
+Imaginite Chest	Imaginite-arkku
+Copper Chest	Kupariarkku
+Bronze Chest	Pronssiarkku
+Silver Chest	Hopea-arkku
+Gold Chest	Kulta-arkku
+Platinum Chest	Platina-arkku
+Bronze Mystery Chest	Pronssinen mysteeriarkku
+Silver Mystery Chest	Hopeinen mysteeriarkku
+Gold Mystery Chest	Kultainen mysteeriarkku
+Add 1 chest	Lisää 1 arkku
+Add {} chests	Lisää {} arkkua
+Chests added: they appear at the Academy	Arkut lisätty: ne ilmestyvät Akatemiaan
+Couldn't add the chests	Arkkujen lisääminen epäonnistui
+They appear the next time this save reaches the Academy.	Ne ilmestyvät, kun tämä tallennus seuraavan kerran saapuu Akatemiaan.
+{} chests waiting for save slot {}	{} arkkua odottaa tallennuspaikkaa {}
+{} chests waiting	{} arkkua odottaa
+Too late: the game already added them	Liian myöhään: peli lisäsi ne jo
+# Collection: a seat's figure dragged onto a taken player seat
+Swap players?	Vaihdetaanko pelaajat?
+Swap	Vaihda
+{} goes on {}, and {} on {}.	{} menee paikalle {} ja {} paikalle {}.
+Players swapped	Pelaajat vaihdettu

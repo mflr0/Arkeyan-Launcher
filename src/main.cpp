@@ -1,5 +1,7 @@
 // Arkeyan Launcher: shows the launcher; PLAY starts the game runtime from the window, which stays open (game_run.h, GameSession).
 #include "shared/collection/datadir.h"
+#include "launcher/disc_check.h"
+#include "launcher/game_install.h"
 #include "launcher/game_run.h"
 #include "launcher/game_settings.h"
 #include "launcher/launcher.h"
@@ -27,6 +29,19 @@ int main(int argc, char** argv)
     }
     for (const std::string& unknown : arguments.unknown)
         fprintf(stderr, "launcher: ignoring the option %s (--help lists them)\n", unknown.c_str());
+    if (!arguments.discDigest.empty())
+    {
+        const disccheck::Digest digest = disccheck::ComputeDigest(arguments.discDigest);
+        if (digest.outcome != disccheck::Digest::Outcome::Done)
+        {
+            fprintf(stderr, "launcher: --disc-digest: can't read %s%s%s\n", arguments.discDigest.c_str(),
+                digest.file.empty() ? "" : ": ", digest.file.c_str());
+            return 1;
+        }
+        printf("%s  %llu files, %llu bytes\n", digest.sha256.c_str(), (unsigned long long)digest.files,
+            (unsigned long long)digest.bytes);
+        return 0;
+    }
     datadir::ApplyPortable(); // portable.txt beside the launcher: its data folder, the games' too
     // The Toy Box window: the launcher started again by itself for the game running, beside the one launcher (it holds no
     // lock, starts no game and checks no update; docs/toybox_window.md).
@@ -67,6 +82,7 @@ int main(int argc, char** argv)
     std::string configPath = LauncherConfigPath();
     LauncherConfig config = LoadLauncherConfig(configPath);
     MigrateFrameRates(config);
+    ApplyGamesFolder(config); // [launcher] games=: the builder and the games find their files there too
 
     // Shortcuts made by a launcher called Skylauncher start this one and carry its name.
     {

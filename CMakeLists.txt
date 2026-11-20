@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.20)
 project(ArkeyanLauncher LANGUAGES C CXX)
 if(WIN32)
-    enable_language(RC) # the exe's icon, manifest and version (resources/windows/skylauncher.rc.in)
+    enable_language(RC) # the exe's icon, manifest and version (resources/windows/arkeyan-launcher.rc.in)
 endif()
-set(LAUNCHER_VERSION "0.9.8" CACHE STRING "Version shown in the app bundle")
+set(LAUNCHER_VERSION "0.9.9" CACHE STRING "Version shown in the app bundle")
 # SKYLAUNCHER_VERSION is the name before 0.6.0: still accepted.
 if(SKYLAUNCHER_VERSION)
     set(LAUNCHER_VERSION "${SKYLAUNCHER_VERSION}")
@@ -44,7 +44,7 @@ if(NOT EXISTS ${CMAKE_SOURCE_DIR}/lib/SDL/CMakeLists.txt OR NOT EXISTS ${CMAKE_S
 endif()
 
 # Applies `patch` to the submodule in `directory` unless it is already applied.
-function(skylauncher_apply_patch directory patch)
+function(arkeyan_apply_patch directory patch)
     execute_process(COMMAND git apply --reverse --check ${patch}
         WORKING_DIRECTORY ${directory} RESULT_VARIABLE already_applied OUTPUT_QUIET ERROR_QUIET)
     if(NOT already_applied EQUAL 0)
@@ -56,12 +56,18 @@ function(skylauncher_apply_patch directory patch)
 endfunction()
 
 # XenonUtils (XenonRecomp, MIT) reads the disc's default.xex: some images declare a larger size than their blocks fill.
-skylauncher_apply_patch(${CMAKE_SOURCE_DIR}/lib/XenonRecomp ${CMAKE_SOURCE_DIR}/patches/xenonutils.patch)
+arkeyan_apply_patch(${CMAKE_SOURCE_DIR}/lib/XenonRecomp ${CMAKE_SOURCE_DIR}/patches/xenonutils.patch)
 
 set(SDL_SHARED OFF CACHE BOOL "" FORCE)
 set(SDL_STATIC ON CACHE BOOL "" FORCE)
 set(SDL_TEST_LIBRARY OFF CACHE BOOL "" FORCE)
 add_subdirectory(lib/SDL EXCLUDE_FROM_ALL)
+# SDL drops libdecor silently when its headers are missing, and GNOME then shows the window with no title bar (#121).
+get_directory_property(sdl_wayland DIRECTORY lib/SDL DEFINITION SDL_VIDEO_DRIVER_WAYLAND)
+get_directory_property(sdl_libdecor DIRECTORY lib/SDL DEFINITION HAVE_WAYLAND_LIBDECOR)
+if(sdl_wayland AND SDL_WAYLAND_LIBDECOR AND NOT sdl_libdecor)
+    message(FATAL_ERROR "SDL has Wayland but not libdecor: install libdecor-0-dev (or pass -DSDL_WAYLAND_LIBDECOR=OFF)")
+endif()
 
 # Only the XEX and XDBF readers of XenonUtils: its disassembler (GNU binutils, GPL) is not built or linked.
 set(XENON_ROOT ${CMAKE_SOURCE_DIR}/lib/XenonRecomp)
@@ -86,12 +92,12 @@ target_link_libraries(XenonXex PUBLIC fmt::fmt)
 # The fonts are also built into the executable, so a lone executable works (Windows .exe).
 add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/embedded_fonts.cpp
     COMMAND ${CMAKE_COMMAND} -DOUTFIT=${CMAKE_SOURCE_DIR}/resources/fonts/Outfit-Regular.ttf -DOUTFIT_BOLD=${CMAKE_SOURCE_DIR}/resources/fonts/Outfit-SemiBold.ttf
-        -DBUNGEE=${CMAKE_SOURCE_DIR}/resources/fonts/Bungee-Regular.ttf -DLUCIDE=${CMAKE_SOURCE_DIR}/resources/fonts/Lucide.ttf -DICON=${CMAKE_SOURCE_DIR}/resources/icons/skylauncher-128.png -DOUTPUT=${CMAKE_BINARY_DIR}/embedded_fonts.cpp
+        -DBUNGEE=${CMAKE_SOURCE_DIR}/resources/fonts/Bungee-Regular.ttf -DLUCIDE=${CMAKE_SOURCE_DIR}/resources/fonts/Lucide.ttf -DICON=${CMAKE_SOURCE_DIR}/resources/icons/arkeyan-launcher-128.png -DOUTPUT=${CMAKE_BINARY_DIR}/embedded_fonts.cpp
         -P ${CMAKE_SOURCE_DIR}/cmake/embed_fonts.cmake
     DEPENDS ${CMAKE_SOURCE_DIR}/cmake/embed_fonts.cmake ${CMAKE_SOURCE_DIR}/resources/fonts/Outfit-Regular.ttf
         ${CMAKE_SOURCE_DIR}/resources/fonts/Outfit-SemiBold.ttf
         ${CMAKE_SOURCE_DIR}/resources/fonts/Bungee-Regular.ttf ${CMAKE_SOURCE_DIR}/resources/fonts/Lucide.ttf
-        ${CMAKE_SOURCE_DIR}/resources/icons/skylauncher-128.png
+        ${CMAKE_SOURCE_DIR}/resources/icons/arkeyan-launcher-128.png
     COMMENT "Embedding the launcher fonts")
 
 # ArkeyanRuntime's collection library (src/shared/collection, tools/sync_collection.sh) builds its toy catalogue in.
@@ -101,25 +107,25 @@ add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/embedded_catalogue.cpp
     DEPENDS ${CMAKE_SOURCE_DIR}/cmake/embed_file.cmake ${CMAKE_SOURCE_DIR}/resources/collection/catalogue.json
     COMMENT "Embedding the toy catalogue")
 # ...and where each game's pictures are on the disc: resources/games/<id>/art.json (synced too), joined into one array.
-file(GLOB SKYLAUNCHER_ART_MANIFESTS CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/resources/games/*/art.json)
-list(SORT SKYLAUNCHER_ART_MANIFESTS)
-string(REPLACE ";" "|" SKYLAUNCHER_ART_MANIFEST_LIST "${SKYLAUNCHER_ART_MANIFESTS}")
+file(GLOB LAUNCHER_ART_MANIFESTS CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/resources/games/*/art.json)
+list(SORT LAUNCHER_ART_MANIFESTS)
+string(REPLACE ";" "|" LAUNCHER_ART_MANIFEST_LIST "${LAUNCHER_ART_MANIFESTS}")
 add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/embedded_art_manifests.cpp
-    COMMAND ${CMAKE_COMMAND} "-DINPUTS=${SKYLAUNCHER_ART_MANIFEST_LIST}" -DOUTPUT=${CMAKE_BINARY_DIR}/art_manifests.json
+    COMMAND ${CMAKE_COMMAND} "-DINPUTS=${LAUNCHER_ART_MANIFEST_LIST}" -DOUTPUT=${CMAKE_BINARY_DIR}/art_manifests.json
         -P ${CMAKE_SOURCE_DIR}/cmake/join_json.cmake
     COMMAND ${CMAKE_COMMAND} -DNAME=g_embeddedArtManifests -DINPUT=${CMAKE_BINARY_DIR}/art_manifests.json
         -DOUTPUT=${CMAKE_BINARY_DIR}/embedded_art_manifests.cpp -P ${CMAKE_SOURCE_DIR}/cmake/embed_file.cmake
-    DEPENDS ${CMAKE_SOURCE_DIR}/cmake/join_json.cmake ${CMAKE_SOURCE_DIR}/cmake/embed_file.cmake ${SKYLAUNCHER_ART_MANIFESTS}
+    DEPENDS ${CMAKE_SOURCE_DIR}/cmake/join_json.cmake ${CMAKE_SOURCE_DIR}/cmake/embed_file.cmake ${LAUNCHER_ART_MANIFESTS}
     COMMENT "Embedding the art manifests" VERBATIM)
 
 # The launcher's languages: resources/lang/<code>.txt, one file each (docs/translations.md).
-file(GLOB SKYLAUNCHER_LANGUAGES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/resources/lang/*.txt)
-list(SORT SKYLAUNCHER_LANGUAGES)
-string(REPLACE ";" "|" SKYLAUNCHER_LANGUAGE_LIST "${SKYLAUNCHER_LANGUAGES}")
+file(GLOB LAUNCHER_LANGUAGES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/resources/lang/*.txt)
+list(SORT LAUNCHER_LANGUAGES)
+string(REPLACE ";" "|" LAUNCHER_LANGUAGE_LIST "${LAUNCHER_LANGUAGES}")
 add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/embedded_languages.cpp
-    COMMAND ${CMAKE_COMMAND} "-DINPUTS=${SKYLAUNCHER_LANGUAGE_LIST}" -DOUTPUT=${CMAKE_BINARY_DIR}/embedded_languages.cpp
+    COMMAND ${CMAKE_COMMAND} "-DINPUTS=${LAUNCHER_LANGUAGE_LIST}" -DOUTPUT=${CMAKE_BINARY_DIR}/embedded_languages.cpp
         -P ${CMAKE_SOURCE_DIR}/cmake/embed_languages.cmake
-    DEPENDS ${CMAKE_SOURCE_DIR}/cmake/embed_languages.cmake ${SKYLAUNCHER_LANGUAGES}
+    DEPENDS ${CMAKE_SOURCE_DIR}/cmake/embed_languages.cmake ${LAUNCHER_LANGUAGES}
     COMMENT "Embedding the languages" VERBATIM)
 
 # Dear ImGui (MIT) with its SDL 3 platform and SDL_Renderer backends.
@@ -137,14 +143,17 @@ add_library(ArkeyanLauncherCore STATIC
     src/launcher/game_install.cpp
     src/launcher/integrity.cpp
     src/launcher/game_progress.cpp
+    src/launcher/game_chests.cpp
     src/launcher/game_music.cpp
     src/launcher/ui/launcher_ui.cpp
     src/launcher/ui/collection_page.cpp
     src/launcher/ui/profiles_page.cpp
+    src/launcher/ui/chests_page.cpp
     src/launcher/ui/collection_figure.cpp
     src/launcher/ui/collection_add.cpp
     src/launcher/ui/collection_manage.cpp
     src/launcher/ui/collection_model.cpp
+    src/launcher/ui/picture_loader.cpp
     src/launcher/ui/game_look.cpp
     src/launcher/ui/pad_walk.cpp
     src/launcher/ui/components/core.cpp
@@ -173,6 +182,7 @@ add_library(ArkeyanLauncherCore STATIC
     src/shared/collection/json.cpp
     src/shared/collection/portable_pack.cpp
     src/shared/collection/progress.cpp
+    src/shared/collection/chests.cpp
     src/shared/collection/save_backup.cpp
     src/shared/collection/search.cpp
     src/shared/collection/upgrades.cpp
@@ -204,6 +214,9 @@ target_sources(ArkeyanLauncherCore PRIVATE
     src/launcher/game_keys.cpp
     src/launcher/game_settings.cpp
     src/launcher/game_copy.cpp
+    src/launcher/disc_check.cpp
+    src/launcher/sha256.cpp
+    src/launcher/games_folder.cpp
     src/launcher/edition_report.cpp
     src/launcher/portable_export.cpp
     src/launcher/shortcut.cpp
@@ -211,7 +224,9 @@ target_sources(ArkeyanLauncherCore PRIVATE
     src/launcher/uninstall.cpp
     src/launcher/ui/uninstall_page.cpp
     src/launcher/ui/game_settings_page.cpp
+    src/launcher/ui/controls_page.cpp
     src/launcher/ui/hd_textures_page.cpp
+    src/launcher/ui/games_folder_page.cpp
     src/launcher/ui/game_data_page.cpp
     src/launcher/report.cpp
     src/launcher/problem_report.cpp
@@ -229,7 +244,7 @@ target_sources(ArkeyanLauncherCore PRIVATE
     src/launcher/ui/game_stopped.cpp)
 target_include_directories(ArkeyanLauncherCore PUBLIC src PRIVATE lib/stb lib/miniz)
 target_link_libraries(ArkeyanLauncherCore PUBLIC SDL3::SDL3-static fmt::fmt XenonXex imgui)
-target_compile_definitions(ArkeyanLauncherCore PRIVATE SKYLAUNCHER_VERSION_STRING="${LAUNCHER_VERSION}" ARKEYAN_SOURCE_FONT_DIR="${CMAKE_SOURCE_DIR}/resources/fonts")
+target_compile_definitions(ArkeyanLauncherCore PRIVATE LAUNCHER_VERSION_STRING="${LAUNCHER_VERSION}" ARKEYAN_SOURCE_FONT_DIR="${CMAKE_SOURCE_DIR}/resources/fonts")
 if(APPLE)
     target_link_libraries(ArkeyanLauncherCore PUBLIC "-framework CoreGraphics" "-framework CoreFoundation" "-framework IOKit")
 endif()
@@ -240,7 +255,7 @@ if(WIN32)
 endif()
 
 # Fonts are data, not game content: Outfit and Bungee (SIL Open Font License, license files next to them).
-set(SKYLAUNCHER_FONTS
+set(LAUNCHER_FONTS
     ${CMAKE_SOURCE_DIR}/resources/fonts/Outfit-Regular.ttf
     ${CMAKE_SOURCE_DIR}/resources/fonts/Outfit-SemiBold.ttf
     ${CMAKE_SOURCE_DIR}/resources/fonts/Bungee-Regular.ttf
@@ -260,8 +275,8 @@ if(WIN32)
             set(LAUNCHER_VERSION_PART_${index} 0)
         endif()
     endforeach()
-    configure_file(resources/windows/skylauncher.rc.in ${CMAKE_BINARY_DIR}/skylauncher.rc @ONLY)
-    target_sources(ArkeyanLauncher PRIVATE ${CMAKE_BINARY_DIR}/skylauncher.rc)
+    configure_file(resources/windows/arkeyan-launcher.rc.in ${CMAKE_BINARY_DIR}/arkeyan-launcher.rc @ONLY)
+    target_sources(ArkeyanLauncher PRIVATE ${CMAKE_BINARY_DIR}/arkeyan-launcher.rc)
     if(MSVC) # clang-cl, the release build: the resource holds the manifest, so the linker must not add its own
         target_link_options(ArkeyanLauncher PRIVATE /MANIFEST:NO /Brepro /INCREMENTAL:NO)
     endif()
@@ -274,11 +289,11 @@ set_target_properties(ArkeyanLauncher PROPERTIES
     MACOSX_BUNDLE_BUNDLE_VERSION "${LAUNCHER_VERSION}")
 install(TARGETS ArkeyanLauncher BUNDLE DESTINATION . RUNTIME DESTINATION bin)
 if(NOT APPLE)
-    install(DIRECTORY ${CMAKE_SOURCE_DIR}/resources/fonts/ DESTINATION share/skylauncher/fonts)
+    install(DIRECTORY ${CMAKE_SOURCE_DIR}/resources/fonts/ DESTINATION share/arkeyan-launcher/fonts)
 endif()
 if(APPLE)
-    set_source_files_properties(${SKYLAUNCHER_FONTS} PROPERTIES MACOSX_PACKAGE_LOCATION Resources/fonts)
-    target_sources(ArkeyanLauncher PRIVATE ${SKYLAUNCHER_FONTS})
+    set_source_files_properties(${LAUNCHER_FONTS} PROPERTIES MACOSX_PACKAGE_LOCATION Resources/fonts)
+    target_sources(ArkeyanLauncher PRIVATE ${LAUNCHER_FONTS})
 else()
     add_custom_command(TARGET ArkeyanLauncher POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/resources/fonts $<TARGET_FILE_DIR:ArkeyanLauncher>/fonts)
@@ -294,11 +309,11 @@ add_executable(FakeArkeyanBuilder EXCLUDE_FROM_ALL tests/fake_arkeyan_builder.c)
 set_target_properties(FakeArkeyanBuilder PROPERTIES OUTPUT_NAME Arkeyan-Builder RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/fake-kit)
 file(WRITE ${CMAKE_BINARY_DIR}/fake-kit/kit.txt "version=0.0\nbuild=fake-1\ngames=ssa,giants\n")
 add_dependencies(ArkeyanLauncherTest FakeArkeyanBuilder ArkeyanLauncher)
-target_compile_definitions(ArkeyanLauncherTest PRIVATE SKYLAUNCHER_FAKE_KIT="${CMAKE_BINARY_DIR}/fake-kit" SKYLAUNCHER_TEST_EXE="$<TARGET_FILE:ArkeyanLauncher>")
+target_compile_definitions(ArkeyanLauncherTest PRIVATE LAUNCHER_FAKE_KIT="${CMAKE_BINARY_DIR}/fake-kit" LAUNCHER_TEST_EXE="$<TARGET_FILE:ArkeyanLauncher>")
 
 # The launcher shell's checks (tests/shell_test.cpp), run by ArkeyanLauncherTest.
-target_sources(ArkeyanLauncherTest PRIVATE tests/shell_test.cpp tests/portal_text_test.cpp tests/settings_test.cpp tests/copy_test.cpp tests/portable_test.cpp tests/i18n_test.cpp tests/uninstall_test.cpp tests/text_fit_test.cpp tests/navigation_test.cpp tests/accent_test.cpp tests/music_test.cpp tests/profiles_test.cpp tests/single_instance_test.cpp tests/toybox_link_test.cpp tests/vfs_test.cpp tests/lux_images_test.cpp tests/level_names_test.cpp)
-target_compile_definitions(ArkeyanLauncherTest PRIVATE SKYLAUNCHER_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+target_sources(ArkeyanLauncherTest PRIVATE tests/shell_test.cpp tests/portal_text_test.cpp tests/settings_test.cpp tests/copy_test.cpp tests/portable_test.cpp tests/i18n_test.cpp tests/uninstall_test.cpp tests/text_fit_test.cpp tests/navigation_test.cpp tests/accent_test.cpp tests/music_test.cpp tests/profiles_test.cpp tests/single_instance_test.cpp tests/toybox_link_test.cpp tests/vfs_test.cpp tests/disc_check_test.cpp tests/lux_images_test.cpp tests/level_names_test.cpp tests/chests_test.cpp)
+target_compile_definitions(ArkeyanLauncherTest PRIVATE LAUNCHER_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
 target_sources(ArkeyanLauncherTest PRIVATE tests/ui_render_test.cpp)
 target_include_directories(ArkeyanLauncherTest PRIVATE lib/miniz)
 

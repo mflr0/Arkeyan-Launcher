@@ -118,12 +118,88 @@ namespace
         return value == entry->second.end() || value->second.empty() ? nullptr : &value->second;
     }
 
-    const GameKey* Row(std::string_view gameId, std::string_view action)
+    // Names of one key place (SDL's lookup ignores case: a hand-edited "f7" is F7).
+    bool SameKey(const std::string& a, const std::string& b)
     {
-        for (const GameKey& key : GameKeys(gameId))
-            if (action == key.action)
-                return &key;
-        return nullptr;
+        return SDL_GetScancodeFromName(a.c_str()) == SDL_GetScancodeFromName(b.c_str());
+    }
+
+    // The game's line, else [input]'s.
+    const std::string* FindLine(const LauncherConfig& config, std::string_view gameId, const std::string& key)
+    {
+        if (const std::string* value = Find(config, GameInputSection(gameId), key))
+            return value;
+        return Find(config, "input", key);
+    }
+
+    void Erase(LauncherConfig& config, const std::string& section, const std::string& key)
+    {
+        if (auto entry = config.find(section); entry != config.end())
+            entry->second.erase(key);
+    }
+
+    bool On(const std::string& value) { return value == "1" || value == "true" || value == "on" || value == "yes"; }
+
+    constexpr std::array<const char*, 6> Shared = { "left_up", "left_down", "left_left", "left_right", "back",
+        "start" };
+
+    // The runtime's default keys (its g_keyActions): each game's rows have the same ones.
+    const char* DefaultKey(std::string_view action)
+    {
+        static constexpr std::pair<const char*, const char*> Defaults[] = { { "a", "Space" }, { "b", "X" },
+            { "x", "C" }, { "y", "V" }, { "start", "Return" }, { "back", "Backspace" }, { "lb", "Q" }, { "rb", "E" },
+            { "lt", "1" }, { "rt", "3" }, { "left_up", "W" }, { "left_down", "S" }, { "left_left", "A" },
+            { "left_right", "D" }, { "right_up", "I" }, { "right_down", "K" }, { "right_left", "J" },
+            { "right_right", "L" }, { "dpad_up", "Up" }, { "dpad_down", "Down" }, { "dpad_left", "Left" },
+            { "dpad_right", "Right" } };
+        for (const auto& [name, key] : Defaults)
+            if (action == name)
+                return key;
+        return "";
+    }
+
+    // One game's section: what PLAY made of [input] and of its copy before (seeded: the launcher's copy of [input]; key
+    // lines it lacked were the defaults) is now its own lines over the global layout `shared` (the runtime's
+    // commands::Migrate does the same).
+    void MigrateSection(std::map<std::string, std::string>& section, const std::map<std::string, std::string>& shared)
+    {
+        const bool seeded = section.count("seeded") != 0;
+        auto sharedValue = [&](const std::string& key) -> const std::string* {
+            auto value = shared.find(key);
+            return value == shared.end() || value->second.empty() ? nullptr : &value->second;
+        };
+        for (const char* action : Actions)
+        {
+            const std::string line = KeyLine(action);
+            auto own = section.find(line);
+            const bool has = own != section.end() && !own->second.empty();
+            const std::string* global = sharedValue(line);
+            if (!SharedAction(action))
+            {
+                if (!has && !seeded && global != nullptr)
+                    section[line] = *global; // what the first copy would have given it
+                continue;
+            }
+            const std::string globalKey = global != nullptr ? *global : DefaultKey(action);
+            if (has && SameKey(own->second, globalKey))
+                section.erase(own);
+            else if (!has && seeded && !SameKey(DefaultKey(action), globalKey))
+                section[line] = DefaultKey(action);
+        }
+        for (auto line = section.begin(); line != section.end();)
+        {
+            const std::string& key = line->first;
+            const std::string* global = sharedValue(key);
+            bool drop = false;
+            if (IsPadRemapLine(key))
+                drop = global != nullptr ? *global == line->second : line->second == key.substr(4);
+            else if (key == "rumble_p1" || key == "rumble_p2")
+                drop = line->second == (global != nullptr ? *global : "normal");
+            else if (key == "mouse")
+                drop = On(line->second) == (global != nullptr && On(*global));
+            line = drop ? section.erase(line) : std::next(line);
+        }
+        section.erase("seeded");
     }
 }
 
@@ -146,13 +222,53 @@ std::span<const GameKey> GameKeys(std::string_view gameId)
 
 std::span<const char* const> InputActions() { return Actions; }
 
+const char* InputDefaultKey(std::string_view action) { return DefaultKey(action); }
+
 std::string GameInputSection(std::string_view gameId) { return std::string(gameId) + ".input"; }
+
+bool SharedAction(std::string_view action)
+{
+    for (const char* shared : Shared)
+        if (action == shared)
+            return true;
+    return false;
+}
 
 std::string GameKeyName(const LauncherConfig& config, std::string_view gameId, const GameKey& key)
 {
-    if (const std::string* value = Find(config, GameInputSection(gameId), KeyLine(key.action)))
+    if (const std::string* value = FindLine(config, gameId, KeyLine(key.action)))
         return *value;
     return SDL_GetScancodeName(key.fallback);
+}
+
+std::string GlobalKeyName(const LauncherConfig& config, const GameKey& key)
+{
+    if (const std::string* value = Find(config, "input", KeyLine(key.action)))
+        return *value;
+    return SDL_GetScancodeName(key.fallback);
+}
+
+bool GameKeyOwn(const LauncherConfig& config, std::string_view gameId, const GameKey& key)
+{
+    return Find(config, GameInputSection(gameId), KeyLine(key.action)) != nullptr;
+}
+
+void SetGameKey(LauncherConfig& config, std::string_view gameId, const GameKey& key, const std::string& sdlName)
+{
+    if (SameKey(sdlName, GlobalKeyName(config, key)))
+        ClearGameKey(config, gameId, key);
+    else
+        config[GameInputSection(gameId)][KeyLine(key.action)] = sdlName;
+}
+
+void ClearGameKey(LauncherConfig& config, std::string_view gameId, const GameKey& key)
+{
+    Erase(config, GameInputSection(gameId), KeyLine(key.action));
+}
+
+void SetGlobalKey(LauncherConfig& config, const GameKey& key, const std::string& sdlName)
+{
+    config["input"][KeyLine(key.action)] = sdlName;
 }
 
 std::string KeyDisplayName(const std::string& sdlName)
@@ -243,8 +359,26 @@ bool GameKeyConflict(const LauncherConfig& config, std::string_view gameId, cons
 {
     const std::string name = GameKeyName(config, gameId, key);
     for (const GameKey& other : GameKeys(gameId))
-        if (&other != &key && GameKeyName(config, gameId, other) == name)
+        if (&other != &key && SameKey(GameKeyName(config, gameId, other), name))
             return true;
+    for (const ToyboxKey& toybox : ToyboxKeys())
+        if (SameKey(ToyboxKeyName(config, toybox), name))
+            return true;
+    return false;
+}
+
+bool GlobalKeyConflict(const LauncherConfig& config, const GameKey& key)
+{
+    const std::string name = GlobalKeyName(config, key);
+    for (const ToyboxKey& toybox : ToyboxKeys())
+        if (SameKey(ToyboxKeyName(config, toybox), name))
+            return true;
+    for (const GameInfo& game : g_games)
+        for (const GameKey& row : GameKeys(game.id))
+            if (std::string_view(row.action) == key.action && !GameKeyOwn(config, game.id, row))
+                for (const GameKey& other : GameKeys(game.id))
+                    if (&other != &row && SameKey(GameKeyName(config, game.id, other), name))
+                        return true;
     return false;
 }
 
@@ -258,37 +392,40 @@ void ResetGameKeys(LauncherConfig& config, std::string_view gameId)
         section->second.erase(KeyLine(action));
         section->second.erase(MouseLine(action));
     }
+    section->second.erase("mouse");
 }
 
-void SeedGameInput(LauncherConfig& config, std::string_view gameId)
+bool MigrateInput(LauncherConfig& config)
 {
-    const std::string section = GameInputSection(gameId);
-    if (config.count(section) != 0 && config[section].count("seeded") != 0)
-        return;
-    auto shared = config.find("input");
+    const bool first = Find(config, "input", "global") == nullptr;
+    bool changed = first;
+    if (first)
+        for (const GameInfo& game : g_games)
+            config[GameInputSection(game.id)]; // a game never seeded yet would have started from [input]
+    if (first)
+        if (auto shared = config.find("input"); shared != config.end())
+            for (auto line = shared->second.begin(); line != shared->second.end();)
+                line = line->first == "mouse" || line->first.starts_with("mouse_") ? shared->second.erase(line)
+                                                                                   : std::next(line);
+    const std::map<std::string, std::string> shared =
+        config.count("input") != 0 ? config["input"] : std::map<std::string, std::string>();
+    for (auto& [name, section] : config)
+        if (name.size() > 6 && name.ends_with(".input") && (first || section.count("seeded") != 0))
+        {
+            MigrateSection(section, shared);
+            changed = true;
+        }
+    if (!changed)
+        return false;
+    // The other actions are each game's own now: an older launcher's PLAY may have put them back.
     for (const char* action : Actions)
-    {
-        if (shared == config.end())
-            break;
-        if (auto value = shared->second.find(KeyLine(action)); value != shared->second.end())
-            config[section].emplace(KeyLine(action), value->second); // a key the game already has stays
-    }
-    config[section]["seeded"] = "1"; // an empty copy is not written to the file: this is what says it was seeded
-}
-
-void ApplyGameInput(LauncherConfig& config, std::string_view gameId)
-{
-    const std::string section = GameInputSection(gameId);
-    for (const char* action : Actions)
-    {
-        const std::string line = KeyLine(action);
-        if (const std::string* value = Find(config, section, line))
-            config["input"][line] = *value;
-        else if (const GameKey* row = Row(gameId, action))
-            config["input"][line] = SDL_GetScancodeName(row->fallback);
-        else if (auto shared = config.find("input"); shared != config.end())
-            shared->second.erase(line); // not one of this game's actions: the runtime's own default
-    }
+        if (!SharedAction(action))
+            Erase(config, "input", KeyLine(action));
+    config["input"]["global"] = "1";
+    for (auto section = config.begin(); section != config.end();)
+        section =
+            section->first.ends_with(".input") && section->second.empty() ? config.erase(section) : std::next(section);
+    return true;
 }
 
 namespace
@@ -320,47 +457,108 @@ std::string PadActionName(std::string_view gameId, int button)
     return {};
 }
 
+namespace
+{
+    int PadValue(const std::string* value, int button)
+    {
+        if (value == nullptr)
+            return button;
+        for (int i = 0; i < PadButtonTotal; i++)
+            if (*value == PadNames[size_t(i)])
+                return i;
+        return *value == "none" ? -1 : button;
+    }
+
+    const char* RumbleLine(int player) { return player == 0 ? "rumble_p1" : "rumble_p2"; }
+
+    std::string Level(const std::string* value)
+    {
+        for (const char* level : Rumble)
+            if (value != nullptr && *value == level)
+                return level;
+        return "normal";
+    }
+}
+
+bool SharedPadButton(int button)
+{
+    const std::string_view name = button >= 0 && button < PadButtonTotal ? PadNames[size_t(button)] : "";
+    return name == "start" || name == "back" || name == "ls" || name == "rs" || name.starts_with("dpad_");
+}
+
 int PadTarget(const LauncherConfig& config, std::string_view gameId, int button)
 {
-    const std::string* value = Find(config, GameInputSection(gameId), PadLine(button));
-    if (value == nullptr)
-        return button;
-    for (int i = 0; i < PadButtonTotal; i++)
-        if (*value == PadNames[size_t(i)])
-            return i;
-    return *value == "none" ? -1 : button;
+    return PadValue(FindLine(config, gameId, PadLine(button)), button);
+}
+
+int GlobalPadTarget(const LauncherConfig& config, int button)
+{
+    return PadValue(Find(config, "input", PadLine(button)), button);
+}
+
+bool PadOwn(const LauncherConfig& config, std::string_view gameId, int button)
+{
+    return Find(config, GameInputSection(gameId), PadLine(button)) != nullptr;
 }
 
 void SetPadTarget(LauncherConfig& config, std::string_view gameId, int button, int target)
 {
     const std::string section = GameInputSection(gameId);
-    if (target == button)
+    if (target == GlobalPadTarget(config, button))
     {
-        if (auto entry = config.find(section); entry != config.end())
-            entry->second.erase(PadLine(button));
+        Erase(config, section, PadLine(button));
         return;
     }
     config[section][PadLine(button)] = target < 0 ? "none" : PadNames[size_t(target)];
 }
 
+void SetGlobalPadTarget(LauncherConfig& config, int button, int target)
+{
+    if (target == button)
+        Erase(config, "input", PadLine(button));
+    else
+        config["input"][PadLine(button)] = target < 0 ? "none" : PadNames[size_t(target)];
+}
+
 void ResetPadMap(LauncherConfig& config, std::string_view gameId)
 {
-    auto section = config.find(GameInputSection(gameId));
+    auto section = config.find(gameId.empty() ? "input" : GameInputSection(gameId));
     if (section == config.end())
         return;
+    if (gameId.empty())
+        for (const ToyboxPad& binding : ToyboxPads())
+            section->second.erase(binding.line);
     for (int i = 0; i < PadButtonTotal; i++)
         section->second.erase(PadLine(i));
+    section->second.erase(RumbleLine(0));
+    section->second.erase(RumbleLine(1));
 }
 
 std::span<const char* const> RumbleLevels() { return Rumble; }
 
 std::string RumbleLevel(const LauncherConfig& config, std::string_view gameId, int player)
 {
-    const std::string* value = Find(config, GameInputSection(gameId), player == 0 ? "rumble_p1" : "rumble_p2");
-    for (const char* level : Rumble)
-        if (value != nullptr && *value == level)
-            return level;
-    return "normal";
+    return Level(FindLine(config, gameId, RumbleLine(player)));
+}
+
+std::string GlobalRumbleLevel(const LauncherConfig& config, int player)
+{
+    return Level(Find(config, "input", RumbleLine(player)));
+}
+
+bool RumbleOwn(const LauncherConfig& config, std::string_view gameId, int player)
+{
+    return Find(config, GameInputSection(gameId), RumbleLine(player)) != nullptr;
+}
+
+void SetRumbleLevel(LauncherConfig& config, std::string_view gameId, int player, const std::string& level)
+{
+    if (gameId.empty())
+        config["input"][RumbleLine(player)] = level;
+    else if (level == GlobalRumbleLevel(config, player))
+        Erase(config, GameInputSection(gameId), RumbleLine(player));
+    else
+        config[GameInputSection(gameId)][RumbleLine(player)] = level;
 }
 
 namespace
@@ -379,16 +577,40 @@ namespace
         return false;
     }
 
-    // What mouse_<action> says: the button, "" for none; nullopt when there is no line.
-    std::optional<std::string> StoredMouse(const LauncherConfig& config, std::string_view gameId, const char* action)
+    // What mouse_<action> says in one section: the button, "" for none; nullopt when there is no line.
+    std::optional<std::string> MouseIn(const LauncherConfig& config, const std::string& section, const char* action)
     {
-        auto section = config.find(GameInputSection(gameId));
-        if (section == config.end())
+        auto entry = config.find(section);
+        if (entry == config.end())
             return std::nullopt;
-        auto value = section->second.find(MouseLine(action));
-        if (value == section->second.end())
+        auto value = entry->second.find(MouseLine(action));
+        if (value == entry->second.end())
             return std::nullopt;
         return IsMouseName(value->second) ? value->second : std::string();
+    }
+
+    // The game's line, else [input]'s.
+    std::optional<std::string> StoredMouse(const LauncherConfig& config, std::string_view gameId, const char* action)
+    {
+        if (std::optional<std::string> own = MouseIn(config, GameInputSection(gameId), action))
+            return own;
+        return MouseIn(config, "input", action);
+    }
+
+    // The button an action is on, the switch aside (mouse::Effective's rule).
+    std::string MouseButtonOf(const LauncherConfig& config, std::string_view gameId, const GameKey& key)
+    {
+        if (std::optional<std::string> stored = StoredMouse(config, gameId, key.action))
+            return *stored;
+        if (key.mouse == nullptr)
+            return {};
+        // The default goes when an action with a line of its own took the button.
+        for (const GameKey& other : GameKeys(gameId))
+            if (&other != &key)
+                if (std::optional<std::string> stored = StoredMouse(config, gameId, other.action);
+                    stored && *stored == key.mouse)
+                    return {};
+        return key.mouse;
     }
 
     constexpr ToyboxKey Toybox[] = { { "key_toybox", N_("Open the Toy Box"), "F6" },
@@ -397,30 +619,39 @@ namespace
 
 bool GameMouseOn(const LauncherConfig& config, std::string_view gameId)
 {
-    const std::string* value = Find(config, GameInputSection(gameId), "mouse");
-    return value != nullptr && (*value == "1" || *value == "true" || *value == "on" || *value == "yes");
+    const std::string* value = FindLine(config, gameId, "mouse");
+    return value != nullptr && On(*value);
+}
+
+bool GlobalMouseOn(const LauncherConfig& config)
+{
+    const std::string* value = Find(config, "input", "mouse");
+    return value != nullptr && On(*value);
+}
+
+bool GameMouseOwn(const LauncherConfig& config, std::string_view gameId)
+{
+    return Find(config, GameInputSection(gameId), "mouse") != nullptr;
 }
 
 void SetGameMouseOn(LauncherConfig& config, std::string_view gameId, bool on)
 {
-    config[GameInputSection(gameId)]["mouse"] = on ? "1" : "0";
+    if (gameId.empty())
+        config["input"]["mouse"] = on ? "1" : "0";
+    else if (on == GlobalMouseOn(config))
+        Erase(config, GameInputSection(gameId), "mouse");
+    else
+        config[GameInputSection(gameId)]["mouse"] = on ? "1" : "0";
 }
 
 std::string GameMouseName(const LauncherConfig& config, std::string_view gameId, const GameKey& key)
 {
-    if (!GameMouseOn(config, gameId))
-        return {};
-    if (std::optional<std::string> stored = StoredMouse(config, gameId, key.action))
-        return *stored;
-    if (key.mouse == nullptr)
-        return {};
-    // The default goes when an action with a line of its own took the button (the runtime's mouse::Effective).
-    for (const GameKey& other : GameKeys(gameId))
-        if (&other != &key)
-            if (std::optional<std::string> stored = StoredMouse(config, gameId, other.action);
-                stored && *stored == key.mouse)
-                return {};
-    return key.mouse;
+    return GameMouseOn(config, gameId) ? MouseButtonOf(config, gameId, key) : std::string();
+}
+
+bool GameMouseButtonOwn(const LauncherConfig& config, std::string_view gameId, const GameKey& key)
+{
+    return MouseIn(config, GameInputSection(gameId), key.action).has_value();
 }
 
 void SetGameMouseButton(LauncherConfig& config, std::string_view gameId, const GameKey& key, const std::string& name)
@@ -428,9 +659,17 @@ void SetGameMouseButton(LauncherConfig& config, std::string_view gameId, const G
     const std::string section = GameInputSection(gameId);
     if (!name.empty())
         for (const GameKey& other : GameKeys(gameId))
-            if (&other != &key && GameMouseName(config, gameId, other) == name)
+            if (&other != &key && MouseButtonOf(config, gameId, other) == name)
                 config[section][MouseLine(other.action)] = "none";
-    config[section][MouseLine(key.action)] = name.empty() ? "none" : name;
+    if (MouseIn(config, "input", key.action) == name)
+        Erase(config, section, MouseLine(key.action)); // what [input] gives it: inherited again
+    else
+        config[section][MouseLine(key.action)] = name.empty() ? "none" : name;
+}
+
+void ClearGameMouseButton(LauncherConfig& config, std::string_view gameId, const GameKey& key)
+{
+    Erase(config, GameInputSection(gameId), MouseLine(key.action));
 }
 
 std::string MouseDisplayName(const std::string& name)
@@ -462,4 +701,92 @@ std::string ToyboxKeyName(const LauncherConfig& config, const ToyboxKey& key)
 {
     const std::string* value = Find(config, "input", key.line);
     return value != nullptr ? *value : key.fallback;
+}
+
+bool ToyboxKeyConflict(const LauncherConfig& config, const ToyboxKey& key)
+{
+    const std::string name = ToyboxKeyName(config, key);
+    for (const ToyboxKey& other : ToyboxKeys())
+        if (&other != &key && SameKey(ToyboxKeyName(config, other), name))
+            return true;
+    for (const GameInfo& game : g_games)
+        for (const GameKey& row : GameKeys(game.id))
+            if (SameKey(GameKeyName(config, game.id, row), name))
+                return true;
+    return false;
+}
+
+namespace
+{
+    constexpr ToyboxPad PadShortcuts[] = { { "pad_wheel", N_("Swap wheel"), { 9, -1 } },
+        { "pad_toybox", N_("Open the Toy Box"), { 9, 3 } }, { "pad_menu", N_("Game menu"), { 9, 8 } } };
+
+    int PhysicalButton(std::string_view name)
+    {
+        for (int i = 0; i < PadButtonTotal; i++)
+            if (name == PadNames[size_t(i)])
+                return i;
+        return -1;
+    }
+}
+
+bool IsPadRemapLine(std::string_view line) { return line.starts_with("pad_") && PhysicalButton(line.substr(4)) >= 0; }
+
+std::span<const ToyboxPad> ToyboxPads() { return PadShortcuts; }
+
+std::array<int, 2> ToyboxPadValue(const LauncherConfig& config, const ToyboxPad& binding)
+{
+    const std::string* value = Find(config, "input", binding.line);
+    if (value == nullptr)
+        return binding.fallback;
+    const size_t plus = value->find('+');
+    if (binding.fallback[1] < 0)
+    {
+        const int button = PhysicalButton(*value);
+        return button < 0 ? binding.fallback : std::array<int, 2>{ button, -1 };
+    }
+    if (plus == std::string::npos)
+        return binding.fallback;
+    const int first = PhysicalButton(std::string_view(*value).substr(0, plus));
+    const int second = PhysicalButton(std::string_view(*value).substr(plus + 1));
+    return first < 0 || second < 0 || first == second ? binding.fallback : std::array<int, 2>{ first, second };
+}
+
+void SetToyboxPad(LauncherConfig& config, const ToyboxPad& binding, std::array<int, 2> buttons)
+{
+    if (buttons[0] < 0 || buttons[0] >= PadButtonTotal ||
+        (binding.fallback[1] < 0 ? buttons[1] != -1
+                                 : buttons[1] < 0 || buttons[1] >= PadButtonTotal || buttons[0] == buttons[1]))
+        return;
+    std::string value = PadNames[size_t(buttons[0])];
+    if (buttons[1] >= 0)
+        value += std::string("+") + PadNames[size_t(buttons[1])];
+    config["input"][binding.line] = value;
+}
+
+std::string ToyboxPadName(const LauncherConfig& config, const ToyboxPad& binding, PadFamily family)
+{
+    const auto buttons = ToyboxPadValue(config, binding);
+    std::string name = PadButtonLabel(buttons[0], family);
+    if (buttons[1] >= 0)
+        name += " + " + PadButtonLabel(buttons[1], family);
+    return name;
+}
+
+bool ToyboxPadConflict(const LauncherConfig& config, const ToyboxPad& binding)
+{
+    const auto buttons = ToyboxPadValue(config, binding);
+    for (size_t i = 0; i < buttons.size(); i++)
+    {
+        const int button = buttons[i];
+        if (button < 0 || (i == 0 && button == 9) || (i == 1 && buttons[0] == 9 && (button == 3 || button == 8)))
+            continue;
+        for (const GameInfo& game : g_games)
+        {
+            const int target = PadTarget(config, game.id, button);
+            if (target >= 0)
+                return true;
+        }
+    }
+    return false;
 }

@@ -4,8 +4,10 @@
 #include "launcher/env.h"
 #include "launcher/install_checklist.h"
 #include "shared/art/game_art.h"
+#include "shared/collection/icons.h"
 #include <SDL3/SDL.h>
 #include <algorithm>
+#include <charconv>
 #include <cmath>
 #include <cstring>
 #include <fmt/format.h>
@@ -78,9 +80,9 @@ namespace launcher_ui
         }
     }
 
-    ArtTexture LoadArt(SDL_Renderer* renderer, const std::string& path, bool crop, int maxWidth)
+    DecodedPicture DecodeArt(const std::string& path, bool crop, int maxWidth)
     {
-        ArtTexture art;
+        DecodedPicture art;
         SDL_Surface* loaded = path.empty() ? nullptr : SDL_LoadPNG(path.c_str());
         if (loaded == nullptr)
             return art;
@@ -102,14 +104,36 @@ namespace launcher_ui
                 left = 0, top = 0, right = rgba->w, bottom = rgba->h;
         }
         int width = right - left, height = bottom - top;
-        int outWidth = maxWidth > 0 && width > maxWidth ? maxWidth : width;
-        int outHeight = std::max(1, int(std::lround(double(height) * outWidth / width)));
-        std::vector<uint8_t> out = Shrink(
-            pixels + size_t(top) * rgba->pitch + size_t(left) * 4, rgba->pitch, width, height, outWidth, outHeight);
+        art.width = maxWidth > 0 && width > maxWidth ? maxWidth : width;
+        art.height = std::max(1, int(std::lround(double(height) * art.width / width)));
+        art.rgba = Shrink(
+            pixels + size_t(top) * rgba->pitch + size_t(left) * 4, rgba->pitch, width, height, art.width, art.height);
         SDL_DestroySurface(rgba);
-        art.texture = LoadRgba(renderer, out, outWidth, outHeight);
         art.aspect = float(width) / float(height);
         return art;
+    }
+
+    ArtTexture LoadArt(SDL_Renderer* renderer, const std::string& path, bool crop, int maxWidth)
+    {
+        ArtTexture art;
+        DecodedPicture decoded = DecodeArt(path, crop, maxWidth);
+        if (decoded.Empty())
+            return art;
+        art.texture = LoadRgba(renderer, decoded.rgba, decoded.width, decoded.height);
+        art.aspect = decoded.aspect;
+        return art;
+    }
+
+    float FadeIn(uint64_t readyAt)
+    {
+        constexpr float FadeMs = 150;
+        if (readyAt == 0)
+            return 1;
+        const float t = float(SDL_GetTicks() - readyAt) / FadeMs;
+        if (t >= 1)
+            return 1;
+        ui::Ctx().animating = true; // the next frame comes at once
+        return t * (2 - t); // eases out
     }
 
     bool SystemReducesMotion()
@@ -180,21 +204,38 @@ namespace launcher_ui
 
     bool App::GameMusicOn() const { return SettingGet(m_config, "launcher", "game_music", "1") != "0"; }
 
+    int GameMusicVolume(const LauncherConfig& config)
+    {
+        const std::string text = SettingGet(config, "launcher", "game_music_volume");
+        int volume = gamemusic::DefaultVolume;
+        if (std::from_chars(text.data(), text.data() + text.size(), volume).ec != std::errc())
+            return gamemusic::DefaultVolume;
+        return std::clamp(volume, 0, 100);
+    }
+
+    void SetGameMusicVolume(LauncherConfig& config, int volume)
+    {
+        config["launcher"]["game_music_volume"] = std::to_string(std::clamp(volume, 0, 100));
+        config["launcher"]["game_music"] = "1";
+    }
+
     const ArtTexture* App::CachedArt(const char* game, LauncherAssets::Role role, int maxWidth)
     {
         std::string key = fmt::format("{} {} {}", game, int(role), maxWidth);
-        auto found = m_cachedArt.find(key);
-        if (found == m_cachedArt.end())
+        auto [found, added] = m_cachedArt.try_emplace(key);
+        if (added)
         {
             LauncherAssets::Asset asset = role == LauncherAssets::Role::HeroBackground
                                               ? LauncherAssets::Asset{ SceneOf(game), true }
                                               : LauncherAssets::Cached(game, role);
-            asset.valid = asset.valid && !asset.path.empty();
-            found = m_cachedArt
-                        .emplace(key,
-                            asset.valid ? LoadArt(m_renderer, asset.path, role == LauncherAssets::Role::Logo, maxWidth)
-                                        : ArtTexture{})
-                        .first;
+            if (asset.valid && !asset.path.empty())
+            {
+                // Read on the loader's thread: until then the page shows what it shows without the art (the night sky,
+                // the game's initials).
+                found->second.pending = true;
+                m_pictures.Request(ArtPictureKey + key, [path = asset.path, crop = role == LauncherAssets::Role::Logo,
+                                                            maxWidth] { return DecodeArt(path, crop, maxWidth); });
+            }
         }
         return found->second ? &found->second : nullptr;
     }
@@ -202,6 +243,7 @@ namespace launcher_ui
     void App::ForgetCachedArt(const char* game)
     {
         std::string prefix = std::string(game) + " ";
+        m_pictures.Forget(ArtPictureKey + prefix);
         for (auto it = m_cachedArt.begin(); it != m_cachedArt.end();)
             if (it->first.starts_with(prefix))
             {
@@ -210,6 +252,78 @@ namespace launcher_ui
             }
             else
                 ++it;
+    }
+
+    void App::PrefetchArt()
+    {
+        for (const LauncherGameEntry& entry : LauncherGameCatalog(m_config))
+            if (entry.enabled)
+            {
+                CachedArt(entry.id, LauncherAssets::Role::HeroBackground, BackdropArtW);
+                CachedArt(entry.id, LauncherAssets::Role::Logo, 0);
+            }
+    }
+
+    void App::UploadPictures(bool all)
+    {
+        // A texture costs about a millisecond per megapixel to upload: a few a frame keep the frame on time.
+        constexpr uint64_t BudgetNs = 2'000'000;
+        all = all || !m_shots.empty() || !m_toyboxScript.empty(); // the screenshot tests: every picture, none fading
+        // Other pictures chosen (here, or in a running game's Toy Box): the figures' pictures are read again.
+        if (const uint64_t generation = collection::PictureGeneration(); generation != m_pictureGeneration)
+        {
+            if (m_pictureGeneration != 0)
+            {
+                m_figureIcons->Clear();
+                m_pictures.Forget(FigurePictureKey);
+            }
+            m_pictureGeneration = generation;
+        }
+        if (all)
+            m_pictures.Wait();
+        const uint64_t start = SDL_GetTicksNS();
+        const uint64_t readyAt = all || ReduceMotion() ? 0 : std::max<uint64_t>(1, SDL_GetTicks());
+        std::string key;
+        DecodedPicture picture;
+        while ((all || SDL_GetTicksNS() - start < BudgetNs) && m_pictures.Take(key, picture))
+        {
+            SDL_Texture* texture =
+                picture.Empty() ? nullptr : LoadRgba(m_renderer, picture.rgba, picture.width, picture.height);
+            if (key.starts_with(FigurePictureKey))
+            {
+                auto found = m_figureIcons->textures.find(key);
+                if (found == m_figureIcons->textures.end() || !found->second.pending)
+                {
+                    if (texture != nullptr) // forgotten meanwhile (ClearIcons)
+                        SDL_DestroyTexture(texture);
+                    continue;
+                }
+                FigureIconTexture& icon = found->second;
+                icon = FigureIconTexture{ texture, picture.generated, float(picture.width), float(picture.height),
+                    false, readyAt };
+            }
+            else if (auto found = key.starts_with(ArtPictureKey)
+                                      ? m_cachedArt.find(key.substr(std::string_view(ArtPictureKey).size()))
+                                      : m_cachedArt.end();
+                found != m_cachedArt.end() && found->second.pending)
+            {
+                ArtTexture& art = found->second;
+                art.texture = texture;
+                art.aspect = picture.aspect;
+                art.pending = false;
+                art.readyAt = readyAt;
+            }
+            else if (texture != nullptr)
+                SDL_DestroyTexture(texture);
+        }
+        if (m_pictures.Pending())
+            m_busyFrames = std::max(m_busyFrames, 1); // the next ones are drawn as they come
+    }
+
+    void App::FinishPictures()
+    {
+        while (m_pictures.Pending())
+            UploadPictures(true);
     }
 
     float App::LogoDrop()
@@ -292,10 +406,10 @@ namespace launcher_ui
         if (list.current >= 0)
         {
             const std::string& id = list.rows[size_t(list.current)].id;
-            current = id == "kit" || id == "toolchain" || id == "disc" ? 0
-                      : id == "recompile"                              ? 1
-                      : id == "shaders"                                ? 2
-                                                                       : 3;
+            current = id == "check" || id == "kit" || id == "toolchain" || id == "disc" ? 0
+                      : id == "recompile"                                               ? 1
+                      : id == "shaders"                                                 ? 2
+                                                                                        : 3;
         }
         for (int i = 0; i < 4; i++)
         {
@@ -310,10 +424,7 @@ namespace launcher_ui
         ImGui::SetCursorScreenPos(
             ImVec2(at.x + width - ui::ButtonWidth(Tr("Cancel"), cancel), at.y + 2 * ui::height::Normal));
         if (ui::Button(Tr("Cancel"), cancel))
-        {
-            m_s->installer.Cancel();
-            m_s->kitDownload.Cancel();
-        }
+            CancelInstall();
         TakeFocus(FocusTo::Page);
         ImGui::SetCursorScreenPos(ImVec2(at.x, at.y + 2 * ui::height::Normal));
         if (ui::Button(Tr("Show details"), { .kind = ui::ButtonKind::Ghost, .size = ui::Size::Small }))

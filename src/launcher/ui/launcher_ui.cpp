@@ -6,6 +6,7 @@
 #include "launcher/game_names.h"
 #include "launcher/ui/collection_model.h"
 #include "shared/collection/progress.h"
+#include "shared/collection/save_backup.h"
 #include "launcher/ui/text_fit.h"
 #include "launcher/install_checklist.h"
 #include "shared/art/game_art.h"
@@ -261,7 +262,7 @@ namespace launcher_ui
 
     // ---- Disc verification on a worker thread --------------------------------------------------------------------
 
-    void VerifyJob::Start(const std::string& image, const GameInfo& game, const std::filesystem::path& skyBuild,
+    void VerifyJob::Start(const std::string& image, const GameInfo& game, const std::filesystem::path& builder,
         const std::string& kitVersion)
     {
         Join();
@@ -274,7 +275,7 @@ namespace launcher_ui
             meta = {};
             assets = {};
         }
-        thread = std::thread([this, image, &game, skyBuild, kitVersion] {
+        thread = std::thread([this, image, &game, builder, kitVersion] {
             auto report = [this](float fraction, std::string_view text) {
                 progress = fraction;
                 std::lock_guard lock(mutex);
@@ -303,7 +304,7 @@ namespace launcher_ui
                     art.Init(game.id);
                     art.ExtractFromDisc(disc, metadata);
                     // Its menu theme, decoded by the kit's Arkeyan-Builder (the launcher has no XMA decoder): once, next to the pictures.
-                    gamemusic::Extract(game.id, image, skyBuild, kitVersion);
+                    gamemusic::Extract(game.id, image, builder, kitVersion);
                 }
             }
             {
@@ -396,7 +397,7 @@ namespace launcher_ui
         if (ParseBool(SettingGet(m_config, "launcher", "fullscreen")))
             flags |= SDL_WINDOW_FULLSCREEN;
         SDL_PropertiesID properties = SDL_CreateProperties();
-        SDL_SetStringProperty(properties, SDL_PROP_WINDOW_CREATE_TITLE_STRING, "Arkeyan Launcher");
+        SDL_SetStringProperty(properties, SDL_PROP_WINDOW_CREATE_TITLE_STRING, LauncherWindowTitle().c_str());
         SDL_SetNumberProperty(properties, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, int(WindowW));
         SDL_SetNumberProperty(properties, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, int(WindowH));
         SDL_SetNumberProperty(properties, SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER, Sint64(flags));
@@ -491,6 +492,7 @@ namespace launcher_ui
             m_testGallery = LauncherEnv("SKY_LAUNCHER_TEST_GALLERY") != nullptr;
             m_testPad = LauncherEnv("SKY_LAUNCHER_TEST_PAD") != nullptr;
             m_testAchievements = LauncherEnv("SKY_LAUNCHER_TEST_ACHIEVEMENTS") != nullptr;
+            m_testChests = LauncherEnv("SKY_LAUNCHER_TEST_CHESTS") != nullptr;
             m_testRunning = LauncherEnv("SKY_LAUNCHER_TEST_RUNNING") != nullptr;
             m_testHero = LauncherEnv("SKY_LAUNCHER_TEST_HERO") != nullptr;
             m_testPadWalk = LauncherEnv("SKY_LAUNCHER_TEST_PADWALK") != nullptr;
@@ -539,8 +541,8 @@ namespace launcher_ui
             if (FindEnabledGame(each.id, m_config) == nullptr)
                 continue;
             SeedGameVideo(m_config, each.id); // each game starts from the video settings the player already had
-            SeedGameInput(m_config, each.id); // and from the keys
         }
+        MigrateInput(m_config); // and the keys of an older launcher become the global layout
     }
 
     // The slot of `game`, made the first time it is asked for.
@@ -567,7 +569,6 @@ namespace launcher_ui
             return;
         m_s = &SlotFor(game);
         SeedGameVideo(m_config, game.id);
-        SeedGameInput(m_config, game.id);
         SetActiveGame(game.id);
         Set("launcher", "game", game.id);
         if (!m_s->started)
@@ -582,7 +583,7 @@ namespace launcher_ui
     bool App::AnyInstalling() const
     {
         for (const auto& slot : m_slots)
-            if (slot->installer.Running() || slot->kitDownload.Running())
+            if (slot->installer.Running() || slot->kitDownload.Running() || slot->installAfterCheck)
                 return true;
         return false;
     }
@@ -629,6 +630,8 @@ namespace launcher_ui
                 FinishVerify();
             if (m_s->copyJob.Done())
                 FinishCopy();
+            if (m_s->discCheck.Done())
+                FinishDiscCheck();
             if (m_s->portableJob.Done())
                 FinishPortableExport();
             FinishHdTextures();
@@ -637,6 +640,7 @@ namespace launcher_ui
         }
         m_s = shown;
         SetActiveGame(m_s->game.id);
+        RunDiscChecks();
     }
 
     void App::Shutdown()
@@ -735,6 +739,7 @@ namespace launcher_ui
             PollUpdateAll();
             PollUpdates();
             PollIntegrity();
+            PollGamesMove();
             PollRequests();
             AutoPlay();
             Frame();
@@ -771,8 +776,8 @@ namespace launcher_ui
         }
         // Something moves: a check, an install's spinner, an update's bar, a held button, a text cursor, a drag, a component's
         // own motion (a spinner, a sliding toggle).
-        if (AnyVerifying() || AnyInstalling() || AnyHdTextures() || m_updates.Busy() || ImGui::IsAnyItemActive() ||
-            ui::Ctx().animating)
+        if (AnyVerifying() || AnyInstalling() || AnyHdTextures() || m_updates.Busy() || m_gamesMove.Running() ||
+            ImGui::IsAnyItemActive() || ui::Ctx().animating)
             return 0;
         if (m_page == Page::Play && m_logoDropAt != 0 &&
             SDL_GetTicks() < m_logoDropAt + uint64_t(LogoDropMs) + 20) // the logo is falling
@@ -793,6 +798,8 @@ namespace launcher_ui
     void App::HandleEvent(const SDL_Event& event)
     {
         m_busyFrames = 3;
+        if (CaptureToyboxPad(event))
+            return;
         // A Toy Box key, then a mouse binding, being captured: the next key press, or the next click or wheel tick (after the
         // click that started the wait is released; Escape cancels).
         if (m_toyboxCapturing != nullptr && event.type == SDL_EVENT_KEY_DOWN)
@@ -818,7 +825,7 @@ namespace launcher_ui
                 name = CapturedWheelName(event.wheel.y);
             if (!name.empty())
             {
-                SetGameMouseButton(m_config, m_s->game.id, *m_mouseCapturing, name);
+                SetGameMouseButton(m_config, m_mouseCaptureGame, *m_mouseCapturing, name);
                 if (!SaveConfig())
                     Toast(Tr("Couldn't save the settings"), ui::ToastKind::Error);
                 m_mouseCapturing = nullptr;
@@ -832,8 +839,16 @@ namespace launcher_ui
         if (m_capturing != nullptr && event.type == SDL_EVENT_KEY_DOWN)
         {
             if (event.key.key != SDLK_ESCAPE)
-                Set(GameInputSection(m_s->game.id).c_str(), (std::string("key_") + m_capturing->action).c_str(),
-                    CapturedKeyName(event.key.scancode).c_str()); // the key's place: the game reads a scancode
+            {
+                const std::string name =
+                    CapturedKeyName(event.key.scancode); // the key's place: the game reads a scancode
+                if (m_captureGame.empty())
+                    SetGlobalKey(m_config, *m_capturing, name);
+                else
+                    SetGameKey(m_config, m_captureGame, *m_capturing, name);
+                if (!SaveConfig())
+                    Toast(Tr("Couldn't save the settings"), ui::ToastKind::Error);
+            }
             m_capturing = nullptr;
             return;
         }
@@ -964,10 +979,14 @@ namespace launcher_ui
     {
         m_s->disc = DiscState::Verifying;
         m_s->discPath = path;
+        m_s->discChecked.reset(); // the new disc gets its own check once verified
+        m_s->discCheckWanted = false;
+        if (m_s->discCheck.Running() && m_s->discCheck.Path() != path)
+            m_s->discCheck.Cancel();
         m_s->editionText.clear();
         m_s->discSize = 0;
         m_s->fromCopy =
-            m_s->copy.state == gamedata::State::Complete && path == datadir::Text(gamedata::Folder(m_s->game.id));
+            m_s->copy.state == gamedata::State::Complete && path == datadir::Text(GameFileOf(m_s->game.id, "gamedata"));
         SDL_PathInfo info;
         if (m_s->fromCopy)
             m_s->discSize = m_s->copy.total;
@@ -979,7 +998,7 @@ namespace launcher_ui
         m_s->logo.Destroy();
         const std::optional<InstallKit> kit = FindInstallKit(m_config, m_s->game.id);
         m_s->verify.Start(
-            path, m_s->game, kit ? kit->ssabuild : std::filesystem::path(), kit ? kit->version : std::string());
+            path, m_s->game, kit ? kit->builder : std::filesystem::path(), kit ? kit->version : std::string());
     }
 
     void App::FinishVerify()
@@ -1020,6 +1039,7 @@ namespace launcher_ui
             Toast(Tr("Couldn't save the settings"), ui::ToastKind::Error);
         m_s->verify.StartScenes(m_s->discPath, m_s->game.id);
         m_s->disc = DiscState::Ready;
+        WantDiscCheck();
         RefreshInstall();
     }
 
@@ -1029,7 +1049,7 @@ namespace launcher_ui
         if (m_s->fromCopy)
         {
             // The copy is looked at again (sizes only): it may have been damaged since. The disc image takes over then.
-            m_s->copy = gamedata::Inspect(gamedata::Folder(m_s->game.id));
+            m_s->copy = gamedata::Inspect(GameFileOf(m_s->game.id, "gamedata"));
             if (m_s->copy.state == gamedata::State::Complete)
                 return true;
             m_s->fromCopy = false;
@@ -1061,6 +1081,11 @@ namespace launcher_ui
 
     void App::PlayNow()
     {
+        if (GamesFolderMissingFirst([this] { PlayNow(); }))
+        {
+            m_launchPending = false;
+            return;
+        }
         if (!DiscStillThere())
         {
             m_launchPending = false;
@@ -1069,7 +1094,7 @@ namespace launcher_ui
         if (!m_music.FadeComplete())
         {
             m_launchPending = true;
-            m_music.Update({}, !GameMusicOn());
+            m_music.Update({}, !GameMusicOn(), GameMusicVolume(m_config));
             return;
         }
         m_launchPending = false;
@@ -1092,6 +1117,7 @@ namespace launcher_ui
             {
                 m_sessionIso = m_s->discPath;
                 m_sessionStart = SDL_GetTicks();
+                StopDiscChecks(); // the game reads the disc: the check carries on once it has quit
             }
             return;
         }
@@ -1111,6 +1137,7 @@ namespace launcher_ui
         const std::optional<GameSession::Ended> ended = m_session.Poll(now);
         if (!m_session.Running().empty() && m_session.Running() != previous)
             m_sessionStart = now;
+        WatchPortal(now);
         UpdatePresence(now);
         if (!ended)
             return;
@@ -1120,13 +1147,15 @@ namespace launcher_ui
             m_config = LoadLauncherConfig(m_configPath);
         else
             TakeBackGameSettings();
+        MigrateInput(m_config); // an older game's F3 menu seeds its section again
         // A crash dialog can wait for acknowledgement; the visible page's theme resumes while it is open too.
         m_music.Update(gamemusic::Playback{ .game = m_s->game.id,
             .gamePage = m_page == Page::Play,
             .running = !m_session.Running().empty(),
             .installing = AnyInstalling(),
             .launching = m_launchPending,
-            .muted = !GameMusicOn() });
+            .muted = !GameMusicOn(),
+            .volume = GameMusicVolume(m_config) });
         m_progressAt = 0; // its play time and unlocks are read again
         if (ended->restarted) // gpu_backend=vulkan is in the settings read above
         {
@@ -1135,6 +1164,8 @@ namespace launcher_ui
             return;
         }
         const GameInfo* game = FindGame(ended->game);
+        if (game != nullptr) // a hang the player ended exits 0 or is stopped here: the movie lines are what tells
+            OfferDiscCheck(*game);
         if (!ended->ours || ended->stopped || ended->exitCode == 0 || game == nullptr)
             return;
         if (!m_shots.empty()) // a screenshot script: no dialog that waits for a click
@@ -1202,56 +1233,52 @@ namespace launcher_ui
         if (nowMs >= m_presencePortalAt)
         {
             m_presencePortalAt = nowMs + PortalMs;
-            // The first seat holding a toy that levels up (player 1's character before an item or a trap) takes priority
-            // over the real figure reported by the runtime.
+            // Player 1's figure as the game plays it (presence.txt, a real toy too). The seats of portal.txt only for a game
+            // that names none (before 0.9.7), and never once a real portal showed they are stale: the first seat
+            // holding a toy that levels up (player 1's character before an item or a trap).
             m_presenceFigureType = -1;
             m_presenceFigureText.clear();
             // Where the player is: the runtime's presence.txt, the level's name from levels.json (the disc's own names).
             m_presenceLevel.clear();
             m_presencePlayers = 0;
-            discordpresence::GameStatus status;
-            const auto readFile = [](const std::filesystem::path& path) {
-                std::ifstream file(path, std::ios::binary);
-                return std::string(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
-            };
-            if (const std::filesystem::path folder = progress::Folder(running); !folder.empty())
+            const discordpresence::GameStatus& status = m_gameStatus;
+            if (status.known)
             {
-                status = discordpresence::ParseGameStatus(readFile(folder / "presence.txt"));
-                if (status.known)
-                {
-                    const std::string levelName = discordpresence::LevelName(
-                        readFile(datadir::Game(running) / "levels.json"), status.level, i18n::Current());
-                    m_presenceLevel = !levelName.empty()     ? levelName
-                                      : status.menu          ? Tr("In the menus")
-                                      : status.level.empty() ? std::string()
-                                                             : Tr("In a level");
-                    m_presencePlayers = status.players;
-                }
+                const std::string levelName = discordpresence::LevelName(
+                    savebackup::ReadFile(datadir::Game(running) / "levels.json"), status.level, i18n::Current());
+                m_presenceLevel = !levelName.empty()     ? levelName
+                                  : status.menu          ? Tr("In the menus")
+                                  : status.level.empty() ? std::string()
+                                                         : Tr("In a level");
+                m_presencePlayers = status.players;
             }
-            if (const collection::Game* game = collection::Catalogue::Get().FindGame(running))
-                for (const std::string& path : ReadSeats(*game, SessionFile(*game)))
-                {
-                    collection::Figure figure;
-                    if (path.empty() || !collection::Read(path, figure) || figure.toy == nullptr ||
-                        !collection::HasProgress(figure))
-                        continue;
-                    m_presenceFigureType = figure.type;
-                    m_presenceFigureText =
-                        collection::NameIn(figure, running) + " \xC2\xB7 " + Tf("Level {}", figure.level);
-                    break;
-                }
-            if (m_presenceFigureType < 0 && status.toy && status.variant)
+            if (const std::optional<discordpresence::Toy>& toy = m_portalWatch.PlayerOne())
             {
                 const collection::Catalogue& catalogue = collection::Catalogue::Get();
                 collection::Figure figure;
-                figure.type = *status.toy;
-                figure.variant = *status.variant;
+                figure.type = toy->type;
+                figure.variant = toy->variant;
                 figure.toy = catalogue.Find(figure.type);
                 figure.variantInfo = catalogue.Describe(figure.toy, figure.variant);
                 m_presenceFigureType = figure.type;
                 m_presenceFigureText = collection::NameIn(figure, running);
-                if (status.toyLevel)
-                    m_presenceFigureText += " \xC2\xB7 " + Tf("Level {}", *status.toyLevel);
+                if (toy->level)
+                    m_presenceFigureText += " \xC2\xB7 " + Tf("Level {}", *toy->level);
+            }
+            else if (m_portalWatch.UseSeats())
+            {
+                if (const collection::Game* game = collection::Catalogue::Get().FindGame(running))
+                    for (const std::string& path : ReadSeats(*game, SessionFile(*game)))
+                    {
+                        collection::Figure figure;
+                        if (path.empty() || !collection::Read(path, figure) || figure.toy == nullptr ||
+                            !collection::HasProgress(figure))
+                            continue;
+                        m_presenceFigureType = figure.type;
+                        m_presenceFigureText =
+                            collection::NameIn(figure, running) + " \xC2\xB7 " + Tf("Level {}", figure.level);
+                        break;
+                    }
             }
         }
         // Line 2: where the player is. The logo's hover: the achievements, the time played and the version.
@@ -1283,6 +1310,40 @@ namespace launcher_ui
             activity.smallText = launcher;
         }
         m_presence.Set(activity);
+    }
+
+    void App::WatchPortal(uint64_t nowMs)
+    {
+        constexpr uint64_t PortalMs = 3000;
+        const std::string& running = m_session.Running();
+        if (running != m_portalGame)
+        {
+            m_portalGame = running;
+            m_portalAt = 0;
+            m_gameStatus = {};
+            m_portalWatch.Reset();
+        }
+        if (running.empty() || nowMs < m_portalAt)
+            return;
+        m_portalAt = nowMs + PortalMs;
+        const std::filesystem::path folder = progress::Folder(running);
+        m_gameStatus = folder.empty() ? discordpresence::GameStatus{}
+                                      : discordpresence::ParseGameStatus(savebackup::ReadFile(folder / "presence.txt"));
+        std::optional<discordpresence::Toy> seatOne;
+        if (const collection::Game* game = collection::Catalogue::Get().FindGame(running))
+        {
+            const std::vector<std::string> seats = ReadSeats(*game, SessionFile(*game));
+            for (size_t i = 0; i < game->seats.size() && i < seats.size(); i++)
+            {
+                if (game->seats[i].id != "p1")
+                    continue;
+                collection::Figure figure;
+                if (!seats[i].empty() && collection::Read(seats[i], figure))
+                    seatOne = discordpresence::Toy{ figure.type, figure.variant, {} };
+                break;
+            }
+        }
+        m_portalWatch.Update(m_gameStatus, seatOne);
     }
 
     // Off in the screenshot and test scripts (SKY_LAUNCHER_SHOTS): they must not show on the developer's Discord.
@@ -1520,6 +1581,7 @@ namespace launcher_ui
                   v = pageSize.y / (h * scale);
             // The software renderer overflows its fixed-point texture coordinates on a page-sized triangle.
             // Small quads keep the same crop and work at every window size and display density.
+            const float fade = FadeIn(art->readyAt); // over the night sky, as it arrives
             const ImVec2 density = ImGui::GetIO().DisplayFramebufferScale;
             const float tileW = 128 / std::max(1.0f, density.x), tileH = 128 / std::max(1.0f, density.y);
             auto uv = [&](float x, float y) {
@@ -1529,15 +1591,17 @@ namespace launcher_ui
                 for (float x = page.x; x < size.x; x += tileW)
                 {
                     const float right = std::min(x + tileW, size.x), bottom = std::min(y + tileH, size.y);
-                    draw->AddImage(Ref(background), ImVec2(x, y), ImVec2(right, bottom), uv(x, y), uv(right, bottom));
+                    draw->AddImage(Ref(background), ImVec2(x, y), ImVec2(right, bottom), uv(x, y), uv(right, bottom),
+                        ui::Col(0xFFFFFF, fade));
                 }
             // One light dim over the whole painting, the same for every game, so the logo and the text read on pale art.
-            draw->AddRectFilled(page, size, ui::Col(ui::color::Scrim, ArtDim));
+            draw->AddRectFilled(page, size, ui::Col(ui::color::Scrim, ArtDim * fade));
             // Continuous shades across the painting: the title's left and the controls' lower edge.
-            draw->AddRectFilledMultiColor(page, size, ui::Col(ui::color::Scrim, 0.9f), ui::Col(ui::color::Scrim, 0.12f),
-                ui::Col(ui::color::Scrim, 0.12f), ui::Col(ui::color::Scrim, 0.9f));
+            draw->AddRectFilledMultiColor(page, size, ui::Col(ui::color::Scrim, 0.9f * fade),
+                ui::Col(ui::color::Scrim, 0.12f * fade), ui::Col(ui::color::Scrim, 0.12f * fade),
+                ui::Col(ui::color::Scrim, 0.9f * fade));
             draw->AddRectFilledMultiColor(page, size, ui::Col(ui::color::Scrim, 0), ui::Col(ui::color::Scrim, 0),
-                ui::Col(ui::color::Scrim, 0.9f), ui::Col(ui::color::Scrim, 0.9f));
+                ui::Col(ui::color::Scrim, 0.9f * fade), ui::Col(ui::color::Scrim, 0.9f * fade));
             return;
         }
         // The portal's glow, low on the right, and twinkling stars.
@@ -1596,7 +1660,7 @@ namespace launcher_ui
         auto line = [](S state, const char* text, unsigned dot, const char* button, bool enabled = true,
                         float progress = -1) { return SlotLine{ text, dot, progress, state, button, enabled }; };
         const bool built = !slot->installed.runtime.empty();
-        if (slot->installer.Running() || slot->kitDownload.Running())
+        if (slot->installer.Running() || slot->kitDownload.Running() || slot->installAfterCheck)
         {
             InstallProgress snapshot = InstallSnapshot(*slot);
             InstallChecklist list = MakeInstallChecklist(snapshot, SDL_GetTicks(), slot->game.id);
@@ -1623,7 +1687,7 @@ namespace launcher_ui
         if (slot->disc == DiscState::Failed)
         {
             if (slot->copy.state == gamedata::State::Damaged &&
-                slot->discPath == datadir::Text(gamedata::Folder(slot->game.id)))
+                slot->discPath == datadir::Text(GameFileOf(slot->game.id, "gamedata")))
                 return line(S::DataDamaged, Tr("Game data damaged"), Danger, Tr(strings::ChooseDisc));
             switch (slot->check.status)
             {
@@ -1648,8 +1712,12 @@ namespace launcher_ui
             if (state == InstallProgress::State::Interrupted)
                 return line(S::Interrupted, Tr("Interrupted"), Accent, button);
         }
+        // The image check: a damaged image is never installed; a built game still plays, with the warning.
+        if (DiscDamaged(*slot))
+            return line(S::DiscDamaged, Tr("Disc image damaged"), Danger, button, !NeedsInstall(*slot));
         if (NeedsInstall(*slot))
-            return line(S::ReadyToInstall, Tr("Ready to install"), Accent, button);
+            return line(S::ReadyToInstall, DiscChecking(*slot) ? Tr("Checking the disc") : Tr("Ready to install"),
+                Accent, button);
         if (UpdateAvailable(*slot))
             return line(S::UpdateAvailable, Tr("Update available"), Accent, button);
         return line(S::Ready, Tr("Ready to play"), Ready, button);
@@ -1803,8 +1871,7 @@ namespace launcher_ui
             GameSlot* slot = &SlotFor(*FindGame(entry.id));
             // Selected only once the player has picked it: Play is that game's page.
             const bool selected =
-                (m_page == Page::Play || m_page == Page::GameSettings || m_page == Page::Achievements) &&
-                std::string_view(entry.id) == m_s->game.id;
+                (m_page == Page::Play || GameSubPage(m_page)) && std::string_view(entry.id) == m_s->game.id;
             const std::string version = GameVersion(*slot);
             SlotLine line = SlotStatus(slot);
             const ui::Status status = StatusOf(line.state);
@@ -1829,8 +1896,7 @@ namespace launcher_ui
                 GoTo(Page::Play);
             }
             if (std::string_view(entry.id) == m_s->game.id &&
-                (m_page == Page::Play || m_page == Page::Home || m_page == Page::GameSettings ||
-                    m_page == Page::Achievements))
+                (m_page == Page::Play || m_page == Page::Home || GameSubPage(m_page)))
                 TakeFocus(FocusTo::Sidebar);
             if (m_testSidebar || m_testRunning)
                 m_drawn[std::string("sidebar:") + entry.id] = line.text;
@@ -2493,7 +2559,10 @@ namespace launcher_ui
             ui::Text(ui::TextStyle::Body, Tr("You can set up your portal while you wait."), ui::color::InkSoft, leftW);
         else if (play.running)
         {
-            const char* hint = Tr("Toy Box in the game: F6, or View + Y on a controller.");
+            const std::string shown = Tf("Toy Box in the game: {}, or {} on a controller.",
+                KeyDisplayName(ToyboxKeyName(m_config, ToyboxKeys()[0])),
+                ToyboxPadName(m_config, ToyboxPads()[1], PadFamilyNow()));
+            const char* hint = shown.c_str();
             const float hintSize = ui::FitSize(ui::Ctx().fonts.text, ui::type::Body, hint, leftW);
             ImGui::PushFont(ui::Ctx().fonts.text, hintSize);
             ui::DrawText(draw, ImGui::GetCursorScreenPos(), ui::Col(ui::color::InkSoft), hint);
@@ -2546,14 +2615,18 @@ namespace launcher_ui
                 Browse();
             ui::Tooltip(m_s->discPath.c_str());
         }
-        if (play.ready && !play.detailed && !play.installing && !play.running && play.install)
+        if (play.ready && !play.detailed && !play.installing && !play.running && (play.install || DiscDamaged(*m_s)))
         {
             ImGui::SetCursorScreenPos(ImVec2(left, pillY + ui::height::Small + ui::space::M));
-            ui::Text(ui::TextStyle::Caption,
-                Tf("Builds the game on your PC: about {} min, {} GB, internet needed once.",
-                    InstallMinutesFor(m_s->game.id), InstallGigabytes)
-                    .c_str(),
-                ui::color::InkSoft, leftW);
+            if (DiscDamaged(*m_s))
+                ui::Text(ui::TextStyle::Caption, Tr("Copy the disc again, then choose the new image."),
+                    ui::color::Danger, leftW);
+            else
+                ui::Text(ui::TextStyle::Caption,
+                    Tf("Builds the game on your PC: about {} min, {} GB, internet needed once.",
+                        InstallMinutesFor(m_s->game.id), InstallGigabytes)
+                        .c_str(),
+                    ui::color::InkSoft, leftW);
         }
         if (play.ready && !play.detailed && !m_s->fromCopy && m_s->copy.state == gamedata::State::Damaged)
         {
@@ -2582,14 +2655,58 @@ namespace launcher_ui
             if (ui::Pill(id.c_str(), progress))
                 GoTo(Page::Achievements);
         }
+        // Imaginite chests: how many wait in the pile of the save played last (Chests page).
+        if (!m_s->installView && ChestsOffered(m_s->game.id) && m_s->disc == DiscState::Ready)
+        {
+            RefreshChests();
+            const std::string label =
+                (m_chests.known ? Tf("Chests · {}", m_chests.pile) : std::string(Tr("Chests"))) + "##chests";
+            ui::PillOptions chests;
+            chests.icon = ui::Icon::Plus;
+            chests.overArt = true;
+            chests.tooltip = Tr("Imaginite chests");
+            musicRight -= ui::PillWidth(label.c_str(), chests);
+            ImGui::SetCursorScreenPos(ImVec2(musicRight, position.y + margin));
+            musicRight -= ui::space::XS;
+            if (ui::Pill(label.c_str(), chests))
+                GoTo(Page::Chests);
+        }
         if (!m_s->installView && m_music.HasTrack(m_s->game.id))
         {
-            const bool on = GameMusicOn();
+            const bool on = GameMusicOn() && GameMusicVolume(m_config) > 0;
             ImGui::SetCursorScreenPos(ImVec2(musicRight - ui::height::Small, position.y + margin));
-            if (ui::IconButton("##gamemusic", on ? ui::Icon::Sound : ui::Icon::Muted,
-                    on ? Tr("Turn the game music off") : Tr("Turn the game music on"),
+            if (ui::IconButton("##gamemusic", on ? ui::Icon::Sound : ui::Icon::Muted, Tr("Game music"),
                     { .kind = ui::ButtonKind::Secondary, .size = ui::Size::Small, .overArt = true }))
-                Set("launcher", "game_music", on ? "0" : "1");
+                ui::OpenMenu("##gamemusicmenu", { .alignRight = true });
+            ImGui::SetNextWindowSize(ImVec2(MusicMenuWidth, 0));
+            if (ui::BeginMenu("##gamemusicmenu"))
+            {
+                ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(ui::space::S, ui::space::S));
+                ImGui::Indent(ui::space::XS);
+                DrawGameMusicSwitch(fmt::format("{}##gamemusicon", Tr("Game music")).c_str());
+                DrawGameMusicVolume(ImGui::GetContentRegionAvail().x - ui::space::XS);
+                ImGui::Unindent(ui::space::XS);
+                ImGui::PopStyleVar();
+                ui::EndMenu();
+            }
+        }
+    }
+
+    void App::DrawGameMusicSwitch(const char* label)
+    {
+        bool on = GameMusicOn();
+        if (ui::Toggle(label, &on))
+            Set("launcher", "game_music", on ? "1" : "0");
+    }
+
+    void App::DrawGameMusicVolume(float width)
+    {
+        int volume = GameMusicVolume(m_config);
+        if (ui::Slider("##gamemusicvolume", &volume, 0, 100, { .width = width, .step = 5 }))
+        {
+            SetGameMusicVolume(m_config, volume);
+            if (!SaveConfig())
+                Toast(Tr("Couldn't save the settings"), ui::ToastKind::Error);
         }
     }
 
@@ -2602,6 +2719,7 @@ namespace launcher_ui
         ui::Tooltip(Tr(strings::PortalTip));
     }
 
+    // Settings > Controls: the controller, the global layout every game inherits (controls_page.cpp), the portal.
     void App::DrawControls()
     {
         const std::string current = CurrentDevice();
@@ -2625,6 +2743,7 @@ namespace launcher_ui
             SettingSelect("##glyphs", "input", "glyphs", GlyphChoices, 0);
             ui::EndSettings();
         }
+        DrawGlobalControls();
 
         ui::SectionHeader(Tr("Portal of Power"));
         if (ui::BeginSettings("##portal"))
@@ -2639,80 +2758,6 @@ namespace launcher_ui
             ui::EndSettings();
         }
         DrawPortalResult();
-
-        ui::SectionHeader(Tr("Toy Box keys"));
-        if (ui::BeginSettings("##toyboxkeys"))
-        {
-            // Each line: the keyboard's key, changed like the game's keys ([input] key_toybox..., shared by the games; Tab also
-            // opens the Toy Box while its key is F6's default), then the pad's buttons ("View + Y": together) in the pad's own
-            // pictures (the pad in use or chosen, else Xbox's), a dash where the pad has none (adding and clearing figures are
-            // the keyboard's only). The pad's column ends on the control column's edge, the key before it.
-            const std::span<const ToyboxKey> keys = ToyboxKeys();
-            const std::vector<ui::PadButton> buttons[] = { { ui::PadButton::Back, ui::PadButton::North }, {}, {} };
-            const ui::Glyphs glyphs = PadGlyphs();
-            const float joint = ui::space::XS; // on each side of the "+"
-            auto padWidth = [&](const std::vector<ui::PadButton>& pad) {
-                float w = 0;
-                for (size_t i = 0; i < pad.size(); i++)
-                    w += ui::KeyCapWidth(pad[i], glyphs) +
-                         (i > 0 ? 2 * joint + ui::TextSize(ui::TextStyle::Caption, "+").x : 0);
-                return w;
-            };
-            float padColumn = 0;
-            for (const auto& pad : buttons)
-                padColumn = std::max(padColumn, padWidth(pad));
-            for (size_t row = 0; row < keys.size(); row++)
-            {
-                const ToyboxKey& key = keys[row];
-                ui::SettingRow(Tr(key.label), nullptr);
-                ImDrawList* draw = ImGui::GetWindowDrawList();
-                const ImVec2 start = ImGui::GetCursorScreenPos();
-                const float right = start.x + ImGui::GetContentRegionAvail().x, padX = right - padColumn;
-                const float capH = ui::height::Normal,
-                            middle = start.y + std::round(capH / 2); // the key button's middle
-                const std::string name = KeyDisplayName(ToyboxKeyName(m_config, key));
-                ui::KeyButtonOptions options;
-                options.capturing = m_toyboxCapturing == &key;
-                const float keyX =
-                    padX - (padColumn > 0 ? ui::space::L : 0) - ui::KeyButtonWidth(name.c_str(), options);
-                ImGui::SetCursorScreenPos(ImVec2(keyX, start.y));
-                ImGui::PushID(key.line);
-                if (ui::KeyButton("##toyboxkey", name.c_str(), options))
-                    m_toyboxCapturing = &key;
-                ImGui::PopID();
-                float x = padX;
-                if (!buttons[row].empty())
-                    for (size_t i = 0; i < buttons[row].size(); i++)
-                    {
-                        if (i > 0)
-                        {
-                            ui::PushText(ui::TextStyle::Caption);
-                            ui::DrawText(draw,
-                                ImVec2(x + joint, std::round(middle - ui::CapMiddle(ui::TextStyle::Caption))),
-                                ui::Col(ui::color::Dim), "+");
-                            x += 2 * joint + ImGui::CalcTextSize("+").x;
-                            ui::PopText();
-                        }
-                        x += ui::DrawKeyCap(draw, ImVec2(x, middle), buttons[row][i], glyphs).x;
-                    }
-                else // no pad button for it: a quiet dash in the pad's column
-                {
-                    ui::PushText(ui::TextStyle::Body);
-                    const char* none = "\xE2\x80\x94";
-                    ui::DrawText(draw,
-                        ImVec2(std::round(padX + (padColumn - ImGui::CalcTextSize(none).x) / 2),
-                            std::round(middle - ui::CapMiddle(ui::TextStyle::Body))),
-                        ui::Col(ui::color::Dim), none);
-                    ui::PopText();
-                }
-                ImGui::SetCursorScreenPos(ImVec2(keyX, start.y));
-                ImGui::Dummy(ImVec2(right - keyX, capH));
-            }
-            ui::EndSettings();
-        }
-        if (m_toyboxCapturing != nullptr)
-            ui::Text(ui::TextStyle::Caption,
-                Tf("Press a key for \"{}\" (Escape cancels)", Tr(m_toyboxCapturing->label)).c_str(), ui::color::Ink);
     }
 
     // The pictures of the pad's buttons where the window names them whatever the input in use (the Toy Box keys): the pad in
@@ -2744,6 +2789,7 @@ namespace launcher_ui
         if (change != ui::TabChange::None)
         {
             m_capturing = nullptr;
+            m_toyboxPadCapturing = nullptr;
             m_s->saveBackupsLoaded = m_s->dataSizesLoaded =
                 false; // the saves and the folders may have changed since the tab was open
         }
@@ -2818,6 +2864,15 @@ namespace launcher_ui
         DrawLauncherLanguage();
         ui::SectionHeader(Tr("Updates"));
         DrawUpdates();
+        ui::SectionHeader(Tr("Game music"));
+        if (ui::BeginSettings("##gamemusicsettings"))
+        {
+            ui::SettingRow(Tr("Play the music"), Tr("Each game's menu theme, on its page."));
+            DrawGameMusicSwitch("##gamemusicon");
+            ui::SettingRow(Tr("Volume"));
+            DrawGameMusicVolume();
+            ui::EndSettings();
+        }
         ui::SectionHeader(Tr("Discord"));
         if (ui::BeginSettings("##discord"))
         {
@@ -2831,6 +2886,8 @@ namespace launcher_ui
             }
             ui::EndSettings();
         }
+        ui::SectionHeader(Tr("Collection"));
+        DrawFigurePictures();
         ui::SectionHeader(Tr("Data folder"), Tr(strings::DataFolderHint));
         const std::string dataPath = datadir::Text(LauncherDataFolder()); // in the tooltip, not in the text
         ui::ButtonOptions folder;
@@ -2842,6 +2899,9 @@ namespace launcher_ui
             std::filesystem::create_directories(LauncherDataFolder(), error);
             OpenFolder(LauncherDataFolder());
         }
+        ImGui::PushID("##gamesfolder"); // its Show in folder is not the data folder's
+        DrawGamesFolder();
+        ImGui::PopID();
         DrawUninstallSection();
     }
 
@@ -2899,6 +2959,48 @@ namespace launcher_ui
         ui::EndSettings();
     }
 
+    namespace
+    {
+        // A game whose figure pictures were read from its disc: a game to choose them from.
+        bool HasFigurePictures(const std::string& game)
+        {
+            std::error_code error;
+            return std::filesystem::is_directory(datadir::Game(game) / "portraits", error);
+        }
+    }
+
+    // The choice for every figure (shared/collection/icons.h): the original game, the newest one, or one game.
+    // A card can still have its own (the figure's sheet).
+    void App::DrawFigurePictures()
+    {
+        const std::string setting = collection::PicturesDefault();
+        auto label = [](const std::string& choice) {
+            if (choice == collection::PicturesNewest)
+                return std::string(Tr("Newest game"));
+            if (collection::Catalogue::Get().FindGame(choice) != nullptr)
+                return FullGameName(choice);
+            return std::string(Tr("Original game"));
+        };
+        if (!ui::BeginSettings("##figurepictures"))
+            return;
+        ui::SettingRow(Tr("Figure pictures"), Tr("Which game's pictures the figures show."));
+        if (ui::BeginSelect("##figurepictures", label(setting).c_str()))
+        {
+            const bool known =
+                setting == collection::PicturesNewest || collection::Catalogue::Get().FindGame(setting) != nullptr;
+            if (ui::SelectOption(Tr("Original game"), !known))
+                collection::SetPicturesDefault(collection::PicturesOrigin);
+            if (ui::SelectOption(Tr("Newest game"), setting == collection::PicturesNewest))
+                collection::SetPicturesDefault(collection::PicturesNewest);
+            for (const collection::Game& game : collection::Catalogue::Get().Games())
+                if (setting == game.id || HasFigurePictures(game.id))
+                    if (ui::SelectOption(FullGameName(game.id).c_str(), setting == game.id))
+                        collection::SetPicturesDefault(game.id);
+            ui::EndSelect();
+        }
+        ui::EndSettings();
+    }
+
     void App::DrawSupport() { DrawLogs(); }
 
     void App::GoTo(Page page)
@@ -2909,15 +3011,16 @@ namespace launcher_ui
             return; // nothing else to do in a launcher that has removed itself (and nothing to write back)
         if ((page == Page::Settings || page == Page::Collection) && (m_page == Page::Home || m_page == Page::Play))
             m_backPage = m_page;
-        else if (page == Page::GameSettings || page == Page::Achievements)
-            m_backPage =
-                Page::Play; // a game's settings and achievements are opened from its page, and close back to it
-        else if (page == Page::Settings && (m_page == Page::GameSettings || m_page == Page::Achievements))
+        // A game's settings, achievements and chests open from its page and close back to it.
+        else if (GameSubPage(page))
             m_backPage = Page::Play;
-        else if (page == Page::Collection && (m_page == Page::GameSettings || m_page == Page::Achievements))
+        else if (page == Page::Settings && GameSubPage(m_page))
+            m_backPage = Page::Play;
+        else if (page == Page::Collection && GameSubPage(m_page))
             m_backPage = Page::Play;
         m_page = page;
         m_capturing = nullptr;
+        m_toyboxPadCapturing = nullptr;
         RequestFocus(FocusTo::Page);
     }
 
@@ -2929,7 +3032,7 @@ namespace launcher_ui
             m_un = {};
         else if (m_page == Page::Settings && m_un.stage == UninstallStage::Result && !m_uninstalled)
             m_un.stage = UninstallStage::Closed;
-        else if (m_page == Page::GameSettings || m_page == Page::Achievements)
+        else if (GameSubPage(m_page))
             GoTo(Page::Play);
         else if (m_page != Page::Home)
             GoTo(Page::Home);
@@ -2948,7 +3051,7 @@ namespace launcher_ui
                 pages.push_back({ Page::Play, FindGame(entry.id) });
         pages.push_back({ Page::Collection, nullptr });
         pages.push_back({ Page::Settings, nullptr });
-        const Page shown = m_page == Page::GameSettings || m_page == Page::Achievements ? Page::Play : m_page;
+        const Page shown = GameSubPage(m_page) ? Page::Play : m_page;
         int at = 0;
         for (size_t i = 0; i < pages.size(); i++)
             if (pages[i].first == shown &&
@@ -3021,11 +3124,32 @@ namespace launcher_ui
         if (m_shots.empty() &&
             (SDL_GetWindowFlags(m_window) & (SDL_WINDOW_MINIMIZED | SDL_WINDOW_OCCLUDED | SDL_WINDOW_HIDDEN)))
             return;
+        UploadPictures();
         UpdateLanguage();
         ImGui_ImplSDLRenderer3_NewFrame();
-        ImGui_ImplSDL3_NewFrame();
-        // The launcher's points are m_uiScale window units: a smaller page, drawn (and its fonts rasterized) denser.
+        // The backend polls pads as well as events: a captured B or bumper must not navigate away.
+        const bool capturingPad = m_toyboxPadCapturing != nullptr || m_toyboxPadBlockInput;
         ImGuiIO& frameIo = ImGui::GetIO();
+        if (capturingPad)
+            frameIo.SetAppAcceptingEvents(false);
+        ImGui_ImplSDL3_NewFrame();
+        if (capturingPad)
+        {
+            frameIo.SetAppAcceptingEvents(true);
+            for (int key = ImGuiKey_GamepadStart; key <= ImGuiKey_GamepadRStickDown; key++)
+                frameIo.AddKeyAnalogEvent(ImGuiKey(key), false, 0);
+            bool held = false;
+            for (SDL_JoystickID id : m_gamepads)
+                if (SDL_Gamepad* pad = SDL_GetGamepadFromID(id))
+                {
+                    for (int button = 0; button < SDL_GAMEPAD_BUTTON_COUNT; button++)
+                        held |= SDL_GetGamepadButton(pad, SDL_GamepadButton(button));
+                    held |= SDL_GetGamepadAxis(pad, SDL_GAMEPAD_AXIS_LEFT_TRIGGER) > 16000 ||
+                            SDL_GetGamepadAxis(pad, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER) > 16000;
+                }
+            m_toyboxPadBlockInput = held;
+        }
+        // The launcher's points are m_uiScale window units: a smaller page, drawn (and its fonts rasterized) denser.
         frameIo.DisplaySize = ImVec2(frameIo.DisplaySize.x / m_uiScale, frameIo.DisplaySize.y / m_uiScale);
         frameIo.DisplayFramebufferScale =
             ImVec2(frameIo.DisplayFramebufferScale.x * m_uiScale, frameIo.DisplayFramebufferScale.y * m_uiScale);
@@ -3049,7 +3173,8 @@ namespace launcher_ui
             .running = !m_session.Running().empty(),
             .installing = AnyInstalling(),
             .launching = m_launchPending,
-            .muted = !GameMusicOn() });
+            .muted = !GameMusicOn(),
+            .volume = GameMusicVolume(m_config) });
         if (const int view = int(m_page) * 100 + (m_page == Page::GameSettings  ? int(m_gameTab)
                                                      : m_page == Page::Settings ? int(m_tab)
                                                                                 : 0);
@@ -3127,6 +3252,7 @@ namespace launcher_ui
             case Page::Settings: DrawSettings(); break;
             case Page::GameSettings: DrawGameSettings(); break;
             case Page::Achievements: DrawAchievements(); break;
+            case Page::Chests: DrawChests(); break;
             }
             ImGui::End();
             ImGui::PopStyleVar();
@@ -3138,20 +3264,23 @@ namespace launcher_ui
             DrawProblemReport();
             DrawQuitPrompt();
             DrawDefenderNotice();
+            DrawGamesFolderMissing();
             DrawGameStopped();
+            DrawDiscOffer();
             DrawToast();
             // Who answers B / Escape next frame: an open menu or dialog, a field being edited, the collection's search or View.
             // LB / RB belong to the pages unless a dialog, a menu or a field has the input.
             m_pagesTaken = ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopupId | ImGuiPopupFlags_AnyPopupLevel) ||
                            ImGui::IsAnyItemActive() || m_toasts.HasFocus() || m_reportOpen || m_whatsNewOpen ||
                            m_downgradeOpen || m_integrityOpen || m_quitPrompt || m_defenderNoticeOpen ||
-                           m_gameStopped.has_value();
+                           m_gamesMissingOpen || m_gameStopped.has_value() || m_discOffer.has_value();
             m_backTaken = m_pagesTaken || (m_page == Page::Collection && m_s->collection->TakesBack());
             m_focusTo = FocusTo::None; // a request no page answered (its item wasn't drawn) is dropped
         }
 
         ImGui::Render();
-        const bool shotNow = !m_shots.empty() && m_testAt != 0 && SDL_GetTicks() >= m_testAt;
+        // A picture asked for in this frame is in the next one: the shot waits for it.
+        const bool shotNow = !m_shots.empty() && m_testAt != 0 && SDL_GetTicks() >= m_testAt && !m_pictures.Pending();
         // The pad walk checks focus and legends, which need ImGui's layout, not pixels: in its quick mode only the frames
         // it saves are drawn. Offscreen, SDL draws in software and that drawing was 96 % of the walk's time.
         static const bool quickWalk =
@@ -3184,7 +3313,7 @@ namespace launcher_ui
                 "05-result" };
             if (m_testPadWalk || m_testExperimental || m_testProfiles || m_testHero || m_testHdTex || m_testButtons ||
                 m_testSidebar || m_testCopy || m_testLogo || m_testKeys || !m_testGameTabs.empty() || m_testPad ||
-                m_testAchievements || m_testRunning || m_testScreens != 0 || !m_testKit.empty())
+                m_testAchievements || m_testChests || m_testRunning || m_testScreens != 0 || !m_testKit.empty())
                 Screenshot(m_testShot.c_str());
             else if (m_testUninstall)
                 Screenshot(UninstallNames[std::min<int>(m_testStep, int(std::size(UninstallNames)) - 1)]);
@@ -3212,6 +3341,11 @@ namespace launcher_ui
             m_testStep++;
         }
         SDL_RenderPresent(m_renderer);
+        if (!m_prefetched && m_shots.empty()) // after the first frame is shown
+        {
+            m_prefetched = true;
+            PrefetchArt();
+        }
     }
 
     void App::Screenshot(const char* name)
@@ -4705,6 +4839,11 @@ namespace launcher_ui
             m_testAt = now + 600;
             return;
         }
+        if (m_testChests)
+        {
+            TestChestsScript(now);
+            return;
+        }
         if (m_testAchievements)
         {
             // The shown game's page with its disc verified and some progress, then its achievements (SKY_LAUNCHER_TEST_DROP names the disc;
@@ -5025,6 +5164,12 @@ std::string LauncherVoiceLabel(const LauncherConfig& config, const GameInfo& gam
 bool LauncherFullscreen(const LauncherConfig& config)
 {
     return ParseBool(SettingGet(config, "launcher", "fullscreen", SettingGet(config, "", "fullscreen")));
+}
+
+std::string LauncherWindowTitle()
+{
+    const char* title = LauncherEnv("SKY_LAUNCHER_WINDOW_TITLE");
+    return title != nullptr && *title != '\0' ? title : "Arkeyan Launcher";
 }
 
 std::string LauncherFormatSize(uint64_t bytes)

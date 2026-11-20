@@ -111,6 +111,7 @@ namespace collection
         int year = 0;
         std::vector<uint16_t> accepts; // toy types the game reads, in the game's order
         std::vector<std::string> acceptsGames; // ...or every toy that first came with these games
+        std::vector<uint16_t> rejects; // platform exclusions, overriding accepts and acceptsGames
         std::map<uint16_t, std::string> names; // the game's internal character names (SSA: portraits)
         std::map<uint16_t, std::string> images; // other toys' pictures among the game's UI images
         // One picture per toy family among the game's UI images (SSA's magic item, location and sidekick icons): the
@@ -156,6 +157,9 @@ namespace collection
         const std::vector<Game>& Games() const { return m_games; }
         const Toy* Find(uint16_t type) const;
         const Game* FindGame(const std::string& id) const;
+        // The game a toy's variant first came with: the toy's own game, or the later game whose year the variant id's
+        // high nibble gives (1: 2012, Giants), as Read takes it. Null when the toy's game is not in the catalogue.
+        const Game* Origin(const Toy& toy, uint16_t variant) const;
 
         bool Accepts(const std::string& game, uint16_t type) const;
         // The toys a game reads: its own order for `accepts`, then catalogue order.

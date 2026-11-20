@@ -31,8 +31,8 @@
 #include <windows.h>
 #endif
 
-#ifndef SKYLAUNCHER_VERSION_STRING
-#define SKYLAUNCHER_VERSION_STRING "0.0.0"
+#ifndef LAUNCHER_VERSION_STRING
+#define LAUNCHER_VERSION_STRING "0.0.0"
 #endif
 
 namespace fs = std::filesystem;
@@ -56,7 +56,7 @@ namespace
     bool Writable(const fs::path& folder)
     {
         std::error_code error;
-        fs::path probe = folder / ".skylauncher-write-test";
+        fs::path probe = folder / ".arkeyan-write-test";
         std::ofstream(probe) << 1;
         bool ok = fs::exists(probe, error);
         fs::remove(probe, error);
@@ -322,7 +322,7 @@ int CompareSemVer(const SemVer& a, const SemVer& b)
     return ComparePre(a.pre, b.pre);
 }
 
-std::string LauncherVersion() { return SKYLAUNCHER_VERSION_STRING; }
+std::string LauncherVersion() { return LAUNCHER_VERSION_STRING; }
 
 bool IsBetaVersion(std::string_view version)
 {

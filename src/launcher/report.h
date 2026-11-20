@@ -16,10 +16,11 @@ namespace launcher_report
         std::string computerName; // the machine's name ("MacBook-Pro.local"); empty when unknown
         std::string homeFolder;   // the account's home path (/Users/alice, C:\Users\alice, /home/alice)
         std::string isoFolder;    // the folder holding the chosen disc image
+        std::string gamesFolder; // the Games folder ([launcher] games=, another drive's path); empty: the data folder
     };
 
     // Replaces the home paths (/Users/<name>, C:\Users\<name>, C:/Users/<name>, /home/<name>), the disc image's folder,
-    // the account name and the computer name with ~, <iso folder>, <user> and <computer>. Everything else is kept
+    // the Games folder, the account name and the computer name with ~, <iso folder>, <games folder>, <user> and <computer>. Everything else is kept
     // byte for byte. Case-insensitive (Windows paths), whole names only for the account and the computer.
     std::string Redact(const std::string& text, const Identity& identity);
 
@@ -29,11 +30,11 @@ namespace launcher_report
     struct Versions
     {
         std::string launcher;
-        std::string kit;       // the kit that built the game, else the one that would
+        std::string kit; // the kit that built the game, else the one that would
         std::string gameBuild; // the [version] line of the last game log, without its tag
         std::string os;
-        std::string gpu;       // the [gpu] adapter line of the last game log
-        std::string cpu;       // the [system] CPU line of the last game log
+        std::string gpu; // the [gpu] adapter line of the last game log
+        std::string cpu; // the [system] CPU line of the last game log
     };
 
     // The version numbers, the OS and the GPU as the game itself logged them.
@@ -45,8 +46,8 @@ namespace launcher_report
     {
         std::filesystem::path
             runtimeFolder; // <data>/SSA: Arkeyan.log (SSARecomp.log from older kits), install.log, install-logs/
-        std::filesystem::path logFolder;     // <data>/logs: skylauncher-game.log, migration.log
-        std::filesystem::path settingsFile;  // <data>/launcher.ini
+        std::filesystem::path logFolder; // <data>/logs: skylauncher-game.log, migration.log
+        std::filesystem::path settingsFile; // <data>/launcher.ini
         GameLog lastRun; // the last run's log (LastGameLog); empty: the newest in the two folders above
         Versions versions;
         std::string iso;

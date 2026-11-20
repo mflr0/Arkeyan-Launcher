@@ -218,6 +218,14 @@ namespace launcher_ui
         ImGui::Dummy(ImVec2(0, ui::space::XS));
         row(Tr("Total"), ui::FormatSize(plan.Total(m_un.tick)));
 
+        // The games folder, named: its games go, the rest of what is in it stays.
+        if (!m_un.env.gamesFolder.empty())
+        {
+            const std::filesystem::path& games = m_un.env.gamesFolder;
+            note(Tf("The games in {} go too; your other files there stay.",
+                datadir::Text(games.filename().empty() ? games : games.filename())));
+        }
+
         // What the plan already knows will stay.
         for (const uninstall::Left& left : plan.left)
             if (std::string text = Sentence(left); !text.empty())

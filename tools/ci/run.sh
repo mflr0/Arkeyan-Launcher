@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
-# The project's checks, run on a Mac (CONTRIBUTING.md, "Checks"): the format, a pull request's title and sign-offs, the
+# The project's checks, run on a Mac (CONTRIBUTING.md, "Checks"): the format, a pull request's title, the
 # macOS build and tests (native), and in Docker containers the Linux build and the sanitizer build (native
 # architecture), the AppImage (amd64, with --dist) and the Windows build (clang-cl, amd64) with its tests under Wine.
 #
-#   tools/ci/run.sh [--quick] [--only job,job] [--root DIR] [--dist DIR]
+#   tools/ci/run.sh [--quick] [--only job,job] [--root DIR] [--dist DIR] [--serial] [--force]
 #
-# Jobs: format, pr (when TITLE, BASE and HEAD are set: tools/check_pull_request.sh), macos, linux, sanitizers, windows,
-# appimage (added to linux by --dist).
+# Jobs: names (no former name outside tools/ci/naming_allow.txt), format, pr (when TITLE, BASE and HEAD are set: tools/check_pull_request.sh), macos, linux, sanitizers, windows,
+# appimage (added to linux by --dist), run at the same time (--serial: one after the other). A job that passed on the
+# same tree (commits, uncommitted and untracked files but the docs, submodule commits, VERSION) is skipped, except names
+# and pr, and with --dist; --force runs it again.
 # --quick runs format and macos (the pre-push hook). --root checks another checkout (tools/ci/check_pr.sh). --dist
 # copies the release files (ArkeyanLauncher.exe, ArkeyanLauncher-x86_64.AppImage, ArkeyanLauncher-macOS.dmg and .zip)
 # there. VERSION=vX.Y.Z builds that version (tools/release_local.sh). Logs: <root>/.scratch/ci/<job>.log.
@@ -14,18 +16,21 @@
 set -uo pipefail
 
 root=$(cd "$(dirname "$0")/../.." && pwd)
-jobs=""; dist=""
+jobs=""; dist=""; serial=0; force=0
 while [ $# -gt 0 ]; do
     case $1 in
         --quick) jobs=format,macos ;;
         --only) shift; jobs=${1:?--only needs a list of jobs} ;;
         --root) shift; root=$(cd "${1:?--root needs a folder}" && pwd) ;;
         --dist) shift; mkdir -p "${1:?--dist needs a folder}"; dist=$(cd "$1" && pwd) ;;
-        *) echo "usage: tools/ci/run.sh [--quick] [--only job,job] [--root DIR] [--dist DIR]" >&2; exit 2 ;;
+        --serial) serial=1 ;;
+        --force) force=1 ;;
+        *) echo "usage: tools/ci/run.sh [--quick] [--only job,job] [--root DIR] [--dist DIR] [--serial] [--force]" >&2
+            exit 2 ;;
     esac
     shift
 done
-[ -n "$jobs" ] || jobs=format,pr,macos,linux,sanitizers,windows
+[ -n "$jobs" ] || jobs=names,format,pr,macos,linux,sanitizers,windows
 # The AppImage is a release file: built with --dist.
 case ",$jobs," in *,linux,*) [ -z "$dist" ] || jobs+=,appimage ;; esac
 here=$(cd "$(dirname "$0")" && pwd)
@@ -35,6 +40,21 @@ mkdir -p "$logs"
 export VERSION=${VERSION:-} SKY_LAUNCHER_TEST_I18N_MISSING_OK=${SKY_LAUNCHER_TEST_I18N_MISSING_OK:-0}
 # The checks run natively (no emulation); the release files are x86_64.
 case $(uname -m) in arm64 | aarch64) native=linux/arm64 ;; *) native=linux/amd64 ;; esac
+# files pathspec...: the tracked and untracked files those match, with their contents.
+files() {
+    git ls-files -s -- "$@"
+    git diff HEAD --binary -- "$@"
+    git ls-files --others --exclude-standard -- "$@"
+    git ls-files -z --others --exclude-standard -- "$@" | xargs -0 git hash-object --
+}
+# What the jobs check; a job that passed on the same state is skipped. The docs change no result: *.md is left out,
+# except the notices the builds ship.
+state=$(cd "$root" && {
+    files . ':(exclude,glob)**/*.md'
+    files ':(glob)**/THIRD_PARTY_NOTICES.md'
+    git submodule status
+    echo "$VERSION $SKY_LAUNCHER_TEST_I18N_MISSING_OK"
+} | shasum | cut -c1-40)
 # One volume per checkout and job keeps each build incremental.
 key=$(printf '%s' "$root" | shasum | cut -c1-8)
 
@@ -44,7 +64,6 @@ image() {
 }
 
 container() { # job image platform
-    image "$2" "$3" || return 1
     local out; out=$(mktemp -d)
     docker run --rm --platform "$3" -e VERSION -e SKY_LAUNCHER_TEST_I18N_MISSING_OK -v "$root:/repo:ro" \
         -v "arkeyan-launcher-$key-$1:/work" -v "$out:/out" "arkeyan-launcher-$2-${3#linux/}" /repo/tools/ci/job.sh "$1" ||
@@ -70,16 +89,19 @@ macos() {
         SKY_LOG="$scratch/env/game.log" "$build/ArkeyanLauncherTest" --no-disc "$scratch/test" || return 1
     rm -rf "$scratch"
     if [ -n "$dist" ]; then
-        "$root/tools/package_macos.sh" "$build/ArkeyanLauncher.app" "$root/resources/icons/skylauncher.svg" "$dist"
+        "$root/tools/package_macos.sh" "$build/ArkeyanLauncher.app" "$root/resources/icons/arkeyan-launcher.svg" "$dist"
     fi
 }
 
 format() {
-    image linux "$native" || return 1
     (cd "$root" && tools/check_format.sh --list) |
         docker run --rm -i --platform "$native" -v "$root:/repo:ro" -w /repo "arkeyan-launcher-linux-${native#linux/}" \
             sh -c 'xargs clang-format --dry-run --Werror --style=file' || return 1
     echo "format ok"
+}
+
+names() {
+    python3 -I "$root/tools/ci/check_names.py" --root "$root" && python3 -I "$root/tools/ci/check_names_test.py"
 }
 
 pr() {
@@ -90,23 +112,81 @@ pr() {
     (cd "$root" && tools/check_pull_request.sh)
 }
 
-failed=0
-summary=""
+# Parallel jobs would build a shared image at the same time: each is built once, first.
+images=""
 for job in ${jobs//,/ }; do
     case $job in
-        format | pr | macos) run=$job ;;
+        format | linux | sanitizers) images+=" linux:$native" ;;
+        appimage) images+=" linux:linux/amd64" ;;
+        windows) images+=" windows:linux/amd64" ;;
+    esac
+done
+for spec in $(printf '%s\n' $images | sort -u); do
+    image "${spec%%:*}" "${spec#*:}" >"$logs/image.log" 2>&1 ||
+        { echo "error: image ${spec%%:*} failed: see $logs/image.log" >&2; exit 1; }
+done
+# run_job job command: the log, the result and, on a pass, the state it passed on.
+run_job() {
+    local start=$SECONDS result
+    if $2 >"$logs/$1.log" 2>&1; then
+        echo "$state" >"$logs/$1.pass"; result=PASS
+    else
+        rm -f "$logs/$1.pass"; result=FAIL
+    fi
+    echo "$result $((SECONDS - start))" >"$logs/$1.result"
+}
+
+# Background jobs ignore Ctrl-C in a script: stop the whole process group.
+trap 'trap - TERM; kill -TERM 0; exit 130' INT TERM
+names=(); runs=(); pids=()
+for job in ${jobs//,/ }; do
+    case $job in
+        names | format | pr | macos) run=$job ;;
         linux | sanitizers) run="container $job linux $native" ;;
         appimage) run="container appimage linux linux/amd64" ;;
         windows) run="container windows windows linux/amd64" ;;
         *) echo "error: unknown job $job" >&2; exit 2 ;;
     esac
-    start=$SECONDS
-    printf '%-11s ' "$job"
-    if $run >"$logs/$job.log" 2>&1; then result=PASS; else result=FAIL; failed=1; fi
-    line=$(printf '%-11s %s (%ss)' "$job" "$result" $((SECONDS - start)))
-    echo "$result ($((SECONDS - start))s)"
-    [ $result = PASS ] || tail -20 "$logs/$job.log" | sed 's/^/    /'
+    rm -f "$logs/$job.result" "$logs/$job.parallel.log"
+    names+=("$job"); runs+=("$run")
+    if [ $force -eq 0 ] && [ -z "$dist" ] && [ "$job" != pr ] && [ "$job" != names ] &&
+        [ "$(cat "$logs/$job.pass" 2>/dev/null)" = "$state" ]; then
+        echo "SKIP 0" >"$logs/$job.result"
+        pids+=("")
+        continue
+    fi
+    run_job "$job" "$run" &
+    pids+=($!)
+    [ $serial -eq 0 ] || wait $!
+done
+
+failed=0
+summary=""
+again=()
+for i in "${!names[@]}"; do
+    job=${names[$i]}
+    [ -z "${pids[$i]}" ] || wait "${pids[$i]}"
+    read -r result took <"$logs/$job.result" || { result=FAIL; took=0; }
+    case $result in
+        SKIP) line=$(printf '%-11s SKIP (passed on this tree)' "$job") ;;
+        *) line=$(printf '%-11s %s (%ss)' "$job" "$result" "$took") ;;
+    esac
+    echo "$line"
     summary+="$line"$'\n'
+    [ "$result" != FAIL ] && continue
+    if [ $serial -eq 0 ]; then again+=("$i"); else failed=1; tail -20 "$logs/$job.log" | sed 's/^/    /'; fi
+done
+# Timing checks can miss their deadlines while the other jobs load the machine: a job that failed among them runs again
+# alone, its first log kept as <job>.parallel.log.
+for i in ${again[@]+"${again[@]}"}; do
+    job=${names[$i]}
+    mv "$logs/$job.log" "$logs/$job.parallel.log"
+    run_job "$job" "${runs[$i]}"
+    read -r result took <"$logs/$job.result" || { result=FAIL; took=0; }
+    line=$(printf '%-11s %s alone (%ss; failed among the others: %s)' "$job" "$result" "$took" "$job.parallel.log")
+    echo "$line"
+    summary+="$line"$'\n'
+    [ "$result" = PASS ] || { failed=1; tail -20 "$logs/$job.log" | sed 's/^/    /'; }
 done
 printf '%s' "$summary" >"$logs/summary.txt"
 [ $failed -eq 0 ] && echo "all jobs passed" || echo "failed: see $logs/<job>.log"

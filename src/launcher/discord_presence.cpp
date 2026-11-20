@@ -413,6 +413,18 @@ namespace discordpresence
         return status;
     }
 
+    void PlayerOneWatch::Update(const GameStatus& status, const std::optional<Toy>& seatOne)
+    {
+        m_playerOne.reset();
+        if (status.toy && status.variant)
+            m_playerOne = Toy{ *status.toy, *status.variant, status.toyLevel };
+        const bool differs =
+            m_playerOne && (!seatOne || seatOne->type != m_playerOne->type || seatOne->variant != m_playerOne->variant);
+        if (differs && m_differed)
+            m_realPortal = true;
+        m_differed = differs;
+    }
+
     std::string LevelName(std::string_view levelsJson, std::string_view level, std::string_view language)
     {
         JsonValue file;

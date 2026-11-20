@@ -262,14 +262,14 @@ namespace ui
 
     // ---- Settings rows ---------------------------------------------------------------------------------------------
 
-    bool BeginSettings(const char* id, float controlWidth)
+    bool BeginSettings(const char* id, float controlWidth, float secondWidth)
     {
         ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, ImVec2(space::XXS, space::S));
         ImGui::PushStyleColor(ImGuiCol_TableBorderLight, LauncherTheme::Rgb(color::Hairline, 110));
         // NoClip: a control at a column's edge keeps its whole focus ring (a column clips 4 points past its content, the ring
         // reaches 6).
-        const bool open = ImGui::BeginTable(
-            id, 2, ImGuiTableFlags_BordersInnerH | ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_NoClip);
+        const bool open = ImGui::BeginTable(id, secondWidth > 0 ? 3 : 2,
+            ImGuiTableFlags_BordersInnerH | ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_NoClip);
         if (!open)
         {
             ImGui::PopStyleColor();
@@ -279,8 +279,14 @@ namespace ui
         // A weight of its own: with SizingStretchProp, ImGui derives it from the width measured so far, 0 / 0 on the
         // first frame (a NaN that reached the window sizes; found by the sanitizer build).
         ImGui::TableSetupColumn("label", ImGuiTableColumnFlags_WidthStretch, 1.0f);
-        ImGui::TableSetupColumn(
-            "control", ImGuiTableColumnFlags_WidthFixed, std::max(controlWidth, float(height::SettingControl)));
+        if (secondWidth > 0)
+        {
+            ImGui::TableSetupColumn("control", ImGuiTableColumnFlags_WidthFixed, controlWidth);
+            ImGui::TableSetupColumn("second", ImGuiTableColumnFlags_WidthFixed, secondWidth);
+        }
+        else
+            ImGui::TableSetupColumn(
+                "control", ImGuiTableColumnFlags_WidthFixed, std::max(controlWidth, float(height::SettingControl)));
         return true;
     }
 

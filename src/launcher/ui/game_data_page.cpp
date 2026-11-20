@@ -52,7 +52,7 @@ namespace launcher_ui
 
         target.started = true; // its own start (below) replaces the first-visit one
         SelectGame(*other);
-        m_s->copy = gamedata::Inspect(gamedata::Folder(m_s->game.id));
+        m_s->copy = gamedata::Inspect(GameFileOf(m_s->game.id, "gamedata"));
         if (m_s->copy.state == gamedata::State::Complete)
         {
             StartGameDisc();
@@ -67,7 +67,8 @@ namespace launcher_ui
 
     void App::StartCopy()
     {
-        if (m_s->disc != DiscState::Ready || m_s->fromCopy || Installing() || m_s->copyJob.Running())
+        if (m_s->disc != DiscState::Ready || m_s->fromCopy || Installing() || m_s->copyJob.Running() ||
+            DiscChecking(*m_s) || DiscDamaged(*m_s))
             return;
         m_s->copyMessage.clear();
         m_s->copyJob.Start(m_s->game, m_s->discPath, m_s->check.xexSha256);
@@ -77,12 +78,13 @@ namespace launcher_ui
     {
         using Outcome = gamedata::CopyResult::Outcome;
         gamedata::CopyResult result = m_s->copyJob.Collect();
-        m_s->copy = gamedata::Inspect(gamedata::Folder(m_s->game.id));
+        m_s->copy = gamedata::Inspect(GameFileOf(m_s->game.id, "gamedata"));
         if (result.outcome == Outcome::Done)
         {
             Toast(Tf("{}: game data copied", m_s->game.name), ui::ToastKind::Success);
             m_s->copyMessage.clear();
-            StartVerify(datadir::Text(gamedata::Folder(m_s->game.id))); // from now on the game plays from the copy
+            StartVerify(
+                datadir::Text(GameFileOf(m_s->game.id, "gamedata"))); // from now on the game plays from the copy
         }
         else if (result.outcome == Outcome::Cancelled)
             Toast(Tr("Copy stopped"));
@@ -97,7 +99,9 @@ namespace launcher_ui
     {
         if (m_s->copyJob.Running())
             return;
-        const std::filesystem::path folder = gamedata::Folder(m_s->game.id);
+        if (m_s->fromCopy && m_s->discCheck.Running())
+            m_s->discCheck.Cancel(); // it reads the copy
+        const std::filesystem::path folder = GameFileOf(m_s->game.id, "gamedata");
         const uint64_t size = m_s->copy.total;
         std::string error;
         if (!gamedata::Remove(folder, error))
@@ -116,7 +120,8 @@ namespace launcher_ui
         auto note = [](const std::string& text) { ui::Text(ui::TextStyle::Caption, text.c_str(), ui::color::Dim); };
         const gamedata::Status& copy = m_s->copy;
         const bool ready = m_s->disc == DiscState::Ready && !m_s->fromCopy;
-        const bool canCopy = ready && !Installing();
+        // Never from a damaged image, nor before the image check says it isn't.
+        const bool canCopy = ready && !Installing() && !DiscChecking(*m_s) && !DiscDamaged(*m_s);
         auto primary = [](bool disabled) {
             ui::ButtonOptions options;
             options.kind = disabled ? ui::ButtonKind::Secondary
@@ -162,7 +167,7 @@ namespace launcher_ui
                                  : Tf("Copied: {}, {} files", ui::FormatSize(copy.total), copy.files))
                     .c_str());
             ImGui::Dummy(ImVec2(0, ui::space::XXS));
-            showFolder(gamedata::Folder(m_s->game.id));
+            showFolder(GameFileOf(m_s->game.id, "gamedata"));
             ImGui::SameLine(0, ui::space::S);
             if (ui::Button(Tr("Remove the copy"), remove(Tr("Hold to delete the copy."))))
                 RemoveCopy();
@@ -195,8 +200,10 @@ namespace launcher_ui
             if (ui::Button(Tr("Copy files"), primary(!canCopy)))
                 StartCopy();
             ImGui::SameLine(0, ui::space::S);
-            showFolder(gamedata::Folder(m_s->game.id).parent_path());
-            note(!ready ? Tr("Choose the disc image first.")
+            showFolder(GameFileOf(m_s->game.id, "gamedata").parent_path());
+            note(!ready               ? Tr("Choose the disc image first.")
+                 : DiscDamaged(*m_s)  ? Tr("Copy the disc again, then choose the new image.")
+                 : DiscChecking(*m_s) ? Tr("Checking the disc")
                  : m_s->discSize > 0
                      ? Tf("Copies the disc's files ({}). No image needed after.", ui::FormatSize(m_s->discSize))
                      : Tr("Copies the disc's files. No image needed after."));
@@ -208,6 +215,184 @@ namespace launcher_ui
             ui::StatusPill(ui::Status::Error, Tr("The copy failed"));
             ui::Text(ui::TextStyle::Body, m_s->copyMessage.c_str(), ui::color::InkSoft);
         }
+    }
+
+    // ---- The image check ------------------------------------------------------------------------------------------------
+
+    // Every file of the verified disc (its image or its copy) is read and compared with the known good copy of its
+    // edition: a damaged image passes the disc check, which reads default.xex only (docs/install.md, "Image check"). The
+    // result is kept with the file's stamp, so an unchanged image is not read again.
+    void App::WantDiscCheck(bool again)
+    {
+        m_s->discChecked.reset();
+        m_s->discCheckWanted = false;
+        if (m_s->disc != DiscState::Ready)
+            return;
+        auto& section = m_config[m_s->game.id];
+        const std::string stamp = disccheck::Stamp(m_s->discPath);
+        if (again)
+            section.erase("disc_check");
+        else if (!stamp.empty() && SettingGet(m_config, m_s->game.id, "disc_check_of") == stamp + " " + m_s->discPath)
+            if (std::optional<disccheck::Digest> kept =
+                    disccheck::LoadDigest(SettingGet(m_config, m_s->game.id, "disc_check")))
+            {
+                m_s->discChecked = disccheck::Compare(m_s->game, m_s->check.xexSha256, *kept);
+                return;
+            }
+        if (m_s->discCheck.Running() && m_s->discCheck.Path() == m_s->discPath)
+            return; // already reading it
+        m_s->discCheckWanted = true;
+    }
+
+    bool App::DiscDamaged(const GameSlot& slot)
+    {
+        return slot.disc == DiscState::Ready && slot.discChecked && disccheck::Damaged(slot.discChecked->verdict);
+    }
+
+    bool App::DiscChecking(const GameSlot& slot) { return slot.disc == DiscState::Ready && !slot.discChecked; }
+
+    // One check at a time, none while a game runs (both read the disc) or a disc is verified: an install waiting for its
+    // check first, then the shown game, then the others.
+    void App::RunDiscChecks()
+    {
+        GameSlot* waiting = nullptr;
+        for (const auto& slot : m_slots)
+            if (slot->installAfterCheck && !slot->discCheck.Running())
+                waiting = slot.get();
+        for (const auto& slot : m_slots)
+            if (slot->discCheck.Running())
+            {
+                if (waiting != nullptr && !slot->installAfterCheck)
+                    slot->discCheck.Cancel(); // FinishDiscCheck wants it again
+                return;
+            }
+        if (!m_session.Running().empty() || AnyVerifying())
+            return;
+        GameSlot* next = waiting;
+        if (next == nullptr && m_s->discCheckWanted)
+            next = m_s;
+        for (const auto& slot : m_slots)
+            if (next == nullptr && slot->discCheckWanted)
+                next = slot.get();
+        if (next == nullptr || next->disc != DiscState::Ready)
+            return;
+        next->discCheckWanted = false;
+        next->discCheck.Start(next->discPath);
+    }
+
+    void App::StopDiscChecks()
+    {
+        for (const auto& slot : m_slots)
+            if (slot->discCheck.Running())
+                slot->discCheck.Cancel();
+    }
+
+    void App::FinishDiscCheck()
+    {
+        const std::string path = m_s->discCheck.Path();
+        const disccheck::Digest digest = m_s->discCheck.Collect();
+        if (path != m_s->discPath || m_s->disc != DiscState::Ready)
+            return; // another disc was chosen meanwhile: it has its own check
+        if (digest.outcome == disccheck::Digest::Outcome::Cancelled)
+        {
+            m_s->discCheckWanted = !m_s->discChecked; // stopped for a game or another check: later
+            return;
+        }
+        m_s->discChecked = disccheck::Compare(m_s->game, m_s->check.xexSha256, digest);
+        auto& section = m_config[m_s->game.id];
+        section["disc_check"] = disccheck::SaveDigest(digest);
+        section["disc_check_of"] = disccheck::Stamp(path) + " " + path;
+        if (!SaveConfig())
+            Toast(Tr("Couldn't save the settings"), ui::ToastKind::Error);
+        if (DiscDamaged(*m_s))
+            Toast(Tf("The disc image of {} is damaged", m_s->game.name), ui::ToastKind::Error);
+        if (m_s->installAfterCheck)
+            ContinueAfterCheck();
+    }
+
+    void App::ContinueAfterCheck()
+    {
+        m_s->installAfterCheck = false;
+        m_s->checkStep.endedAt = SDL_GetTicks();
+        if (DiscDamaged(*m_s))
+        {
+            m_s->checkError = Tr("Copy the disc again, then choose the new image.");
+            return; // the card shows the failure
+        }
+        ContinueInstall();
+    }
+
+    // The Disc tab's pill: the check's progress, then what it found.
+    void App::DrawDiscCheck()
+    {
+        using disccheck::Verdict;
+        if (m_s->disc != DiscState::Ready)
+            return;
+        if (!m_s->discChecked)
+        {
+            const bool reading = m_s->discCheck.Running() && m_s->discCheck.Path() == m_s->discPath;
+            ui::StatusPill(ui::Status::Busy,
+                Tf("Checking files, {}", ui::FormatPercent(reading ? m_s->discCheck.Fraction() : 0.0f)).c_str());
+            return;
+        }
+        const disccheck::Result& result = *m_s->discChecked;
+        const std::string size = ui::FormatSize(m_s->discSize);
+        if (result.verdict == Verdict::Matches)
+            ui::StatusPill(ui::Status::Success, Tf("Good copy, {}", size).c_str());
+        else if (result.verdict == Verdict::NoReference)
+            ui::StatusPill(ui::Status::Neutral, Tf("Readable, {}", size).c_str(), ui::Icon::Check);
+        else
+            ui::StatusPill(ui::Status::Error, Tr("Damaged copy"));
+        std::string text = disccheck::ResultText(result);
+        if (disccheck::Damaged(result.verdict))
+            text += std::string(" ") + Tr("Copy the disc again, then choose the new image.");
+        ui::Text(ui::TextStyle::Body, text.c_str(), ui::color::InkSoft);
+    }
+
+    // After a game ends (crashed, closed or stopped): its log names movies that didn't open, what a damaged image does
+    // (issue #64). Not when this disc matches a good copy.
+    void App::OfferDiscCheck(const GameInfo& game)
+    {
+        const GameLog log = LastGameLog();
+        if (log.file.empty() || log.game != game.id)
+            return;
+        if (!disccheck::LogShowsDamagedDisc(ReadLogTail(log.file, 4u << 20)))
+            return;
+        const GameSlot& slot = SlotFor(game);
+        if (slot.discChecked && slot.discChecked->verdict == disccheck::Verdict::Matches)
+            return;
+        m_discOffer = game.id;
+    }
+
+    void App::DrawDiscOffer()
+    {
+        if (!m_discOffer || m_gameStopped) // after the crash dialog, if both
+            return;
+        const GameInfo* game = FindGame(*m_discOffer);
+        if (game == nullptr)
+        {
+            m_discOffer.reset();
+            return;
+        }
+        bool open = true;
+        if (ui::BeginModal("##discoffer", Tr("The disc image may be damaged"), &open, ui::ModalSize::Medium))
+        {
+            const std::string text =
+                Tf("{} couldn't open some of its movies. A damaged copy of the disc does this.", game->name) + "\n\n" +
+                Tr("Copy the disc again, then choose the new image.");
+            ui::Text(ui::TextStyle::Body, text.c_str(), ui::color::Ink);
+            ImGui::Dummy(ImVec2(0, ui::space::S));
+            if (ui::ModalActions(&open, Tr("Choose image"), Tr("Not now")) == ui::ModalResult::Confirm)
+            {
+                SelectGame(*game);
+                GoTo(Page::GameSettings);
+                m_gameTab = GameTab::Disc;
+                Browse(); // the file dialog; the Disc tab shows the new image's check
+            }
+            ui::EndModal();
+        }
+        if (!open)
+            m_discOffer.reset();
     }
 
     // ---- The test script -------------------------------------------------------------------------------------------------
@@ -244,7 +429,7 @@ namespace launcher_ui
         auto busy = [&](GameSlot& slot) {
             return slot.disc == DiscState::Verifying || slot.copyJob.Running() || slot.installer.Running();
         };
-        const std::string folder = datadir::Text(gamedata::Folder("ssa"));
+        const std::string folder = datadir::Text(GameFileOf("ssa", "gamedata"));
         const std::string giantsIso = LauncherEnv("SKY_LAUNCHER_TEST_COPY_GIANTS_ISO") != nullptr
                                           ? LauncherEnv("SKY_LAUNCHER_TEST_COPY_GIANTS_ISO")
                                           : "";
@@ -444,11 +629,11 @@ namespace launcher_ui
             if (busy(g))
                 return;
             expect(g.copy.state == gamedata::State::Complete && g.fromCopy &&
-                       g.discPath == datadir::Text(gamedata::Folder("giants")),
+                       g.discPath == datadir::Text(GameFileOf("giants", "gamedata")),
                 "Giants plays from its own copy");
             expect(a.copy.state == gamedata::State::None, "SSA's copy is its own");
             std::string error;
-            gamedata::Remove(gamedata::Folder("giants"), error);
+            gamedata::Remove(GameFileOf("giants", "gamedata"), error);
             m_testStep++;
             break;
         }

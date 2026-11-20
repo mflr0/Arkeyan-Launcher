@@ -28,10 +28,10 @@ case "$job" in
         cmake --build /work/build --target ArkeyanLauncher
         rm -rf /work/AppDir
         cmake --install /work/build --prefix /work/AppDir/usr
-        rsvg-convert -w 256 -h 256 resources/icons/skylauncher.svg -o /work/skylauncher.png
+        rsvg-convert -w 256 -h 256 resources/icons/arkeyan-launcher.svg -o /work/arkeyan-launcher.png
         cd /work
         /opt/linuxdeploy --appimage-extract-and-run --appdir AppDir -e AppDir/usr/bin/ArkeyanLauncher \
-            -d src/resources/linux/skylauncher.desktop -i skylauncher.png --output appimage
+            -d src/resources/linux/arkeyan-launcher.desktop -i arkeyan-launcher.png --output appimage
         mv Arkeyan*.AppImage /out/ArkeyanLauncher-x86_64.AppImage
         ;;
     sanitizers)

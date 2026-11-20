@@ -356,7 +356,7 @@ namespace launcher_ui
 
     void App::ToyboxShot()
     {
-        if (m_toyboxShot.empty())
+        if (m_toyboxShot.empty() || m_pictures.Pending()) // a picture asked for in this frame: the next one
             return;
         const char* folder = LauncherEnv("SKY_LAUNCHER_TOYBOX_SHOTS");
         SDL_Surface* surface = folder != nullptr ? SDL_RenderReadPixels(m_renderer, nullptr) : nullptr;
