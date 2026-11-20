@@ -566,6 +566,11 @@ namespace
                collection::PortalOverviewLine(collection::PortalOverview(ssa, model.seats, names), "none") == "none");
         EXPECT(launcher_ui::ReadSeats(ssa, session) == std::vector<std::string>(4)); // the file names nothing
         EXPECT(model.SetSeat(0, spyro) && model.SetSeat(2, anvil)); // as before, for the checks below
+        // Two players change places, in the session file too; an item never goes on a player's seat (issue #181).
+        EXPECT(model.SetSeat(1, gill) && model.SwapSeats(0, 1) && model.seats[0] == gill && model.seats[1] == spyro);
+        EXPECT(launcher_ui::ReadSeats(ssa, session)[0] == gill && launcher_ui::ReadSeats(ssa, session)[1] == spyro);
+        EXPECT(!model.SwapSeats(0, 2) && model.seats[0] == gill && model.seats[2] == anvil && !model.SwapSeats(1, 1));
+        EXPECT(model.SwapSeats(1, 0) && model.seats[0] == spyro && model.SetSeat(1, ""));
         // A failed write leaves both the on-disk seats and the displayed seats intact.
         {
             const auto beforeSeats = model.seats;
@@ -3166,7 +3171,7 @@ static int RunChecks(int argc, char** argv)
     if (noDisc)
     {
         for (const char* mode :
-            { "backups", "sheet", "pictures", "notes", "migration", "catalogue", "data", "uninstall", "paths" })
+            { "backups", "sheet", "drag", "pictures", "notes", "migration", "catalogue", "data", "uninstall", "paths" })
         {
             const std::string root = (scratch / "review-ui" / mode).string();
             const char* arguments[] = { argv[0], "--review-ui", root.c_str(), mode, nullptr };

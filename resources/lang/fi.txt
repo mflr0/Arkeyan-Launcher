@@ -1246,3 +1246,8 @@ They appear the next time this save reaches the Academy.	Ne ilmestyvät, kun tä
 {} chests waiting for save slot {}	{} arkkua odottaa tallennuspaikkaa {}
 {} chests waiting	{} arkkua odottaa
 Too late: the game already added them	Liian myöhään: peli lisäsi ne jo
+# Collection: a seat's figure dragged onto a taken player seat
+Swap players?	Vaihdetaanko pelaajat?
+Swap	Vaihda
+{} goes on {}, and {} on {}.	{} menee paikalle {} ja {} paikalle {}.
+Players swapped	Pelaajat vaihdettu

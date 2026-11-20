@@ -26,7 +26,8 @@ shows the same seats.
   the portal", read only: lift it off the portal to change it), or nothing.
 - Put a figure on a seat as on the Collection page: drop its card on the seat, or click the seat and pick a card, or the
   sheet's **Put on the portal**. A figure on the other player's seat swaps the players. Take it off with the seat's X, its
-  menu, Delete, or by dragging it to the shelf. What the game refuses comes back as a message ("The portal is full",
+  menu, Delete, or by dragging it to the shelf; drag it onto another seat to move it there (two players: "Swap
+  players?", then the game's `swap`). What the game refuses comes back as a message ("The portal is full",
   "Another program is using this figure"...).
 - Keyboard, mouse and controller work as on the Collection page; the look is the launcher's. The controller and the keyboard
   go to the window that has the focus (the game's or this one), never to both: click the game to play again.

@@ -1245,3 +1245,8 @@ They appear the next time this save reaches the Academy.	Ze verschijnen de volge
 {} chests waiting for save slot {}	{} kisten wachten op opslagplek {}
 {} chests waiting	{} kisten wachten
 Too late: the game already added them	Te laat: het spel heeft ze al toegevoegd
+# Collection: a seat's figure dragged onto a taken player seat
+Swap players?	Spelers wisselen?
+Swap	Wisselen
+{} goes on {}, and {} on {}.	{} gaat naar {} en {} naar {}.
+Players swapped	Spelers gewisseld

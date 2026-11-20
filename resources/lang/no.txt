@@ -1246,3 +1246,8 @@ They appear the next time this save reaches the Academy.	De dukker opp neste gan
 {} chests waiting for save slot {}	{} kister venter på lagringsplass {}
 {} chests waiting	{} kister venter
 Too late: the game already added them	For sent: spillet har allerede lagt dem til
+# Collection: a seat's figure dragged onto a taken player seat
+Swap players?	Bytte spillere?
+Swap	Bytt
+{} goes on {}, and {} on {}.	{} går til {} og {} til {}.
+Players swapped	Spillerne byttet plass

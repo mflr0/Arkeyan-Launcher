@@ -105,7 +105,10 @@ namespace launcher_ui
         bool Drop(const std::string& path);
         std::string Folder() const;
         // B / Escape belongs to the page: an overlay is open, a seat is being chosen for, or a search is typed.
-        bool TakesBack() const { return m_overlay != Overlay::None || m_choosing >= 0 || m_search[0] != 0; }
+        bool TakesBack() const
+        {
+            return m_overlay != Overlay::None || m_choosing >= 0 || m_search[0] != 0 || m_swapFrom >= 0;
+        }
 
         // SKY_LAUNCHER_TEST_SEATX: the X of every seat, pressed by mouse, keyboard and pad (App::TestSeatXScript).
         std::vector<std::string> TestSeats() const { return m_model.seats; }
@@ -223,6 +226,15 @@ namespace launcher_ui
         const std::vector<BackupRow>& Backups(const std::string& figure);
 
         void PutOn(size_t seat, const std::string& path);
+        // Why the seat would not take the figure now, as PutOn says it (`kind`: its toast's); empty when it would. The
+        // seats grey out by it while a figure is dragged, so the hint and the toast never disagree.
+        std::string Refusal(size_t seat, const collection::Figure& figure, ui::ToastKind* kind = nullptr) const;
+        // A seat's figure dropped on another seat: it moves there; onto a taken player seat, "Swap players?" first.
+        void MoveSeat(size_t from, size_t to);
+        void DrawSwapQuestion();
+        // A seated figure's picture (a swapper's halves joined), `size` square at `at`.
+        void DrawSeatPicture(ImDrawList* draw, const collection::Figure& figure, ImVec2 at, float size);
+        void DrawDragged(const collection::Figure& figure); // its picture under the pointer, while it is dragged
         void OpenFigure(const std::string& path);
         void Import(const std::vector<std::string>& paths);
         void ExportTo(const std::vector<std::string>& paths);
@@ -260,6 +272,7 @@ namespace launcher_ui
         int m_focusSeat = -1; // focus this seat next frame (the screenshot test),
         bool m_focusCard = false; // or the shelf's first card
         int m_seatMenu = -1; // the seat whose right-click menu is open
+        int m_swapFrom = -1, m_swapTo = -1; // the players "Swap players?" asks about; -1: no question
         std::string m_selected; // the card with the focus
         std::string m_toggleFavourite; // the card whose star was clicked this frame (HandleShortcuts applies it)
         std::string m_hovered; // the card under the mouse or the focus (X: its sheet)
