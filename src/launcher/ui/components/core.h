@@ -128,6 +128,9 @@ namespace ui
     // put. Nothing outside a settings row (layout.cpp).
     void SettingControl(float width);
 
+    // A value easing towards `target` (0 or 1) over motion::Fast, kept per id; at once with reduced motion.
+    float Ease(ImGuiID id, float target);
+
     // ---- Drawing. ----
     // The keyboard and pad focus ring around min..max (focus::Width, focus::Offset, Context::accent).
     void FocusRing(ImVec2 min, ImVec2 max, float rounding, ImDrawFlags flags = 0);
