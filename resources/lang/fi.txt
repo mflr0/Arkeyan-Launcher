@@ -1251,3 +1251,56 @@ Swap players?	Vaihdetaanko pelaajat?
 Swap	Vaihda
 {} goes on {}, and {} on {}.	{} menee paikalle {} ja {} paikalle {}.
 Players swapped	Pelaajat vaihdettu
+
+# Online
+Address	Osoite
+Allow cross-platform sessions (not tested)	Salli pelit eri järjestelmien välillä (ei testattu)
+Connect	Yhdistä
+Couldn't read a figure; choose your figures again in Collection.	Hahmoa ei voitu lukea; valitse hahmosi uudelleen Kokoelmasta.
+Couldn't read your picture; choose it again in your profile.	Kuvaasi ei voitu lukea; valitse se uudelleen profiilissasi.
+Couldn't read your saves; check that their folder is accessible.	Tallennuksiasi ei voitu lukea; tarkista, että niiden kansioon on pääsy.
+Couldn't restore the session's saves or figures; check the data folder and restart.	Pelin tallennuksia tai hahmoja ei voitu palauttaa; tarkista datakansio ja käynnistä uudelleen.
+Couldn't start the online game; check your game installation and try again.	Verkkopeliä ei voitu käynnistää; tarkista pelin asennus ja yritä uudelleen.
+Game default	Pelin oletus
+Host	Isännöi
+Join	Liity
+Leave	Poistu
+Measuring the connection...	Mitataan yhteyttä...
+No figures chosen	Ei valittuja hahmoja
+Online	Verkossa
+Online room	Verkkohuone
+Online with {}	Verkossa pelaajan {} kanssa
+Open room	Avaa huone
+Open the port automatically	Avaa portti automaattisesti
+Opening the router's port...	Avataan reitittimen porttia...
+Password (optional)	Salasana (valinnainen)
+Player {} · {}	Pelaaja {} · {}
+Port	Portti
+Port not opened; open port {} UDP and TCP on your router.	Porttia ei avattu; avaa reitittimestäsi portti {} UDP- ja TCP-liikenteelle.
+Round trip: {} ms · Input delay: {} frames	Meno-paluu: {} ms · Syöteviive: {} ruutua
+Start	Aloita
+The connection failed; open or join a room again.	Yhteys epäonnistui; avaa huone tai liity uudelleen.
+The host didn't answer; check the address and ask them to open the room.	Isäntä ei vastannut; tarkista osoite ja pyydä häntä avaamaan huone.
+The other player left; open or join a room again.	Toinen pelaaja poistui; avaa huone tai liity uudelleen.
+The other player stopped answering; check your connection and reconnect.	Toinen pelaaja ei enää vastaa; tarkista yhteys ja yhdistä uudelleen.
+The password doesn't match; ask the host and try again.	Salasana ei täsmää; kysy se isännältä ja yritä uudelleen.
+This address isn't valid; paste the host's IP:port.	Osoite ei kelpaa; liitä isännän IP:portti.
+This port is busy; choose another port.	Portti on käytössä; valitse toinen portti.
+This room is full; ask the host to open another room.	Huone on täynnä; pyydä isäntää avaamaan toinen huone.
+Waiting for the other player...	Odotetaan toista pelaajaa...
+You chose different games; choose the same game.	Valitsitte eri pelit; valitkaa sama peli.
+Your disc editions differ; use the same disc edition.	Levyjenne versiot eroavat; käyttäkää samaa levyversiota.
+Your game versions differ; update both games.	Peliversionne eroavat; päivittäkää molemmat pelit.
+Your games don't match; check both games and launchers.	Pelinne eivät täsmää; tarkistakaa molemmat pelit ja käynnistysohjelmat.
+Your launcher versions differ; update both launchers.	Käynnistysohjelmienne versiot eroavat; päivittäkää molemmat.
+Your room	Huoneesi
+Your rooms aren't compatible; update both launchers.	Huoneenne eivät ole yhteensopivia; päivittäkää molemmat käynnistysohjelmat.
+Your saves exceed 64 MB; remove unused saves first.	Tallennuksesi ylittävät 64 Mt; poista ensin tarpeettomat tallennukset.
+Your systems differ; both players must allow cross-platform sessions.	Järjestelmänne eroavat; molempien on sallittava pelit eri järjestelmien välillä.
+{} FPS · Text: {} · Voices: {}	{} FPS · Teksti: {} · Äänet: {}
+This port isn't valid; choose a number from 1 to 65535.	Portti ei kelpaa; valitse luku väliltä 1–65535.
+Round trip: {} ms · Input delay: 1 frame	Meno-paluu: {} ms · Syöteviive: 1 ruutu
+The games lost sync; reopen the room and try again	Pelit eivät enää ole samassa tahdissa; avaa huone uudelleen ja yritä taas
+Your frame rates differ; choose the same frame rate	Kuvataajuutenne eroavat; valitkaa sama kuvataajuus
+The portal figures didn't match; choose your figures again in Collection	Portaalin hahmot eivät täsmää; valitse hahmosi uudelleen Kokoelmasta
+The online session ended unexpectedly; reopen the room and try again	Verkkopeli päättyi odottamatta; avaa huone uudelleen ja yritä taas

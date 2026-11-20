@@ -1250,3 +1250,56 @@ Swap players?	Spelers wisselen?
 Swap	Wisselen
 {} goes on {}, and {} on {}.	{} gaat naar {} en {} naar {}.
 Players swapped	Spelers gewisseld
+
+# Online
+Address	Adres
+Allow cross-platform sessions (not tested)	Sessies tussen systemen toestaan (niet getest)
+Connect	Verbinden
+Couldn't read a figure; choose your figures again in Collection.	Een figuur kon niet worden gelezen; kies je figuren opnieuw in Verzameling.
+Couldn't read your picture; choose it again in your profile.	Je afbeelding kon niet worden gelezen; kies die opnieuw in je profiel.
+Couldn't read your saves; check that their folder is accessible.	Je opgeslagen spellen konden niet worden gelezen; controleer de toegang tot de map.
+Couldn't restore the session's saves or figures; check the data folder and restart.	De opgeslagen spellen of figuren van de sessie konden niet worden hersteld; controleer de gegevensmap en start opnieuw.
+Couldn't start the online game; check your game installation and try again.	Het onlinespel kon niet starten; controleer de spelinstallatie en probeer het opnieuw.
+Game default	Spelstandaard
+Host	Hosten
+Join	Deelnemen
+Leave	Verlaten
+Measuring the connection...	Verbinding meten...
+No figures chosen	Geen figuren gekozen
+Online	Online
+Online room	Onlinekamer
+Online with {}	Online met {}
+Open room	Kamer openen
+Open the port automatically	Poort automatisch openen
+Opening the router's port...	Routerpoort openen...
+Password (optional)	Wachtwoord (optioneel)
+Player {} · {}	Speler {} · {}
+Port	Poort
+Port not opened; open port {} UDP and TCP on your router.	Poort niet geopend; open poort {} voor UDP en TCP op je router.
+Round trip: {} ms · Input delay: {} frames	Heen en terug: {} ms · Invoervertraging: {} frames
+Start	Starten
+The connection failed; open or join a room again.	De verbinding is mislukt; open een kamer of neem opnieuw deel.
+The host didn't answer; check the address and ask them to open the room.	De host antwoordt niet; controleer het adres en vraag of de kamer open kan.
+The other player left; open or join a room again.	De andere speler is vertrokken; open een kamer of neem opnieuw deel.
+The other player stopped answering; check your connection and reconnect.	De andere speler antwoordt niet meer; controleer je verbinding en verbind opnieuw.
+The password doesn't match; ask the host and try again.	Het wachtwoord klopt niet; vraag het aan de host en probeer opnieuw.
+This address isn't valid; paste the host's IP:port.	Dit adres is ongeldig; plak IP:poort van de host.
+This port is busy; choose another port.	Deze poort is bezet; kies een andere poort.
+This room is full; ask the host to open another room.	Deze kamer is vol; vraag de host een andere te openen.
+Waiting for the other player...	Wachten op de andere speler...
+You chose different games; choose the same game.	Jullie kozen verschillende spellen; kies hetzelfde spel.
+Your disc editions differ; use the same disc edition.	Jullie schijfedities verschillen; gebruik dezelfde editie.
+Your game versions differ; update both games.	Jullie spelversies verschillen; werk beide spellen bij.
+Your games don't match; check both games and launchers.	Jullie spellen komen niet overeen; controleer beide spellen en launchers.
+Your launcher versions differ; update both launchers.	Jullie launcherversies verschillen; werk beide launchers bij.
+Your room	Jouw kamer
+Your rooms aren't compatible; update both launchers.	Jullie kamers zijn niet compatibel; werk beide launchers bij.
+Your saves exceed 64 MB; remove unused saves first.	Je opgeslagen spellen zijn groter dan 64 MB; verwijder eerst ongebruikte spellen.
+Your systems differ; both players must allow cross-platform sessions.	Jullie systemen verschillen; sta allebei sessies tussen systemen toe.
+{} FPS · Text: {} · Voices: {}	{} FPS · Tekst: {} · Stemmen: {}
+This port isn't valid; choose a number from 1 to 65535.	Deze poort is ongeldig; kies een getal van 1 tot 65535.
+Round trip: {} ms · Input delay: 1 frame	Heen en terug: {} ms · Invoervertraging: 1 frame
+The games lost sync; reopen the room and try again	De spellen lopen niet meer gelijk; open de kamer opnieuw en probeer het nog eens
+Your frame rates differ; choose the same frame rate	Jullie beeldsnelheden verschillen; kies dezelfde beeldsnelheid
+The portal figures didn't match; choose your figures again in Collection	De portaalfiguren komen niet overeen; kies je figuren opnieuw in Verzameling
+The online session ended unexpectedly; reopen the room and try again	De onlinesessie is onverwacht gestopt; open de kamer opnieuw en probeer het nog eens

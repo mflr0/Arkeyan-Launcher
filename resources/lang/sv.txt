@@ -1251,3 +1251,56 @@ Swap players?	Byta spelare?
 Swap	Byt
 {} goes on {}, and {} on {}.	{} går till {} och {} till {}.
 Players swapped	Spelarna bytte plats
+
+# Online
+Address	Adress
+Allow cross-platform sessions (not tested)	Tillåt spel mellan system (otestat)
+Connect	Anslut
+Couldn't read a figure; choose your figures again in Collection.	En figur kunde inte läsas; välj dina figurer igen i Samling.
+Couldn't read your picture; choose it again in your profile.	Din bild kunde inte läsas; välj den igen i din profil.
+Couldn't read your saves; check that their folder is accessible.	Dina sparfiler kunde inte läsas; kontrollera att deras mapp är tillgänglig.
+Couldn't restore the session's saves or figures; check the data folder and restart.	Sessionens sparfiler eller figurer kunde inte återställas; kontrollera datamappen och starta om.
+Couldn't start the online game; check your game installation and try again.	Onlinespelet kunde inte startas; kontrollera spelinstallationen och försök igen.
+Game default	Spelets standard
+Host	Var värd
+Join	Gå med
+Leave	Lämna
+Measuring the connection...	Mäter anslutningen...
+No figures chosen	Inga figurer valda
+Online	Online
+Online room	Onlinerum
+Online with {}	Online med {}
+Open room	Öppna rum
+Open the port automatically	Öppna porten automatiskt
+Opening the router's port...	Öppnar routerns port...
+Password (optional)	Lösenord (valfritt)
+Player {} · {}	Spelare {} · {}
+Port	Port
+Port not opened; open port {} UDP and TCP on your router.	Porten öppnades inte; öppna port {} för UDP och TCP i routern.
+Round trip: {} ms · Input delay: {} frames	Tur och retur: {} ms · Inmatningsfördröjning: {} bildrutor
+Start	Starta
+The connection failed; open or join a room again.	Anslutningen misslyckades; öppna eller gå med i ett rum igen.
+The host didn't answer; check the address and ask them to open the room.	Värden svarade inte; kontrollera adressen och be värden öppna rummet.
+The other player left; open or join a room again.	Den andra spelaren lämnade; öppna eller gå med i ett rum igen.
+The other player stopped answering; check your connection and reconnect.	Den andra spelaren slutade svara; kontrollera anslutningen och anslut igen.
+The password doesn't match; ask the host and try again.	Lösenordet stämmer inte; fråga värden och försök igen.
+This address isn't valid; paste the host's IP:port.	Adressen är ogiltig; klistra in värdens IP:port.
+This port is busy; choose another port.	Porten används redan; välj en annan port.
+This room is full; ask the host to open another room.	Rummet är fullt; be värden öppna ett annat rum.
+Waiting for the other player...	Väntar på den andra spelaren...
+You chose different games; choose the same game.	Ni valde olika spel; välj samma spel.
+Your disc editions differ; use the same disc edition.	Era skivutgåvor skiljer sig; använd samma utgåva.
+Your game versions differ; update both games.	Era spelversioner skiljer sig; uppdatera båda spelen.
+Your games don't match; check both games and launchers.	Era spel matchar inte; kontrollera båda spelen och startprogrammen.
+Your launcher versions differ; update both launchers.	Era startprogramsversioner skiljer sig; uppdatera båda startprogrammen.
+Your room	Ditt rum
+Your rooms aren't compatible; update both launchers.	Era rum är inte kompatibla; uppdatera båda startprogrammen.
+Your saves exceed 64 MB; remove unused saves first.	Dina sparfiler överstiger 64 MB; ta bort oanvända sparfiler först.
+Your systems differ; both players must allow cross-platform sessions.	Era system skiljer sig; båda måste tillåta spel mellan system.
+{} FPS · Text: {} · Voices: {}	{} FPS · Text: {} · Röster: {}
+This port isn't valid; choose a number from 1 to 65535.	Porten är ogiltig; välj ett tal från 1 till 65535.
+Round trip: {} ms · Input delay: 1 frame	Tur och retur: {} ms · Inmatningsfördröjning: 1 bildruta
+The games lost sync; reopen the room and try again	Spelen är inte längre synkroniserade; öppna rummet igen och försök på nytt
+Your frame rates differ; choose the same frame rate	Era bildfrekvenser skiljer sig; välj samma bildfrekvens
+The portal figures didn't match; choose your figures again in Collection	Portalfigurerna stämmer inte överens; välj dina figurer igen i Samling
+The online session ended unexpectedly; reopen the room and try again	Onlinespelet avslutades oväntat; öppna rummet igen och försök på nytt

@@ -24,6 +24,7 @@
 #include "launcher/launcher.h"
 #include "launcher/profiles.h"
 #include "launcher/ui/launcher_ui.h"
+#include "launcher/ui/online_page.h"
 #include "launcher/portal_status.h"
 #include "launcher/toybox_link_client.h"
 #include "launcher/uninstall.h"
@@ -282,12 +283,13 @@ namespace launcher_ui
         Settings,
         GameSettings,
         Achievements,
+        Online,
         Chests // Imaginite chests (chests_page.cpp)
     };
     // A page of the shown game opened from its Play page, which closes back to it.
     constexpr bool GameSubPage(Page page)
     {
-        return page == Page::GameSettings || page == Page::Achievements || page == Page::Chests;
+        return page == Page::GameSettings || page == Page::Achievements || page == Page::Chests || page == Page::Online;
     }
     enum class SettingsTab
     {
@@ -498,6 +500,7 @@ namespace launcher_ui
 
     private:
         friend struct ReviewChecks;
+        friend struct OnlineUiChecks;
         friend struct PerformanceProbe;
         bool Init();
         void Shutdown();
@@ -517,6 +520,13 @@ namespace launcher_ui
             bool running, stopping, showGame, installing, noDisc, ready, verifying, install, update, detailed;
         };
         void DrawPlay();
+        void DrawOnline();
+        void OpenOnline();
+        void PollOnline();
+        void CloseOnline();
+        void LaunchOnline();
+        void RecoverOnline();
+        void TestOnlineScript(uint64_t now);
         void DrawChests();
         std::string DrawPlayHeading(
             const PlayState& play, const ArtTexture* logo, ImVec2 titleAt, ImVec2 titleSize, ImVec2 at, float leftW);
@@ -921,6 +931,7 @@ namespace launcher_ui
         bool m_requests = false; // LauncherOptions::requests
         uint64_t m_requestAt = 0; // when the request file was last looked for
         uint64_t m_raiseUntil = 0; // a minimized window is raised once restored (macOS restores it with an animation)
+        OnlineRoom m_online;
         GameSession m_session; // the game running: one at a time (game_run.h)
         uint64_t m_sessionStart = 0; // SDL_GetTicks when the game started: the time on the game page
         bool m_launchPending = false; // the page theme must finish fading before the process starts

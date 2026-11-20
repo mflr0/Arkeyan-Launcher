@@ -830,6 +830,20 @@ PLAY starts the game **beside the window, which stays open** (`GameSession`, `la
 `FAKE_ARKEYAN_BUILDER_HOLD` keeps the build at 100 %) shoots and checks the line through an install and an update at 0, 50 and 100 %,
 with the other game shown meanwhile, then a failed build: `ArkeyanLauncherTest` runs it (`SidebarChecks`).
 
+## Online
+
+An installed game's **Online** button sits beside PLAY and is absent while a game runs. The page uses the settings-page
+column, card, tabs and fields for Host (port, automatic opening, optional password) and Join (address and password).
+Opening or connecting replaces the form with the two player cards, readiness, connection timing and host settings; the
+host also gets the address, Copy and Start. Leave or Back closes the room. The shared controls provide mouse, keyboard
+and pad focus; the tabs use the same navigation as settings. Settings > Launcher holds the cross-platform toggle, off
+by default. During a session the hero reads “Online with <pseudo>”.
+After the game ends, recovery shows one translated error toast for an abnormal session end, with a next step; a normal
+quit is silent. Startup performs the same recovery after a closed launcher. French Online text uses “vous”.
+
+See [Online co-op](online.md) for the player steps, protocol, launch variables, write-back, router lease and screenshot
+fixtures (`SKY_LAUNCHER_TEST_ONLINE_UI=1` with `SKY_LAUNCHER_SHOTS`).
+
 ## Achievements and play time
 
 The games have Xbox 360 achievements; the launcher lists them per game and shows how long the game was played. Nothing is shipped: the list is
@@ -1281,7 +1295,7 @@ games and Coming later, A into Collection, Y for the search, the D-pad to a seat
 row, the shelf) and A to put a card there, X for a card's sheet, B back, then down to Settings, A, RT to its Launcher tab, Escape. Each step's page is checked ("FAIL nav step";
 a timeout stops a run that went astray); `ArkeyanLauncherTest` runs it (`NavChecks`).
 With `SKY_LAUNCHER_TEST_PADWALK=1` it walks every page, tab and dialog with the pad ("Navigation model"; `pad_walk.cpp`):
-`00-first-start` to `50-ssa-sound` (`50-` the Sound tab, 0.9.4; since 0.9.2 with the Profiles menu, editor and tab, the file check's dialog, the pages and game settings of Trap Team, SuperChargers and Imaginators with their portal panel and Toy Box button), each shot as a pad player arrives there, then walked, every result a `padwalk` line
+`00-first-start` to `55-online-guest` (`50-` the Sound tab, 0.9.4; `51-` through `55-` the Online forms and rooms; since 0.9.2 with the Profiles menu, editor and tab, the file check's dialog, the pages and game settings of Trap Team, SuperChargers and Imaginators with their portal panel and Toy Box button), each shot as a pad player arrives there, then walked, every result a `padwalk` line
 (`FAIL padwalk` for a stop never reached, a move out of reading order, B or LB / RB not doing their job). The Spyro's Adventure
 views want `SKY_LAUNCHER_TEST_DROP`; without a disc they show its no-disc state. `SKY_SAVE_DIR` and `SKY_COLLECTION` scratch.
 With `SKY_LAUNCHER_TEST_INSTALL=1` and `SKY_LAUNCHER_KIT=$PWD/build/fake-kit` it shows the install screens instead

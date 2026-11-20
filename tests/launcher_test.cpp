@@ -1756,6 +1756,8 @@ int AccentChecks(const std::filesystem::path& scratch); // tests/accent_test.cpp
 int AccentChecksInChild(const char* executable, const std::filesystem::path& scratch);
 int MusicChecks(const std::filesystem::path& scratch); // tests/music_test.cpp
 int ProfilesChecks(const std::filesystem::path& scratch); // tests/profiles_test.cpp
+int OnlineUiChecks(const std::filesystem::path& scratch);
+int OnlineChecks(const std::filesystem::path& scratch); // tests/online_test.cpp
 int CopyChecks(const std::filesystem::path& scratch, const std::string& ssaIso,
     const std::string& giantsIso); // tests/copy_test.cpp
 int PortableChecks(const std::filesystem::path& scratch); // tests/portable_test.cpp
@@ -2306,7 +2308,7 @@ static void PadWalkChecks(const std::filesystem::path& scratch, const std::strin
         if (line.starts_with("padwalk: ") && line.find(" views") != std::string::npos)
             views = std::atoi(line.c_str() + 9);
     }
-    EXPECT(views == 51);
+    EXPECT(views == 56);
     printf("Pad walk: %d views, every control reached, B and LB / RB checked\n", views);
 }
 
@@ -2956,6 +2958,10 @@ static int RunChecks(int argc, char** argv)
         return MusicChecks(scratch) == 0 ? 0 : 1;
     if (skyenv::Get("SKY_LAUNCHER_TEST_PROFILES_ONLY") != nullptr) // only the player profiles (quick to rerun)
         return ProfilesChecks(scratch) == 0 ? 0 : 1;
+    if (skyenv::Get("SKY_LAUNCHER_TEST_ONLINE_UI_ONLY") != nullptr)
+        return OnlineUiChecks(scratch / "online-ui") == 0 ? 0 : 1;
+    if (skyenv::Get("SKY_LAUNCHER_TEST_ONLINE_ONLY") != nullptr) // only the online room (quick to rerun)
+        return OnlineChecks(scratch / "online") == 0 ? 0 : 1;
     if (skyenv::Get("SKY_LAUNCHER_TEST_SHELL_ONLY") != nullptr)
         return ShellChecks(scratch) == 0 ? 0 : 1;
     if (skyenv::Get("SKY_LAUNCHER_TEST_SETTINGS_ONLY") != nullptr)
@@ -3028,7 +3034,9 @@ static int RunChecks(int argc, char** argv)
         const char* arguments[] = { argv[0], "--channel-switch", folder.c_str(), nullptr };
         SDL_Process* process = SDL_CreateProcess(arguments, false);
         int code = -1;
-        if (process != nullptr)
+        if (process == nullptr)
+            printf("Online room checks: cannot start %s: %s\n", argv[0], SDL_GetError());
+        else
         {
             SDL_WaitProcess(process, true, &code);
             SDL_DestroyProcess(process);
@@ -3060,6 +3068,29 @@ static int RunChecks(int argc, char** argv)
     g_failures += AccentChecksInChild(argv[0], scratch);
     g_failures += MusicChecks(scratch);
     g_failures += ProfilesChecks(scratch);
+    {
+        // A denied listening socket must not let a room assertion abort unrelated checks.
+        SDL_Environment* environment = SDL_CreateEnvironment(true);
+        SDL_SetEnvironmentVariable(environment, "SKY_LAUNCHER_TEST_ONLINE_ONLY", "1", true);
+        const std::string folder = (scratch / "online").string();
+        const char* arguments[] = { argv[0], "--no-disc", folder.c_str(), nullptr };
+        const SDL_PropertiesID properties = SDL_CreateProperties();
+        SDL_SetPointerProperty(properties, SDL_PROP_PROCESS_CREATE_ARGS_POINTER, arguments);
+        SDL_SetPointerProperty(properties, SDL_PROP_PROCESS_CREATE_ENVIRONMENT_POINTER, environment);
+        SDL_Process* process = SDL_CreateProcessWithProperties(properties);
+        SDL_DestroyProperties(properties);
+        SDL_DestroyEnvironment(environment);
+        int code = -1;
+        if (process != nullptr)
+        {
+            SDL_WaitProcess(process, true, &code);
+            SDL_DestroyProcess(process);
+        }
+        if (code != 0)
+            printf("Online room checks: child exited %d\n", code);
+        EXPECT(code == 0);
+    }
+    g_failures += OnlineUiChecks(scratch / "online-ui");
     g_failures += AchievementChecks();
     SceneChecks(scratch);
 
@@ -3637,3 +3668,5 @@ int main(int argc, char** argv)
         return 1;
     }
 }
+
+#include "online_ui_test.cpp"

@@ -4,6 +4,7 @@
 #include "launcher/ui/launcher_ui.h"
 #include "launcher/env.h"
 #include "launcher/game_names.h"
+#include "launcher/online/session_launch.h"
 #include "launcher/ui/collection_model.h"
 #include "shared/collection/progress.h"
 #include "shared/collection/save_backup.h"
@@ -523,7 +524,15 @@ namespace launcher_ui
 
     App::App(
         const GameInfo& game, const std::string& configPath, LauncherConfig& config, const LauncherOptions& options)
-        : m_configPath(configPath), m_config(config), m_session(GameIds())
+        : m_configPath(configPath), m_config(config), m_session(GameIds(), [](const std::string& id) {
+              if (savebackup::GameRunning(FoldersOf(id).saves))
+                  return true;
+              std::ifstream destination(LauncherDataFolder() / "online" / "destination.txt");
+              std::string path, game;
+              std::getline(destination, path);
+              std::getline(destination, game);
+              return game == id && savebackup::GameRunning(LauncherDataFolder() / "online" / "session" / "saves");
+          })
     {
         LoadProfiles(); // before anything reads the settings: the active profile's keys and languages
         m_s = &SlotFor(FindEnabledGame(game.id, config) != nullptr ? game : *FindGame("ssa"));
@@ -542,6 +551,8 @@ namespace launcher_ui
                 continue;
             SeedGameVideo(m_config, each.id); // each game starts from the video settings the player already had
         }
+        UpdateLanguage();
+        RecoverOnline();
         MigrateInput(m_config); // and the keys of an older launcher become the global layout
     }
 
@@ -645,6 +656,13 @@ namespace launcher_ui
 
     void App::Shutdown()
     {
+        m_online.router.Close();
+        for (auto*& picture : m_online.pictures)
+        {
+            if (picture)
+                SDL_DestroyTexture(picture);
+            picture = nullptr;
+        }
         m_portal.Stop();
         for (auto& slot : m_slots)
         {
@@ -734,6 +752,7 @@ namespace launcher_ui
                 HandleEvent(event);
             PollSlots();
             PollGame();
+            PollOnline();
             PollToyboxWindow();
             CheckQueuedDiscs();
             PollUpdateAll();
@@ -1163,7 +1182,24 @@ namespace launcher_ui
             Toast(Tr("Direct3D 12 showed nothing: the game starts again with Vulkan"), ui::ToastKind::Info);
             return;
         }
+        const bool fromRoom = m_online.launched || m_online.recovering;
+        if (fromRoom)
+        {
+            RecoverOnline();
+            if (m_online.recovering && !m_online.error.empty())
+                Toast(m_online.error, ui::ToastKind::Error);
+            m_online.with.clear();
+            CloseOnline();
+        }
         const GameInfo* game = FindGame(ended->game);
+        // The game's "Play online" (its F3 menu) quit to open this game's Online page.
+        if (game != nullptr && !fromRoom && online::TakeOpenOnline(FoldersOf(game->id).saves) == game->id)
+        {
+            if (m_s->game.id != game->id)
+                SelectGame(*game);
+            OpenOnline();
+            return;
+        }
         if (game != nullptr) // a hang the player ended exits 0 or is stopped here: the movie lines are what tells
             OfferDiscCheck(*game);
         if (!ended->ours || ended->stopped || ended->exitCode == 0 || game == nullptr)
@@ -2331,7 +2367,9 @@ namespace launcher_ui
         {
             const uint64_t now = SDL_GetTicks();
             const uint64_t seconds = m_testHero ? 42 : (now - std::min(now, m_sessionStart)) / 1000;
-            status = Tf("Playing now · {} this session", fmt::format("{}:{:02}", seconds / 60, seconds % 60));
+            status = m_online.with.empty()
+                         ? Tf("Playing now · {} this session", fmt::format("{}:{:02}", seconds / 60, seconds % 60))
+                         : Tf("Online with {}", m_online.with);
         }
         if (play.stopping)
             status = Tr("Stopping...");
@@ -2394,6 +2432,14 @@ namespace launcher_ui
             action.progress = m_s->verify.progress;
             action.indeterminate = m_s->verify.progress >= 0.97f;
         }
+        const bool onlineAvailable = !play.running && m_session.Running().empty() && play.ready && !play.install &&
+                                     !play.installing && !m_s->installed.runtime.empty();
+        ui::ButtonOptions onlineButton;
+        onlineButton.size = ui::Size::Large;
+        onlineButton.overArt = true;
+        const float onlineWidth = ui::ButtonWidth(Tr("Online"), onlineButton);
+        if (onlineAvailable)
+            action.width = std::min(action.width, leftW - ui::height::MainGear - 2 * ui::space::S - onlineWidth);
         const MainActionHit hit = DrawMainAction(ImVec2(left, buttonY), action);
         const ImVec2 actionMin = ImGui::GetItemRectMin(), actionMax = ImGui::GetItemRectMax();
         if (m_testRunning || m_testHero)
@@ -2415,6 +2461,13 @@ namespace launcher_ui
                 StartInstall();
             else
                 PlayNow();
+        }
+        if (onlineAvailable)
+        {
+            ImGui::SetCursorScreenPos(ImVec2(left + action.width + ui::height::MainGear + 2 * ui::space::S,
+                buttonY + (ui::height::Main - ui::height::Large) / 2));
+            if (ui::Button(Tr("Online"), onlineButton))
+                OpenOnline();
         }
         if (play.showGame)
         {
@@ -2862,6 +2915,15 @@ namespace launcher_ui
             return;
         }
         DrawLauncherLanguage();
+        ui::SectionHeader(Tr("Online"));
+        if (ui::BeginSettings("##onlinesettings"))
+        {
+            ui::SettingRow(Tr("Allow cross-platform sessions (not tested)"));
+            bool enabled = ParseBool(SettingGet(m_config, "launcher", "online_cross_platform", "0"));
+            if (ui::Toggle("##onlinecrossplatform", &enabled))
+                Set("launcher", "online_cross_platform", enabled ? "1" : "0");
+            ui::EndSettings();
+        }
         ui::SectionHeader(Tr("Updates"));
         DrawUpdates();
         ui::SectionHeader(Tr("Game music"));
@@ -3018,6 +3080,8 @@ namespace launcher_ui
             m_backPage = Page::Play;
         else if (page == Page::Collection && GameSubPage(m_page))
             m_backPage = Page::Play;
+        if (m_page == Page::Online && page != Page::Online && !m_online.launched)
+            CloseOnline();
         m_page = page;
         m_capturing = nullptr;
         m_toyboxPadCapturing = nullptr;
@@ -3253,6 +3317,7 @@ namespace launcher_ui
             case Page::GameSettings: DrawGameSettings(); break;
             case Page::Achievements: DrawAchievements(); break;
             case Page::Chests: DrawChests(); break;
+            case Page::Online: DrawOnline(); break;
             }
             ImGui::End();
             ImGui::PopStyleVar();
@@ -3313,7 +3378,8 @@ namespace launcher_ui
                 "05-result" };
             if (m_testPadWalk || m_testExperimental || m_testProfiles || m_testHero || m_testHdTex || m_testButtons ||
                 m_testSidebar || m_testCopy || m_testLogo || m_testKeys || !m_testGameTabs.empty() || m_testPad ||
-                m_testAchievements || m_testChests || m_testRunning || m_testScreens != 0 || !m_testKit.empty())
+                m_testAchievements || m_testChests || LauncherEnv("SKY_LAUNCHER_TEST_ONLINE_UI") || m_testRunning ||
+                m_testScreens != 0 || !m_testKit.empty())
                 Screenshot(m_testShot.c_str());
             else if (m_testUninstall)
                 Screenshot(UninstallNames[std::min<int>(m_testStep, int(std::size(UninstallNames)) - 1)]);
@@ -4665,6 +4731,11 @@ namespace launcher_ui
         if (m_shots.empty() || m_testAt != 0)
             return;
         uint64_t now = SDL_GetTicks();
+        if (LauncherEnv("SKY_LAUNCHER_TEST_ONLINE_UI"))
+        {
+            TestOnlineScript(now);
+            return;
+        }
         if (m_testPadWalk)
         {
             TestPadWalkScript(now);
@@ -5214,3 +5285,6 @@ std::string RunLauncherWindow(const GameInfo& game, const std::string& configPat
         *played = &app.ChosenGame();
     return chosen;
 }
+
+// These pages share the window translation unit to keep the explicit build source list unchanged.
+#include "launcher/ui/online_page.cpp"

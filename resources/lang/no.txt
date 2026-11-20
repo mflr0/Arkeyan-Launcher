@@ -1251,3 +1251,56 @@ Swap players?	Bytte spillere?
 Swap	Bytt
 {} goes on {}, and {} on {}.	{} går til {} og {} til {}.
 Players swapped	Spillerne byttet plass
+
+# Online
+Address	Adresse
+Allow cross-platform sessions (not tested)	Tillat spill mellom systemer (ikke testet)
+Connect	Koble til
+Couldn't read a figure; choose your figures again in Collection.	Kunne ikke lese en figur; velg figurene dine på nytt i Samling.
+Couldn't read your picture; choose it again in your profile.	Kunne ikke lese bildet ditt; velg det på nytt i profilen din.
+Couldn't read your saves; check that their folder is accessible.	Kunne ikke lese lagringene dine; sjekk at mappen er tilgjengelig.
+Couldn't restore the session's saves or figures; check the data folder and restart.	Kunne ikke gjenopprette øktens lagringer eller figurer; sjekk datamappen og start på nytt.
+Couldn't start the online game; check your game installation and try again.	Kunne ikke starte nettspillet; sjekk spillinstallasjonen og prøv igjen.
+Game default	Spillets standard
+Host	Vær vert
+Join	Bli med
+Leave	Forlat
+Measuring the connection...	Måler tilkoblingen...
+No figures chosen	Ingen figurer valgt
+Online	På nett
+Online room	Nettrom
+Online with {}	På nett med {}
+Open room	Åpne rom
+Open the port automatically	Åpne porten automatisk
+Opening the router's port...	Åpner ruterens port...
+Password (optional)	Passord (valgfritt)
+Player {} · {}	Spiller {} · {}
+Port	Port
+Port not opened; open port {} UDP and TCP on your router.	Porten ble ikke åpnet; åpne port {} for UDP og TCP på ruteren.
+Round trip: {} ms · Input delay: {} frames	Tur-retur: {} ms · Inndataforsinkelse: {} bilder
+Start	Start
+The connection failed; open or join a room again.	Tilkoblingen mislyktes; åpne eller bli med i et rom igjen.
+The host didn't answer; check the address and ask them to open the room.	Verten svarte ikke; sjekk adressen og be verten åpne rommet.
+The other player left; open or join a room again.	Den andre spilleren forlot rommet; åpne eller bli med i et rom igjen.
+The other player stopped answering; check your connection and reconnect.	Den andre spilleren sluttet å svare; sjekk tilkoblingen og koble til igjen.
+The password doesn't match; ask the host and try again.	Passordet stemmer ikke; spør verten og prøv igjen.
+This address isn't valid; paste the host's IP:port.	Adressen er ugyldig; lim inn vertens IP:port.
+This port is busy; choose another port.	Porten er opptatt; velg en annen port.
+This room is full; ask the host to open another room.	Rommet er fullt; be verten åpne et nytt rom.
+Waiting for the other player...	Venter på den andre spilleren...
+You chose different games; choose the same game.	Dere valgte ulike spill; velg det samme spillet.
+Your disc editions differ; use the same disc edition.	Dere har ulike plateutgaver; bruk samme utgave.
+Your game versions differ; update both games.	Dere har ulike spillversjoner; oppdater begge spillene.
+Your games don't match; check both games and launchers.	Spillene deres samsvarer ikke; sjekk begge spillene og startprogrammene.
+Your launcher versions differ; update both launchers.	Dere har ulike versjoner av startprogrammet; oppdater begge.
+Your room	Ditt rom
+Your rooms aren't compatible; update both launchers.	Rommene er ikke kompatible; oppdater begge startprogrammene.
+Your saves exceed 64 MB; remove unused saves first.	Lagringene dine overstiger 64 MB; fjern ubrukte lagringer først.
+Your systems differ; both players must allow cross-platform sessions.	Dere har ulike systemer; begge må tillate spill mellom systemer.
+{} FPS · Text: {} · Voices: {}	{} FPS · Tekst: {} · Stemmer: {}
+This port isn't valid; choose a number from 1 to 65535.	Porten er ugyldig; velg et tall fra 1 til 65535.
+Round trip: {} ms · Input delay: 1 frame	Tur-retur: {} ms · Inndataforsinkelse: 1 bilde
+The games lost sync; reopen the room and try again	Spillene er ikke lenger synkronisert; åpne rommet på nytt og prøv igjen
+Your frame rates differ; choose the same frame rate	Bildefrekvensene deres er ulike; velg samme bildefrekvens
+The portal figures didn't match; choose your figures again in Collection	Portalfigurene samsvarer ikke; velg figurene dine på nytt i Samling
+The online session ended unexpectedly; reopen the room and try again	Nettspillet ble avsluttet uventet; åpne rommet på nytt og prøv igjen

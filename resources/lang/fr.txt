@@ -1084,7 +1084,7 @@ Doubles the game's textures from your disc. About {} of disk, a few minutes.	Dou
 Needs newer game tools: reinstall the game to get them.	Il faut des outils de jeu plus récents : réinstallez le jeu pour les obtenir.
 Quit the game first.	Quittez d'abord le jeu.
 They are made when the game is installed.	Elles sont créées à l'installation du jeu.
-Making the HD textures. You can keep using the launcher; the game waits.	Création des textures HD. Vous pouvez continuer à utiliser le lanceur ; le jeu attend.
+Making the HD textures. You can keep using the launcher; the game waits.	Création des textures HD. Vous pouvez continuer à utiliser le launcher ; le jeu attend.
 Removing the HD textures.	Suppression des textures HD.
 HD textures ready	Textures HD prêtes
 HD textures removed	Textures HD supprimées
@@ -1280,3 +1280,56 @@ Swap players?	Échanger les joueurs ?
 Swap	Échanger
 {} goes on {}, and {} on {}.	{} va sur {}, et {} sur {}.
 Players swapped	Joueurs échangés
+
+# Online
+Address	Adresse
+Allow cross-platform sessions (not tested)	Autoriser les parties entre systèmes (non testé)
+Connect	Se connecter
+Couldn't read a figure; choose your figures again in Collection.	Impossible de lire une figurine ; choisissez vos figurines dans Collection.
+Couldn't read your picture; choose it again in your profile.	Impossible de lire votre image ; choisissez-la dans votre profil.
+Couldn't read your saves; check that their folder is accessible.	Impossible de lire vos sauvegardes ; vérifiez l'accès à leur dossier.
+Couldn't restore the session's saves or figures; check the data folder and restart.	Impossible de récupérer les sauvegardes ou figurines de la partie ; vérifiez le dossier de données et redémarrez.
+Couldn't start the online game; check your game installation and try again.	Impossible de lancer la partie en ligne ; vérifiez l'installation du jeu et réessayez.
+Game default	Choix du jeu
+Host	Héberger
+Join	Rejoindre
+Leave	Quitter
+Measuring the connection...	Mesure de la connexion...
+No figures chosen	Aucune figurine choisie
+Online	En ligne
+Online room	Salon en ligne
+Online with {}	En ligne avec {}
+Open room	Ouvrir le salon
+Open the port automatically	Ouvrir le port automatiquement
+Opening the router's port...	Ouverture du port du routeur...
+Password (optional)	Mot de passe (facultatif)
+Player {} · {}	Joueur {} · {}
+Port	Port
+Port not opened; open port {} UDP and TCP on your router.	Port non ouvert ; ouvrez le port {} en UDP et TCP sur votre routeur.
+Round trip: {} ms · Input delay: {} frames	Aller-retour : {} ms · Retard des commandes : {} images
+Start	Lancer
+The connection failed; open or join a room again.	La connexion a échoué ; ouvrez ou rejoignez un salon.
+The host didn't answer; check the address and ask them to open the room.	L'hôte n'a pas répondu ; vérifiez l'adresse et demandez-lui d'ouvrir le salon.
+The other player left; open or join a room again.	L'autre joueur est parti ; ouvrez ou rejoignez un salon.
+The other player stopped answering; check your connection and reconnect.	L'autre joueur ne répond plus ; vérifiez votre connexion et reconnectez-vous.
+The password doesn't match; ask the host and try again.	Le mot de passe ne correspond pas ; demandez-le à l'hôte et réessayez.
+This address isn't valid; paste the host's IP:port.	Cette adresse n'est pas valide ; collez l'adresse IP:port de l'hôte.
+This port is busy; choose another port.	Ce port est occupé ; choisissez un autre port.
+This room is full; ask the host to open another room.	Ce salon est complet ; demandez à l'hôte d'en ouvrir un autre.
+Waiting for the other player...	En attente de l'autre joueur...
+You chose different games; choose the same game.	Vous avez choisi des jeux différents ; choisissez le même jeu.
+Your disc editions differ; use the same disc edition.	Vos éditions du disque diffèrent ; utilisez la même édition.
+Your game versions differ; update both games.	Vos versions du jeu diffèrent ; mettez les deux jeux à jour.
+Your games don't match; check both games and launchers.	Vos jeux ne correspondent pas ; vérifiez les deux jeux et launchers.
+Your launcher versions differ; update both launchers.	Vos versions du launcher diffèrent ; mettez les deux launchers à jour.
+Your room	Votre salon
+Your rooms aren't compatible; update both launchers.	Vos salons ne sont pas compatibles ; mettez les deux launchers à jour.
+Your saves exceed 64 MB; remove unused saves first.	Vos sauvegardes dépassent 64 Mo ; supprimez celles que vous n'utilisez plus.
+Your systems differ; both players must allow cross-platform sessions.	Vos systèmes diffèrent ; vous devez tous les deux autoriser les parties entre systèmes.
+{} FPS · Text: {} · Voices: {}	{} FPS · Texte : {} · Voix : {}
+This port isn't valid; choose a number from 1 to 65535.	Ce port n'est pas valide ; choisissez un nombre de 1 à 65535.
+Round trip: {} ms · Input delay: 1 frame	Aller-retour : {} ms · Retard des commandes : 1 image
+The games lost sync; reopen the room and try again	Les jeux se sont désynchronisés ; rouvrez le salon et réessayez
+Your frame rates differ; choose the same frame rate	Vos fréquences d'images diffèrent ; choisissez la même fréquence
+The portal figures didn't match; choose your figures again in Collection	Les figurines du portail diffèrent ; choisissez vos figurines dans Collection
+The online session ended unexpectedly; reopen the room and try again	La partie en ligne s'est arrêtée ; rouvrez le salon et réessayez

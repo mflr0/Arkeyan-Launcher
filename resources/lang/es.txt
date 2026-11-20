@@ -1250,3 +1250,56 @@ Swap players?	¿Intercambiar jugadores?
 Swap	Intercambiar
 {} goes on {}, and {} on {}.	{} va a {} y {} a {}.
 Players swapped	Jugadores intercambiados
+
+# Online
+Address	Dirección
+Allow cross-platform sessions (not tested)	Permitir partidas entre sistemas (sin probar)
+Connect	Conectar
+Couldn't read a figure; choose your figures again in Collection.	No se pudo leer una figura; vuelve a elegir tus figuras en Colección.
+Couldn't read your picture; choose it again in your profile.	No se pudo leer tu imagen; vuelve a elegirla en tu perfil.
+Couldn't read your saves; check that their folder is accessible.	No se pudieron leer tus partidas; comprueba el acceso a su carpeta.
+Couldn't restore the session's saves or figures; check the data folder and restart.	No se pudieron recuperar las partidas o figuras de la sesión; revisa la carpeta de datos y reinicia.
+Couldn't start the online game; check your game installation and try again.	No se pudo iniciar la partida en línea; revisa la instalación del juego e inténtalo de nuevo.
+Game default	Predeterminado del juego
+Host	Crear partida
+Join	Unirse
+Leave	Salir
+Measuring the connection...	Midiendo la conexión...
+No figures chosen	Sin figuras elegidas
+Online	En línea
+Online room	Sala en línea
+Online with {}	En línea con {}
+Open room	Abrir sala
+Open the port automatically	Abrir el puerto automáticamente
+Opening the router's port...	Abriendo el puerto del rúter...
+Password (optional)	Contraseña (opcional)
+Player {} · {}	Jugador {} · {}
+Port	Puerto
+Port not opened; open port {} UDP and TCP on your router.	Puerto no abierto; abre el puerto {} UDP y TCP en tu rúter.
+Round trip: {} ms · Input delay: {} frames	Ida y vuelta: {} ms · Retardo de entrada: {} fotogramas
+Start	Iniciar
+The connection failed; open or join a room again.	La conexión falló; vuelve a abrir una sala o únete de nuevo.
+The host didn't answer; check the address and ask them to open the room.	El anfitrión no respondió; revisa la dirección y pídele que abra la sala.
+The other player left; open or join a room again.	El otro jugador se fue; vuelve a abrir una sala o únete de nuevo.
+The other player stopped answering; check your connection and reconnect.	El otro jugador dejó de responder; revisa tu conexión y vuelve a conectarte.
+The password doesn't match; ask the host and try again.	La contraseña no coincide; pregunta al anfitrión e inténtalo de nuevo.
+This address isn't valid; paste the host's IP:port.	Esta dirección no es válida; pega la IP:puerto del anfitrión.
+This port is busy; choose another port.	Este puerto está ocupado; elige otro puerto.
+This room is full; ask the host to open another room.	Esta sala está llena; pide al anfitrión que abra otra.
+Waiting for the other player...	Esperando al otro jugador...
+You chose different games; choose the same game.	Habéis elegido juegos distintos; elegid el mismo juego.
+Your disc editions differ; use the same disc edition.	Vuestras ediciones del disco son distintas; usad la misma edición.
+Your game versions differ; update both games.	Vuestras versiones del juego son distintas; actualizad ambos juegos.
+Your games don't match; check both games and launchers.	Vuestros juegos no coinciden; revisad ambos juegos y lanzadores.
+Your launcher versions differ; update both launchers.	Vuestras versiones del lanzador son distintas; actualizad ambos lanzadores.
+Your room	Tu sala
+Your rooms aren't compatible; update both launchers.	Vuestras salas no son compatibles; actualizad ambos lanzadores.
+Your saves exceed 64 MB; remove unused saves first.	Tus partidas superan los 64 MB; borra primero las que no uses.
+Your systems differ; both players must allow cross-platform sessions.	Vuestros sistemas son distintos; ambos debéis permitir partidas entre sistemas.
+{} FPS · Text: {} · Voices: {}	{} FPS · Texto: {} · Voces: {}
+This port isn't valid; choose a number from 1 to 65535.	Este puerto no es válido; elige un número del 1 al 65535.
+Round trip: {} ms · Input delay: 1 frame	Ida y vuelta: {} ms · Retardo de entrada: 1 fotograma
+The games lost sync; reopen the room and try again	Los juegos perdieron la sincronización; vuelve a abrir la sala e inténtalo de nuevo
+Your frame rates differ; choose the same frame rate	Vuestras tasas de fotogramas difieren; elegid la misma
+The portal figures didn't match; choose your figures again in Collection	Las figuras del portal no coinciden; vuelve a elegir tus figuras en Colección
+The online session ended unexpectedly; reopen the room and try again	La partida en línea terminó de forma inesperada; vuelve a abrir la sala e inténtalo de nuevo

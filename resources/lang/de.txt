@@ -1248,3 +1248,56 @@ Swap players?	Spieler tauschen?
 Swap	Tauschen
 {} goes on {}, and {} on {}.	{} kommt auf {} und {} auf {}.
 Players swapped	Spieler getauscht
+
+# Online
+Address	Adresse
+Allow cross-platform sessions (not tested)	Sitzungen zwischen Systemen erlauben (ungetestet)
+Connect	Verbinden
+Couldn't read a figure; choose your figures again in Collection.	Eine Figur konnte nicht gelesen werden; wähle deine Figuren erneut in der Sammlung.
+Couldn't read your picture; choose it again in your profile.	Dein Bild konnte nicht gelesen werden; wähle es erneut in deinem Profil.
+Couldn't read your saves; check that their folder is accessible.	Deine Spielstände konnten nicht gelesen werden; prüfe den Zugriff auf ihren Ordner.
+Couldn't restore the session's saves or figures; check the data folder and restart.	Spielstände oder Figuren der Sitzung konnten nicht wiederhergestellt werden; prüfe den Datenordner und starte neu.
+Couldn't start the online game; check your game installation and try again.	Das Online-Spiel konnte nicht starten; prüfe die Spielinstallation und versuche es erneut.
+Game default	Spielvorgabe
+Host	Hosten
+Join	Beitreten
+Leave	Verlassen
+Measuring the connection...	Verbindung wird gemessen...
+No figures chosen	Keine Figuren gewählt
+Online	Online
+Online room	Online-Raum
+Online with {}	Online mit {}
+Open room	Raum öffnen
+Open the port automatically	Port automatisch öffnen
+Opening the router's port...	Router-Port wird geöffnet...
+Password (optional)	Passwort (optional)
+Player {} · {}	Spieler {} · {}
+Port	Port
+Port not opened; open port {} UDP and TCP on your router.	Port nicht geöffnet; öffne Port {} für UDP und TCP am Router.
+Round trip: {} ms · Input delay: {} frames	Umlaufzeit: {} ms · Eingabeverzögerung: {} Frames
+Start	Starten
+The connection failed; open or join a room again.	Die Verbindung ist fehlgeschlagen; öffne einen Raum oder tritt erneut bei.
+The host didn't answer; check the address and ask them to open the room.	Der Host antwortet nicht; prüfe die Adresse und bitte ihn, den Raum zu öffnen.
+The other player left; open or join a room again.	Der andere Spieler ist gegangen; öffne einen Raum oder tritt erneut bei.
+The other player stopped answering; check your connection and reconnect.	Der andere Spieler antwortet nicht mehr; prüfe deine Verbindung und verbinde dich erneut.
+The password doesn't match; ask the host and try again.	Das Passwort stimmt nicht; frage den Host und versuche es erneut.
+This address isn't valid; paste the host's IP:port.	Diese Adresse ist ungültig; füge IP:Port des Hosts ein.
+This port is busy; choose another port.	Dieser Port ist belegt; wähle einen anderen Port.
+This room is full; ask the host to open another room.	Dieser Raum ist voll; bitte den Host, einen anderen zu öffnen.
+Waiting for the other player...	Warten auf den anderen Spieler...
+You chose different games; choose the same game.	Ihr habt verschiedene Spiele gewählt; wählt dasselbe Spiel.
+Your disc editions differ; use the same disc edition.	Eure Disc-Ausgaben unterscheiden sich; verwendet dieselbe Ausgabe.
+Your game versions differ; update both games.	Eure Spielversionen unterscheiden sich; aktualisiert beide Spiele.
+Your games don't match; check both games and launchers.	Eure Spiele stimmen nicht überein; prüft beide Spiele und Launcher.
+Your launcher versions differ; update both launchers.	Eure Launcher-Versionen unterscheiden sich; aktualisiert beide Launcher.
+Your room	Dein Raum
+Your rooms aren't compatible; update both launchers.	Eure Räume sind nicht kompatibel; aktualisiert beide Launcher.
+Your saves exceed 64 MB; remove unused saves first.	Deine Spielstände überschreiten 64 MB; entferne zuerst ungenutzte Spielstände.
+Your systems differ; both players must allow cross-platform sessions.	Eure Systeme unterscheiden sich; beide müssen Sitzungen zwischen Systemen erlauben.
+{} FPS · Text: {} · Voices: {}	{} FPS · Text: {} · Stimmen: {}
+This port isn't valid; choose a number from 1 to 65535.	Dieser Port ist ungültig; wähle eine Zahl von 1 bis 65535.
+Round trip: {} ms · Input delay: 1 frame	Umlaufzeit: {} ms · Eingabeverzögerung: 1 Frame
+The games lost sync; reopen the room and try again	Die Spiele sind nicht mehr synchron; öffne den Raum erneut und versuche es noch einmal
+Your frame rates differ; choose the same frame rate	Eure Bildraten unterscheiden sich; wählt dieselbe Bildrate
+The portal figures didn't match; choose your figures again in Collection	Die Portalfiguren stimmen nicht überein; wähle deine Figuren erneut in der Sammlung
+The online session ended unexpectedly; reopen the room and try again	Die Online-Sitzung endete unerwartet; öffne den Raum erneut und versuche es noch einmal
