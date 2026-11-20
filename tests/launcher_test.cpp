@@ -447,7 +447,8 @@ namespace
                    !catalogue.Accepts("trapteam", 3440));
         }
 
-        // SuperChargers and Imaginators take a trap on its own seat, and refuse Clown Cruiser and Barrel Blaster.
+        // SuperChargers and Imaginators take a trap on its own seat, and refuse the Wii-only toys: Clown Cruiser, Barrel
+        // Blaster and their drivers.
         for (const char* id : { "superchargers", "imaginators" })
         {
             const collection::Game* game = catalogue.FindGame(id);
@@ -461,6 +462,7 @@ namespace
             }
             EXPECT(trapSeat && catalogue.Accepts(id, 210));
             EXPECT(!catalogue.Accepts(id, 3233) && !catalogue.Accepts(id, 3240));
+            EXPECT(!catalogue.Accepts(id, 3423) && !catalogue.Accepts(id, 3424));
         }
 
         // Migration: copied, never moved; a second pass copies nothing.
