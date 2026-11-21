@@ -1,6 +1,6 @@
 #include "launcher/ui/launcher_app.h"
 #include "launcher/atomic_file.h"
-#include "launcher/online/room_inputs.cpp"
+#include "launcher/online/room_inputs.h"
 #include "shared/collection/datadir.h"
 #include "shared/collection/save_backup.h"
 #include <chrono>
@@ -11,6 +11,7 @@
 #if defined(_WIN32)
 #include <winsock2.h>
 #include <ws2tcpip.h>
+#undef DrawText // windows.h's macro would rename ui::DrawText
 #else
 #include <ifaddrs.h>
 #include <arpa/inet.h>

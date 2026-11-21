@@ -331,7 +331,8 @@ int OnlineUiChecks(const std::filesystem::path& scratch)
     fs::remove(saves / "outside-link.dat");
     std::error_code linkError;
     fs::create_symlink(scratch / "runtime", saves / "outside-link.dat", linkError);
-    if (!linkError)
+    // Wine makes a Unix link that its own file system does not report as a link: nothing to refuse there.
+    if (!linkError && fs::is_symlink(saves / "outside-link.dat", linkError))
     {
         auto linked = online::ReadRoomInputs(config, profile, *game, sha, true, portal, saves);
         Expect(linked.error == online::InputError::Save, "save symlinks refused");

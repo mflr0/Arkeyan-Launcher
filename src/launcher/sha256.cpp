@@ -179,6 +179,8 @@ void Sha256::Blocks(const uint8_t* data, size_t count)
 
 void Sha256::Update(std::span<const uint8_t> data)
 {
+    if (data.empty()) // an empty span's data() may be null, which memcpy must not get
+        return;
     m_length += data.size();
     size_t at = 0;
     if (m_pendingSize != 0)
