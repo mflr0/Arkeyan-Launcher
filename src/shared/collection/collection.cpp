@@ -35,6 +35,15 @@ namespace collection
     {
         constexpr const char* IndexName = "collection.json";
 
+        // `folder`/`name`.
+        std::string Child(const std::string& folder, const std::string& name)
+        {
+            std::string path = folder;
+            path += '/';
+            path += name;
+            return path;
+        }
+
         int64_t ProcessId()
         {
 #ifdef _WIN32
@@ -298,7 +307,7 @@ namespace collection
                     if (IsDumpName(found[i]))
                         names.push_back(found[i]);
                 }
-                SDL_free(found);
+                SDL_free(reinterpret_cast<void*>(found));
             }
             std::sort(names.begin(), names.end());
             return names;
@@ -311,8 +320,14 @@ namespace collection
             std::string stem = dot == std::string::npos ? wanted : wanted.substr(0, dot);
             std::string extension = dot == std::string::npos ? ".sky" : wanted.substr(dot);
             std::string name = stem + extension;
-            for (int n = 2; Exists(folder + "/" + name); n++)
-                name = stem + " (" + std::to_string(n) + ")" + extension;
+            for (int n = 2; Exists(Child(folder, name)); n++)
+            {
+                name = stem;
+                name += " (";
+                name += std::to_string(n);
+                name += ')';
+                name += extension;
+            }
             return name;
         }
 
@@ -349,7 +364,7 @@ namespace collection
             for (const char* word : reserved)
             {
                 if (Lower(head) == Lower(word))
-                    stem = "_" + stem;
+                    stem.insert(0, 1, '_');
             }
             if (stem.size() + extension.size() > MaxNameBytes)
             {
@@ -436,6 +451,21 @@ namespace collection
         return french ? France[battleClass - 1] : figures::BattleClassName(battleClass);
     }
 
+    std::string CategoryTitle(Category category, bool french)
+    {
+        switch (category)
+        {
+        case Category::Giant: return french ? "Géant" : "Giant";
+        case Category::SwapTop:
+        case Category::SwapBottom: return "Swapper";
+        case Category::TrapMaster: return french ? "Maître du Piège" : "Trap Master";
+        case Category::SuperCharger: return "SuperCharger";
+        case Category::Sensei: return "Sensei";
+        case Category::Mini: return "Mini";
+        default: return {};
+        }
+    }
+
     std::string LevelText(const Figure& figure, const std::string& game, bool french)
     {
         if (figure.toy != nullptr && figure.toy->category == Category::CreationCrystal)
@@ -471,7 +501,8 @@ namespace collection
             snprintf(text, sizeof(text), french ? "Niveau %d (%d)" : "Level %d (%d)", cap, figure.level);
         else
             snprintf(text, sizeof(text), french ? "Niveau %d" : "Level %d", figure.level);
-        return text;
+        std::string title = figure.toy != nullptr ? CategoryTitle(figure.toy->category, french) : std::string();
+        return title.empty() ? std::string(text) : title + " · " + text;
     }
 
     std::string DefaultFolder()
@@ -970,7 +1001,7 @@ namespace collection
                     moved = SDL_RenamePath(
                                 (from + "/" + found[i]).c_str(), (to + "/" + FreeNameIn(to, found[i])).c_str()) &&
                             moved;
-                SDL_free(found);
+                SDL_free(reinterpret_cast<void*>(found));
             }
             SDL_RemovePath(from.c_str()); // empty now, else left as it is
             return moved;
@@ -1147,7 +1178,12 @@ namespace collection
         stamp.erase(std::remove(stamp.begin(), stamp.end(), ':'), stamp.end()); // 2026-10-24T101500Z
         std::string backup = folder + "/" + stamp + ".sky";
         for (int n = 2; Exists(backup); n++)
-            backup = folder + "/" + stamp + "-" + std::to_string(n) + ".sky";
+        {
+            backup = Child(folder, stamp);
+            backup += '-';
+            backup += std::to_string(n);
+            backup += ".sky";
+        }
         return CopyBytes(path, backup) ? backup : std::string();
     }
 
@@ -1182,8 +1218,8 @@ namespace collection
         for (const std::string& name : names)
         {
             FigureData tag;
-            if (!known || (LoadDump(folder + "/" + name, tag) && SameToy(tag, current)))
-                backups.push_back(folder + "/" + name);
+            if (!known || (LoadDump(Child(folder, name), tag) && SameToy(tag, current)))
+                backups.push_back(Child(folder, name));
         }
         return backups;
     }
@@ -1537,7 +1573,7 @@ namespace collection
         std::string stamp = Now();
         stamp.erase(std::remove(stamp.begin(), stamp.end(), ':'), stamp.end());
         std::string id = stamp + " " + FileName(path);
-        for (int n = 2; Exists(folder + "/" + id); n++)
+        for (int n = 2; Exists(Child(folder, id)); n++)
             id = stamp + "-" + std::to_string(n) + " " + FileName(path);
         // The index first: when it cannot be written (collection.json unreadable or bad) nothing has moved, so the file and
         // its metadata never disagree; when the move fails the entry is taken back out.
@@ -1570,13 +1606,13 @@ namespace collection
         };
         if (!record(true))
             return Refuse(error, "collection.json cannot be updated (unreadable, or kept as .bad-*)");
-        if (!SDL_RenamePath(path.c_str(), (folder + "/" + id).c_str()))
+        if (!SDL_RenamePath(path.c_str(), (Child(folder, id)).c_str()))
         {
             record(false);
             return Refuse(error, "cannot move the file to the trash");
         }
         // The figure's backups go with it, so a new figure under the same name does not inherit them.
-        if (!MoveFolder(Folder() + "/backups/" + FileName(path), folder + "/" + id + BackupsSuffix))
+        if (!MoveFolder(Folder() + "/backups/" + FileName(path), Child(folder, id) + BackupsSuffix))
             fprintf(stderr, "[collection] the backups of %s stay where they were\n", FileName(path).c_str());
         if (lock.locked)
             BreakLock(path);
@@ -1690,7 +1726,7 @@ namespace collection
             if (SDL_GetPathInfo(path.c_str(), &info) && info.type == SDL_PATHTYPE_DIRECTORY)
             {
                 for (const std::string& name : DumpNames(path))
-                    files.push_back(path + "/" + name);
+                    files.push_back(Child(path, name));
             }
             else
                 files.push_back(path);
@@ -1770,10 +1806,16 @@ namespace collection
             const std::string stem = dot == std::string::npos ? wanted : wanted.substr(0, dot);
             const std::string extension = dot == std::string::npos ? std::string() : wanted.substr(dot);
             std::string name = wanted;
-            for (int n = 2; Exists(folder + "/" + name) && LoadBounded(folder + "/" + name, there) && there != bytes;
+            for (int n = 2; Exists(Child(folder, name)) && LoadBounded(Child(folder, name), there) && there != bytes;
                 n++)
-                name = stem + " (" + std::to_string(n) + ")" + extension;
-            if (Exists(folder + "/" + name) ? there == bytes : CopyBytes(path, folder + "/" + name))
+            {
+                name = stem;
+                name += " (";
+                name += std::to_string(n);
+                name += ')';
+                name += extension;
+            }
+            if (Exists(Child(folder, name)) ? there == bytes : CopyBytes(path, Child(folder, name)))
                 copied++;
         }
         return copied;
@@ -2238,7 +2280,7 @@ namespace collection
             if (done.Has(name))
                 continue;
             std::string bytes;
-            if (!LoadBytes(source + "/" + name, bytes) || bytes.size() < sizeof(FigureData))
+            if (!LoadBytes(Child(source, name), bytes) || bytes.size() < sizeof(FigureData))
             {
                 result.failed++;
                 continue;

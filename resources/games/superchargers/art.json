@@ -14,5 +14,23 @@
   "levels": {
     "kind": "igz",
     "archive": "archives/zoneinfos.pak"
-  }
+  },
+  "icons": {
+    "element_air": { "archive": "archives/permanent.pak", "entry": "ui!ElementalIcons!DN_Air`" },
+    "element_earth": { "archive": "archives/permanent.pak", "entry": "ui!ElementalIcons!DN_Earth`" },
+    "element_fire": { "archive": "archives/permanent.pak", "entry": "ui!ElementalIcons!DN_Fire`" },
+    "element_water": { "archive": "archives/permanent.pak", "entry": "ui!ElementalIcons!DN_Water`" },
+    "element_magic": { "archive": "archives/permanent.pak", "entry": "ui!ElementalIcons!DN_Magic`" },
+    "element_tech": { "archive": "archives/permanent.pak", "entry": "ui!ElementalIcons!DN_Tech`" },
+    "element_life": { "archive": "archives/permanent.pak", "entry": "ui!ElementalIcons!DN_Life`" },
+    "element_undead": { "archive": "archives/permanent.pak", "entry": "ui!ElementalIcons!DN_Undead`" },
+    "element_light": { "archive": "archives/permanent.pak", "entry": "ui!ElementalIcons!DN_Light`" },
+    "element_dark": { "archive": "archives/permanent.pak", "entry": "ui!ElementalIcons!DN_Dark`" },
+    "ride_land": { "archive": "archives/juicedomain_permanent.pak", "entry": "Elements_Collection!CharactersCollection_VehicleLand`" },
+    "ride_sea": { "archive": "archives/juicedomain_permanent.pak", "entry": "Elements_Collection!CharactersCollection_VehicleSwim`" },
+    "ride_sky": { "archive": "archives/juicedomain_permanent.pak", "entry": "Elements_Collection!CharactersCollection_VehicleFlight`" },
+    "element_trophy_sky": { "archive": "archives/ap_trophies.pak", "entry": "ActionPacks!Trophies!SkyTrophy_Unlocked`" },
+    "element_trophy_land": { "archive": "archives/ap_trophies.pak", "entry": "ActionPacks!Trophies!LandTrophy_Unlocked`" },
+    "element_trophy_sea": { "archive": "archives/ap_trophies.pak", "entry": "ActionPacks!Trophies!SeaTrophy_Unlocked`" },
+    "element_trophy_kaos": { "archive": "archives/ap_trophies.pak", "entry": "ActionPacks!Trophies!KaosTrophy_Unlocked`" } }
 }

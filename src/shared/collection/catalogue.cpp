@@ -69,6 +69,10 @@ namespace collection
             toy.element = json.Has("element") ? ParseElement(json["element"].AsString()) : Element::None;
             toy.category = ParseCategory(json["category"].AsString());
             toy.edition = json.Has("edition") ? ParseVariantKind(json["edition"].AsString()) : VariantKind::Base;
+            toy.swapType = json["swap_type"].AsString();
+            toy.battleClass = uint8_t(std::clamp<int64_t>(json["battle_class"].AsInt(), 0, 11));
+            toy.elementIcon = json["element_icon"].AsString();
+            toy.ride = json["ride"].AsString();
             toy.game = json["game"].AsString();
             if (toy.element == Element::Count || toy.category == Category::Count || toy.edition == VariantKind::Count)
             {

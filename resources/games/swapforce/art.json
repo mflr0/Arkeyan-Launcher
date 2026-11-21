@@ -32,5 +32,22 @@
   "levels": {
     "kind": "mua",
     "archive": "archives/zoneinfos.pak"
-  }
+  },
+  "icons": {
+    "element_air": { "archive": "archives/permanent.pak", "entry": "textures\\juicestandard_dn_air_10" },
+    "element_earth": { "archive": "archives/permanent.pak", "entry": "textures\\juicestandard_dn_earth_10" },
+    "element_fire": { "archive": "archives/permanent.pak", "entry": "textures\\juicestandard_dn_fire_10" },
+    "element_water": { "archive": "archives/permanent.pak", "entry": "textures\\juicestandard_dn_water_10" },
+    "element_magic": { "archive": "archives/permanent.pak", "entry": "textures\\juicestandard_dn_magic_10" },
+    "element_tech": { "archive": "archives/permanent.pak", "entry": "textures\\juicestandard_dn_tech_10" },
+    "element_life": { "archive": "archives/permanent.pak", "entry": "textures\\juicestandard_dn_life_10" },
+    "element_undead": { "archive": "archives/permanent.pak", "entry": "textures\\juicestandard_dn_undead_10" },
+    "swap_bouncer": { "archive": "archives/permanent.pak", "entry": "textures\\juicestandard_turbo_hud_bou_", "tint": "black", "under": { "archive": "archives/juicedomain_permanent.pak", "entry": "textures\\juicestandard_turbo_hud_bg_" } },
+    "swap_digger": { "archive": "archives/permanent.pak", "entry": "textures\\juicestandard_turbo_hud_bur_", "tint": "black", "under": { "archive": "archives/juicedomain_permanent.pak", "entry": "textures\\juicestandard_turbo_hud_bg_" } },
+    "swap_climber": { "archive": "archives/permanent.pak", "entry": "textures\\juicestandard_turbo_hud_cli_", "tint": "black", "under": { "archive": "archives/juicedomain_permanent.pak", "entry": "textures\\juicestandard_turbo_hud_bg_" } },
+    "swap_flyer": { "archive": "archives/permanent.pak", "entry": "textures\\juicestandard_turbo_hud_roc_", "tint": "black", "under": { "archive": "archives/juicedomain_permanent.pak", "entry": "textures\\juicestandard_turbo_hud_bg_" } },
+    "swap_speeder": { "archive": "archives/permanent.pak", "entry": "textures\\juicestandard_turbo_hud_spe_", "tint": "black", "under": { "archive": "archives/juicedomain_permanent.pak", "entry": "textures\\juicestandard_turbo_hud_bg_" } },
+    "swap_sneaker": { "archive": "archives/permanent.pak", "entry": "textures\\juicestandard_turbo_hud_ste_", "tint": "black", "under": { "archive": "archives/juicedomain_permanent.pak", "entry": "textures\\juicestandard_turbo_hud_bg_" } },
+    "swap_teleporter": { "archive": "archives/permanent.pak", "entry": "textures\\juicestandard_turbo_hud_tel_", "tint": "black", "under": { "archive": "archives/juicedomain_permanent.pak", "entry": "textures\\juicestandard_turbo_hud_bg_" } },
+    "swap_twister": { "archive": "archives/permanent.pak", "entry": "textures\\juicestandard_turbo_hud_twi_", "tint": "black", "under": { "archive": "archives/juicedomain_permanent.pak", "entry": "textures\\juicestandard_turbo_hud_bg_" } } }
 }

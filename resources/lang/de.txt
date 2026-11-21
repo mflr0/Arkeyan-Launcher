@@ -988,6 +988,8 @@ no hat	kein Hut
 nothing yet	noch nichts
 only what {} reads	nur was {} liest
 owned x{}	im Besitz x{}
+owned	im Besitz
+not owned	nicht im Besitz
 plays as {0} in {1}	spielt als {0} in {1}
 plays as {}	spielt als {}
 portal	Portal
@@ -1076,6 +1078,11 @@ Virtual	Virtuell
 Shield {}	Schild {}
 Weapon {}	Waffe {}
 Level {} ({})	Stufe {} ({})
+Giant	Giant
+Trap Master	Fallenmeister
+SuperCharger	SuperCharger
+Sensei	Sensei
+Mini	Mini
 {} figure	{} Figur
 {} figures	{} Figuren
 Knight	Ritter

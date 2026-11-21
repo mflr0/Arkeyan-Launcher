@@ -1764,6 +1764,34 @@ void EditChecks()
            "Arkeyan Launcher est à jour. 2 mises à jour de jeux disponibles.");
     i18n::SetLanguage("en");
 
+    // A card's level line: the category title first, each piece in the launcher's language.
+    {
+        const auto& toys = collection::Catalogue::Get().Toys();
+        auto giant = std::find_if(toys.begin(), toys.end(),
+            [](const collection::Toy& toy) { return toy.category == collection::Category::Giant; });
+        auto crystal = std::find_if(toys.begin(), toys.end(),
+            [](const collection::Toy& toy) { return toy.category == collection::Category::CreationCrystal; });
+        EXPECT(giant != toys.end() && crystal != toys.end());
+        collection::Figure figure;
+        figure.toy = &*giant;
+        figure.type = giant->type;
+        figure.state = figures::AreaState::Valid;
+        figure.level = 15;
+        collection::Figure made;
+        made.toy = &*crystal;
+        made.type = crystal->type;
+        made.state = figures::AreaState::Valid;
+        made.level = 14;
+        made.battleClass = 4; // Ninja
+        made.missingSignature = true;
+        EXPECT(launcher_ui::LevelLabel(figure, "giants") == "Giant \xC2\xB7 Level 15");
+        i18n::SetLanguage("fr");
+        EXPECT(launcher_ui::LevelLabel(figure, "giants") == "G\xC3\xA9"
+                                                            "ant \xC2\xB7 Niveau 15");
+        EXPECT(launcher_ui::LevelLabel(made, "imaginators") == "Virtuel \xC2\xB7 Ninja \xC2\xB7 Niveau 14");
+        i18n::SetLanguage("en");
+    }
+
     using launcher_ui::Trimmed;
     EXPECT(Trimmed("   ").empty() && Trimmed("").empty() && Trimmed("\t Splash's  ") == "Splash's" &&
            Trimmed("A b") == "A b");
@@ -3364,6 +3392,10 @@ static int RunChecks(int argc, char** argv)
         EXPECT(provider.Get(LauncherAssets::Role::TitleIcon).valid &&
                LauncherAssets::Cached(id, LauncherAssets::Role::Logo).valid);
         EXPECT(found.portraits >= minimumPortraits);
+        // The cards' element icons, which the collection then finds (a disc in the element's colour until then).
+        const int icons = art::Extract(id, art::ReadFrom(gameDisc), {}, art::Icons).icons;
+        printf("  %s: %d card icons\n", id, icons);
+        EXPECT(icons >= 8 && !collection::ElementIconPath(id, collection::Element::Fire).empty());
         // The scenes of the launcher's backgrounds: every one of the manifest's is on the disc, read once.
         auto scenesBegan = Clock::now();
         art::ExtractScenes(id, art::ReadFrom(gameDisc));
@@ -3458,6 +3490,26 @@ static int RunChecks(int argc, char** argv)
         EXPECT(doomTop != nullptr && !collection::PortraitPath("swapforce", *doomTop).empty());
         EXPECT(
             std::filesystem::exists(scratch / "art-data" / "SwapForce" / "portraits")); // the data folder is SwapForce/
+        // A swapper's movement icon as the game's HUD shows it: the black symbol on the yellow hexagon.
+        for (const char* name : { "swap_climber", "swap_bouncer", "swap_teleporter" })
+        {
+            collection::Image icon =
+                collection::LoadPng((art::IconFolder("swapforce") / (std::string(name) + ".png")).string());
+            size_t opaque = 0, yellow = 0, black = 0;
+            for (uint32_t pixel : icon.rgba)
+            {
+                if ((pixel >> 24) < 128)
+                    continue;
+                const uint32_t r = pixel & 0xFF, g = pixel >> 8 & 0xFF, b = pixel >> 16 & 0xFF;
+                opaque++;
+                yellow += r > 140 && g > 120 && b < 120;
+                black += r < 64 && g < 64 && b < 64;
+            }
+            printf("  swapforce: %s %dx%d, %zu opaque, %zu yellow, %zu black\n", name, icon.width, icon.height, opaque,
+                yellow, black);
+            EXPECT(!icon.Empty() && opaque * 10 >= icon.rgba.size() * 4 && yellow * 10 >= opaque * 3 &&
+                   black * 20 >= opaque);
+        }
     }
     if (const char* imaginatorsIso = skyenv::Get("SKY_LAUNCHER_TEST_IMAGINATORS_ISO"); imaginatorsIso != nullptr)
     {
@@ -3474,6 +3526,29 @@ static int RunChecks(int argc, char** argv)
         printf("  imaginators: logo %ux%u, %zu of %zu pixels of the words' band opaque\n", logo.width, logo.height,
             solid, band);
         EXPECT(band > 0 && solid * 100 >= band * 98);
+        // A Sensei's class icon is the badge's glyph alone: nothing of the badge's lit rim past the dark ring around the
+        // glyph, nor of the frame's grey highlight inside it (an arc at the top left).
+        EXPECT(art::Extract("imaginators", art::ReadFrom(gameDisc), {}, art::Icons).icons >= 11);
+        for (const char* name : { "class_ninja", "class_knight", "class_sorcerer", "class_quickshot" })
+        {
+            collection::Image icon =
+                collection::LoadPng((art::IconFolder("imaginators") / (std::string(name) + ".png")).string());
+            size_t rim = 0, glyph = 0, arc = 0;
+            for (int y = 0; y < icon.height; y++)
+                for (int x = 0; x < icon.width; x++)
+                {
+                    if ((icon.rgba[size_t(y) * icon.width + x] >> 24) <= 32)
+                        continue;
+                    const float dx = float(x) + 0.5f - float(icon.width) / 2,
+                                dy = float(y) + 0.5f - float(icon.height) / 2;
+                    const float distance = std::sqrt(dx * dx + dy * dy) / (float(icon.width) / 2);
+                    (distance > 0.64f ? rim : glyph)++;
+                    arc += distance >= 0.49f && dx < 0 && dy < 0 && std::fabs(dx - dy) < float(icon.width) / 5;
+                }
+            printf("  imaginators: %s %dx%d, %zu glyph, %zu rim and %zu arc pixels\n", name, icon.width, icon.height,
+                glyph, rim, arc);
+            EXPECT(!icon.Empty() && glyph > 100 && rim == 0 && arc < 60);
+        }
     }
     if (dataBefore.empty())
         TestUnsetEnv("SKYLANDERS_DATA");

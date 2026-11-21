@@ -991,6 +991,8 @@ no hat	ei hattua
 nothing yet	ei vielä mitään
 only what {} reads	vain se, mitä {} lukee
 owned x{}	omistettu x{}
+owned	omistettu
+not owned	ei omistettu
 plays as {0} in {1}	nimellä {0} pelissä {1}
 plays as {}	pelataan nimellä {}
 portal	portaali
@@ -1079,6 +1081,11 @@ Virtual	Virtuaali
 Shield {}	Kilpi {}
 Weapon {}	Ase {}
 Level {} ({})	Taso {} ({})
+Giant	Giant
+Trap Master	Ansamestari
+SuperCharger	SuperCharger
+Sensei	Sensei
+Mini	Mini
 {} figure	{} hahmo
 {} figures	{} hahmoa
 Knight	Ritari

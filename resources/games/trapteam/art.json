@@ -67,5 +67,8 @@
         "title": "999_Level_Village(1)"
       }
     ]
-  }
+  },
+  "icons": {
+    "type_trapmaster": { "archive": "character/470_tech_bruteforce.bld", "entry": "level.bld",
+                         "hash": "6f4b30cc7a1007e1", "crop": [311, 764, 64, 55] } }
 }

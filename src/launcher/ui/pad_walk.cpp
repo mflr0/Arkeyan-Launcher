@@ -118,10 +118,11 @@ namespace launcher_ui
                     "{} from {} stays, {} is that way", Names[direction], name(from), name(expected->id));
             if (b == nullptr)
                 return {}; // a stop the walk doesn't know (0.8.0's selects and fields were not recorded)
-            if (!beyond(*b))
-                return fmt::format("{} from {} goes the wrong way, to {}", Names[direction], name(from), name(to));
+            // Before the direction: a stop scrolled out of view keeps its whole rectangle, not where it will show.
             if (!b->shown)
                 return {}; // a list scrolling on to its next row, before the focus leaves it (the model's rule)
+            if (!beyond(*b))
+                return fmt::format("{} from {} goes the wrong way, to {}", Names[direction], name(from), name(to));
             if (vertical ? !SameRow(*b, *expected) && distance(*b) > distance(*expected)
                          : !SameRow(*b, *a) || distance(*b) > distance(*expected) + 1)
                 return fmt::format(

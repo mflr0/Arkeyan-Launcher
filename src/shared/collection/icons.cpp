@@ -783,6 +783,71 @@ namespace collection
 
     namespace
     {
+        // icons/<key> in `gameId`'s portraits folder, else in the newest game's.
+        std::string CachedIcon(const std::string& gameId, const std::string& key)
+        {
+            const Catalogue& catalogue = Catalogue::Get();
+            if (const Game* game = catalogue.FindGame(gameId))
+                if (std::string path = FirstCached(*game, { "icons/" + key }); !path.empty())
+                    return path;
+            std::vector<const Game*> newest;
+            for (const Game& game : catalogue.Games())
+                newest.push_back(&game);
+            std::stable_sort(
+                newest.begin(), newest.end(), [](const Game* a, const Game* b) { return a->year > b->year; });
+            for (const Game* game : newest)
+                if (std::string path = game->id != gameId ? FirstCached(*game, { "icons/" + key }) : std::string();
+                    !path.empty())
+                    return path;
+            return {};
+        }
+    }
+
+    std::string ElementIconPath(const std::string& gameId, Element element)
+    {
+        if (element >= Element::None)
+            return {};
+        return CachedIcon(gameId, std::string("element_") + ElementId(element));
+    }
+
+    std::string ElementIconPath(const std::string& gameId, const Toy& toy)
+    {
+        if (!toy.elementIcon.empty())
+            return CachedIcon(gameId, "element_" + toy.elementIcon);
+        // The item families, which have no element: their own mark.
+        if (toy.category == Category::MagicItem)
+            return CachedIcon(gameId, "element_magicitem");
+        if (toy.category == Category::Adventure)
+            return CachedIcon(gameId, "element_adventure");
+        return ElementIconPath(gameId, toy.element);
+    }
+
+    std::string TypeIconPath(const std::string& gameId, const Toy& toy)
+    {
+        if (!toy.swapType.empty())
+            return CachedIcon(gameId, "swap_" + toy.swapType);
+        if (!toy.ride.empty())
+            return CachedIcon(gameId, "ride_" + toy.ride);
+        switch (toy.category)
+        {
+        case Category::TrapMaster: return CachedIcon(gameId, "type_trapmaster");
+        case Category::Giant: return CachedIcon(gameId, "type_giant");
+        case Category::Mini: return CachedIcon(gameId, "type_mini");
+        default: break;
+        }
+        return ClassIconPath(gameId, toy.battleClass);
+    }
+
+    std::string ClassIconPath(const std::string& gameId, int battleClass)
+    {
+        std::string name = battleClass == 11 ? "Kaos" : figures::BattleClassName(battleClass);
+        if (name.empty())
+            return {};
+        return CachedIcon(gameId, "class_" + Lower(name));
+    }
+
+    namespace
+    {
         enum class PictureKind
         {
             Portrait,

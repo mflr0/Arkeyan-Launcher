@@ -84,12 +84,14 @@ namespace launcher_ui
 
     namespace
     {
-        // One piece of the library's English level line ("Level 10 (15)", "Shield 2", "Virtual", a crystal's class...), in the
+        // One piece of the library's English level line ("Level 10 (15)", "Shield 2", "Virtual", a crystal's class, a
+        // category's title...), in the
         // launcher's language. A piece it does not know stays as it is (a name).
         std::string LevelPiece(const std::string& piece)
         {
-            static const char* const Classes[] = { N_("Knight"), N_("Bowslinger"), N_("Quickshot"), N_("Ninja"),
-                N_("Brawler"), N_("Smasher"), N_("Sorcerer"), N_("Swashbuckler"), N_("Sentinel"), N_("Bazooker") };
+            static const char* const Names[] = { N_("Knight"), N_("Bowslinger"), N_("Quickshot"), N_("Ninja"),
+                N_("Brawler"), N_("Smasher"), N_("Sorcerer"), N_("Swashbuckler"), N_("Sentinel"), N_("Bazooker"),
+                N_("Giant"), N_("Swapper"), N_("Trap Master"), N_("SuperCharger"), N_("Sensei"), N_("Mini") };
             int level = 0, shown = 0;
             if (std::sscanf(piece.c_str(), "Level %d (%d)", &level, &shown) == 2)
                 return Tf("Level {} ({})", level, shown);
@@ -107,7 +109,7 @@ namespace launcher_ui
                 return Tr("Unreadable");
             if (piece == "New")
                 return Tr("New");
-            for (const char* name : Classes)
+            for (const char* name : Names)
                 if (piece == name)
                     return Tr(name);
             return piece;
@@ -118,13 +120,14 @@ namespace launcher_ui
             std::string out;
             for (size_t begin = 0; begin <= english.size();)
             {
-                size_t end = english.find(" \xC2\xB7 ", begin);
+                constexpr std::string_view Dot = " \xC2\xB7 ";
+                size_t end = english.find(Dot, begin);
                 if (end == std::string::npos)
                     end = english.size();
                 if (!out.empty())
-                    out += " \xC2\xB7 ";
+                    out += Dot;
                 out += LevelPiece(english.substr(begin, end - begin));
-                begin = end + 3;
+                begin = end + Dot.size();
             }
             return out;
         }
@@ -329,6 +332,51 @@ namespace launcher_ui
             ui::Col(ui::color::Scrim, 0.5f * alpha), letters.c_str());
         draw->AddText(position, ui::Col(ui::color::Ink, alpha), letters.c_str());
         ImGui::PopFont();
+    }
+
+    namespace
+    {
+        // A card's colour where its element icon goes until a disc gives the icon (the Toy Box's).
+        uint32_t CornerRgb(const collection::Toy& toy)
+        {
+            if (toy.category == collection::Category::MagicItem || toy.category == collection::Category::Trophy)
+                return 0x1E8F82;
+            if (toy.category == collection::Category::Adventure)
+                return 0xA8406F;
+            return collection::ElementRgb(toy.element);
+        }
+    }
+
+    void CollectionPage::DrawCornerIcons(ImDrawList* draw, const collection::Toy* toy, const collection::Toy* typed,
+        int battleClass, ImVec2 at, float size)
+    {
+        if (toy == nullptr)
+            return;
+        // Read once per key on the loader's thread; ClearIcons (a disc's pictures were just read) asks again.
+        auto icon = [&](const std::string& key, std::function<std::string()> find) -> const FigureIconTexture& {
+            auto [found, added] = m_icons->textures.try_emplace(fmt::format("{}corner {}", FigurePictureKey, key));
+            if (added)
+                m_app.m_pictures.Request(found->first, [find = std::move(find)] {
+                    const std::string path = find();
+                    return path.empty() ? DecodedPicture{} : FromImage(collection::LoadPng(path));
+                });
+            return found->second;
+        };
+        const std::string game = m_model.gameId;
+        const FigureIconTexture& element = icon(
+            fmt::format("{} e{}", game, toy->type), [game, toy] { return collection::ElementIconPath(game, *toy); });
+        if (element.texture != nullptr)
+            DrawFitted(draw, element, at, size);
+        else if (!element.pending)
+            draw->AddCircleFilled(ImVec2(at.x + size / 2, at.y + size / 2), size / 3, ui::Col(CornerRgb(*toy)));
+        const FigureIconTexture& type =
+            battleClass != 0   ? icon(fmt::format("{} c{}", game, battleClass),
+                                     [game, battleClass] { return collection::ClassIconPath(game, battleClass); })
+            : typed != nullptr ? icon(fmt::format("{} t{}", game, typed->type),
+                                     [game, typed] { return collection::TypeIconPath(game, *typed); })
+                               : element;
+        if (&type != &element && type.texture != nullptr)
+            DrawFitted(draw, type, ImVec2(at.x, at.y + size + ui::space::XXS), size);
     }
 
     void CollectionPage::DrawFitted(ImDrawList* draw, const FigureIconTexture& picture, ImVec2 at, float box)
@@ -1766,7 +1814,7 @@ namespace launcher_ui
                     : selected || hovered ? ui::color::Edge
                                           : ui::color::Hairline),
             ui::radius::Card, 0, seat >= 0 || selected ? ui::stroke::Edge : ui::stroke::Hairline);
-        if (collection::Card card = CardOf(figure); !DrawSwapper(draw, card, picture, art))
+        if (const collection::Card card = CardOf(figure); !DrawSwapper(draw, card, picture, art))
         {
             DrawIcon(draw, figure.toy, figure.Kind(), picture, art, false, figure.variant, HeldVillain(figure));
             { // the busts end flat: fade their foot into the card
@@ -1788,11 +1836,11 @@ namespace launcher_ui
             ui::DrawText(draw, ImVec2(at.x + (width - w) / 2, y), ui::Col(color), cut.c_str());
             ui::PopText();
         };
-        // Marks: the variant, favorite, seat.
-        collection::VariantKind kind = figure.Kind();
-        if (kind != collection::VariantKind::Base)
-            ui::DrawBadge(draw, ImVec2(at.x + ui::space::XS, at.y + ui::space::XS), KindLabel(kind).c_str(),
-                collection::VariantKindRgb(kind));
+        // Marks, as on the Toy Box's cards: the element and type icons top left; the seat, then the favorite star, top
+        // right. The version is in the name.
+        const collection::Card card = CardOf(figure);
+        DrawCornerIcons(draw, figure.toy, card.Swapper() ? card.second->toy : figure.toy, figure.battleClass,
+            ImVec2(at.x + ui::space::XS, at.y + ui::space::XS), ui::icon::Normal);
         // The favorite star, in the top right corner: empty, filled once the figure is a favorite; a click toggles it (the pad
         // has it on the figure's sheet).
         const ImVec2 starAt(end.x - ui::space::M, at.y + ui::space::M);
@@ -1832,8 +1880,12 @@ namespace launcher_ui
         ui::DrawIcon(draw, ui::Icon::Star, starAt, starSize,
             ui::Col(figure.favourite || starHovered ? ui::color::Warning : ui::color::Dim));
         if (seat >= 0)
-            ui::DrawBadge(draw, ImVec2(at.x + ui::space::XS, picture.y + art - ui::space::L),
-                SeatTag(size_t(seat)).c_str(), ui::color::AccentFill, ui::color::OnAccent);
+        {
+            const std::string tag = SeatTag(size_t(seat));
+            const ImVec2 size = ui::BadgeSize(tag.c_str());
+            ui::DrawBadge(draw, ImVec2(starAt.x - starSize / 2 - ui::space::XS - size.x, starAt.y - size.y / 2),
+                tag.c_str(), ui::color::AccentFill, ui::color::OnAccent);
+        }
         if (dim)
             draw->AddRectFilled(
                 at, end, ui::Col(ui::color::Scrim, float(ui::elevation::ScrimAlpha) / 255.0f), ui::radius::Card);

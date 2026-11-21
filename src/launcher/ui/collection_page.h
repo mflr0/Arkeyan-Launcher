@@ -206,6 +206,11 @@ namespace launcher_ui
         // The picture's texture once the loader read it (pending and empty until then), asked for on the first call.
         const FigureIconTexture& Icon(const collection::Toy* toy, collection::VariantKind kind, bool large,
             uint16_t variant, uint16_t villain = 0);
+        // A card's top left corner, as the Toy Box's: `toy`'s element icon at `at` (a disc in its colour until a disc
+        // with icons is read), and below it the type icon of `typed` (a swapper's bottom: its movement), or the class of
+        // a made creation crystal (`battleClass`), when there is one.
+        void DrawCornerIcons(ImDrawList* draw, const collection::Toy* toy, const collection::Toy* typed,
+            int battleClass, ImVec2 at, float size);
         // The villain a trap holds (its stored id, 1-46), 0 for an empty trap or any other figure.
         static uint16_t HeldVillain(const collection::Figure& figure);
         void DrawFitted(ImDrawList* draw, const FigureIconTexture& picture, ImVec2 at, float box); // centred in `box`

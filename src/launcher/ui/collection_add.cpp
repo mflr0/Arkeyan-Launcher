@@ -48,6 +48,46 @@ namespace launcher_ui
                    !catalogue.Read(game, &toy, variant.id).exact;
         }
 
+        struct AddGroup
+        {
+            std::string title;
+            std::vector<const Toy*> toys;
+        };
+
+        // The Toy Box's Add sections: the characters by element (Kaos, who has none, last), then the Minis, Traps,
+        // Vehicles, Creation Crystals, Magic Items, Adventure Packs and Trophies; any other kind after them. Empty ones
+        // are left out.
+        std::vector<AddGroup> AddGroups(const std::vector<const Toy*>& toys)
+        {
+            using collection::Element;
+            const auto character = [](const Toy& toy) {
+                return toy.category != Category::Mini && toy.category <= Category::Sensei;
+            };
+            std::vector<AddGroup> groups;
+            std::vector<bool> placed(toys.size());
+            auto take = [&](std::string title, auto belongs) {
+                AddGroup group{ std::move(title), {} };
+                for (size_t i = 0; i < toys.size(); i++)
+                    if (!placed[i] && belongs(*toys[i]))
+                    {
+                        placed[i] = true;
+                        group.toys.push_back(toys[i]);
+                    }
+                if (!group.toys.empty())
+                    groups.push_back(std::move(group));
+            };
+            for (Element element : { Element::Magic, Element::Earth, Element::Water, Element::Air, Element::Fire,
+                     Element::Life, Element::Undead, Element::Tech, Element::Light, Element::Dark })
+                take(ElementName(element), [&](const Toy& toy) { return character(toy) && toy.element == element; });
+            take("Kaos", character);
+            for (Category category : { Category::Mini, Category::Trap, Category::Vehicle, Category::CreationCrystal,
+                     Category::MagicItem, Category::Adventure, Category::Trophy })
+                take(CategoryLabel(category), [&](const Toy& toy) { return toy.category == category; });
+            for (int category = 0; category < int(Category::Count); category++)
+                take(CategoryLabel(Category(category)), [&](const Toy& toy) { return int(toy.category) == category; });
+            return groups;
+        }
+
         size_t CountVersions(const std::string& game, const Toy& toy)
         {
             return size_t(std::count_if(toy.variants.begin(), toy.variants.end(),
@@ -57,18 +97,27 @@ namespace launcher_ui
 
     std::string AddToyRequirement(const Toy& toy) { return Tf("needs {}", ShortGameName(toy.game)); }
 
+    namespace
+    {
+        // The wide card's left part, as the Toy Box's: the corner icons' column, then the picture.
+        constexpr float AddArt = ui::height::Normal;
+        constexpr float AddTextX = ui::space::XS + ui::icon::Small + ui::space::XS + AddArt + ui::space::XS;
+        constexpr float AddCardH = AddArt + 2 * ui::space::XS;
+    }
+
     float AddToyMinCell()
     {
-        float width = ui::height::Main + ui::height::Normal;
+        // The longest requirement, else room for "Trap Master · owned x2": two cards side by side in the dialog.
+        float width = ui::height::SettingControl / 2 - ui::space::XL;
         ui::PushText(ui::TextStyle::Caption);
         for (const collection::Game& game : collection::Catalogue::Get().Games())
         {
             Toy toy;
             toy.game = game.id;
-            width = std::max(width, ImGui::CalcTextSize(AddToyRequirement(toy).c_str()).x + 2 * ui::space::XS);
+            width = std::max(width, ImGui::CalcTextSize(AddToyRequirement(toy).c_str()).x);
         }
         ui::PopText();
-        return std::ceil(width);
+        return std::ceil(AddTextX + width + ui::space::XS);
     }
 
     void CollectionPage::DrawAdd()
@@ -163,12 +212,9 @@ namespace launcher_ui
 
     bool CollectionPage::DrawAddToy(const Toy& toy, int pass, float cell, const std::string& search)
     {
-        constexpr float Art = ui::height::Main + ui::space::XS;
-        constexpr float CardH =
-            ui::space::XS + Art + ui::space::XS + ui::type::Caption + ui::space::XXS + ui::height::Small;
         ImVec2 at = ImGui::GetCursorScreenPos();
         ImGui::PushID(toy.type);
-        if (ui::Hit("##toy", ImVec2(cell, CardH)))
+        if (ui::Hit("##toy", ImVec2(cell, AddCardH)))
         {
             m_addToy = toy.type;
             m_addVersion = FirstAddMatchingVersion(toy, search);
@@ -179,8 +225,10 @@ namespace launcher_ui
         ui::FocusRingIf(state, ui::radius::Card);
         ImGui::PopID();
         const bool hovered = state.hovered, selected = m_addToy == toy.type;
+        if (!ImGui::IsItemVisible())
+            return selected;
         ImDrawList* draw = ImGui::GetWindowDrawList();
-        const ImVec2 end(at.x + cell, at.y + CardH);
+        const ImVec2 end(at.x + cell, at.y + AddCardH);
         draw->AddRectFilled(at, end,
             ui::Col(selected  ? ui::color::RaisedPressed
                     : hovered ? ui::color::Raised
@@ -188,36 +236,37 @@ namespace launcher_ui
             ui::radius::Card);
         if (selected)
             draw->AddRect(at, end, ui::Col(ui::color::AccentFill), ui::radius::Card, 0, ui::stroke::Edge);
+        // The Toy Box's Add card: the element and type icons in a column, the picture, then the name over the type and
+        // how many are owned ("Trap Master · owned x2"), or what a later game's toy needs; its versions' count after the
+        // name.
         uint16_t bottomVariant = 0;
-        const ImVec2 art(at.x + (cell - Art) / 2, at.y + ui::space::XS);
-        if (!IsSwapper(toy) || !DrawSwapper(draw, &toy, 0, BottomOf(toy, 0, bottomVariant), bottomVariant, art, Art))
-            DrawIcon(draw, &toy, collection::VariantKind::Base, art, Art, false);
-        const std::string name = IsSwapper(toy) ? WithoutHalf(toy.name) : toy.name;
-        ui::PushText(ui::TextStyle::Caption, true);
-        const std::string cut = ui::Ellipsize(name.c_str(), cell - 2 * ui::space::XS);
-        ui::DrawText(draw, ImVec2(at.x + (cell - ImGui::CalcTextSize(cut.c_str()).x) / 2, art.y + Art + ui::space::XS),
-            ui::Col(ui::color::Ink), cut.c_str());
-        ui::PopText();
+        const Toy* bottom = IsSwapper(toy) ? BottomOf(toy, 0, bottomVariant) : nullptr;
+        DrawCornerIcons(draw, &toy, bottom != nullptr ? bottom : &toy, 0,
+            ImVec2(at.x + ui::space::XS, at.y + ui::space::XS), ui::icon::Small);
+        const ImVec2 art(at.x + AddTextX - ui::space::XS - AddArt, at.y + ui::space::XS);
+        if (bottom == nullptr || !DrawSwapper(draw, &toy, 0, bottom, bottomVariant, art, AddArt))
+            DrawIcon(draw, &toy, collection::VariantKind::Base, art, AddArt, false);
+        const size_t versions = CountVersions(ViewGame(m_addGame, toy), toy);
+        const std::string more = versions > 0 ? "+" + std::to_string(versions) : std::string();
+        const float textX = at.x + AddTextX, room = end.x - ui::space::XS - textX;
+        const float nameY = at.y + ui::space::XS;
+        PutText(draw, ImVec2(textX, nameY), ui::TextStyle::Body, true, ui::color::Ink,
+            IsSwapper(toy) ? WithoutHalf(toy.name) : toy.name,
+            room - (more.empty() ? 0 : ui::BadgeSize(more.c_str()).x + ui::space::XS));
+        const float lineY = end.y - ui::space::XS - ui::type::Caption;
         const int owns = CountAddOwned(toy.type, -1, {});
-        const float noteY = art.y + Art + ui::space::XS + ui::type::Caption + ui::space::XXS;
-        if (pass == 1)
+        std::string line = pass == 1   ? AddToyRequirement(toy)
+                           : owns == 0 ? std::string(Tr("not owned"))
+                           : owns == 1 ? std::string(Tr("owned"))
+                                       : Tf("owned x{}", owns);
+        if (const std::string title = collection::CategoryTitle(toy.category); pass == 0 && !title.empty())
+            line = std::string(Tr(title.c_str())) + " \xC2\xB7 " + line;
+        PutText(draw, ImVec2(textX, lineY), ui::TextStyle::Caption, false,
+            pass == 0 && owns > 0 ? ui::color::Success : ui::color::Dim, line, room);
+        if (!more.empty()) // it has versions: a small badge, the count
         {
-            ui::PushText(ui::TextStyle::Caption);
-            const std::string note = AddToyRequirement(toy);
-            ui::DrawText(draw, ImVec2(at.x + (cell - ImGui::CalcTextSize(note.c_str()).x) / 2, noteY),
-                ui::Col(ui::color::Dim), note.c_str());
-            ui::PopText();
-        }
-        else if (owns > 0)
-        {
-            const std::string note = Tf("owned x{}", owns);
-            ui::DrawBadge(draw, ImVec2(at.x + (cell - ui::BadgeSize(note.c_str()).x) / 2, noteY), note.c_str(),
-                ui::color::Success);
-        }
-        if (CountVersions(ViewGame(m_addGame, toy), toy) > 0) // it has versions: a small badge, the count
-        {
-            const std::string more = "+" + std::to_string(CountVersions(ViewGame(m_addGame, toy), toy));
-            ui::DrawBadge(draw, ImVec2(end.x - ui::BadgeSize(more.c_str()).x - ui::space::XS, at.y + ui::space::XS),
+            const ImVec2 size = ui::BadgeSize(more.c_str());
+            ui::DrawBadge(draw, ImVec2(end.x - size.x - ui::space::XS, nameY + (ui::type::Body - size.y) / 2),
                 more.c_str(), ui::color::AccentFill, ui::color::OnAccent);
         }
         return selected;
@@ -239,7 +288,18 @@ namespace launcher_ui
         const Toy* chosen = nullptr;
         if (!found)
             ui::EmptyState(ui::Icon::Search, Tr("No figure matches"));
-        for (int pass = 0; pass < 2; pass++) // the game's own toys, then the later games'
+        auto cards = [&](const std::vector<const Toy*>& toys, int pass) {
+            for (size_t i = 0; i < toys.size(); i++)
+            {
+                if (i % columns != 0)
+                    ImGui::SameLine(0, Gap);
+                if (DrawAddToy(*toys[i], pass, Cell, search))
+                    chosen = toys[i];
+            }
+            ImGui::Dummy(ImVec2(0, ui::space::XS));
+        };
+        // The game's own toys in the Toy Box's sections, then the later games' in one.
+        for (int pass = 0; pass < 2; pass++)
         {
             std::vector<const Toy*> toys;
             for (const Toy& toy : catalogue.Toys())
@@ -251,15 +311,17 @@ namespace launcher_ui
             ui::SectionHeader(pass == 0 ? Tf("Works in {}", ShortGameName(m_addGame)).c_str() : Tr("Later games"),
                 count.c_str(), pass > 0);
             ImGui::Dummy(ImVec2(0, ui::space::XXS));
-            for (size_t i = 0; i < toys.size(); i++)
+            if (pass == 1)
             {
-                const Toy& toy = *toys[i];
-                if (i % columns != 0)
-                    ImGui::SameLine(0, Gap);
-                if (DrawAddToy(toy, pass, Cell, search))
-                    chosen = &toy;
+                cards(toys, pass);
+                continue;
             }
-            ImGui::Dummy(ImVec2(0, ui::space::XS));
+            for (const AddGroup& group : AddGroups(toys))
+            {
+                ui::Text(ui::TextStyle::Caption, fmt::format("{} \xC2\xB7 {}", group.title, group.toys.size()).c_str(),
+                    ui::color::InkSoft, 0, true);
+                cards(group.toys, pass);
+            }
         }
         ui::EndRoomyChild();
 
@@ -277,13 +339,25 @@ namespace launcher_ui
             ui::Text(ui::TextStyle::Body, Tr("Pick a figure."), ui::color::Dim);
         else
         {
-            ui::Text(ui::TextStyle::Body, (IsSwapper(*chosen) ? WithoutHalf(chosen->name) : chosen->name).c_str(),
-                ui::color::Ink, 0, true);
-            ui::Text(ui::TextStyle::Caption,
-                fmt::format("{} · {}", ElementName(chosen->element),
-                    IsSwapper(*chosen) ? std::string(Tr("Swapper")) : CategoryLabel(chosen->category))
-                    .c_str(),
-                ui::color::Dim);
+            // The Toy Box's head: the picture, the name, then the element and the type ("Fire · Giant").
+            constexpr float Art = ui::height::Main;
+            const ImVec2 at = ImGui::GetCursorScreenPos();
+            ImDrawList* draw = ImGui::GetWindowDrawList();
+            uint16_t bottomVariant = 0;
+            if (!IsSwapper(*chosen) ||
+                !DrawSwapper(draw, chosen, 0, BottomOf(*chosen, 0, bottomVariant), bottomVariant, at, Art))
+                DrawPicture(draw, chosen, chosen->edition, 0, at, Art);
+            const std::string title = collection::CategoryTitle(chosen->category);
+            const float textX = at.x + Art + ui::space::XS,
+                        room = ImGui::GetContentRegionAvail().x - Art - ui::space::XS;
+            PutText(draw, ImVec2(textX, at.y + Art / 2 - ui::type::Body - ui::space::XXS / 2), ui::TextStyle::Body,
+                true, ui::color::Ink, IsSwapper(*chosen) ? WithoutHalf(chosen->name) : chosen->name, room);
+            PutText(draw, ImVec2(textX, at.y + Art / 2 + ui::space::XXS / 2), ui::TextStyle::Caption, false,
+                ui::color::Dim,
+                fmt::format("{} \xC2\xB7 {}", ElementName(chosen->element),
+                    title.empty() ? CategoryLabel(chosen->category) : std::string(Tr(title.c_str()))),
+                room);
+            ImGui::Dummy(ImVec2(0, Art + ui::space::XXS));
             std::vector<std::pair<std::string, collection::VariantKind>> versions{
                 { IsSwapper(*chosen) ? WithoutHalf(chosen->name) : chosen->name, chosen->edition }
             };

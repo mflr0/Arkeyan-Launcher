@@ -990,6 +990,8 @@ no hat	sin sombrero
 nothing yet	nada aún
 only what {} reads	solo lo que lee {}
 owned x{}	tienes x{}
+owned	tienes
+not owned	no lo tienes
 plays as {0} in {1}	se juega como {0} en {1}
 plays as {}	se juega como {}
 portal	portal
@@ -1078,6 +1080,11 @@ Virtual	Virtual
 Shield {}	Escudo {}
 Weapon {}	Arma {}
 Level {} ({})	Nivel {} ({})
+Giant	Giant
+Trap Master	Maestro de Trampas
+SuperCharger	SuperCharger
+Sensei	Sensei
+Mini	Mini
 {} figure	{} figura
 {} figures	{} figuras
 Knight	Caballero
