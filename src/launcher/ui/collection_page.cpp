@@ -838,7 +838,17 @@ namespace launcher_ui
         m_overlay = Overlay::None;
         m_editing = false;
         m_confirm.clear();
+        m_addSeat = -1;
         ImGui::CloseCurrentPopup();
+    }
+
+    void CollectionPage::OpenAdd(int seat)
+    {
+        m_overlay = Overlay::Add;
+        m_addToy = 0xFFFF;
+        m_created.clear();
+        m_addGame = m_model.gameId;
+        m_addSeat = seat;
     }
 
     // Empties a seat: the figure leaves the portal of the next start (and stays in the collection).
@@ -991,12 +1001,7 @@ namespace launcher_ui
         const float row = std::max(title.y, buttonsY + ui::height::Normal - top.y);
         ImGui::SetCursorScreenPos(ImVec2(top.x + width - addWidth - ui::space::S - manageWidth, buttonsY));
         if (ui::Button(Tr("Add a figure"), add))
-        {
-            m_overlay = Overlay::Add;
-            m_addToy = 0xFFFF;
-            m_created.clear();
-            m_addGame = m_model.gameId;
-        }
+            OpenAdd();
         m_app.TakeFocus(FocusTo::Page);
         ImGui::SameLine(0, ui::space::S);
         if (ui::Button(Tr("Manage"), manage) || m_testMenu == 1)
@@ -1498,11 +1503,26 @@ namespace launcher_ui
             {
                 // Empty, or a figure the collection no longer has (deleted, moved): the seat can still be emptied.
                 const ImVec2 box(picture.x + SeatPicture, picture.y + SeatPicture);
+                // An empty seat's +: Add a figure for it (the rest of the seat chooses among the shelf's figures).
+                bool plus = false;
+                if (!occupied && editable)
+                {
+                    ImGui::SetCursorScreenPos(picture);
+                    ImGui::PushID(int(i) + 200);
+                    ImGui::PushItemFlag(ImGuiItemFlags_NoNav, true); // the pad's X on the seat does it
+                    if (ui::Hit("##seat-add", ImVec2(SeatPicture, SeatPicture)))
+                        OpenAdd(int(i));
+                    ImGui::PopItemFlag();
+                    plus = ImGui::IsItemHovered();
+                    ui::Tooltip(Tr("Add a figure"));
+                    ImGui::PopID();
+                }
+                const bool lit = choosing || plus;
                 draw->AddRectFilled(picture, box, ui::Col(ui::color::Inset), ui::radius::Control);
-                draw->AddRect(picture, box, ui::Col(choosing ? ui::color::AccentFill : ui::color::Hairline),
+                draw->AddRect(picture, box, ui::Col(lit ? ui::color::AccentFill : ui::color::Hairline),
                     ui::radius::Control, 0, ui::stroke::Edge);
                 ui::DrawIcon(draw, ui::Icon::Plus, ImVec2(picture.x + SeatPicture / 2, picture.y + SeatPicture / 2),
-                    ui::icon::Normal, ui::Col(choosing ? ui::color::AccentFill : ui::color::Dim));
+                    ui::icon::Normal, ui::Col(lit ? ui::color::AccentFill : ui::color::Dim));
                 PutText(draw, ImVec2(tx, second), ui::TextStyle::Body, true,
                     occupied ? ui::color::Danger : ui::color::InkSoft, occupied ? Tr("Missing figure") : Tr("Empty"),
                     room);
@@ -1907,12 +1927,7 @@ namespace launcher_ui
             {
                 if (ui::EmptyState(ui::Icon::Plus,
                         Tr("No figures yet. Add one, or drop your figure files on the window."), Tr("Add a figure")))
-                {
-                    m_overlay = Overlay::Add;
-                    m_addToy = 0xFFFF;
-                    m_created.clear();
-                    m_addGame = m_model.gameId;
-                }
+                    OpenAdd();
                 ui::ButtonOptions starters;
                 const std::string label =
                     Tf("Create the {} starter pack", GameName(m_model.gameId.c_str(), GameNameForm::Short));
@@ -1990,12 +2005,14 @@ namespace launcher_ui
             Reload();
         }
         // The pad's actions, declared every frame: their hints are the legend's (false under a dialog, a menu or a field).
-        // X takes the focused seat's figure off (Delete), else opens the focused card's sheet (F2); Y the search (F3); LT / RT
-        // choose for the seat before or after (Page Up / Page Down).
+        // X takes the focused seat's figure off (Delete), opens Add a figure for a focused empty seat, else opens the focused
+        // card's sheet (F2); Y the search (F3); LT / RT choose for the seat before or after (Page Up / Page Down).
         const collection::Game* seatsOf = m_model.Game();
-        const bool onSeat =
-            m_navSeat >= 0 && size_t(m_navSeat) < m_model.seats.size() && !m_model.seats[size_t(m_navSeat)].empty();
+        const bool seatFocused = m_navSeat >= 0 && size_t(m_navSeat) < m_model.seats.size();
+        const bool onSeat = seatFocused && !m_model.seats[size_t(m_navSeat)].empty();
         const bool takeOff = onSeat && ui::PadAction(ui::PadButton::West, Tr("Take it off"), nullptr, ImGuiKey_Delete);
+        const bool addHere = seatFocused && !onSeat && m_model.CanEditSeats() && !m_model.RealSeat(size_t(m_navSeat)) &&
+                             ui::PadAction(ui::PadButton::West, Tr("Add a figure"));
         const bool sheet =
             !onSeat && m_navSeat < 0 && ui::PadAction(ui::PadButton::West, Tr("Figure sheet"), "F2", ImGuiKey_F2);
         const bool search = ui::PadAction(ui::PadButton::North, Tr("Search"), "F3", ImGuiKey_F3);
@@ -2015,6 +2032,11 @@ namespace launcher_ui
         if (takeOff)
         {
             TakeOff(size_t(m_navSeat));
+            return;
+        }
+        if (addHere)
+        {
+            OpenAdd(m_navSeat);
             return;
         }
         if (m_hoverSeat >= 0 && ImGui::IsKeyPressed(ImGuiKey_Delete, false))

@@ -223,6 +223,7 @@ namespace launcher_ui
         void DrawRealSeat(ImDrawList* draw, size_t seat, ImVec2 at, ImVec2 end); // a real toy on the portal (read only)
         void DrawBottom(ImDrawList* draw, const collection::Figure& bottom, ImVec2 at, float size);
         void CloseOverlay();
+        void OpenAdd(int seat = -1); // Add a figure; from an empty seat's +: what it makes goes on that seat
         void Toast(const std::string& text, ui::ToastKind kind = ui::ToastKind::Info);
 
         // What Manage and the Figure page show from disk, read again only once the collection changed (m_generation):
@@ -309,6 +310,7 @@ namespace launcher_ui
         char m_addSearch[64] = {};
         char m_addLabel[64] = {};
         std::string m_created; // the figure Add a figure just made
+        int m_addSeat = -1; // Add a figure opened from this seat's +, -1: from elsewhere
         int m_diskGeneration = -1;
         std::vector<collection::TrashEntry> m_trash;
         std::vector<std::string> m_trashNames; // the figure each trashed dump is (by m_trash's order)

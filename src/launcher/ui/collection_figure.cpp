@@ -111,6 +111,7 @@ namespace launcher_ui
         if (!ui::BeginModal("##overlay", title.c_str(), &open, ui::ModalSize::Large))
         {
             m_overlay = Overlay::None;
+            m_addSeat = -1;
             m_editing = false;
             m_confirm.clear();
             m_manageFresh = true;
@@ -137,6 +138,7 @@ namespace launcher_ui
         if (!open && m_overlay != Overlay::None) // the cross, B or Escape
         {
             m_overlay = Overlay::None;
+            m_addSeat = -1;
             m_editing = false;
             m_confirm.clear();
         }
