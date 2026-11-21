@@ -990,6 +990,8 @@ no hat	ingen hat
 nothing yet	intet endnu
 only what {} reads	kun det {} læser
 owned x{}	ejer x{}
+owned	ejer
+not owned	ejer ikke
 plays as {0} in {1}	spilles som {0} i {1}
 plays as {}	spilles som {}
 portal	portal
@@ -1078,6 +1080,11 @@ Virtual	Virtuel
 Shield {}	Skjold {}
 Weapon {}	Våben {}
 Level {} ({})	Niveau {} ({})
+Giant	Giant
+Trap Master	Fældemester
+SuperCharger	SuperCharger
+Sensei	Sensei
+Mini	Mini
 {} figure	{} figur
 {} figures	{} figurer
 Knight	Ridder

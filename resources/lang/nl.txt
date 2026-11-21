@@ -990,6 +990,8 @@ no hat	geen hoed
 nothing yet	nog niets
 only what {} reads	alleen wat {} leest
 owned x{}	in bezit x{}
+owned	in bezit
+not owned	niet in bezit
 plays as {0} in {1}	speelt als {0} in {1}
 plays as {}	speelt als {}
 portal	portal
@@ -1078,6 +1080,11 @@ Virtual	Virtueel
 Shield {}	Schild {}
 Weapon {}	Wapen {}
 Level {} ({})	Niveau {} ({})
+Giant	Giant
+Trap Master	Trap Master
+SuperCharger	SuperCharger
+Sensei	Sensei
+Mini	Mini
 {} figure	{} figuur
 {} figures	{} figuren
 Knight	Ridder

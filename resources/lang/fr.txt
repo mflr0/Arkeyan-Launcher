@@ -737,6 +737,8 @@ needs {}	demande {}
 no hat	sans chapeau
 only what {} reads	seulement ce que {} lit
 owned x{}	possédé x{}
+owned	possédé
+not owned	non possédé
 the collection's index can't be written	l'index de la collection ne peut pas être écrit
 tidied	rangée
 Not available for {} yet	Pas encore disponible pour {}
@@ -1107,6 +1109,11 @@ Virtual	Virtuel
 Shield {}	Bouclier {}
 Weapon {}	Arme {}
 Level {} ({})	Niveau {} ({})
+Giant	Géant
+Trap Master	Maître des pièges
+SuperCharger	SuperCharger
+Sensei	Sensei
+Mini	Mini
 {} figure	{} figurine
 {} figures	{} figurines
 Knight	Chevalier

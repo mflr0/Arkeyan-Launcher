@@ -157,7 +157,7 @@ namespace art
                     float ta = float(top >> 24) / 255, ba = float(bottom >> 24) / 255, alpha = ta + ba * (1 - ta);
                     if (alpha <= 0)
                         continue;
-                    uint32_t out = uint32_t(alpha * 255 + 0.5f) << 24;
+                    uint32_t out = uint32_t(std::lround(alpha * 255)) << 24;
                     for (int shift = 0; shift < 24; shift += 8)
                     {
                         float c =
@@ -249,9 +249,9 @@ namespace art
             {
                 float coverage = std::clamp((mask[i] - 0.25f) * 2.0f, 0.0f, 1.0f); // the edge, antialiased
                 float body = std::clamp((mask[i] - 0.55f) / 0.35f, 0.0f, 1.0f); // 0 on the rim, 1 inside
-                uint32_t out = uint32_t(coverage * 255 + 0.5f) << 24;
+                uint32_t out = uint32_t(std::lround(coverage * 255)) << 24;
                 for (int shift = 0; shift < 24; shift += 8)
-                    out |= uint32_t(float((base >> shift) & 0xFF) * (0.35f + 0.65f * body) + 0.5f) << shift;
+                    out |= uint32_t(std::lround(float((base >> shift) & 0xFF) * (0.35f + 0.65f * body))) << shift;
                 plate.rgba[i] = out;
             }
             return plate;
@@ -301,8 +301,8 @@ namespace art
                            margin = 10; // the plate reaches 10 texels past the pieces
             // "GIANTS" starts 0.48 of the arch's height down, the medallions 0.08 of the word's height under it (both
             // measured on the press logo, scaled to the sheet; title_giants_3d.png says 0.507, drawn in perspective).
-            const int wordTop = int(float(archH) * 0.48f + 0.5f),
-                      medalsTop = wordTop + int(wordH) + int(float(wordH) * 0.08f + 0.5f);
+            const int wordTop = int(std::lround(float(archH) * 0.48f)),
+                      medalsTop = wordTop + int(wordH) + int(std::lround(float(wordH) * 0.08f));
             const int origin = int(arch.left); // sheet column of the logo's left edge (without the margin)
             Image pieces;
             pieces.width = std::max(archW, tm.right - arch.left) + 2 * margin;
@@ -338,6 +338,11 @@ namespace art
                 picture; // the picture: its name [Lux], the end of its source path [Alchemy]; empty: the entry's first
             std::string compose, plate; // a composition step ("sprite_sheet_logo") and the second picture it uses
             std::string package, file; // ...or a JPEG or PNG file of an STFS package on the disc (stfs.h: `nxeart`)
+            uint64_t hash = 0; // [icons] ...or the entry's picture of this pack hash (ExtractHashedIcons)...
+            int crop[4] = {}; // ...cut to x, y, width, height
+            std::string tint; // [icons] "white", "glyph", "element", "black": Tint
+            std::string underArchive,
+                underEntry; // [icons] a plate drawn under the picture (Swap Force's hexagon): Under
         };
 
         // [Alchemy] A folder of material instances in an archive, each naming its texture, an entry of the same archive
@@ -382,6 +387,8 @@ namespace art
             // Imaginators' creation parts' names (game_text.cpp): the manifest's "parts" part as it is.
             collection::Json parts;
             collection::Json levels;
+            // The cards' corner icons, by key ("element_fire", "type_giant", "swap_climber"): one picture each.
+            std::map<std::string, Source> icons;
         };
 
         std::vector<Materials> ReadMaterials(const collection::Json& json)
@@ -394,9 +401,15 @@ namespace art
 
         Source ReadSource(const collection::Json& json)
         {
-            Source source{ json["stream"].AsString(), json["archive"].AsString(), json["entry"].AsString(),
-                json["picture"].AsString(), json["compose"].AsString(), json["plate"].AsString(),
-                json["package"].AsString(), json["file"].AsString() };
+            Source source;
+            source.stream = json["stream"].AsString();
+            source.archive = json["archive"].AsString();
+            source.entry = json["entry"].AsString();
+            source.picture = json["picture"].AsString();
+            source.compose = json["compose"].AsString();
+            source.plate = json["plate"].AsString();
+            source.package = json["package"].AsString();
+            source.file = json["file"].AsString();
             return source;
         }
 
@@ -440,6 +453,17 @@ namespace art
                     m.upgrades = json["upgrades"];
                     m.parts = json["parts"];
                     m.levels = json["levels"];
+                    for (const auto& [key, icon] : json["icons"].Members())
+                    {
+                        Source source = ReadSource(icon);
+                        source.hash = strtoull(icon["hash"].AsString().c_str(), nullptr, 16);
+                        source.tint = icon["tint"].AsString();
+                        source.underArchive = icon["under"]["archive"].AsString();
+                        source.underEntry = icon["under"]["entry"].AsString();
+                        for (size_t i = 0; i < 4 && i < icon["crop"].Items().size(); i++)
+                            source.crop[i] = int(icon["crop"].Items()[i].AsInt());
+                        m.icons[key] = source;
+                    }
                     if (!m.game.empty())
                         out.push_back(std::move(m));
                 }
@@ -539,9 +563,12 @@ namespace art
                         picture = found->second;
                     else if (archive)
                         if (std::optional<alchemy::IgzFile> scene = OpenScene(*archive, entry))
-                            for (const alchemy::IgzFile::Picture& candidate : scene->Pictures())
-                                if (alchemy::DecodePicture(*scene, candidate, picture))
+                        {
+                            const alchemy::IgzFile& file = *scene;
+                            for (const alchemy::IgzFile::Picture& candidate : file.Pictures())
+                                if (alchemy::DecodePicture(file, candidate, picture))
                                     break;
+                        }
                     std::filesystem::path file = folder / (SceneName(entry) + ".png");
                     if (picture.rgba.empty() || !SavePng(picture, file))
                         std::filesystem::remove(file, error);
@@ -721,10 +748,11 @@ namespace art
                     fprintf(stderr, "[art] cannot read %s of the disc\n", source.archive.c_str());
                     continue;
                 }
+                const alchemy::IgaArchive& iga = *archive;
                 const std::string under = Lower(source.folder);
-                for (size_t i = 0; i < archive->Count(); i++)
+                for (size_t i = 0; i < iga.Count(); i++)
                 {
-                    std::string name = Lower(archive->Name(i));
+                    std::string name = Lower(iga.Name(i));
                     size_t at = name.find(under),
                            end = at == std::string::npos ? at : name.find(".png", at + under.size());
                     if (end == std::string::npos)
@@ -733,11 +761,13 @@ namespace art
                     std::filesystem::path path = folder / (name.substr(name.find_last_of('/') + 1) + ".png");
                     if (Exists(path))
                         continue;
-                    std::optional<alchemy::IgzFile> scene = alchemy::IgzFile::Parse(archive->Read(i));
-                    std::vector<alchemy::IgzFile::Picture> pictures =
-                        scene ? scene->Pictures() : std::vector<alchemy::IgzFile::Picture>{};
+                    std::optional<alchemy::IgzFile> scene = alchemy::IgzFile::Parse(iga.Read(i));
+                    if (!scene)
+                        continue;
+                    const alchemy::IgzFile& file = *scene;
+                    std::vector<alchemy::IgzFile::Picture> pictures = file.Pictures();
                     Image image;
-                    if (!pictures.empty() && alchemy::DecodePicture(*scene, pictures[0], image) && SavePng(image, path))
+                    if (!pictures.empty() && alchemy::DecodePicture(file, pictures[0], image) && SavePng(image, path))
                         present++;
                 }
             }
@@ -806,6 +836,128 @@ namespace art
             return CountPngs(folder);
         }
 
+        // The manifest's "tint" (Source::tint): "white", the shape in white (Giants' grey pet mask); "glyph", the light
+        // glyph of a dark badge alone, in white (Imaginators' class icons: about 70 % of the badge is near black, the
+        // glyph near white); "element", a grey mask in the element's colour (Giants' element icons); "black", the shape in
+        // black (Swap Force's movement symbols, drawn on their hexagon).
+        void Tint(Image& image, const std::string& tint, const std::string& key)
+        {
+            if (tint == "glyph")
+            {
+                // The badge's lit rim is as light as the glyph: only what its dark ring encloses is kept (the glyph
+                // reaches 0.6 of the picture's half-size, the rim starts at 0.65). Inside the ring, the frame's grey
+                // highlights (top left, bottom right, from 0.49 out) are told from the glyph by their colour: a chroma
+                // under 96, where the glyph's is mostly higher.
+                const float centreX = float(image.width) / 2, centreY = float(image.height) / 2,
+                            inside = 0.63f * std::min(centreX, centreY), frame = 0.45f * std::min(centreX, centreY);
+                for (size_t i = 0; i < image.rgba.size(); i++)
+                {
+                    uint32_t& pixel = image.rgba[i];
+                    uint32_t r = pixel & 0xFF, g = pixel >> 8 & 0xFF, b = pixel >> 16 & 0xFF,
+                             luma = (r * 3 + g * 6 + b) / 10;
+                    uint32_t keep = luma <= 64 ? 0 : luma >= 192 ? 255 : (luma - 64) * 2;
+                    const float dx = float(i % image.width) + 0.5f - centreX,
+                                dy = float(i / image.width) + 0.5f - centreY;
+                    const float distance = dx * dx + dy * dy;
+                    const uint32_t chroma = std::max({ r, g, b }) - std::min({ r, g, b });
+                    if (distance > inside * inside || (distance > frame * frame && chroma < 96))
+                        keep = 0;
+                    pixel = ((pixel >> 24) * keep / 255) << 24 | 0xFFFFFF;
+                }
+                return;
+            }
+            if (tint == "black")
+            {
+                for (uint32_t& pixel : image.rgba)
+                    pixel &= 0xFF000000u;
+                return;
+            }
+            uint32_t rgb = 0xFFFFFF;
+            if (tint == "element")
+                rgb = collection::ElementRgb(collection::ParseElement(key.substr(key.find('_') + 1)));
+            else if (tint != "white")
+                return;
+            for (uint32_t& pixel : image.rgba)
+            {
+                // The mask's brightness, 128 its middle grey, scales the colour (white: the glyph's shape only).
+                uint32_t r = pixel & 0xFF, g = pixel >> 8 & 0xFF, b = pixel >> 16 & 0xFF,
+                         luma = (r * 3 + g * 6 + b) / 10;
+                uint32_t scale = tint == "white" ? 255 : std::min<uint32_t>(luma * 2, 255);
+                uint32_t out = 0;
+                for (int c = 0; c < 3; c++)
+                    out |= ((rgb >> (16 - 8 * c) & 0xFF) * scale / 255) << (8 * c);
+                pixel = (pixel & 0xFF000000u) | out;
+            }
+        }
+
+        // `image` drawn over `plate`, scaled to the plate's size: Swap Force's HUD puts its movement symbols on a hexagon.
+        Image Under(const Image& image, const Image& plate)
+        {
+            Image out = plate;
+            for (uint32_t y = 0; y < out.height; y++)
+                for (uint32_t x = 0; x < out.width; x++)
+                {
+                    const uint32_t top =
+                        image.rgba[size_t(y * image.height / out.height) * image.width + x * image.width / out.width];
+                    uint32_t& bottom = out.rgba[size_t(y) * out.width + x];
+                    const uint32_t a = top >> 24, keep = 255 - a;
+                    uint32_t mixed = std::max(a, bottom >> 24) << 24;
+                    for (int shift = 0; shift < 24; shift += 8)
+                        mixed |= ((top >> shift & 0xFF) * a + (bottom >> shift & 0xFF) * keep) / 255 << shift;
+                    bottom = mixed;
+                }
+            return out;
+        }
+
+        // The manifest's icons missing from `folder`, each written as <key>.png; the number of icons there afterwards.
+        int ReadIcons(const Manifest& m, const Disc& disc, const std::filesystem::path& folder)
+        {
+            std::map<std::string, std::set<std::string>> streams; // [Lux] decoded together
+            for (const auto& [key, source] : m.icons)
+                if (!source.stream.empty() && !Exists(folder / (key + ".png")))
+                    streams[source.stream].insert(source.picture);
+            // The hashed ones are ExtractHashedIcons'.
+            std::map<std::string, std::map<std::string, Image>> decoded;
+            for (const auto& [stream, names] : streams)
+                decoded[stream] = LuxPictures(disc, stream, names);
+            int present = 0;
+            for (const auto& [key, source] : m.icons)
+            {
+                std::filesystem::path path = folder / (key + ".png");
+                if (source.hash != 0)
+                {
+                    present += Exists(path);
+                    continue;
+                }
+                if (!Exists(path))
+                {
+                    Image image;
+                    if (!source.stream.empty())
+                    {
+                        auto found = decoded[source.stream].find(source.picture);
+                        if (found != decoded[source.stream].end())
+                            image = found->second;
+                    }
+                    else
+                        AlchemyPicture(disc, source, source.picture, image);
+                    Tint(image, source.tint, key);
+                    if (!source.underArchive.empty() && !image.rgba.empty())
+                    {
+                        Source under;
+                        under.archive = source.underArchive;
+                        under.entry = source.underEntry;
+                        Image plate;
+                        if (AlchemyPicture(disc, under, {}, plate) && !plate.rgba.empty())
+                            image = Under(image, plate);
+                    }
+                    if (image.rgba.empty() || !SavePng(image, path))
+                        continue;
+                }
+                present++;
+            }
+            return present;
+        }
+
         int ReadVersion(const std::filesystem::path& manifest)
         {
             std::ifstream in(manifest);
@@ -847,6 +999,75 @@ namespace art
     {
         std::filesystem::path portraits = PortraitFolder(game);
         return portraits.empty() ? portraits : portraits / "artworks";
+    }
+
+    int ExtractHashedIcons(std::string_view game, const Disc& disc, const PictureHash& hashOf)
+    try
+    {
+        const Manifest* where = FindManifest(game);
+        std::filesystem::path folder = IconFolder(game);
+        if (where == nullptr || folder.empty())
+            return 0;
+        int written = 0;
+        std::error_code error;
+        for (const auto& [key, source] : where->icons)
+        {
+            std::filesystem::path path = folder / (key + ".png");
+            if (source.hash == 0 || Exists(path))
+                continue;
+            auto archive = OpenArchive(disc, source.archive);
+            std::optional<alchemy::IgzFile> scene = archive ? OpenScene(*archive, source.entry) : std::nullopt;
+            if (!scene)
+                continue;
+            const alchemy::IgzFile& file = *scene;
+            for (const alchemy::IgzFile::Picture& picture : file.Pictures())
+            {
+                Image whole;
+                if (hashOf(file, picture) != source.hash || !alchemy::DecodePicture(file, picture, whole))
+                    continue;
+                const int x = source.crop[0], y = source.crop[1], w = source.crop[2], h = source.crop[3];
+                if (w <= 0 || h <= 0 || x < 0 || y < 0 || uint32_t(x + w) > whole.width ||
+                    uint32_t(y + h) > whole.height)
+                    break;
+                // A disc of the crop's larger side, the crop in its middle: a cut of a model's texture has no edge of
+                // its own, so it is shaped like the other marks.
+                const int side = std::max(w, h);
+                const float radius = side / 2.0f;
+                Image icon;
+                icon.width = icon.height = uint32_t(side);
+                icon.rgba.assign(size_t(side) * size_t(side), 0);
+                for (int row = 0; row < side; row++)
+                    for (int column = 0; column < side; column++)
+                    {
+                        int fromX = x + column - (side - w) / 2, fromY = y + row - (side - h) / 2;
+                        if (fromX < x || fromY < y || fromX >= x + w || fromY >= y + h)
+                            continue;
+                        // The crop is measured on the texture dump, whose rows run the other way from DecodePicture's
+                        // [V: Jawbreaker's, 2026-11-21].
+                        fromY = int(whole.height) - 1 - fromY;
+                        float dx = column + 0.5f - radius, dy = row + 0.5f - radius;
+                        float cover = std::clamp(radius - std::sqrt(dx * dx + dy * dy) + 0.5f, 0.0f, 1.0f);
+                        uint32_t pixel = whole.rgba[size_t(fromY) * whole.width + size_t(fromX)];
+                        uint32_t alpha = uint32_t((pixel >> 24) * cover);
+                        icon.rgba[size_t(row) * side + column] = (pixel & 0xFFFFFF) | alpha << 24;
+                    }
+                std::filesystem::create_directories(folder, error);
+                written += SavePng(icon, path) ? 1 : 0;
+                break;
+            }
+        }
+        return written;
+    }
+    catch (const std::exception& failure) // a malformed disc: no icon, the caller goes on
+    {
+        fprintf(stderr, "[art] %.*s: hashed icons not read (%s)\n", int(game.size()), game.data(), failure.what());
+        return 0;
+    }
+
+    std::filesystem::path IconFolder(std::string_view game)
+    {
+        std::filesystem::path portraits = PortraitFolder(game);
+        return portraits.empty() ? portraits : portraits / "icons";
     }
 
     std::string CachedPath(std::string_view game, Role role)
@@ -1113,7 +1334,7 @@ namespace art
                 const float t = std::clamp((std::sqrt(dx * dx + dy * dy) - Inner) / (Outer - Inner), 0.0f, 1.0f);
                 const float keep = 1 - t * t * (3 - 2 * t);
                 uint32_t& texel = soft.rgba[size_t(y) * picture.width + x];
-                const uint32_t alpha = uint32_t(float(texel >> 24) * keep + 0.5f);
+                const uint32_t alpha = uint32_t(std::lround(float(texel >> 24) * keep));
                 texel = (texel & 0x00FFFFFF) | alpha << 24;
             }
         return soft;
@@ -1234,6 +1455,12 @@ namespace art
             std::filesystem::path artworks = ArtworkFolder(game);
             std::filesystem::create_directories(artworks, error);
             result.artworks = AlchemyArtworks(*where, disc, artworks);
+        }
+        if ((parts & Icons) && where != nullptr && !where->icons.empty() && !portraits.empty())
+        {
+            std::filesystem::path icons = IconFolder(game);
+            std::filesystem::create_directories(icons, error);
+            result.icons = ReadIcons(*where, disc, icons);
         }
         if ((parts & Upgrades) && where != nullptr && where->upgrades.IsObject())
         {

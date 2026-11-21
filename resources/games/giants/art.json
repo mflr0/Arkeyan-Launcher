@@ -91,5 +91,18 @@
         "title": "999_Level_Village(1)"
       }
     ]
-  }
+  },
+  "icons": {
+    "element_air": { "archive": "permanent/global.bld", "entry": "level.bld", "picture": "elementalicons/air_64.png", "tint": "element" },
+    "element_earth": { "archive": "permanent/global.bld", "entry": "level.bld", "picture": "elementalicons/earth_64.png", "tint": "element" },
+    "element_fire": { "archive": "permanent/global.bld", "entry": "level.bld", "picture": "elementalicons/fire_64.png", "tint": "element" },
+    "element_water": { "archive": "permanent/global.bld", "entry": "level.bld", "picture": "elementalicons/water_64.png", "tint": "element" },
+    "element_magic": { "archive": "permanent/global.bld", "entry": "level.bld", "picture": "elementalicons/magic_64.png", "tint": "element" },
+    "element_tech": { "archive": "permanent/global.bld", "entry": "level.bld", "picture": "elementalicons/tech_64.png", "tint": "element" },
+    "element_life": { "archive": "permanent/global.bld", "entry": "level.bld", "picture": "elementalicons/life_64.png", "tint": "element" },
+    "element_undead": { "archive": "permanent/global.bld", "entry": "level.bld", "picture": "elementalicons/undead_64.png", "tint": "element" },
+    "type_mini": { "archive": "permanent/global.bld", "entry": "level.bld", "picture": "elementalicons/pet_64.png", "tint": "white" },
+    "type_giant": { "archive": "level/level_200.bld", "entry": "level.bld", "picture": "element_icons/textures/icon_giant.png" },
+    "element_magicitem": { "archive": "permanent/global.bld", "entry": "level.bld", "picture": "elementalicons/magicitem_64.png", "tint": "white" },
+    "element_adventure": { "archive": "permanent/global.bld", "entry": "level.bld", "picture": "elementalicons/location_64.png", "tint": "white" } }
 }

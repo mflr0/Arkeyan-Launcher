@@ -170,8 +170,11 @@ At the first visit to the page (`CollectionPage::Open`):
   right click still opens its sheet. The saved `fold_foreign` setting has no effect on this shelf.
   The untouched starters the game made on its own
   are left out (Manage > Tidy). A card: the picture, the name (the label, else the toy's name with the game's nickname:
-  "Gill Grunt (Splash)"), the level line for the portal's game, the star, the variant's name, P1/P2/"On" for the seats.
-  The Toy Box draws the same card.
+  "Gill Grunt (Splash)"; the version is in it), the level line for the portal's game with the type's title first
+  ("Giant · Level 15", `collection::LevelText`; each piece translated), the element icon top left (a disc in the element's
+  colour until a disc gives the icons, `collection::ElementIconPath`) with the type icon under it when there is one (a
+  swapper's bottom movement, a Giant, a Trap Master, a Sensei's or a made crystal's class: `TypeIconPath`,
+  `ClassIconPath`), and top right P1/P2/"On" for the seats, then the star. The Toy Box draws the same card.
 - **The sheet** (a click on a card when no seat is being chosen, right click, X, F2): the picture with its element and
   type, in a Modal (Large, titled with the figure's name, the cross at the top right; B and Escape close it); the version,
   where it sits (a status pill "On Player 1 at the next start of Spyro's Adventure") or which game holds it (a warning
@@ -189,14 +192,18 @@ At the first visit to the page (`CollectionPage::Open`):
   levels; Giants 1-15 on the first two parts of the experience; Swap Force 1-20, the game's own table), experience, Giants' **hat picker** (52 names, a Select), gold, hero points (text fields that take digits), the nickname the game shows.
   Save re-reads the figure and writes only the fields changed (a game may have played it meanwhile); a name alone
   writes no stats (and makes no backup).
-- **Add a figure** (a Modal, Large): a game Select (the six games), a SearchField, a **Type** Select (as the bar's), one card per
-  character with an "owned x2" Badge; the toys the game reads first, then "Later games" labelled "needs Giants" (a
+- **Add a figure** (a Modal, Large): a game Select (the six games), a SearchField, a **Type** Select (as the bar's), one wide
+  card per character, as the Toy Box's: the element and type icons in a column, the picture, the name with the versions'
+  "+3" badge, then "Trap Master · owned x2" ("not owned", "owned"). The toys the game reads first, under "Works in <game>",
+  in the Toy Box's sections (each element, Kaos, then Minis, Traps, Vehicles, Creation Crystals, Magic Items, Adventure
+  Packs, Trophies), then "Later games" in one section, each card labelled "needs Giants" in place of the owned line (a
   SectionHeader each, with its count). Every category keeps the full "needs <game>" label; the grid's minimum card width
-  fits the longest requirement in the current language. A side Card lists the versions as ListRows (the picture in `image`, "owned x2" as `trailing`)
+  fits the longest requirement in the current language. The side Card starts with the toy's picture, its name and
+  "Fire · Giant". A side Card lists the versions as ListRows (the picture in `image`, "owned x2" as `trailing`)
   (the plain toy under its own name, then the variants the chosen game tells apart and the same-tag editions: a variant the game plays
   as the plain toy is not a row, `Catalogue::Read`); the plain toy makes the figure under the id the toy is sold with, and the
   toy's own entry in the catalogue (its `base` kind) is never a second row; the footer holds the optional name, "Put it on Player 1" after a Create, and Close then Create at the right (the dialog stays open after a Create, to make another). A toy with
-  versions has a "+3" badge on its card; the panel is titled "Versions", each row with its picture (the toy's own when
+  versions has a "+3" badge on its card; the panel's list is titled "Versions", each row with its picture (the toy's own when
   it has none), its kind (an unknown kind from a newer `catalogue.json` shows as "Other") and the game it came with
   ("Series · Giants", `Catalogue::Origin`; a same-tag edition, the toy's own game); the search also matches
   the versions' names ("polar" finds Whirlwind, with Polar Whirlwind chosen).

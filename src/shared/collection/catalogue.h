@@ -84,6 +84,12 @@ namespace collection
         Category category = Category::Core;
         std::string game; // id of the game it first came with
         VariantKind edition = VariantKind::Base; // the toy type itself is special (Legendary Bash, Dark Spyro)
+        std::string swapType; // [SwapForce] a half's movement ("climber", "flyer"...): JSON "swap_type"
+        uint8_t battleClass =
+            0; // [Imaginators] a Sensei's (figures::BattleClassName, 1-10; 11 Kaos'): JSON "battle_class"
+        std::string
+            elementIcon; // the element icon of a toy outside the ten elements (Kaos: "kaos"): JSON "element_icon"
+        std::string ride; // [SuperChargers] a vehicle's terrain, a SuperCharger's vehicle's: "land", "sea", "sky"
         std::vector<Variant> variants;
     };
 

@@ -4,6 +4,7 @@
 // its background art, its title icon, its toy portraits and (Giants, Swap Force) its large toy artworks. One flow for every game; what differs per game (which
 // archive, which picture) is the table in game_art.cpp. Used by the in-game Toy Box and by Arkeyan Launcher (game page,
 // sidebar, collection). Nothing is shipped or downloaded. docs/runtime/host/game_art.md.
+#include "alchemy_archive.h"
 #include "xenos_texture.h"
 #include <atomic>
 #include <cstdint>
@@ -63,6 +64,16 @@ namespace art
     std::filesystem::path PortraitFolder(std::string_view game);
     // <portraits>/artworks/: the game's large pictures of its toys and variants (Giants' versus screen art).
     std::filesystem::path ArtworkFolder(std::string_view game);
+    // <portraits>/icons/: the cards' element and figure-type icons, <key>.png (the manifest's "icons";
+    // collection::ElementIconPath, TypeIconPath).
+    std::filesystem::path IconFolder(std::string_view game);
+
+    // The manifest's icons named by a pack hash instead of a picture name (`"hash"`, `"crop": [x, y, width, height]`:
+    // Trap Team's pictures have no names): the entry's picture whose hash `hashOf` gives (texpack::ContentHash of its
+    // top level as the renderer uploads it, 0 when it cannot say), cut to the crop. Only Arkeyan-Builder hashes
+    // (hd_textures.h); Extract leaves these icons. The number written.
+    using PictureHash = std::function<uint64_t(const alchemy::IgzFile& file, const alchemy::IgzFile::Picture& picture)>;
+    int ExtractHashedIcons(std::string_view game, const Disc& disc, const PictureHash& hashOf);
 
     // The cached picture of `role` for `game`, empty if there is none yet.
     std::string CachedPath(std::string_view game, Role role);
@@ -110,7 +121,8 @@ namespace art
         Upgrades = 8, // the toys' upgrade names, descriptions and prices (<data>/<Game>/upgrades.json; game_text.h)
         PartNames = 16, // Imaginators' creation parts' names (<data>/<Game>/parts.json; game_text.h)
         LevelNames = 32, // localized level names (<data>/<Game>/levels.json; game_text.h)
-        All = 63,
+        Icons = 64, // the element and figure-type icons of the cards
+        All = 127,
     };
 
     struct Extraction
@@ -121,6 +133,7 @@ namespace art
         bool upgrades = false; // upgrades.json present afterwards
         bool partNames = false; // parts.json present afterwards
         bool levelNames = false; // current levels.json present afterwards (possibly an empty mapping)
+        int icons = 0; // the manifest's icons present afterwards
     };
 
     // Reads `game`'s pictures from the player's disc into its caches; what is already cached (by this version of the

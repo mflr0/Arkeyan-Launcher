@@ -100,8 +100,12 @@ namespace collection
     // figure's own level is above the game's cap (a figure Giants took to 15, shown in Spyro's Adventure); "New" for a
     // character never played; "Unreadable" for a damaged one; empty for toys without progress. French with `french`.
     // A creation crystal shows its class and level instead ("Ninja · Level 14", "Virtual · ..." when made here without the
-    // factory signature), "Ready to create" when blank.
+    // factory signature), "Ready to create" when blank. A figure with a category title has it before its level
+    // ("Giant · Level 15").
     std::string LevelText(const Figure& figure, const std::string& game, bool french = false);
+    // The title a card shows before the level ("Giant", "Swapper", "Trap Master", "SuperCharger", "Sensei", "Mini"),
+    // empty for the other categories. French with `french`.
+    std::string CategoryTitle(Category category, bool french = false);
     // An Imaginators toy made here, without its factory signature (Figure::missingSignature): the port plays it, a real
     // game refuses it. By language code ("en", "fr", "de", "it", "es", "nl"; English otherwise).
     const char* VirtualToyText(const std::string& language);

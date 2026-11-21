@@ -13,5 +13,28 @@
   "levels": {
     "kind": "igz",
     "archive": "archives/zoneinfos.pak"
-  }
+  },
+  "icons": {
+    "element_air": { "archive": "archives/juicedomain_permanent.pak", "entry": "MenuComponents!ElementIcon_Air`" },
+    "element_earth": { "archive": "archives/juicedomain_permanent.pak", "entry": "MenuComponents!ElementIcon_Earth`" },
+    "element_fire": { "archive": "archives/juicedomain_permanent.pak", "entry": "MenuComponents!ElementIcon_Fire`" },
+    "element_water": { "archive": "archives/juicedomain_permanent.pak", "entry": "MenuComponents!ElementIcon_Water`" },
+    "element_magic": { "archive": "archives/juicedomain_permanent.pak", "entry": "MenuComponents!ElementIcon_Magic`" },
+    "element_tech": { "archive": "archives/juicedomain_permanent.pak", "entry": "MenuComponents!ElementIcon_Tech`" },
+    "element_life": { "archive": "archives/juicedomain_permanent.pak", "entry": "MenuComponents!ElementIcon_Life`" },
+    "element_undead": { "archive": "archives/juicedomain_permanent.pak", "entry": "MenuComponents!ElementIcon_Undead`" },
+    "element_light": { "archive": "archives/juicedomain_permanent.pak", "entry": "MenuComponents!ElementIcon_Light`" },
+    "element_dark": { "archive": "archives/juicedomain_permanent.pak", "entry": "MenuComponents!ElementIcon_Dark`" },
+    "class_knight": { "archive": "archives/juicedomain_permanent.pak", "entry": "MenuComponents!ClassIcon_Sword`", "tint": "glyph" },
+    "class_bowslinger": { "archive": "archives/juicedomain_permanent.pak", "entry": "MenuComponents!ClassIcon_Archer`", "tint": "glyph" },
+    "class_quickshot": { "archive": "archives/juicedomain_permanent.pak", "entry": "MenuComponents!ClassIcon_Pistol`", "tint": "glyph" },
+    "class_ninja": { "archive": "archives/juicedomain_permanent.pak", "entry": "MenuComponents!ClassIcon_Thrown`", "tint": "glyph" },
+    "class_brawler": { "archive": "archives/juicedomain_permanent.pak", "entry": "MenuComponents!ClassIcon_Fist`", "tint": "glyph" },
+    "class_smasher": { "archive": "archives/juicedomain_permanent.pak", "entry": "MenuComponents!ClassIcon_Club`", "tint": "glyph" },
+    "class_sorcerer": { "archive": "archives/juicedomain_permanent.pak", "entry": "MenuComponents!ClassIcon_Mage`", "tint": "glyph" },
+    "class_swashbuckler": { "archive": "archives/juicedomain_permanent.pak", "entry": "MenuComponents!ClassIcon_Blades`", "tint": "glyph" },
+    "class_sentinel": { "archive": "archives/juicedomain_permanent.pak", "entry": "MenuComponents!ClassIcon_Doubler`", "tint": "glyph" },
+    "class_bazooker": { "archive": "archives/juicedomain_permanent.pak", "entry": "MenuComponents!ClassIcon_Bazooka`", "tint": "glyph" },
+    "element_kaos": { "archive": "archives/juicedomain_permanent.pak", "entry": "MenuComponents!ElementIcon_Kaos`" },
+    "class_kaos": { "archive": "archives/juicedomain_permanent.pak", "entry": "MenuComponents!ClassIcon_Kaos`", "tint": "glyph" } }
 }

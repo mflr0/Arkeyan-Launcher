@@ -48,6 +48,20 @@ namespace collection
     // empty when that game has none cached.
     std::string GameKindPicturePath(const std::string& gameId, Category category);
 
+    // The cards' corner icons, read from a disc (art::IconFolder): `gameId`'s own, else the newest game's that has one.
+    // Empty when no installed game has it (the card draws a disc in the element's colour instead).
+    std::string ElementIconPath(const std::string& gameId, Element element);
+    // The toy's: its own (Toy::elementIcon: Kaos', a trophy's), a magic item's or an adventure pack's mark, else its
+    // element's.
+    std::string ElementIconPath(const std::string& gameId, const Toy& toy);
+    // A swapper half's movement icon (its bottom's: the top has none), a Sensei's battle class icon, a vehicle's or a
+    // SuperCharger's ride (land, sea, sky), the Trap Masters' T, the Giants' and the Minis' marks. Empty for the other toys: their type is the title before the level
+    // (CategoryTitle).
+    std::string TypeIconPath(const std::string& gameId, const Toy& toy);
+    // The battle class's icon (figures::BattleClassName, 1-10: a Sensei's, a made creation crystal's; 11: Kaos'), empty
+    // for 0.
+    std::string ClassIconPath(const std::string& gameId, int battleClass);
+
     // --- Which game's pictures (the player's choice; docs/runtime/host/figures.md, "Which picture") ----------------------
 
     // Kept in the collection folder's pictures/pictures.json with the player's own pictures (pictures/<type>-<variant>.png),

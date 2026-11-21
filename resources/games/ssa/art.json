@@ -28,5 +28,17 @@
       "fi": "fin"
     },
     "challengePrefix": "Challenge_Title_"
-  }
+  },
+  "icons": {
+    "element_air": { "stream": "uigameimage.str", "picture": "elementiconair" },
+    "element_earth": { "stream": "uigameimage.str", "picture": "elementiconearth" },
+    "element_fire": { "stream": "uigameimage.str", "picture": "elementiconfire" },
+    "element_water": { "stream": "uigameimage.str", "picture": "elementiconwater" },
+    "element_magic": { "stream": "uigameimage.str", "picture": "elementiconmagic" },
+    "element_tech": { "stream": "uigameimage.str", "picture": "elementiconmech" },
+    "element_life": { "stream": "uigameimage.str", "picture": "elementiconlife" },
+    "element_undead": { "stream": "uigameimage.str", "picture": "elementicondeath" },
+    "type_mini": { "stream": "uigameimage.str", "picture": "elementiconpet" },
+    "element_magicitem": { "stream": "uigameimage.str", "picture": "elementiconmagicitem" },
+    "element_adventure": { "stream": "uigameimage.str", "picture": "elementiconlocation" } }
 }

@@ -990,6 +990,8 @@ no hat	nessun cappello
 nothing yet	ancora niente
 only what {} reads	solo ciò che {} legge
 owned x{}	posseduto x{}
+owned	posseduto
+not owned	non posseduto
 plays as {0} in {1}	vale come {0} in {1}
 plays as {}	vale come {}
 portal	portale
@@ -1078,6 +1080,11 @@ Virtual	Virtuale
 Shield {}	Scudo {}
 Weapon {}	Arma {}
 Level {} ({})	Livello {} ({})
+Giant	Giant
+Trap Master	Maestro delle Trappole
+SuperCharger	SuperCharger
+Sensei	Sensei
+Mini	Mini
 {} figure	{} figura
 {} figures	{} figure
 Knight	Cavaliere

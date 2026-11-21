@@ -991,6 +991,8 @@ no hat	ingen hatt
 nothing yet	inget ännu
 only what {} reads	bara det {} läser
 owned x{}	ägda x{}
+owned	ägd
+not owned	inte ägd
 plays as {0} in {1}	spelas som {0} i {1}
 plays as {}	spelas som {}
 portal	portal
@@ -1079,6 +1081,11 @@ Virtual	Virtuell
 Shield {}	Sköld {}
 Weapon {}	Vapen {}
 Level {} ({})	Nivå {} ({})
+Giant	Giant
+Trap Master	Trap Master
+SuperCharger	SuperCharger
+Sensei	Sensei
+Mini	Mini
 {} figure	{} figur
 {} figures	{} figurer
 Knight	Riddare
