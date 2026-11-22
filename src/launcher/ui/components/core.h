@@ -170,7 +170,6 @@ namespace ui
         Folder,
         Disc,
         Play,
-        Hold,
         More,
         Star,
         Success,

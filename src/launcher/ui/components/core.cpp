@@ -317,7 +317,6 @@ namespace ui
             case Icon::Folder: return lucide::Folder;
             case Icon::Disc: return lucide::Disc3;
             case Icon::Play: return lucide::Play;
-            case Icon::Hold: return lucide::Timer;
             case Icon::More: return lucide::Ellipsis;
             case Icon::Star: return lucide::Star;
             case Icon::Success: return lucide::CircleCheck;

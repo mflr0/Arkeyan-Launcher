@@ -300,10 +300,7 @@ namespace ui
             x += icon::Small + space::XXS;
         }
         DrawText(draw, ImVec2(x, std::round(mid - CapMiddle(TextStyle::Body, true))),
-            Col(options.capturing   ? color::OnAccent
-                : options.inherited ? color::Dim
-                                    : color::Ink),
-            shown);
+            Col(options.capturing ? color::OnAccent : color::Ink), shown);
         PopText();
         if (state.focused) // around the face and its side
             FocusRing(at, ImVec2(at.x + w, at.y + h + KeyDepth), radius::Control);

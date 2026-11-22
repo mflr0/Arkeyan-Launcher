@@ -286,8 +286,8 @@ namespace ui
         if (!open)
             NavItem(); // open, its list is the stops (ImGui's own moves)
         ImGui::BeginDisabled(options.disabled);
-        DrawText(draw, ImVec2(min.x + space::M, std::round(mid - CapMiddle(TextStyle::Body))),
-            Col(options.inherited ? color::Dim : color::Ink), shown.c_str());
+        DrawText(draw, ImVec2(min.x + space::M, std::round(mid - CapMiddle(TextStyle::Body))), Col(color::Ink),
+            shown.c_str());
         DrawIcon(draw, open ? Icon::ChevronUp : Icon::ChevronDown,
             ImVec2(std::round(max.x - space::S - icon::Small / 2), mid), icon::Small, Col(color::InkSoft));
         ImGui::EndDisabled();

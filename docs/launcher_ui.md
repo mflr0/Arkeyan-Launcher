@@ -1282,6 +1282,7 @@ and writes `icons-0.png` through `icons-3.png`. These checks also run in `--no-d
   (`SKY_LAUNCHER_FONT_DIR` overrides the folder while trying fonts); `ui::Ctx().fonts` hands them to the components.
 
 ## Screenshot test
+The scripts that drive the window are in `src/launcher/ui/test_scripts.cpp`, apart from the window's own code.
 The launcher can drive itself without opening a visible window:
 ```sh
 SDL_VIDEO_DRIVER=offscreen \

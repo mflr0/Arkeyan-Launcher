@@ -74,7 +74,6 @@ namespace ui
     {
         bool capturing = false;
         bool conflict = false;
-        bool inherited = false; // the key comes from the global layout: its name dimmed
         const char* tooltip = nullptr;
     };
     bool KeyButton(const char* id, const char* key, const KeyButtonOptions& options = {});
@@ -92,7 +91,6 @@ namespace ui
         const char* gearTooltip = nullptr; // "Spyro's Adventure settings"
         bool takeFocus = false; // the main half takes the keyboard and pad focus this frame
         bool showFocus = false; // and shows its ring
-        bool separated = true; // the gear always stands apart
         Icon icon = Icon::None;
         bool danger = false; // the running game's stop action
         float width = height::MainWidth;
