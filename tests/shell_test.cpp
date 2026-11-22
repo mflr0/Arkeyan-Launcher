@@ -1402,6 +1402,43 @@ namespace
             SHELL_EXPECT(older.find("Alice Old") == std::string::npos && older.find("Alice USB") == std::string::npos);
             const std::string copied = launcher_report::Anonymous(quoted, {});
             SHELL_EXPECT(copied.find("Alice") == std::string::npos && copied.find("SSA.iso") != std::string::npos);
+            // A removable or second drive's name and folders are often the player's, whatever the path points at.
+            for (const char* line : { "[texpack] folder /run/media/<user>/Alice Deck/Packs",
+                     "[portal] dump /media/<user>/Alice Stick/figures/spyro.sky", "games=/Volumes/Alice SSD",
+                     "kit=/mnt/Alice Drive/kits", "[save] E:\\Alice Perso\\saves", "[save] F:/Alice Perso/saves",
+                     "[copy] \\\\NAS\\Alice share\\copy",
+                     "[log] /var/run/media/<user>/Alice Deck/Arkeyan.log, started" })
+                SHELL_EXPECT(launcher_report::Anonymous(line, {}).find("Alice") == std::string::npos);
+            SHELL_EXPECT(launcher_report::Anonymous("[disc] /run/media/<user>/Alice Deck/SSA.iso", {}) ==
+                         "[disc] <folder>/SSA.iso"); // a disc image's folder has its own word
+            // What names nothing of the player's is left as it is.
+            for (const char* plain : { "see https://github.com/a/b", "[gpu] C:\\Windows\\System32\\d3d12.dll",
+                     "[perf] 60 fps, 16.6 ms p99", "~/media/notes", "/usr/lib/libSDL3.so" })
+                SHELL_EXPECT(launcher_report::Anonymous(plain, {}) == plain);
+        }
+        // The game logs on disk, which players attach by hand, are redacted where they are: same time (the newest log is
+        // found by it), and a second pass changes nothing.
+        {
+            const std::filesystem::path file = scratch / "logclean" / "Arkeyan.log";
+            std::filesystem::create_directories(file.parent_path());
+            WriteBytes(file, "[log] /home/alice/.local/share/Skylanders/SSA/Arkeyan.log\r\n"
+                             "[disc] /run/media/alice/Alice Deck/SSA.iso\n[perf] 60 fps\n");
+            const auto written = std::filesystem::last_write_time(file) - std::chrono::hours(3);
+            std::filesystem::last_write_time(file, written);
+            launcher_report::Identity player;
+            player.userName = "alice";
+            player.homeFolder = "/home/alice";
+            SHELL_EXPECT(launcher_report::AnonymiseFile(file, player));
+            std::string clean;
+            {
+                std::ifstream in(file, std::ios::binary);
+                clean.assign(std::istreambuf_iterator<char>(in), std::istreambuf_iterator<char>());
+            }
+            SHELL_EXPECT(clean == "[log] ~/.local/share/Skylanders/SSA/Arkeyan.log\r\n"
+                                  "[disc] <folder>/SSA.iso\n[perf] 60 fps\n");
+            const auto moved = std::filesystem::last_write_time(file) - written;
+            SHELL_EXPECT(moved < std::chrono::seconds(2) && moved > -std::chrono::seconds(2));
+            SHELL_EXPECT(!launcher_report::AnonymiseFile(file, player));
         }
         // The whole report: every file, the versions and the GPU line, all redacted.
         std::filesystem::path data = scratch / "reportdata";

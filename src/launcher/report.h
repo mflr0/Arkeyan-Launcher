@@ -28,8 +28,13 @@ namespace launcher_report
 
     // This machine's identity, with the disc image the launcher was given (empty: none).
     Identity CurrentIdentity(const std::string& iso);
-    // A text to paste in public (a game's log): redacted, the folders of the disc images it quotes included.
+    // A text to paste in public (a game's log): redacted, the folders of the disc images it quotes included, and every
+    // folder of an external drive (its name is often the player's).
     std::string Anonymous(const std::string& text, Identity identity);
+    // The folders launcher.ini names (each game's disc, the Games folder, a kit elsewhere), added to what is redacted.
+    void AddSettingsFolders(Identity& identity, const std::filesystem::path& settingsFile);
+    // Rewrites a log as Anonymous gives it, its time kept. True when it changed; a log that can't be rewritten stays whole.
+    bool AnonymiseFile(const std::filesystem::path& file, const Identity& identity);
 
     struct Versions
     {
