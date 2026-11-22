@@ -5,6 +5,7 @@
 #include "shared/collection/progress.h"
 #include "shared/collection/save_backup.h"
 #include <algorithm>
+#include <cstdio>
 #include <numeric>
 
 namespace launcher_ui
@@ -35,6 +36,9 @@ namespace launcher_ui
         RefreshChests();
         const GameChests& chests = m_chests;
         const std::span<const ChestKindRow> kinds = ChestKinds(m_s->game.id);
+        // One counter per kind, whatever set the counters last (a test, another game): the sliders index them by kind.
+        if (m_chestCounts.size() != kinds.size())
+            m_chestCounts.resize(kinds.size(), 0);
         const char* title = GameName(m_s->game.id, GameNameForm::Full);
         BeginSettingsPage("##chestscolumn", title != nullptr ? title : m_s->game.name, true, true);
         BeginCard("##chests", ImVec2(0, 0), ImGuiChildFlags_AutoResizeY);
@@ -108,12 +112,35 @@ namespace launcher_ui
 
 namespace launcher_ui
 {
-    // SKY_LAUNCHER_TEST_CHESTS (with SKY_LAUNCHER_SHOTS, a scratch SKYLANDERS_DATA or SKY_SAVE_DIR, --game imaginators): the
+    // SKY_LAUNCHER_TEST_CHESTS (with SKY_LAUNCHER_SHOTS, a scratch SKYLANDERS_DATA or SKY_SAVE_DIR; it shows Imaginators): the
     // Chests page before the game read a pile, with a pile of 4 and counters set, with chests waiting, and with chests waiting
     // for another slot. The files are written in the game's player folder.
     void App::TestChestsScript(uint64_t now)
     {
+        // Without a disc the launcher opens on another game, which has no chests: the script shows Imaginators.
+        if (m_testStep == 0)
+            SelectGame(*FindGame("imaginators"));
+        const std::span<const ChestKindRow> kinds = ChestKinds(m_s->game.id);
+        if (kinds.empty())
+        {
+            fprintf(stderr, "FAIL chests step %d: %s has no chests\n", m_testStep, m_s->game.id);
+            m_testFailures++;
+            m_running = false;
+            return;
+        }
         const std::filesystem::path folder = progress::Folder(m_s->game.id);
+        // A counter by its kind's key, so the script never indexes past the kinds the game has.
+        auto setCount = [&](std::string_view key, int count) {
+            m_chestCounts.resize(kinds.size(), 0);
+            for (size_t i = 0; i < kinds.size(); i++)
+                if (kinds[i].key == key)
+                {
+                    m_chestCounts[i] = count;
+                    return;
+                }
+            fprintf(stderr, "FAIL chests step %d: no chest kind %.*s\n", m_testStep, int(key.size()), key.data());
+            m_testFailures++;
+        };
         auto write = [&](const char* name, std::string_view text) {
             std::error_code error;
             std::filesystem::create_directories(folder, error);
@@ -135,9 +162,9 @@ namespace launcher_ui
         case 1:
             write("chests.txt", "slot=0\npile=4\npile.imaginite=3\npile.gold=1\npile.other=0\nlimit=99\n");
             RefreshChests(true);
-            m_chestCounts.assign(ChestKinds(m_s->game.id).size(), 0);
-            m_chestCounts[1] = 20;
-            m_chestCounts[5] = 5;
+            m_chestCounts.assign(kinds.size(), 0);
+            setCount("copper", 20);
+            setCount("platinum", 5);
             m_testShot = "chests-2-pile";
             m_testAt = now + 600;
             break;
@@ -157,7 +184,7 @@ namespace launcher_ui
         case 4:
             write("chests.txt", "slot=0\npile=4\npile.imaginite=3\npile.gold=1\npile.other=0\nlimit=99\n");
             RefreshChests(true);
-            m_chestCounts[0] = 3;
+            setCount("imaginite", 3);
             m_testShot = "chests-5-add";
             m_testAt = now + 600;
             break;

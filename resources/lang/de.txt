@@ -1265,3 +1265,4 @@ Saves and data	Spielstände und Daten
 Frees {}.	Gibt {} frei.
 Fits {}	Passt auf {}
 Use the default	Standard verwenden
+That file is not a disc the launcher can use	Diese Datei ist keine Disc, die der Launcher verwenden kann

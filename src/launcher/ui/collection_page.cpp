@@ -972,6 +972,7 @@ namespace launcher_ui
         constexpr float SeatPad = ui::space::M; // inside a seat, round its picture and its lines
         constexpr float SeatHeight = SeatPicture + 2 * SeatPad;
         constexpr float SeatGap = ui::space::M; // between the seats
+        constexpr float SeatLabelLeast = ui::height::Main; // a seat label's least room before its row splits
         constexpr float ShelfCell = 2 * ui::height::Main; // the narrowest a figure's card gets
         constexpr float ShelfGap = ui::space::XS;
         constexpr int FilterCount = 3; // Element, Works in, Type
@@ -1502,7 +1503,8 @@ namespace launcher_ui
         const size_t count = std::min(game->seats.size(), m_model.seats.size());
         if (count == 0)
             return;
-        // One row, or two when a seat's label would be cut (seven seats in Imaginators): the players' seats first.
+        // One row, or two when a seat's label would be cut (seven seats in Imaginators): the players' seats first; more
+        // in a narrow window.
         std::vector<bool> playerSeat;
         float widest = 0;
         ui::PushText(ui::TextStyle::Caption, false);
@@ -1514,7 +1516,9 @@ namespace launcher_ui
         ui::PopText();
         // The label's room: the seat less its padding, picture and gap, and the X of an occupied seat.
         auto labelRoom = [](float w) { return w - 2 * SeatPad - SeatPicture - ui::space::S - ui::space::L; };
-        const std::vector<std::vector<size_t>> rows = SeatRows(playerSeat, width, SeatGap, widest, labelRoom);
+        // A narrow window (640 wide) splits the rows again until a label keeps at least a main button's height of room.
+        const std::vector<std::vector<size_t>> rows =
+            SeatRows(playerSeat, width, SeatGap, widest, SeatLabelLeast, labelRoom);
         const ImVec2 row = ImGui::GetCursorScreenPos();
         std::vector<ImVec2> seatAt(count), seatEnd(count);
         for (size_t r = 0; r < rows.size(); r++)

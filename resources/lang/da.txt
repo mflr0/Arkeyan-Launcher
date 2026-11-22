@@ -1267,3 +1267,4 @@ Saves and data	Gemte spil og data
 Frees {}.	Frigør {}.
 Fits {}	Passer på {}
 Use the default	Brug standarden
+That file is not a disc the launcher can use	Den fil er ikke en disk, som launcheren kan bruge

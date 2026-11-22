@@ -1267,3 +1267,4 @@ Saves and data	Jogos salvos e dados
 Frees {}.	Libera {}.
 Fits {}	Vai em {}
 Use the default	Usar a predefinição
+That file is not a disc the launcher can use	Esse arquivo não é um disco que o launcher possa usar

@@ -1268,3 +1268,4 @@ Saves and data	Tallennukset ja tiedot
 Frees {}.	Vapauttaa {}.
 Fits {}	Sopii paikalle: {}
 Use the default	Käytä oletusta
+That file is not a disc the launcher can use	Tiedosto ei ole levy, jota launcher voi käyttää

@@ -5,7 +5,10 @@
 #include "shared/collection/datadir.h"
 #include "launcher/ui/launcher_ui.h"
 #include "launcher/ui/text_fit.h"
+#include <cstdio>
 #include <ctime>
+#include <functional>
+#include <utility>
 #include <fmt/format.h>
 
 std::string GameUpdateSummary(const std::vector<std::string>& games)
@@ -99,6 +102,127 @@ namespace launcher_ui
         return GameUpdateSummary(games);
     }
 
+    namespace
+    {
+        enum BannerAction
+        {
+            None,
+            WhatsNew,
+            UpdateLauncher,
+            Later,
+            Restart,
+            Cancel,
+            Retry,
+            Dismiss
+        };
+
+        struct BannerButton
+        {
+            const char* label;
+            bool primary;
+            int action;
+        };
+
+        // What the banner says and offers in this state; BannerHeight and DrawUpdateBanner read the same.
+        struct BannerContent
+        {
+            std::string text;
+            std::vector<BannerButton> buttons;
+            float barFraction = -1;
+            bool progress = false;
+        };
+
+        BannerContent BannerContentOf(const UpdateManager::State& state, bool later)
+        {
+            using Phase = UpdateManager::Phase;
+            BannerContent content;
+            content.progress = state.phase == Phase::Copying || state.phase == Phase::Downloading ||
+                               state.phase == Phase::Verifying || state.phase == Phase::Installing;
+            if (state.restartNeeded)
+            {
+                content.text = Tf("Arkeyan Launcher {} is installed. Restart to use it.", state.launcher.tag);
+                content.buttons = { { Tr("Restart now"), true, Restart } };
+            }
+            else if (content.progress)
+            {
+                content.text = state.phase == Phase::Copying       ? Tr("Copying saves and figures")
+                               : state.phase == Phase::Downloading ? Tr("Downloading Arkeyan Launcher")
+                               : state.phase == Phase::Verifying   ? Tr("Checking Arkeyan Launcher")
+                                                                   : Tr("Installing Arkeyan Launcher");
+                content.barFraction = state.phase == Phase::Downloading ? state.progress : -1;
+                if (state.phase == Phase::Downloading)
+                    content.buttons = { { Tr("Cancel"), false, Cancel } };
+            }
+            else if (state.phase == Phase::Failed)
+            {
+                content.text = Tf("The update failed: {}", state.error);
+                content.buttons = { { Tr("Retry"), true, Retry }, { Tr("Close"), false, Dismiss } };
+            }
+            else if (state.phase == Phase::Done && !state.note.empty())
+            {
+                content.text = state.note;
+                content.buttons = { { Tr("Close"), false,
+                    Dismiss } }; // as the failed one: one word to dismiss a banner
+            }
+            else if (state.launcherNewer && !later)
+            {
+                content.text = state.downgrade ? Tf("Version {} (the final release)", state.launcher.tag)
+                                               : Tf("Update available: {}", state.launcher.tag);
+                content.buttons = { { Tr("Update now"), true, UpdateLauncher }, { Tr("What's new"), false, WhatsNew },
+                    { Tr("Later"), false, Later } };
+            }
+            return content;
+        }
+
+        ui::ButtonOptions BannerButtonOptions(const BannerButton& button)
+        {
+            ui::ButtonOptions options;
+            options.kind = button.primary ? ui::ButtonKind::Primary : ui::ButtonKind::Secondary;
+            options.overArt = !button.primary;
+            return options;
+        }
+
+        float BannerButtonsWidth(const BannerContent& content)
+        {
+            float width = 0;
+            for (const BannerButton& button : content.buttons)
+                width += ui::ButtonWidth(button.label, BannerButtonOptions(button)) + ui::space::S;
+            return width;
+        }
+
+        // The width the message has, left of the buttons.
+        float BannerTextWidth(const BannerContent& content)
+        {
+            const float contentW = ImGui::GetIO().DisplaySize.x - SidebarW - 2 * ui::space::L;
+            return contentW - BannerButtonsWidth(content) - ui::space::M;
+        }
+
+        // A message too long for one line of `width` goes on two, cut at the last space that fits (a long error names a file
+        // at its end: the player must read it). Only a second line still too long ends with "...". Empty second: one line.
+        std::pair<std::string, std::string> SplitBannerText(
+            const std::string& text, float width, const std::function<float(const std::string&)>& measure)
+        {
+            if (measure(text) <= width)
+                return { text, {} };
+            size_t cut = std::string::npos;
+            for (size_t space = text.find(' '); space != std::string::npos; space = text.find(' ', space + 1))
+            {
+                if (measure(text.substr(0, space)) > width)
+                    break;
+                cut = space;
+            }
+            if (cut == std::string::npos) // one word wider than the line: cut it with "..."
+                return { FitText(text, width, measure), {} };
+            std::string rest = text.substr(cut + 1);
+            return { text.substr(0, cut), FitText(rest, width, measure) };
+        }
+
+        float BodyWidth(const std::string& text)
+        {
+            return ui::TextSize(ui::TextStyle::Body, text.c_str(), nullptr, true).x;
+        }
+    }
+
     float App::BannerHeight()
     {
         UpdateManager::State state = m_updates.Snapshot();
@@ -108,7 +232,13 @@ namespace launcher_ui
         bool offer = state.launcherNewer && !m_updateLater;
         bool shown = progress || state.restartNeeded || (state.phase == Phase::Failed && !state.error.empty()) ||
                      offer || (state.phase == Phase::Done && !state.note.empty());
-        return shown ? BannerH + (ui::Ctx().glyphs != ui::Glyphs::Keyboard ? ui::height::Normal : 0) : 0;
+        if (!shown)
+            return 0;
+        float height = BannerH + (ui::Ctx().glyphs != ui::Glyphs::Keyboard ? ui::height::Normal : 0);
+        const BannerContent content = BannerContentOf(state, m_updateLater);
+        if (!content.progress && !SplitBannerText(content.text, BannerTextWidth(content), BodyWidth).second.empty())
+            height += ui::SizeOf(ui::TextStyle::Body); // the message's second line
+        return height;
     }
 
     void App::DrawUpdateBanner(float height)
@@ -129,79 +259,40 @@ namespace launcher_ui
             ImVec2(at.x + display.x - SidebarW, at.y + height), Rgb(ui::color::AccentFillPressed));
 
         // Buttons are laid out from the right; the text takes what is left.
-        struct Button
-        {
-            const char* label;
-            bool primary;
-            int action;
-        };
-        std::vector<Button> buttons;
-        std::string text;
-        float barFraction = -1;
-        bool progress = state.phase == Phase::Copying || state.phase == Phase::Downloading ||
-                        state.phase == Phase::Verifying || state.phase == Phase::Installing;
-        enum
-        {
-            None,
-            WhatsNew,
-            UpdateLauncher,
-            Later,
-            Restart,
-            Cancel,
-            Retry,
-            Dismiss
-        };
-        if (state.restartNeeded)
-        {
-            text = Tf("Arkeyan Launcher {} is installed. Restart to use it.", state.launcher.tag);
-            buttons = { { Tr("Restart now"), true, Restart } };
-        }
-        else if (progress)
-        {
-            text = state.phase == Phase::Copying       ? Tr("Copying saves and figures")
-                   : state.phase == Phase::Downloading ? Tr("Downloading Arkeyan Launcher")
-                   : state.phase == Phase::Verifying   ? Tr("Checking Arkeyan Launcher")
-                                                       : Tr("Installing Arkeyan Launcher");
-            barFraction = state.phase == Phase::Downloading ? state.progress : -1;
-            if (state.phase == Phase::Downloading)
-                buttons = { { Tr("Cancel"), false, Cancel } };
-        }
-        else if (state.phase == Phase::Failed)
-        {
-            text = Tf("The update failed: {}", state.error);
-            buttons = { { Tr("Retry"), true, Retry }, { Tr("Close"), false, Dismiss } };
-        }
-        else if (state.phase == Phase::Done && !state.note.empty())
-        {
-            text = state.note;
-            buttons = { { Tr("Close"), false, Dismiss } }; // as the failed one: one word to dismiss a banner
-        }
-        else if (state.launcherNewer && !m_updateLater)
-        {
-            text = state.downgrade ? Tf("Version {} (the final release)", state.launcher.tag)
-                                   : Tf("Update available: {}", state.launcher.tag);
-            buttons = { { Tr("Update now"), true, UpdateLauncher }, { Tr("What's new"), false, WhatsNew },
-                { Tr("Later"), false, Later } };
-        }
+        const BannerContent content = BannerContentOf(state, m_updateLater);
+        const std::string& text = content.text;
+        const std::vector<BannerButton>& buttons = content.buttons;
+        const float barFraction = content.barFraction;
+        const bool progress = content.progress;
         // else: BannerHeight said there is nothing to show, and the banner is not drawn
 
-        auto optionsOf = [](const Button& button) {
-            ui::ButtonOptions options;
-            options.kind = button.primary ? ui::ButtonKind::Primary : ui::ButtonKind::Secondary;
-            options.overArt = !button.primary;
-            return options;
-        };
-        float buttonsW = 0;
-        for (const Button& button : buttons)
-            buttonsW += ui::ButtonWidth(button.label, optionsOf(button)) + ui::space::S;
+        const auto& optionsOf = BannerButtonOptions;
+        const float buttonsW = BannerButtonsWidth(content);
         const float contentW = display.x - SidebarW - 2 * ui::space::L;
-        const float textW = contentW - buttonsW - ui::space::M;
+        const float textW = BannerTextWidth(content);
         const float legendH = ui::Ctx().glyphs != ui::Glyphs::Keyboard ? ui::height::Normal : 0;
         const float middle = (height - legendH - ui::stroke::Selection) / 2;
-        ImGui::SetCursorPos(ImVec2(ui::space::L, std::round(middle - ui::SizeOf(ui::TextStyle::Body) / 2)));
-        std::string shown = ui::Ellipsize(text.c_str(),
-            progress ? std::min(textW, ui::TextSize(ui::TextStyle::Body, text.c_str(), nullptr, true).x) : textW);
-        ui::Text(ui::TextStyle::Body, shown.c_str(), ui::color::Ink, -1, true);
+        const float lineH = ui::SizeOf(ui::TextStyle::Body);
+        std::string shown;
+        if (progress)
+        {
+            ImGui::SetCursorPos(ImVec2(ui::space::L, std::round(middle - lineH / 2)));
+            shown = ui::Ellipsize(text.c_str(), std::min(textW, BodyWidth(text)));
+            ui::Text(ui::TextStyle::Body, shown.c_str(), ui::color::Ink, -1, true);
+        }
+        else
+        {
+            // One line, or two centred together on the buttons' middle.
+            const auto [first, second] = SplitBannerText(text, textW, BodyWidth);
+            const float lines = second.empty() ? 1 : 2;
+            ImGui::SetCursorPos(ImVec2(ui::space::L, std::round(middle - lines * lineH / 2)));
+            ImGui::BeginGroup();
+            ui::Text(ui::TextStyle::Body, first.c_str(), ui::color::Ink, -1, true);
+            if (!second.empty())
+                ui::Text(ui::TextStyle::Body, second.c_str(), ui::color::Ink, -1, true);
+            ImGui::EndGroup();
+            shown = second.empty() ? first : first + " " + second;
+        }
         if (shown != text && ImGui::IsItemHovered()) // cut to fit: the whole message under the pointer
             ImGui::SetTooltip("%s", text.c_str());
         if (progress) // the wait after the words: a bar with its percentage, or a sweep when no end is known
@@ -222,7 +313,7 @@ namespace launcher_ui
         float x = ui::space::L + contentW - buttonsW + ui::space::S;
         int pressed = None;
         ui::NavJoin("##page"); // the band's buttons are the page's top row for the D-pad
-        for (const Button& button : buttons)
+        for (const BannerButton& button : buttons)
         {
             ui::ButtonOptions options = optionsOf(button);
             ImGui::SetCursorPos(ImVec2(x, middle - ui::HeightOf(ui::Size::Normal) / 2));
@@ -592,13 +683,35 @@ namespace launcher_ui
             m_testAt = now + 400;
             break;
         case 4:
+        {
             m_updates.UpdateLauncher(); // a fake release without SHA256SUMS: refused; with one, the update is made
             m_updateWasBusy = true;
             m_page = Page::Play;
-            if (const auto phase = m_updates.Snapshot().phase;
-                phase == UpdateManager::Phase::Failed || phase == UpdateManager::Phase::Done)
-                m_testAt = now + 400;
+            const UpdateManager::State state = m_updates.Snapshot();
+            if (state.phase != UpdateManager::Phase::Failed && state.phase != UpdateManager::Phase::Done)
+                break;
+            m_testAt = now + 400;
+            // A failure longer than the line is read to its end on two lines, never cut with "...".
+            auto perChar = [](const std::string& line) { return 8.0f * float(line.size()); };
+            const std::string longText = "The update failed: v9.9.9 has no ArkeyanLauncher-macOS.zip for this computer";
+            const auto [first, second] = SplitBannerText(longText, 400, perChar);
+            if (second.empty() || first + " " + second != longText || perChar(first) > 400 || perChar(second) > 400)
+            {
+                fprintf(stderr, "FAIL update banner: a long failure is not split on two lines\n");
+                m_testFailures++;
+            }
+            if (state.phase == UpdateManager::Phase::Failed)
+            {
+                const BannerContent content = BannerContentOf(state, m_updateLater);
+                const auto [one, two] = SplitBannerText(content.text, BannerTextWidth(content), BodyWidth);
+                if ((two.empty() ? one : one + " " + two) != content.text)
+                {
+                    fprintf(stderr, "FAIL update banner: the failure is cut (\"%s\")\n", content.text.c_str());
+                    m_testFailures++;
+                }
+            }
             break;
+        }
         default: m_running = false; break;
         }
     }

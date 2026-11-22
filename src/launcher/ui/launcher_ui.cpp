@@ -574,6 +574,7 @@ namespace launcher_ui
         m_launchPending = false;
         if (FindEnabledGame(game.id, m_config) == nullptr)
             return;
+        CancelCaptures(); // a key waited for belongs to the game shown
         m_s = &SlotFor(game);
         SeedGameVideo(m_config, game.id);
         SetActiveGame(game.id);
@@ -655,9 +656,18 @@ namespace launcher_ui
                 m_homeDisc.clear(); // the player went on to something else
             else if (m_s->disc != DiscState::Verifying)
             {
+                const std::string given = m_homeDisc;
                 m_homeDisc.clear();
-                if (m_s->disc == DiscState::Failed && m_s->check.status == GameSourceStatus::WrongGame)
+                if (m_s->disc == DiscState::Failed && m_s->check.status == GameSourceStatus::WrongGame &&
+                    FindEnabledGame(m_s->check.otherGame, m_config) != nullptr)
                     UseDiscForOtherGame();
+                else if (m_s->disc == DiscState::Failed)
+                {
+                    // The player never chose this game for that file: it goes back to the disc it had.
+                    Toast(Tr("That file is not a disc the launcher can use"), ui::ToastKind::Error);
+                    if (SettingGet(m_config, m_s->game.id, "iso") != given)
+                        StartGameDisc();
+                }
             }
         }
     }
@@ -4467,6 +4477,84 @@ namespace launcher_ui
         }
     }
 
+    // A disc given on Home (SKY_LAUNCHER_TEST_SCREENS=issues, no disc image: each check's result is set by hand): a file
+    // that is no usable disc leaves the shown game on the disc it had, with one message; another game's disc goes to that
+    // game. Then a key, mouse or Toy Box capture left pending ends when the page or the game changes.
+    void App::TestHomeDiscChecks()
+    {
+        auto expect = [&](bool ok, const char* what) {
+            if (!ok)
+            {
+                fprintf(stderr, "FAIL home disc: %s\n", what);
+                m_testFailures++;
+            }
+        };
+        const GameInfo* ssa = FindEnabledGame("ssa", m_config);
+        const GameInfo* giants = FindEnabledGame("giants", m_config);
+        if (ssa == nullptr || giants == nullptr)
+        {
+            expect(false, "both games are enabled");
+            return;
+        }
+        GameSlot& a = SlotFor(*ssa);
+        GameSlot& g = SlotFor(*giants);
+        GoTo(Page::Home);
+        SelectGame(*giants);
+        g.verify.Join();
+        const DiscState before = g.disc;
+        const std::string beforePath = g.discPath;
+        auto given = [&](const char* file, GameSourceStatus status, const char* other) {
+            m_homeDisc = datadir::Text(std::filesystem::temp_directory_path() / file);
+            g.disc = DiscState::Failed; // as the check of that file ends
+            g.discPath = m_homeDisc;
+            g.check = {};
+            g.check.status = status;
+            g.check.otherGame = other;
+        };
+
+        // Not a disc the launcher can use: Giants is back on its own disc, and says so once.
+        m_toasts.Clear();
+        given("not-a-disc.iso", GameSourceStatus::NotXboxDisc, "");
+        PollSlots();
+        expect(m_homeDisc.empty() && m_s == &g, "the shown game stays");
+        expect(
+            g.discPath == beforePath && (g.disc == before || (!beforePath.empty() && g.disc == DiscState::Verifying)),
+            "the shown game is back on its previous disc");
+        PollSlots();
+        expect(m_toasts.Items().size() == 1 && m_toasts.Items()[0].kind == ui::ToastKind::Error, "one message");
+        m_toasts.Clear();
+
+        // Another supported game's disc: it goes to that game, and Giants keeps its own.
+        if (a.disc == DiscState::Verifying) // a busy game refuses the disc
+        {
+            a.verify.Join();
+            a.disc = DiscState::None;
+        }
+        given("other-game.iso", GameSourceStatus::WrongGame, "ssa");
+        const std::string other = m_homeDisc;
+        PollSlots();
+        expect(m_s == &a && m_page == Page::Play && (a.discPath == other || a.fromCopy), "the disc went to SSA");
+        expect(g.discPath == beforePath, "Giants kept its disc");
+        m_toasts.Clear();
+
+        // Captures: each one pending, then the page changes, then the game.
+        for (int change = 0; change < 2; change++)
+        {
+            m_capturing = &GameKeys(ssa->id)[0];
+            m_mouseCapturing = &GameKeys(ssa->id)[0];
+            m_toyboxCapturing = &ToyboxKeys()[0];
+            m_toyboxPadCapturing = &ToyboxPads()[0];
+            if (change == 0)
+                GoTo(Page::GameSettings);
+            else
+                SelectGame(*giants);
+            expect(m_capturing == nullptr && m_mouseCapturing == nullptr && m_toyboxCapturing == nullptr &&
+                       m_toyboxPadCapturing == nullptr,
+                change == 0 ? "a capture ends with the page" : "a capture ends with the game");
+        }
+        GoTo(Page::Settings);
+    }
+
     // Screens of the screenshot test, each captured once it has settled.
     // The three model screens (docs/polish_audit.md): Home, the game page and its Keyboard tab, as a player finds them: Spyro's
     // Adventure's disc (SKY_LAUNCHER_TEST_DROP) verified and its game built (by hand: the runtime is not run), Giants opened
@@ -4534,7 +4622,7 @@ namespace launcher_ui
             m_page = Page::Settings;
             m_tab = SettingsTab::Controls;
             static const char* const shots[] = { "controls", "toybox-info", "update-one", "update-several", "support",
-                "about", "edit", "unknown-type", "unknown-named", "missing-figure" };
+                "about", "edit", "unknown-type", "unknown-named", "missing-figure", "home-disc" };
             switch (m_testStep)
             {
             case 0: break;
@@ -4586,10 +4674,11 @@ namespace launcher_ui
                 m_page = Page::Collection;
                 m_s->collection->TestScreen(48);
                 break;
-            default:
+            case 10:
                 m_s->collection->TestScreen(49);
-                m_running = false;
-                return;
+                TestHomeDiscChecks();
+                break;
+            default: m_running = false; return;
             }
             m_testShot = std::string("issues-") + shots[m_testStep];
             m_testAt = now + 900;
