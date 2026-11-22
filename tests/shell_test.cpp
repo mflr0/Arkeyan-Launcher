@@ -1416,6 +1416,81 @@ namespace
                      "[perf] 60 fps, 16.6 ms p99", "~/media/notes", "/usr/lib/libSDL3.so" })
                 SHELL_EXPECT(launcher_report::Anonymous(plain, {}) == plain);
         }
+        // The cleaning runs at every start: a second pass changes nothing, whatever the account or computer is called,
+        // and words a log is made of are never taken for a name.
+        {
+            const char* corpus = "[log] C:\\Users\\User\\AppData\\Roaming\\Skylanders\\SSA\\Arkeyan.log\n"
+                                 "# game ssa\n[input] user 1 connected\n[log] started\n[system] host computer\n"
+                                 "[save] <drive>/a.sky <folder>/b.iso <computer> <user> <iso folder>\n";
+            for (const auto& [user, computer] : std::vector<std::pair<const char*, const char*>>{ { "User", "" },
+                     { "user", "" }, { "game", "" }, { "log", "" }, { "folder", "computer" }, { "drive", "Mac" } })
+            {
+                launcher_report::Identity who;
+                who.userName = user;
+                who.computerName = computer;
+                const std::string once = launcher_report::Anonymous(corpus, who);
+                SHELL_EXPECT(launcher_report::Anonymous(once, who) == once);
+                for (const char* kept : { "# game ssa\n", "[input] user 1 connected\n", "[log] started\n",
+                         "<drive>/a.sky <folder>/b.iso <computer> <user> <iso folder>" })
+                    SHELL_EXPECT(once.find(kept) != std::string::npos);
+            }
+            // A disc kept straight in the home folder hides that disc's folder, not every home path.
+            launcher_report::Identity sam;
+            sam.userName = "sam";
+            sam.homeFolder = "/Users/sam";
+            SHELL_EXPECT(launcher_report::Anonymous("[disc] /Users/sam/SSA.iso\n[log] /Users/sam/Library/x.log\n",
+                             sam) == "[disc] ~/SSA.iso\n[log] ~/Library/x.log\n");
+            launcher_report::Identity fromSettings = sam;
+            WriteBytes(
+                scratch / "home-disc.ini", "[ssa]\niso=/Users/sam/SSA.iso\n[giants]\niso=/Users/sam/Discs/G.iso\n");
+            launcher_report::AddSettingsFolders(fromSettings, scratch / "home-disc.ini");
+            SHELL_EXPECT(fromSettings.otherFolders == std::vector<std::string>{ "/Users/sam/Discs" });
+            // The launcher's capture names the game and its disc on one line: each path keeps what it needs.
+            SHELL_EXPECT(launcher_report::Anonymous("# /Users/sam/Games/SSA.app /Volumes/Ext Disk/Discs/SSA.iso",
+                             sam) == "# ~/Games/SSA.app <folder>/SSA.iso");
+            // Any account's folder, in any spelling: a short name, doubled separators, another account, a second home root.
+            for (const auto& [in, out] : std::vector<std::pair<const char*, const char*>>{
+                     { "[tmp] C:\\Users\\JEANDU~1\\AppData\\Local\\Temp\\x.log",
+                         "[tmp] C:\\Users\\<user>\\AppData\\Local\\Temp\\x.log" },
+                     { "{\"iso\":\"C:\\\\Users\\\\jeand\\\\x.bin\"}", "{\"iso\":\"C:\\\\Users\\\\<user>\\\\x.bin\"}" },
+                     { "[log] /home/other/.local/x", "[log] /home/<user>/.local/x" },
+                     { "[log] /var/home/jean/.local/x", "[log] /var/home/<user>/.local/x" },
+                     { "[log] C:/Users/Public/x", "[log] C:/Users/Public/x" } })
+                SHELL_EXPECT(launcher_report::Anonymous(in, {}) == out);
+            SHELL_EXPECT(
+                launcher_report::Anonymous("games=/var/mnt/Jean Perso/Games", {}).find("Jean") == std::string::npos);
+            // The online room's address and password never leave in a report.
+            const std::filesystem::path online = scratch / "online-report";
+            std::filesystem::create_directories(online);
+            WriteBytes(
+                online / "launcher.ini", "[ssa.online]\naddress=203.0.113.9:47640\npassword=hunter2\nport=47640\n");
+            launcher_report::Sources room;
+            room.settingsFile = online / "launcher.ini";
+            room.runtimeFolder = room.logFolder = online;
+            const std::string roomReport = launcher_report::BuildReport(room);
+            SHELL_EXPECT(roomReport.find("hunter2") == std::string::npos);
+            SHELL_EXPECT(roomReport.find("203.0.113.9") == std::string::npos);
+            SHELL_EXPECT(roomReport.find("port=47640") != std::string::npos);
+        }
+        // At start-up the cleaning runs off the window's thread, and whoever reads a log waits for it: the copy is clean.
+        {
+            const std::filesystem::path logs = scratch / "logclean-start";
+            std::filesystem::create_directories(logs);
+            const std::string home = launcher_report::CurrentIdentity("").homeFolder;
+            WriteBytes(logs / "Arkeyan.log", "[log] " + home + "/Library/Skylanders/SSA/Arkeyan.log\n");
+            WriteBytes(logs / CaptureLogName, "# game ssa\n[disc] /Volumes/Alice SSD/SSA.iso\n");
+            TestSetEnv("SKY_LAUNCHER_LOG_DIR", logs.string().c_str());
+            CleanGameLogsInBackground(scratch / "no-settings.ini");
+            const std::string copied = GameLogText();
+            SHELL_EXPECT(!copied.empty() && copied.find("Alice") == std::string::npos);
+            WaitGameLogs();
+            std::ifstream in(logs / "Arkeyan.log", std::ios::binary);
+            const std::string own((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+            SHELL_EXPECT(home.size() < 2 || own.find(home) == std::string::npos);
+            std::ifstream capture(logs / CaptureLogName, std::ios::binary);
+            const std::string captured((std::istreambuf_iterator<char>(capture)), std::istreambuf_iterator<char>());
+            SHELL_EXPECT(captured.starts_with("# game ssa\n") && captured.find("Alice") == std::string::npos);
+        }
         // The game logs on disk, which players attach by hand, are redacted where they are: same time (the newest log is
         // found by it), and a second pass changes nothing.
         {

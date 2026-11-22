@@ -59,6 +59,7 @@ namespace
 launcher_report::Sources CurrentReportSources(
     const std::string& configPath, const LauncherConfig& config, const std::string& gameId, const std::string& iso)
 {
+    WaitGameLogs();
     launcher_report::Sources sources;
     sources.runtimeFolder = gameId == ActiveGame() ? RuntimeLogFolder() : GameDataFolder(gameId);
     sources.logFolder = GameLogFolder();

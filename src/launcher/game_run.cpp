@@ -12,6 +12,7 @@
 #include "launcher/launcher.h"
 #include "launcher/updater.h"
 #include <SDL3/SDL.h>
+#include <future>
 #include <algorithm>
 #include <cstring>
 #include <fmt/format.h>
@@ -229,6 +230,7 @@ GameRunResult RunGame(
     const std::string& runtime, const std::string& iso, const std::vector<std::string>& extraArguments)
 {
     GameRunResult result;
+    WaitGameLogs();
     std::filesystem::path folder = GameLogFolder();
     std::error_code error;
     std::filesystem::create_directories(folder, error);
@@ -405,6 +407,7 @@ bool GameSession::Start(const std::string& game, const GameLaunch& launch, const
 
 bool GameSession::Spawn(const std::string& game, const GameLaunch& launch, const std::string& iso, std::string& error)
 {
+    WaitGameLogs(); // the capture is renamed below
     std::error_code ignored;
     // The output goes straight into the file (the previous run's kept as .prev): nothing of the launcher stands between the
     // game and its log, and a launcher that is closed leaves the game running.
@@ -604,6 +607,30 @@ GameLog NewestGameLog(
     return newest;
 }
 
+namespace
+{
+    std::future<void> g_cleaning;
+}
+
+void WaitGameLogs()
+{
+    if (g_cleaning.valid())
+        g_cleaning.get();
+}
+
+void CleanGameLogsInBackground(const std::filesystem::path& settingsFile)
+{
+    WaitGameLogs();
+    g_cleaning = std::async(std::launch::async, [settingsFile] {
+        try
+        {
+            CleanGameLogs(settingsFile);
+        }
+        catch (...) // a log that can't be rewritten stays as it is
+        {}
+    });
+}
+
 void CleanGameLogs(const std::filesystem::path& settingsFile)
 {
     launcher_report::Identity identity = launcher_report::CurrentIdentity("");
@@ -660,6 +687,7 @@ std::string GameLogHeading(const GameLog& log)
 
 std::string GameLogText(size_t maxBytes)
 {
+    WaitGameLogs();
     const GameLog log = LastGameLog();
     std::string part = log.file.empty() ? std::string() : ReadLogTail(log.file, maxBytes);
     if (part.empty())

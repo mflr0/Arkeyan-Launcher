@@ -12,6 +12,7 @@
 #include <ctime>
 #include <fstream>
 #include <iterator>
+#include <string>
 #include <sstream>
 
 #if defined(_WIN32)
@@ -150,7 +151,84 @@ namespace
     {
         std::string needle;
         std::string replacement;
+        bool name = false; // an account's or a computer's bare name, not a path
     };
+
+    // Words a log is made of: an account or computer called so keeps its name in the text (its folders still go), or every
+    // tag, header and sentence holding the word would change.
+    bool CommonWord(const std::string& name)
+    {
+        static const char* const Words[] = { "user", "users", "admin", "administrator", "owner", "guest", "default",
+            "root", "game", "games", "player", "test", "dev", "log", "logs", "pc", "mac", "deck", "steam", "steamdeck",
+            "desktop", "laptop", "computer", "home", "local", "localhost", "windows", "linux", "macos", "portal",
+            "disc", "figure", "settings", "kernel", "content", "profile", "scene", "perf", "movie", "thread", "toybox",
+            "gpu", "save", "saves", "input", "audio", "video", "system", "version", "crash", "launcher", "folder",
+            "drive", "media", "data", "online", "arkeyan", "skylanders", "ssa", "giants", "public", "shared" };
+        const std::string lower = Lower(name);
+        if (lower.size() < 3)
+            return true;
+        for (const char* word : Words)
+            if (lower == word)
+                return true;
+        return false;
+    }
+
+    // A placeholder this redaction wrote: copied as it is, so that redacting again changes nothing.
+    size_t PlaceholderAt(const std::string& text, size_t at)
+    {
+        if (text[at] != '<')
+            return 0;
+        for (const char* word : { "<user>", "<computer>", "<folder>", "<drive>", "<iso folder>", "<games folder>" })
+            if (text.compare(at, std::char_traits<char>::length(word), word) == 0)
+                return std::char_traits<char>::length(word);
+        return 0;
+    }
+
+    // Any account's folder, whoever it is: C:\Users\<name>, /Users/<name>, /home/<name>, /var/home/<name>, in any spelling
+    // of the separators (a short 8.3 name, doubled backslashes). The current account's is already "~".
+    std::string HideAccounts(const std::string& text)
+    {
+        std::string out;
+        out.reserve(text.size());
+        for (size_t at = 0; at < text.size();)
+        {
+            size_t head = 0;
+            if (text[at] == '/' || text[at] == '\\')
+            {
+                size_t next = at;
+                while (next < text.size() && (text[next] == '/' || text[next] == '\\'))
+                    next++;
+                for (const char* folder : { "Users", "home" })
+                {
+                    const size_t length = std::char_traits<char>::length(folder);
+                    if (next + length < text.size() && (text[next + length] == '/' || text[next + length] == '\\') &&
+                        Lower(text.substr(next, length)) == Lower(folder) && (next == 0 || text[at - 1] != '~'))
+                    {
+                        head = next + length;
+                        while (head < text.size() && (text[head] == '/' || text[head] == '\\'))
+                            head++;
+                    }
+                }
+            }
+            if (head == 0)
+            {
+                out += text[at++];
+                continue;
+            }
+            size_t end = head;
+            while (end < text.size() && std::string("/\\\r\n\t\"'<>|*?:").find(text[end]) == std::string::npos)
+                end++;
+            const std::string name = Lower(text.substr(head, end - head));
+            out.append(text, at, head - at);
+            if (end == head || name == "public" || name == "default" || name == "shared" || name == "all users" ||
+                (end < text.size() && text[end] == '<'))
+                out.append(text, head, end - head);
+            else
+                out += "<user>";
+            at = end;
+        }
+        return out;
+    }
 
     void AddRule(std::vector<Rule>& rules, const std::string& needle, const std::string& replacement)
     {
@@ -185,7 +263,8 @@ namespace
                           (before >= 'a' && before <= 'z') || static_cast<unsigned char>(before) >= 0x80;
         if (word || before == '~' || before == '>' || before == '.' || before == '_' || before == '-')
             return 0;
-        for (const std::string root : { "/Volumes/", "/media/", "/run/media/", "/var/run/media/", "/mnt/" })
+        for (const std::string root :
+            { "/Volumes/", "/media/", "/run/media/", "/var/run/media/", "/mnt/", "/var/mnt/" })
             if (line.compare(at, root.size(), root) == 0)
                 return root.size();
         if (at + 2 < line.size() && line[at + 1] == ':' && (line[at + 2] == '/' || line[at + 2] == '\\'))
@@ -313,14 +392,16 @@ std::string launcher_report::Redact(const std::string& text, const Identity& ide
         AddPathRules(rules, "C:\\Users\\" + identity.userName, "~");
         AddPathRules(rules, "C:/Users/" + identity.userName, "~");
     }
-    if (!identity.computerName.empty())
-    {
-        AddRule(rules, identity.computerName, "<computer>");
-        if (size_t dot = identity.computerName.find('.'); dot != std::string::npos && dot > 0)
-            AddRule(rules, identity.computerName.substr(0, dot), "<computer>");
-    }
-    if (!identity.userName.empty())
-        AddRule(rules, identity.userName, "<user>");
+    auto name = [&](const std::string& word, const char* replacement) {
+        if (word.empty() || CommonWord(word))
+            return;
+        AddRule(rules, word, replacement);
+        rules.back().name = true;
+    };
+    name(identity.computerName, "<computer>");
+    if (size_t dot = identity.computerName.find('.'); dot != std::string::npos && dot > 0)
+        name(identity.computerName.substr(0, dot), "<computer>");
+    name(identity.userName, "<user>");
     // The longest match first, so a full path is replaced before the name it ends with.
     std::stable_sort(
         rules.begin(), rules.end(), [](const Rule& a, const Rule& b) { return a.needle.size() > b.needle.size(); });
@@ -329,6 +410,12 @@ std::string launcher_report::Redact(const std::string& text, const Identity& ide
     out.reserve(text.size());
     for (size_t at = 0; at < text.size();)
     {
+        if (const size_t placeholder = PlaceholderAt(text, at))
+        {
+            out.append(text, at, placeholder);
+            at += placeholder;
+            continue;
+        }
         const Rule* match = nullptr;
         for (const Rule& rule : rules)
         {
@@ -337,6 +424,10 @@ std::string launcher_report::Redact(const std::string& text, const Identity& ide
             bool starts = at == 0 || !WordChar(text[at - 1]);
             bool ends = at + rule.needle.size() == text.size() || !WordChar(text[at + rule.needle.size()]);
             if (!starts || !ends)
+                continue;
+            // A log's tag is never a name: "[log]" stays "[log]" for an account called log.
+            if (rule.name && at > 0 && text[at - 1] == '[' && at + rule.needle.size() < text.size() &&
+                text[at + rule.needle.size()] == ']')
                 continue;
             match = &rule;
             break;
@@ -389,6 +480,25 @@ launcher_report::Versions launcher_report::ReadVersions(
     return versions;
 }
 
+namespace
+{
+    // The home folder, or a folder holding it: the home rules say "~" there, which keeps every other path readable.
+    bool HoldsHome(std::string folder, const launcher_report::Identity& identity)
+    {
+        std::string home = identity.homeFolder;
+        if (home.empty())
+            return false;
+        for (std::string* path : { &folder, &home })
+        {
+            *path = Lower(*path);
+            std::replace(path->begin(), path->end(), '\\', '/');
+            while (path->size() > 1 && path->back() == '/')
+                path->pop_back();
+        }
+        return home == folder || home.starts_with(folder + "/");
+    }
+}
+
 void launcher_report::AddSettingsFolders(Identity& identity, const std::filesystem::path& settingsFile)
 {
     // launcher.ini goes in whole: the folders it names (every game's disc, the Games folder) may be the player's name.
@@ -410,7 +520,7 @@ void launcher_report::AddSettingsFolders(Identity& identity, const std::filesyst
             continue; // already "~", and where in it helps
         if (key == "iso")
             folder.erase(slash);
-        if (folder.size() > 3) // never a bare drive: "D:" would be replaced all over the report
+        if (folder.size() > 3 && !HoldsHome(folder, identity)) // never a bare drive: "D:" would be all over the report
             identity.otherFolders.push_back(folder);
     }
 }
@@ -428,7 +538,7 @@ std::string launcher_report::Anonymous(const std::string& text, Identity identit
         for (size_t end; (end = lower.find(".iso", from)) != std::string::npos; from = end + 4)
         {
             size_t start = std::string::npos;
-            for (size_t at = from; at < end && start == std::string::npos; at++)
+            for (size_t at = from; at < end; at++) // the last start before the file: one line can hold two paths
             {
                 const bool opens = at == 0 || std::string(" \t=\"'([").find(line[at - 1]) != std::string::npos;
                 const bool drive = at + 2 < end && line[at + 1] == ':' && (line[at + 2] == '/' || line[at + 2] == '\\');
@@ -438,11 +548,12 @@ std::string launcher_report::Anonymous(const std::string& text, Identity identit
             if (start == std::string::npos)
                 continue;
             const size_t slash = line.find_last_of("/\\", end);
-            if (slash != std::string::npos && slash > start + 3)
+            if (slash != std::string::npos && slash > start + 3 &&
+                !HoldsHome(line.substr(start, slash - start), identity))
                 identity.otherFolders.push_back(line.substr(start, slash - start));
         }
     }
-    return HideDrives(Redact(text, identity));
+    return HideDrives(HideAccounts(Redact(text, identity)));
 }
 
 bool launcher_report::AnonymiseFile(const std::filesystem::path& file, const Identity& identity)
@@ -509,7 +620,23 @@ std::string launcher_report::BuildReport(const Sources& sources)
     report += crash.empty() ? "===== last crash =====\n(no crash in the logs)\n\n"
                             : "===== last crash (" + crashFrom + ") =====\n" + crash + "\n\n";
 
-    Section(report, "launcher.ini", sources.settingsFile);
+    {
+        // Each key holding a secret or where to reach the player keeps its name, never its value.
+        std::istringstream lines(ReadFile(sources.settingsFile));
+        std::string settings;
+        for (std::string line; std::getline(lines, line);)
+        {
+            const size_t equals = line.find('=');
+            std::string key = equals == std::string::npos ? std::string() : Lower(line.substr(0, equals));
+            key.erase(key.find_last_not_of(" \t") + 1);
+            for (const char* secret : { "password", "address", "room", "token", "secret" })
+                if (key == secret)
+                    line = line.substr(0, equals + 1) + "<hidden>";
+            settings += line + "\n";
+        }
+        report +=
+            "===== launcher.ini =====\n" + (settings.empty() ? std::string("(empty or not found)\n") : settings) + "\n";
+    }
     Section(report, "migration.log", sources.logFolder / "migration.log");
     // One copy of the last run (the game's own log and the launcher's capture hold the same lines), then the run before.
     const GameLog lastRun = !sources.lastRun.file.empty() || !sources.lastRun.game.empty()

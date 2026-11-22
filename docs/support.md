@@ -16,10 +16,17 @@ Settings (the gear) > Help: **Report a problem** (one text file with the last lo
 see below), **Copy game log** and **Open logs folder** (`logs/`). `SKY_LAUNCHER_LOG_DIR` replaces both log folders (tests).
 
 **Names in the logs** (`CleanGameLogs`, `launcher_report::Anonymous`). Players attach these files by hand, so when a game
-ends and when the launcher starts, both game logs and their `.prev` are rewritten as the report has them: the home folder
-`~`, the account and computer names, the folders launcher.ini names, and `<drive>/<file>` for any path on an external
-drive (`/Volumes`, `/media`, `/run/media`, `/mnt`, a Windows drive other than C:, a network share). Their time is kept. A
-running game's logs are left to it, and so are the install's logs (the launcher reads them back).
+ends and when the launcher starts (then off the window's thread: `CleanGameLogsInBackground`, and every reader and writer of
+the logs calls `WaitGameLogs` first), both game logs and their `.prev` are rewritten as the report has them: the home folder
+`~`, any other account's folder `<user>` (in any spelling: an 8.3 short name, doubled backslashes, `/var/home`), the account
+and computer names, the folders launcher.ini names (never the home folder itself: a disc kept there keeps `~`), and
+`<drive>/<file>` for any path on an external drive (`/Volumes`, `/media`, `/run/media`, `/mnt`, `/var/mnt`, a Windows drive
+other than C:, a network share). Their time is kept. Running it again changes nothing: the placeholders are left as they
+are. An account or computer named like a word a log is made of (`user`, `game`, `log`, `Mac`...) keeps its bare name in the
+text, its folders still go, and a log's `[tag]` is never taken for a name. A running game's logs are left to it, and so are
+the install's logs (the launcher reads them back). Not masked: a drive mounted on a folder of another name (`/data`).
+The report's copy of launcher.ini keeps the name of a key holding a secret or an address (`password`, `address`, `room`,
+`token`, `secret`), never its value.
 
 **The last run** (0.9.5, `LastGameLog`, `src/launcher/game_run.cpp`): `Arkeyan.log` and `skylauncher-game.log` hold the
 same lines, so a copy carries one of them: the newest of `logs/skylauncher-game.log` and every game's `Arkeyan.log`; the

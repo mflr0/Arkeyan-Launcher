@@ -512,7 +512,7 @@ namespace launcher_ui
             m_portal.Start();
             if (m_shots
                     .empty()) // what older launchers and games started without this one left (not in screenshot runs)
-                CleanGameLogs(datadir::FromText(m_configPath));
+                CleanGameLogsInBackground(datadir::FromText(m_configPath));
         }
         return true;
     }
@@ -1165,7 +1165,10 @@ namespace launcher_ui
         if (!ended)
             return;
         if (m_shots.empty()) // before a crash's dialog offers them
+        {
+            WaitGameLogs();
             CleanGameLogs(datadir::FromText(m_configPath));
+        }
         // The game writes its own section of its settings file (the F3 menu): read it again, or the next save here would put
         // back the values from before the game (a profile's own file is handed back to launcher.ini and the profile's).
         if (GameSettingsPath() == m_configPath)

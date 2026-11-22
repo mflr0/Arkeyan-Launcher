@@ -27,6 +27,10 @@ inline constexpr char CaptureLogName[] = "skylauncher-game.log";
 // The game logs on disk lose the player's names and drives (report.h, Anonymous): players attach them by hand. Called
 // when the launcher starts and when a game ends; the logs of a game that runs are left to it.
 void CleanGameLogs(const std::filesystem::path& settingsFile);
+// The same off the window's thread (at start-up, where a long log would hold the first frame back); every reader and
+// writer of the logs waits for it first (WaitGameLogs).
+void CleanGameLogsInBackground(const std::filesystem::path& settingsFile);
+void WaitGameLogs();
 
 struct GameRunResult
 {
