@@ -118,6 +118,17 @@ namespace ui
             ImGui::SetCursorScreenPos(ImVec2(start.x + cap.x + space::M, start.y));
         }
         PushText(TextStyle::Label);
+        // The gap narrows, down to M (the focus ring's S on each side), when the labels would not fit the row.
+        float gap = space::XL;
+        if (count > 1)
+        {
+            float words = 0;
+            for (const char* label : labels)
+                words += ImGui::CalcTextSize(label, LabelEnd(label)).x;
+            const float room = ImGui::GetContentRegionAvail().x - (ImGui::GetCursorScreenPos().x - start.x) -
+                               (caps ? KeyCapWidth(PadButton::RightBumper, Ctx().glyphs) + space::M : 0);
+            gap = std::clamp((room - words) / float(count - 1), float(space::M), float(space::XL));
+        }
         for (int i = 0; i < count; i++)
         {
             const char* label = labels[i];
@@ -146,13 +157,13 @@ namespace ui
             if (state.focused) // the label's row with S of air at its sides: the ring is not drawn on the letters
                 FocusRing(
                     ImVec2(at.x - space::S, at.y), ImVec2(at.x + text.x + space::S, at.y + rowH), radius::Control);
-            ImGui::SameLine(0, space::XL);
+            ImGui::SameLine(0, gap);
         }
         PopText();
         if (caps)
         {
             ImVec2 at = ImGui::GetCursorScreenPos();
-            DrawKeyCap(draw, ImVec2(at.x - space::XL + space::M, at.y + (rowH - stroke::Selection) / 2),
+            DrawKeyCap(draw, ImVec2(at.x - gap + space::M, at.y + (rowH - stroke::Selection) / 2),
                 PadButton::RightBumper, Ctx().glyphs);
         }
         ImGui::NewLine();

@@ -64,7 +64,7 @@ namespace online
         m_connection = net::Connect(host, port, error);
         if (m_connection == net::Invalid)
         {
-            SDL_Log("[online] cannot reach %s:%u: %s", host.c_str(), port, error.c_str());
+            SDL_Log("[online] cannot reach the room: %s", error.c_str());
             End(Error::CannotConnect);
             return false;
         }
@@ -125,10 +125,49 @@ namespace online
         m_step = Step::AwaitHello;
     }
 
+    const char* ErrorName(Error error)
+    {
+        switch (error)
+        {
+        case Error::None: return "none";
+        case Error::PortInUse: return "the port is in use";
+        case Error::BadAddress: return "not a room code or an address";
+        case Error::CannotConnect: return "nothing answered";
+        case Error::Timeout: return "the other side stopped answering";
+        case Error::Mismatch: return "the two sides do not match";
+        case Error::WrongPassword: return "wrong password";
+        case Error::RoomFull: return "the room is full";
+        case Error::Left: return "the other player left";
+        case Error::Broken: return "unexpected or malformed messages";
+        }
+        return "unknown";
+    }
+
+    std::string Lobby::MismatchDetail(Mismatch mismatch) const
+    {
+        const Hello& mine = m_mine;
+        const Hello& theirs = m_status.remoteHello;
+        const auto both = [](const char* what, const std::string& a, const std::string& b) {
+            return std::string(" (") + what + ": " + a + " here, " + b + " there)";
+        };
+        switch (mismatch)
+        {
+        case Mismatch::None: return "";
+        case Mismatch::Protocol:
+            return both("room protocol", std::to_string(mine.protocol), std::to_string(theirs.protocol));
+        case Mismatch::Launcher: return both("launcher", mine.launcherVersion, theirs.launcherVersion);
+        case Mismatch::Game: return both("game", mine.gameId, theirs.gameId);
+        case Mismatch::Disc: return " (disc editions differ)";
+        case Mismatch::GameVersion: return both("game version", mine.gameVersion, theirs.gameVersion);
+        case Mismatch::Platform: return both("system", mine.platform, theirs.platform);
+        }
+        return "";
+    }
+
     void Lobby::End(Error error, Mismatch mismatch)
     {
         if (error != Error::None)
-            SDL_Log("[online] room ended (%d)", int(error));
+            SDL_Log("[online] room ended: %s%s", ErrorName(error), MismatchDetail(mismatch).c_str());
         CloseConnection();
         net::Close(m_listener);
         m_listener = net::Invalid;
@@ -141,7 +180,8 @@ namespace online
     // The host's room stays open for the next guest; what this one got wrong is kept for the room's notice.
     void Lobby::DropGuest(Error error, Mismatch mismatch)
     {
-        SDL_Log("[online] guest %s turned away (%d)", m_status.peer.c_str(), int(error));
+        SDL_Log("[online] a guest was turned away, the room stays open: %s%s", ErrorName(error),
+            MismatchDetail(mismatch).c_str());
         m_status.lastRefusal = { error, mismatch, m_status.peer, Now() };
         CloseConnection();
         const Refusal refusal = m_status.lastRefusal;
@@ -189,6 +229,7 @@ namespace online
         if (m_status.state != State::InRoom || m_status.localReady == ready)
             return;
         m_status.localReady = ready;
+        SDL_Log("[online] you are %s", ready ? "ready" : "no longer ready");
         Send(MessageType::Ready, { uint8_t(ready ? 1 : 0) });
     }
 
@@ -206,7 +247,9 @@ namespace online
         m_status.start = start;
         m_status.inputDelay = start.inputDelay;
         m_status.state = State::Started;
-        SDL_Log("[online] starting, input delay %u", start.inputDelay);
+        SDL_Log("[online] starting: input delay %u frames, round trip %.0f ms, %u FPS, save %u bytes in %u files",
+            start.inputDelay, m_status.rttMs, m_hostOptions.settings.fpsLimit, m_hostOptions.settings.saveBytes,
+            unsigned(m_hostOptions.settings.saveFiles));
         m_closeAfterFlush = true;
         Flush();
         net::Close(m_listener);
@@ -253,6 +296,8 @@ namespace online
             return;
         }
         m_status.remoteHello = theirs;
+        SDL_Log("[online] the other player: launcher %s, game %s %s, %s", theirs.launcherVersion.c_str(),
+            theirs.gameId.c_str(), theirs.gameVersion.c_str(), theirs.platform.c_str());
         if (m_status.host)
             Send(MessageType::Hello, Encode(m_mine)); // the guest can then say exactly what differs
         const Mismatch mismatch = Compare(m_mine, theirs);
@@ -389,13 +434,22 @@ namespace online
                 const uint8_t fps = m_status.host ? m_hostOptions.settings.fpsLimit
                                                   : (m_status.haveSettings ? m_status.settings.fpsLimit : 30);
                 m_status.inputDelay = InputDelayFor(m_status.rttMs, 1000.0 / fps);
+                if (Now() >= m_nextRttLog)
+                {
+                    SDL_Log("[online] round trip %.0f ms (last %.0f ms), input delay %u frames", m_status.rttMs, sample,
+                        m_status.inputDelay);
+                    m_nextRttLog = Now() + RttLogEveryMs;
+                }
             }
             break;
         }
         case MessageType::Ready:
             ok = frame.payload.size() == 1 && frame.payload[0] <= 1;
-            if (ok)
+            if (ok && m_status.remoteReady != (frame.payload[0] == 1))
+            {
                 m_status.remoteReady = frame.payload[0] == 1;
+                SDL_Log("[online] the other player is %s", m_status.remoteReady ? "ready" : "no longer ready");
+            }
             break;
         case MessageType::Start:
         {
@@ -408,7 +462,8 @@ namespace online
                 m_status.start = start;
                 m_status.inputDelay = start.inputDelay;
                 m_status.state = State::Started;
-                SDL_Log("[online] the host starts, input delay %u", start.inputDelay);
+                SDL_Log("[online] the host starts: input delay %u frames, round trip %.0f ms", start.inputDelay,
+                    m_status.rttMs);
                 CloseConnection();
                 return;
             }
@@ -498,7 +553,9 @@ namespace online
                     m_status.peer = peer;
                     m_status.state = State::Greeting;
                     m_startedAt = m_lastHeard = now;
-                    SDL_Log("[online] %s is joining", peer.c_str());
+                    // The address is not logged: players share their logs.
+                    SDL_Log("[online] a guest is joining (%s)",
+                        peer.find(':') != std::string::npos && peer.rfind("::ffff:", 0) != 0 ? "IPv6" : "IPv4");
                 }
             }
         }
@@ -541,7 +598,8 @@ namespace online
             Send(MessageType::Ping, w.Bytes());
             m_nextPing = now + PingEveryMs;
         }
-        if (now - m_lastHeard > SilenceTimeoutMs)
+        // Read the clock again: the bytes just read set m_lastHeard after `now`, and the difference is unsigned.
+        if (Now() - m_lastHeard > SilenceTimeoutMs)
         {
             Fail(Error::Timeout);
             return;

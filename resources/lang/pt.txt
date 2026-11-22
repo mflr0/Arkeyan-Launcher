@@ -1252,9 +1252,6 @@ Swap	Trocar
 Players swapped	Jogadores trocados
 
 # Online
-Address	Endereço
-Allow cross-platform sessions (not tested)	Permitir sessões entre sistemas (não testado)
-Connect	Ligar
 Couldn't read a figure; choose your figures again in Collection.	Não foi possível ler uma figura; escolhe novamente as tuas figuras na Coleção.
 Couldn't read your picture; choose it again in your profile.	Não foi possível ler a tua imagem; escolhe-a novamente no teu perfil.
 Couldn't read your saves; check that their folder is accessible.	Não foi possível ler as tuas gravações; verifica o acesso à pasta.
@@ -1264,29 +1261,113 @@ Game default	Predefinição do jogo
 Host	Alojar
 Join	Aderir
 Leave	Sair
-Measuring the connection...	A medir a ligação...
-No figures chosen	Nenhuma figura escolhida
 Online	Online
-Online room	Sala online
 Online with {}	Online com {}
-Open room	Abrir sala
-Open the port automatically	Abrir a porta automaticamente
-Opening the router's port...	A abrir a porta do router...
-Password (optional)	Palavra-passe (opcional)
-Player {} · {}	Jogador {} · {}
+A player couldn't join: {}	Um jogador não conseguiu aderir: {}
+Ask your friend for the room's password and type it in the Online tab.	Pede ao teu amigo a palavra-passe da sala e escreve-a no separador Online.
+Both choose the same game, then try again.	Escolham ambos o mesmo jogo e tentem novamente.
+Both update the launcher in Settings, then try again.	Atualizem ambos o launcher nas Definições e tentem novamente.
+Change it only if another program uses it.	Altera-a apenas se outro programa a usar.
+Check that you both have the same game, disc and launcher.	Verifiquem se ambos têm o mesmo jogo, disco e launcher.
+Check that your friend's room is open: they pressed HOST A ROOM.	Verifica se a sala do teu amigo está aberta: ele premiu ALOJAR UMA SALA.
+Choose figures	Escolher figuras
+Choose your figures and press I'm ready. Your friend starts the game.	Escolhe as tuas figuras e prime "Estou pronto". O teu amigo inicia o jogo.
+Connection: {} · {} ms · input delay 1 frame	Ligação: {} · {} ms · atraso dos comandos de 1 fotograma
+Connection: {} · {} ms · input delay {} frames	Ligação: {} · {} ms · atraso dos comandos de {} fotogramas
+Cross-platform sessions	Sessões entre sistemas
+Details for your router	Detalhes para o teu router
+Everyone is ready: press Start.	Estão todos prontos: prime Iniciar.
+Everyone is ready: the host starts.	Estão todos prontos: o anfitrião inicia o jogo.
+Get ready	Prepara-te
+Get ready and start	Prepara-te e inicia
+Go to the game's page	Ir para a página do jogo
+Player 1 · Host	Jogador 1 · Anfitrião
+Player 2 · Guest	Jogador 2 · Convidado
+HOST A ROOM	ALOJAR UMA SALA
+Hide	Ocultar
+How PLAY starts the game	Como JOGAR inicia o jogo
+How it works	Como funciona
+How to fix it	Como resolver
+I'm ready	Estou pronto
+If your friend set one.	Se o teu amigo tiver definido uma.
+If your router refuses, open (forward) port {} for UDP and TCP to this computer in your router's settings.	Se o router recusar, abre (reencaminha) a porta {} para UDP e TCP para este computador nas definições do router.
+Invite your friend	Convida o teu amigo
+JOIN A ROOM	ADERIR A UMA SALA
+Joining your friend's room...	A entrar na sala do teu amigo...
+Lets friends outside your home in. Most routers allow it.	Deixa entrar amigos que estão fora de tua casa. A maioria dos routers permite-o.
+No access to the router? Both install the same free virtual network, such as Tailscale or ZeroTier, and use the address it gives this computer.	Sem acesso ao router? Instalem ambos a mesma rede virtual gratuita, como Tailscale ou ZeroTier, e usem o endereço que atribui a este computador.
+No figures on the portal yet	Ainda não há figuras no portal
+Not in the same home? Their router may block it: their room shows them how to fix it.	Não estão na mesma casa? O router dele pode bloquear a ligação: a sala dele mostra-lhe como resolver.
+Not ready	Não pronto
+On the game's page, in place of PLAY.	Na página do jogo, em vez de JOGAR.
+On the portal: {}	No portal: {}
+Online play needs the same edition of the disc on both computers, for example both USA.	Para jogar online é precisa a mesma edição do disco nos dois computadores, por exemplo USA em ambos.
+Online: you join your friend's room · Change	Online: entras na sala do teu amigo · Alterar
+Online: you open a room for a friend · Change	Online: abres uma sala para um amigo · Alterar
+Open my router automatically	Abrir o meu router automaticamente
+Open my router automatically asks your router with UPnP or NAT-PMP.	"Abrir o meu router automaticamente" envia um pedido ao router através de UPnP ou NAT-PMP.
+Open or join a room again to play.	Abre ou entra numa sala novamente para jogar.
+Open the Online tab	Abrir o separador Online
+Optional. Your friend types it to join.	Opcional. O teu amigo escreve-a para aderir.
+Or both install the same free virtual network, such as Tailscale or ZeroTier, and send the address it gives this computer, with the port.	Ou instalem ambos a mesma rede virtual gratuita, como Tailscale ou ZeroTier, e enviem o endereço que atribui a este computador, com a porta.
+Password	Palavra-passe
+Paste it below	Cola-o abaixo
+Play with a friend on another system. Not tested yet: both must turn it on.	Joga com um amigo noutro sistema. Ainda não testado: ambos têm de ativar esta opção.
+Play with a friend over the internet, each on your own computer.	Joga com um amigo pela internet, cada um no seu computador.
+Playing between systems isn't tested yet. To try it, both turn on Cross-platform sessions in the game's Online tab.	O jogo entre sistemas ainda não foi testado. Para experimentar, ativem ambos "Sessões entre sistemas" no separador Online do jogo.
+Press HOST A ROOM	Prime ALOJAR UMA SALA
+Press I'm ready when your figures are set.	Prime "Estou pronto" quando as tuas figuras estiverem prontas.
+Press JOIN A ROOM	Prime ADERIR A UMA SALA
+Sending your save to {}...	A enviar a tua gravação para {}...
+Show	Mostrar
+Solo	A solo
+Someone else is already in it: a room is for two players.	Já está lá outra pessoa: uma sala é para dois jogadores.
+Something needs fixing	Há algo a resolver
+The connection failed	A ligação falhou
+The connection was lost	A ligação foi perdida
+The one with the older version updates the game on its page, then you try again.	Quem tiver a versão mais antiga atualiza o jogo na sua página e depois tentam novamente.
+The room couldn't open	Não foi possível abrir a sala
+The room is closed	A sala está fechada
+The room uses port {}, for UDP and TCP.	A sala usa a porta {}, para UDP e TCP.
+This port is already in use	Esta porta já está a ser usada
+This room is full	Esta sala está cheia
+Try again	Tentar novamente
+Try again. If it keeps failing, both restart the launcher.	Tentem novamente. Se continuar a falhar, reiniciem ambos o launcher.
+Waiting for player 2	À espera do jogador 2
+Waiting for player 2 to join.	À espera de que o jogador 2 entre.
+Waiting for {} to be ready.	À espera de que {} esteja pronto.
+With a virtual network such as Tailscale or ZeroTier, use the address it gives your friend's computer.	Com uma rede virtual como Tailscale ou ZeroTier, usa o endereço que atribui ao computador do teu amigo.
+Wrong password	Palavra-passe errada
+You both choose your figures and press I'm ready. Then you press Start.	Ambos escolhem as suas figuras e primem "Estou pronto". Depois tu primes Iniciar.
+You both need this game with the same disc edition, and the same launcher version.	Ambos precisam deste jogo com a mesma edição do disco e a mesma versão do launcher.
+You chose different games	Escolheram jogos diferentes
+You play on different systems	Jogam em sistemas diferentes
+You play on this computer. To play with a friend over the internet, choose Host to open a room for them, or Join to enter theirs.	Jogas neste computador. Para jogar com um amigo pela internet, escolhe Alojar para lhe abrir uma sala, ou Aderir para entrar na dele.
+You: {}	Tu: {}
+Your discs aren't the same edition	Os vossos discos são de edições diferentes
+Your friend joins	O teu amigo entra
+Your friend left the room	O teu amigo saiu da sala
+Your friend stopped answering. Check both internet connections, then try again.	O teu amigo deixou de responder. Verifiquem ambas as ligações à internet e tentem novamente.
+Your friend's room	A sala do teu amigo
+Your online room stays open. Put your figures on the portal, then go back.	A tua sala online continua aberta. Coloca as tuas figuras no portal e depois volta.
+Back to the room	Voltar à sala
+Your friend's room didn't answer	A sala do teu amigo não respondeu
+Your friend: {}	O teu amigo: {}
+Your game versions differ	As vossas versões do jogo diferem
+Your games don't match	Os vossos jogos não correspondem
+Your launchers aren't the same version	Os vossos launchers têm versões diferentes
+Your router lets friends in from anywhere.	O router deixa entrar amigos de qualquer lugar.
+fair	razoável
+good	boa
+slow	lenta
 Port	Porta
-Port not opened; open port {} UDP and TCP on your router.	Porta não aberta; abre a porta {} UDP e TCP no teu router.
-Round trip: {} ms · Input delay: {} frames	Ida e volta: {} ms · Atraso dos comandos: {} fotogramas
 Start	Iniciar
 The connection failed; open or join a room again.	A ligação falhou; abre ou entra numa sala novamente.
-The host didn't answer; check the address and ask them to open the room.	O anfitrião não respondeu; verifica o endereço e pede-lhe que abra a sala.
 The other player left; open or join a room again.	O outro jogador saiu; abre ou entra numa sala novamente.
 The other player stopped answering; check your connection and reconnect.	O outro jogador deixou de responder; verifica a ligação e volta a ligar-te.
 The password doesn't match; ask the host and try again.	A palavra-passe não corresponde; pergunta ao anfitrião e tenta novamente.
-This address isn't valid; paste the host's IP:port.	Este endereço não é válido; cola o IP:porta do anfitrião.
 This port is busy; choose another port.	Esta porta está ocupada; escolhe outra porta.
 This room is full; ask the host to open another room.	Esta sala está cheia; pede ao anfitrião que abra outra.
-Waiting for the other player...	À espera do outro jogador...
 You chose different games; choose the same game.	Escolheram jogos diferentes; escolham o mesmo jogo.
 Your disc editions differ; use the same disc edition.	As vossas edições do disco diferem; usem a mesma edição.
 Your game versions differ; update both games.	As vossas versões do jogo diferem; atualizem ambos os jogos.
@@ -1298,8 +1379,36 @@ Your saves exceed 64 MB; remove unused saves first.	As tuas gravações excedem 
 Your systems differ; both players must allow cross-platform sessions.	Os vossos sistemas diferem; ambos têm de permitir sessões entre sistemas.
 {} FPS · Text: {} · Voices: {}	{} FPS · Texto: {} · Vozes: {}
 This port isn't valid; choose a number from 1 to 65535.	Esta porta não é válida; escolhe um número de 1 a 65535.
-Round trip: {} ms · Input delay: 1 frame	Ida e volta: {} ms · Atraso dos comandos: 1 fotograma
 The games lost sync; reopen the room and try again	Os jogos perderam a sincronização; volta a abrir a sala e tenta novamente
 Your frame rates differ; choose the same frame rate	As vossas taxas de fotogramas diferem; escolham a mesma
 The portal figures didn't match; choose your figures again in Collection	As figuras no portal não correspondem; escolhe novamente as tuas figuras na Coleção
 The online session ended unexpectedly; reopen the room and try again	A sessão online terminou inesperadamente; volta a abrir a sala e tenta novamente
+A friend in your home can use this code instead: {}	Um amigo em tua casa pode usar este código em vez disso: {}
+Another program uses it. Choose another port in the Online tab, for example 47641, and send your friend the new room code.	Outro programa usa-a. Escolhe outra porta no separador Online, por exemplo 47641, e envia ao teu amigo o novo código da sala.
+Check the room code: ask them to copy it again.	Verifica o código da sala: pede-lhe para o copiar de novo.
+Get the room code	Obter o código da sala
+Getting your room code...	A obter o código da sala...
+In Room code, with the password if there is one.	Em Código da sala, com a palavra-passe se houver.
+In the room, copy your room code and send it to them by message, with the password if you set one.	Na sala, copia o código da sala e envia-lho por mensagem, com a palavra-passe se definiste uma.
+In the same home, ask your friend for the code under How to fix it in their room.	Na mesma casa, pede ao teu amigo o código em Como resolver, na sala dele.
+It looks like K7QD-M2XA: letters and digits in groups of four. Ask your friend to copy it again from their room and paste it whole.	É parecido com K7QD-M2XA: letras e algarismos em grupos de quatro. Pede ao teu amigo para o copiar de novo da sala dele e colá-lo inteiro.
+Open port {} (UDP and TCP) to this computer in your router's settings: search the web for your router's name and "port forwarding".	Abre a porta {} (UDP e TCP) para este computador nas definições do router: procura na web o nome do teu router e "reencaminhamento de portas".
+Paste your friend's room code first.	Cola primeiro o código da sala do teu amigo.
+Room code	Código da sala
+Room code copied. Paste it in a message to your friend.	Código da sala copiado. Cola-o numa mensagem para o teu amigo.
+Send your friend this room code and the password:	Envia ao teu amigo este código da sala e a palavra-passe:
+Send your friend this room code:	Envia ao teu amigo este código da sala:
+The host didn't answer; check the room code and ask them to open the room.	O anfitrião não respondeu; verifica o código da sala e pede-lhe para abrir a sala.
+The one your friend sent you. An address works too.	O que o teu amigo te enviou. Um endereço também serve.
+The room code holds your friend's address. You can paste the address itself instead, like 203.0.113.4:47640.	O código da sala contém o endereço do teu amigo. Também podes colar o próprio endereço, como 203.0.113.4:47640.
+The room code holds your public address, found with a free STUN server. Share it only with your friend.	O código da sala contém o teu endereço público, obtido com um servidor STUN gratuito. Partilha-o só com o teu amigo.
+They choose Join in this tab, paste your room code, then press JOIN A ROOM.	Escolhe Aderir neste separador, cola o teu código da sala e carrega em ADERIR A UMA SALA.
+This room code isn't right	Este código da sala não está certo
+This room code isn't valid; ask your friend to copy it again.	Este código da sala não é válido; pede ao teu amigo para o copiar de novo.
+Your friend opens a room and sends you its code, and the password if there is one.	O teu amigo abre uma sala e envia-te o código, e a palavra-passe se houver.
+Your internet provider shares your address with other homes, so a friend elsewhere can't reach you this way.	O teu fornecedor de internet partilha o teu endereço com outras casas, por isso um amigo noutro lado não te consegue alcançar assim.
+Your router didn't let your friend in by itself, so a friend elsewhere can't join yet.	O router não deixou entrar o teu amigo sozinho, por isso um amigo noutro lado ainda não pode aderir.
+Your router didn't open, so this code uses IPv6. It works if your friend's internet has IPv6 too.	O router não abriu, por isso este código usa IPv6. Funciona se a internet do teu amigo também tiver IPv6.
+Your router isn't opened automatically: a friend elsewhere needs the port opened.	O router não é aberto automaticamente: um amigo noutro lado precisa da porta aberta.
+{} (you)	{} (tu)
+Not ready yet: choosing their figures	Ainda não está pronto: escolhe as figuras

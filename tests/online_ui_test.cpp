@@ -1,4 +1,5 @@
 #include "launcher/online/room_inputs.h"
+#include "launcher/online/room_code.h"
 #include "launcher/ui/online_page.h"
 #include "launcher/ui/launcher_app.h"
 #include "shared/collection/save_backup.h"
@@ -273,11 +274,33 @@ int OnlineUiChecks(const std::filesystem::path& scratch)
                    game->seats[host.player.figures[i].seat].player != 2,
             "figure bytes and write-back paths match");
     }
-    config["launcher"]["online_cross_platform"] = "1";
+    config["ssa.online"]["cross_platform"] = "1";
     auto guest = online::ReadRoomInputs(config, profile, *game, sha, false, portal, saves);
     Expect(guest.hello.crossPlatform && guest.save.empty() && guest.player.figures.size() == 1 &&
                guest.localFigureFiles[0] == p1,
         "guest brings own player one, no shared figures or saves");
+    {
+        LauncherConfig fresh;
+        const auto none = online::ReadGameOnline(fresh, "ssa");
+        Expect(none.mode == online::Mode::Solo && none.port == online::DefaultPort && none.automatic &&
+                   none.address.empty() && !none.crossPlatform,
+            "a game never set up plays alone");
+        online::GameOnline set{ online::Mode::Join, 50000, false, "203.0.113.4:50000", "pw", true };
+        online::WriteGameOnline(fresh, "giants", set);
+        const auto back = online::ReadGameOnline(fresh, "giants");
+        Expect(back.mode == online::Mode::Join && back.port == 50000 && !back.automatic &&
+                   back.address == set.address && back.password == "pw" && back.crossPlatform &&
+                   online::ReadGameOnline(fresh, "ssa").mode == online::Mode::Solo,
+            "online settings are kept per game");
+        Expect(online::VersionLabel("0.10.0", true) == "0.10.0-o" &&
+                   online::VersionLabel("0.10.0", false) == "0.10.0" && online::VersionLabel("", true).empty(),
+            "a game set to play online shows -o after its version");
+        fresh["ssa.online"]["port"] = "70000";
+        fresh["ssa.online"]["mode"] = "host";
+        Expect(online::ReadGameOnline(fresh, "ssa").port == online::DefaultPort &&
+                   online::ReadGameOnline(fresh, "ssa").mode == online::Mode::Host,
+            "a port out of range falls back to the default");
+    }
     config["ssa.video"]["fps_limit"] = "30";
     Expect(online::RoomSettings(config, "ssa").fpsLimit == 30, "original frame rate");
     const auto* swap = collection::Catalogue::Get().FindGame("swapforce");
@@ -350,13 +373,49 @@ int OnlineUiChecks(const std::filesystem::path& scratch)
     for (int value = 0; value <= int(online::Mismatch::Platform); ++value)
         Expect(*launcher_ui::OnlineErrorText(online::Error::Mismatch, online::Mismatch(value)) != '\0',
             "mismatch has a sentence");
+    {
+        online::Hello mine, theirs;
+        mine.gameVersion = "0.9.16";
+        theirs.gameVersion = "0.9.15";
+        mine.platform = "macos-arm64";
+        theirs.platform = "windows-x64";
+        for (int value = 1; value <= int(online::Error::Broken); ++value)
+        {
+            const auto help = launcher_ui::OnlineHelpFor(online::Error(value), online::Mismatch::None, mine, theirs);
+            Expect(value == int(online::Error::Mismatch) || (!help.title.empty() && !help.lines.empty()),
+                "every room error has a help card");
+        }
+        for (int value = 0; value <= int(online::Mismatch::Platform); ++value)
+        {
+            const auto help =
+                launcher_ui::OnlineHelpFor(online::Error::Mismatch, online::Mismatch(value), mine, theirs);
+            Expect(!help.title.empty() && !help.lines.empty(), "every mismatch has a help card");
+        }
+        using Action = launcher_ui::OnlineHelp::Action;
+        const auto versions =
+            launcher_ui::OnlineHelpFor(online::Error::Mismatch, online::Mismatch::GameVersion, mine, theirs);
+        Expect(versions.lines.size() >= 3 && versions.lines[0].find("0.9.16") != std::string::npos &&
+                   versions.lines[1].find("0.9.15") != std::string::npos && versions.action == Action::Update,
+            "a version mismatch shows both versions and leads to the update");
+        const auto systems =
+            launcher_ui::OnlineHelpFor(online::Error::Mismatch, online::Mismatch::Platform, mine, theirs);
+        Expect(systems.lines[0].find("macOS") != std::string::npos &&
+                   systems.lines[1].find("Windows") != std::string::npos && systems.action == Action::Settings,
+            "a system mismatch names both systems and leads to the Online tab");
+        Expect(launcher_ui::OnlineHelpFor(online::Error::CannotConnect, online::Mismatch::None, mine, theirs).action ==
+                   Action::Retry,
+            "an unanswered join can be tried again");
+        Expect(launcher_ui::MaskedAddress("203.0.113.4:47640") == "********:47640" &&
+                   launcher_ui::MaskedAddress("203.0.113.4").find("203") == std::string::npos,
+            "a masked address hides the IP and keeps the port");
+    }
     auto wait = [](auto condition) {
         const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(2);
         while (!condition() && std::chrono::steady_clock::now() < deadline)
             SDL_Delay(1);
         return condition();
     };
-    std::atomic<int> maps = 0, unmaps = 0;
+    std::atomic<int> maps = 0, unmaps = 0, lookups = 0;
     std::atomic<bool> bothProtocols = true;
     {
         launcher_ui::RouterLease lease(
@@ -369,9 +428,15 @@ int OnlineUiChecks(const std::filesystem::path& scratch)
                 mapping.externalPort = options.port;
                 return mapping;
             },
-            [&](const auto&, const auto&) { ++unmaps; }, std::chrono::milliseconds(20));
+            [&](const auto&, const auto&) { ++unmaps; }, std::chrono::milliseconds(20),
+            [&] {
+                ++lookups;
+                return online::stun::Result{ { "198.51.100.7", 0 }, { "2001:db8::7", 0 } };
+            });
         lease.Open(47640);
         Expect(wait([&] { return maps >= 2 && lease.Get().ok; }), "router lease is renewed on its worker");
+        Expect(lookups == 1 && lease.Seen().v4.ip == "198.51.100.7" && lease.Seen().v6.ip == "2001:db8::7",
+            "the public addresses are asked once per room, not at each renewal");
         lease.Close();
         Expect(wait([&] { return unmaps == 1; }), "closing room removes the lease");
     }
@@ -391,7 +456,12 @@ int OnlineUiChecks(const std::filesystem::path& scratch)
                 mapping.ok = true;
                 return mapping;
             },
-            [&](const auto&, const auto&) { ++unmaps; });
+            [&](const auto&, const auto&) { ++unmaps; }, std::chrono::hours(1),
+            [&] {
+                ++lookups;
+                return online::stun::Result{};
+            });
+        lookups = 0;
         lease.Open(47640);
         {
             std::unique_lock lock(gateMutex);
@@ -406,6 +476,57 @@ int OnlineUiChecks(const std::filesystem::path& scratch)
         gate.notify_one();
         Expect(wait([&] { return unmaps == 1; }), "late router result is removed after leaving");
         Expect(!lease.Get().ok && !lease.Pending(), "late result cannot reopen the room");
+        Expect(lookups == 0, "a room closed while the router answers asks no public address");
+    }
+    {
+        maps = 0;
+        launcher_ui::RouterLease lease(
+            [&](const auto&) {
+                ++maps;
+                return netplay::portmap::Mapping{};
+            },
+            [](const auto&, const auto&) {}, std::chrono::hours(1),
+            [] { return online::stun::Result{ { "198.51.100.7", 0 }, {} }; });
+        lease.Open(47640, false);
+        Expect(wait([&] { return !lease.Pending() && lease.Seen().v4.ip == "198.51.100.7"; }) && maps == 0,
+            "with automatic opening off, the router is not asked but the public address is");
+    }
+    {
+        using Reach = launcher_ui::Invite::Reach;
+        using netplay::portmap::Mapping;
+        const online::stun::Result none, v4{ { "198.51.100.7", 0 }, {} },
+            both{ { "198.51.100.7", 0 }, { "2001:db8::7", 0 } };
+        const Mapping opened{ .ok = true, .externalIp = "203.0.113.4", .externalPort = 47640 };
+        const Mapping shared{ .ok = true, .externalIp = "100.64.0.9", .externalPort = 47640 };
+        std::string host;
+        uint16_t port = 0;
+        auto holds = [&](const launcher_ui::Invite& invite, const char* ip, uint16_t to) {
+            return online::DecodeRoomCode(invite.code, host, port) && host == ip && port == to;
+        };
+        auto invite = launcher_ui::InviteFor(opened, both, true, true, "192.168.1.20", 47640);
+        Expect(invite.reach == Reach::Asking && invite.code.empty(), "no room code while the router is asked");
+        invite = launcher_ui::InviteFor(opened, both, false, true, "192.168.1.20", 47640);
+        Expect(invite.reach == Reach::Anywhere && holds(invite, "203.0.113.4", 47640) &&
+                   invite.address == "203.0.113.4:47640",
+            "an opened router: the code holds its public address");
+        Expect(online::DecodeRoomCode(invite.homeCode, host, port) && host == "192.168.1.20",
+            "the code for a friend at home holds the local address");
+        invite = launcher_ui::InviteFor({}, both, false, true, "192.168.1.20", 47640);
+        Expect(invite.reach == Reach::Ipv6 && holds(invite, "2001:db8::7", 47640) &&
+                   invite.address == "[2001:db8::7]:47640",
+            "a refusing router with IPv6: the code holds the IPv6 address");
+        invite = launcher_ui::InviteFor(shared, v4, false, true, "192.168.1.20", 47640);
+        Expect(invite.reach == Reach::Shared && holds(invite, "198.51.100.7", 47640),
+            "an address shared by the provider is told apart");
+        invite = launcher_ui::InviteFor({}, v4, false, true, "192.168.1.20", 47640);
+        Expect(invite.reach == Reach::Refused && holds(invite, "198.51.100.7", 47640), "a refusing router");
+        invite = launcher_ui::InviteFor({}, both, false, false, "192.168.1.20", 47641);
+        Expect(invite.reach == Reach::Manual && holds(invite, "198.51.100.7", 47641),
+            "automatic opening off: the public IPv4 address, for a forwarded port");
+        invite = launcher_ui::InviteFor({}, none, false, true, "192.168.1.20", 47640);
+        Expect(invite.reach == Reach::Refused && holds(invite, "192.168.1.20", 47640),
+            "no public address known: the local one");
+        Expect(launcher_ui::MaskedCode("K7QD-M2XA") == "****-****", "a masked code keeps only its dashes");
     }
     launcher_ui::OnlineUiChecks::Recovery(scratch / "recovery");
     fprintf(stderr, "Online UI inputs, session recovery and router worker: %d failure(s)\n", failures);

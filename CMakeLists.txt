@@ -142,8 +142,10 @@ add_library(ArkeyanLauncherCore STATIC
     src/launcher/online/lobby.cpp
     src/launcher/online/lobby_protocol.cpp
     src/launcher/online/net_socket.cpp
+    src/launcher/online/room_code.cpp
     src/launcher/online/room_inputs.cpp
     src/launcher/online/session_launch.cpp
+    src/launcher/online/stun.cpp
     src/shared/portmap.cpp
     src/launcher/i18n.cpp
     src/launcher/game_install.cpp

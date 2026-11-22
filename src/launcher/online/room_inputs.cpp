@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <fstream>
 #include <cctype>
+#include <cstdlib>
 #include <limits>
 
 namespace online
@@ -92,6 +93,36 @@ namespace online
         return settings;
     }
 
+    GameOnline ReadGameOnline(const LauncherConfig& config, std::string_view game)
+    {
+        using namespace room_inputs;
+        const std::string section = std::string(game) + ".online";
+        GameOnline online;
+        const std::string mode = Get(config, section, "mode");
+        online.mode = mode == "host" ? Mode::Host : mode == "join" ? Mode::Join : Mode::Solo;
+        const std::string port = Get(config, section, "port");
+        char* end = nullptr;
+        const unsigned long value = port.empty() ? 0 : std::strtoul(port.c_str(), &end, 10);
+        if (value >= 1 && value <= 65535 && end != nullptr && *end == 0)
+            online.port = uint16_t(value);
+        online.automatic = Bool(Get(config, section, "open_port", "1"));
+        online.address = Get(config, section, "address");
+        online.password = Get(config, section, "password");
+        online.crossPlatform = Bool(Get(config, section, "cross_platform", "0"));
+        return online;
+    }
+
+    void WriteGameOnline(LauncherConfig& config, std::string_view game, const GameOnline& online)
+    {
+        auto& section = config[std::string(game) + ".online"];
+        section["mode"] = online.mode == Mode::Host ? "host" : online.mode == Mode::Join ? "join" : "solo";
+        section["port"] = std::to_string(online.port);
+        section["open_port"] = online.automatic ? "1" : "0";
+        section["address"] = online.address;
+        section["password"] = online.password;
+        section["cross_platform"] = online.crossPlatform ? "1" : "0";
+    }
+
     RoomInputs ReadRoomInputs(const LauncherConfig& config, const profiles::Profile& profile,
         const collection::Game& game, const std::string& xexSha256, bool host, const std::string& seatsFile,
         const std::filesystem::path& saves, bool readSave)
@@ -104,7 +135,7 @@ namespace online
         inputs.hello.xexSha256 = xexSha256;
         inputs.hello.gameVersion = FindInstalledGame(config, xexSha256).gameVersion;
         inputs.hello.platform = RoomPlatform();
-        inputs.hello.crossPlatform = Bool(Get(config, "launcher", "online_cross_platform", "0"));
+        inputs.hello.crossPlatform = ReadGameOnline(config, game.id).crossPlatform;
         inputs.player.pseudo = profile.name.empty() ? Tr("Player 1") : profile.name;
         inputs.player.xuid = profile.xuid;
         inputs.player.color = uint8_t(std::clamp(profile.color, 0, 9));

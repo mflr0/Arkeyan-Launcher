@@ -101,6 +101,7 @@ namespace online
         static constexpr uint64_t ConnectTimeoutMs = 10000;
         static constexpr uint64_t SilenceTimeoutMs = 15000; // no byte at all from the other side
         static constexpr uint64_t PingEveryMs = 1000;
+        static constexpr uint64_t RttLogEveryMs = 10000;
 
         explicit Lobby(Clock clock = {});
         ~Lobby();
@@ -140,6 +141,7 @@ namespace online
         void Fail(Error error, Mismatch mismatch = Mismatch::None);
         void CloseConnection();
         uint64_t Now() const;
+        std::string MismatchDetail(Mismatch mismatch) const; // both sides' values, for the log
 
         Clock m_clock;
         Status m_status;
@@ -157,9 +159,12 @@ namespace online
         bool m_haveKeys = false;
         uint32_t m_sendSequence = 0, m_receiveSequence = 0;
         Step m_step = Step::AwaitHello;
-        uint64_t m_startedAt = 0, m_lastHeard = 0, m_nextPing = 0;
+        uint64_t m_startedAt = 0, m_lastHeard = 0, m_nextPing = 0, m_nextRttLog = 0;
         bool m_closeAfterFlush = false;
     };
+
+    // What went wrong, in words, for the log.
+    const char* ErrorName(Error error);
 
     // A fresh random nonce or session key.
     void RandomBytes(std::span<uint8_t> out);

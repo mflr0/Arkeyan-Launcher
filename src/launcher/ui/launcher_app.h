@@ -308,7 +308,8 @@ namespace launcher_ui
         Language,
         Disc,
         Saves,
-        Game
+        Game,
+        Online
     };
     enum class DiscState
     {
@@ -510,6 +511,7 @@ namespace launcher_ui
         static int VisibilityWait(int requested, SDL_WindowFlags flags);
         int ContentWait();
         int IdleWait(); // how long the loop may sleep before the next frame, in ms (0: draw now)
+        static constexpr int RoomWaitMs = 4; // at most, while an online room is open
         void Frame();
         void DrawBackdrop();
         void DrawSidebar();
@@ -521,7 +523,17 @@ namespace launcher_ui
         };
         void DrawPlay();
         void DrawOnline();
-        void OpenOnline();
+        void DrawGameOnline(); // the game's Online tab: Solo, Host or Join, and what each needs
+        void DrawRoomPlayers(const online::Status& status);
+        void DrawRoomInvite(const online::Status& status);
+        bool DrawOnlineHelp(const OnlineHelp& help); // true when its action was pressed
+        void LoadOnlineFields();
+        void SaveOnlineFields();
+        void OpenOnlineTab();
+        void StartOnline(); // HOST A ROOM / JOIN A ROOM: the room page, opened or joined with the tab's settings
+        bool BeginRoom();
+        bool RoomOpen() const; // a room waits or holds both players (the player may be choosing figures meanwhile)
+        bool OpenOnline();
         void PollOnline();
         void CloseOnline();
         void LaunchOnline();

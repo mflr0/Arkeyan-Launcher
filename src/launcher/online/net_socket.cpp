@@ -1,4 +1,5 @@
 #include "launcher/online/net_socket.h"
+#include "launcher/online/room_code.h"
 #include <charconv>
 #include <cstring>
 #include <mutex>
@@ -242,6 +243,8 @@ namespace online::net
             text.remove_suffix(1);
         if (text.empty())
             return false;
+        if (DecodeRoomCode(text, host, port))
+            return true;
         std::string_view portText;
         if (text.front() == '[')
         {

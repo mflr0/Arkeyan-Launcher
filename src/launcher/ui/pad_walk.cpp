@@ -411,12 +411,12 @@ namespace launcher_ui
                 game("ssa");
                 GoTo(Page::Online);
                 const int saved = m_testStep;
-                m_testStep = name.starts_with("55-")
-                                 ? 4 + int(online::Error::Broken) + int(online::Mismatch::Platform) + 5
-                             : name.starts_with("51-") ? 0
-                             : name.starts_with("52-") ? 1
-                             : name.starts_with("53-") ? 2
-                                                       : 3;
+                // TestOnlineScript's steps: the Online tab as Host and Join, the waiting room, both ready, the guest.
+                m_testStep = name.starts_with("51-")   ? 1
+                             : name.starts_with("52-") ? 2
+                             : name.starts_with("53-") ? 4
+                             : name.starts_with("54-") ? 6
+                                                       : 7;
                 TestOnlineScript(now);
                 m_testStep = saved;
                 RequestFocus(FocusTo::Page);
@@ -653,14 +653,11 @@ namespace launcher_ui
             w.phase = 2;
             return;
         case 5: // LT / RT tab shortcuts, then B
-            if ((m_page == Page::Settings || m_page == Page::GameSettings ||
-                    (m_page == Page::Online && m_online.preview && m_online.preview->state == online::State::Idle)) &&
+            if ((m_page == Page::Settings || m_page == Page::GameSettings) &&
                 !ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopupId | ImGuiPopupFlags_AnyPopupLevel))
             {
-                w.indexAt = m_page == Page::Settings ? int(m_tab)
-                            : m_page == Page::Online ? m_online.tab
-                                                     : int(m_gameTab);
-                const int count = m_page == Page::Settings ? 5 : m_page == Page::Online ? 2 : 8;
+                w.indexAt = m_page == Page::Settings ? int(m_tab) : int(m_gameTab);
+                const int count = m_page == Page::Settings ? 5 : int(GameTab::Online) + 1;
                 w.stepDir = w.indexAt == count - 1 ? -1 : 1;
                 press(w.stepDir > 0 ? ImGuiKey_GamepadR2 : ImGuiKey_GamepadL2);
                 w.phase = 11;
@@ -789,9 +786,7 @@ namespace launcher_ui
             return;
         case 12:
         {
-            const int tab = m_page == Page::Settings ? int(m_tab)
-                            : m_page == Page::Online ? m_online.tab
-                                                     : int(m_gameTab);
+            const int tab = m_page == Page::Settings ? int(m_tab) : int(m_gameTab);
             if (m_page != w.pageAt || tab != w.indexAt + w.stepDir)
                 fail("LT / RT must change the settings tab without changing page");
             press(w.stepDir > 0 ? ImGuiKey_GamepadL2 : ImGuiKey_GamepadR2);
@@ -804,9 +799,7 @@ namespace launcher_ui
             w.phase = 14;
             return;
         case 14:
-            if (m_page != w.pageAt || (m_page == Page::Settings    ? int(m_tab)
-                                          : m_page == Page::Online ? m_online.tab
-                                                                   : int(m_gameTab)) != w.indexAt)
+            if (m_page != w.pageAt || (m_page == Page::Settings ? int(m_tab) : int(m_gameTab)) != w.indexAt)
                 fail("the opposite trigger must restore the original settings tab");
             press(ImGuiKey_GamepadFaceRight);
             w.phase = 6;

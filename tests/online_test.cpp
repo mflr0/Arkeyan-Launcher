@@ -2,6 +2,8 @@
 // addresses, then whole rooms over the loopback address: a guest that joins, gets the host's settings and save, and both
 // start; a wrong password, another disc, a full room, a guest that leaves, a silent one. Returns the number of failures.
 #include "launcher/online/lobby.h"
+#include "launcher/online/room_code.h"
+#include "launcher/online/stun.h"
 #include "launcher/online/session_launch.h"
 #include "launcher/ui/collection_model.h"
 #include "shared/collection/datadir.h"
@@ -227,14 +229,91 @@ namespace
         ONLINE_EXPECT(!net::ParseAddress("", 1, host, port) && !net::ParseAddress("a:0", 1, host, port) &&
                       !net::ParseAddress("a:70000", 1, host, port) && !net::ParseAddress("a:", 1, host, port) &&
                       !net::ParseAddress("[::1", 1, host, port) && !net::ParseAddress("a b:1", 1, host, port));
+
+        // Room codes: the three lengths, read back whatever the case, dashes and look-alike letters; a typo refused.
+        const std::string shortCode = EncodeRoomCode("203.0.113.4", DefaultPort);
+        ONLINE_EXPECT(shortCode.size() == 9 && shortCode[4] == '-');
+        ONLINE_EXPECT(DecodeRoomCode(shortCode, host, port) && host == "203.0.113.4" && port == DefaultPort);
+        const std::string withPort = EncodeRoomCode("203.0.113.4", 5000);
+        ONLINE_EXPECT(withPort.size() == 14 && withPort != shortCode);
+        ONLINE_EXPECT(DecodeRoomCode(withPort, host, port) && host == "203.0.113.4" && port == 5000);
+        const std::string v6 = EncodeRoomCode("2001:db8::7", 47641);
+        ONLINE_EXPECT(v6.size() == 39);
+        ONLINE_EXPECT(DecodeRoomCode(v6, host, port) && host == "2001:db8::7" && port == 47641);
+        ONLINE_EXPECT(EncodeRoomCode("my-pc.local", 1).empty() && EncodeRoomCode("", 1).empty());
+        {
+            std::string loose;
+            for (const char c : shortCode)
+                if (c != '-')
+                    loose += char(c == '0' ? 'o' : c == '1' ? 'l' : (c >= 'A' && c <= 'Z') ? c - 'A' + 'a' : c);
+            ONLINE_EXPECT(DecodeRoomCode(" " + loose.substr(0, 4) + " " + loose.substr(4) + "\n", host, port) &&
+                          host == "203.0.113.4");
+            int refused = 0;
+            for (size_t i = 0; i < shortCode.size(); ++i)
+            {
+                if (shortCode[i] == '-')
+                    continue;
+                std::string typo = shortCode;
+                typo[i] = typo[i] == 'Z' ? 'Y' : char(typo[i] == '9' ? 'A' : typo[i] + 1);
+                std::string h;
+                uint16_t p = 0;
+                refused += DecodeRoomCode(typo, h, p) ? 0 : 1;
+            }
+            ONLINE_EXPECT(refused >= 7); // an 8-bit check: one typo in 256 slips by
+        }
+        ONLINE_EXPECT(!DecodeRoomCode("K7QD-M2X", host, port) && !DecodeRoomCode("K7QD-M2XU", host, port) &&
+                      !DecodeRoomCode("", host, port));
+        ONLINE_EXPECT(net::ParseAddress(withPort, DefaultPort, host, port) && host == "203.0.113.4" && port == 5000);
+        ONLINE_EXPECT(net::ParseAddress(v6, DefaultPort, host, port) && host == "2001:db8::7" && port == 47641);
+
+        // STUN: the request's header, and the XOR-mapped address of an answer (IPv4, IPv6), the plain one as a fallback.
+        const stun::Id id{ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };
+        const auto request = stun::BindingRequest(id);
+        ONLINE_EXPECT(request.size() == 20 && request[0] == 0 && request[1] == 1 && request[2] == 0 &&
+                      request[3] == 0 && request[4] == 0x21 && request[5] == 0x12 && request[6] == 0xA4 &&
+                      request[7] == 0x42 && request[8] == 1 && request[19] == 12);
+        const auto answer = [&](uint16_t type, std::vector<uint8_t> value) {
+            std::vector<uint8_t> packet = { 0x01, 0x01, 0, uint8_t(4 + value.size()), 0x21, 0x12, 0xA4, 0x42 };
+            packet.insert(packet.end(), id.begin(), id.end());
+            packet.push_back(uint8_t(type >> 8));
+            packet.push_back(uint8_t(type));
+            packet.push_back(0);
+            packet.push_back(uint8_t(value.size()));
+            packet.insert(packet.end(), value.begin(), value.end());
+            return packet;
+        };
+        stun::Endpoint mapped;
+        // 203.0.113.4:5000 XORed with the magic cookie.
+        const auto v4 = answer(0x0020, { 0, 1, uint8_t((5000 ^ 0x2112) >> 8), uint8_t((5000 ^ 0x2112) & 0xFF),
+                                           0xCB ^ 0x21, 0x00 ^ 0x12, 0x71 ^ 0xA4, 0x04 ^ 0x42 });
+        ONLINE_EXPECT(stun::ParseBindingResponse(v4, id, mapped) && mapped.ip == "203.0.113.4" && mapped.port == 5000);
+        std::vector<uint8_t> v6Value = { 0, 2, 0x00 ^ 0x21, 0x50 ^ 0x12 };
+        const uint8_t address6[16] = { 0x20, 0x01, 0x0d, 0xb8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7 };
+        const uint8_t key[16] = { 0x21, 0x12, 0xA4, 0x42, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };
+        for (int i = 0; i < 16; ++i)
+            v6Value.push_back(uint8_t(address6[i] ^ key[i]));
+        ONLINE_EXPECT(stun::ParseBindingResponse(answer(0x0020, v6Value), id, mapped) && mapped.ip == "2001:db8::7" &&
+                      mapped.port == 0x50);
+        ONLINE_EXPECT(stun::ParseBindingResponse(answer(0x0001, { 0, 1, 0x13, 0x88, 198, 51, 100, 7 }), id, mapped) &&
+                      mapped.ip == "198.51.100.7" && mapped.port == 5000);
+        stun::Id other = id;
+        other[0] = 9;
+        ONLINE_EXPECT(!stun::ParseBindingResponse(v4, other, mapped));
+        auto cut = v4;
+        cut.resize(cut.size() - 2);
+        ONLINE_EXPECT(!stun::ParseBindingResponse(cut, id, mapped));
+        auto error = v4;
+        error[1] = 0x11;
+        ONLINE_EXPECT(!stun::ParseBindingResponse(error, id, mapped));
     }
 
     // Two rooms' worth of polling on one thread, on a clock the test moves.
     struct Room
     {
         uint64_t now = 1000;
-        Lobby host{ [this] { return now; } };
-        Lobby guest{ [this] { return now; } };
+        bool ticking = false; // each reading of the clock a millisecond later, as a real clock moves during a poll
+        Lobby host{ [this] { return ticking ? now++ : now; } };
+        Lobby guest{ [this] { return ticking ? now++ : now; } };
         uint16_t port = 0;
 
         bool Open(const std::string& password, std::vector<SaveFile> save = {})
@@ -291,6 +370,16 @@ namespace
 
     void RoomChecks()
     {
+        {
+            // The clock moves between the start of a poll and the bytes it reads: not a silence.
+            Room room;
+            room.ticking = true;
+            ONLINE_EXPECT(room.Open(""));
+            room.Join(room.guest, "");
+            ONLINE_EXPECT(room.Until(
+                [&] { return room.host.Get().state == State::InRoom && room.guest.Get().state == State::InRoom; }));
+            ONLINE_EXPECT(room.host.Get().lastRefusal.error == Error::None);
+        }
         {
             std::vector<SaveFile> save = { { "slot0/save.bin", std::vector<uint8_t>(150000) },
                 { "options.cfg", { 1, 2 } } };

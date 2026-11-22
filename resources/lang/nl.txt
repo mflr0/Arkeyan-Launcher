@@ -1252,9 +1252,6 @@ Swap	Wisselen
 Players swapped	Spelers gewisseld
 
 # Online
-Address	Adres
-Allow cross-platform sessions (not tested)	Sessies tussen systemen toestaan (niet getest)
-Connect	Verbinden
 Couldn't read a figure; choose your figures again in Collection.	Een figuur kon niet worden gelezen; kies je figuren opnieuw in Verzameling.
 Couldn't read your picture; choose it again in your profile.	Je afbeelding kon niet worden gelezen; kies die opnieuw in je profiel.
 Couldn't read your saves; check that their folder is accessible.	Je opgeslagen spellen konden niet worden gelezen; controleer de toegang tot de map.
@@ -1264,29 +1261,113 @@ Game default	Spelstandaard
 Host	Hosten
 Join	Deelnemen
 Leave	Verlaten
-Measuring the connection...	Verbinding meten...
-No figures chosen	Geen figuren gekozen
 Online	Online
-Online room	Onlinekamer
 Online with {}	Online met {}
-Open room	Kamer openen
-Open the port automatically	Poort automatisch openen
-Opening the router's port...	Routerpoort openen...
-Password (optional)	Wachtwoord (optioneel)
-Player {} · {}	Speler {} · {}
+A player couldn't join: {}	Een speler kon niet deelnemen: {}
+Ask your friend for the room's password and type it in the Online tab.	Vraag je vriend om het wachtwoord van de kamer en typ het op het tabblad Online.
+Both choose the same game, then try again.	Kies allebei hetzelfde spel en probeer het opnieuw.
+Both update the launcher in Settings, then try again.	Werk allebei de launcher bij in Instellingen en probeer het opnieuw.
+Change it only if another program uses it.	Wijzig deze alleen als een ander programma de poort gebruikt.
+Check that you both have the same game, disc and launcher.	Controleer of jullie allebei hetzelfde spel, dezelfde schijf en dezelfde launcher hebben.
+Check that your friend's room is open: they pressed HOST A ROOM.	Controleer of de kamer van je vriend open is: je vriend heeft op KAMER HOSTEN gedrukt.
+Choose figures	Figuren kiezen
+Choose your figures and press I'm ready. Your friend starts the game.	Kies je figuren en druk op "Ik ben klaar". Je vriend start het spel.
+Connection: {} · {} ms · input delay 1 frame	Verbinding: {} · {} ms · invoervertraging 1 frame
+Connection: {} · {} ms · input delay {} frames	Verbinding: {} · {} ms · invoervertraging {} frames
+Cross-platform sessions	Sessies tussen systemen
+Details for your router	Details voor je router
+Everyone is ready: press Start.	Iedereen is klaar: druk op Starten.
+Everyone is ready: the host starts.	Iedereen is klaar: de host start.
+Get ready	Maak je klaar
+Get ready and start	Maak je klaar en start
+Go to the game's page	Naar de spelpagina
+Player 1 · Host	Speler 1 · Host
+Player 2 · Guest	Speler 2 · Gast
+HOST A ROOM	KAMER HOSTEN
+Hide	Verbergen
+How PLAY starts the game	Hoe PLAY het spel start
+How it works	Hoe het werkt
+How to fix it	Zo los je het op
+I'm ready	Ik ben klaar
+If your friend set one.	Als je vriend er een heeft ingesteld.
+If your router refuses, open (forward) port {} for UDP and TCP to this computer in your router's settings.	Als je router weigert, open poort {} voor UDP en TCP naar deze computer in de instellingen van je router (poort doorsturen).
+Invite your friend	Nodig je vriend uit
+JOIN A ROOM	DEELNEMEN AAN EEN KAMER
+Joining your friend's room...	Deelnemen aan de kamer van je vriend...
+Lets friends outside your home in. Most routers allow it.	Laat vrienden van buiten je huis binnen. De meeste routers staan dit toe.
+No access to the router? Both install the same free virtual network, such as Tailscale or ZeroTier, and use the address it gives this computer.	Geen toegang tot de router? Installeer allebei hetzelfde gratis virtuele netwerk, zoals Tailscale of ZeroTier, en gebruik het adres dat het aan deze computer geeft.
+No figures on the portal yet	Nog geen figuren op de portal
+Not in the same home? Their router may block it: their room shows them how to fix it.	Niet in hetzelfde huis? De router van je vriend kan de verbinding blokkeren: in de kamer staat hoe je vriend dit kan oplossen.
+Not ready	Niet klaar
+On the game's page, in place of PLAY.	Op de spelpagina, in plaats van PLAY.
+On the portal: {}	Op de portal: {}
+Online play needs the same edition of the disc on both computers, for example both USA.	Voor online spelen is op beide computers dezelfde schijfeditie nodig, bijvoorbeeld allebei USA.
+Online: you join your friend's room · Change	Online: je neemt deel aan de kamer van je vriend · Wijzigen
+Online: you open a room for a friend · Change	Online: je opent een kamer voor een vriend · Wijzigen
+Open my router automatically	Mijn router automatisch openen
+Open my router automatically asks your router with UPnP or NAT-PMP.	"Mijn router automatisch openen" vraagt je router om toegang via UPnP of NAT-PMP.
+Open or join a room again to play.	Open een kamer of neem opnieuw deel om te spelen.
+Open the Online tab	Het tabblad Online openen
+Optional. Your friend types it to join.	Optioneel. Je vriend typt het om deel te nemen.
+Or both install the same free virtual network, such as Tailscale or ZeroTier, and send the address it gives this computer, with the port.	Of installeer allebei hetzelfde gratis virtuele netwerk, zoals Tailscale of ZeroTier, en stuur het adres dat het aan deze computer geeft, samen met de poort.
+Password	Wachtwoord
+Paste it below	Plak hem hieronder
+Play with a friend on another system. Not tested yet: both must turn it on.	Speel met een vriend op een ander systeem. Nog niet getest: jullie moeten het allebei inschakelen.
+Play with a friend over the internet, each on your own computer.	Speel met een vriend via internet, ieder op een eigen computer.
+Playing between systems isn't tested yet. To try it, both turn on Cross-platform sessions in the game's Online tab.	Spelen tussen systemen is nog niet getest. Schakel allebei "Sessies tussen systemen" in op het tabblad Online van het spel om het te proberen.
+Press HOST A ROOM	Druk op KAMER HOSTEN
+Press I'm ready when your figures are set.	Druk op "Ik ben klaar" als je figuren klaarstaan.
+Press JOIN A ROOM	Druk op DEELNEMEN AAN EEN KAMER
+Sending your save to {}...	Je opgeslagen spel naar {} sturen...
+Show	Tonen
+Solo	Solo
+Someone else is already in it: a room is for two players.	Er is al iemand anders binnen: een kamer is voor twee spelers.
+Something needs fixing	Er moet iets worden opgelost
+The connection failed	De verbinding is mislukt
+The connection was lost	De verbinding is verbroken
+The one with the older version updates the game on its page, then you try again.	Wie de oudere versie heeft, werkt het spel bij op de spelpagina. Daarna proberen jullie het opnieuw.
+The room couldn't open	De kamer kon niet worden geopend
+The room is closed	De kamer is gesloten
+The room uses port {}, for UDP and TCP.	De kamer gebruikt poort {} voor UDP en TCP.
+This port is already in use	Deze poort is al in gebruik
+This room is full	Deze kamer is vol
+Try again	Opnieuw proberen
+Try again. If it keeps failing, both restart the launcher.	Probeer het opnieuw. Als het blijft mislukken, start allebei de launcher opnieuw.
+Waiting for player 2	Wachten op speler 2
+Waiting for player 2 to join.	Wachten tot speler 2 deelneemt.
+Waiting for {} to be ready.	Wachten tot {} klaar is.
+With a virtual network such as Tailscale or ZeroTier, use the address it gives your friend's computer.	Gebruik bij een virtueel netwerk zoals Tailscale of ZeroTier het adres dat het aan de computer van je vriend geeft.
+Wrong password	Verkeerd wachtwoord
+You both choose your figures and press I'm ready. Then you press Start.	Jullie kiezen allebei je figuren en drukken op "Ik ben klaar". Daarna druk jij op Starten.
+You both need this game with the same disc edition, and the same launcher version.	Jullie hebben allebei dit spel met dezelfde schijfeditie en dezelfde launcherversie nodig.
+You chose different games	Jullie kozen verschillende spellen
+You play on different systems	Jullie spelen op verschillende systemen
+You play on this computer. To play with a friend over the internet, choose Host to open a room for them, or Join to enter theirs.	Je speelt op deze computer. Kies Hosten om een kamer voor je vriend te openen of Deelnemen om diens kamer binnen te gaan als je via internet met een vriend wilt spelen.
+You: {}	Jij: {}
+Your discs aren't the same edition	Jullie schijven zijn van verschillende edities
+Your friend joins	Je vriend neemt deel
+Your friend left the room	Je vriend heeft de kamer verlaten
+Your friend stopped answering. Check both internet connections, then try again.	Je vriend antwoordt niet meer. Controleer beide internetverbindingen en probeer het opnieuw.
+Your friend's room	De kamer van je vriend
+Your online room stays open. Put your figures on the portal, then go back.	Je onlinekamer blijft open. Zet je figuren op de portal en ga dan terug.
+Back to the room	Terug naar de kamer
+Your friend's room didn't answer	De kamer van je vriend heeft niet geantwoord
+Your friend: {}	Je vriend: {}
+Your game versions differ	Jullie spelversies verschillen
+Your games don't match	Jullie spellen komen niet overeen
+Your launchers aren't the same version	Jullie launcherversies verschillen
+Your router lets friends in from anywhere.	Je router laat vrienden van overal binnen.
+fair	redelijk
+good	goed
+slow	traag
 Port	Poort
-Port not opened; open port {} UDP and TCP on your router.	Poort niet geopend; open poort {} voor UDP en TCP op je router.
-Round trip: {} ms · Input delay: {} frames	Heen en terug: {} ms · Invoervertraging: {} frames
 Start	Starten
 The connection failed; open or join a room again.	De verbinding is mislukt; open een kamer of neem opnieuw deel.
-The host didn't answer; check the address and ask them to open the room.	De host antwoordt niet; controleer het adres en vraag of de kamer open kan.
 The other player left; open or join a room again.	De andere speler is vertrokken; open een kamer of neem opnieuw deel.
 The other player stopped answering; check your connection and reconnect.	De andere speler antwoordt niet meer; controleer je verbinding en verbind opnieuw.
 The password doesn't match; ask the host and try again.	Het wachtwoord klopt niet; vraag het aan de host en probeer opnieuw.
-This address isn't valid; paste the host's IP:port.	Dit adres is ongeldig; plak IP:poort van de host.
 This port is busy; choose another port.	Deze poort is bezet; kies een andere poort.
 This room is full; ask the host to open another room.	Deze kamer is vol; vraag de host een andere te openen.
-Waiting for the other player...	Wachten op de andere speler...
 You chose different games; choose the same game.	Jullie kozen verschillende spellen; kies hetzelfde spel.
 Your disc editions differ; use the same disc edition.	Jullie schijfedities verschillen; gebruik dezelfde editie.
 Your game versions differ; update both games.	Jullie spelversies verschillen; werk beide spellen bij.
@@ -1298,8 +1379,36 @@ Your saves exceed 64 MB; remove unused saves first.	Je opgeslagen spellen zijn g
 Your systems differ; both players must allow cross-platform sessions.	Jullie systemen verschillen; sta allebei sessies tussen systemen toe.
 {} FPS · Text: {} · Voices: {}	{} FPS · Tekst: {} · Stemmen: {}
 This port isn't valid; choose a number from 1 to 65535.	Deze poort is ongeldig; kies een getal van 1 tot 65535.
-Round trip: {} ms · Input delay: 1 frame	Heen en terug: {} ms · Invoervertraging: 1 frame
 The games lost sync; reopen the room and try again	De spellen lopen niet meer gelijk; open de kamer opnieuw en probeer het nog eens
 Your frame rates differ; choose the same frame rate	Jullie beeldsnelheden verschillen; kies dezelfde beeldsnelheid
 The portal figures didn't match; choose your figures again in Collection	De portaalfiguren komen niet overeen; kies je figuren opnieuw in Verzameling
 The online session ended unexpectedly; reopen the room and try again	De onlinesessie is onverwacht gestopt; open de kamer opnieuw en probeer het nog eens
+A friend in your home can use this code instead: {}	Een vriend bij jou thuis kan in plaats daarvan deze code gebruiken: {}
+Another program uses it. Choose another port in the Online tab, for example 47641, and send your friend the new room code.	Een ander programma gebruikt hem. Kies een andere poort op het tabblad Online, bijvoorbeeld 47641, en stuur je vriend de nieuwe kamercode.
+Check the room code: ask them to copy it again.	Controleer de kamercode: vraag of hij hem opnieuw kopieert.
+Get the room code	De kamercode ophalen
+Getting your room code...	Kamercode ophalen...
+In Room code, with the password if there is one.	Bij Kamercode, met het wachtwoord als er een is.
+In the room, copy your room code and send it to them by message, with the password if you set one.	Kopieer in de kamer je kamercode en stuur hem in een bericht, met het wachtwoord als je er een hebt ingesteld.
+In the same home, ask your friend for the code under How to fix it in their room.	In hetzelfde huis: vraag je vriend om de code onder Zo los je het op in zijn kamer.
+It looks like K7QD-M2XA: letters and digits in groups of four. Ask your friend to copy it again from their room and paste it whole.	Hij lijkt op K7QD-M2XA: letters en cijfers in groepjes van vier. Vraag je vriend hem opnieuw uit zijn kamer te kopiëren en helemaal te plakken.
+Open port {} (UDP and TCP) to this computer in your router's settings: search the web for your router's name and "port forwarding".	Open poort {} (UDP en TCP) naar deze computer in de instellingen van je router: zoek op internet de naam van je router en "port forwarding".
+Paste your friend's room code first.	Plak eerst de kamercode van je vriend.
+Room code	Kamercode
+Room code copied. Paste it in a message to your friend.	Kamercode gekopieerd. Plak hem in een bericht aan je vriend.
+Send your friend this room code and the password:	Stuur je vriend deze kamercode en het wachtwoord:
+Send your friend this room code:	Stuur je vriend deze kamercode:
+The host didn't answer; check the room code and ask them to open the room.	De host antwoordde niet; controleer de kamercode en vraag hem de kamer te openen.
+The one your friend sent you. An address works too.	Die je vriend je stuurde. Een adres werkt ook.
+The room code holds your friend's address. You can paste the address itself instead, like 203.0.113.4:47640.	De kamercode bevat het adres van je vriend. Je kunt ook het adres zelf plakken, zoals 203.0.113.4:47640.
+The room code holds your public address, found with a free STUN server. Share it only with your friend.	De kamercode bevat je openbare adres, gevonden met een gratis STUN-server. Deel hem alleen met je vriend.
+They choose Join in this tab, paste your room code, then press JOIN A ROOM.	Hij kiest Deelnemen op dit tabblad, plakt je kamercode en drukt op DEELNEMEN AAN EEN KAMER.
+This room code isn't right	Deze kamercode klopt niet
+This room code isn't valid; ask your friend to copy it again.	Deze kamercode is ongeldig; vraag je vriend hem opnieuw te kopiëren.
+Your friend opens a room and sends you its code, and the password if there is one.	Je vriend opent een kamer en stuurt je de code, en het wachtwoord als er een is.
+Your internet provider shares your address with other homes, so a friend elsewhere can't reach you this way.	Je internetprovider deelt je adres met andere huishoudens, dus een vriend elders kan je zo niet bereiken.
+Your router didn't let your friend in by itself, so a friend elsewhere can't join yet.	Je router liet je vriend niet uit zichzelf binnen, dus een vriend elders kan nog niet deelnemen.
+Your router didn't open, so this code uses IPv6. It works if your friend's internet has IPv6 too.	Je router ging niet open, dus deze code gebruikt IPv6. Het werkt als het internet van je vriend ook IPv6 heeft.
+Your router isn't opened automatically: a friend elsewhere needs the port opened.	Je router wordt niet automatisch geopend: voor een vriend elders moet de poort open staan.
+{} (you)	{} (jij)
+Not ready yet: choosing their figures	Nog niet klaar: kiest de figuren

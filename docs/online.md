@@ -2,31 +2,50 @@
 
 Each player uses their own copy of the same game and disc edition, their own profile and their own figures. The host is
 Player 1; the guest is Player 2. Both players need the same launcher and installed game version. Sessions between systems
-are off by default; both players can enable **Allow cross-platform sessions (not tested)** in Settings > Launcher.
+are off by default; both players can turn on **Cross-platform sessions** in the game's Online tab.
 
-## Open or join a room
+## Set it up: the game's Online tab
 
-Choose an installed game and press **Online** beside PLAY. On **Host**, leave the port at 47640 or choose another, choose
-whether to open the router's port automatically, and optionally set a password. Press **Open room**, then **Copy** beside
-the address and give it and the password to the other player. On **Join**, paste that address into **Address**, enter the
-password if needed, and press **Connect**.
+Online play is set up per game, in its settings (the gear beside PLAY), tab **Online**. **How PLAY starts the game** has
+three choices: **Solo** (the game alone, as before), **Host** (PLAY opens a room) and **Join** (PLAY joins the friend's
+room). The choice stays after a session, so the same friends play again in one press. The tab shows the four steps of
+the chosen mode, then its fields: on Host, **Open my router automatically** and an optional password; on Join, the
+**Room code** the friend sent (hidden until **Show**; an address such as `203.0.113.4:47640` works too) and the
+password. **Details for your router** holds the technical
+part: the port (47640, changed only when another program uses it), UDP and TCP, what the automatic opening does, and the
+virtual network way (Tailscale, ZeroTier) for a router that cannot be opened. The settings live in `[<game>.online]` of
+`launcher.ini` (`mode`, `port`, `open_port`, `address`, `password`, `cross_platform`).
 
-The host's address uses the public IPv4 address reported by the router when available. Otherwise it shows the computer's
-local address and asks you to open the displayed port for both UDP and TCP on the router. The local address works for
-another computer on the same network; someone elsewhere needs your router's public address. Automatic opening can take
-several seconds; the window stays usable. An address behind a second router may need forwarding on both routers.
+While a game is set to Host or Join, the sidebar shows `-o` after its version (`0.10.0-o`), as the game does in a
+session. On the game page, PLAY then reads **HOST A ROOM** or **JOIN A ROOM**, and the line above it says which; pressing that line
+opens the Online tab. Join without a room code opens the tab instead. The friend's code is never shown on the game page.
 
-The room shows both players' names, pictures, colours and figures, the round trip and input delay, and the host's frame
-rate and game languages. Choose your figures in Collection before opening the room: each player brings their own Player 1
-figures; the host also brings the shared figures. The guest's figures occupy Player 2's seats in the game. Each player
-switches **Ready** on, then the host presses **Start**. **Leave**, Back, or changing page closes the room. A refused guest
-leaves a notice in the host's room. An error explains what to check before trying again.
+## The room
+
+The host's room shows two cards side by side, the same height. The empty one invites: the room code to send (hidden
+until **Show**; **Copy** works either way) and how far it reaches (see "Room codes"). When a friend elsewhere cannot get
+in, the card says why, and **How to fix it** gives the ways: forward the port (UDP and TCP) in the router's settings
+(when the router refused or automatic opening is off), a virtual network on both computers, and the code for a friend in
+the same home (the computer's local address). Opening the router and finding the public address take a few seconds; the
+window stays usable.
+
+Each player's card shows their name (yours followed by "(you)"), picture, colour, role, readiness and the figures on
+their portal, with **Choose
+figures** (Collection) and, once both are in, **I'm ready**. Each player brings their own Player 1 figures; the host also
+brings the shared figures. The guest's figures occupy Player 2's seats in the game. The connection (good, fair or slow,
+the round trip and the input delay) appears once the guest is in; the host's frame rate and game languages head the room.
+Beside **Start** (host only) and **Leave**, one sentence says what the room waits for. **Leave**, Back, or changing page
+closes the room. A refused guest leaves a notice in the host's room.
+
+When something fails, the room shows a help card: what happened, both sides' values where they differ (launcher and game
+versions, systems, games), what to do, and a button that does it (**Try again**, **Open the Online tab**, **Go to the
+game's page** for its update, **Check for updates** for the launcher's).
 
 During play, the game page says **Online with <pseudo>**. Your figures' progress returns to your own Toy Box after the game;
 the host keeps the shared save progress. The guest's previous saves stay their own. If you close the launcher during a
 session, reopening it waits for the game to finish before recovering the session's files.
 
-In a game started alone, **Play online** in the F3 menu closes the game and opens this game's Online page (the game
+In a game started alone, **Play online** in the F3 menu closes the game and opens this game's Online tab (the game
 leaves `open-online.txt`, its id, in its saves; the launcher reads and removes it when the game ends).
 
 ## Room protocol
@@ -101,10 +120,47 @@ Unknown codes use a general retry message. Successful recovery removes the end m
 so another recovery does not repeat the toast. Failed recovery keeps both records for retry, including after leaving
 the room.
 
+## Room codes
+
+A room code is the host's address written for a player to paste: no server holds rooms. `src/launcher/online/room_code.h`
+writes it in Crockford's base 32 (`0-9` and `A-Z` without `I L O U`; on reading, case, dashes and spaces are ignored and
+`O`, `I`, `L` read as `0`, `1`, `1`), in groups of four, with a check made from FNV-1a over the kind and the bytes:
+
+| Letters | Holds | Check |
+|---|---|---|
+| 8 (`K7QD-M2XA`) | IPv4 address, port 47640 | 8 bits |
+| 12 | IPv4 address and port | 12 bits |
+| 32 | IPv6 address and port | 16 bits |
+
+`net::ParseAddress` reads a room code first, then an address, so Join, `launcher.ini` and the game's `SKY_NETPLAY_JOIN`
+are unchanged. Which address the code holds (`InviteFor` in `src/launcher/ui/online_page.cpp`):
+
+| The room's card | When | The code holds |
+|---|---|---|
+| lets friends in from anywhere | the router opened the port on a public IPv4 address | that address and the router's port |
+| uses IPv6 | no public IPv4 address opened, automatic opening on, this computer answers over IPv6 | the IPv6 address, the room's port |
+| shared by the provider | the router opened the port, but its own address is private (CGNAT, a second router) | the public IPv4 address |
+| refused | the router refused | the public IPv4 address, for a port forwarded by hand |
+| not opened automatically | automatic opening off | the public IPv4 address |
+
+The public addresses come from one STUN binding request (RFC 5389, `src/launcher/online/stun.h`) per room, over IPv4
+and over IPv6, to `stun.l.google.com:19302`, else `stun.cloudflare.com:3478`; only the mapped address of the answer is
+read. Without an answer the code holds the computer's local address.
+
+## The log
+
+The room writes `[online]` lines to the launcher's output, in words and never with an address (players share their
+logs): the room opening and its port; the router's answer (`port 47640 opened with UPnP (outside port 47640)`, or why
+not); whether STUN found an IPv4 and an IPv6 address; the room code's reach when it changes; a guest joining (IPv4 or
+IPv6) and the other player's launcher, game, version and system; each side's readiness; the round trip and the input
+delay every 10 seconds; the start (input delay, round trip, frame rate, save size); and every end or refusal with its
+reason and, for a mismatch, both sides' values (`game version: 0.10.0 here, 0.9.17 there`).
+
 ## Router lease
 
-The room's `RouterLease` worker calls `netplay::portmap::Map` with `Options::alsoTcp = true`: the room needs TCP and the
-game needs UDP on the same port. UPnP is tried first, then NAT-PMP. The lease is renewed every hour. Closing the room or
+The room's `RouterLease` worker calls `netplay::portmap::Map` with `Options::alsoTcp = true` (not with automatic opening
+off): the room needs TCP and the game needs UDP on the same port. UPnP is tried first, then NAT-PMP. The lease is renewed
+every hour. Then, once per room, the worker asks the public addresses (`stun::Lookup`), not for a room already closed. Closing the room or
 ending the game schedules `Unmap` on the same worker. If a room closes while mapping is in flight, the returned mapping
 is removed before the worker handles another room. The worker joins at window shutdown.
 
@@ -113,7 +169,8 @@ is removed before the worker handles another room. The worker joins at window sh
 `OnlineUiChecks` in `tests/online_ui_test.cpp` checks the state adapter with generated figures and stand-in save bytes,
 startup and game-exit recovery, host and guest write-back, every end reason, and a failed recovery followed by retry.
 `SKY_LAUNCHER_TEST_ONLINE_UI_ONLY=1` selects it in `ArkeyanLauncherTest`. The existing `OnlineChecks` cover the room protocol,
-loopback peers, port mapping against local fixtures, and session preparation and write-back.
+loopback peers, port mapping against local fixtures, room codes (every length, loose reading, typos) and STUN answers,
+and session preparation and write-back.
 
 With scratch HOME, settings, data and collection folders, `SDL_VIDEO_DRIVER=offscreen`, `SKY_LAUNCHER_SHOTS=<scratch shots>`
 and `SKY_LAUNCHER_TEST_ONLINE_UI=1` capture the Host and Join tabs, waiting and ready rooms, every room error and mismatch,
@@ -122,5 +179,5 @@ end toast (including a silent normal end). Set `SKY_LAUNCHER_LANGUAGE=en` or `fr
 `SKY_LAUNCHER_TEST_SIZE=1024x680` or `1600x1000` for each size. The optional `OnlineRoom::preview`
 status is only set by this screenshot script; it bypasses sockets, launch and router mapping. No game disc is needed. The pad walk's `51-online-host` through `55-online-guest` views check every enabled control,
 reading order, Back and the form tabs; select them with `SKY_LAUNCHER_TEST_PADWALK_VIEW=51-,52-,53-,54-,55-`.
-The router-worker checks inject callbacks, including a late mapping result after Leave and a short renewal interval;
-they never contact a router.
+The router-worker checks inject callbacks, including a late mapping result after Leave, a short renewal interval and the
+public address lookup; they never contact a router or a STUN server. `InviteFor` is checked for every row of "Room codes".

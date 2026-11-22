@@ -1253,9 +1253,6 @@ Swap	Vaihda
 Players swapped	Pelaajat vaihdettu
 
 # Online
-Address	Osoite
-Allow cross-platform sessions (not tested)	Salli pelit eri järjestelmien välillä (ei testattu)
-Connect	Yhdistä
 Couldn't read a figure; choose your figures again in Collection.	Hahmoa ei voitu lukea; valitse hahmosi uudelleen Kokoelmasta.
 Couldn't read your picture; choose it again in your profile.	Kuvaasi ei voitu lukea; valitse se uudelleen profiilissasi.
 Couldn't read your saves; check that their folder is accessible.	Tallennuksiasi ei voitu lukea; tarkista, että niiden kansioon on pääsy.
@@ -1265,29 +1262,113 @@ Game default	Pelin oletus
 Host	Isännöi
 Join	Liity
 Leave	Poistu
-Measuring the connection...	Mitataan yhteyttä...
-No figures chosen	Ei valittuja hahmoja
 Online	Verkossa
-Online room	Verkkohuone
 Online with {}	Verkossa pelaajan {} kanssa
-Open room	Avaa huone
-Open the port automatically	Avaa portti automaattisesti
-Opening the router's port...	Avataan reitittimen porttia...
-Password (optional)	Salasana (valinnainen)
-Player {} · {}	Pelaaja {} · {}
+A player couldn't join: {}	Pelaaja ei voinut liittyä: {}
+Ask your friend for the room's password and type it in the Online tab.	Pyydä ystävältäsi huoneen salasana ja kirjoita se Verkossa-välilehdelle.
+Both choose the same game, then try again.	Valitkaa molemmat sama peli ja yrittäkää uudelleen.
+Both update the launcher in Settings, then try again.	Päivittäkää molemmat käynnistysohjelma Asetuksissa ja yrittäkää uudelleen.
+Change it only if another program uses it.	Vaihda se vain, jos toinen ohjelma käyttää sitä.
+Check that you both have the same game, disc and launcher.	Tarkistakaa, että teillä molemmilla on sama peli, levy ja käynnistysohjelma.
+Check that your friend's room is open: they pressed HOST A ROOM.	Tarkista, että ystäväsi huone on auki: hän on painanut ISÄNNÖI HUONETTA.
+Choose figures	Valitse hahmot
+Choose your figures and press I'm ready. Your friend starts the game.	Valitse hahmosi ja paina "Olen valmis". Ystäväsi aloittaa pelin.
+Connection: {} · {} ms · input delay 1 frame	Yhteys: {} · {} ms · syöteviive 1 ruutu
+Connection: {} · {} ms · input delay {} frames	Yhteys: {} · {} ms · syöteviive {} ruutua
+Cross-platform sessions	Pelit eri järjestelmien välillä
+Details for your router	Reitittimen tiedot
+Everyone is ready: press Start.	Kaikki ovat valmiita: paina Aloita.
+Everyone is ready: the host starts.	Kaikki ovat valmiita: isäntä aloittaa.
+Get ready	Valmistaudu
+Get ready and start	Valmistaudu ja aloita
+Go to the game's page	Siirry pelin sivulle
+Player 1 · Host	Pelaaja 1 · Isäntä
+Player 2 · Guest	Pelaaja 2 · Vieras
+HOST A ROOM	ISÄNNÖI HUONETTA
+Hide	Piilota
+How PLAY starts the game	Miten PELAA aloittaa pelin
+How it works	Näin se toimii
+How to fix it	Näin korjaat ongelman
+I'm ready	Olen valmis
+If your friend set one.	Jos ystäväsi on asettanut sellaisen.
+If your router refuses, open (forward) port {} for UDP and TCP to this computer in your router's settings.	Jos reititin kieltäytyy, avaa (ohjaa) portti {} UDP- ja TCP-liikenteelle tähän tietokoneeseen reitittimen asetuksissa.
+Invite your friend	Kutsu ystäväsi
+JOIN A ROOM	LIITY HUONEESEEN
+Joining your friend's room...	Liitytään ystäväsi huoneeseen...
+Lets friends outside your home in. Most routers allow it.	Päästää kodin ulkopuolella olevat ystävät sisään. Useimmat reitittimet sallivat sen.
+No access to the router? Both install the same free virtual network, such as Tailscale or ZeroTier, and use the address it gives this computer.	Etkö pääse reitittimen asetuksiin? Asentakaa molemmat sama ilmainen virtuaaliverkko, kuten Tailscale tai ZeroTier, ja käyttäkää sen tälle tietokoneelle antamaa osoitetta.
+No figures on the portal yet	Portaalissa ei ole vielä hahmoja
+Not in the same home? Their router may block it: their room shows them how to fix it.	Ette ole samassa kodissa? Ystäväsi reititin voi estää yhteyden: hänen huoneensa kertoo, miten ongelman voi korjata.
+Not ready	Ei valmis
+On the game's page, in place of PLAY.	Pelin sivulla PELAA-painikkeen tilalla.
+On the portal: {}	Portaalissa: {}
+Online play needs the same edition of the disc on both computers, for example both USA.	Verkkopeli vaatii saman levyversion molemmilla tietokoneilla, esimerkiksi molemmilla USA.
+Online: you join your friend's room · Change	Verkossa: liityt ystäväsi huoneeseen · Vaihda
+Online: you open a room for a friend · Change	Verkossa: avaat huoneen ystävällesi · Vaihda
+Open my router automatically	Avaa reitittimeni automaattisesti
+Open my router automatically asks your router with UPnP or NAT-PMP.	"Avaa reitittimeni automaattisesti" lähettää reitittimellesi pyynnön UPnP- tai NAT-PMP-protokollalla.
+Open or join a room again to play.	Avaa huone tai liity huoneeseen uudelleen pelataksesi.
+Open the Online tab	Avaa Verkossa-välilehti
+Optional. Your friend types it to join.	Valinnainen. Ystäväsi kirjoittaa sen liittyäkseen.
+Or both install the same free virtual network, such as Tailscale or ZeroTier, and send the address it gives this computer, with the port.	Tai asentakaa molemmat sama ilmainen virtuaaliverkko, kuten Tailscale tai ZeroTier, ja lähettäkää sen tälle tietokoneelle antama osoite portin kanssa.
+Password	Salasana
+Paste it below	Liitä se alle
+Play with a friend on another system. Not tested yet: both must turn it on.	Pelaa ystävän kanssa eri järjestelmällä. Ei vielä testattu: molempien on otettava tämä käyttöön.
+Play with a friend over the internet, each on your own computer.	Pelaa ystävän kanssa internetin kautta, kumpikin omalla tietokoneellaan.
+Playing between systems isn't tested yet. To try it, both turn on Cross-platform sessions in the game's Online tab.	Pelejä eri järjestelmien välillä ei ole vielä testattu. Kokeillaksenne ottakaa molemmat "Pelit eri järjestelmien välillä" käyttöön pelin Verkossa-välilehdellä.
+Press HOST A ROOM	Paina ISÄNNÖI HUONETTA
+Press I'm ready when your figures are set.	Paina "Olen valmis", kun hahmosi ovat paikoillaan.
+Press JOIN A ROOM	Paina LIITY HUONEESEEN
+Sending your save to {}...	Lähetetään tallennustasi pelaajalle {}...
+Show	Näytä
+Solo	Yksin
+Someone else is already in it: a room is for two players.	Huoneessa on jo joku muu: huone on kahdelle pelaajalle.
+Something needs fixing	Jokin on korjattava
+The connection failed	Yhteys epäonnistui
+The connection was lost	Yhteys katkesi
+The one with the older version updates the game on its page, then you try again.	Vanhemman version käyttäjä päivittää pelin sen sivulla, sitten yritätte uudelleen.
+The room couldn't open	Huonetta ei voitu avata
+The room is closed	Huone on suljettu
+The room uses port {}, for UDP and TCP.	Huone käyttää porttia {} UDP- ja TCP-liikenteelle.
+This port is already in use	Tämä portti on jo käytössä
+This room is full	Tämä huone on täynnä
+Try again	Yritä uudelleen
+Try again. If it keeps failing, both restart the launcher.	Yrittäkää uudelleen. Jos se ei vieläkään onnistu, käynnistäkää molemmat käynnistysohjelma uudelleen.
+Waiting for player 2	Odotetaan pelaajaa 2
+Waiting for player 2 to join.	Odotetaan pelaajan 2 liittymistä.
+Waiting for {} to be ready.	Odotetaan, että {} on valmis.
+With a virtual network such as Tailscale or ZeroTier, use the address it gives your friend's computer.	Kun käytät virtuaaliverkkoa, kuten Tailscale tai ZeroTier, käytä sen ystäväsi tietokoneelle antamaa osoitetta.
+Wrong password	Väärä salasana
+You both choose your figures and press I'm ready. Then you press Start.	Valitsette molemmat hahmonne ja painatte "Olen valmis". Sitten sinä painat Aloita.
+You both need this game with the same disc edition, and the same launcher version.	Molemmilla on oltava tämä peli samalla levyversiolla ja sama käynnistysohjelman versio.
+You chose different games	Valitsitte eri pelit
+You play on different systems	Pelaatte eri järjestelmillä
+You play on this computer. To play with a friend over the internet, choose Host to open a room for them, or Join to enter theirs.	Pelaat tällä tietokoneella. Jos haluat pelata ystäväsi kanssa internetin kautta, valitse Isännöi avataksesi hänelle huoneen tai Liity mennäksesi hänen huoneeseensa.
+You: {}	Sinä: {}
+Your discs aren't the same edition	Levynne eivät ole samaa versiota
+Your friend joins	Ystäväsi liittyy
+Your friend left the room	Ystäväsi poistui huoneesta
+Your friend stopped answering. Check both internet connections, then try again.	Ystäväsi lakkasi vastaamasta. Tarkistakaa molemmat internetyhteydet ja yrittäkää uudelleen.
+Your friend's room	Ystäväsi huone
+Your online room stays open. Put your figures on the portal, then go back.	Verkkohuoneesi pysyy auki. Aseta hahmosi portaalille ja palaa sitten takaisin.
+Back to the room	Takaisin huoneeseen
+Your friend's room didn't answer	Ystäväsi huone ei vastannut
+Your friend: {}	Ystäväsi: {}
+Your game versions differ	Peliversionne eroavat
+Your games don't match	Pelinne eivät täsmää
+Your launchers aren't the same version	Käynnistysohjelmienne versiot eroavat
+Your router lets friends in from anywhere.	Reitittimesi päästää ystävät sisään mistä tahansa.
+fair	kohtalainen
+good	hyvä
+slow	hidas
 Port	Portti
-Port not opened; open port {} UDP and TCP on your router.	Porttia ei avattu; avaa reitittimestäsi portti {} UDP- ja TCP-liikenteelle.
-Round trip: {} ms · Input delay: {} frames	Meno-paluu: {} ms · Syöteviive: {} ruutua
 Start	Aloita
 The connection failed; open or join a room again.	Yhteys epäonnistui; avaa huone tai liity uudelleen.
-The host didn't answer; check the address and ask them to open the room.	Isäntä ei vastannut; tarkista osoite ja pyydä häntä avaamaan huone.
 The other player left; open or join a room again.	Toinen pelaaja poistui; avaa huone tai liity uudelleen.
 The other player stopped answering; check your connection and reconnect.	Toinen pelaaja ei enää vastaa; tarkista yhteys ja yhdistä uudelleen.
 The password doesn't match; ask the host and try again.	Salasana ei täsmää; kysy se isännältä ja yritä uudelleen.
-This address isn't valid; paste the host's IP:port.	Osoite ei kelpaa; liitä isännän IP:portti.
 This port is busy; choose another port.	Portti on käytössä; valitse toinen portti.
 This room is full; ask the host to open another room.	Huone on täynnä; pyydä isäntää avaamaan toinen huone.
-Waiting for the other player...	Odotetaan toista pelaajaa...
 You chose different games; choose the same game.	Valitsitte eri pelit; valitkaa sama peli.
 Your disc editions differ; use the same disc edition.	Levyjenne versiot eroavat; käyttäkää samaa levyversiota.
 Your game versions differ; update both games.	Peliversionne eroavat; päivittäkää molemmat pelit.
@@ -1299,8 +1380,36 @@ Your saves exceed 64 MB; remove unused saves first.	Tallennuksesi ylittävät 64
 Your systems differ; both players must allow cross-platform sessions.	Järjestelmänne eroavat; molempien on sallittava pelit eri järjestelmien välillä.
 {} FPS · Text: {} · Voices: {}	{} FPS · Teksti: {} · Äänet: {}
 This port isn't valid; choose a number from 1 to 65535.	Portti ei kelpaa; valitse luku väliltä 1–65535.
-Round trip: {} ms · Input delay: 1 frame	Meno-paluu: {} ms · Syöteviive: 1 ruutu
 The games lost sync; reopen the room and try again	Pelit eivät enää ole samassa tahdissa; avaa huone uudelleen ja yritä taas
 Your frame rates differ; choose the same frame rate	Kuvataajuutenne eroavat; valitkaa sama kuvataajuus
 The portal figures didn't match; choose your figures again in Collection	Portaalin hahmot eivät täsmää; valitse hahmosi uudelleen Kokoelmasta
 The online session ended unexpectedly; reopen the room and try again	Verkkopeli päättyi odottamatta; avaa huone uudelleen ja yritä taas
+A friend in your home can use this code instead: {}	Kotonasi oleva ystävä voi käyttää sen sijaan tätä koodia: {}
+Another program uses it. Choose another port in the Online tab, for example 47641, and send your friend the new room code.	Toinen ohjelma käyttää sitä. Valitse Online-välilehdeltä toinen portti, esimerkiksi 47641, ja lähetä ystävällesi uusi huonekoodi.
+Check the room code: ask them to copy it again.	Tarkista huonekoodi: pyydä ystävääsi kopioimaan se uudelleen.
+Get the room code	Hae huonekoodi
+Getting your room code...	Haetaan huonekoodia...
+In Room code, with the password if there is one.	Huonekoodi-kenttään, salasanan kanssa, jos sellainen on.
+In the room, copy your room code and send it to them by message, with the password if you set one.	Kopioi huoneessa huonekoodisi ja lähetä se viestillä, salasanan kanssa, jos asetit sellaisen.
+In the same home, ask your friend for the code under How to fix it in their room.	Samassa kodissa: pyydä ystävältäsi koodia hänen huoneensa kohdasta Näin korjaat ongelman.
+It looks like K7QD-M2XA: letters and digits in groups of four. Ask your friend to copy it again from their room and paste it whole.	Se näyttää tältä: K7QD-M2XA, kirjaimia ja numeroita neljän ryhmissä. Pyydä ystävääsi kopioimaan se uudelleen huoneestaan ja liittämään se kokonaan.
+Open port {} (UDP and TCP) to this computer in your router's settings: search the web for your router's name and "port forwarding".	Avaa portti {} (UDP ja TCP) tähän tietokoneeseen reitittimen asetuksista: hae verkosta reitittimesi nimeä ja "port forwarding".
+Paste your friend's room code first.	Liitä ensin ystäväsi huonekoodi.
+Room code	Huonekoodi
+Room code copied. Paste it in a message to your friend.	Huonekoodi kopioitu. Liitä se viestiin ystävällesi.
+Send your friend this room code and the password:	Lähetä ystävällesi tämä huonekoodi ja salasana:
+Send your friend this room code:	Lähetä ystävällesi tämä huonekoodi:
+The host didn't answer; check the room code and ask them to open the room.	Isäntä ei vastannut; tarkista huonekoodi ja pyydä häntä avaamaan huone.
+The one your friend sent you. An address works too.	Se, jonka ystäväsi lähetti sinulle. Myös osoite käy.
+The room code holds your friend's address. You can paste the address itself instead, like 203.0.113.4:47640.	Huonekoodi sisältää ystäväsi osoitteen. Voit myös liittää itse osoitteen, kuten 203.0.113.4:47640.
+The room code holds your public address, found with a free STUN server. Share it only with your friend.	Huonekoodi sisältää julkisen osoitteesi, joka on haettu ilmaiselta STUN-palvelimelta. Jaa se vain ystäväsi kanssa.
+They choose Join in this tab, paste your room code, then press JOIN A ROOM.	Hän valitsee tällä välilehdellä Liity, liittää huonekoodisi ja painaa LIITY HUONEESEEN.
+This room code isn't right	Huonekoodi ei ole oikein
+This room code isn't valid; ask your friend to copy it again.	Huonekoodi ei kelpaa; pyydä ystävääsi kopioimaan se uudelleen.
+Your friend opens a room and sends you its code, and the password if there is one.	Ystäväsi avaa huoneen ja lähettää sinulle sen koodin ja salasanan, jos sellainen on.
+Your internet provider shares your address with other homes, so a friend elsewhere can't reach you this way.	Internetliittymäsi tarjoaja jakaa osoitteesi muiden kotien kanssa, joten muualla oleva ystävä ei tavoita sinua näin.
+Your router didn't let your friend in by itself, so a friend elsewhere can't join yet.	Reititin ei päästänyt ystävääsi sisään itsestään, joten muualla oleva ystävä ei voi vielä liittyä.
+Your router didn't open, so this code uses IPv6. It works if your friend's internet has IPv6 too.	Reititin ei auennut, joten tämä koodi käyttää IPv6:ta. Se toimii, jos myös ystäväsi internetissä on IPv6.
+Your router isn't opened automatically: a friend elsewhere needs the port opened.	Reititintä ei avata automaattisesti: muualla oleva ystävä tarvitsee avatun portin.
+{} (you)	{} (sinä)
+Not ready yet: choosing their figures	Ei vielä valmis: valitsee hahmojaan
