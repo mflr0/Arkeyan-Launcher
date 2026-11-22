@@ -1267,3 +1267,4 @@ Saves and data	Partidas y datos
 Frees {}.	Libera {}.
 Fits {}	Va en {}
 Use the default	Usar el predeterminado
+That file is not a disc the launcher can use	Ese archivo no es un disco que el launcher pueda usar

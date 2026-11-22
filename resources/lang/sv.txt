@@ -1268,3 +1268,4 @@ Saves and data	Sparfiler och data
 Frees {}.	Frigör {}.
 Fits {}	Passar på {}
 Use the default	Använd standard
+That file is not a disc the launcher can use	Den filen är inte en skiva som launchern kan använda

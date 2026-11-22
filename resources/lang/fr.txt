@@ -1297,3 +1297,4 @@ Saves and data	Sauvegardes et données
 Frees {}.	Libère {}.
 Fits {}	Va sur {}
 Use the default	Utiliser la valeur par défaut
+That file is not a disc the launcher can use	Ce fichier n'est pas un disque que le launcher peut utiliser

@@ -4,6 +4,7 @@
 // (launcher_ui.cpp, controls_page.cpp). The video keys are the game's own copy in [<game>.video] (game_settings.h); the
 // keyboard and controller pages are in controls_page.cpp (game_keys.h).
 #include "launcher/ui/launcher_app.h"
+#include "launcher/ui/window_size.h"
 #include "launcher/env.h"
 #include "launcher/shortcut.h"
 #include "shared/collection/datadir.h"
@@ -135,11 +136,37 @@ namespace launcher_ui
 
     // ---- Picture, sound and language --------------------------------------------------------------------------------------
 
+    namespace
+    {
+        constexpr std::pair<int, int> WindowSizePresets[] = { { 1280, 720 }, { 1600, 900 }, { 1920, 1080 },
+            { 2560, 1440 } };
+
+        // App's own flag is shared by every game; this one knows which game Custom was picked for.
+        WindowSizeCustom g_windowSizeCustom;
+    }
+
+    bool IsPresetWindowSize(std::string_view value)
+    {
+        for (const auto& [w, h] : WindowSizePresets)
+            if (value == fmt::format("{}x{}", w, h))
+                return true;
+        return false;
+    }
+
+    bool ShowsCustomWindowSize(WindowSizeCustom& state, std::string_view game, std::string_view value)
+    {
+        if (state.game != game)
+            state = WindowSizeCustom{ std::string(game), false };
+        int width = 0, height = 0;
+        return WindowSizeOf(value, width, height) && (state.chosen || !IsPresetWindowSize(value));
+    }
+
     // window_size (game_settings.h): Last used (no key), four sizes, or Custom's own width and height.
     void App::DrawWindowSize(const char* video)
     {
-        static constexpr std::pair<int, int> Presets[] = { { 1280, 720 }, { 1600, 900 }, { 1920, 1080 },
-            { 2560, 1440 } };
+        const auto& Presets = WindowSizePresets;
+        if (g_windowSizeCustom.game != m_s->game.id)
+            m_windowSizeShown.clear(); // the fields are filled again from this game's value, not the last game's typing
         const std::string value = SettingGet(m_config, video, "window_size");
         int width = 0, height = 0;
         const bool sized = WindowSizeOf(value, width, height);
@@ -147,7 +174,7 @@ namespace launcher_ui
         for (size_t i = 0; i < std::size(Presets); i++)
             if (value == fmt::format("{}x{}", Presets[i].first, Presets[i].second))
                 preset = int(i);
-        const bool custom = sized && (m_windowSizeCustom || preset < 0);
+        const bool custom = ShowsCustomWindowSize(g_windowSizeCustom, m_s->game.id, value);
         auto sizeText = [](int w, int h) { return Tf("{} x {}", w, h); };
         auto setSize = [&](int w, int h) { Set(video, "window_size", fmt::format("{}x{}", w, h)); };
 
@@ -159,7 +186,7 @@ namespace launcher_ui
         {
             if (ui::SelectOption(Tr("Last used"), !sized))
             {
-                m_windowSizeCustom = false;
+                g_windowSizeCustom.chosen = false;
                 m_config[video].erase("window_size");
                 if (!SaveConfig())
                     Toast(Tr("Couldn't save the settings"), ui::ToastKind::Error);
@@ -169,12 +196,12 @@ namespace launcher_ui
                         fmt::format("{}##size{}", sizeText(Presets[i].first, Presets[i].second), i).c_str(),
                         !custom && preset == int(i)))
                 {
-                    m_windowSizeCustom = false;
+                    g_windowSizeCustom.chosen = false;
                     setSize(Presets[i].first, Presets[i].second);
                 }
             if (ui::SelectOption(Tr("Custom"), custom))
             {
-                m_windowSizeCustom = true;
+                g_windowSizeCustom.chosen = true;
                 if (!sized)
                     setSize(Presets[0].first, Presets[0].second);
             }

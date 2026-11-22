@@ -1268,3 +1268,4 @@ Saves and data	Lagringer og data
 Frees {}.	Frigjør {}.
 Fits {}	Passer på {}
 Use the default	Bruk standard
+That file is not a disc the launcher can use	Den filen er ikke en plate launcheren kan bruke

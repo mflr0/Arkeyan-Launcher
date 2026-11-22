@@ -14,6 +14,7 @@
 #include "launcher/report.h"
 #include "launcher/shortcut.h"
 #include "launcher/ui/launcher_app.h"
+#include "launcher/ui/window_size.h"
 #include "shared/collection/datadir.h"
 #include "shared/collection/save_backup.h"
 #include "shared/collection/game_data.h"
@@ -282,6 +283,20 @@ namespace
             SETTINGS_EXPECT(WindowSizeOf("300x200", width, height) && width == 640 && height == 360);
             for (const char* odd : { "", "0x0", "abc", "1600", "x900", "1600x", "-1x5", "1600x900x1" })
                 SETTINGS_EXPECT(!WindowSizeOf(odd, width, height));
+        }
+        // Custom picked in one game's Picture tab stays that game's: another game on a preset shows the preset.
+        {
+            using launcher_ui::ShowsCustomWindowSize;
+            launcher_ui::WindowSizeCustom custom;
+            SETTINGS_EXPECT(!ShowsCustomWindowSize(custom, "ssa", "1920x1080"));
+            custom.chosen = true; // Custom picked for SSA, still on a preset value
+            SETTINGS_EXPECT(ShowsCustomWindowSize(custom, "ssa", "1920x1080"));
+            SETTINGS_EXPECT(!ShowsCustomWindowSize(custom, "giants", "1920x1080"));
+            SETTINGS_EXPECT(!ShowsCustomWindowSize(custom, "giants", "")); // Last used
+            SETTINGS_EXPECT(ShowsCustomWindowSize(custom, "giants", "1700x950")); // no preset matches
+            SETTINGS_EXPECT(!ShowsCustomWindowSize(custom, "ssa", "1920x1080")); // back on SSA: its saved preset
+            SETTINGS_EXPECT(
+                launcher_ui::IsPresetWindowSize("2560x1440") && !launcher_ui::IsPresetWindowSize("1700x950"));
         }
 
         // A resolution scale the page does not offer (hand-edited) is shown as Auto and the game gets Auto too (issue #9, S-26).

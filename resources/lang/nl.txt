@@ -1267,3 +1267,4 @@ Saves and data	Savegames en gegevens
 Frees {}.	Maakt {} vrij.
 Fits {}	Past op {}
 Use the default	Standaard gebruiken
+That file is not a disc the launcher can use	Dit bestand is geen schijf die de launcher kan gebruiken

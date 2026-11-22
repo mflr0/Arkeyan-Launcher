@@ -879,6 +879,7 @@ namespace launcher_ui
         void Screenshot(const char* name);
         void TestScript();
         void TestScreensScript(uint64_t now);
+        void TestHomeDiscChecks(); // a disc given on Home, and the captures a page or game change ends
         void TestInstallScript(uint64_t now);
         void TestUpdateScript(uint64_t now);
         void TestNavScript(uint64_t now);
@@ -939,7 +940,6 @@ namespace launcher_ui
         int m_gameSectionScroll = 0; // frames left to bring the linked section into view (its size needs one)
         // Window size: Custom chosen (it stays shown on a preset value), and the width and height being typed, filled from
         // the saved value each time it changes (`m_windowSizeShown`).
-        bool m_windowSizeCustom = false;
         std::string m_windowSizeShown;
         char m_windowSizeText[2][6] = {};
         bool m_autoPlay = false; // --play: start the game as soon as it is ready (a desktop shortcut)
