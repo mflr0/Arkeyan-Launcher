@@ -247,6 +247,11 @@ Couldn't write to the game folder.	Kunne ikke skrive til spilmappen.
 Create	Opret
 Create the profile	Opret profilen
 Create the {} starter pack	Opret startpakken til {}
+No {} Skylanders yet	Ingen Skylanders fra {} endnu
+Create starter pack	Opret startpakken
+The starter pack is in your collection	Startpakken er i din samling
+Already in your collection	Allerede i din samling
+Couldn't create the starter pack	Startpakken kunne ikke oprettes
 Create {}	Opret {}
 Created {}	{} oprettet
 Creation Crystals	Skabelseskrystaller

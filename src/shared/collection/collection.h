@@ -145,6 +145,27 @@ namespace collection
     // Returns how many.
     int CreateMissing(const std::vector<uint16_t>& types);
 
+    // --- The starter pack of a game (Game::starter) ----------------------------------------------------------------------
+
+    // The variant a figure of the pack is made with: its own, else the toy's standard one.
+    uint16_t StarterVariant(const StarterFigure& starter);
+    // What the box holds, by name, for a button or a banner ("Wash Buckler", a swapper without its half).
+    std::vector<std::string> StarterPackNames(const std::string& game);
+    // Whether `figures` hold a character that first came with the game: a toy that one of its players' places takes
+    // (not a vehicle, not a swapper's bottom alone). The untouched starters do not count.
+    bool HasCharacterOf(const std::string& game, const std::vector<Figure>& figures);
+    // Whether the game's starter pack is offered: it has one, the player has no character of the game, and no real
+    // portal is in use (those players play with their own toys).
+    bool OffersStarterPack(const std::string& game, const std::vector<Figure>& figures, bool realPortal);
+    struct StarterPackResult
+    {
+        int made = 0; // figures created (a swapper counts once)
+        int failed = 0; // figures that could not be created
+    };
+    // Creates the figures of the game's pack that `figures` lack (the same toy and variant; a swapper by its top; the
+    // untouched starters do not count). The portal is left as it is.
+    StarterPackResult CreateStarterPack(const std::string& game, const std::vector<Figure>& figures);
+
     // Writes progress into the dump (both areas, docs/runtime/host/figures.md). Refused while another process uses it.
     bool WriteStats(const std::string& path, const figures::FigureStats& stats, std::string* error = nullptr);
     // Trap Team: makes `villain` (1-46) the trap's selected villain and sets whether it is evolved, keeping the other

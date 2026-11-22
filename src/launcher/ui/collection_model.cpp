@@ -508,6 +508,13 @@ namespace launcher_ui
         return game != nullptr && !SessionFile(*game).empty() && RunningGame() != gameId;
     }
 
+    bool CollectionModel::ShowsStarterBanner(bool realPortal, bool choosing) const
+    {
+        const bool owns = std::any_of(figures.begin(), figures.end(),
+            [](const collection::Figure& figure) { return !collection::UntouchedStarter(figure); });
+        return owns && !choosing && collection::OffersStarterPack(gameId, figures, realPortal);
+    }
+
     bool CollectionModel::Incompatible(const collection::Figure& figure) const
     {
         return figure.toy != nullptr && !gameId.empty() && !collection::Catalogue::Get().Accepts(gameId, figure.type);

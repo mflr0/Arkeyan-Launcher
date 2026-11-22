@@ -164,6 +164,22 @@ namespace collection
                 game.acceptsGames.push_back(id.AsString());
             for (const Json& type : item["rejects"].Items())
                 game.rejects.push_back(uint16_t(type.AsInt()));
+            for (const Json& entry : item["starter"].Items())
+            {
+                // "<type>" or "<type>:<variant id>"
+                const std::string& key = entry.AsString();
+                char* end = nullptr;
+                StarterFigure starter;
+                starter.type = uint16_t(strtoul(key.c_str(), &end, 0));
+                if (end == key.c_str())
+                {
+                    error = "a starter figure needs a toy type in " + game.id;
+                    return false;
+                }
+                if (*end == ':')
+                    starter.variant = uint16_t(strtoul(end + 1, nullptr, 0));
+                game.starter.push_back(starter);
+            }
             for (const Json& entry : item["seats"].Items())
             {
                 Seat seat;

@@ -248,6 +248,11 @@ Couldn't write to the game folder.	Pelikansioon ei voitu kirjoittaa.
 Create	Luo
 Create the profile	Luo profiili
 Create the {} starter pack	Luo pelin {} aloituspaketti
+No {} Skylanders yet	Ei vielä Skylandereita pelistä {}
+Create starter pack	Luo aloituspaketti
+The starter pack is in your collection	Aloituspaketti on kokoelmassasi
+Already in your collection	Jo kokoelmassasi
+Couldn't create the starter pack	Aloituspakettia ei voitu luoda
 Create {}	Luo: {}
 Created {}	Luotu: {}
 Creation Crystals	Luomiskristallit
