@@ -765,6 +765,7 @@ namespace launcher_ui
         void RefreshInstall();
         bool NeedsInstall() const;
         bool NeedsInstall(const GameSlot& slot) const;
+        bool GameInstalled(std::string_view id) const; // built, or the player's own runtime; never makes a slot
         bool Installing() const
         {
             return m_s->installer.Running() || m_s->kitDownload.Running() || m_s->installAfterCheck;

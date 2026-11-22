@@ -426,6 +426,27 @@ namespace launcher_ui
                 expect(page.m_model.seats[0] == gill && page.m_model.seats[2] == anvil && page.m_swapFrom < 0,
                     "a seat that refuses the figure keeps its own");
             }
+            else if (mode == "add-later")
+            {
+                // A later game's figure reads "needs Giants" until Giants is installed, then as the game's own do.
+                page.OpenAdd();
+                const collection::Toy* giantsToy = nullptr;
+                for (const collection::Toy& toy : collection::Catalogue::Get().Toys())
+                    if (toy.game == "giants" && !collection::Catalogue::Get().Accepts("ssa", toy.type))
+                    {
+                        giantsToy = &toy;
+                        break;
+                    }
+                expect(giantsToy != nullptr, "a Giants toy that Spyro's Adventure does not read");
+                if (giantsToy == nullptr)
+                    return 1;
+                const std::string needs = AddToyRequirement(*giantsToy);
+                expect(page.AddToyLine(*giantsToy, 1) == needs, "not installed: the card says what it needs");
+                app.SlotFor(*FindGame("giants")).installed.runtime = (root / "giants-runtime").string();
+                const std::string line = page.AddToyLine(*giantsToy, 1);
+                expect(line != needs && line.ends_with("not owned"), "installed: the card shows what is owned");
+                expect(page.AddToyLine(*giantsToy, 0).ends_with("not owned"), "a game's own figure is unchanged");
+            }
             else if (mode == "seat-add")
             {
                 // An empty seat's + opens Add a figure for that seat, and the figure made there goes straight onto it;

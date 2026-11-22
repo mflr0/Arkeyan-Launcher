@@ -184,6 +184,10 @@ namespace launcher_ui
         int CountAddOwned(uint16_t type, int variant, const std::string& edition) const;
         const collection::Toy* DrawAddGrid(ImVec2 size, const std::string& search);
         bool DrawAddToy(const collection::Toy& toy, int pass, float cell, const std::string& search);
+        // A card's caption: what a later game's toy needs (pass 1) until that game is installed, else the category and
+        // how many are owned.
+        bool AddToyNeedsGame(const collection::Toy& toy, int pass) const;
+        std::string AddToyLine(const collection::Toy& toy, int pass) const;
         void DrawAddVersions(const collection::Toy* chosen, float listH);
         void DrawAddFooter(const collection::Toy* chosen);
         void CreateAddFigure(const collection::Toy* chosen, const std::string& versionName);

@@ -254,15 +254,9 @@ namespace launcher_ui
             IsSwapper(toy) ? WithoutHalf(toy.name) : toy.name,
             room - (more.empty() ? 0 : ui::BadgeSize(more.c_str()).x + ui::space::XS));
         const float lineY = end.y - ui::space::XS - ui::type::Caption;
-        const int owns = CountAddOwned(toy.type, -1, {});
-        std::string line = pass == 1   ? AddToyRequirement(toy)
-                           : owns == 0 ? std::string(Tr("not owned"))
-                           : owns == 1 ? std::string(Tr("owned"))
-                                       : Tf("owned x{}", owns);
-        if (const std::string title = collection::CategoryTitle(toy.category); pass == 0 && !title.empty())
-            line = std::string(Tr(title.c_str())) + " \xC2\xB7 " + line;
         PutText(draw, ImVec2(textX, lineY), ui::TextStyle::Caption, false,
-            pass == 0 && owns > 0 ? ui::color::Success : ui::color::Dim, line, room);
+            !AddToyNeedsGame(toy, pass) && CountAddOwned(toy.type, -1, {}) > 0 ? ui::color::Success : ui::color::Dim,
+            AddToyLine(toy, pass), room);
         if (!more.empty()) // it has versions: a small badge, the count
         {
             const ImVec2 size = ui::BadgeSize(more.c_str());
@@ -270,6 +264,24 @@ namespace launcher_ui
                 more.c_str(), ui::color::AccentFill, ui::color::OnAccent);
         }
         return selected;
+    }
+
+    bool CollectionPage::AddToyNeedsGame(const Toy& toy, int pass) const
+    {
+        return pass == 1 && !m_app.GameInstalled(toy.game);
+    }
+
+    std::string CollectionPage::AddToyLine(const Toy& toy, int pass) const
+    {
+        if (AddToyNeedsGame(toy, pass))
+            return AddToyRequirement(toy);
+        const int owns = CountAddOwned(toy.type, -1, {});
+        std::string line = owns == 0   ? std::string(Tr("not owned"))
+                           : owns == 1 ? std::string(Tr("owned"))
+                                       : Tf("owned x{}", owns);
+        if (const std::string title = collection::CategoryTitle(toy.category); !title.empty())
+            line = std::string(Tr(title.c_str())) + " \xC2\xB7 " + line;
+        return line;
     }
 
     const Toy* CollectionPage::DrawAddGrid(ImVec2 size, const std::string& search)
