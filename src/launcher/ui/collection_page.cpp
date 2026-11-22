@@ -1039,9 +1039,11 @@ namespace launcher_ui
             ImGui::EndDragDropTarget();
         }
         HandleShortcuts();
-        if (pad)
-            ui::PageLegend(Tr("Back"), width, true); // with the page's pad actions (HandleShortcuts)
+        if (pad) // the legend's room in the column
+            ImGui::Dummy(ImVec2(width, ui::height::Normal));
         ImGui::EndChild();
+        if (pad)
+            m_app.DrawFootLegend(); // with the page's pad actions (HandleShortcuts)
 
         DrawSwapQuestion();
         DrawOverlay();

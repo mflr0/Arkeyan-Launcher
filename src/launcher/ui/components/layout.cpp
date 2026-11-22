@@ -58,14 +58,14 @@ namespace ui
         const ImVec2 centre(at.x + height::Normal / 2, at.y + height::Normal / 2);
         ImDrawList* draw = ImGui::GetWindowDrawList();
         if (active)
-            draw->AddCircleFilled(centre, height::Normal / 2, Col(color::AccentFill));
+            draw->AddCircleFilled(centre, height::Normal / 2, Col(Ctx().accent));
         else
             draw->AddCircle(centre, height::Normal / 2, Col(color::Edge), 0, stroke::Hairline);
         const std::string value = std::to_string(number);
         PushText(TextStyle::Label, true);
         DrawText(draw,
             ImVec2(centre.x - ImGui::CalcTextSize(value.c_str()).x / 2, centre.y - CapMiddle(TextStyle::Label, true)),
-            Col(active ? color::OnAccent : color::InkSoft), value.c_str());
+            Col(active ? InkOn(Ctx().accent, color::OnAccent) : color::InkSoft), value.c_str());
         PopText();
         ImGui::SetCursorScreenPos(ImVec2(at.x + lead, at.y));
         Text(TextStyle::Label, title, color::Ink, textWidth, true);

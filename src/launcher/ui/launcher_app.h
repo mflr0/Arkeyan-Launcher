@@ -754,6 +754,8 @@ namespace launcher_ui
         float m_columnWidth = 0;
         // `legend`: while a pad is in use the column leaves the foot of the page to a PadLegend (A Select, B Back), drawn by EndPageColumn.
         void BeginPageColumn(const char* id, float width, bool alwaysScrollbar = false, bool legend = false);
+        void DrawFootLegend(); // the pad legend at the window's foot, edge to edge
+        bool m_columnScrolls = true; // last frame, the settings column had something to scroll
         void EndPageColumn();
         // A settings row's select: the choices' labels, the value in [section] key; the control column's width.
         bool SettingSelect(

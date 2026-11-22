@@ -168,9 +168,9 @@ namespace launcher_ui
                                  : (missing ? Tf("{0} is missing a file: {1}", name, first.path)
                                             : Tf("A file of {0} was changed: {1}", name, first.path));
         if (finding.problems.size() == 2)
-            what += " " + std::string(Tr("And 1 other file."));
+            what += ". " + std::string(Tr("And 1 other file."));
         else if (finding.problems.size() > 2)
-            what += " " + Tf("And {} other files.", finding.problems.size() - 1);
+            what += ". " + Tf("And {} other files.", finding.problems.size() - 1);
         const std::string how = chosen  ? Tr("These are your own game tools: restore the file, or set them up again.")
                                 : isKit ? Tr("Repair downloads the game tools again.")
                                         : Tr("Repair builds the game again from your disc.");

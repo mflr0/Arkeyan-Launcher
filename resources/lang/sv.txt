@@ -583,7 +583,6 @@ Not enough space: {} needed, {} free.	Inte tillräckligt med utrymme: {} behövs
 Not for this game	Annat spel
 Not for {}	Inte för {}
 Not in the catalog. Name one to show it.	Finns inte i katalogen. Namnge en för att visa den.
-Not installed yet	Inte installerat ännu
 Not needed: the game plays from its copied data.	Behövs inte: spelet körs från sin kopierade data.
 Not now	Inte nu
 Not played yet	Inte spelat ännu

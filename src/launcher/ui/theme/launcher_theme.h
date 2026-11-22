@@ -43,8 +43,9 @@ namespace LauncherTheme
     inline constexpr unsigned TextDim =
         0xB8B8C4; // was 0x9C9CA8: 4.1:1 on the raised greys, now 4.5:1 or more (docs/launcher_ui.md, Legibility)
 
-    // One accent everywhere, the blue of the main button (close to the Skylanders logo's sky blue): selections,
-    // toggles, sliders, focus. The only other accent is the orange bar marking the selected row of the sidebar.
+    // The launcher's accent, the blue of the main button (close to the Skylanders logo's sky blue): toggles, sliders, and
+    // on its own pages the tabs, bars and focus, which wear the game's colour on a game's pages. The sidebar's selected
+    // row has its game's colour, or the orange bar for Collection and Settings.
     inline constexpr unsigned Accent = 0x6BBAFF;
     inline constexpr unsigned AccentHover = 0x8ECBFF;
     inline constexpr unsigned AccentDark = 0x2F86E0; // bevel under accent buttons, lines marking a selection

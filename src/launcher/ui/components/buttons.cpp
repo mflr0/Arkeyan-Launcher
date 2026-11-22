@@ -450,8 +450,7 @@ namespace ui
                 Col(ink, options.enabled || busy ? 1 : DisabledAlpha));
             ImGui::PopFont();
             if (options.progress >= 0 || options.indeterminate)
-                DrawProgress(
-                    draw, at, end, radius::Card, 0, color::AccentFill, options.progress, options.indeterminate);
+                DrawProgress(draw, at, end, radius::Card, 0, Ctx().accent, options.progress, options.indeterminate);
             FocusRingIf(state, radius::Card);
 
             const ImVec2 gearAt(end.x + space::S, at.y), gearEnd(gearAt.x + height::MainGear, end.y);

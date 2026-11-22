@@ -277,8 +277,6 @@ namespace launcher_ui
                 OpenFolder(std::filesystem::path(std::u8string(path.begin(), path.end())));
             }
         }
-        ImGui::Dummy(ImVec2(0, ui::space::XS));
-        ui::Text(ui::TextStyle::Caption, collection::Folder().c_str(), ui::color::Dim);
     }
 
     void CollectionPage::DrawUnknown()

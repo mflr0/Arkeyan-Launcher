@@ -580,7 +580,6 @@ Not enough space: {} needed, {} free.	Nicht genug Platz: {} nötig, {} frei.
 Not for this game	Passt nicht
 Not for {}	Nicht für {}
 Not in the catalog. Name one to show it.	Nicht im Katalog. Gib einen Namen ein, um sie anzuzeigen.
-Not installed yet	Noch nicht installiert
 Not needed: the game plays from its copied data.	Nicht nötig: Das Spiel läuft von seinen kopierten Daten.
 Not now	Nicht jetzt
 Not played yet	Noch nicht gespielt

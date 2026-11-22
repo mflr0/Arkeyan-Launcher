@@ -4,6 +4,9 @@
 #include "launcher/ui/collection_page.h"
 #include "launcher/ui/components/feedback.h"
 #include "launcher/ui/components/inputs.h"
+#include "launcher/ui/components/layout.h"
+#include "launcher/ui/launcher_ui.h"
+#include "launcher/ui/theme/launcher_theme.h"
 #include "launcher/ui/components/lucide.h"
 #include "shared/embedded_fonts.h"
 #include <SDL3/SDL.h>
@@ -200,6 +203,37 @@ int UiRenderChecks(const std::filesystem::path& scratch)
             }
         }
         i18n::SetLanguage(language);
+        // A game's pages wear its colour: the tab's line, the step in progress and the bar.
+        const unsigned savedAccent = ui::Ctx().accent;
+        constexpr unsigned GameColour = 0x12B456;
+        ui::Ctx().accent = GameColour;
+        auto coloured = [&](ImDrawList* draw, int first) {
+            for (int v = first; v < draw->VtxBuffer.Size; v++)
+                if (draw->VtxBuffer[v].col == ui::Col(GameColour))
+                    return true;
+            return false;
+        };
+        drawTabs(plain, ui::Glyphs::Keyboard, [&](ImDrawList* draw, int first) {
+            expect(coloured(draw, first), "the selected tab's line wears the game's colour");
+            int from = draw->VtxBuffer.Size;
+            ui::GuideStep(1, "One", "Six", 300, true);
+            expect(coloured(draw, from), "the step in progress wears the game's colour");
+            from = draw->VtxBuffer.Size;
+            ui::ProgressBar(0.5f, 300, false);
+            expect(coloured(draw, from), "a progress bar wears the game's colour");
+        });
+        ui::Ctx().accent = savedAccent;
+        // The sidebar's badges are their games' colours, Imaginators the deep blue of its card beside Spyro's sky blue.
+        for (const LauncherGameEntry& entry : LauncherGameCatalog({}))
+        {
+            if (!entry.enabled)
+                continue;
+            const LauncherTheme::GameStyle& style = LauncherTheme::StyleOf(entry.id);
+            const unsigned wanted = std::string(entry.id) == "imaginators" ? style.bottom : style.glow;
+            expect(entry.accent == wanted, "a game's badge has the game's colour");
+            expect(ui::Contrast(entry.accent, ui::InkOn(entry.accent, LauncherTheme::BadgeInk)) >= 4.5f,
+                "a badge's initials read on its colour");
+        }
         ui::Ctx().glyphs = savedGlyphs;
     }
     ui::Ctx().fonts = savedFonts;

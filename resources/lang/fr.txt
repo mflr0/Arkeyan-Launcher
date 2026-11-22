@@ -955,7 +955,6 @@ yesterday	hier
 On the portal	Sur le portail
 Live	En direct
 {} · empty	{} · libre
-Not installed yet	Pas encore installé
 Installing · {}	Installation · {}
 Ready · {} played	Prêt · {} de jeu
 Show the game	Afficher le jeu

@@ -1525,9 +1525,17 @@ namespace launcher_ui
         m_columnAt = ImGui::GetCursorScreenPos();
         m_columnWidth = width;
         const float legendH = m_columnLegend ? ui::height::Normal + ImGui::GetStyle().ItemSpacing.y : 0;
+        // alwaysScrollbar keeps the bar's room (the card is as wide on every tab), but nothing to scroll shows no bar.
+        const bool hideBar = alwaysScrollbar && !m_columnScrolls;
+        if (hideBar)
+            for (ImGuiCol part : { ImGuiCol_ScrollbarBg, ImGuiCol_ScrollbarGrab, ImGuiCol_ScrollbarGrabHovered,
+                     ImGuiCol_ScrollbarGrabActive })
+                ImGui::PushStyleColor(part, IM_COL32(0, 0, 0, 0));
         ui::BeginRoomyChild(id, ImVec2(width, ImGui::GetContentRegionAvail().y + below - Bleed - legendH),
             ImGuiChildFlags_NavFlattened,
             ImGuiWindowFlags_NoBackground | (alwaysScrollbar ? ImGuiWindowFlags_AlwaysVerticalScrollbar : 0), Bleed);
+        if (hideBar)
+            ImGui::PopStyleColor(4);
         ImGui::SetScrollX(0.0f);
         m_columnBelow = below;
     }
@@ -1535,12 +1543,25 @@ namespace launcher_ui
     void App::EndPageColumn()
     {
         ImGui::Dummy(ImVec2(0, m_columnBelow));
+        m_columnScrolls = ImGui::GetScrollMaxY() > 0.5f;
         ui::EndRoomyChild();
         if (m_columnLegend)
-        {
-            ImGui::SetCursorScreenPos(ImVec2(m_columnAt.x, ImGui::GetCursorScreenPos().y));
-            ui::PageLegend(Tr("Back"), m_columnWidth, true);
-        }
+            DrawFootLegend();
+    }
+
+    void App::DrawFootLegend()
+    {
+        // At the window's foot, edge to edge over the page's padding, as on Home and a game's page. It adds nothing to
+        // the page's content: the page never scrolls for it.
+        ImGuiWindow* window = ImGui::GetCurrentWindow();
+        const ImVec2 cursor = window->DC.CursorPos, content = window->DC.CursorMaxPos;
+        const ImVec2 at = ImGui::GetWindowPos(), size = ImGui::GetWindowSize();
+        ImGui::PushClipRect(at, ImVec2(at.x + size.x, at.y + size.y), false);
+        ImGui::SetCursorScreenPos(ImVec2(at.x, at.y + size.y - ui::height::Normal));
+        ui::PageLegend(Tr("Back"), size.x, true);
+        ImGui::PopClipRect();
+        window->DC.CursorPos = cursor;
+        window->DC.CursorMaxPos = content;
     }
 
     void App::BeginCard(const char* id, ImVec2 size, ImGuiChildFlags flags)
@@ -1779,7 +1800,8 @@ namespace launcher_ui
             if (c == entry.name || c[-1] == ' ')
                 letters[letters[0] == 0 ? 0 : 1] = *c;
         const ImVec2 extent = ImGui::CalcTextSize(letters);
-        draw->AddText(ImVec2(centre.x - extent.x / 2, centre.y - extent.y / 2), Rgb(BadgeInk), letters);
+        const unsigned ink = entry.enabled ? ui::InkOn(entry.accent, BadgeInk) : BadgeInk;
+        draw->AddText(ImVec2(centre.x - extent.x / 2, centre.y - extent.y / 2), Rgb(ink), letters);
         ImGui::PopFont();
     }
 
@@ -2333,7 +2355,7 @@ namespace launcher_ui
         else
             ui::HeroHeading(draw, titleAt, ImVec2(titleW, titleH), "Skylanders", shortName);
 
-        std::string status = play.noDisc ? Tr("Not installed yet") : play.running ? Tr("Playing now") : play.slot.text;
+        std::string status = play.running ? Tr("Playing now") : play.slot.text;
         if (play.running)
         {
             const uint64_t now = SDL_GetTicks();
@@ -2366,7 +2388,7 @@ namespace launcher_ui
             ui::Text(ui::TextStyle::Body, status.c_str(), ui::color::InkSoft, -1);
         }
         else
-            ui::StatusLine(play.noDisc ? ui::Status::Warning : StatusOf(play.slot.state), status.c_str(), leftW,
+            ui::StatusLine(StatusOf(play.slot.state), status.c_str(), leftW,
                 IconOf(play.slot.state)); // the sidebar's and Home's icon
 
         return status;
@@ -3172,7 +3194,7 @@ namespace launcher_ui
         ui::NewFrame(SDL_GetTicks());
         // On the dark panels the game's glow reads as a ring, a tab bar or a switch only when bright enough: a dark one (Trap
         // Team's red) is lightened toward white until it reaches 4.5:1 on the panels.
-        ui::Ctx().accent = m_page == Page::Play || m_page == Page::GameSettings ? ReadableAccent(m_s->game.id) : Accent;
+        ui::Ctx().accent = m_page == Page::Play || GameSubPage(m_page) ? ReadableAccent(m_s->game.id) : Accent;
         ui::Ctx().reduceMotion = ReduceMotion();
         // The shown game's menu theme plays on its page only; it fades out when a game starts.
         m_music.Update(gamemusic::Playback{ .game = m_s != nullptr ? m_s->game.id : std::string(),
@@ -5131,14 +5153,16 @@ void LauncherTheme::Apply(ImGuiStyle& style)
 std::span<const LauncherGameEntry> LauncherGameCatalog(const LauncherConfig& config)
 {
     // The names are game_names.h's (the short one: the sidebar's rows).
+    // A badge is its game's colour; Imaginators takes its card's deep blue, apart from Spyro's Adventure's sky blue.
     static const LauncherGameEntry catalog[] = {
-        { "ssa", GameName("ssa", GameNameForm::Short), 0x6BBAFF, true },
-        { "giants", GameName("giants", GameNameForm::Short), 0xFFC65C, true },
-        { "swapforce", GameName("swapforce", GameNameForm::Short), 0xFF55A8, true },
-        { "trapteam", GameName("trapteam", GameNameForm::Short), 0x6DF0B4, true },
-        { "superchargers", GameName("superchargers", GameNameForm::Short), 0xFF8A5C, true },
+        { "ssa", GameName("ssa", GameNameForm::Short), LauncherTheme::SpyrosAdventureStyle.glow, true },
+        { "giants", GameName("giants", GameNameForm::Short), LauncherTheme::GiantsStyle.glow, true },
+        { "swapforce", GameName("swapforce", GameNameForm::Short), LauncherTheme::SwapForceStyle.glow, true },
+        { "trapteam", GameName("trapteam", GameNameForm::Short), LauncherTheme::TrapTeamStyle.glow, true },
+        { "superchargers", GameName("superchargers", GameNameForm::Short), LauncherTheme::SuperChargersStyle.glow,
+            true },
         { "racing", GameName("racing", GameNameForm::Short), 0xE85D75, false },
-        { "imaginators", GameName("imaginators", GameNameForm::Short), 0xB49BFF, true },
+        { "imaginators", GameName("imaginators", GameNameForm::Short), LauncherTheme::ImaginatorsStyle.bottom, true },
         { "cloudpatrol", GameName("cloudpatrol", GameNameForm::Short), 0x7FD4FF, false },
         { "lostislands", GameName("lostislands", GameNameForm::Short), 0x7BD88F, false },
     };

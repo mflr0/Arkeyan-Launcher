@@ -583,7 +583,6 @@ Not enough space: {} needed, {} free.	Tilaa ei ole tarpeeksi: tarvitaan {}, vapa
 Not for this game	Ei tälle pelille
 Not for {}	Ei pelille {}
 Not in the catalog. Name one to show it.	Ei luettelossa. Nimeä se, niin se näkyy.
-Not installed yet	Ei vielä asennettu
 Not needed: the game plays from its copied data.	Ei tarvita: peli toimii kopioiduilla tiedoillaan.
 Not now	Ei nyt
 Not played yet	Ei vielä pelattu

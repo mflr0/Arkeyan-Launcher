@@ -372,6 +372,12 @@ portal names prominent and empty seats as tall as occupied ones, without changin
 
 ## Consistency
 Phase B applies these on every screen it touches.
+- **A game's colour**: its sidebar badge is its `GameStyle::glow` (Imaginators its `bottom`, the deep blue of its card, apart
+  from Spyro's Adventure's sky blue), the initials white or dark, whichever reads. On that game's pages the selected tab's
+  line, the step in progress, the progress bars and the focus ring wear it too (`Context::accent`); switches, sliders and
+  primary buttons keep the launcher's blue.
+- **The pad legend** is at the window's foot, edge to edge, on every page (`App::DrawFootLegend`). A settings page keeps
+  its scrollbar's room on every tab and shows the bar only with something to scroll.
 - **Game names**: `GameName(id, GameNameForm::Full | Short)` (`game_names.h`) is the only source. The **full** name
   ("Skylanders: Giants") in titles, headers, Home's cards, messages, dialogs and file names; the **short** one ("Giants")
   where room is tight: the sidebar's rows, chips, filters, a select's rows, the coming-later list, a logo's stand-in. All
@@ -700,7 +706,7 @@ The portal column narrows from 400 to 264 points at small window sizes; longer n
 - **Ready**: the logo or name, Ready to play (with the recorded play time and last-played date when available), Play,
   a separate settings button, and the device and portal pills below. Change disc remains available at the top; copied
   game data continues to use the existing Disc settings. The achievements pill still opens Achievements.
-- **Needs a disc**: Not installed yet, Choose disc and settings; the hint explains window-wide .iso dropping and local
+- **Needs a disc**: Needs your disc (the sidebar's words), Choose disc and settings; the hint explains window-wide .iso dropping and local
   reading. The right card gives Choose your disc, Install (the existing time and space estimates), and Play.
 - **Installing**: the title stays visible, with the current checklist step, overall percentage and progress bar, four
   milestones, Cancel, Show details and settings. The milestones collect tools/disc, recompilation, shaders, and the

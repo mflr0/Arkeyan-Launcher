@@ -582,7 +582,6 @@ Not enough space: {} needed, {} free.	Ikke nok plads: {} kræves, {} ledig.
 Not for this game	Ikke til dette spil
 Not for {}	Ikke til {}
 Not in the catalog. Name one to show it.	Ikke i kataloget. Giv den et navn for at vise den.
-Not installed yet	Ikke installeret endnu
 Not needed: the game plays from its copied data.	Ikke nødvendigt: Spillet kører fra sine kopierede data.
 Not now	Ikke nu
 Not played yet	Ikke spillet endnu

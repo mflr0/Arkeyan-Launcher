@@ -583,7 +583,6 @@ Not enough space: {} needed, {} free.	Ikke nok plass: {} trengs, {} ledig.
 Not for this game	Annet spill
 Not for {}	Ikke for {}
 Not in the catalog. Name one to show it.	Ikke i katalogen. Gi den et navn for å vise den.
-Not installed yet	Ikke installert ennå
 Not needed: the game plays from its copied data.	Ikke nødvendig: spillet kjører fra de kopierte dataene.
 Not now	Ikke nå
 Not played yet	Ikke spilt ennå

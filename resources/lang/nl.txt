@@ -582,7 +582,6 @@ Not enough space: {} needed, {} free.	Niet genoeg ruimte: {} nodig, {} vrij.
 Not for this game	Past hier niet
 Not for {}	Niet voor {}
 Not in the catalog. Name one to show it.	Niet in de catalogus. Geef een naam om het te tonen.
-Not installed yet	Nog niet geïnstalleerd
 Not needed: the game plays from its copied data.	Niet nodig: het spel draait vanaf zijn gekopieerde gegevens.
 Not now	Niet nu
 Not played yet	Nog niet gespeeld
