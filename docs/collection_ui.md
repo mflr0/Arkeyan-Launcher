@@ -123,7 +123,10 @@ At the first visit to the page (`CollectionPage::Open`):
   X; tooltip "Add a figure") opens Add a figure for that seat (`OpenAdd(seat)`, `m_addSeat`); the rest of the tile still
   chooses. The figure **Create** makes there goes straight onto the seat and Add a figure closes; one the seat refuses
   (`Refusal`) stays off it, with the footer's "Put it on ..." as before. Add a figure opened any other way puts nothing
-  on a seat. The pad's X on a focused empty seat does the same. Check: `ArkeyanLauncherTest`'s `seat-add` review.
+  on a seat. The pad's X on a focused empty seat does the same. The list opens on what the seat takes (#254): the Type
+  Select's first row "Fits <seat>" (`m_addFits`, `SeatTakes`), chosen; "All types" and the single types below it widen
+  it. Every opening resets the type: from a seat "Fits <seat>", from anywhere else All types. Check:
+  `ArkeyanLauncherTest`'s `seat-add` review, the screenshot `70-add-for-trap-seat`.
 - **Dragging** (#181, as the game's Toy Box): the figure's picture follows the pointer, a little transparent; the seats
   that would refuse it are greyed out, with the rule of the toast a drop would show (`CollectionPage::Refusal`, shared
   with `PutOn`), and the seat under the pointer is outlined. A tile dragged onto an empty seat moves there; a player onto
@@ -215,7 +218,8 @@ At the first visit to the page (`CollectionPage::Open`):
   levels; Giants 1-15 on the first two parts of the experience; Swap Force 1-20, the game's own table), experience, Giants' **hat picker** (52 names, a Select), gold, hero points (text fields that take digits), the nickname the game shows.
   Save re-reads the figure and writes only the fields changed (a game may have played it meanwhile); a name alone
   writes no stats (and makes no backup).
-- **Add a figure** (a Modal, Large): a game Select (the six games), a SearchField, a **Type** Select (as the bar's), one wide
+- **Add a figure** (a Modal, Large): a game Select (the six games), a SearchField, a **Type** Select (as the bar's, led by
+  "Fits <seat>" when opened from a seat's `+`), one wide
   card per character, as the Toy Box's: the element and type icons in a column, the picture, the name with the versions'
   "+3" badge, then "Trap Master · owned x2" ("not owned", "owned"). The toys the game reads first, under "Works in <game>",
   in the Toy Box's sections (each element, Kaos, then Minis, Traps, Vehicles, Creation Crystals, Magic Items, Adventure

@@ -63,6 +63,7 @@ All elements	Alle elementen
 All games	Alle spellen
 All games are updated	Alle spellen zijn bijgewerkt
 All types	Alle typen
+Fits {}	Past op {}
 Also delete my saves and my figures	Ook mijn savegames en figuren verwijderen
 Alternate deco	Alternatieve versie
 AMD upscaling: faster, nearly as sharp (F3 in game).	AMD-opschaling: sneller, bijna even scherp (F3 in het spel).

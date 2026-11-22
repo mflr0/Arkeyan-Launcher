@@ -396,7 +396,7 @@ namespace launcher_ui
             "52-sort-name", "53-all-swappers", "54-mixed-swapper-sheet", "55-add-swapper-versions", "56-add-no-match",
             "57-manage-menu", "58-figure-menu", "59-put-on-menu", "60-focus-card", "61-focus-seat", "62-trap-sheet",
             "63-trap-edit", "collection-bottom", "64-trapteam-greyed", "65-unknown-type", "66-unknown-named",
-            "67-missing-figure", "68-seat-restored", "69-picture-menu" };
+            "67-missing-figure", "68-seat-restored", "69-picture-menu", "70-add-for-trap-seat" };
     }
 
     const char* CollectionPage::TestShotName(int step) { return Shots[std::clamp(step, 0, int(std::size(Shots)) - 1)]; }
@@ -853,6 +853,11 @@ namespace launcher_ui
         case 50: // the sheet's "Figure picture" menu, open
             OpenFigure(figureOf(14));
             m_testMenu = 4;
+            break;
+        case 51: // Trap Team: the Trap seat's + opens Add a figure on traps only, "Fits Trap"
+            for (size_t i = 0; m_model.Game() != nullptr && i < m_model.Game()->seats.size(); i++)
+                if (m_model.Game()->seats[i].id == "trap")
+                    OpenAdd(int(i));
             break;
         case 46:
         case 47:

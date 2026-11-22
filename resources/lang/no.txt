@@ -64,6 +64,7 @@ All elements	Alle elementer
 All games	Alle spill
 All games are updated	Alle spill er oppdatert
 All types	Alle typer
+Fits {}	Passer på {}
 Also delete my saves and my figures	Slett også lagringene og figurene mine
 Alternate deco	Alternativ dekor
 AMD upscaling: faster, nearly as sharp (F3 in game).	AMD-oppskalering: raskere, nesten like skarp (F3 i spillet).
