@@ -700,7 +700,7 @@ namespace launcher_ui
         std::vector<collection::Figure> sorting = shown;
         for (collection::Figure& figure : sorting)
             figure.uses = { { "", figure.LastUsedIn(gameId), 0 } };
-        return collection::Shelf(sorting, filter.sort, "");
+        return collection::Shelf(sorting, filter.sort, "", gameId);
     }
 
     std::vector<std::string> CollectionModel::OnPortal() const

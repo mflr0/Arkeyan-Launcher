@@ -119,6 +119,70 @@ namespace collection
             return it != Words.end() ? it->second : id.c_str();
         }
 
+        // The elements in the order the games' menus show them.
+        constexpr Element ElementOrder[] = { Element::Magic, Element::Earth, Element::Water, Element::Air,
+            Element::Fire, Element::Life, Element::Undead, Element::Tech, Element::Light, Element::Dark };
+
+        // The Category sort's families, in its order.
+        constexpr Category Families[] = { Category::Core, Category::Mini, Category::CreationCrystal, Category::Trap,
+            Category::Vehicle, Category::MagicItem, Category::Adventure, Category::Trophy, Category::Villain };
+
+        Category FamilyOf(Category category) { return category <= Category::Sensei ? Category::Core : category; }
+
+        template <typename T, size_t N>
+        int IndexIn(const T (&order)[N], T value)
+        {
+            return int(std::find(order, order + N, value) - order);
+        }
+
+        // Where a titled sort puts a figure: its section's place and title.
+        struct Place
+        {
+            int rank = 0;
+            Section title;
+        };
+
+        Place PlaceOf(const Figure& figure, Sort sort, const std::string& first)
+        {
+            const Toy& toy = *figure.toy;
+            if (sort == Sort::Game)
+            {
+                const Catalogue& catalogue = Catalogue::Get();
+                const Game* origin = catalogue.Origin(toy, figure.variant);
+                if (origin == nullptr) // a game the catalogue does not list: after those it does
+                    return { int(catalogue.Games().size()), { Section::Kind::Game, 0, toy.game, {} } };
+                const int rank = origin->id == first ? -1 : int(origin - catalogue.Games().data());
+                return { rank, { Section::Kind::Game, 0, origin->id, {} } };
+            }
+            int rank = 0;
+            if (sort == Sort::Element)
+            {
+                rank = IndexIn(ElementOrder, toy.element);
+                if (rank < int(std::size(ElementOrder)))
+                    return { rank, { Section::Kind::Element, int(toy.element), {}, {} } };
+            }
+            const Category family = FamilyOf(toy.category);
+            return { rank + IndexIn(Families, family), { Section::Kind::Category, int(family), {}, {} } };
+        }
+
+        // The shelf's cards cut into a titled sort's sections, each keeping the shelf's order.
+        std::vector<Section> Cut(
+            const std::vector<Figure>& list, const std::vector<size_t>& shelf, Sort sort, const std::string& first)
+        {
+            std::map<std::pair<int, std::string>, Section> byPlace;
+            for (size_t i : shelf)
+            {
+                Place place = PlaceOf(list[i], sort, first);
+                std::pair<int, std::string> key(place.rank, place.title.game);
+                byPlace.try_emplace(std::move(key), std::move(place.title)).first->second.items.push_back(i);
+            }
+            std::vector<Section> sections;
+            sections.reserve(byPlace.size());
+            for (auto& [key, section] : byPlace)
+                sections.push_back(std::move(section));
+            return sections;
+        }
+
         // "level 10" is two words; these spell the first.
         bool IsLevelWord(const std::string& word)
         {
@@ -254,8 +318,9 @@ namespace collection
 
     const char* SortId(Sort sort)
     {
-        static const char* const Ids[] = { "recent", "name", "level", "element", "game", "favorites" };
-        return sort < Sort::Count ? Ids[size_t(sort)] : Ids[0];
+        static const char* const Ids[] = { "game", "recent", "element", "category", "name", "level", "favorites" };
+        static_assert(std::size(Ids) == size_t(Sort::Count));
+        return sort < Sort::Count ? Ids[size_t(sort)] : Ids[size_t(DefaultSort)];
     }
 
     Sort ParseSort(const std::string& id)
@@ -263,13 +328,14 @@ namespace collection
         for (int i = 0; i < int(Sort::Count); i++)
             if (id == SortId(Sort(i)))
                 return Sort(i);
-        return Sort::Recent;
+        return DefaultSort;
     }
 
     std::string SortLabel(Sort sort, bool french)
     {
-        static const char* const English[] = { "Recent", "Name", "Level", "Element", "Game", "Favorites" };
-        static const char* const France[] = { "Récents", "Nom", "Niveau", "Élément", "Jeu", "Favoris" };
+        static const char* const English[] = { "Game", "Recent", "Element", "Category", "Name", "Level", "Favorites" };
+        static const char* const France[] = { "Jeu", "Récents", "Élément", "Catégorie", "Nom", "Niveau", "Favoris" };
+        static_assert(std::size(English) == size_t(Sort::Count) && std::size(France) == size_t(Sort::Count));
         return sort < Sort::Count ? (french ? France : English)[size_t(sort)] : "";
     }
 
@@ -280,11 +346,30 @@ namespace collection
         return std::to_string(count) + (count == 1 ? " figure" : " figures");
     }
 
-    std::vector<Section> Shelf(const std::vector<Figure>& list, Sort sort, const std::string& game)
+    std::vector<Section> Shelf(
+        const std::vector<Figure>& list, Sort sort, const std::string& game, const std::string& first)
     {
         std::vector<Section> sections = Group(list, GroupBy::Smart, OrderBy::Recent, game);
         if (sort == Sort::Recent)
             return sections;
+        // Group leaves an empty shelf out, and puts it first.
+        if (sections.empty() || sections.front().kind != Section::Kind::Shelf)
+            return sections;
+
+        if (sort == Sort::Game || sort == Sort::Element || sort == Sort::Category)
+        {
+            std::vector<Section> cut = Cut(list, sections.front().items, sort, first.empty() ? game : first);
+            cut.insert(cut.end(), sections.begin() + 1, sections.end());
+            return cut;
+        }
+
+        std::vector<size_t>& items = sections.front().items;
+        if (sort == Sort::Favorites) // the Recent order otherwise: the sort is stable
+        {
+            std::stable_sort(items.begin(), items.end(),
+                [&](size_t a, size_t b) { return list[a].favourite && !list[b].favourite; });
+            return sections;
+        }
 
         std::map<std::string, size_t> byFile;
         for (size_t i = 0; i < list.size(); i++)
@@ -294,57 +379,15 @@ namespace collection
             auto other = f.partner.empty() ? byFile.end() : byFile.find(f.partner);
             return Fold(CardName(other != byFile.end() ? Card{ &f, &list[other->second] } : Card{ &f, nullptr }));
         };
-        const Catalogue& catalogue = Catalogue::Get();
-        auto gameRank = [&](size_t i) {
-            const auto& games = catalogue.Games();
-            for (size_t g = 0; g < games.size(); g++)
-                if (games[g].id == list[i].toy->game)
-                    return int(g);
-            return int(games.size());
-        };
-        // The menus' order of the elements; toys with no element after them, by toy type.
-        constexpr Element Order[] = { Element::Magic, Element::Earth, Element::Water, Element::Air, Element::Fire,
-            Element::Life, Element::Undead, Element::Tech, Element::Light, Element::Dark };
-        auto elementRank = [&](size_t i) {
-            const Toy* toy = list[i].toy;
-            for (size_t e = 0; e < std::size(Order); e++)
-                if (toy->element == Order[e])
-                    return int(e);
-            return 100 + int(toy->category);
-        };
-
-        for (Section& section : sections)
-        {
-            if (section.kind != Section::Kind::Shelf)
-                continue;
-            std::map<size_t, std::string> names;
-            for (size_t i : section.items)
-                names[i] = nameOf(i);
-            std::stable_sort(section.items.begin(), section.items.end(), [&](size_t a, size_t b) {
-                switch (sort)
-                {
-                case Sort::Level:
-                {
-                    int la = HasProgress(list[a]) ? list[a].level : -1, lb = HasProgress(list[b]) ? list[b].level : -1;
-                    if (la != lb)
-                        return la > lb;
-                    break;
-                }
-                case Sort::Element:
-                    if (elementRank(a) != elementRank(b))
-                        return elementRank(a) < elementRank(b);
-                    break;
-                case Sort::Game:
-                    if (gameRank(a) != gameRank(b))
-                        return gameRank(a) < gameRank(b);
-                    break;
-                case Sort::Favorites: // the Recent order otherwise: the sort is stable
-                    return list[a].favourite && !list[b].favourite;
-                default: break;
-                }
-                return names[a] < names[b];
-            });
-        }
+        std::map<size_t, std::string> names;
+        for (size_t i : items)
+            names[i] = nameOf(i);
+        auto levelOf = [&](size_t i) { return HasProgress(list[i]) ? list[i].level : -1; };
+        std::stable_sort(items.begin(), items.end(), [&](size_t a, size_t b) {
+            if (sort == Sort::Level && levelOf(a) != levelOf(b))
+                return levelOf(a) > levelOf(b);
+            return names[a] < names[b];
+        });
         return sections;
     }
 }

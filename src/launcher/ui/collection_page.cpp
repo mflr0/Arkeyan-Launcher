@@ -162,6 +162,7 @@ namespace launcher_ui
     {
         switch (sort)
         {
+        case collection::Sort::Category: return Tr("Category");
         case collection::Sort::Recent: return Tr("Recent");
         case collection::Sort::Name: return Tr("Name");
         case collection::Sort::Level: return Tr("Level");
@@ -485,7 +486,20 @@ namespace launcher_ui
         // Only a game that can start with prepared seats has a portal here (one with a runtime: SSA, Giants).
         if (const collection::Game* game = m_model.Game(); game == nullptr || SessionFile(*game).empty())
             m_model.gameId = "ssa";
+        LoadSort();
         Reload();
+    }
+
+    void CollectionPage::LoadSort() { m_filter.sort = collection::ParseSort(collection::GetSort("launcher")); }
+
+    void CollectionPage::ChangeSort(collection::Sort sort)
+    {
+        if (sort == m_filter.sort)
+            return;
+        m_filter.sort = sort;
+        m_shelfTop = true;
+        if (!collection::SetSort("launcher", collection::SortId(sort)))
+            Toast(Tr("Couldn't save the settings"), ui::ToastKind::Error);
     }
 
     void CollectionPage::Reload()
@@ -672,7 +686,8 @@ namespace launcher_ui
             if (const collection::Game* game = collection::Catalogue::Get().FindGame(section.game))
                 return game->name;
             return section.game;
-        case Section::Kind::Category: return CategoryLabel(Category(section.value));
+        case Section::Kind::Category:
+            return Category(section.value) == Category::Mini ? Tr("Minis") : CategoryLabel(Category(section.value));
         case Section::Kind::Series: return KindLabel(collection::VariantKind(section.value));
         case Section::Kind::Level: return Tf("Level {}", section.value);
         case Section::Kind::Letter: return std::string(1, char(section.value));
@@ -950,6 +965,7 @@ namespace launcher_ui
         constexpr float SeatGap = ui::space::M; // between the seats
         constexpr float ShelfCell = 2 * ui::height::Main; // the narrowest a figure's card gets
         constexpr float ShelfGap = ui::space::XS;
+        constexpr int FilterCount = 3; // Element, Works in, Type
         constexpr float FilterPanel = ui::height::SettingControl + 2 * ui::height::Main;
         constexpr float RefusedAlpha = 0.35f; // a seat that would refuse the figure being dragged
         constexpr float DraggedAlpha = 0.75f; // the dragged figure's picture under the pointer
@@ -1664,20 +1680,23 @@ namespace launcher_ui
             ui::EndCard();
         }
 
-        // The search first and wide, then the order (not a filter) and Filters (Element, Game, Type in one small panel); when
-        // a filter is on, its chip, Clear all and the count of figures found.
+        // The search first and wide, then Sort and filter, one button that says the sort and how many filters are on;
+        // when a filter is on, its chip, Clear all and the count of figures found.
         const int active = (m_filter.element >= 0) + !m_filter.game.empty() + (m_filter.category >= 0);
-        ui::ButtonOptions filters;
-        filters.trailing = ui::Icon::ChevronDown;
-        const std::string filtersLabel =
-            std::string(Tr("Filters")) + (active > 0 ? fmt::format(" · {}", active) : std::string());
-        const float filtersWidth = ui::ButtonWidth(filtersLabel.c_str(), filters);
-        // As wide as its longest choice shows uncut (the select's own padding and chevron: SelectWidth).
-        float sortWidth = 0;
+        auto buttonText = [](collection::Sort sort, int count) {
+            const std::string text = Tf("Sort: {}", SortText(sort));
+            return count > 0 ? fmt::format("{} ({})", text, count) : text;
+        };
+        ui::ButtonOptions button;
+        button.trailing = ui::Icon::ChevronDown;
+        button.tooltip = Tr("Sort and filter");
+        // As wide as its longest text, so that neither it nor the search moves.
+        float width = 0;
         for (int sort = 0; sort < int(collection::Sort::Count); sort++)
-            sortWidth = std::max(sortWidth, ui::SelectWidth(Tf("Sort: {}", SortText(collection::Sort(sort))).c_str()));
-        const float searchWidth = std::max(ui::height::SettingControl / 2,
-            ImGui::GetContentRegionAvail().x - filtersWidth - sortWidth - 2 * ui::space::S);
+            width = std::max(width, ui::ButtonWidth(buttonText(collection::Sort(sort), FilterCount).c_str(), button));
+        button.width = width;
+        const float searchWidth =
+            std::max(ui::height::SettingControl / 2, ImGui::GetContentRegionAvail().x - width - ui::space::S);
         if (m_focusSearch)
         {
             ImGui::SetKeyboardFocusHere();
@@ -1686,19 +1705,8 @@ namespace launcher_ui
         ui::SearchField("##search", m_search, sizeof(m_search), Tr("Name, element, game, level..."), searchWidth);
         ImGui::SameLine(0, ui::space::S);
 
-        ui::SelectOptions sortOptions;
-        sortOptions.width = sortWidth;
-        const bool sorting = ui::BeginSelect("##sort", Tf("Sort: {}", SortText(m_filter.sort)).c_str(), sortOptions);
-        if (sorting)
-        {
-            for (int sort = 0; sort < int(collection::Sort::Count); sort++)
-                if (ui::SelectOption(SortText(collection::Sort(sort)).c_str(), m_filter.sort == collection::Sort(sort)))
-                    m_filter.sort = collection::Sort(sort);
-            ui::EndSelect();
-        }
-        ImGui::SameLine(0, ui::space::S);
-
-        const bool pressed = ui::Button(filtersLabel.c_str(), filters);
+        // One id whatever it says: the focus stays on it when the sort changes.
+        const bool pressed = ui::Button((buttonText(m_filter.sort, active) + "###sortandfilter").c_str(), button);
         if (pressed || m_openFilters)
             ui::OpenMenu("##filtersmenu", { .alignRight = true });
         m_openFilters = false;
@@ -1706,7 +1714,8 @@ namespace launcher_ui
         DrawTags();
     }
 
-    // The Filters panel: Element, Works in and Type, each a Select, and Clear all.
+    // The Sort and filter panel: Sort by, a divider, then "Show only" (Element, Works in and Type, each a Select) and
+    // Clear all.
     void CollectionPage::DrawFilters(int active)
     {
         ImGui::SetNextWindowSize(ImVec2(FilterPanel, 0));
@@ -1719,7 +1728,7 @@ namespace launcher_ui
         // The labels' column fits the widest one (a longer translation never touches its box).
         ui::PushText(ui::TextStyle::Caption);
         float column = 0;
-        for (const char* label : { N_("Element"), N_("Works in"), N_("Type") })
+        for (const char* label : { N_("Sort by"), N_("Element"), N_("Works in"), N_("Type") })
             column = std::max(column, ImGui::CalcTextSize(Tr(label)).x + ui::space::M);
         ui::PopText();
         const float room = ImGui::GetContentRegionAvail().x;
@@ -1738,6 +1747,15 @@ namespace launcher_ui
                 ui::EndSelect();
             }
         };
+        row(N_("Sort by"), "##sortby", SortText(m_filter.sort), [&] {
+            for (int sort = 0; sort < int(collection::Sort::Count); sort++)
+                if (ui::SelectOption(SortText(collection::Sort(sort)).c_str(), m_filter.sort == collection::Sort(sort)))
+                    ChangeSort(collection::Sort(sort));
+        });
+        ui::MenuSeparator();
+        ImGui::Indent(ui::space::XS);
+        ui::Text(ui::TextStyle::Caption, Tr("Show only"), ui::color::Dim, -1);
+        ImGui::Unindent(ui::space::XS);
         row(N_("Element"), "##element",
             m_filter.element >= 0 ? ElementName(collection::Element(m_filter.element)) : Tr("All elements"), [&] {
                 if (ui::SelectOption(Tr("All elements"), m_filter.element < 0))
@@ -2030,11 +2048,12 @@ namespace launcher_ui
         for (size_t s = 0; s < m_sections.size(); s++)
         {
             const Section& section = m_sections[s];
-            // The shelf has no title (the bar says what it shows); what follows does.
+            // A titled sort's sections and the unknown toys have their title and count; one shelf has none (the bar says
+            // what it shows). No divider over the first: the bar is right above.
             if (section.kind != Section::Kind::Shelf)
             {
                 const std::string count = FigureCountText(int(section.items.size()));
-                ui::SectionHeader(SectionName(section).c_str(), count.c_str());
+                ui::SectionHeader(SectionName(section).c_str(), count.c_str(), s > 0);
                 ImGui::Dummy(ImVec2(0, ui::space::XXS));
             }
             ImGui::PushID(int(s));

@@ -75,7 +75,7 @@ namespace launcher_ui
         int category = -1;     // a collection::Category
         std::string
             text; // the smart search (collection::SearchMatches): names, elements, games, types, versions, levels
-        collection::Sort sort = collection::Sort::Recent;
+        collection::Sort sort = collection::DefaultSort;
         int seat = -1; // choosing for this seat of the model's game: only what goes there and the game reads
     };
 
@@ -133,9 +133,9 @@ namespace launcher_ui
         // collection::Tidy that leaves the figures on a seat alone, then reloads. Returns how many moved.
         int Tidy();
         std::vector<std::string> OnPortal() const; // the seated paths
-        // The figures the page shows, into `shown`, cut by collection::Group's shelf for Game(): every figure once,
-        // favorites first, then what the game took (newest first), then by element (Sort::Recent; the other sorts ignore
-        // favorites); incompatible figures keep their normal place, unknown toys follow the shelf. Choosing for a seat
+        // The figures the page shows, into `shown`, cut by collection::Shelf: every figure once, in titled sections
+        // (Game, the shown game's first; Element; Category) or one shelf (the other sorts). Incompatible figures keep
+        // their normal place and section, unknown toys follow the shelf. Choosing for a seat
         // leaves out incompatible figures. The untouched starters the game made on its own
         // are left out unless seated; `hidden` (optional) counts them.
         std::vector<collection::Section> Shelf(

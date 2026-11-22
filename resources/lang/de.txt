@@ -766,6 +766,11 @@ Skylanders, Spyro and Activision are trademarks of Activision Publishing, Inc. T
 Some figures are marked as in use, but their game is not running.	Einige Figuren sind als benutzt markiert, aber ihr Spiel läuft nicht.
 Something went wrong while {}.	Beim Vorgang „{}“ ist etwas schiefgelaufen.
 Sort: {}	Sortierung: {}
+Sort by	Sortieren nach
+Show only	Nur anzeigen
+Category	Kategorie
+Minis	Minis
+Sort and filter	Sortieren und filtern
 Space	Leertaste
 Speakers	Lautsprecher
 Special Power / Back	Spezialkraft / Zurück

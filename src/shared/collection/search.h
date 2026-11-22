@@ -1,8 +1,8 @@
 #pragma once
 
 // The shelf's smart search and sort, shared by the Toy Box and Arkeyan Launcher (docs/runtime/host/collection.md "Search and
-// sort"): one function says whether a card matches what the player typed, and Shelf cuts a list into the shelf in the
-// player's sort order.
+// sort"): one function says whether a card matches what the player typed, and Shelf cuts a list into the shelf's
+// sections in the player's sort.
 #include "collection.h"
 #include <string>
 #include <vector>
@@ -24,28 +24,37 @@ namespace collection
     // An empty query matches everything. `game` ("ssa", "swapforce"...) fixes the level cap the card shows.
     bool SearchMatches(const std::string& query, const Card& card, const std::string& game);
 
-    // How the shelf is ordered. Recent is the shelf of old: favourites first, then what the game took last, then by
-    // element; the others ignore favourites.
+    // How the shelf is ordered, as the menus list it. Game, Element and Category cut it into titled sections, each in
+    // the Recent order: favourites first, then what the game took last, then by element.
     enum class Sort
     {
+        Game, // the game a figure came out with
         Recent,
+        Element,
+        Category, // the toys' families
         Name,
         Level,
-        Element,
-        Game,
         Favorites, // favorites first, then the Recent order
         Count
     };
-    const char* SortId(Sort sort);          // "recent", "name", "level", "element", "game", "favorites"
-    Sort ParseSort(const std::string& id);  // Recent when unknown
+    constexpr Sort DefaultSort = Sort::Game;
+    const char* SortId(Sort sort); // "game", "recent", "element", "category", "name", "level", "favorites"
+    Sort ParseSort(const std::string& id); // DefaultSort when unknown
     // The sort's name in the apps' menus and tags ("Recent" / "Récents"), the same words in both apps.
     std::string SortLabel(Sort sort, bool french = false);
 
     // "12 figures" and "1 figure"; "12 figurines" and, as in French, "0 figurine" and "1 figurine": the count of the shelf.
     std::string FigureCount(int count, bool french = false);
 
-    // Group(list, Smart, ...) with the shelf section ordered by `sort`: Name (A to Z), Level (highest first, toys with no
-    // level last), Element (the menus' order, then toy type), Game (the catalogue's order); ties by name. Unknown and
-    // "other games" toys keep their sections.
-    std::vector<Section> Shelf(const std::vector<Figure>& list, Sort sort, const std::string& game);
+    // Group(list, Smart, ...) in the player's sort:
+    //   - Game: a Section::Kind::Game per game a figure came out with (Catalogue::Origin: a re-release's own game), that
+    //     of `first` (empty: `game`) ahead, then the release order;
+    //   - Element: a Kind::Element per element in the menus' order, then a Kind::Category per family for what has none;
+    //   - Category: a Kind::Category per family, named by its Category: Core (every playable character but minis),
+    //     Mini, CreationCrystal, Trap, Vehicle, MagicItem, Adventure, Trophy, Villain;
+    //   - Name (A to Z), Level (highest first, toys with no level last), ties by name; Recent; Favorites: one
+    //     Kind::Shelf, untitled.
+    // No section is empty. Unknown and "other games" toys keep their sections, after those.
+    std::vector<Section> Shelf(
+        const std::vector<Figure>& list, Sort sort, const std::string& game, const std::string& first = {});
 }
