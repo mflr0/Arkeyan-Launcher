@@ -1263,3 +1263,5 @@ Folder	Ordner
 Caches	Caches
 Saves and data	Spielstände und Daten
 Frees {}.	Gibt {} frei.
+Fits {}	Passt auf {}
+Use the default	Standard verwenden

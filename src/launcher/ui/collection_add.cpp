@@ -159,22 +159,46 @@ namespace launcher_ui
         ImGui::SameLine(0, ui::space::S);
         ui::SearchField("##addsearch", m_addSearch, sizeof(m_addSearch), Tr("Search the catalog"),
             room - 2 * selectW - 2 * ui::space::S);
-        // Type: the same menu as the shelf's bar.
+        // Type: the same menu as the shelf's bar, led by what the seat of the + takes.
         ImGui::SameLine(0, ui::space::S);
         ui::SelectOptions typeOptions;
         typeOptions.width = selectW;
-        if (ui::BeginSelect("##addtype",
-                m_addCategory < 0 ? Tr("All types") : CategoryLabel(Category(m_addCategory)).c_str(), typeOptions))
+        const std::string fits = AddSeat() != nullptr ? Tf("Fits {}", SeatName(size_t(m_addSeat))) : std::string();
+        const bool fitting = m_addFits && !fits.empty();
+        const std::string label = fitting             ? fits
+                                  : m_addCategory < 0 ? std::string(Tr("All types"))
+                                                      : CategoryLabel(Category(m_addCategory));
+        if (ui::BeginSelect("##addtype", label.c_str(), typeOptions))
         {
-            if (ui::SelectOption(Tr("All types"), m_addCategory < 0))
+            if (!fits.empty() && ui::SelectOption(fits.c_str(), fitting))
+            {
+                m_addFits = true;
                 m_addCategory = -1;
+            }
+            if (ui::SelectOption(Tr("All types"), !fitting && m_addCategory < 0))
+            {
+                m_addFits = false;
+                m_addCategory = -1;
+            }
             for (int category = 0; category < int(Category::Count); category++)
                 if (std::any_of(catalogue.Toys().begin(), catalogue.Toys().end(),
                         [&](const Toy& toy) { return int(toy.category) == category; }))
-                    if (ui::SelectOption(CategoryLabel(Category(category)).c_str(), m_addCategory == category))
+                    if (ui::SelectOption(
+                            CategoryLabel(Category(category)).c_str(), !fitting && m_addCategory == category))
+                    {
+                        m_addFits = false;
                         m_addCategory = category;
+                    }
             ui::EndSelect();
         }
+    }
+
+    const collection::Seat* CollectionPage::AddSeat() const
+    {
+        const collection::Game* game = m_model.Game();
+        return game != nullptr && m_addSeat >= 0 && size_t(m_addSeat) < game->seats.size()
+                   ? &game->seats[size_t(m_addSeat)]
+                   : nullptr;
     }
 
     int CollectionPage::FirstAddMatchingVersion(const Toy& toy, const std::string& search) const
@@ -194,6 +218,8 @@ namespace launcher_ui
         if (toy.category == Category::SwapBottom)
             return false; // the bottom comes with its top
         if (m_addCategory >= 0 && int(toy.category) != m_addCategory)
+            return false;
+        if (const collection::Seat* seat = m_addFits ? AddSeat() : nullptr; seat != nullptr && !SeatTakes(*seat, toy))
             return false;
         return search.empty() || Lower(toy.name).find(search) != std::string::npos ||
                FirstAddMatchingVersion(toy, search) > 0;

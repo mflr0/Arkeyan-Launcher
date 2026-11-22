@@ -1265,3 +1265,5 @@ Folder	Carpeta
 Caches	Cachés
 Saves and data	Partidas y datos
 Frees {}.	Libera {}.
+Fits {}	Va en {}
+Use the default	Usar el predeterminado

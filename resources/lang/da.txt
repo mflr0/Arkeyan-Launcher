@@ -1265,3 +1265,5 @@ Folder	Mappe
 Caches	Cacher
 Saves and data	Gemte spil og data
 Frees {}.	Frigør {}.
+Fits {}	Passer på {}
+Use the default	Brug standarden

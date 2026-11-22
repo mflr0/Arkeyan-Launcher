@@ -1265,3 +1265,5 @@ Folder	Map
 Caches	Caches
 Saves and data	Savegames en gegevens
 Frees {}.	Maakt {} vrij.
+Fits {}	Past op {}
+Use the default	Standaard gebruiken

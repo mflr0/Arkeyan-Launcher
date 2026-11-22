@@ -87,8 +87,12 @@ namespace launcher_ui
 
     bool SeatAccepts(const collection::Seat& seat, const collection::Figure& figure)
     {
-        return figure.toy != nullptr &&
-               std::find(seat.accepts.begin(), seat.accepts.end(), figure.toy->category) != seat.accepts.end();
+        return figure.toy != nullptr && SeatTakes(seat, *figure.toy);
+    }
+
+    bool SeatTakes(const collection::Seat& seat, const collection::Toy& toy)
+    {
+        return std::find(seat.accepts.begin(), seat.accepts.end(), toy.category) != seat.accepts.end();
     }
 
     std::vector<std::string> ReadSeats(const collection::Game& game, const std::string& file)

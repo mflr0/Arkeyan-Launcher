@@ -1266,3 +1266,5 @@ Folder	Mapp
 Caches	Cacheminnen
 Saves and data	Sparfiler och data
 Frees {}.	Frigör {}.
+Fits {}	Passar på {}
+Use the default	Använd standard

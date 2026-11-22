@@ -476,6 +476,20 @@ namespace
                 trapSeat = trapSeat || (seat.id == "trap" && launcher_ui::SeatAccepts(seat, trap));
             }
             EXPECT(trapSeat && catalogue.Accepts(id, 210));
+            // Add a figure from Player 1's +: every family the seat takes, nothing else.
+            const collection::Seat* p1 = nullptr;
+            for (size_t i = 0; game != nullptr && i < game->seats.size(); i++)
+                if (game->seats[i].id == "p1")
+                    p1 = &game->seats[i];
+            const collection::Toy* core = catalogue.Find(16);
+            const collection::Toy* giant = nullptr;
+            for (const collection::Toy& toy : catalogue.Toys())
+                if (toy.category == collection::Category::Giant && giant == nullptr)
+                    giant = &toy;
+            EXPECT(p1 != nullptr && core != nullptr && giant != nullptr && catalogue.Find(210) != nullptr);
+            if (p1 != nullptr && core != nullptr && giant != nullptr && catalogue.Find(210) != nullptr)
+                EXPECT(launcher_ui::SeatTakes(*p1, *core) && launcher_ui::SeatTakes(*p1, *giant) &&
+                       !launcher_ui::SeatTakes(*p1, *catalogue.Find(210)));
             EXPECT(!catalogue.Accepts(id, 3233) && !catalogue.Accepts(id, 3240));
             EXPECT(!catalogue.Accepts(id, 3423) && !catalogue.Accepts(id, 3424));
         }

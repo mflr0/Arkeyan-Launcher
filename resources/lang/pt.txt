@@ -1265,3 +1265,5 @@ Folder	Pasta
 Caches	Caches
 Saves and data	Jogos salvos e dados
 Frees {}.	Libera {}.
+Fits {}	Vai em {}
+Use the default	Usar a predefinição

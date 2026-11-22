@@ -1265,3 +1265,5 @@ Folder	Cartella
 Caches	Cache
 Saves and data	Salvataggi e dati
 Frees {}.	Libera {}.
+Fits {}	Va su {}
+Use the default	Usa il predefinito

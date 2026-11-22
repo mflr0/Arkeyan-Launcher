@@ -1266,3 +1266,5 @@ Folder	Mappe
 Caches	Hurtigbuffere
 Saves and data	Lagringer og data
 Frees {}.	Frigjør {}.
+Fits {}	Passer på {}
+Use the default	Bruk standard

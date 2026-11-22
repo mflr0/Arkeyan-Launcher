@@ -1266,3 +1266,5 @@ Folder	Kansio
 Caches	Välimuistit
 Saves and data	Tallennukset ja tiedot
 Frees {}.	Vapauttaa {}.
+Fits {}	Sopii paikalle: {}
+Use the default	Käytä oletusta

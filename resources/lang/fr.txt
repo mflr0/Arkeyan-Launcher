@@ -1295,3 +1295,5 @@ Folder	Dossier
 Caches	Caches
 Saves and data	Sauvegardes et données
 Frees {}.	Libère {}.
+Fits {}	Va sur {}
+Use the default	Utiliser la valeur par défaut
