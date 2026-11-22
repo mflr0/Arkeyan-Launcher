@@ -193,6 +193,11 @@ namespace launcher_ui
             { "48-imaginators-controller", BackTo::GamePage, false },
             { "49-portable-not-installed", BackTo::GamePage, false },
             { "50-ssa-sound", BackTo::GamePage, false },
+            { "51-online-host", BackTo::GamePage, false },
+            { "52-online-join", BackTo::GamePage, false },
+            { "53-online-waiting", BackTo::GamePage, false },
+            { "54-online-ready", BackTo::GamePage, false },
+            { "55-online-guest", BackTo::GamePage, false },
         };
         ImGuiContext& g = *ImGui::GetCurrentContext();
         ImGuiIO& io = ImGui::GetIO();
@@ -399,6 +404,22 @@ namespace launcher_ui
             {
                 game(name.starts_with("40-") ? "trapteam" : name.starts_with("41-") ? "superchargers" : "imaginators");
                 GoTo(Page::Play);
+            }
+            else if (name.starts_with("51-") || name.starts_with("52-") || name.starts_with("53-") ||
+                     name.starts_with("54-") || name.starts_with("55-"))
+            {
+                game("ssa");
+                GoTo(Page::Online);
+                const int saved = m_testStep;
+                // TestOnlineScript's steps: the Online tab as Host and Join, the waiting room, both ready, the guest.
+                m_testStep = name.starts_with("51-")   ? 1
+                             : name.starts_with("52-") ? 2
+                             : name.starts_with("53-") ? 4
+                             : name.starts_with("54-") ? 6
+                                                       : 7;
+                TestOnlineScript(now);
+                m_testStep = saved;
+                RequestFocus(FocusTo::Page);
             }
             else if (name.starts_with("49-"))
             {
@@ -636,7 +657,7 @@ namespace launcher_ui
                 !ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopupId | ImGuiPopupFlags_AnyPopupLevel))
             {
                 w.indexAt = m_page == Page::Settings ? int(m_tab) : int(m_gameTab);
-                const int count = m_page == Page::Settings ? 5 : 8;
+                const int count = m_page == Page::Settings ? 5 : int(GameTab::Online) + 1;
                 w.stepDir = w.indexAt == count - 1 ? -1 : 1;
                 press(w.stepDir > 0 ? ImGuiKey_GamepadR2 : ImGuiKey_GamepadL2);
                 w.phase = 11;

@@ -362,6 +362,19 @@ namespace launcher_ui
                     Tick(app, false);
                 ui::Ctx().animating = true;
                 expect(app.IdleWait() >= 250, "focus loss requests a wait even on a loaded machine");
+                {
+                    // An open room keeps the loop awake, focused or not: the pings time the network, not the sleep.
+                    online::HostOptions room;
+                    bool open = false;
+                    for (uint16_t port = 47760; port < 47800 && !open; ++port)
+                    {
+                        room.port = port;
+                        open = app.m_online.lobby.Host(room);
+                    }
+                    expect(open && app.IdleWait() <= App::RoomWaitMs, "an open room keeps the unfocused loop awake");
+                    app.m_online.lobby.Leave();
+                    expect(app.IdleWait() >= 250, "a closed room lets the unfocused loop sleep again");
+                }
                 start = Clock::now();
                 int backgroundFrames = 0;
                 while (Ms(start) < 1100)

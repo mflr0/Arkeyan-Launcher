@@ -830,6 +830,21 @@ PLAY starts the game **beside the window, which stays open** (`GameSession`, `la
 `FAKE_ARKEYAN_BUILDER_HOLD` keeps the build at 100 %) shoots and checks the line through an install and an update at 0, 50 and 100 %,
 with the other game shown meanwhile, then a failed build: `ArkeyanLauncherTest` runs it (`SidebarChecks`).
 
+## Online
+
+Online play is a mode of each game, set in its settings' **Online** tab (Solo, Host, Join; the steps of the mode, its
+fields, the cross-platform switch and **Details for your router**). In Host or Join, the game page's main action reads
+**HOST A ROOM** or **JOIN A ROOM** and the status line above it names the mode and opens the tab; there is no separate
+Online button. The room page uses the settings-page column and card: two player cards of one height (the empty one with
+the room code, masked until **Show**, and how far it reaches), the connection once the guest is in, and one sentence
+beside Start and Leave saying what is missing. Errors are help cards (warning edge, title, both sides' values, one action
+button). The shared controls provide mouse, keyboard and pad focus. During a session the hero reads “Online with <pseudo>”.
+After the game ends, recovery shows one translated error toast for an abnormal session end, with a next step; a normal
+quit is silent. Startup performs the same recovery after a closed launcher. French Online text uses “vous”.
+
+See [Online co-op](online.md) for the player steps, protocol, launch variables, write-back, router lease and screenshot
+fixtures (`SKY_LAUNCHER_TEST_ONLINE_UI=1` with `SKY_LAUNCHER_SHOTS`).
+
 ## Achievements and play time
 
 The games have Xbox 360 achievements; the launcher lists them per game and shows how long the game was played. Nothing is shipped: the list is
@@ -1281,7 +1296,7 @@ games and Coming later, A into Collection, Y for the search, the D-pad to a seat
 row, the shelf) and A to put a card there, X for a card's sheet, B back, then down to Settings, A, RT to its Launcher tab, Escape. Each step's page is checked ("FAIL nav step";
 a timeout stops a run that went astray); `ArkeyanLauncherTest` runs it (`NavChecks`).
 With `SKY_LAUNCHER_TEST_PADWALK=1` it walks every page, tab and dialog with the pad ("Navigation model"; `pad_walk.cpp`):
-`00-first-start` to `50-ssa-sound` (`50-` the Sound tab, 0.9.4; since 0.9.2 with the Profiles menu, editor and tab, the file check's dialog, the pages and game settings of Trap Team, SuperChargers and Imaginators with their portal panel and Toy Box button), each shot as a pad player arrives there, then walked, every result a `padwalk` line
+`00-first-start` to `55-online-guest` (`50-` the Sound tab, 0.9.4; `51-` and `52-` the Online tab as Host and Join, `53-` through `55-` the rooms; since 0.9.2 with the Profiles menu, editor and tab, the file check's dialog, the pages and game settings of Trap Team, SuperChargers and Imaginators with their portal panel and Toy Box button), each shot as a pad player arrives there, then walked, every result a `padwalk` line
 (`FAIL padwalk` for a stop never reached, a move out of reading order, B or LB / RB not doing their job). The Spyro's Adventure
 views want `SKY_LAUNCHER_TEST_DROP`; without a disc they show its no-disc state. `SKY_SAVE_DIR` and `SKY_COLLECTION` scratch.
 With `SKY_LAUNCHER_TEST_INSTALL=1` and `SKY_LAUNCHER_KIT=$PWD/build/fake-kit` it shows the install screens instead

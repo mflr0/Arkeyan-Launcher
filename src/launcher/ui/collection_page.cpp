@@ -863,6 +863,16 @@ namespace launcher_ui
         ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (available - width) / 2);
         m_app.BeginPageColumn("##collectioncolumn", width);
         DrawHeader(width);
+        if (m_app.RoomOpen())
+        {
+            // Figures chosen from an online room: the way back to it, which stays open meanwhile.
+            ui::Text(ui::TextStyle::Body,
+                Tr("Your online room stays open. Put your figures on the portal, then go back."), ui::color::InkSoft,
+                -1);
+            ImGui::SameLine(0, ui::space::S);
+            if (ui::Button(Tr("Back to the room"), { .kind = ui::ButtonKind::Primary, .size = ui::Size::Small }))
+                m_app.GoTo(Page::Online);
+        }
         DrawSeats(width);
         DrawBar();
         // The shelf has room round its cards (their focus rings, the choose banner's border).

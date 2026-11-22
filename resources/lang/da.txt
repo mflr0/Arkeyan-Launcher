@@ -1250,3 +1250,165 @@ Swap players?	Byt spillere?
 Swap	Byt
 {} goes on {}, and {} on {}.	{} går til {} og {} til {}.
 Players swapped	Spillerne byttede plads
+
+# Online
+Couldn't read a figure; choose your figures again in Collection.	En figur kunne ikke læses; vælg dine figurer igen i Samling.
+Couldn't read your picture; choose it again in your profile.	Dit billede kunne ikke læses; vælg det igen i din profil.
+Couldn't read your saves; check that their folder is accessible.	Dine gemte spil kunne ikke læses; tjek adgang til deres mappe.
+Couldn't restore the session's saves or figures; check the data folder and restart.	Spillets gemte data eller figurer kunne ikke gendannes; tjek datamappen og genstart.
+Couldn't start the online game; check your game installation and try again.	Onlinespillet kunne ikke starte; tjek spilinstallationen og prøv igen.
+Game default	Spillets standard
+Host	Vær vært
+Join	Deltag
+Leave	Forlad
+Online	Online
+Online with {}	Online med {}
+A player couldn't join: {}	En spiller kunne ikke deltage: {}
+Ask your friend for the room's password and type it in the Online tab.	Bed din ven om rummets adgangskode, og skriv den i fanen Online.
+Both choose the same game, then try again.	Vælg begge det samme spil, og prøv igen.
+Both update the launcher in Settings, then try again.	Opdater begge startprogrammet i Indstillinger, og prøv igen.
+Change it only if another program uses it.	Skift den kun, hvis et andet program bruger den.
+Check that you both have the same game, disc and launcher.	Tjek, at I begge har det samme spil, den samme disk og det samme startprogram.
+Check that your friend's room is open: they pressed HOST A ROOM.	Tjek, at din vens rum er åbent: din ven har trykket på VÆR VÆRT FOR ET RUM.
+Choose figures	Vælg figurer
+Choose your figures and press I'm ready. Your friend starts the game.	Vælg dine figurer, og tryk på "Jeg er klar". Din ven starter spillet.
+Connection: {} · {} ms · input delay 1 frame	Forbindelse: {} · {} ms · inputforsinkelse 1 billede
+Connection: {} · {} ms · input delay {} frames	Forbindelse: {} · {} ms · inputforsinkelse {} billeder
+Cross-platform sessions	Spil mellem systemer
+Details for your router	Detaljer til din router
+Everyone is ready: press Start.	Alle er klar: tryk på Start.
+Everyone is ready: the host starts.	Alle er klar: værten starter.
+Get ready	Gør dig klar
+Get ready and start	Gør dig klar og start
+Go to the game's page	Gå til spillets side
+Player 1 · Host	Spiller 1 · Vært
+Player 2 · Guest	Spiller 2 · Gæst
+HOST A ROOM	VÆR VÆRT FOR ET RUM
+Hide	Skjul
+How PLAY starts the game	Sådan starter PLAY spillet
+How it works	Sådan fungerer det
+How to fix it	Sådan løser du det
+I'm ready	Jeg er klar
+If your friend set one.	Hvis din ven har valgt en.
+If your router refuses, open (forward) port {} for UDP and TCP to this computer in your router's settings.	Hvis routeren afviser det, skal du åbne (videresende) port {} for UDP og TCP til denne computer i routerens indstillinger.
+Invite your friend	Inviter din ven
+JOIN A ROOM	DELTAG I ET RUM
+Joining your friend's room...	Deltager i din vens rum...
+Lets friends outside your home in. Most routers allow it.	Lukker venner uden for dit hjem ind. De fleste routere tillader det.
+No access to the router? Both install the same free virtual network, such as Tailscale or ZeroTier, and use the address it gives this computer.	Ingen adgang til routeren? Installer begge det samme gratis virtuelle netværk, for eksempel Tailscale eller ZeroTier, og brug den adresse, det giver denne computer.
+No figures on the portal yet	Ingen figurer på portalen endnu
+Not in the same home? Their router may block it: their room shows them how to fix it.	Er I ikke i samme hjem? Din vens router blokerer måske forbindelsen: rummet viser din ven, hvordan det løses.
+Not ready	Ikke klar
+On the game's page, in place of PLAY.	På spillets side i stedet for PLAY.
+On the portal: {}	På portalen: {}
+Online play needs the same edition of the disc on both computers, for example both USA.	Onlinespil kræver samme diskudgave på begge computere, for eksempel USA på begge.
+Online: you join your friend's room · Change	Online: du deltager i din vens rum · Skift
+Online: you open a room for a friend · Change	Online: du åbner et rum til en ven · Skift
+Open my router automatically	Åbn min router automatisk
+Open my router automatically asks your router with UPnP or NAT-PMP.	"Åbn min router automatisk" sender en forespørgsel til din router med UPnP eller NAT-PMP.
+Open or join a room again to play.	Åbn eller deltag i et rum igen for at spille.
+Open the Online tab	Åbn fanen Online
+Optional. Your friend types it to join.	Valgfri. Din ven skriver den for at deltage.
+Or both install the same free virtual network, such as Tailscale or ZeroTier, and send the address it gives this computer, with the port.	Eller installer begge det samme gratis virtuelle netværk, for eksempel Tailscale eller ZeroTier, og send den adresse, det giver denne computer, sammen med porten.
+Password	Adgangskode
+Paste it below	Indsæt den herunder
+Play with a friend on another system. Not tested yet: both must turn it on.	Spil med en ven på et andet system. Ikke testet endnu: I skal begge slå det til.
+Play with a friend over the internet, each on your own computer.	Spil med en ven over internettet på hver jeres computer.
+Playing between systems isn't tested yet. To try it, both turn on Cross-platform sessions in the game's Online tab.	Spil mellem systemer er ikke testet endnu. For at prøve det skal I begge slå "Spil mellem systemer" til i spillets Online-fane.
+Press HOST A ROOM	Tryk på VÆR VÆRT FOR ET RUM
+Press I'm ready when your figures are set.	Tryk på "Jeg er klar", når dine figurer er på plads.
+Press JOIN A ROOM	Tryk på DELTAG I ET RUM
+Sending your save to {}...	Sender dit gemte spil til {}...
+Show	Vis
+Solo	Solo
+Someone else is already in it: a room is for two players.	Der er allerede en anden i rummet: et rum er til to spillere.
+Something needs fixing	Noget skal løses
+The connection failed	Forbindelsen mislykkedes
+The connection was lost	Forbindelsen blev afbrudt
+The one with the older version updates the game on its page, then you try again.	Den med den ældre version opdaterer spillet på spillets side, og så prøver I igen.
+The room couldn't open	Rummet kunne ikke åbnes
+The room is closed	Rummet er lukket
+The room uses port {}, for UDP and TCP.	Rummet bruger port {} til UDP og TCP.
+This port is already in use	Denne port er allerede i brug
+This room is full	Dette rum er fuldt
+Try again	Prøv igen
+Try again. If it keeps failing, both restart the launcher.	Prøv igen. Hvis det stadig mislykkes, skal I begge genstarte startprogrammet.
+Waiting for player 2	Venter på spiller 2
+Waiting for player 2 to join.	Venter på, at spiller 2 deltager.
+Waiting for {} to be ready.	Venter på, at {} er klar.
+With a virtual network such as Tailscale or ZeroTier, use the address it gives your friend's computer.	Med et virtuelt netværk som Tailscale eller ZeroTier skal du bruge den adresse, det giver din vens computer.
+Wrong password	Forkert adgangskode
+You both choose your figures and press I'm ready. Then you press Start.	I vælger begge jeres figurer og trykker på "Jeg er klar". Derefter trykker du på Start.
+You both need this game with the same disc edition, and the same launcher version.	I skal begge have dette spil med samme diskudgave og samme version af startprogrammet.
+You chose different games	I valgte forskellige spil
+You play on different systems	I spiller på forskellige systemer
+You play on this computer. To play with a friend over the internet, choose Host to open a room for them, or Join to enter theirs.	Du spiller på denne computer. For at spille med en ven over internettet skal du vælge Vær vært for at åbne et rum til din ven eller Deltag for at gå ind i din vens rum.
+You: {}	Dig: {}
+Your discs aren't the same edition	Jeres diske er ikke samme udgave
+Your friend joins	Din ven deltager
+Your friend left the room	Din ven forlod rummet
+Your friend stopped answering. Check both internet connections, then try again.	Din ven svarer ikke længere. Tjek begge internetforbindelser, og prøv igen.
+Your friend's room	Din vens rum
+Your online room stays open. Put your figures on the portal, then go back.	Dit onlinerum forbliver åbent. Stil dine figurer på portalen, og gå så tilbage.
+Back to the room	Tilbage til rummet
+Your friend's room didn't answer	Din vens rum svarede ikke
+Your friend: {}	Din ven: {}
+Your game versions differ	Jeres spilversioner er forskellige
+Your games don't match	Jeres spil passer ikke sammen
+Your launchers aren't the same version	Jeres startprogrammer har forskellige versioner
+Your router lets friends in from anywhere.	Din router lukker venner ind, uanset hvor de er.
+fair	rimelig
+good	god
+slow	langsom
+Port	Port
+Start	Start
+The connection failed; open or join a room again.	Forbindelsen mislykkedes; åbn eller deltag i et rum igen.
+The other player left; open or join a room again.	Den anden spiller gik; åbn eller deltag i et rum igen.
+The other player stopped answering; check your connection and reconnect.	Den anden spiller svarer ikke længere; tjek forbindelsen og forbind igen.
+The password doesn't match; ask the host and try again.	Adgangskoden passer ikke; spørg værten og prøv igen.
+This port is busy; choose another port.	Porten er optaget; vælg en anden port.
+This room is full; ask the host to open another room.	Rummet er fuldt; bed værten åbne et andet rum.
+You chose different games; choose the same game.	I valgte forskellige spil; vælg det samme spil.
+Your disc editions differ; use the same disc edition.	Jeres diskudgaver er forskellige; brug den samme udgave.
+Your game versions differ; update both games.	Jeres spilversioner er forskellige; opdater begge spil.
+Your games don't match; check both games and launchers.	Jeres spil passer ikke sammen; tjek begge spil og startprogrammer.
+Your launcher versions differ; update both launchers.	Jeres startprogramversioner er forskellige; opdater begge startprogrammer.
+Your room	Dit rum
+Your rooms aren't compatible; update both launchers.	Jeres rum er ikke kompatible; opdater begge startprogrammer.
+Your saves exceed 64 MB; remove unused saves first.	Dine gemte spil fylder over 64 MB; fjern ubrugte gemte spil først.
+Your systems differ; both players must allow cross-platform sessions.	Jeres systemer er forskellige; begge skal tillade spil mellem systemer.
+{} FPS · Text: {} · Voices: {}	{} FPS · Tekst: {} · Stemmer: {}
+This port isn't valid; choose a number from 1 to 65535.	Porten er ugyldig; vælg et tal fra 1 til 65535.
+The games lost sync; reopen the room and try again	Spillene er ikke længere synkroniseret; åbn rummet igen og prøv på ny
+Your frame rates differ; choose the same frame rate	Jeres billedhastigheder er forskellige; vælg den samme
+The portal figures didn't match; choose your figures again in Collection	Portalfigurerne passer ikke sammen; vælg dine figurer igen i Samling
+The online session ended unexpectedly; reopen the room and try again	Onlinespillet sluttede uventet; åbn rummet igen og prøv på ny
+A friend in your home can use this code instead: {}	En ven hjemme hos dig kan bruge denne kode i stedet: {}
+Another program uses it. Choose another port in the Online tab, for example 47641, and send your friend the new room code.	Et andet program bruger den. Vælg en anden port under fanen Online, for eksempel 47641, og send din ven den nye rumkode.
+Check the room code: ask them to copy it again.	Tjek rumkoden: bed din ven kopiere den igen.
+Get the room code	Hent rumkoden
+Getting your room code...	Henter rumkoden...
+In Room code, with the password if there is one.	I Rumkode, med adgangskoden hvis der er en.
+In the room, copy your room code and send it to them by message, with the password if you set one.	Kopiér rumkoden i rummet, og send den i en besked, med adgangskoden hvis du har sat en.
+In the same home, ask your friend for the code under How to fix it in their room.	I samme hjem: bed din ven om koden under Sådan løser du det i vennens rum.
+It looks like K7QD-M2XA: letters and digits in groups of four. Ask your friend to copy it again from their room and paste it whole.	Den ligner K7QD-M2XA: bogstaver og cifre i grupper af fire. Bed din ven kopiere den igen fra sit rum og indsætte det hele.
+Open port {} (UDP and TCP) to this computer in your router's settings: search the web for your router's name and "port forwarding".	Åbn port {} (UDP og TCP) til denne computer i routerens indstillinger: søg på nettet efter routerens navn og "port forwarding".
+Paste your friend's room code first.	Indsæt først din vens rumkode.
+Room code	Rumkode
+Room code copied. Paste it in a message to your friend.	Rumkoden er kopieret. Indsæt den i en besked til din ven.
+Send your friend this room code and the password:	Send din ven denne rumkode og adgangskoden:
+Send your friend this room code:	Send din ven denne rumkode:
+The host didn't answer; check the room code and ask them to open the room.	Værten svarede ikke; tjek rumkoden, og bed værten åbne rummet.
+The one your friend sent you. An address works too.	Den, din ven sendte dig. En adresse virker også.
+The room code holds your friend's address. You can paste the address itself instead, like 203.0.113.4:47640.	Rumkoden indeholder din vens adresse. Du kan også indsætte selve adressen, som 203.0.113.4:47640.
+The room code holds your public address, found with a free STUN server. Share it only with your friend.	Rumkoden indeholder din offentlige adresse, fundet med en gratis STUN-server. Del den kun med din ven.
+They choose Join in this tab, paste your room code, then press JOIN A ROOM.	Vennen vælger Deltag under denne fane, indsætter din rumkode og trykker på DELTAG I ET RUM.
+This room code isn't right	Rumkoden passer ikke
+This room code isn't valid; ask your friend to copy it again.	Rumkoden er ugyldig; bed din ven kopiere den igen.
+Your friend opens a room and sends you its code, and the password if there is one.	Din ven åbner et rum og sender dig koden og adgangskoden, hvis der er en.
+Your internet provider shares your address with other homes, so a friend elsewhere can't reach you this way.	Din internetudbyder deler din adresse med andre hjem, så en ven et andet sted kan ikke nå dig på denne måde.
+Your router didn't let your friend in by itself, so a friend elsewhere can't join yet.	Din router lukkede ikke din ven ind af sig selv, så en ven et andet sted kan ikke deltage endnu.
+Your router didn't open, so this code uses IPv6. It works if your friend's internet has IPv6 too.	Din router blev ikke åbnet, så denne kode bruger IPv6. Den virker, hvis din vens internet også har IPv6.
+Your router isn't opened automatically: a friend elsewhere needs the port opened.	Din router åbnes ikke automatisk: en ven et andet sted har brug for, at porten er åben.
+{} (you)	{} (dig)
+Not ready yet: choosing their figures	Ikke klar endnu: vælger sine figurer

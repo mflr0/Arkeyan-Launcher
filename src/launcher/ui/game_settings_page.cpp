@@ -76,7 +76,7 @@ namespace launcher_ui
         BeginSettingsPage("##gamesettingscolumn", title != nullptr ? title : m_s->game.name, true);
 
         static const char* const Tabs[] = { N_("Video"), N_("Keyboard"), N_("Controller"), N_("Sound"), N_("Language"),
-            N_("Disc"), N_("Saves"), N_("Game") };
+            N_("Disc"), N_("Saves"), N_("Game"), N_("Online") };
         int tab = int(m_gameTab);
         DrawTabBar(Tabs, int(std::size(Tabs)), &tab);
         m_gameTab = GameTab(tab);
@@ -91,6 +91,7 @@ namespace launcher_ui
         case GameTab::Disc: DrawGameDisc(); break;
         case GameTab::Saves: DrawSaveBackups(); break;
         case GameTab::Game: DrawGameTab(); break;
+        case GameTab::Online: DrawGameOnline(); break;
         }
         EndCard();
         if (m_testHdTex)

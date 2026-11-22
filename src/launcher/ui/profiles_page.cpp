@@ -106,6 +106,12 @@ namespace launcher_ui
             return;
         if (!SaveConfig())
             Toast(Tr("Couldn't save the settings"), ui::ToastKind::Error);
+        if (!m_online.game.empty() && !m_online.launched)
+        {
+            CloseOnline();
+            if (m_page == Page::Online)
+                GoTo(Page::Play);
+        }
         m_profiles.active = id;
         profiles::Save(m_profiles);
         UseProfileEnvironment();
