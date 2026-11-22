@@ -267,7 +267,6 @@ namespace launcher_ui
                     options.progress = c.progress;
                     options.indeterminate = c.indeterminate;
                     options.style = &StyleOf(Games[g]);
-                    options.separated = true;
                     options.icon = std::string_view(c.label) == "INSTALL"  ? ui::Icon::Download
                                    : std::string_view(c.label) == "UPDATE" ? ui::Icon::Update
                                                                            : ui::Icon::Play; // the game page's

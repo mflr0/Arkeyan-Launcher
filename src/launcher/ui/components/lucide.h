@@ -24,7 +24,6 @@ namespace ui::lucide
     constexpr unsigned Folder = 0xE0D7; // folder
     constexpr unsigned Disc3 = 0xE494; // disc-3
     constexpr unsigned Play = 0xE13C; // play
-    constexpr unsigned Timer = 0xE1E0; // timer
     constexpr unsigned Ellipsis = 0xE0B6; // ellipsis
     constexpr unsigned Star = 0xE176; // star
     constexpr unsigned CircleCheck = 0xE226; // circle-check

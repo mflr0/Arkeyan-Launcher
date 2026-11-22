@@ -146,6 +146,7 @@ add_library(ArkeyanLauncherCore STATIC
     src/launcher/game_chests.cpp
     src/launcher/game_music.cpp
     src/launcher/ui/launcher_ui.cpp
+    src/launcher/ui/test_scripts.cpp
     src/launcher/ui/collection_page.cpp
     src/launcher/ui/profiles_page.cpp
     src/launcher/ui/chests_page.cpp
