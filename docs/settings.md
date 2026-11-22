@@ -195,10 +195,13 @@ written in `[input]` by hand reaches every game.
 - **Reset to defaults** also clears the game's `mouse_` lines and its switch.
 - The game's F3 menu has the same rows (its Commands page) and writes the same lines in the game's section; the Toy Box keys in `[input]`.
 - **Settings > Controls > All games > Toy Box keys**: click a controller picker, then press one physical button for
-  **Swap wheel**, or two different buttons in order for **Open the Toy Box** and **Game menu** (the in-game F3 menu).
-  Escape cancels. Hold the wheel button to open the wheel; tapping it still performs the game's action. Add and clear
-  figures keep a dash in the controller column. Keyboard bindings remain available beside the controller pickers.
-- These global shortcuts are `[input] pad_wheel=back`, `pad_toybox=back+y`, and `pad_menu=back+start` by default.
+  **Swap wheel**, or two different buttons in order for **Open the Toy Box**, **Add a figure**, **Clear the figures**
+  and **Game menu** (the in-game F3 menu). Escape cancels. Hold the wheel button to open the wheel; tapping it still
+  performs the game's action. Add a figure and Clear the figures work like their keys while the game plays, and show
+  a dash until set; the reset arrow beside a changed shortcut puts its default back (a dash for these two). Keyboard
+  bindings remain available beside the controller pickers.
+- These global shortcuts are `[input] pad_wheel=back`, `pad_toybox=back+y`, and `pad_menu=back+start` by default;
+  `pad_toybox_add` and `pad_toybox_clear` are `none`, and `none` turns any two-button shortcut off.
   Missing or invalid values use those defaults. Names are the same sixteen names as controller remaps; chords use `+`
   between two different names. Game sections cannot override them, and game remaps never move the physical shortcuts.
 - A shortcut is marked red when its physical button performs a game's action in any game, following that game's remaps.

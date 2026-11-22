@@ -95,6 +95,12 @@ namespace launcher_ui
                 app.CaptureToyboxPad(lost);
                 expect(app.m_toyboxPadCapturing == nullptr && app.m_config["input"]["pad_wheel"] == "a",
                     "losing focus cancels without changing the binding");
+                begin(4);
+                press(SDL_GAMEPAD_BUTTON_BACK);
+                expect(app.m_toyboxPadCapturing != nullptr, "Clear the figures takes two buttons");
+                press(SDL_GAMEPAD_BUTTON_EAST);
+                expect(app.m_config["input"]["pad_toybox_clear"] == "back+b" && app.m_toyboxPadCapturing == nullptr,
+                    "Clear the figures stores its two buttons");
                 expect(LoadLauncherConfig(LauncherConfigPath())["input"]["pad_menu"] == "lt+rt",
                     "the capture saves the settings file");
                 return failures == 0 ? 0 : 1;
