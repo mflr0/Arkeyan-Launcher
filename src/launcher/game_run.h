@@ -24,6 +24,9 @@ std::filesystem::path RuntimeLogFolder();
 inline constexpr char RuntimeLogName[] = "Arkeyan.log";
 inline constexpr char RuntimePreviousLogName[] = "Arkeyan.prev.log";
 inline constexpr char CaptureLogName[] = "skylauncher-game.log";
+// The game logs on disk lose the player's names and drives (report.h, Anonymous): players attach them by hand. Called
+// when the launcher starts and when a game ends; the logs of a game that runs are left to it.
+void CleanGameLogs(const std::filesystem::path& settingsFile);
 
 struct GameRunResult
 {

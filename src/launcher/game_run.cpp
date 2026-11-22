@@ -1,4 +1,5 @@
 #include "launcher/game_run.h"
+#include "launcher/report.h"
 #include "shared/runtime_names.h"
 #include "shared/collection/datadir.h"
 #include "launcher/env.h"
@@ -601,6 +602,32 @@ GameLog NewestGameLog(
         newest = { capture, game, written };
     }
     return newest;
+}
+
+void CleanGameLogs(const std::filesystem::path& settingsFile)
+{
+    launcher_report::Identity identity = launcher_report::CurrentIdentity("");
+    launcher_report::AddSettingsFolders(identity, settingsFile);
+    auto clean = [&](const std::filesystem::path& folder) {
+        launcher_report::AnonymiseFile(runtime_names::ReadLog(folder), identity);
+        launcher_report::AnonymiseFile(runtime_names::ReadLog(folder, true), identity);
+    };
+    bool running = false;
+    const char* override = LauncherEnv("SKY_LAUNCHER_LOG_DIR");
+    for (const GameNames& names : g_gameNames)
+    {
+        if (GameIsRunning(FoldersOf(names.id)))
+            running = true;
+        else if (override == nullptr || *override == 0)
+            clean(LauncherDataFolder() / datadir::GameFolderName(names.id));
+    }
+    if (running)
+        return; // the capture is that game's
+    if (override != nullptr && *override != 0) // tests
+        clean(Path(override));
+    const std::filesystem::path folder = GameLogFolder();
+    launcher_report::AnonymiseFile(folder / CaptureLogName, identity);
+    launcher_report::AnonymiseFile(folder / "skylauncher-game.prev.log", identity);
 }
 
 GameLog LastGameLog()
