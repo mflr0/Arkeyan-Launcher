@@ -6,6 +6,7 @@
 #include "launcher/env.h"
 #include "shared/collection/datadir.h"
 #include "launcher/ui/launcher_ui.h"
+#include "launcher/ui/seat_rows.h"
 #include "shared/collection/icons.h"
 #include <algorithm>
 #include <cctype>
@@ -1447,8 +1448,32 @@ namespace launcher_ui
         const size_t count = std::min(game->seats.size(), m_model.seats.size());
         if (count == 0)
             return;
-        const float w = std::floor((width - SeatGap * float(count - 1)) / float(count));
+        // One row, or two when a seat's label would be cut (seven seats in Imaginators): the players' seats first.
+        std::vector<bool> playerSeat;
+        float widest = 0;
+        ui::PushText(ui::TextStyle::Caption, false);
+        for (size_t i = 0; i < count; i++)
+        {
+            playerSeat.push_back(game->seats[i].player != 0);
+            widest = std::max(widest, ImGui::CalcTextSize(SeatName(i).c_str()).x);
+        }
+        ui::PopText();
+        // The label's room: the seat less its padding, picture and gap, and the X of an occupied seat.
+        auto labelRoom = [](float w) { return w - 2 * SeatPad - SeatPicture - ui::space::S - ui::space::L; };
+        const std::vector<std::vector<size_t>> rows = SeatRows(playerSeat, width, SeatGap, widest, labelRoom);
         const ImVec2 row = ImGui::GetCursorScreenPos();
+        std::vector<ImVec2> seatAt(count), seatEnd(count);
+        for (size_t r = 0; r < rows.size(); r++)
+        {
+            const float w = SeatWidth(width, SeatGap, rows[r].size());
+            const float y = row.y + float(r) * (SeatHeight + SeatGap);
+            for (size_t k = 0; k < rows[r].size(); k++)
+            {
+                const float x = row.x + float(k) * (w + SeatGap);
+                seatAt[rows[r][k]] = ImVec2(x, y);
+                seatEnd[rows[r][k]] = ImVec2(k + 1 == rows[r].size() ? row.x + width : x + w, y + SeatHeight);
+            }
+        }
         m_navSeat = m_hoverSeat = -1;
         m_crossAt.assign(count, ImVec2(-1, -1));
         // The figure being dragged (a card, or a seat's), for the seats that would refuse it and the one it is over.
@@ -1467,8 +1492,7 @@ namespace launcher_ui
         }
         for (size_t i = 0; i < count; i++)
         {
-            const ImVec2 at(row.x + float(i) * (w + SeatGap), row.y),
-                end(i + 1 == count ? row.x + width : at.x + w, at.y + SeatHeight);
+            const ImVec2 at = seatAt[i], end = seatEnd[i];
             ImGui::SetCursorScreenPos(at);
             ImGui::PushID(int(i));
             // The X is submitted over the seat: without this the seat keeps the hover and the X never sees the pointer.
@@ -1607,7 +1631,8 @@ namespace launcher_ui
             }
         }
         DrawSeatMenu();
-        ImGui::SetCursorScreenPos(ImVec2(row.x, row.y + SeatHeight + ui::space::M));
+        ImGui::SetCursorScreenPos(
+            ImVec2(row.x, row.y + float(rows.size()) * (SeatHeight + SeatGap) - SeatGap + ui::space::M));
     }
 
     // The bar: what the shelf is for (a seat being chosen for), the search, the order and Filters.

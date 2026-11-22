@@ -110,6 +110,11 @@ At the first visit to the page (`CollectionPage::Open`):
   those the launcher has a runtime for (`SessionFile` not empty): Spyro's Adventure, Giants (Player 1, Player 2, Item or
   adventure) and Swap Force (Player 1, Player 2, Magic item, Adventure). The page opens on the game chosen in the sidebar
   when it is one of them.
+- **One row of seats, or two** (#190): the seats share the page's width on one row while every seat's name fits beside
+  its picture, with room for the X (measured in the launcher's language, at the window's width); else two rows, the
+  players' seats first (players and vehicles), then the shared ones (item, adventure, trap), each row sharing the width
+  (`launcher/ui/seat_rows.h`). Imaginators' seven seats take two; Spyro's Adventure's four take two in a narrow
+  window. Only the drawing order changes: a seat keeps its index (the session file, dragging, LT / RT).
 - **Placing, two steps**: click a seat (A on it, or LT / RT), it lights up and the bar says "Choose a figure for Player 1 ·
   only what Spyro's Adventure reads"; the shelf then shows only what goes there and the game reads; click a figure: it
   goes on the seat ("Player 1: Splash's"), and the choosing ends. Click the seat again, Cancel, B or Escape stops

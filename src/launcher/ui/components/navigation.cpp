@@ -127,10 +127,12 @@ namespace ui
             Ctx().testNavigationItems->push_back(id);
         if (Ctx().testStops != nullptr)
         {
-            // Where it shows: a row half scrolled out of its list is judged by its visible part.
+            // Where it shows: a row half scrolled out of its list is judged by its visible part; one with less than half
+            // of it in view counts as scrolled out (the model goes past a row scrolled nearly out above).
             ImRect shown = rect;
             shown.ClipWithFull(clip);
-            const bool visible = (g.LastItemData.StatusFlags & ImGuiItemStatusFlags_Visible) != 0;
+            const bool visible = (g.LastItemData.StatusFlags & ImGuiItemStatusFlags_Visible) != 0 &&
+                                 shown.GetHeight() * 2 >= rect.GetHeight();
             Ctx().testStops->push_back(
                 { id, box.root, visible ? shown.Min : rect.Min, visible ? shown.Max : rect.Max, visible });
         }
