@@ -1395,6 +1395,13 @@ namespace
             const std::string anonymous = launcher_report::BuildReport(paths);
             SHELL_EXPECT(anonymous.find("Alice SSD") == std::string::npos);
             SHELL_EXPECT(anonymous.find("Alice Backup") == std::string::npos);
+            // A disc the settings no longer name, quoted by an older log (the report's and Copy game log's).
+            const std::string quoted = "[disc] image /Volumes/Alice Old/SSA.iso opened\n[disc] H:\\Alice USB\\G.ISO\n";
+            WriteBytes(other / "install.prev.log", quoted);
+            const std::string older = launcher_report::BuildReport(paths);
+            SHELL_EXPECT(older.find("Alice Old") == std::string::npos && older.find("Alice USB") == std::string::npos);
+            const std::string copied = launcher_report::Anonymous(quoted, {});
+            SHELL_EXPECT(copied.find("Alice") == std::string::npos && copied.find("SSA.iso") != std::string::npos);
         }
         // The whole report: every file, the versions and the GPU line, all redacted.
         std::filesystem::path data = scratch / "reportdata";

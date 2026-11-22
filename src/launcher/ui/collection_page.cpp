@@ -893,6 +893,8 @@ namespace launcher_ui
             Open();
         collection::ImportReport report = collection::Import(paths);
         Reload();
+        if (report.added > 0)
+            m_allGames = true; // an import can be another game's figure: shown, with the filter's chip
         std::string text = Tf("Imported {}", report.added);
         if (report.duplicates > 0)
             text += Tf(" · {} already there", report.duplicates);

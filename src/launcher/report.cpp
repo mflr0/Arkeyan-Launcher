@@ -320,6 +320,36 @@ launcher_report::Versions launcher_report::ReadVersions(
     return versions;
 }
 
+std::string launcher_report::Anonymous(const std::string& text, Identity identity)
+{
+    // A log can quote a disc that launcher.ini no longer names: every disc image's folder goes.
+    std::istringstream lines(text);
+    for (std::string line; std::getline(lines, line);)
+    {
+        std::string lower = line;
+        for (char& c : lower)
+            c = c >= 'A' && c <= 'Z' ? char(c - 'A' + 'a') : c;
+        size_t from = 0;
+        for (size_t end; (end = lower.find(".iso", from)) != std::string::npos; from = end + 4)
+        {
+            size_t start = std::string::npos;
+            for (size_t at = from; at < end && start == std::string::npos; at++)
+            {
+                const bool opens = at == 0 || std::string(" \t=\"'([").find(line[at - 1]) != std::string::npos;
+                const bool drive = at + 2 < end && line[at + 1] == ':' && (line[at + 2] == '/' || line[at + 2] == '\\');
+                if (opens && (drive || line[at] == '/' || line.compare(at, 2, "\\\\") == 0))
+                    start = at;
+            }
+            if (start == std::string::npos)
+                continue;
+            const size_t slash = line.find_last_of("/\\", end);
+            if (slash != std::string::npos && slash > start + 3)
+                identity.otherFolders.push_back(line.substr(start, slash - start));
+        }
+    }
+    return Redact(text, identity);
+}
+
 std::string launcher_report::BuildReport(const Sources& sources)
 {
     std::string report;
@@ -390,8 +420,10 @@ std::string launcher_report::BuildReport(const Sources& sources)
         key.erase(key.find_last_not_of(" \t") + 1);
         folder.erase(0, folder.find_first_not_of(" \t"));
         const size_t slash = folder.find_last_of("/\\"); // both spellings: a report can quote another system's path
-        if (slash == std::string::npos || (key != "iso" && key != "games"))
+        if (slash == std::string::npos || (key != "iso" && key != "games" && key != "kit"))
             continue;
+        if (key == "kit" && !identity.homeFolder.empty() && folder.starts_with(identity.homeFolder))
+            continue; // already "~", and where in it helps
         if (key == "iso")
             folder.erase(slash);
         if (folder.size() > 3) // never a bare drive: "D:" would be replaced all over the report
@@ -403,7 +435,7 @@ std::string launcher_report::BuildReport(const Sources& sources)
         if (!folder.empty())
             identity.isoFolder = datadir::Text(folder);
     }
-    return Redact(Sanitise(report), identity) + "\n";
+    return Anonymous(Sanitise(report), identity) + "\n";
 }
 
 std::string launcher_report::CrashDetails(const std::string& log)

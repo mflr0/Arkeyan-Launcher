@@ -119,7 +119,8 @@ void ShowGameStopped(const GameInfo& game, int exitCode, const std::string& conf
             return;
         if (pressed == 1)
         {
-            SDL_SetClipboardText(GameLogText().c_str());
+            SDL_SetClipboardText(
+                launcher_report::Anonymous(GameLogText(), launcher_report::CurrentIdentity("")).c_str());
             continue;
         }
         ReportGameStopped(game, exitCode, configPath, config, iso);

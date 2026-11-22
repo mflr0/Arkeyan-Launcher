@@ -304,7 +304,8 @@ namespace launcher_ui
         copy.disabled = !any;
         if (ui::Button(Tr("Copy game log"), copy))
         {
-            SDL_SetClipboardText(GameLogText().c_str());
+            SDL_SetClipboardText(
+                launcher_report::Anonymous(GameLogText(), launcher_report::CurrentIdentity("")).c_str());
             Toast(Tr("Game log copied"), ui::ToastKind::Success);
         }
         ui::SettingRow(Tr("Logs folder"), nullptr);

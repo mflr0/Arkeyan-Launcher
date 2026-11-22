@@ -28,6 +28,8 @@ namespace launcher_report
 
     // This machine's identity, with the disc image the launcher was given (empty: none).
     Identity CurrentIdentity(const std::string& iso);
+    // A text to paste in public (a game's log): redacted, the folders of the disc images it quotes included.
+    std::string Anonymous(const std::string& text, Identity identity);
 
     struct Versions
     {

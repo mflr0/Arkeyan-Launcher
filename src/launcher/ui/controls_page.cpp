@@ -610,6 +610,20 @@ namespace launcher_ui
             DrawGlobalKeys();
         if (DrawFold(Tr("Toy Box shortcuts"), &m_toyboxShortcutsOpen))
             DrawToyboxKeys();
+        // Under no fold: it resets the buttons and the rumble above as well as the shortcuts.
+        ImGui::Dummy(ImVec2(0, ui::space::XS));
+        ui::ButtonOptions reset;
+        reset.kind = ui::ButtonKind::Danger;
+        reset.hold = true;
+        reset.tooltip = Tr("Hold to reset the controller buttons for all games.");
+        if (ui::Button(Tr(strings::ResetKeys), reset))
+        {
+            ResetPadMap(m_config, "");
+            m_toyboxPadCapturing = nullptr;
+            if (!SaveConfig())
+                Toast(Tr("Couldn't save the settings"), ui::ToastKind::Error);
+            Toast(Tr("Controller buttons reset"), ui::ToastKind::Success);
+        }
     }
 
     void App::DrawGlobalKeys()
@@ -802,17 +816,5 @@ namespace launcher_ui
                     : m_toyboxPadCapturing->fallback[1] < 0 ? N_("Press a button (Escape cancels).")
                                                             : N_("Press two buttons in order (Escape cancels).")),
                 ui::color::Ink);
-        ui::ButtonOptions reset;
-        reset.kind = ui::ButtonKind::Danger;
-        reset.hold = true;
-        reset.tooltip = Tr("Hold to reset the controller buttons for all games.");
-        if (ui::Button(Tr(strings::ResetKeys), reset))
-        {
-            ResetPadMap(m_config, "");
-            m_toyboxPadCapturing = nullptr;
-            if (!SaveConfig())
-                Toast(Tr("Couldn't save the settings"), ui::ToastKind::Error);
-            Toast(Tr("Controller buttons reset"), ui::ToastKind::Success);
-        }
     }
 }

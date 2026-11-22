@@ -922,6 +922,7 @@ namespace launcher_ui
             else if (event.drop.data != nullptr)
             {
                 m_homeDisc = m_page == Page::Home ? event.drop.data : "";
+                CancelCaptures();
                 m_page = Page::Play;
                 StartVerify(event.drop.data);
             }
@@ -2165,6 +2166,11 @@ namespace launcher_ui
             TakeFocus(FocusTo::Page);
         if (act && next == nullptr)
         {
+            if (Installing()) // as a dropped disc: the install is using this game's
+            {
+                Toast(Tr("Wait for the installation to finish"));
+                return;
+            }
             const std::string path = ChooseIsoDialog(m_window, m_s->game, "", Tr("Choose a disc"));
             if (!path.empty())
             {
@@ -2907,8 +2913,7 @@ namespace launcher_ui
         ImGui::Dummy(ImVec2(0, ui::space::XXS));
         if (change != ui::TabChange::None)
         {
-            m_capturing = nullptr;
-            m_toyboxPadCapturing = nullptr;
+            CancelCaptures();
             m_s->saveBackupsLoaded = m_s->dataSizesLoaded =
                 false; // the saves and the folders may have changed since the tab was open
         }
@@ -3126,8 +3131,17 @@ namespace launcher_ui
 
     void App::DrawSupport() { DrawLogs(); }
 
+    void App::CancelCaptures()
+    {
+        m_capturing = nullptr;
+        m_mouseCapturing = nullptr;
+        m_toyboxCapturing = nullptr;
+        m_toyboxPadCapturing = nullptr;
+    }
+
     void App::GoTo(Page page)
     {
+        CancelCaptures();
         if (page != Page::Play)
             m_launchPending = false;
         if (m_uninstalled)
