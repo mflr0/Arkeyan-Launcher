@@ -3,6 +3,7 @@
 #include "launcher/game_names.h"
 #include "launcher/ui/collection_page.h"
 #include "launcher/ui/components/feedback.h"
+#include "launcher/ui/components/inputs.h"
 #include "launcher/ui/components/lucide.h"
 #include "shared/embedded_fonts.h"
 #include <SDL3/SDL.h>
@@ -12,7 +13,9 @@
 #include <cmath>
 #include <cstdio>
 #include <filesystem>
+#include <span>
 #include <string>
+#include <vector>
 
 int UiRenderChecks(const std::filesystem::path& scratch)
 {
@@ -136,6 +139,68 @@ int UiRenderChecks(const std::filesystem::path& scratch)
         expect(stbi_write_png((scratch / name).string().c_str(), int(512 * density), int(128 * density), 4,
                    surface->pixels, surface->pitch) != 0,
             "icon screenshot written");
+    }
+    // The tab bar at the smallest window, with a pad: the caps name the buttons that change tab, and the row fits in every
+    // language, the right cap included.
+    {
+        constexpr float ColumnW = 672; // a settings page's content at 1024 wide, beside the sidebar and the scrollbar
+        const ui::Glyphs savedGlyphs = ui::Ctx().glyphs;
+        io.DisplayFramebufferScale = ImVec2(1, 1);
+        io.DisplaySize = ImVec2(1024, 256);
+        auto drawTabs = [&](std::span<const char* const> labels, ui::Glyphs glyphs, auto&& check) {
+            ImGui_ImplSDLRenderer3_NewFrame();
+            ImGui::NewFrame();
+            ui::Ctx().glyphs = glyphs;
+            ImGui::SetNextWindowPos(ImVec2(0, 0));
+            ImGui::SetNextWindowSize(ImVec2(ColumnW, 128));
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+            ImGui::Begin("Tabs", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoSavedSettings);
+            ImDrawList* draw = ImGui::GetWindowDrawList();
+            const int first = draw->VtxBuffer.Size;
+            int current = 0;
+            ui::Tabs("##testtabs", labels, &current);
+            check(draw, first);
+            ImGui::End();
+            ImGui::PopStyleVar();
+            ImGui::Render();
+        };
+        const char* const plain[] = { "One", "Six" }; // no B and no T: those glyphs come from the caps alone
+        drawTabs(plain, ui::Glyphs::Xbox, [&](ImDrawList* draw, int first) {
+            ImFontBaked* baked = text->GetFontBaked(ui::type::Caption);
+            auto count = [&](ImWchar c) {
+                const ImFontGlyph* glyph = baked->FindGlyph(c);
+                int found = 0;
+                for (int v = first; v < draw->VtxBuffer.Size; v++)
+                    found += draw->VtxBuffer[v].uv.x == glyph->U0 && draw->VtxBuffer[v].uv.y == glyph->V0;
+                return found;
+            };
+            expect(count('T') == 2 && count('B') == 0, "the tab caps name LT and RT, the buttons that change tab");
+        });
+        const char* const game[] = { "Video", "Keyboard", "Controller", "Sound", "Language", "Disc", "Saves", "Game" };
+        const char* const launcher[] = { "Controls", "Launcher", "Support", "About", "Profiles" };
+        for (const auto& lang : i18n::Languages())
+        {
+            i18n::SetLanguage(lang.code);
+            for (std::span<const char* const> source :
+                { std::span<const char* const>(game), std::span<const char* const>(launcher) })
+            {
+                std::vector<const char*> labels;
+                for (const char* label : source)
+                    labels.push_back(i18n::Tr(label));
+                for (ui::Glyphs glyphs : { ui::Glyphs::Xbox, ui::Glyphs::PlayStation, ui::Glyphs::Nintendo })
+                    drawTabs(labels, glyphs, [&](ImDrawList* draw, int first) {
+                        float right = 0;
+                        for (int v = first; v < draw->VtxBuffer.Size; v++)
+                            right = std::max(right, draw->VtxBuffer[v].pos.x);
+                        if (right > ColumnW)
+                            fprintf(stderr, "tabs %s (%d labels): %.0f of %.0f points\n", lang.code.c_str(),
+                                int(labels.size()), right, ColumnW);
+                        expect(right <= ColumnW, "the tabs and both caps fit the smallest window");
+                    });
+            }
+        }
+        i18n::SetLanguage(language);
+        ui::Ctx().glyphs = savedGlyphs;
     }
     ui::Ctx().fonts = savedFonts;
     ImGui_ImplSDLRenderer3_Shutdown();

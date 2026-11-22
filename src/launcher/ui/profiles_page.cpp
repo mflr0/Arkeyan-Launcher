@@ -383,8 +383,10 @@ namespace launcher_ui
         ImGui::EndGroup();
         ImGui::SetCursorScreenPos(ImVec2(at.x, std::max(ImGui::GetCursorScreenPos().y, at.y + big + 8) + ui::space::M));
         const bool named = !preview.name.empty();
-        const ui::ModalResult result = ui::ModalActions(
-            &open, named ? (existing != nullptr ? Tr("Save") : Tr("Create the profile")) : nullptr, Tr("Cancel"));
+        const char* confirm = existing != nullptr ? Tr("Save") : Tr("Create the profile");
+        if (m_testPadWalk)
+            m_drawn["profile-confirm"] = confirm != nullptr ? "shown" : "hidden";
+        const ui::ModalResult result = ui::ModalActions(&open, confirm, Tr("Cancel"), ui::ModalKind::Normal, named);
         ui::EndModal();
         if (result == ui::ModalResult::Confirm && named)
         {

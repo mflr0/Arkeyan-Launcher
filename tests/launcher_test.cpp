@@ -2422,6 +2422,16 @@ static void PadWalkChecks(const std::filesystem::path& scratch, const std::strin
             views = std::atoi(line.c_str() + 9);
     }
     EXPECT(views == 51);
+    // The smallest window: the sidebar fits.
+    const std::string small = "SKY_LAUNCHER_TEST_SIZE=1024x680 SKY_LAUNCHER_TEST_PADWALK_VIEW=01- " + command;
+    EXPECT(std::system(small.c_str()) == 0);
+    std::ifstream smallOut(root / "out.txt");
+    while (std::getline(smallOut, line))
+    {
+        if (line.find("FAIL") != std::string::npos)
+            fprintf(stderr, "%s\n", line.c_str());
+        EXPECT(line.find("FAIL") == std::string::npos);
+    }
     printf("Pad walk: %d views, every control reached, B and LB / RB checked\n", views);
 }
 

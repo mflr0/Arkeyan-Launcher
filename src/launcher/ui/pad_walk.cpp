@@ -530,6 +530,10 @@ namespace launcher_ui
                     fail("a settings legend must contain LT RT Tabs");
                 if (modal && !has(ui::PadButton::LeftTrigger) && hints.size() != 2)
                     fail("a dialog without tabs must only name Select and its back action");
+                if (m_drawn["sidebar-fit"] == "cut")
+                    fail("the sidebar's games and Coming later must fit the window");
+                if (name.starts_with("37-") && m_drawn["profile-confirm"] != "shown")
+                    fail("New profile must show its Create button before a name is typed");
             }
             w.phase = 2;
             return;

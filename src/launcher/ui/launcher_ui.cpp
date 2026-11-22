@@ -1849,23 +1849,27 @@ namespace launcher_ui
 
         // The games scroll in their own list between the header and the footer (Collection, Settings), which never move.
         const float footer = 2 * ui::height::Normal + ui::space::XXS;
+        float listH;
         {
             const ImVec2 listAt = ImGui::GetCursorScreenPos();
-            const float listH = std::max(ui::height::Large,
+            listH = std::max(ui::height::Large,
                 ImGui::GetWindowPos().y + ImGui::GetWindowHeight() - ui::space::L - footer - ui::space::S - listAt.y);
             ImGui::BeginChild("##games", ImVec2(SidebarW - 2 * ui::space::S, listH), ImGuiChildFlags_NavFlattened,
                 ImGuiWindowFlags_NoScrollbar);
         }
         // The games: only those with a runtime can be selected. The ones not out yet fold into one row under them.
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, ui::space::XXS));
-        std::vector<const LauncherGameEntry*> later;
+        std::vector<const LauncherGameEntry*> shown, later;
         for (const LauncherGameEntry& entry : LauncherGameCatalog(m_config))
+            (entry.enabled && FindGame(entry.id) != nullptr ? shown : later).push_back(&entry);
+        // In the smallest window the games' rows give up a few points each, so Coming later is never half under the edge.
+        const size_t rowCount = shown.size() + (later.empty() ? 0 : 1);
+        const float rowsH = listH - (later.empty() ? 0.0f : ui::height::Normal) - float(rowCount) * ui::space::XXS;
+        const float gameRowH = std::clamp(std::floor(rowsH / float(std::max<size_t>(shown.size(), 1))),
+            ui::height::Normal + ui::space::XS, ui::height::Large);
+        for (const LauncherGameEntry* game : shown)
         {
-            if (!entry.enabled || FindGame(entry.id) == nullptr)
-            {
-                later.push_back(&entry);
-                continue;
-            }
+            const LauncherGameEntry& entry = *game;
             ImGui::PushID(entry.id);
             // Every game has its slot: its icon and disc state show here, not just the shown one's.
             GameSlot* slot = &SlotFor(*FindGame(entry.id));
@@ -1882,6 +1886,7 @@ namespace launcher_ui
             options.status = &status;
             options.statusIcon = IconOf(line.state);
             options.leadWidth = GameLogoW;
+            options.exactHeight = gameRowH;
             options.note = version.empty() ? nullptr : version.c_str();
             options.selected = selected;
             options.selectedColor = ReadableAccent(entry.id, 3.0f); // the game's colour, bright enough on the sidebar
@@ -1935,6 +1940,8 @@ namespace launcher_ui
                 }
         }
         ImGui::PopStyleVar();
+        if (m_testPadWalk) // folded, every game and Coming later show without scrolling
+            m_drawn["sidebar-fit"] = ImGui::GetScrollMaxY() > 0.5f ? "cut" : "whole";
         ImGui::EndChild();
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, ui::space::XXS));
 
@@ -2461,7 +2468,7 @@ namespace launcher_ui
             ui::PillOptions portalPill;
             portalPill.icon = ui::IconOf(ui::Status::Success);
             portalPill.iconColor = ui::ColorOf(ui::Status::Success);
-            portalPill.trailing = ui::Icon::ChevronDown;
+            portalPill.trailing = ui::Icon::ChevronRight; // it opens its settings: no menu
             portalPill.overArt = true;
             portalPill.tooltip = portalTip.c_str();
             // The controller picker: what the game listens to, a menu of the choices above it (the pad icon says what it picks, the

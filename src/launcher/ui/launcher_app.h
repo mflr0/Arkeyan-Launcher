@@ -641,7 +641,7 @@ namespace launcher_ui
         void RunUninstallEverything();
         void ExportFiguresFirst(); // collection_manage.cpp: the existing export, of every figure
         void TestUninstallScript(uint64_t now);
-        // The tabs of a settings page: words on one line, an accent line under the selected one; LB / RB change tab.
+        // The tabs of a settings page: words on one line, an accent line under the selected one; LT / RT change tab.
         // True when the tab changed (by a click or a bumper).
         bool DrawTabBar(const char* const* labels, int count, int* current);
         // A settings page's head: the centred column, the title (Display) and, when `back`, the Back button at its right.
@@ -682,7 +682,7 @@ namespace launcher_ui
         void TestGalleryScript(uint64_t now);
 
         // Pages and focus (docs/launcher_ui.md, "Navigation model"). The sidebar and the page are separate windows, which the
-        // D-pad doesn't cross: LB / RB change tabs where present, otherwise the main page. B goes back one step (to Home,
+        // D-pad doesn't cross: LT / RT change tabs, LB / RB the main page. B goes back one step (to Home,
         // then on Home to the sidebar); A on a sidebar row moves the focus into its page.
         void GoTo(Page page);
         void Back();

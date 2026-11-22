@@ -509,7 +509,7 @@ namespace ui
         return true;
     }
 
-    ModalResult ModalActions(bool* open, const char* confirm, const char* cancel, ModalKind kind)
+    ModalResult ModalActions(bool* open, const char* confirm, const char* cancel, ModalKind kind, bool canConfirm)
     {
         g_modalBack.back() = cancel;
         ModalResult result = ModalResult::None;
@@ -517,19 +517,20 @@ namespace ui
         ButtonOptions cancelOptions;
         ButtonOptions confirmOptions;
         confirmOptions.kind = kind == ModalKind::Danger ? ButtonKind::Danger : ButtonKind::Primary;
+        confirmOptions.disabled = !canConfirm;
         float width = ButtonWidth(cancel, cancelOptions) +
                       (confirm != nullptr ? space::S + ButtonWidth(confirm, confirmOptions) : 0);
         ImGui::SetCursorPosX(ImGui::GetCursorPosX() + std::max(0.0f, ImGui::GetContentRegionAvail().x - width));
         if (Button(cancel, cancelOptions))
             result = ModalResult::Cancel;
-        if ((kind == ModalKind::Danger || confirm == nullptr) && ImGui::IsWindowAppearing())
+        if ((kind == ModalKind::Danger || confirm == nullptr || !canConfirm) && ImGui::IsWindowAppearing())
             ImGui::SetItemDefaultFocus();
         if (confirm != nullptr)
         {
             ImGui::SameLine(0, space::S);
             if (Button(confirm, confirmOptions))
                 result = ModalResult::Confirm;
-            if (kind != ModalKind::Danger && ImGui::IsWindowAppearing())
+            if (kind != ModalKind::Danger && canConfirm && ImGui::IsWindowAppearing())
                 ImGui::SetItemDefaultFocus();
         }
         if (result != ModalResult::None)

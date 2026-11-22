@@ -206,7 +206,7 @@ portal names prominent and empty seats as tall as occupied ones, without changin
 | | |
 |---|---|
 | When | The pages of a settings screen (two to six words). |
-| API | `TabChange ui::Tabs(id, labels, &current, TabsOptions{bumpers, focusSelected, showFocus})`: `None`, `Click` or `Bumper`. LT / RT change tab (LB / RB change the main page), in a dialog's tabs too; with a pad in use their key caps show at the row's ends. Height `Normal`, `space::XL` between tabs. |
+| API | `TabChange ui::Tabs(id, labels, &current, TabsOptions{bumpers, focusSelected, showFocus})`: `None`, `Click` or `Bumper`. LT / RT change tab (LB / RB change the main page), in a dialog's tabs too; with a pad in use their key caps (LT and RT) show at the row's ends. Height `Normal`, `space::XL` between tabs; a row too long for its room narrows the gaps to `M`, then the labels (down to `Caption`). |
 | States | The selected tab bold `Ink` with the accent line (`stroke::Selection`); others `Dim`, `Ink` under the pointer with a hairline; focus ring. |
 
 ### Segmented
@@ -679,6 +679,8 @@ every game shows its real state and art at once ("Update all" on Home's title li
      icons of Collection and Settings centred in it): all the titles start on one edge.
    - Collection and Settings at the bottom (sentence case), rows with an icon, L from the window's foot.
    - Rows are reachable with the keyboard and the pad like the others.
+   - In the smallest window the games' rows shrink (from `Large` down to `Normal` + XS), so the list and its Coming later
+     row fit without scrolling.
 2. **Play** (the game page, no tabs): see "Game page hero" below. The disc's art fills the page; title,
    state, commands and device pills sit on it, with the collection's portal at the right. There is no bottom bar.
    - The speaker at the top right switches game music on or off for every game; it is shown only when the disc theme is cached.
@@ -1046,12 +1048,12 @@ its existing layout and shortcuts; pad-only legends and extra banner height are 
 | Home | LB RB Pages, A Select, B Back (to the sidebar). |
 | Game page | LB RB Pages, Y Game settings when no game is running, A Select, B Back. |
 | Install card and compact installation progress | The game-page legend plus X Show details / Hide details. A selects the enabled Retry, Resume, Copy log, Logs, details or Cancel control. Opening a detailed card focuses its first enabled footer action. |
-| Settings: Controls, Launcher, Support, About, Profiles | LB RB Tabs, A Select, B Back. B closes the uninstall list before leaving Settings. The profile editor's ten color choices use the shared focus ring and navigation stops. |
-| Game settings: Video, Keyboard, Controller, Sound, Language, Disc, Saves, Game | LB RB Tabs, A Select, B Back to the game page. |
+| Settings: Controls, Launcher, Support, About, Profiles | LB RB Pages, LT RT Tabs, A Select, B Back. B closes the uninstall list before leaving Settings. The profile editor's ten color choices use the shared focus ring and navigation stops. |
+| Game settings: Video, Keyboard, Controller, Sound, Language, Disc, Saves, Game | LB RB Pages, LT RT Tabs, A Select, B Back to the game page. |
 | Achievements | LB RB Pages, A Select, B Back to the game page. |
 | Collection | LB RB Pages, the available X action, Y Search, LT RT Other seat when seats exist, A Select, B Back. |
 | Figure sheet, Add a figure | A Select, B Close; Edit and Change the top/bottom use B Back for their inner step. |
-| Manage | LB RB Tabs, A Select, B Close. |
+| Manage | LT RT Tabs, A Select, B Close. |
 | Confirmations, profile editor and portable export question | A Select, B Cancel (or the question's actual cancellation label). Destructive confirmations keep the safe default focus. |
 | Crash/problem report, release notes and file-integrity dialog | A Select, B Close. Save, copy, release-page and repair actions are reachable controls selected with A. |
 | Quit during installation and Defender notice | A Select, B Keep installing or B Not now, respectively. |
@@ -1070,7 +1072,7 @@ B and tab bumper behavior; it requires a window and is separate from the standal
   hand call `App::FocusRing`, which draws the same ring. The page's columns are `ImGuiChildFlags_NavFlattened`.
 - **Pad and keyboard** ("Navigation model"). The sidebar and the page are separate windows: B / Escape on Home moves the focus
   to the sidebar's current row; A on a row opens its page with the focus on its first control (`App::GoTo`, `TakeFocus`).
-  LB / RB change the tab (`App::DrawTabBar`, Manage) where present, otherwise the main page; LT / RT change the seat the
+  LT / RT change the tab (`App::DrawTabBar`, Manage), LB / RB the main page; in the Collection LT / RT change the seat the
   Collection chooses for. The launcher starts with the focus in the sidebar. The ARKEYAN LAUNCHER title is not a stop (it is Home's link for the pointer):
   Home is the start page, and its games are the sidebar's rows.
 - **Hold to confirm.** What deletes or overwrites is a red button held for a second (`App::HoldButton`, the state in
