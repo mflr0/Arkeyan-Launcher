@@ -13,6 +13,20 @@ namespace ui
 {
     namespace
     {
+        // A value easing towards `target` (0 or 1) over motion::Fast, kept per item; at once with reduced motion.
+        float Ease(ImGuiID id, float target)
+        {
+            ImGuiStorage* storage = ImGui::GetStateStorage();
+            float* value = storage->GetFloatRef(id, target);
+            if (Ctx().reduceMotion)
+                return *value = target;
+            float step = ImGui::GetIO().DeltaTime * 1000.0f / motion::Fast;
+            *value = *value < target ? std::min(target, *value + step) : std::max(target, *value - step);
+            if (*value != target)
+                Ctx().animating = true;
+            return *value;
+        }
+
         // The frame of a field or a select: height::Normal, the inset grey, its edge; ImGui's own focus cursor off (ours).
         constexpr int FieldVars = 4, FieldColors = 6;
         void PushField(float padLeft = space::M)

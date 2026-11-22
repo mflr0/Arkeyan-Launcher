@@ -1759,7 +1759,7 @@ namespace launcher_ui
 
     // The game's logo (with "Skylanders" on it) once its disc has been read, else its initials on its colour (at most
     // height::Normal across); centred in the box.
-    void App::DrawGameMark(ImDrawList* draw, const LauncherGameEntry& entry, ImVec2 at, ImVec2 size, float lit)
+    void App::DrawGameMark(ImDrawList* draw, const LauncherGameEntry& entry, ImVec2 at, ImVec2 size)
     {
         const ArtTexture* logo =
             entry.enabled ? CachedArt(entry.id, LauncherAssets::Role::Logo, int(size.x * 2.5f)) : nullptr;
@@ -1769,10 +1769,18 @@ namespace launcher_ui
             DrawLogo(draw, *logo, ImVec2(at.x, at.y + (size.y - h) / 2), ImVec2(size.x, h), 1, false);
             return;
         }
-        // Not read yet: the game's own Portal of Power (feedback.h).
         const ImVec2 centre(at.x + size.x / 2, at.y + size.y / 2);
-        ui::DrawPortalMark(
-            draw, centre, std::min(size.y, ui::height::Large), PortalOf(entry.id), entry.enabled ? 1.0f : 0.35f, lit);
+        const float radius = std::min(size.y, ui::height::Normal) / 2;
+        draw->AddCircleFilled(centre, radius, ui::Col(entry.accent, entry.enabled ? 1.0f : 0.35f));
+        ImGui::PushFont(ui::Ctx().fonts.title, radius);
+        // The first letters of its words, two at most: SA, G, SF.
+        char letters[3] = {};
+        for (const char* c = entry.name; *c != 0 && letters[1] == 0; c++)
+            if (c == entry.name || c[-1] == ' ')
+                letters[letters[0] == 0 ? 0 : 1] = *c;
+        const ImVec2 extent = ImGui::CalcTextSize(letters);
+        draw->AddText(ImVec2(centre.x - extent.x / 2, centre.y - extent.y / 2), Rgb(BadgeInk), letters);
+        ImGui::PopFont();
     }
 
     void App::DrawSidebar()
@@ -1880,13 +1888,7 @@ namespace launcher_ui
             options.progress = line.progress;
             options.progressColor = StyleOf(entry.id).top;
             options.imageWidth = GameLogoW;
-            options.image = [&](ImDrawList* list, ImVec2 at, ImVec2 box) {
-                // Its portal is on while the game is shown, under the pointer or with the focus (the row is the last
-                // item), fading in and out.
-                const ui::State row = ui::ItemState();
-                DrawGameMark(list, entry, at, box,
-                    ui::Ease(ImGui::GetID("##portal-lit"), selected || row.hovered || row.focused ? 1.0f : 0.0f));
-            };
+            options.image = [&](ImDrawList* list, ImVec2 at, ImVec2 box) { DrawGameMark(list, entry, at, box); };
             if (ui::ListRow(entry.name, options) && !m_uninstalled)
             {
                 if (std::string_view(entry.id) != m_s->game.id)

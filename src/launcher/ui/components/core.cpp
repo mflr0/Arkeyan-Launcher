@@ -10,19 +10,6 @@
 
 namespace ui
 {
-    float Ease(ImGuiID id, float target)
-    {
-        ImGuiStorage* storage = ImGui::GetStateStorage();
-        float* value = storage->GetFloatRef(id, target);
-        if (Ctx().reduceMotion)
-            return *value = target;
-        float step = ImGui::GetIO().DeltaTime * 1000.0f / motion::Fast;
-        *value = *value < target ? std::min(target, *value + step) : std::max(target, *value - step);
-        if (*value != target)
-            Ctx().animating = true;
-        return *value;
-    }
-
     namespace
     {
         Context g_context;

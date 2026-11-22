@@ -30,6 +30,7 @@ namespace LauncherTheme
                               BottomBarRaisedActive = 0x26262C;
     inline constexpr unsigned BottomBarBorder = 0x50505E;
     inline constexpr unsigned BottomBarInk = 0xF2F2F2;
+    inline constexpr unsigned BadgeInk = 0x15171C; // initials on the coloured game badges
     // Surfaces (settings cards, fields, buttons, menus): the sidebar's neutral greys, each with its hover and pressed shade.
     inline constexpr unsigned Panel = 0x26262C;
     inline constexpr unsigned PanelRaised = 0x3A3A42, PanelRaisedHover = 0x47474F, PanelRaisedActive = 0x55555E;
@@ -96,14 +97,6 @@ namespace LauncherTheme
         0xF07008 }; // the title's letters, orange to red; its navy outline
     inline constexpr GameStyle ImaginatorsStyle = { 0x60A8D8, 0x0070A0, 0x0A1A3A,
         0x58A8D8 }; // the title's blue letters, light to deep; dark navy ink
-    // Each game's Portal of Power as its mark before the disc's logo is read (ui::PortalLook: body, light, trim).
-    inline constexpr unsigned PortalBase = 0x22252B; // the dark plastic under a portal
-    inline constexpr unsigned SsaPortal[3] = { 0x59606B, 0xE6ECEF, 0x34C759 }; // dark stone, white top, green band
-    inline constexpr unsigned GiantsPortal[3] = { 0x6A717C, 0xFFB43A, PortalBase }; // stone, its top lit gold
-    inline constexpr unsigned SwapForcePortal[3] = { 0x9AA2AC, 0xBFE04A, PortalBase }; // pale stone, lit lime
-    inline constexpr unsigned TrapTeamPortal[3] = { 0xE4ECF0, 0xE8B23A, 0xDE0018 }; // clear ring, gold slot, red lamp
-    inline constexpr unsigned SuperChargersPortal[3] = { 0x3E4652, 0x5FD3F0, 0x2F7BE0 }; // black pad, blue flames, rim
-    inline constexpr unsigned ImaginatorsPortal[3] = { 0x3E4652, 0x8FDBF7, 0x2F7BE0 }; // the same pad, a crystal
     // The game's style by catalogue id; the launcher's own blue for a game without one.
     const GameStyle& StyleOf(const char* game);
 
