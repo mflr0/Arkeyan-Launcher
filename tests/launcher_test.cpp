@@ -1843,6 +1843,7 @@ int SettingsChecks(const std::filesystem::path& scratch); // tests/settings_test
 int I18nChecks(); // tests/i18n_test.cpp
 int UninstallChecks(const std::filesystem::path& scratch); // tests/uninstall_test.cpp
 int TextFitChecks(); // tests/text_fit_test.cpp
+int SeatRowsChecks(); // tests/seat_rows_test.cpp
 int UiRenderChecks(const std::filesystem::path& scratch); // tests/ui_render_test.cpp
 int NavigationChecks(); // tests/navigation_test.cpp
 int AccentChecks(const std::filesystem::path& scratch); // tests/accent_test.cpp, in a process of its own
@@ -3150,6 +3151,7 @@ static int RunChecks(int argc, char** argv)
     g_failures += ToyboxLinkChecks(scratch / "toybox-link");
     g_failures += I18nChecks();
     g_failures += TextFitChecks();
+    g_failures += SeatRowsChecks();
     g_failures += UiRenderChecks(scratch / "ui-render");
     g_failures += NavigationChecks();
     g_failures += AccentChecksInChild(argv[0], scratch);
