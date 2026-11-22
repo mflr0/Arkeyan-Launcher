@@ -442,6 +442,15 @@ namespace launcher_ui
             m_addLabel[0] = 0;
             Reload();
             Toast(Tf("Created {}", versionName), ui::ToastKind::Success);
+            // Opened from an empty seat's +: straight onto that seat when it takes the figure, and Add a figure closes.
+            const collection::Figure* made = m_model.Find(path);
+            if (m_addSeat >= 0 && made != nullptr && m_model.seats.size() > size_t(m_addSeat) &&
+                m_model.seats[size_t(m_addSeat)].empty() && Refusal(size_t(m_addSeat), *made).empty())
+            {
+                PutOn(size_t(m_addSeat), path);
+                m_created.clear();
+                CloseOverlay();
+            }
         }
     }
 

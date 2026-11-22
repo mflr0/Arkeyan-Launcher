@@ -426,6 +426,89 @@ namespace launcher_ui
                 expect(page.m_model.seats[0] == gill && page.m_model.seats[2] == anvil && page.m_swapFrom < 0,
                     "a seat that refuses the figure keeps its own");
             }
+            else if (mode == "seat-add")
+            {
+                // An empty seat's + opens Add a figure for that seat, and the figure made there goes straight onto it;
+                // the rest of the seat still chooses among the shelf's figures; the pad's X on an empty seat opens it too.
+                const std::string gill = collection::Create(14), anvil = collection::Create(200),
+                                  pack = collection::Create(300);
+                expect(!gill.empty() && !anvil.empty() && !pack.empty(), "synthetic figures created");
+                page.Reload();
+                page.PutOn(0, gill);
+                page.PutOn(2, anvil);
+                page.PutOn(3, pack);
+                expect(page.m_model.seats.size() == 4 && page.m_model.seats[1].empty() && page.m_model.seats[3] == pack,
+                    "only Player 2's seat is empty");
+                app.Frame();
+                items.clear();
+                app.Frame();
+                uint32_t plus = 0;
+                for (const auto& [id, label] : ui::Ctx().testNavigationLabels)
+                    if (label == "##seat-add")
+                        plus = plus == 0 ? id : uint32_t(-1);
+                expect(plus != 0 && plus != uint32_t(-1), "one + for the one empty seat");
+                std::vector<uint32_t> seats;
+                for (uint32_t id : items)
+                    if (ui::Ctx().testNavigationLabels[id] == "##seat")
+                        seats.push_back(id);
+                expect(seats.size() == 4, "four seats");
+                if (plus != 0 && plus != uint32_t(-1))
+                {
+                    ImGui::ActivateItemByID(plus);
+                    app.Frame();
+                    app.Frame();
+                }
+                expect(page.m_overlay == CollectionPage::Overlay::Add && page.m_addSeat == 1 && page.m_choosing < 0,
+                    "the + opens Add a figure for its seat");
+                const collection::Toy* spyroToy = collection::Catalogue::Get().Find(16);
+                const collection::Toy* itemToy = collection::Catalogue::Get().Find(201);
+                expect(spyroToy != nullptr && itemToy != nullptr, "catalogue toys");
+                if (spyroToy == nullptr || itemToy == nullptr)
+                    return 1;
+                // An item made from Player 2's + does not go there: Add a figure stays, offering the seat it fits.
+                page.m_addVersion = 0;
+                page.CreateAddFigure(itemToy, itemToy->name);
+                expect(page.m_model.seats[1].empty() && page.m_overlay == CollectionPage::Overlay::Add &&
+                           !page.m_created.empty(),
+                    "a figure the seat refuses stays off it");
+                page.CreateAddFigure(spyroToy, spyroToy->name);
+                const std::string made = page.m_created.empty() ? page.m_model.seats[1] : std::string();
+                expect(!made.empty() && page.m_model.Find(made) != nullptr && page.m_model.Find(made)->type == 16,
+                    "the figure made from the + is on its seat");
+                expect(
+                    page.m_overlay == CollectionPage::Overlay::None && page.m_addSeat < 0, "and Add a figure closes");
+                // From the header's Add a figure, a new figure stays off the portal.
+                page.TakeOff(1);
+                page.OpenAdd();
+                page.CreateAddFigure(spyroToy, spyroToy->name);
+                expect(page.m_model.seats[1].empty() && page.m_overlay == CollectionPage::Overlay::Add,
+                    "Add a figure from the header puts nothing on a seat");
+                page.m_overlay = CollectionPage::Overlay::None;
+                app.Frame();
+                items.clear();
+                app.Frame();
+                // The rest of the seat: choosing for it, as before.
+                if (seats.size() == 4)
+                {
+                    ImGui::ActivateItemByID(seats[1]);
+                    app.Frame();
+                    app.Frame();
+                }
+                expect(page.m_choosing == 1 && page.m_overlay == CollectionPage::Overlay::None,
+                    "the rest of the seat chooses for it");
+                page.Choose(-1);
+                // The pad: X on the focused empty seat (the test's pad keys count with no pad plugged in).
+                app.m_testPadInput = true;
+                page.TestFocusSeat(1);
+                app.Frame();
+                app.Frame();
+                ImGui::GetIO().AddKeyEvent(ImGuiKey_GamepadFaceLeft, true);
+                app.Frame();
+                ImGui::GetIO().AddKeyEvent(ImGuiKey_GamepadFaceLeft, false);
+                app.Frame();
+                expect(page.m_overlay == CollectionPage::Overlay::Add && page.m_addSeat == 1,
+                    "the pad's X on an empty seat opens Add a figure for it");
+            }
             ui::Ctx().testHeld = 0;
             ui::Ctx().testNavigationItems = nullptr;
             return failures == 0 ? 0 : 1;
