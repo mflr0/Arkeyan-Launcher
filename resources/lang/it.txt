@@ -1267,7 +1267,6 @@ Leave	Esci
 Online	Online
 Online with {}	Online con {}
 A player couldn't join: {}	Un giocatore non è riuscito a unirsi: {}
-Ask your friend for the room's password and type it in the Online tab.	Chiedi al tuo amico la password della stanza e inseriscila nella scheda Online.
 Both choose the same game, then try again.	Scegliete entrambi lo stesso gioco, poi riprovate.
 Both update the launcher in Settings, then try again.	Aggiornate entrambi il launcher in Impostazioni, poi riprovate.
 Change it only if another program uses it.	Cambiala solo se la usa un altro programma.
@@ -1292,13 +1291,11 @@ How PLAY starts the game	Come GIOCA avvia il gioco
 How it works	Come funziona
 How to fix it	Come risolvere
 I'm ready	Sono pronto
-If your friend set one.	Se il tuo amico ne ha impostata una.
 If your router refuses, open (forward) port {} for UDP and TCP to this computer in your router's settings.	Se il router rifiuta, apri (inoltra) la porta {} per UDP e TCP verso questo computer nelle impostazioni del router.
 Invite your friend	Invita il tuo amico
 JOIN A ROOM	UNISCITI A UNA STANZA
 Joining your friend's room...	Accesso alla stanza del tuo amico...
 Lets friends outside your home in. Most routers allow it.	Fa entrare gli amici che non sono a casa tua. La maggior parte dei router lo permette.
-No access to the router? Both install the same free virtual network, such as Tailscale or ZeroTier, and use the address it gives this computer.	Non puoi accedere al router? Installate entrambi la stessa rete virtuale gratuita, come Tailscale o ZeroTier, e usate l'indirizzo che assegna a questo computer.
 No figures on the portal yet	Nessuna figura sul portale per ora
 Not in the same home? Their router may block it: their room shows them how to fix it.	Non siete nella stessa casa? Il suo router potrebbe bloccare la connessione: la sua stanza gli mostra come risolvere.
 Not ready	Non pronto
@@ -1311,9 +1308,6 @@ Open my router automatically	Apri il mio router automaticamente
 Open my router automatically asks your router with UPnP or NAT-PMP.	"Apri il mio router automaticamente" invia una richiesta al router tramite UPnP o NAT-PMP.
 Open or join a room again to play.	Apri o raggiungi di nuovo una stanza per giocare.
 Open the Online tab	Apri la scheda Online
-Optional. Your friend types it to join.	Facoltativa. Il tuo amico la inserisce per unirsi.
-Or both install the same free virtual network, such as Tailscale or ZeroTier, and send the address it gives this computer, with the port.	Oppure installate entrambi la stessa rete virtuale gratuita, come Tailscale o ZeroTier, e inviate l'indirizzo che assegna a questo computer, con la porta.
-Password	Password
 Paste it below	Incollalo qui sotto
 Play with a friend on another system. Not tested yet: both must turn it on.	Gioca con un amico su un altro sistema. Non ancora testato: dovete attivarlo entrambi.
 Play with a friend over the internet, each on your own computer.	Gioca con un amico su internet, ognuno sul proprio computer.
@@ -1339,8 +1333,6 @@ Try again. If it keeps failing, both restart the launcher.	Riprovate. Se continu
 Waiting for player 2	In attesa del giocatore 2
 Waiting for player 2 to join.	In attesa che il giocatore 2 si unisca.
 Waiting for {} to be ready.	In attesa che {} sia pronto.
-With a virtual network such as Tailscale or ZeroTier, use the address it gives your friend's computer.	Con una rete virtuale come Tailscale o ZeroTier, usa l'indirizzo che assegna al computer del tuo amico.
-Wrong password	Password errata
 You both choose your figures and press I'm ready. Then you press Start.	Scegliete entrambi le vostre figure e premete "Sono pronto". Poi tu premi Avvia.
 You both need this game with the same disc edition, and the same launcher version.	Dovete avere entrambi questo gioco con la stessa edizione del disco e la stessa versione del launcher.
 You chose different games	Avete scelto giochi diversi
@@ -1368,7 +1360,6 @@ Start	Avvia
 The connection failed; open or join a room again.	Connessione non riuscita; apri o raggiungi di nuovo una stanza.
 The other player left; open or join a room again.	L'altro giocatore è uscito; apri o raggiungi di nuovo una stanza.
 The other player stopped answering; check your connection and reconnect.	L'altro giocatore non risponde più; controlla la connessione e riconnettiti.
-The password doesn't match; ask the host and try again.	La password non corrisponde; chiedila all'host e riprova.
 This port is busy; choose another port.	Questa porta è occupata; scegli un'altra porta.
 This room is full; ask the host to open another room.	Questa stanza è piena; chiedi all'host di aprirne un'altra.
 You chose different games; choose the same game.	Avete scelto giochi diversi; scegliete lo stesso gioco.
@@ -1391,27 +1382,37 @@ Another program uses it. Choose another port in the Online tab, for example 4764
 Check the room code: ask them to copy it again.	Controlla il codice della stanza: chiedigli di copiarlo di nuovo.
 Get the room code	Ottieni il codice della stanza
 Getting your room code...	Recupero del codice della stanza...
-In Room code, with the password if there is one.	In Codice della stanza, con la password se c'è.
-In the room, copy your room code and send it to them by message, with the password if you set one.	Nella stanza, copia il codice della stanza e inviaglielo con un messaggio, con la password se ne hai impostata una.
 In the same home, ask your friend for the code under How to fix it in their room.	Nella stessa casa, chiedi al tuo amico il codice sotto Come risolvere, nella sua stanza.
-It looks like K7QD-M2XA: letters and digits in groups of four. Ask your friend to copy it again from their room and paste it whole.	Somiglia a K7QD-M2XA: lettere e cifre in gruppi di quattro. Chiedi al tuo amico di copiarlo di nuovo dalla sua stanza e di incollarlo per intero.
 Open port {} (UDP and TCP) to this computer in your router's settings: search the web for your router's name and "port forwarding".	Apri la porta {} (UDP e TCP) verso questo computer nelle impostazioni del router: cerca sul web il nome del tuo router e "port forwarding".
 Paste your friend's room code first.	Incolla prima il codice della stanza del tuo amico.
 Room code	Codice della stanza
 Room code copied. Paste it in a message to your friend.	Codice della stanza copiato. Incollalo in un messaggio al tuo amico.
-Send your friend this room code and the password:	Invia al tuo amico questo codice della stanza e la password:
 Send your friend this room code:	Invia al tuo amico questo codice della stanza:
 The host didn't answer; check the room code and ask them to open the room.	L'host non ha risposto; controlla il codice della stanza e chiedigli di aprire la stanza.
-The one your friend sent you. An address works too.	Quello che ti ha inviato il tuo amico. Va bene anche un indirizzo.
-The room code holds your friend's address. You can paste the address itself instead, like 203.0.113.4:47640.	Il codice della stanza contiene l'indirizzo del tuo amico. Puoi anche incollare l'indirizzo stesso, come 203.0.113.4:47640.
 The room code holds your public address, found with a free STUN server. Share it only with your friend.	Il codice della stanza contiene il tuo indirizzo pubblico, trovato con un server STUN gratuito. Condividilo solo con il tuo amico.
 They choose Join in this tab, paste your room code, then press JOIN A ROOM.	Sceglie Unisciti in questa scheda, incolla il tuo codice della stanza, poi preme UNISCITI A UNA STANZA.
 This room code isn't right	Questo codice della stanza non è giusto
 This room code isn't valid; ask your friend to copy it again.	Questo codice della stanza non è valido; chiedi al tuo amico di copiarlo di nuovo.
-Your friend opens a room and sends you its code, and the password if there is one.	Il tuo amico apre una stanza e ti invia il suo codice, e la password se c'è.
 Your internet provider shares your address with other homes, so a friend elsewhere can't reach you this way.	Il tuo fornitore di internet condivide il tuo indirizzo con altre case, quindi un amico altrove non può raggiungerti così.
 Your router didn't let your friend in by itself, so a friend elsewhere can't join yet.	Il router non ha fatto entrare il tuo amico da solo, quindi un amico altrove non può ancora unirsi.
 Your router didn't open, so this code uses IPv6. It works if your friend's internet has IPv6 too.	Il router non si è aperto, quindi questo codice usa IPv6. Funziona se anche l'internet del tuo amico ha IPv6.
 Your router isn't opened automatically: a friend elsewhere needs the port opened.	Il router non viene aperto automaticamente: per un amico altrove la porta deve essere aperta.
 {} (you)	{} (tu)
 Not ready yet: choosing their figures	Non ancora pronto: sceglie le sue figure
+A room code is needed	Serve un codice stanza
+An address alone can't open a room any more: ask your friend for the room code.	Un indirizzo da solo non apre più una stanza: chiedi al tuo amico il codice stanza.
+Code for another address	Codice per un altro indirizzo
+Copy the whole room code from your friend's room: letters and digits in groups of four.	Copia il codice completo della stanza del tuo amico: lettere e cifre in gruppi di quattro.
+Enter this computer's Tailscale or ZeroTier address, with its port.	Inserisci l'indirizzo Tailscale o ZeroTier di questo computer, con la porta.
+Guests paused for 30 seconds	Ospiti bloccati per 30 secondi
+In the room, copy your room code and send it to them by message.	Nella stanza, copia il tuo codice e invialo al tuo amico con un messaggio.
+No access to the router? Both install the same free virtual network, such as Tailscale or ZeroTier, then make its code in the room's Details.	Non puoi accedere al router? Installate la stessa rete virtuale gratuita, come Tailscale o ZeroTier, poi create il codice nei Dettagli della stanza.
+Paste the whole code in Room code.	Incolla il codice completo in Codice stanza.
+The room code holds your friend's address and opens their room.	Il codice contiene l'indirizzo del tuo amico e apre la sua stanza.
+The whole code your friend sent you.	Il codice completo che ti ha inviato il tuo amico.
+This room code is wrong or old: ask your friend to copy it again.	Questo codice stanza è errato o vecchio: chiedi al tuo amico di copiarlo di nuovo.
+Too many wrong room codes. Wait 30 seconds, then try again.	Troppi codici stanza errati. Attendi 30 secondi, poi riprova.
+With Tailscale or ZeroTier, ask your friend to make a code in their room's Details.	Con Tailscale o ZeroTier, chiedi al tuo amico di creare un codice nei Dettagli della sua stanza.
+With Tailscale or ZeroTier, make a code for this computer's address in Details below.	Con Tailscale o ZeroTier, crea un codice per l'indirizzo di questo computer nei Dettagli qui sotto.
+Wrong room code	Codice stanza errato
+Your friend opens a room and sends you its code.	Il tuo amico apre una stanza e ti invia il codice.

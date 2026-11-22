@@ -1,9 +1,8 @@
 #pragma once
 
-// The room code (docs/online.md, "Room codes"): the host's address written as a short code a player copies and pastes,
-// such as K7QD-M2XA. No server is involved: the code is the address itself, in base 32 (Crockford's letters, so O and
-// 0, I, L and 1 read the same), with a check that catches a typo. Three lengths: an IPv4 address on the default port
-// (8 letters), an IPv4 address with its port (12), an IPv6 address with its port (32).
+// A room code carries the address and a 40-bit room secret, followed by a typo check.
+// Crockford base 32, grouped by four: 20 letters for IPv4 on the default port,
+// 24 for IPv4 with a port, 44 for IPv6 with a port. See docs/online.md.
 #include <cstdint>
 #include <string>
 #include <string_view>
@@ -11,8 +10,8 @@
 namespace online
 {
     // "" when `host` is not an IPv4 or IPv6 address.
-    std::string EncodeRoomCode(std::string_view host, uint16_t port);
+    std::string EncodeRoomCode(std::string_view host, uint16_t port, uint64_t secret);
     // True when `text` is a room code (dashes, spaces and case ignored), with the address it holds: `host` as
     // "a.b.c.d" or an IPv6 address without brackets.
-    bool DecodeRoomCode(std::string_view text, std::string& host, uint16_t& port);
+    bool DecodeRoomCode(std::string_view text, std::string& host, uint16_t& port, uint64_t& secret);
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-// The online room (docs/online.md): the host opens it on a port, one guest joins with its address and the password; both
+// The online room (docs/online.md): the host opens it on a port, one guest joins with the room code; both
 // see each other's profile and figures, the round trip and the input delay, and the host's settings and save go to the
 // guest. Each player says Ready; the host starts, and both launchers then start the game with what the room agreed
 // (online/session_launch.h). Polled from the window's loop: nothing here waits.
@@ -22,7 +22,6 @@ namespace online
     struct HostOptions
     {
         uint16_t port = DefaultPort;
-        std::string password;
         Hello hello; // this launcher and its game (host and nonce are filled in)
         Player player;
         Settings settings; // saveBytes and saveFiles are filled in from `save`
@@ -32,7 +31,6 @@ namespace online
     struct JoinOptions
     {
         std::string address; // as pasted: "host:port"
-        std::string password;
         Hello hello;
         Player player;
     };
@@ -52,11 +50,13 @@ namespace online
     {
         None,
         PortInUse,     // host: the port cannot be opened
+        CodeRequired,  // an address without the room secret
+        TooManyCodes,  // guests temporarily refused after failed proofs
         BadAddress,    // guest: the address is not one
         CannotConnect, // guest: nothing answered there
         Timeout,       // the other side stopped answering
         Mismatch,      // not the same game, disc, version or system: Status::mismatch
-        WrongPassword,
+        WrongCode,
         RoomFull,
         Left,   // the other player left
         Broken, // malformed or unexpected messages
@@ -118,6 +118,7 @@ namespace online
         void Leave();
         void Poll();
         const Status& Get() const { return m_status; }
+        uint64_t Secret() const { return m_secret; }
 
     private:
         enum class Step
@@ -130,7 +131,7 @@ namespace online
         void SendBye(ByeReason reason);
         void Flush();
         bool ReadAll();
-        void Handle(const Received& frame);
+        void Handle(Received frame);
         void HandleHello(const Received& frame);
         void HandleProof(const Received& frame);
         void HandleRoom(const Received& frame);
@@ -143,6 +144,9 @@ namespace online
         uint64_t Now() const;
         std::string MismatchDetail(Mismatch mismatch) const; // both sides' values, for the log
 
+        void WrongProof();
+        uint64_t m_secret = 0, m_refuseUntil = 0;
+        std::vector<uint64_t> m_wrongProofs;
         Clock m_clock;
         Status m_status;
         HostOptions m_hostOptions;

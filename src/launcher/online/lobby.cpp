@@ -1,4 +1,6 @@
 #include "launcher/online/lobby.h"
+#include "launcher/online/room_code.h"
+#include <limits>
 #include <SDL3/SDL.h>
 #include <algorithm>
 #include <random>
@@ -25,6 +27,13 @@ namespace online
         Leave();
         m_status = {};
         m_status.host = true;
+        m_wrongProofs.clear();
+        m_refuseUntil = 0;
+        std::array<uint8_t, 5> secret{};
+        RandomBytes(secret);
+        m_secret = 0;
+        for (const uint8_t byte : secret)
+            m_secret = (m_secret << 8) | byte;
         options.hello.host = true;
         RandomBytes(options.hello.nonce);
         options.settings.saveFiles = uint16_t(options.save.size());
@@ -56,9 +65,9 @@ namespace online
         RandomBytes(options.hello.nonce);
         std::string host, error;
         uint16_t port = 0;
-        if (!net::ParseAddress(options.address, DefaultPort, host, port))
+        if (!DecodeRoomCode(options.address, host, port, m_secret))
         {
-            End(Error::BadAddress);
+            End(net::ParseAddress(options.address, DefaultPort, host, port) ? Error::CodeRequired : Error::BadAddress);
             return false;
         }
         m_connection = net::Connect(host, port, error);
@@ -79,8 +88,13 @@ namespace online
 
     void Lobby::Send(MessageType type, const std::vector<uint8_t>& payload)
     {
-        const auto* key = m_haveKeys ? (m_status.host ? &m_keys.hostToGuest : &m_keys.guestToHost) : nullptr;
-        const auto frame = Frame(type, m_sendSequence++, payload, key);
+        // Close before the sequence can wrap and reuse a cipher nonce.
+        if (m_sendSequence == std::numeric_limits<uint32_t>::max())
+        {
+            Fail(Error::Broken);
+            return;
+        }
+        const auto frame = Frame(type, m_sendSequence++, payload, m_haveKeys ? &m_keys : nullptr, m_status.host);
         m_out.insert(m_out.end(), frame.begin(), frame.end());
     }
 
@@ -135,7 +149,9 @@ namespace online
         case Error::CannotConnect: return "nothing answered";
         case Error::Timeout: return "the other side stopped answering";
         case Error::Mismatch: return "the two sides do not match";
-        case Error::WrongPassword: return "wrong password";
+        case Error::WrongCode: return "wrong room code";
+        case Error::CodeRequired: return "a room code is required";
+        case Error::TooManyCodes: return "too many wrong codes: guests refused for 30 s";
         case Error::RoomFull: return "the room is full";
         case Error::Left: return "the other player left";
         case Error::Broken: return "unexpected or malformed messages";
@@ -284,9 +300,9 @@ namespace online
     void Lobby::HandleHello(const Received& frame)
     {
         if (!m_status.host && frame.type == MessageType::Bye && frame.payload.size() == 1 &&
-            ByeReason(frame.payload[0]) == ByeReason::Full)
+            (ByeReason(frame.payload[0]) == ByeReason::Full || ByeReason(frame.payload[0]) == ByeReason::Limited))
         {
-            End(Error::RoomFull);
+            End(ByeReason(frame.payload[0]) == ByeReason::Full ? Error::RoomFull : Error::TooManyCodes);
             return;
         }
         Hello theirs;
@@ -303,7 +319,6 @@ namespace online
         const Mismatch mismatch = Compare(m_mine, theirs);
         if (mismatch != Mismatch::None)
         {
-            SendBye(ByeReason::Mismatch);
             if (m_status.host)
             {
                 Flush();
@@ -315,11 +330,10 @@ namespace online
         }
         const Nonce& hostNonce = m_status.host ? m_mine.nonce : theirs.nonce;
         const Nonce& guestNonce = m_status.host ? theirs.nonce : m_mine.nonce;
-        const std::string& password = m_status.host ? m_hostOptions.password : m_joinOptions.password;
-        m_keys = DeriveKeys(password, hostNonce, guestNonce);
+        m_keys = DeriveKeys(m_secret, hostNonce, guestNonce);
         m_haveKeys = true;
         m_step = Step::AwaitProof;
-        // The guest proves first; the host answers only to a guest that knows the password.
+        // The guest proves first; the host answers only to a guest that knows the code.
         if (!m_status.host)
         {
             const Tag proof = ProofOf(m_keys, false);
@@ -330,29 +344,16 @@ namespace online
     void Lobby::HandleProof(const Received& frame)
     {
         const bool fromHost = !m_status.host;
-        const auto& key = fromHost ? m_keys.hostToGuest : m_keys.guestToHost;
         const Tag expected = ProofOf(m_keys, fromHost);
-        const bool good = frame.type == MessageType::Proof && CheckTag(frame, key) &&
-                          frame.payload.size() == expected.size() &&
-                          std::equal(expected.begin(), expected.end(), frame.payload.begin());
-        if (!good)
+        uint8_t difference = 0;
+        if (frame.payload.size() == expected.size())
+            for (size_t i = 0; i < expected.size(); ++i)
+                difference |= uint8_t(expected[i] ^ frame.payload[i]);
+        else
+            difference = 1;
+        if (frame.type != MessageType::Proof || difference != 0)
         {
-            // An unauthenticated Bye before the proof: the host refused this guest's hello or password.
-            if (!m_status.host && frame.type == MessageType::Bye && frame.payload.size() == 1)
-            {
-                const auto reason = ByeReason(frame.payload[0]);
-                End(reason == ByeReason::Full ? Error::RoomFull : Error::WrongPassword);
-                return;
-            }
-            if (m_status.host)
-            {
-                m_haveKeys = false;
-                SendBye(ByeReason::Password);
-                Flush();
-                DropGuest(Error::WrongPassword);
-            }
-            else
-                End(Error::WrongPassword);
+            WrongProof();
             return;
         }
         if (m_status.host)
@@ -369,12 +370,6 @@ namespace online
 
     void Lobby::HandleRoom(const Received& frame)
     {
-        const auto& key = m_status.host ? m_keys.guestToHost : m_keys.hostToGuest;
-        if (!CheckTag(frame, key))
-        {
-            Fail(Error::Broken);
-            return;
-        }
         bool ok = true;
         switch (frame.type)
         {
@@ -480,11 +475,19 @@ namespace online
         }
     }
 
-    void Lobby::Handle(const Received& frame)
+    void Lobby::Handle(Received frame)
     {
-        if (frame.sequence != m_receiveSequence++)
+        if (m_receiveSequence == std::numeric_limits<uint32_t>::max() || frame.sequence != m_receiveSequence++)
         {
             Fail(Error::Broken);
+            return;
+        }
+        if (m_step != Step::AwaitHello && !OpenFrame(frame, m_keys, !m_status.host))
+        {
+            if (m_step == Step::AwaitProof)
+                WrongProof();
+            else
+                Fail(Error::Broken);
             return;
         }
         switch (m_step)
@@ -496,6 +499,25 @@ namespace online
         case Step::AwaitProof: HandleProof(frame); break;
         case Step::Room: HandleRoom(frame); break;
         }
+    }
+
+    void Lobby::WrongProof()
+    {
+        if (m_status.host)
+        {
+            const uint64_t now = Now();
+            std::erase_if(m_wrongProofs, [&](uint64_t at) { return now - at >= 60000; });
+            m_wrongProofs.push_back(now);
+            if (m_wrongProofs.size() >= 5)
+            {
+                m_refuseUntil = now + 30000;
+                m_wrongProofs.clear();
+                SDL_Log("[online] too many wrong codes: guests refused for 30 s");
+                DropGuest(Error::TooManyCodes);
+                return;
+            }
+        }
+        Fail(Error::WrongCode);
     }
 
     bool Lobby::ReadAll()
@@ -538,7 +560,15 @@ namespace online
             const net::Handle incoming = net::Accept(m_listener, peer);
             if (incoming != net::Invalid)
             {
-                if (m_connection != net::Invalid)
+                if (now < m_refuseUntil)
+                {
+                    const auto bye =
+                        Frame(MessageType::Bye, 0, std::vector<uint8_t>{ uint8_t(ByeReason::Limited) }, nullptr);
+                    net::Send(incoming, bye.data(), bye.size());
+                    net::Close(incoming);
+                    m_status.lastRefusal = { Error::TooManyCodes, Mismatch::None, peer, now };
+                }
+                else if (m_connection != net::Invalid)
                 {
                     // One guest per room: the newcomer hears why.
                     const auto bye =
@@ -548,6 +578,7 @@ namespace online
                 }
                 else
                 {
+                    RandomBytes(m_mine.nonce);
                     m_connection = incoming;
                     m_connected = true;
                     m_status.peer = peer;
@@ -586,7 +617,9 @@ namespace online
         if (!ReadAll())
         {
             // The other side closed: a refusal it explained was handled with its Bye.
-            Fail(!m_status.host && m_status.state == State::Greeting ? Error::CannotConnect : Error::Left);
+            Fail(!m_status.host && m_status.state == State::Greeting
+                     ? (m_haveKeys ? Error::WrongCode : Error::CannotConnect)
+                     : Error::Left);
             return;
         }
         if (m_connection == net::Invalid)

@@ -317,17 +317,22 @@ namespace online
         return Digest(outer, innerHash);
     }
 
-    Keys DeriveKeys(std::string_view password, const Nonce& hostNonce, const Nonce& guestNonce)
+    Keys DeriveKeys(uint64_t secret, const Nonce& hostNonce, const Nonce& guestNonce)
     {
         std::vector<uint8_t> salt;
-        const auto label = AsBytes("arkeyan lobby v1");
+        const auto label = AsBytes("arkeyan lobby v2");
         salt.insert(salt.end(), label.begin(), label.end());
         salt.insert(salt.end(), hostNonce.begin(), hostNonce.end());
         salt.insert(salt.end(), guestNonce.begin(), guestNonce.end());
-        const auto root = HmacSha256(AsBytes(password), salt);
+        std::array<uint8_t, 5> secretBytes{};
+        for (size_t i = 0; i < secretBytes.size(); ++i)
+            secretBytes[i] = uint8_t(secret >> (8 * (4 - i)));
+        const auto root = HmacSha256(secretBytes, salt);
         Keys keys;
         keys.hostToGuest = HmacSha256(root, AsBytes("host to guest"));
         keys.guestToHost = HmacSha256(root, AsBytes("guest to host"));
+        keys.hostCipher = HmacSha256(root, AsBytes("encrypt host to guest"));
+        keys.guestCipher = HmacSha256(root, AsBytes("encrypt guest to host"));
         return keys;
     }
 
@@ -356,17 +361,41 @@ namespace online
         }
     }
 
-    std::vector<uint8_t> Frame(
-        MessageType type, uint32_t sequence, std::span<const uint8_t> payload, const std::array<uint8_t, 32>* key)
+    namespace
     {
+        CipherNonce FrameNonce(uint32_t sequence, bool fromHost)
+        {
+            CipherNonce nonce{};
+            nonce[0] = fromHost ? 1 : 2;
+            for (int i = 0; i < 4; ++i)
+                nonce[4 + i] = uint8_t(sequence >> (8 * i));
+            return nonce;
+        }
+    }
+
+    std::vector<uint8_t> Frame(
+        MessageType type, uint32_t sequence, std::span<const uint8_t> payload, const Keys* keys, bool fromHost)
+    {
+        std::vector<uint8_t> ciphertext(payload.begin(), payload.end());
+        if (keys)
+            ChaCha20Xor(fromHost ? keys->hostCipher : keys->guestCipher, FrameNonce(sequence, fromHost), 1, ciphertext);
         Writer w;
-        w.U32(uint32_t(HeaderBytes + payload.size() + TagBytes));
+        w.U32(uint32_t(HeaderBytes + ciphertext.size() + TagBytes));
         w.U8(uint8_t(type));
         w.U32(sequence);
-        w.Raw(payload);
-        const Tag tag = key ? TagOf(type, sequence, payload, *key) : Tag{};
+        w.Raw(ciphertext);
+        const Tag tag =
+            keys ? TagOf(type, sequence, ciphertext, fromHost ? keys->hostToGuest : keys->guestToHost) : Tag{};
         w.Raw(tag);
         return std::move(w.Bytes());
+    }
+
+    bool OpenFrame(Received& frame, const Keys& keys, bool fromHost)
+    {
+        if (!CheckTag(frame, fromHost ? keys.hostToGuest : keys.guestToHost))
+            return false;
+        return ChaCha20Xor(
+            fromHost ? keys.hostCipher : keys.guestCipher, FrameNonce(frame.sequence, fromHost), 1, frame.payload);
     }
 
     void FrameReader::Feed(std::span<const uint8_t> bytes)

@@ -67,7 +67,7 @@ namespace launcher_ui
         std::string homeCode; // for a friend on the same network
     };
     Invite InviteFor(const netplay::portmap::Mapping& mapping, const online::stun::Result& seen, bool pending,
-        bool automatic, const std::string& localAddress, uint16_t port);
+        bool automatic, const std::string& localAddress, uint16_t port, uint64_t secret);
 
     // What went wrong, said for someone who knows nothing of networks: a title, the facts (each side's version), what to
     // do, and the button that does it.
@@ -96,7 +96,7 @@ namespace launcher_ui
         online::RoomInputs inputs;
         online::Mode mode = online::Mode::Host; // of the room open now
         std::string fieldsFor; // the game whose Online tab settings fill the fields below
-        char port[6] = "47640", address[256] = {}, password[128] = {};
+        char port[6] = "47640", address[256] = {}, otherAddress[256] = {};
         bool automatic = true, crossPlatform = false;
         bool showAddress = false, showDetails = false, showFix = false;
         float cardHeight = 0; // the taller player card's, last frame: both are drawn that tall

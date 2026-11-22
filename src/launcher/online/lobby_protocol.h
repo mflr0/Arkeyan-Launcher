@@ -2,8 +2,9 @@
 
 // The online lobby's messages (docs/online.md): what two launchers say to each other before both start the game. One TCP
 // connection, the host listening; every frame is length-prefixed, and once both hellos are exchanged every frame carries a
-// tag keyed from the room password and both sides' random nonces, so a wrong password or a stranger's bytes are refused.
+// tag and encryption keyed from the room secret and fresh random nonces, so strangers are refused.
 // Pure code: no socket here (online/lobby.h drives it), so the tests feed it bytes.
+#include "launcher/online/chacha20.h"
 #include <array>
 #include <cstddef>
 #include <cstdint>
@@ -15,7 +16,7 @@
 
 namespace online
 {
-    inline constexpr uint16_t LobbyProtocolVersion = 1;
+    inline constexpr uint16_t LobbyProtocolVersion = 2;
     inline constexpr uint16_t DefaultPort = 47640;
     inline constexpr size_t MaxFrameBytes = 4 * 1024 * 1024; // a whole frame: the biggest is a save chunk
     inline constexpr size_t SaveChunkBytes = 64 * 1024;
@@ -105,9 +106,10 @@ namespace online
         Left = 1,       // the player left the room
         Full = 2,       // the room has its guest already
         Mismatch = 3,   // not the same game (the receiver compares the hellos itself for the detail)
-        Password = 4,   // the tag did not match
+        Code = 4,   // the tag did not match
         Protocol = 5,   // a malformed or unexpected message
         Timeout = 6,
+        Limited = 7,
     };
 
     // Little-endian building blocks, bounds-checked: a reader that runs past its end fails and stays failed.
@@ -174,19 +176,20 @@ namespace online
     };
     Mismatch Compare(const Hello& mine, const Hello& theirs);
 
-    // HMAC-SHA256, and the keys of one direction of a session: from the password and both nonces.
+    // HMAC-SHA256, and the keys of one direction of a session: from the five secret bytes and both nonces.
     std::array<uint8_t, 32> HmacSha256(std::span<const uint8_t> key, std::span<const uint8_t> message);
     struct Keys
     {
         std::array<uint8_t, 32> hostToGuest{}, guestToHost{};
+        CipherKey hostCipher{}, guestCipher{};
     };
-    Keys DeriveKeys(std::string_view password, const Nonce& hostNonce, const Nonce& guestNonce);
+    Keys DeriveKeys(uint64_t secret, const Nonce& hostNonce, const Nonce& guestNonce);
     // What each side proves it knows: the key of its own direction, tagged with its role.
     Tag ProofOf(const Keys& keys, bool host);
 
     // A frame on the wire: u32 length of what follows, u8 type, u32 sequence, payload, then the tag (zeros before keys).
     std::vector<uint8_t> Frame(
-        MessageType type, uint32_t sequence, std::span<const uint8_t> payload, const std::array<uint8_t, 32>* key);
+        MessageType type, uint32_t sequence, std::span<const uint8_t> payload, const Keys* keys, bool fromHost = false);
 
     struct Received
     {
@@ -209,6 +212,8 @@ namespace online
         size_t m_start = 0;
         bool m_broken = false;
     };
+    // Authenticate the ciphertext before decrypting it; failure leaves the payload untouched.
+    bool OpenFrame(Received& frame, const Keys& keys, bool fromHost);
     // The tag a frame must carry under `key`.
     bool CheckTag(const Received& frame, const std::array<uint8_t, 32>& key);
 

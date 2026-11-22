@@ -140,6 +140,7 @@ add_library(ArkeyanLauncherCore STATIC
     src/launcher/launcher.cpp
     src/launcher/launcher_games.cpp
     src/launcher/online/lobby.cpp
+    src/launcher/online/chacha20.cpp
     src/launcher/online/lobby_protocol.cpp
     src/launcher/online/net_socket.cpp
     src/launcher/online/room_code.cpp

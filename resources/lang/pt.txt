@@ -1267,7 +1267,6 @@ Leave	Sair
 Online	Online
 Online with {}	Online com {}
 A player couldn't join: {}	Um jogador não conseguiu aderir: {}
-Ask your friend for the room's password and type it in the Online tab.	Pede ao teu amigo a palavra-passe da sala e escreve-a no separador Online.
 Both choose the same game, then try again.	Escolham ambos o mesmo jogo e tentem novamente.
 Both update the launcher in Settings, then try again.	Atualizem ambos o launcher nas Definições e tentem novamente.
 Change it only if another program uses it.	Altera-a apenas se outro programa a usar.
@@ -1292,13 +1291,11 @@ How PLAY starts the game	Como JOGAR inicia o jogo
 How it works	Como funciona
 How to fix it	Como resolver
 I'm ready	Estou pronto
-If your friend set one.	Se o teu amigo tiver definido uma.
 If your router refuses, open (forward) port {} for UDP and TCP to this computer in your router's settings.	Se o router recusar, abre (reencaminha) a porta {} para UDP e TCP para este computador nas definições do router.
 Invite your friend	Convida o teu amigo
 JOIN A ROOM	ADERIR A UMA SALA
 Joining your friend's room...	A entrar na sala do teu amigo...
 Lets friends outside your home in. Most routers allow it.	Deixa entrar amigos que estão fora de tua casa. A maioria dos routers permite-o.
-No access to the router? Both install the same free virtual network, such as Tailscale or ZeroTier, and use the address it gives this computer.	Sem acesso ao router? Instalem ambos a mesma rede virtual gratuita, como Tailscale ou ZeroTier, e usem o endereço que atribui a este computador.
 No figures on the portal yet	Ainda não há figuras no portal
 Not in the same home? Their router may block it: their room shows them how to fix it.	Não estão na mesma casa? O router dele pode bloquear a ligação: a sala dele mostra-lhe como resolver.
 Not ready	Não pronto
@@ -1311,9 +1308,6 @@ Open my router automatically	Abrir o meu router automaticamente
 Open my router automatically asks your router with UPnP or NAT-PMP.	"Abrir o meu router automaticamente" envia um pedido ao router através de UPnP ou NAT-PMP.
 Open or join a room again to play.	Abre ou entra numa sala novamente para jogar.
 Open the Online tab	Abrir o separador Online
-Optional. Your friend types it to join.	Opcional. O teu amigo escreve-a para aderir.
-Or both install the same free virtual network, such as Tailscale or ZeroTier, and send the address it gives this computer, with the port.	Ou instalem ambos a mesma rede virtual gratuita, como Tailscale ou ZeroTier, e enviem o endereço que atribui a este computador, com a porta.
-Password	Palavra-passe
 Paste it below	Cola-o abaixo
 Play with a friend on another system. Not tested yet: both must turn it on.	Joga com um amigo noutro sistema. Ainda não testado: ambos têm de ativar esta opção.
 Play with a friend over the internet, each on your own computer.	Joga com um amigo pela internet, cada um no seu computador.
@@ -1339,8 +1333,6 @@ Try again. If it keeps failing, both restart the launcher.	Tentem novamente. Se 
 Waiting for player 2	À espera do jogador 2
 Waiting for player 2 to join.	À espera de que o jogador 2 entre.
 Waiting for {} to be ready.	À espera de que {} esteja pronto.
-With a virtual network such as Tailscale or ZeroTier, use the address it gives your friend's computer.	Com uma rede virtual como Tailscale ou ZeroTier, usa o endereço que atribui ao computador do teu amigo.
-Wrong password	Palavra-passe errada
 You both choose your figures and press I'm ready. Then you press Start.	Ambos escolhem as suas figuras e primem "Estou pronto". Depois tu primes Iniciar.
 You both need this game with the same disc edition, and the same launcher version.	Ambos precisam deste jogo com a mesma edição do disco e a mesma versão do launcher.
 You chose different games	Escolheram jogos diferentes
@@ -1368,7 +1360,6 @@ Start	Iniciar
 The connection failed; open or join a room again.	A ligação falhou; abre ou entra numa sala novamente.
 The other player left; open or join a room again.	O outro jogador saiu; abre ou entra numa sala novamente.
 The other player stopped answering; check your connection and reconnect.	O outro jogador deixou de responder; verifica a ligação e volta a ligar-te.
-The password doesn't match; ask the host and try again.	A palavra-passe não corresponde; pergunta ao anfitrião e tenta novamente.
 This port is busy; choose another port.	Esta porta está ocupada; escolhe outra porta.
 This room is full; ask the host to open another room.	Esta sala está cheia; pede ao anfitrião que abra outra.
 You chose different games; choose the same game.	Escolheram jogos diferentes; escolham o mesmo jogo.
@@ -1391,27 +1382,37 @@ Another program uses it. Choose another port in the Online tab, for example 4764
 Check the room code: ask them to copy it again.	Verifica o código da sala: pede-lhe para o copiar de novo.
 Get the room code	Obter o código da sala
 Getting your room code...	A obter o código da sala...
-In Room code, with the password if there is one.	Em Código da sala, com a palavra-passe se houver.
-In the room, copy your room code and send it to them by message, with the password if you set one.	Na sala, copia o código da sala e envia-lho por mensagem, com a palavra-passe se definiste uma.
 In the same home, ask your friend for the code under How to fix it in their room.	Na mesma casa, pede ao teu amigo o código em Como resolver, na sala dele.
-It looks like K7QD-M2XA: letters and digits in groups of four. Ask your friend to copy it again from their room and paste it whole.	É parecido com K7QD-M2XA: letras e algarismos em grupos de quatro. Pede ao teu amigo para o copiar de novo da sala dele e colá-lo inteiro.
 Open port {} (UDP and TCP) to this computer in your router's settings: search the web for your router's name and "port forwarding".	Abre a porta {} (UDP e TCP) para este computador nas definições do router: procura na web o nome do teu router e "reencaminhamento de portas".
 Paste your friend's room code first.	Cola primeiro o código da sala do teu amigo.
 Room code	Código da sala
 Room code copied. Paste it in a message to your friend.	Código da sala copiado. Cola-o numa mensagem para o teu amigo.
-Send your friend this room code and the password:	Envia ao teu amigo este código da sala e a palavra-passe:
 Send your friend this room code:	Envia ao teu amigo este código da sala:
 The host didn't answer; check the room code and ask them to open the room.	O anfitrião não respondeu; verifica o código da sala e pede-lhe para abrir a sala.
-The one your friend sent you. An address works too.	O que o teu amigo te enviou. Um endereço também serve.
-The room code holds your friend's address. You can paste the address itself instead, like 203.0.113.4:47640.	O código da sala contém o endereço do teu amigo. Também podes colar o próprio endereço, como 203.0.113.4:47640.
 The room code holds your public address, found with a free STUN server. Share it only with your friend.	O código da sala contém o teu endereço público, obtido com um servidor STUN gratuito. Partilha-o só com o teu amigo.
 They choose Join in this tab, paste your room code, then press JOIN A ROOM.	Escolhe Aderir neste separador, cola o teu código da sala e carrega em ADERIR A UMA SALA.
 This room code isn't right	Este código da sala não está certo
 This room code isn't valid; ask your friend to copy it again.	Este código da sala não é válido; pede ao teu amigo para o copiar de novo.
-Your friend opens a room and sends you its code, and the password if there is one.	O teu amigo abre uma sala e envia-te o código, e a palavra-passe se houver.
 Your internet provider shares your address with other homes, so a friend elsewhere can't reach you this way.	O teu fornecedor de internet partilha o teu endereço com outras casas, por isso um amigo noutro lado não te consegue alcançar assim.
 Your router didn't let your friend in by itself, so a friend elsewhere can't join yet.	O router não deixou entrar o teu amigo sozinho, por isso um amigo noutro lado ainda não pode aderir.
 Your router didn't open, so this code uses IPv6. It works if your friend's internet has IPv6 too.	O router não abriu, por isso este código usa IPv6. Funciona se a internet do teu amigo também tiver IPv6.
 Your router isn't opened automatically: a friend elsewhere needs the port opened.	O router não é aberto automaticamente: um amigo noutro lado precisa da porta aberta.
 {} (you)	{} (tu)
 Not ready yet: choosing their figures	Ainda não está pronto: escolhe as figuras
+A room code is needed	É necessário um código de sala
+An address alone can't open a room any more: ask your friend for the room code.	Só um endereço já não abre uma sala: pede ao teu amigo o código da sala.
+Code for another address	Código para outro endereço
+Copy the whole room code from your friend's room: letters and digits in groups of four.	Copia o código completo da sala do teu amigo: letras e algarismos em grupos de quatro.
+Enter this computer's Tailscale or ZeroTier address, with its port.	Introduz o endereço Tailscale ou ZeroTier deste computador, com a porta.
+Guests paused for 30 seconds	Convidados bloqueados por 30 segundos
+In the room, copy your room code and send it to them by message.	Na sala, copia o teu código e envia-o ao teu amigo por mensagem.
+No access to the router? Both install the same free virtual network, such as Tailscale or ZeroTier, then make its code in the room's Details.	Sem acesso ao router? Instalem a mesma rede virtual gratuita, como Tailscale ou ZeroTier, e criem o código nos Detalhes da sala.
+Paste the whole code in Room code.	Cola o código completo em Código da sala.
+The room code holds your friend's address and opens their room.	O código contém o endereço do teu amigo e abre a sala dele.
+The whole code your friend sent you.	O código completo que o teu amigo te enviou.
+This room code is wrong or old: ask your friend to copy it again.	Este código de sala está errado ou é antigo: pede ao teu amigo que o copie novamente.
+Too many wrong room codes. Wait 30 seconds, then try again.	Demasiados códigos de sala errados. Espera 30 segundos e tenta novamente.
+With Tailscale or ZeroTier, ask your friend to make a code in their room's Details.	Com Tailscale ou ZeroTier, pede ao teu amigo que crie um código nos Detalhes da sala dele.
+With Tailscale or ZeroTier, make a code for this computer's address in Details below.	Com Tailscale ou ZeroTier, cria um código para o endereço deste computador nos Detalhes abaixo.
+Wrong room code	Código de sala errado
+Your friend opens a room and sends you its code.	O teu amigo abre uma sala e envia-te o código.

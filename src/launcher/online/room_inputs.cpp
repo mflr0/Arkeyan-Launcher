@@ -107,7 +107,6 @@ namespace online
             online.port = uint16_t(value);
         online.automatic = Bool(Get(config, section, "open_port", "1"));
         online.address = Get(config, section, "address");
-        online.password = Get(config, section, "password");
         online.crossPlatform = Bool(Get(config, section, "cross_platform", "0"));
         return online;
     }
@@ -119,7 +118,7 @@ namespace online
         section["port"] = std::to_string(online.port);
         section["open_port"] = online.automatic ? "1" : "0";
         section["address"] = online.address;
-        section["password"] = online.password;
+        section.erase("password");
         section["cross_platform"] = online.crossPlatform ? "1" : "0";
     }
 

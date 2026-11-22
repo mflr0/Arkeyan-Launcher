@@ -9,12 +9,11 @@ are off by default; both players can turn on **Cross-platform sessions** in the 
 Online play is set up per game, in its settings (the gear beside PLAY), tab **Online**. **How PLAY starts the game** has
 three choices: **Solo** (the game alone, as before), **Host** (PLAY opens a room) and **Join** (PLAY joins the friend's
 room). The choice stays after a session, so the same friends play again in one press. The tab shows the four steps of
-the chosen mode, then its fields: on Host, **Open my router automatically** and an optional password; on Join, the
-**Room code** the friend sent (hidden until **Show**; an address such as `203.0.113.4:47640` works too) and the
-password. **Details for your router** holds the technical
+the chosen mode, then its fields: on Host, **Open my router automatically**; on Join, the
+**Room code** the friend sent (hidden until **Show**). An address alone cannot open a room. **Details for your router** holds the technical
 part: the port (47640, changed only when another program uses it), UDP and TCP, what the automatic opening does, and the
 virtual network way (Tailscale, ZeroTier) for a router that cannot be opened. The settings live in `[<game>.online]` of
-`launcher.ini` (`mode`, `port`, `open_port`, `address`, `password`, `cross_platform`).
+`launcher.ini` (`mode`, `port`, `open_port`, `address`, `cross_platform`). The old room password is ignored and removed when the Online settings are saved.
 
 While a game is set to Host or Join, the sidebar shows `-o` after its version (`0.10.0-o`), as the game does in a
 session. On the game page, PLAY then reads **HOST A ROOM** or **JOIN A ROOM**, and the line above it says which; pressing that line
@@ -28,6 +27,10 @@ in, the card says why, and **How to fix it** gives the ways: forward the port (U
 (when the router refused or automatic opening is off), a virtual network on both computers, and the code for a friend in
 the same home (the computer's local address). Opening the router and finding the public address take a few seconds; the
 window stays usable.
+
+The room's **Details** offers **Code for another address**: enter this computer's virtual-network address
+(such as Tailscale or ZeroTier), with its port, then **Copy** the resulting code. It carries the same room secret
+as the public and home codes. Share a code only with the friend you want to let in.
 
 Each player's card shows their name (yours followed by "(you)"), picture, colour, role, readiness and the figures on
 their portal, with **Choose
@@ -50,15 +53,25 @@ leaves `open-online.txt`, its id, in its saves; the launcher reads and removes i
 
 ## Room protocol
 
-`src/launcher/online/lobby_protocol.h` defines protocol version 1. One TCP connection carries little-endian frames:
+`src/launcher/online/lobby_protocol.h` defines protocol version 2. One TCP connection carries little-endian frames:
 `u32 length`, `u8 type`, `u32 sequence`, payload, a 16-byte authentication tag. Frames are at most 4 MB. Text is prefixed
-by a 16-bit byte count, blobs by a 32-bit count. Hellos carry random 32-byte nonces; the password and both nonces derive
-separate HMAC-SHA256 keys for each direction. The proof and subsequent frames authenticate those keys.
+by a 16-bit byte count, blobs by a 32-bit count. Hellos carry random 32-byte nonces, fresh for each connection. The room's 40-bit secret, as five bytes in
+most-significant-byte order, and both nonces derive separate HMAC-SHA256 tag keys and ChaCha20 encryption keys
+for each direction. Every payload after the hellos, including proofs, saves and Start, is encrypted before its tag
+is computed. The tag covers the type, sequence and ciphertext and is checked before decryption. The frame nonce
+is 12 bytes: a little-endian direction word (1 host, 2 guest), the little-endian sequence, then four zero bytes;
+the ChaCha20 block counter starts at 1. A sequence must be exactly the next one; a connection closes before the
+32-bit sequence can wrap. Headers and hellos are visible; room contents are private.
+
+The host counts failed proofs in a sliding 60-second window. The fifth starts a 30-second pause for all new guests,
+including guests with a correct code, with a refusal notice in the room. Existing size, player, seat and save checks
+still apply. A rejected guest leaves the host's room open. Full-room and paused-room refusals before the hellos are
+unauthenticated; after the hellos every frame requires authentication and encryption.
 
 | Type | Value | Payload and purpose |
 |---|---|---|
 | Hello | 1 | Protocol, host flag, launcher version, game id, executable SHA-256, game version, platform, cross-platform flag, nonce; compare compatibility |
-| Proof | 2 | 16-byte proof of the password-derived directional key |
+| Proof | 2 | 16-byte proof of the secret-derived directional key |
 | Player | 3 | Pseudo, Xbox id, colour, PNG picture (at most 512 KB), up to 16 figures with type, variant, seat, name and dump bytes |
 | Settings | 4 | Frame rate, text and voice languages, Nightmare option, total save bytes and file count |
 | SaveChunk | 5 | Relative file path, whole file length, offset, bytes; chunks at most 64 KB |
@@ -66,7 +79,7 @@ separate HMAC-SHA256 keys for each direction. The proof and subsequent frames au
 | Pong | 7 | The received timestamp echoed back |
 | Ready | 8 | Player's ready flag; changing the player's figures clears readiness |
 | Start | 9 | 16-byte session key, input delay in frames, host's UDP port |
-| Bye | 10 | Left, full, mismatch, password, protocol or timeout reason |
+| Bye | 10 | Left, full, mismatch, code, protocol, timeout or attempts-limit reason |
 
 The hello uses `LauncherVersion()` (the build's `LAUNCHER_VERSION_STRING`), the verified page's executable SHA-256 and
 `FindInstalledGame(...).gameVersion`. Platform is the OS and architecture, for example `macos-arm64` or `linux-x64`.
@@ -122,18 +135,19 @@ the room.
 
 ## Room codes
 
-A room code is the host's address written for a player to paste: no server holds rooms. `src/launcher/online/room_code.h`
+A room code holds the host's address and a fresh random 40-bit secret chosen with `RandomBytes` when the room opens: no server holds rooms. Closing and reopening the room invalidates its old codes. The secret is required to enter, even when the address and port are known. `src/launcher/online/room_code.h`
 writes it in Crockford's base 32 (`0-9` and `A-Z` without `I L O U`; on reading, case, dashes and spaces are ignored and
-`O`, `I`, `L` read as `0`, `1`, `1`), in groups of four, with a check made from FNV-1a over the kind and the bytes:
+`O`, `I`, `L` read as `0`, `1`, `1`), in groups of four, with a check made from 64-bit FNV-1a over the kind and the address, optional port and five secret bytes (most significant first):
 
 | Letters | Holds | Check |
 |---|---|---|
-| 8 (`K7QD-M2XA`) | IPv4 address, port 47640 | 8 bits |
-| 12 | IPv4 address and port | 12 bits |
-| 32 | IPv6 address and port | 16 bits |
+| 20 | IPv4 address, secret; port 47640 | 28 bits |
+| 24 | IPv4 address, port and secret | 32 bits |
+| 44 | IPv6 address, port and secret | 36 bits |
 
-`net::ParseAddress` reads a room code first, then an address, so Join, `launcher.ini` and the game's `SKY_NETPLAY_JOIN`
-are unchanged. Which address the code holds (`InviteFor` in `src/launcher/ui/online_page.cpp`):
+`net::ParseAddress` still reads codes and plain addresses. Joining requires `DecodeRoomCode` to recover the secret
+before opening a socket; plain addresses show a help card asking for the code. The game's `SKY_NETPLAY_JOIN` remains
+an address and port. Which address the code holds (`InviteFor` in `src/launcher/ui/online_page.cpp`):
 
 | The room's card | When | The code holds |
 |---|---|---|
@@ -170,7 +184,9 @@ is removed before the worker handles another room. The worker joins at window sh
 startup and game-exit recovery, host and guest write-back, every end reason, and a failed recovery followed by retry.
 `SKY_LAUNCHER_TEST_ONLINE_UI_ONLY=1` selects it in `ArkeyanLauncherTest`. The existing `OnlineChecks` cover the room protocol,
 loopback peers, port mapping against local fixtures, room codes (every length, loose reading, typos) and STUN answers,
-and session preparation and write-back.
+and session preparation and write-back. Security checks include the RFC 8439 section 2.3.2 and 2.4.2 vectors,
+wire captures without known profile/save plaintext, altered ciphertext, replay, failed-proof windows and cooldown,
+and oversized players, invalid save chunks and unknown messages followed by a successful join.
 
 With scratch HOME, settings, data and collection folders, `SDL_VIDEO_DRIVER=offscreen`, `SKY_LAUNCHER_SHOTS=<scratch shots>`
 and `SKY_LAUNCHER_TEST_ONLINE_UI=1` capture the Host and Join tabs, waiting and ready rooms, every room error and mismatch,

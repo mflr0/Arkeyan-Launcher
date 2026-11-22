@@ -1297,7 +1297,6 @@ Leave	Quitter
 Online	En ligne
 Online with {}	En ligne avec {}
 A player couldn't join: {}	Un joueur n'a pas pu rejoindre le salon : {}
-Ask your friend for the room's password and type it in the Online tab.	Demandez le mot de passe du salon à votre ami et saisissez-le dans l'onglet En ligne.
 Both choose the same game, then try again.	Choisissez tous les deux le même jeu, puis réessayez.
 Both update the launcher in Settings, then try again.	Mettez tous les deux le launcher à jour dans Réglages, puis réessayez.
 Change it only if another program uses it.	Changez-le seulement si un autre programme l'utilise.
@@ -1322,13 +1321,11 @@ How PLAY starts the game	Comment JOUER lance le jeu
 How it works	Comment ça marche
 How to fix it	Comment résoudre le problème
 I'm ready	Je suis prêt
-If your friend set one.	Si votre ami en a défini un.
 If your router refuses, open (forward) port {} for UDP and TCP to this computer in your router's settings.	Si votre box refuse, ouvrez (redirigez) le port {} pour UDP et TCP vers cet ordinateur dans les réglages de votre box.
 Invite your friend	Inviter votre ami
 JOIN A ROOM	REJOINDRE UN SALON
 Joining your friend's room...	Connexion au salon de votre ami...
 Lets friends outside your home in. Most routers allow it.	Laisse entrer les amis qui ne sont pas chez vous. La plupart des box le permettent.
-No access to the router? Both install the same free virtual network, such as Tailscale or ZeroTier, and use the address it gives this computer.	Pas d'accès à la box ? Installez tous les deux le même réseau virtuel gratuit, comme Tailscale ou ZeroTier, et utilisez l'adresse qu'il donne à cet ordinateur.
 No figures on the portal yet	Aucune figurine sur le portail pour l'instant
 Not in the same home? Their router may block it: their room shows them how to fix it.	Vous n'êtes pas dans le même logement ? La box de votre ami bloque peut-être la connexion : son salon lui indique comment résoudre le problème.
 Not ready	Pas prêt
@@ -1341,9 +1338,6 @@ Open my router automatically	Ouvrir ma box automatiquement
 Open my router automatically asks your router with UPnP or NAT-PMP.	« Ouvrir ma box automatiquement » envoie une demande à votre box avec UPnP ou NAT-PMP.
 Open or join a room again to play.	Ouvrez ou rejoignez à nouveau un salon pour jouer.
 Open the Online tab	Ouvrir l'onglet En ligne
-Optional. Your friend types it to join.	Facultatif. Votre ami le saisit pour rejoindre le salon.
-Or both install the same free virtual network, such as Tailscale or ZeroTier, and send the address it gives this computer, with the port.	Ou installez tous les deux le même réseau virtuel gratuit, comme Tailscale ou ZeroTier, et envoyez l'adresse qu'il donne à cet ordinateur, avec le port.
-Password	Mot de passe
 Paste it below	Collez-le ci-dessous
 Play with a friend on another system. Not tested yet: both must turn it on.	Jouez avec un ami sur un autre système. Pas encore testé : vous devez tous les deux activer cette option.
 Play with a friend over the internet, each on your own computer.	Jouez avec un ami sur Internet, chacun sur son ordinateur.
@@ -1369,8 +1363,6 @@ Try again. If it keeps failing, both restart the launcher.	Réessayez. Si cela �
 Waiting for player 2	En attente du joueur 2
 Waiting for player 2 to join.	En attente de l'arrivée du joueur 2.
 Waiting for {} to be ready.	En attente de la préparation de {}.
-With a virtual network such as Tailscale or ZeroTier, use the address it gives your friend's computer.	Avec un réseau virtuel comme Tailscale ou ZeroTier, utilisez l'adresse qu'il donne à l'ordinateur de votre ami.
-Wrong password	Mot de passe incorrect
 You both choose your figures and press I'm ready. Then you press Start.	Choisissez tous les deux vos figurines et appuyez sur « Je suis prêt ». Puis appuyez sur Lancer.
 You both need this game with the same disc edition, and the same launcher version.	Vous devez tous les deux avoir ce jeu avec la même édition du disque et la même version du launcher.
 You chose different games	Vous avez choisi des jeux différents
@@ -1398,7 +1390,6 @@ Start	Lancer
 The connection failed; open or join a room again.	La connexion a échoué ; ouvrez ou rejoignez un salon.
 The other player left; open or join a room again.	L'autre joueur est parti ; ouvrez ou rejoignez un salon.
 The other player stopped answering; check your connection and reconnect.	L'autre joueur ne répond plus ; vérifiez votre connexion et reconnectez-vous.
-The password doesn't match; ask the host and try again.	Le mot de passe ne correspond pas ; demandez-le à l'hôte et réessayez.
 This port is busy; choose another port.	Ce port est occupé ; choisissez un autre port.
 This room is full; ask the host to open another room.	Ce salon est complet ; demandez à l'hôte d'en ouvrir un autre.
 You chose different games; choose the same game.	Vous avez choisi des jeux différents ; choisissez le même jeu.
@@ -1421,27 +1412,37 @@ Another program uses it. Choose another port in the Online tab, for example 4764
 Check the room code: ask them to copy it again.	Vérifiez le code du salon : demandez-lui de le copier à nouveau.
 Get the room code	Obtenir le code du salon
 Getting your room code...	Obtention du code du salon...
-In Room code, with the password if there is one.	Dans Code du salon, avec le mot de passe s'il y en a un.
-In the room, copy your room code and send it to them by message, with the password if you set one.	Dans le salon, copiez le code du salon et envoyez-le-lui par message, avec le mot de passe si vous en avez mis un.
 In the same home, ask your friend for the code under How to fix it in their room.	Dans le même foyer, demandez à votre ami le code sous Comment résoudre le problème, dans son salon.
-It looks like K7QD-M2XA: letters and digits in groups of four. Ask your friend to copy it again from their room and paste it whole.	Il ressemble à K7QD-M2XA : des lettres et des chiffres par groupes de quatre. Demandez à votre ami de le copier à nouveau depuis son salon et de le coller en entier.
 Open port {} (UDP and TCP) to this computer in your router's settings: search the web for your router's name and "port forwarding".	Ouvrez le port {} (UDP et TCP) vers cet ordinateur dans les réglages de votre box : cherchez sur le web le nom de votre box et « redirection de port ».
 Paste your friend's room code first.	Collez d'abord le code du salon de votre ami.
 Room code	Code du salon
 Room code copied. Paste it in a message to your friend.	Code du salon copié. Collez-le dans un message à votre ami.
-Send your friend this room code and the password:	Envoyez ce code du salon et le mot de passe à votre ami :
 Send your friend this room code:	Envoyez ce code du salon à votre ami :
 The host didn't answer; check the room code and ask them to open the room.	L'hôte n'a pas répondu ; vérifiez le code du salon et demandez-lui d'ouvrir le salon.
-The one your friend sent you. An address works too.	Celui que votre ami vous a envoyé. Une adresse marche aussi.
-The room code holds your friend's address. You can paste the address itself instead, like 203.0.113.4:47640.	Le code du salon contient l'adresse de votre ami. Vous pouvez aussi coller l'adresse elle-même, comme 203.0.113.4:47640.
 The room code holds your public address, found with a free STUN server. Share it only with your friend.	Le code du salon contient votre adresse publique, trouvée avec un serveur STUN gratuit. Ne le partagez qu'avec votre ami.
 They choose Join in this tab, paste your room code, then press JOIN A ROOM.	Il choisit Rejoindre dans cet onglet, colle votre code du salon, puis appuie sur REJOINDRE UN SALON.
 This room code isn't right	Ce code du salon n'est pas bon
 This room code isn't valid; ask your friend to copy it again.	Ce code du salon n'est pas valide ; demandez à votre ami de le copier à nouveau.
-Your friend opens a room and sends you its code, and the password if there is one.	Votre ami ouvre un salon et vous envoie son code, et le mot de passe s'il y en a un.
 Your internet provider shares your address with other homes, so a friend elsewhere can't reach you this way.	Votre fournisseur d'accès partage votre adresse avec d'autres foyers : un ami ailleurs ne peut pas vous joindre ainsi.
 Your router didn't let your friend in by itself, so a friend elsewhere can't join yet.	Votre box n'a pas laissé entrer votre ami d'elle-même : un ami ailleurs ne peut pas encore vous rejoindre.
 Your router didn't open, so this code uses IPv6. It works if your friend's internet has IPv6 too.	Votre box ne s'est pas ouverte, ce code utilise donc l'IPv6. Il marche si la connexion de votre ami a aussi l'IPv6.
 Your router isn't opened automatically: a friend elsewhere needs the port opened.	Votre box ne s'ouvre pas automatiquement : un ami ailleurs a besoin que le port soit ouvert.
 {} (you)	{} (vous)
 Not ready yet: choosing their figures	Pas encore prêt : choisit ses figurines
+A room code is needed	Un code de salon est nécessaire
+An address alone can't open a room any more: ask your friend for the room code.	Une adresse seule ne suffit plus pour entrer : demandez le code du salon à votre ami.
+Code for another address	Code pour une autre adresse
+Copy the whole room code from your friend's room: letters and digits in groups of four.	Copiez le code entier du salon de votre ami : lettres et chiffres par groupes de quatre.
+Enter this computer's Tailscale or ZeroTier address, with its port.	Entrez l'adresse Tailscale ou ZeroTier de cet ordinateur, avec son port.
+Guests paused for 30 seconds	Invités refusés pendant 30 secondes
+In the room, copy your room code and send it to them by message.	Dans le salon, copiez votre code et envoyez-le à votre ami par message.
+No access to the router? Both install the same free virtual network, such as Tailscale or ZeroTier, then make its code in the room's Details.	Pas d'accès au routeur ? Installez tous deux le même réseau virtuel gratuit, comme Tailscale ou ZeroTier, puis créez son code dans les Détails du salon.
+Paste the whole code in Room code.	Collez le code entier dans Code du salon.
+The room code holds your friend's address and opens their room.	Le code contient l'adresse de votre ami et ouvre son salon.
+The whole code your friend sent you.	Le code entier que votre ami vous a envoyé.
+This room code is wrong or old: ask your friend to copy it again.	Ce code de salon est incorrect ou ancien : demandez à votre ami de le copier à nouveau.
+Too many wrong room codes. Wait 30 seconds, then try again.	Trop de codes de salon incorrects. Attendez 30 secondes, puis réessayez.
+With Tailscale or ZeroTier, ask your friend to make a code in their room's Details.	Avec Tailscale ou ZeroTier, demandez à votre ami de créer un code dans les Détails de son salon.
+With Tailscale or ZeroTier, make a code for this computer's address in Details below.	Avec Tailscale ou ZeroTier, créez un code pour l'adresse de cet ordinateur dans les Détails ci-dessous.
+Wrong room code	Code de salon incorrect
+Your friend opens a room and sends you its code.	Votre ami ouvre un salon et vous envoie son code.

@@ -1268,7 +1268,6 @@ Leave	Poistu
 Online	Verkossa
 Online with {}	Verkossa pelaajan {} kanssa
 A player couldn't join: {}	Pelaaja ei voinut liittyä: {}
-Ask your friend for the room's password and type it in the Online tab.	Pyydä ystävältäsi huoneen salasana ja kirjoita se Verkossa-välilehdelle.
 Both choose the same game, then try again.	Valitkaa molemmat sama peli ja yrittäkää uudelleen.
 Both update the launcher in Settings, then try again.	Päivittäkää molemmat käynnistysohjelma Asetuksissa ja yrittäkää uudelleen.
 Change it only if another program uses it.	Vaihda se vain, jos toinen ohjelma käyttää sitä.
@@ -1293,13 +1292,11 @@ How PLAY starts the game	Miten PELAA aloittaa pelin
 How it works	Näin se toimii
 How to fix it	Näin korjaat ongelman
 I'm ready	Olen valmis
-If your friend set one.	Jos ystäväsi on asettanut sellaisen.
 If your router refuses, open (forward) port {} for UDP and TCP to this computer in your router's settings.	Jos reititin kieltäytyy, avaa (ohjaa) portti {} UDP- ja TCP-liikenteelle tähän tietokoneeseen reitittimen asetuksissa.
 Invite your friend	Kutsu ystäväsi
 JOIN A ROOM	LIITY HUONEESEEN
 Joining your friend's room...	Liitytään ystäväsi huoneeseen...
 Lets friends outside your home in. Most routers allow it.	Päästää kodin ulkopuolella olevat ystävät sisään. Useimmat reitittimet sallivat sen.
-No access to the router? Both install the same free virtual network, such as Tailscale or ZeroTier, and use the address it gives this computer.	Etkö pääse reitittimen asetuksiin? Asentakaa molemmat sama ilmainen virtuaaliverkko, kuten Tailscale tai ZeroTier, ja käyttäkää sen tälle tietokoneelle antamaa osoitetta.
 No figures on the portal yet	Portaalissa ei ole vielä hahmoja
 Not in the same home? Their router may block it: their room shows them how to fix it.	Ette ole samassa kodissa? Ystäväsi reititin voi estää yhteyden: hänen huoneensa kertoo, miten ongelman voi korjata.
 Not ready	Ei valmis
@@ -1312,9 +1309,6 @@ Open my router automatically	Avaa reitittimeni automaattisesti
 Open my router automatically asks your router with UPnP or NAT-PMP.	"Avaa reitittimeni automaattisesti" lähettää reitittimellesi pyynnön UPnP- tai NAT-PMP-protokollalla.
 Open or join a room again to play.	Avaa huone tai liity huoneeseen uudelleen pelataksesi.
 Open the Online tab	Avaa Verkossa-välilehti
-Optional. Your friend types it to join.	Valinnainen. Ystäväsi kirjoittaa sen liittyäkseen.
-Or both install the same free virtual network, such as Tailscale or ZeroTier, and send the address it gives this computer, with the port.	Tai asentakaa molemmat sama ilmainen virtuaaliverkko, kuten Tailscale tai ZeroTier, ja lähettäkää sen tälle tietokoneelle antama osoite portin kanssa.
-Password	Salasana
 Paste it below	Liitä se alle
 Play with a friend on another system. Not tested yet: both must turn it on.	Pelaa ystävän kanssa eri järjestelmällä. Ei vielä testattu: molempien on otettava tämä käyttöön.
 Play with a friend over the internet, each on your own computer.	Pelaa ystävän kanssa internetin kautta, kumpikin omalla tietokoneellaan.
@@ -1340,8 +1334,6 @@ Try again. If it keeps failing, both restart the launcher.	Yrittäkää uudellee
 Waiting for player 2	Odotetaan pelaajaa 2
 Waiting for player 2 to join.	Odotetaan pelaajan 2 liittymistä.
 Waiting for {} to be ready.	Odotetaan, että {} on valmis.
-With a virtual network such as Tailscale or ZeroTier, use the address it gives your friend's computer.	Kun käytät virtuaaliverkkoa, kuten Tailscale tai ZeroTier, käytä sen ystäväsi tietokoneelle antamaa osoitetta.
-Wrong password	Väärä salasana
 You both choose your figures and press I'm ready. Then you press Start.	Valitsette molemmat hahmonne ja painatte "Olen valmis". Sitten sinä painat Aloita.
 You both need this game with the same disc edition, and the same launcher version.	Molemmilla on oltava tämä peli samalla levyversiolla ja sama käynnistysohjelman versio.
 You chose different games	Valitsitte eri pelit
@@ -1369,7 +1361,6 @@ Start	Aloita
 The connection failed; open or join a room again.	Yhteys epäonnistui; avaa huone tai liity uudelleen.
 The other player left; open or join a room again.	Toinen pelaaja poistui; avaa huone tai liity uudelleen.
 The other player stopped answering; check your connection and reconnect.	Toinen pelaaja ei enää vastaa; tarkista yhteys ja yhdistä uudelleen.
-The password doesn't match; ask the host and try again.	Salasana ei täsmää; kysy se isännältä ja yritä uudelleen.
 This port is busy; choose another port.	Portti on käytössä; valitse toinen portti.
 This room is full; ask the host to open another room.	Huone on täynnä; pyydä isäntää avaamaan toinen huone.
 You chose different games; choose the same game.	Valitsitte eri pelit; valitkaa sama peli.
@@ -1392,27 +1383,37 @@ Another program uses it. Choose another port in the Online tab, for example 4764
 Check the room code: ask them to copy it again.	Tarkista huonekoodi: pyydä ystävääsi kopioimaan se uudelleen.
 Get the room code	Hae huonekoodi
 Getting your room code...	Haetaan huonekoodia...
-In Room code, with the password if there is one.	Huonekoodi-kenttään, salasanan kanssa, jos sellainen on.
-In the room, copy your room code and send it to them by message, with the password if you set one.	Kopioi huoneessa huonekoodisi ja lähetä se viestillä, salasanan kanssa, jos asetit sellaisen.
 In the same home, ask your friend for the code under How to fix it in their room.	Samassa kodissa: pyydä ystävältäsi koodia hänen huoneensa kohdasta Näin korjaat ongelman.
-It looks like K7QD-M2XA: letters and digits in groups of four. Ask your friend to copy it again from their room and paste it whole.	Se näyttää tältä: K7QD-M2XA, kirjaimia ja numeroita neljän ryhmissä. Pyydä ystävääsi kopioimaan se uudelleen huoneestaan ja liittämään se kokonaan.
 Open port {} (UDP and TCP) to this computer in your router's settings: search the web for your router's name and "port forwarding".	Avaa portti {} (UDP ja TCP) tähän tietokoneeseen reitittimen asetuksista: hae verkosta reitittimesi nimeä ja "port forwarding".
 Paste your friend's room code first.	Liitä ensin ystäväsi huonekoodi.
 Room code	Huonekoodi
 Room code copied. Paste it in a message to your friend.	Huonekoodi kopioitu. Liitä se viestiin ystävällesi.
-Send your friend this room code and the password:	Lähetä ystävällesi tämä huonekoodi ja salasana:
 Send your friend this room code:	Lähetä ystävällesi tämä huonekoodi:
 The host didn't answer; check the room code and ask them to open the room.	Isäntä ei vastannut; tarkista huonekoodi ja pyydä häntä avaamaan huone.
-The one your friend sent you. An address works too.	Se, jonka ystäväsi lähetti sinulle. Myös osoite käy.
-The room code holds your friend's address. You can paste the address itself instead, like 203.0.113.4:47640.	Huonekoodi sisältää ystäväsi osoitteen. Voit myös liittää itse osoitteen, kuten 203.0.113.4:47640.
 The room code holds your public address, found with a free STUN server. Share it only with your friend.	Huonekoodi sisältää julkisen osoitteesi, joka on haettu ilmaiselta STUN-palvelimelta. Jaa se vain ystäväsi kanssa.
 They choose Join in this tab, paste your room code, then press JOIN A ROOM.	Hän valitsee tällä välilehdellä Liity, liittää huonekoodisi ja painaa LIITY HUONEESEEN.
 This room code isn't right	Huonekoodi ei ole oikein
 This room code isn't valid; ask your friend to copy it again.	Huonekoodi ei kelpaa; pyydä ystävääsi kopioimaan se uudelleen.
-Your friend opens a room and sends you its code, and the password if there is one.	Ystäväsi avaa huoneen ja lähettää sinulle sen koodin ja salasanan, jos sellainen on.
 Your internet provider shares your address with other homes, so a friend elsewhere can't reach you this way.	Internetliittymäsi tarjoaja jakaa osoitteesi muiden kotien kanssa, joten muualla oleva ystävä ei tavoita sinua näin.
 Your router didn't let your friend in by itself, so a friend elsewhere can't join yet.	Reititin ei päästänyt ystävääsi sisään itsestään, joten muualla oleva ystävä ei voi vielä liittyä.
 Your router didn't open, so this code uses IPv6. It works if your friend's internet has IPv6 too.	Reititin ei auennut, joten tämä koodi käyttää IPv6:ta. Se toimii, jos myös ystäväsi internetissä on IPv6.
 Your router isn't opened automatically: a friend elsewhere needs the port opened.	Reititintä ei avata automaattisesti: muualla oleva ystävä tarvitsee avatun portin.
 {} (you)	{} (sinä)
 Not ready yet: choosing their figures	Ei vielä valmis: valitsee hahmojaan
+A room code is needed	Tarvitset huonekoodin
+An address alone can't open a room any more: ask your friend for the room code.	Pelkkä osoite ei enää avaa huonetta: pyydä ystävältäsi huonekoodi.
+Code for another address	Koodi toiselle osoitteelle
+Copy the whole room code from your friend's room: letters and digits in groups of four.	Kopioi ystäväsi huoneen koko koodi: kirjaimia ja numeroita neljän ryhmissä.
+Enter this computer's Tailscale or ZeroTier address, with its port.	Anna tämän tietokoneen Tailscale- tai ZeroTier-osoite ja portti.
+Guests paused for 30 seconds	Vieraat estetty 30 sekunniksi
+In the room, copy your room code and send it to them by message.	Kopioi huonekoodi huoneessa ja lähetä se ystävällesi viestillä.
+No access to the router? Both install the same free virtual network, such as Tailscale or ZeroTier, then make its code in the room's Details.	Etkö pääse reitittimen asetuksiin? Asentakaa sama ilmainen virtuaaliverkko, kuten Tailscale tai ZeroTier, ja luokaa koodi huoneen Lisätiedoissa.
+Paste the whole code in Room code.	Liitä koko koodi Huonekoodi-kenttään.
+The room code holds your friend's address and opens their room.	Huonekoodi sisältää ystäväsi osoitteen ja avaa hänen huoneensa.
+The whole code your friend sent you.	Ystäväsi lähettämä koko koodi.
+This room code is wrong or old: ask your friend to copy it again.	Tämä huonekoodi on väärä tai vanha: pyydä ystävääsi kopioimaan se uudelleen.
+Too many wrong room codes. Wait 30 seconds, then try again.	Liian monta väärää huonekoodia. Odota 30 sekuntia ja yritä uudelleen.
+With Tailscale or ZeroTier, ask your friend to make a code in their room's Details.	Jos käytätte Tailscalea tai ZeroTieria, pyydä ystävääsi luomaan koodi huoneensa Lisätiedoissa.
+With Tailscale or ZeroTier, make a code for this computer's address in Details below.	Jos käytätte Tailscalea tai ZeroTieria, luo tämän tietokoneen osoitteelle koodi alla olevissa Lisätiedoissa.
+Wrong room code	Väärä huonekoodi
+Your friend opens a room and sends you its code.	Ystäväsi avaa huoneen ja lähettää sinulle sen koodin.

@@ -1,7 +1,9 @@
 // ArkeyanLauncherTest's checks for the online room (launcher/online/): the messages and their limits, the keyed tags,
 // addresses, then whole rooms over the loopback address: a guest that joins, gets the host's settings and save, and both
-// start; a wrong password, another disc, a full room, a guest that leaves, a silent one. Returns the number of failures.
+// start; a wrong room code, another disc, a full room, a guest that leaves, a silent one. Returns the number of failures.
 #include "launcher/online/lobby.h"
+#include <algorithm>
+#include <limits>
 #include "launcher/online/room_code.h"
 #include "launcher/online/stun.h"
 #include "launcher/online/session_launch.h"
@@ -74,6 +76,30 @@ namespace
         return player;
     }
 
+    void CipherChecks()
+    {
+        CipherKey key{};
+        for (size_t i = 0; i < key.size(); ++i)
+            key[i] = uint8_t(i);
+        CipherNonce nonce{ 0, 0, 0, 9, 0, 0, 0, 0x4a, 0, 0, 0, 0 };
+        // RFC 8439 sections 2.3.2 and 2.4.2.
+        ONLINE_EXPECT(Hex(ChaCha20Block(key, nonce, 1)) ==
+                      "10f1e7e4d13b5915500fdd1fa32071c4c7d1f4c733c068030422aa9ac3d46c4e"
+                      "d2826446079faa0914c2d705d98b02a2b5129cd1de164eb9cbd083e8a2503c4e");
+        nonce[3] = 0;
+        const std::string plain = "Ladies and Gentlemen of the class of '99: If I could offer you only one tip for the "
+                                  "future, sunscreen would be it.";
+        std::vector<uint8_t> bytes(plain.begin(), plain.end());
+        ONLINE_EXPECT(ChaCha20Xor(key, nonce, 1, bytes));
+        ONLINE_EXPECT(Hex(bytes) == "6e2e359a2568f98041ba0728dd0d6981e97e7aec1d4360c20a27afccfd9fae0b"
+                                    "f91b65c5524733ab8f593dabcd62b3571639d624e65152ab8f530c359f0861d8"
+                                    "07ca0dbf500d6a6156a38e088a22b65e52bc514d16ccf806818ce91ab7793736"
+                                    "5af90bbf74a35be6b40b8eedf2785e42874d");
+        ONLINE_EXPECT(ChaCha20Xor(key, nonce, 1, bytes) && std::string(bytes.begin(), bytes.end()) == plain);
+        ONLINE_EXPECT(!ChaCha20Xor(key, nonce, std::numeric_limits<uint32_t>::max(), bytes));
+        ONLINE_EXPECT(std::string(bytes.begin(), bytes.end()) == plain);
+    }
+
     void MessageChecks()
     {
         // RFC 4231, test case 2.
@@ -98,8 +124,8 @@ namespace
         longer.push_back(0);
         ONLINE_EXPECT(!Decode(longer, back));
         // A newer protocol is read far enough to say so.
-        std::vector<uint8_t> future = { 2, 0, 0xFF };
-        ONLINE_EXPECT(Decode(future, back) && back.protocol == 2);
+        std::vector<uint8_t> future = { uint8_t(LobbyProtocolVersion + 1), 0, 0xFF };
+        ONLINE_EXPECT(Decode(future, back) && back.protocol == LobbyProtocolVersion + 1);
 
         Player player = SamplePlayer("Kaos", 7), playerBack;
         ONLINE_EXPECT(Decode(Encode(player), playerBack) && playerBack.pseudo == "Kaos" &&
@@ -155,15 +181,15 @@ namespace
         Nonce n1{}, n2{};
         n1[0] = 1;
         n2[0] = 2;
-        const Keys k1 = DeriveKeys("pw", n1, n2), k2 = DeriveKeys("pw", n1, n2), k3 = DeriveKeys("pW", n1, n2),
-                   k4 = DeriveKeys("pw", n2, n1);
+        const Keys k1 = DeriveKeys(0x123456789a, n1, n2), k2 = DeriveKeys(0x123456789a, n1, n2),
+                   k3 = DeriveKeys(0x123456789b, n1, n2), k4 = DeriveKeys(0x123456789a, n2, n1);
         ONLINE_EXPECT(k1.hostToGuest == k2.hostToGuest && k1.hostToGuest != k3.hostToGuest &&
                       k1.hostToGuest != k4.hostToGuest && k1.hostToGuest != k1.guestToHost);
         ONLINE_EXPECT(ProofOf(k1, true) != ProofOf(k1, false));
 
         // Frames: whole ones out of bytes fed one at a time; the tag binds type, sequence and payload.
         const std::vector<uint8_t> payload = { 1, 2, 3 };
-        const auto frame = Frame(MessageType::Ready, 7, payload, &k1.hostToGuest);
+        const auto frame = Frame(MessageType::Ready, 7, payload, &k1, true);
         FrameReader reader;
         int count = 0;
         for (const uint8_t byte : frame)
@@ -172,13 +198,15 @@ namespace
             while (auto got = reader.Next())
             {
                 ++count;
-                ONLINE_EXPECT(got->type == MessageType::Ready && got->sequence == 7 && got->payload == payload);
+                ONLINE_EXPECT(got->type == MessageType::Ready && got->sequence == 7 && got->payload != payload);
                 ONLINE_EXPECT(CheckTag(*got, k1.hostToGuest) && !CheckTag(*got, k1.guestToHost));
                 got->payload[0] ^= 1;
                 ONLINE_EXPECT(!CheckTag(*got, k1.hostToGuest));
                 got->payload[0] ^= 1;
                 got->sequence++;
                 ONLINE_EXPECT(!CheckTag(*got, k1.hostToGuest));
+                got->sequence--;
+                ONLINE_EXPECT(OpenFrame(*got, k1, true) && got->payload == payload);
             }
         }
         ONLINE_EXPECT(count == 1 && !reader.Broken());
@@ -231,23 +259,29 @@ namespace
                       !net::ParseAddress("[::1", 1, host, port) && !net::ParseAddress("a b:1", 1, host, port));
 
         // Room codes: the three lengths, read back whatever the case, dashes and look-alike letters; a typo refused.
-        const std::string shortCode = EncodeRoomCode("203.0.113.4", DefaultPort);
-        ONLINE_EXPECT(shortCode.size() == 9 && shortCode[4] == '-');
-        ONLINE_EXPECT(DecodeRoomCode(shortCode, host, port) && host == "203.0.113.4" && port == DefaultPort);
-        const std::string withPort = EncodeRoomCode("203.0.113.4", 5000);
-        ONLINE_EXPECT(withPort.size() == 14 && withPort != shortCode);
-        ONLINE_EXPECT(DecodeRoomCode(withPort, host, port) && host == "203.0.113.4" && port == 5000);
-        const std::string v6 = EncodeRoomCode("2001:db8::7", 47641);
-        ONLINE_EXPECT(v6.size() == 39);
-        ONLINE_EXPECT(DecodeRoomCode(v6, host, port) && host == "2001:db8::7" && port == 47641);
-        ONLINE_EXPECT(EncodeRoomCode("my-pc.local", 1).empty() && EncodeRoomCode("", 1).empty());
+        constexpr uint64_t secret = 0x9876543210;
+        uint64_t decoded = 0;
+        const std::string shortCode = EncodeRoomCode("203.0.113.4", DefaultPort, secret);
+        ONLINE_EXPECT(shortCode.size() == 24 && shortCode[4] == '-');
+        ONLINE_EXPECT(DecodeRoomCode(shortCode, host, port, decoded) && host == "203.0.113.4" && port == DefaultPort &&
+                      decoded == secret);
+        const std::string withPort = EncodeRoomCode("203.0.113.4", 5000, secret);
+        ONLINE_EXPECT(withPort.size() == 29 && withPort != shortCode);
+        ONLINE_EXPECT(DecodeRoomCode(withPort, host, port, decoded) && host == "203.0.113.4" && port == 5000 &&
+                      decoded == secret);
+        const std::string v6 = EncodeRoomCode("2001:db8::7", 47641, secret);
+        ONLINE_EXPECT(v6.size() == 54);
+        ONLINE_EXPECT(
+            DecodeRoomCode(v6, host, port, decoded) && host == "2001:db8::7" && port == 47641 && decoded == secret);
+        ONLINE_EXPECT(EncodeRoomCode("my-pc.local", 1, secret).empty() && EncodeRoomCode("", 1, secret).empty());
         {
             std::string loose;
             for (const char c : shortCode)
                 if (c != '-')
                     loose += char(c == '0' ? 'o' : c == '1' ? 'l' : (c >= 'A' && c <= 'Z') ? c - 'A' + 'a' : c);
-            ONLINE_EXPECT(DecodeRoomCode(" " + loose.substr(0, 4) + " " + loose.substr(4) + "\n", host, port) &&
-                          host == "203.0.113.4");
+            ONLINE_EXPECT(
+                DecodeRoomCode(" " + loose.substr(0, 4) + " " + loose.substr(4) + "\n", host, port, decoded) &&
+                host == "203.0.113.4");
             int refused = 0;
             for (size_t i = 0; i < shortCode.size(); ++i)
             {
@@ -257,12 +291,14 @@ namespace
                 typo[i] = typo[i] == 'Z' ? 'Y' : char(typo[i] == '9' ? 'A' : typo[i] + 1);
                 std::string h;
                 uint16_t p = 0;
-                refused += DecodeRoomCode(typo, h, p) ? 0 : 1;
+                refused += DecodeRoomCode(typo, h, p, decoded) ? 0 : 1;
             }
-            ONLINE_EXPECT(refused >= 7); // an 8-bit check: one typo in 256 slips by
+            ONLINE_EXPECT(refused == 20);
         }
-        ONLINE_EXPECT(!DecodeRoomCode("K7QD-M2X", host, port) && !DecodeRoomCode("K7QD-M2XU", host, port) &&
-                      !DecodeRoomCode("", host, port));
+        ONLINE_EXPECT(EncodeRoomCode("203.0.113.4", DefaultPort, secret + 1) != shortCode);
+        ONLINE_EXPECT(EncodeRoomCode("203.0.113.4", DefaultPort, secret | (0xffull << 40)) == shortCode);
+        ONLINE_EXPECT(!DecodeRoomCode("K7QD-M2X", host, port, decoded) &&
+                      !DecodeRoomCode("K7QD-M2XU", host, port, decoded) && !DecodeRoomCode("", host, port, decoded));
         ONLINE_EXPECT(net::ParseAddress(withPort, DefaultPort, host, port) && host == "203.0.113.4" && port == 5000);
         ONLINE_EXPECT(net::ParseAddress(v6, DefaultPort, host, port) && host == "2001:db8::7" && port == 47641);
 
@@ -316,10 +352,9 @@ namespace
         Lobby guest{ [this] { return ticking ? now++ : now; } };
         uint16_t port = 0;
 
-        bool Open(const std::string& password, std::vector<SaveFile> save = {})
+        bool Open(std::vector<SaveFile> save = {})
         {
             HostOptions options;
-            options.password = password;
             options.hello = SampleHello();
             options.player = SamplePlayer("Host", 1);
             options.settings.fpsLimit = 30;
@@ -338,11 +373,10 @@ namespace
             return false;
         }
 
-        void Join(Lobby& who, const std::string& password, Hello hello = SampleHello())
+        void Join(Lobby& who, bool wrong = false, Hello hello = SampleHello())
         {
             JoinOptions options;
-            options.address = "127.0.0.1:" + std::to_string(port);
-            options.password = password;
+            options.address = EncodeRoomCode("127.0.0.1", port, host.Secret() ^ uint64_t(wrong));
             options.hello = hello;
             options.player = SamplePlayer("Guest", 2);
             options.player.xuid = "E0000000000000CD";
@@ -368,14 +402,213 @@ namespace
         }
     };
 
+    struct WireGuest
+    {
+        net::Handle socket = net::Invalid;
+        FrameReader reader;
+        Keys keys;
+        std::vector<uint8_t> wire;
+        ~WireGuest() { net::Close(socket); }
+
+        bool Send(const std::vector<uint8_t>& frame)
+        {
+            size_t at = 0;
+            for (int i = 0; i < 3000 && at < frame.size(); ++i)
+            {
+                const long sent = net::Send(socket, frame.data() + at, frame.size() - at);
+                if (sent < 0)
+                    return false;
+                at += size_t(sent);
+                if (!sent)
+                    SDL_Delay(1);
+            }
+            return at == frame.size();
+        }
+
+        void Read()
+        {
+            uint8_t bytes[16384];
+            for (;;)
+            {
+                const long got = net::Receive(socket, bytes, sizeof bytes);
+                if (got <= 0)
+                    break;
+                wire.insert(wire.end(), bytes, bytes + got);
+                reader.Feed(std::span(bytes, size_t(got)));
+            }
+        }
+
+        bool Enter(Room& room)
+        {
+            std::string error;
+            socket = net::Connect("127.0.0.1", room.port, error);
+            if (socket == net::Invalid ||
+                !room.Until([&] { return net::Connecting(socket) == net::Progress::Connected; }))
+                return false;
+            Hello hello = SampleHello();
+            RandomBytes(hello.nonce);
+            if (!Send(Frame(MessageType::Hello, 0, Encode(hello), nullptr)))
+                return false;
+            std::optional<Received> reply;
+            if (!room.Until([&] {
+                    Read();
+                    reply = reader.Next();
+                    return bool(reply);
+                }))
+                return false;
+            Hello hostHello;
+            if (reply->type != MessageType::Hello || !Decode(reply->payload, hostHello))
+                return false;
+            keys = DeriveKeys(room.host.Secret(), hostHello.nonce, hello.nonce);
+            const auto proof = ProofOf(keys, false);
+            if (!Send(Frame(MessageType::Proof, 1, proof, &keys, false)))
+                return false;
+            return room.Until([&] {
+                Read();
+                return room.host.Get().state == State::InRoom;
+            });
+        }
+    };
+
+    void SecurityChecks()
+    {
+        {
+            Room room;
+            ONLINE_EXPECT(room.Open());
+            const auto secret = room.host.Secret();
+            ONLINE_EXPECT((secret >> 40) == 0);
+            ONLINE_EXPECT(room.Open() && room.host.Secret() != secret);
+            JoinOptions plain;
+            plain.address = "127.0.0.1:" + std::to_string(room.port);
+            ONLINE_EXPECT(!room.guest.Join(plain) && room.guest.Get().error == Error::CodeRequired);
+            room.host.Poll();
+            ONLINE_EXPECT(room.host.Get().state == State::Waiting);
+        }
+        {
+            Room room;
+            ONLINE_EXPECT(room.Open());
+            for (int attempt = 0; attempt < 5; ++attempt)
+            {
+                room.Join(room.guest, true);
+                ONLINE_EXPECT(room.Until(
+                    [&] { return room.guest.Get().state == State::Ended && room.host.Get().state == State::Waiting; }));
+                ONLINE_EXPECT(room.guest.Get().error == Error::WrongCode);
+                ONLINE_EXPECT(
+                    room.host.Get().lastRefusal.error == (attempt == 4 ? Error::TooManyCodes : Error::WrongCode));
+            }
+            const uint64_t refusedAt = room.host.Get().lastRefusal.atMs;
+            room.now = refusedAt + 29900;
+            room.Join(room.guest);
+            ONLINE_EXPECT(room.Until([&] { return room.guest.Get().state == State::Ended; }));
+            ONLINE_EXPECT(room.guest.Get().error == Error::TooManyCodes);
+            room.now = refusedAt + 30000;
+            room.Join(room.guest);
+            ONLINE_EXPECT(room.Until([&] { return room.guest.Get().state == State::InRoom; }));
+        }
+        {
+            Room room;
+            ONLINE_EXPECT(room.Open());
+            for (int attempt = 0; attempt < 5; ++attempt)
+            {
+                room.Join(room.guest, true);
+                ONLINE_EXPECT(room.Until([&] { return room.guest.Get().state == State::Ended; }));
+                ONLINE_EXPECT(room.host.Get().lastRefusal.error == Error::WrongCode);
+                room.now += 60001;
+            }
+            room.Join(room.guest);
+            ONLINE_EXPECT(room.Until([&] { return room.guest.Get().state == State::InRoom; }));
+        }
+        const std::string saveText = "stand-in save bytes that must stay private";
+        for (int attack = 0; attack < 5; ++attack)
+        {
+            Room room;
+            ONLINE_EXPECT(room.Open({ { "slot0/save.bin", std::vector<uint8_t>(saveText.begin(), saveText.end()) } }));
+            WireGuest guest;
+            if (!guest.Enter(room))
+            {
+                ONLINE_EXPECT(false);
+                continue;
+            }
+            bool receivedSave = false, receivedPlayer = false, receivedProof = false;
+            ONLINE_EXPECT(room.Until([&] {
+                guest.Read();
+                while (auto frame = guest.reader.Next())
+                {
+                    ONLINE_EXPECT(OpenFrame(*frame, guest.keys, true));
+                    if (frame->type == MessageType::SaveChunk)
+                    {
+                        SaveChunk chunk;
+                        ONLINE_EXPECT(Decode(frame->payload, chunk) &&
+                                      std::string(chunk.bytes.begin(), chunk.bytes.end()) == saveText);
+                        receivedSave = true;
+                    }
+                    if (frame->type == MessageType::Player)
+                    {
+                        Player player;
+                        ONLINE_EXPECT(Decode(frame->payload, player) && player.pseudo == "Host");
+                        receivedPlayer = true;
+                    }
+                    if (frame->type == MessageType::Proof)
+                    {
+                        const auto expected = ProofOf(guest.keys, true);
+                        ONLINE_EXPECT(
+                            std::equal(frame->payload.begin(), frame->payload.end(), expected.begin(), expected.end()));
+                        receivedProof = true;
+                    }
+                }
+                return receivedSave && receivedPlayer && receivedProof;
+            }));
+            const auto contains = [&](std::string_view plain) {
+                return std::search(guest.wire.begin(), guest.wire.end(), plain.begin(), plain.end()) !=
+                       guest.wire.end();
+            };
+            ONLINE_EXPECT(!contains("Host") && !contains(saveText));
+            std::vector<uint8_t> payload{ 1 };
+            MessageType type = MessageType::Ready;
+            if (attack == 2)
+            {
+                type = MessageType::Player;
+                Player large = SamplePlayer("Guest", 2);
+                large.pseudo.assign(65, 'x');
+                payload = Encode(large);
+            }
+            else if (attack == 3)
+            {
+                type = MessageType::SaveChunk;
+                payload = Encode(SaveChunk{ "slot0/save.bin", 1, 1, { 2 } });
+            }
+            else if (attack == 4)
+                type = MessageType(255);
+            auto frame = Frame(type, 2, payload, &guest.keys, false);
+            if (attack == 0)
+            {
+                frame[9] ^= 1;
+                FrameReader check;
+                check.Feed(frame);
+                auto changed = check.Next();
+                ONLINE_EXPECT(changed && !OpenFrame(*changed, guest.keys, false));
+            }
+            if (attack == 1)
+            {
+                ONLINE_EXPECT(guest.Send(frame));
+                ONLINE_EXPECT(room.Until([&] { return room.host.Get().remoteReady; }));
+            }
+            ONLINE_EXPECT(guest.Send(frame));
+            ONLINE_EXPECT(room.Until([&] { return room.host.Get().state == State::Waiting; }));
+            ONLINE_EXPECT(room.host.Get().lastRefusal.error == Error::Broken);
+            room.Join(room.guest);
+            ONLINE_EXPECT(room.Until([&] { return room.guest.Get().state == State::InRoom; }));
+        }
+    }
+
     void RoomChecks()
     {
         {
             // The clock moves between the start of a poll and the bytes it reads: not a silence.
             Room room;
             room.ticking = true;
-            ONLINE_EXPECT(room.Open(""));
-            room.Join(room.guest, "");
+            ONLINE_EXPECT(room.Open());
+            room.Join(room.guest);
             ONLINE_EXPECT(room.Until(
                 [&] { return room.host.Get().state == State::InRoom && room.guest.Get().state == State::InRoom; }));
             ONLINE_EXPECT(room.host.Get().lastRefusal.error == Error::None);
@@ -386,8 +619,8 @@ namespace
             for (size_t i = 0; i < save[0].bytes.size(); ++i)
                 save[0].bytes[i] = uint8_t(i * 7);
             Room room;
-            ONLINE_EXPECT(room.Open("secret", save) && room.host.Get().state == State::Waiting);
-            room.Join(room.guest, "secret");
+            ONLINE_EXPECT(room.Open(save) && room.host.Get().state == State::Waiting);
+            room.Join(room.guest);
             ONLINE_EXPECT(room.Until([&] {
                 const Status& g = room.guest.Get();
                 return g.state == State::InRoom && g.haveRemote && g.saveReceived == 150002 &&
@@ -420,33 +653,33 @@ namespace
         }
         {
             Room room;
-            ONLINE_EXPECT(room.Open("secret"));
-            room.Join(room.guest, "wrong");
+            ONLINE_EXPECT(room.Open());
+            room.Join(room.guest, true);
             ONLINE_EXPECT(room.Until([&] { return room.guest.Get().state == State::Ended; }));
-            ONLINE_EXPECT(room.guest.Get().error == Error::WrongPassword);
-            ONLINE_EXPECT(room.Until([&] { return room.host.Get().lastRefusal.error == Error::WrongPassword; }));
+            ONLINE_EXPECT(room.guest.Get().error == Error::WrongCode);
+            ONLINE_EXPECT(room.Until([&] { return room.host.Get().lastRefusal.error == Error::WrongCode; }));
             ONLINE_EXPECT(room.host.Get().state == State::Waiting);
-            // The room stays open: the right password gets in after a wrong one.
-            room.Join(room.guest, "secret");
+            // The room stays open: the right code gets in after a wrong one.
+            room.Join(room.guest);
             ONLINE_EXPECT(room.Until([&] { return room.guest.Get().state == State::InRoom; }));
         }
         {
             Room room;
-            ONLINE_EXPECT(room.Open(""));
+            ONLINE_EXPECT(room.Open());
             Hello other = SampleHello();
             other.xexSha256 = std::string(64, 'b');
-            room.Join(room.guest, "", other);
+            room.Join(room.guest, false, other);
             ONLINE_EXPECT(room.Until([&] { return room.guest.Get().state == State::Ended; }));
             ONLINE_EXPECT(room.guest.Get().error == Error::Mismatch && room.guest.Get().mismatch == Mismatch::Disc);
             ONLINE_EXPECT(room.Until([&] { return room.host.Get().lastRefusal.mismatch == Mismatch::Disc; }));
         }
         {
             Room room;
-            ONLINE_EXPECT(room.Open(""));
-            room.Join(room.guest, "");
+            ONLINE_EXPECT(room.Open());
+            room.Join(room.guest);
             ONLINE_EXPECT(room.Until([&] { return room.guest.Get().state == State::InRoom; }));
             Lobby third([&room] { return room.now; });
-            room.Join(third, "");
+            room.Join(third);
             ONLINE_EXPECT(room.Until([&] { return third.Get().state == State::Ended; }, &third));
             ONLINE_EXPECT(third.Get().error == Error::RoomFull && room.guest.Get().state == State::InRoom);
             room.guest.Leave();
@@ -455,8 +688,8 @@ namespace
         }
         {
             Room room;
-            ONLINE_EXPECT(room.Open(""));
-            room.Join(room.guest, "");
+            ONLINE_EXPECT(room.Open());
+            room.Join(room.guest);
             ONLINE_EXPECT(room.Until([&] { return room.guest.Get().state == State::InRoom; }));
             // The host stops answering (its window froze): the guest gives up after the silence timeout.
             for (int i = 0; i < 40 && room.guest.Get().state == State::InRoom; ++i)
@@ -668,8 +901,10 @@ namespace
 int OnlineChecks(const std::filesystem::path& scratch)
 {
     g_failures = 0;
+    CipherChecks();
     MessageChecks();
     RoomChecks();
+    SecurityChecks();
     SessionChecks(scratch);
     if (g_failures == 0)
         printf("online room checks: all passed\n");

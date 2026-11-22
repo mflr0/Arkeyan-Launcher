@@ -40,7 +40,6 @@ namespace online
         uint16_t port = DefaultPort;
         bool automatic = true; // ask the router to open the port (UPnP, NAT-PMP)
         std::string address;   // Join: the host's "IP:port"
-        std::string password;
         bool crossPlatform = false; // this player allows a session with another system
     };
     GameOnline ReadGameOnline(const LauncherConfig& config, std::string_view game);
