@@ -100,6 +100,13 @@ namespace launcher_ui
         return slot.disc == DiscState::Ready && slot.installed.runtime.empty() && slot.ownRuntime.empty();
     }
 
+    bool App::GameInstalled(std::string_view id) const
+    {
+        return std::any_of(m_slots.begin(), m_slots.end(), [&](const auto& slot) {
+            return slot->game.id == id && (!slot->installed.runtime.empty() || !slot->ownRuntime.empty());
+        });
+    }
+
     bool App::UpdateAvailable() const { return UpdateAvailable(*m_s); }
 
     bool App::UpdateAvailable(const GameSlot& slot) const

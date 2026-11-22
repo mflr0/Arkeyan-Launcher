@@ -207,8 +207,8 @@ At the first visit to the page (`CollectionPage::Open`):
   card per character, as the Toy Box's: the element and type icons in a column, the picture, the name with the versions'
   "+3" badge, then "Trap Master · owned x2" ("not owned", "owned"). The toys the game reads first, under "Works in <game>",
   in the Toy Box's sections (each element, Kaos, then Minis, Traps, Vehicles, Creation Crystals, Magic Items, Adventure
-  Packs, Trophies), then "Later games" in one section, each card labelled "needs Giants" in place of the owned line (a
-  SectionHeader each, with its count). Every category keeps the full "needs <game>" label; the grid's minimum card width
+  Packs, Trophies), then "Later games" in one section, each card labelled "needs Giants" in place of the owned line until that
+  game is installed, then with the owned line as above (a SectionHeader each, with its count). Every category keeps the full "needs <game>" label; the grid's minimum card width
   fits the longest requirement in the current language. The side Card starts with the toy's picture, its name and
   "Fire · Giant". A side Card lists the versions as ListRows (the picture in `image`, "owned x2" as `trailing`)
   (the plain toy under its own name, then the variants the chosen game tells apart and the same-tag editions: a variant the game plays
