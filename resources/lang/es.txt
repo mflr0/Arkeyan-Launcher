@@ -63,6 +63,7 @@ All elements	Todos los elementos
 All games	Todos los juegos
 All games are updated	Todos los juegos están actualizados
 All types	Todos los tipos
+Fits {}	Va en {}
 Also delete my saves and my figures	Borrar también mis partidas y mis figuras
 Alternate deco	Decoración alternativa
 AMD upscaling: faster, nearly as sharp (F3 in game).	Escalado de AMD: más rápido, casi igual de nítido (F3 en el juego).

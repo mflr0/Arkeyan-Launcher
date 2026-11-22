@@ -187,6 +187,7 @@ namespace launcher_ui
         void DrawAddFilters();
         int FirstAddMatchingVersion(const collection::Toy& toy, const std::string& search) const;
         bool MatchesAddToy(const collection::Toy& toy, const std::string& search) const;
+        const collection::Seat* AddSeat() const; // the seat of the + Add a figure opened from, else null
         int CountAddOwned(uint16_t type, int variant, const std::string& edition) const;
         const collection::Toy* DrawAddGrid(ImVec2 size, const std::string& search);
         bool DrawAddToy(const collection::Toy& toy, int pass, float cell, const std::string& search);
@@ -327,6 +328,7 @@ namespace launcher_ui
         uint16_t m_addToy = 0xFFFF;
         int m_addVersion = 0; // 0: standard, else 1 + an index in the toy's variants
         int m_addCategory = -1;
+        bool m_addFits = false; // the list holds only what m_addSeat takes ("Fits <seat>")
         char m_addSearch[64] = {};
         char m_addLabel[64] = {};
         std::string m_created; // the figure Add a figure just made

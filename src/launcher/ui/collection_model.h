@@ -24,6 +24,8 @@ namespace launcher_ui
 
     // Whether a figure can sit on the seat. Unknown toys must be identified before seating.
     bool SeatAccepts(const collection::Seat& seat, const collection::Figure& figure);
+    // Whether the seat takes the toy's family (Add a figure's "Fits <seat>").
+    bool SeatTakes(const collection::Seat& seat, const collection::Toy& toy);
 
     // One path per seat of `game` (empty: a free seat), from the session file: a figure goes to the seat of its slot when
     // it fits there, else to the first free seat that takes it, as the game's Toy Box does. Paths of the old figure

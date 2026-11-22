@@ -925,6 +925,8 @@ namespace launcher_ui
         m_created.clear();
         m_addGame = m_model.gameId;
         m_addSeat = seat;
+        m_addCategory = -1;
+        m_addFits = seat >= 0;
     }
 
     // Empties a seat: the figure leaves the portal of the next start (and stays in the collection).

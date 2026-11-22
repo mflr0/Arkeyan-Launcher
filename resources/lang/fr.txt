@@ -542,6 +542,7 @@ Air	Air
 All elements	Tous les éléments
 All games	Tous les jeux
 All types	Tous les types
+Fits {}	Va sur {}
 Alternate deco	Autre déco
 At the next start of {}	Au prochain lancement de {}
 Back up now	Sauvegarder maintenant

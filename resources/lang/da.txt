@@ -63,6 +63,7 @@ All elements	Alle elementer
 All games	Alle spil
 All games are updated	Alle spil er opdateret
 All types	Alle typer
+Fits {}	Passer på {}
 Also delete my saves and my figures	Slet også mine gemte spil og mine figurer
 Alternate deco	Alternativ farve
 AMD upscaling: faster, nearly as sharp (F3 in game).	AMD-opskalering: hurtigere, næsten lige så skarp (F3 i spillet).
