@@ -422,7 +422,7 @@ twelve pages, first at 1x then at 2x, and quits:
 `gallery-<lang>-<1x|2x>-<NN>-<page>.png`: 01 buttons (each kind by state, the hold's hint, pills, icon buttons, sizes), 02 the
 main action (every state, Spyro's Adventure), 03 the main action in Giants' and Swap Force's colours (focus ring included),
 04 tabs (keyboard, then with a pad's LT / RT), segmented, select, slider, 05 toggle, checkbox, radio, settings rows,
-06 fields, cards, list rows, a section header, an empty state, 07 badges, chips, status pills and shapes, each game's portal mark, progress, 08 toasts
+06 fields, cards, list rows, a section header, an empty state, 07 badges, chips, status pills and shapes, progress, 08 toasts
 (the error with the focus), key caps of each pad family and the keyboard, the pad legend, 09 the modal, 10 a danger dialog,
 11 a menu and a tooltip, 12 an open select. Run it with `SKY_LAUNCHER_LANGUAGE=en` and `=fr`. It is the components'
 visual test (look at every page after a change to a component) and the designer's review sheet. The sample labels are the
@@ -670,13 +670,7 @@ every game shows its real state and art at once ("Update all" on Home's title li
      rows' content edge. The title is Home's link for the pointer (a hand on it), not a keyboard or pad stop: no ring.
    - The three playable games as rows (Spyro's Adventure, Giants and Swap Force), then one "Coming later" row for the four others. An enabled game whose disc has been read (this session or an earlier one) shows **its logo**, the
      art with "Skylanders" on it, in the row's left column (`GameLogoW` x `GameLogoH`); before that, and for the games
-     coming later (no disc, so never any game art), **the game's own Portal of Power**, drawn flat with one dark line
-     (`ui::DrawPortalMark`, `PortalOf` in `game_look.cpp`, colours in `launcher_theme.h`): the stone ring for Spyro's
-     Adventure (white top, green band), Giants (lit gold) and Swap Force (pale stone, lit lime), the clear ring with its
-     trap slot for Trap Team, the pad with its engine for SuperChargers and with a crystal for Imaginators (the same
-     pad: the crystal tells them apart); a game to come gets a plain stone ring, faded. No gradient. It **lights up** while
-     its game is shown, under the pointer or with the focus: its light goes from a darker shade of itself to full
-     brightness with a flat halo, easing over `motion::Fast` (`ui::Ease`); only the brightness moves, never the hue.
+     coming later (no disc, so never any game art), a neutral badge: the initials (SA, G, SF) on the game's colour.
    - The name, then under it the game's state: **its icon and its words on one line** (`IconOf(SlotState)`, "A game's
      states", below), the icon at the name's left edge, centred on the words' capitals. The selected game's row has the
      orange bar while its Play page is open.
@@ -978,7 +972,7 @@ page backdrops and logos are read, decoded, cropped and shrunk on one thread of 
 (`App::UploadPictures`), so opening the Collection or scrolling a long shelf never waits for the disk. The newest request
 runs first: what was just scrolled into view.
 - **While a picture is not ready** the card shows its own fill (no picture, no initials), the Play page its night sky,
-  the sidebar the game's portal; the picture **fades in** over 150 ms when it arrives (`FadeIn`), at once with reduced
+  the sidebar the game's initials; the picture **fades in** over 150 ms when it arrives (`FadeIn`), at once with reduced
   motion. A swapper waits for its joined picture instead of showing the top first.
 - **Keys:** a figure's picture is kept by toy, variant, kind and use (icon, picture, swapper), not by file, so a card
   already drawn neither reads its file nor looks its path up again; the disc's pictures arriving (`ClearIcons`,
