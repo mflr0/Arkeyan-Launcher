@@ -1417,3 +1417,4 @@ With Tailscale or ZeroTier, ask your friend to make a code in their room's Detai
 With Tailscale or ZeroTier, make a code for this computer's address in Details below.	Med Tailscale eller ZeroTier skapar du en kod för den här datorns adress under Detaljer nedan.
 Wrong room code	Fel rumskod
 Your friend opens a room and sends you its code.	Din vän öppnar ett rum och skickar koden till dig.
+Your game stopped during the session. Play together again from where you saved.	Ditt spel stoppade under sessionen. Spela tillsammans igen från där ni sparade.

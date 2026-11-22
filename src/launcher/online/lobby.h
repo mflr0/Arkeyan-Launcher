@@ -26,6 +26,7 @@ namespace online
         Player player;
         Settings settings; // saveBytes and saveFiles are filled in from `save`
         std::vector<SaveFile> save;
+        uint64_t secret = 0; // the room code's secret; 0 draws a fresh one ("Play together again" keeps the last)
     };
 
     struct JoinOptions

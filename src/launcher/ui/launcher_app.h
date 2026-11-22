@@ -538,6 +538,7 @@ namespace launcher_ui
         void CloseOnline();
         void LaunchOnline();
         void RecoverOnline();
+        void PlayTogetherAgain(const std::string& game, bool automatic);
         void TestOnlineScript(uint64_t now);
         void DrawChests();
         std::string DrawPlayHeading(

@@ -95,7 +95,7 @@ namespace launcher_ui
                     "successful recovery consumes manifest, destination and end reason");
             };
             for (const char* reason : { "quit", "timeout", "desync", "transport", "protocol", "game", "image",
-                     "runtime", "platform", "fps", "seats", "invalid", "unknown", "" })
+                     "runtime", "platform", "fps", "seats", "invalid", "unknown" })
             {
                 prepare(true, *reason ? reason : nullptr);
                 LauncherConfig config;
@@ -119,6 +119,30 @@ namespace launcher_ui
                 App app(*FindGame("ssa"), LauncherConfigPath(), config);
                 recovered(false);
                 Expect(app.m_toasts.Items().empty(), "guest normal end is silent");
+            }
+            // "Play together again" from the game: once the saves are back, the room is set up again with its code.
+            prepare(true, "quit");
+            Write(session / "saves" / "online-replay.txt", "replay\n");
+            {
+                LauncherConfig config;
+                config["ssa.online"]["mode"] = "host";
+                App app(*FindGame("ssa"), LauncherConfigPath(), config);
+                app.m_online.lastSecret = 0x1234567890;
+                app.m_online.keepSecret = false;
+                app.RecoverOnline();
+                Expect(!fs::exists(session / "saves" / "online-replay.txt"), "the replay request is consumed");
+                // No disc in this test: opening the room stops at the disc check, which shows the game's page.
+                Expect(app.m_online.mode == online::Mode::Host, "play together again reopens the host's room");
+            }
+            // A game that stopped without a reason (a crash): the room offers to play together again.
+            prepare(false, nullptr);
+            {
+                LauncherConfig config;
+                config["ssa.online"]["mode"] = "join";
+                App app(*FindGame("ssa"), LauncherConfigPath(), config);
+                Expect(app.m_page == Page::Online && !app.m_online.error.empty() &&
+                           app.m_online.mode == online::Mode::Join && app.m_online.rejoinUntil != 0,
+                    "a game that stopped during a session offers to play together again");
             }
             {
                 LauncherConfig config;

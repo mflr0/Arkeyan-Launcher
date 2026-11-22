@@ -1417,3 +1417,4 @@ With Tailscale or ZeroTier, ask your friend to make a code in their room's Detai
 With Tailscale or ZeroTier, make a code for this computer's address in Details below.	Med Tailscale eller ZeroTier lager du en kode for denne datamaskinens adresse under Detaljer nedenfor.
 Wrong room code	Feil romkode
 Your friend opens a room and sends you its code.	Vennen din åpner et rom og sender deg koden.
+Your game stopped during the session. Play together again from where you saved.	Spillet ditt stoppet under økten. Spill sammen igjen fra der dere lagret.

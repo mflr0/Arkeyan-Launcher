@@ -29,11 +29,14 @@ namespace online
         m_status.host = true;
         m_wrongProofs.clear();
         m_refuseUntil = 0;
-        std::array<uint8_t, 5> secret{};
-        RandomBytes(secret);
-        m_secret = 0;
-        for (const uint8_t byte : secret)
-            m_secret = (m_secret << 8) | byte;
+        m_secret = options.secret & 0xFFFFFFFFFFull;
+        while (m_secret == 0)
+        {
+            std::array<uint8_t, 5> secret{};
+            RandomBytes(secret);
+            for (const uint8_t byte : secret)
+                m_secret = (m_secret << 8) | byte;
+        }
         options.hello.host = true;
         RandomBytes(options.hello.nonce);
         options.settings.saveFiles = uint16_t(options.save.size());

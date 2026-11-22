@@ -1416,3 +1416,4 @@ With Tailscale or ZeroTier, ask your friend to make a code in their room's Detai
 With Tailscale or ZeroTier, make a code for this computer's address in Details below.	Com Tailscale ou ZeroTier, cria um código para o endereço deste computador nos Detalhes abaixo.
 Wrong room code	Código de sala errado
 Your friend opens a room and sends you its code.	O teu amigo abre uma sala e envia-te o código.
+Your game stopped during the session. Play together again from where you saved.	O teu jogo parou durante a sessão. Voltem a jogar juntos a partir de onde gravaram.

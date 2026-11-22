@@ -1416,3 +1416,4 @@ With Tailscale or ZeroTier, ask your friend to make a code in their room's Detai
 With Tailscale or ZeroTier, make a code for this computer's address in Details below.	Maak met Tailscale of ZeroTier hieronder bij Details een code voor het adres van deze computer.
 Wrong room code	Onjuiste kamercode
 Your friend opens a room and sends you its code.	Je vriend opent een kamer en stuurt je de code.
+Your game stopped during the session. Play together again from where you saved.	Je spel stopte tijdens de sessie. Speel weer samen vanaf waar jullie hebben opgeslagen.

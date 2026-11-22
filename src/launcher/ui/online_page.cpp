@@ -539,6 +539,12 @@ namespace launcher_ui
                 break;
             }
         ended.close();
+        // "Play together again" from the game's banner, or a game that stopped without saying why (a crash): the room
+        // is set up again with the same code once the saves are back.
+        const auto replayFile = online_page::Root() / "session" / "saves" / "online-replay.txt";
+        std::error_code exists;
+        const bool replay = std::filesystem::exists(replayFile, exists);
+        const bool stopped = reason.empty() && !replay && !std::filesystem::exists(endedFile, exists);
         std::string error;
         if (!online::FinishSession(online_page::Root() / "session", m_online.realSaves, error))
         {
@@ -549,15 +555,47 @@ namespace launcher_ui
         std::error_code ec;
         std::filesystem::remove(online_page::Root() / "destination.txt", ec);
         std::filesystem::remove(endedFile, ec);
+        std::filesystem::remove(replayFile, ec);
         if (const std::string text = OnlineEndText(reason); !text.empty())
             Toast(text, ui::ToastKind::Error);
         m_online.recovering = false;
         m_online.error.clear();
+        if ((replay || stopped) && !game.empty())
+        {
+            SDL_Log("[online] %s: setting the room up again with the same code",
+                replay ? "play together again" : "the game stopped during the session");
+            PlayTogetherAgain(game, replay);
+            return;
+        }
         if (!m_online.launched && m_session.Running().empty())
         {
             m_online.with.clear();
             m_online.game.clear();
         }
+    }
+
+    // The same room again after a session that stopped: the host reopens it with the last code at once; the guest
+    // joins with the code it has, again every 3 seconds for 2 minutes, while the host's launcher sets it up. A crash
+    // (`automatic` false) waits for the player's "Play together again" on the room's help card.
+    void App::PlayTogetherAgain(const std::string& game, bool automatic)
+    {
+        auto& room = m_online;
+        room.game.clear();
+        if (const auto* info = FindGame(game))
+            SelectGame(*info);
+        const auto settings = online::ReadGameOnline(m_config, game);
+        room.mode = settings.mode;
+        room.keepSecret = room.mode == online::Mode::Host && room.lastSecret != 0;
+        room.rejoinUntil = room.mode == online::Mode::Join ? SDL_GetTicks() + 120000 : 0;
+        // At startup (a launcher reopened after the session) the window and its focus are not there yet.
+        if (ImGui::GetCurrentContext())
+            GoTo(Page::Online);
+        else
+            m_page = Page::Online;
+        if (automatic)
+            BeginRoom();
+        else
+            room.error = Tr("Your game stopped during the session. Play together again from where you saved.");
     }
 
     void App::PollOnline()
@@ -571,6 +609,19 @@ namespace launcher_ui
         }
         m_online.lobby.Poll();
         const auto& status = m_online.lobby.Get();
+        if (m_online.rejoinUntil != 0)
+        {
+            const uint64_t now = SDL_GetTicks();
+            if (status.state == online::State::InRoom || now >= m_online.rejoinUntil)
+                m_online.rejoinUntil = 0;
+            else if (status.state == online::State::Ended && status.error == online::Error::CannotConnect &&
+                     now >= m_online.rejoinAt)
+            {
+                m_online.rejoinAt = now + 3000;
+                SDL_Log("[online] the host's room does not answer yet: trying again");
+                BeginRoom();
+            }
+        }
         if (status.state != m_online.lastState)
         {
             m_online.lastState = status.state;
@@ -884,8 +935,11 @@ namespace launcher_ui
             options.player = room.inputs.player;
             options.settings = room.inputs.settings;
             options.save = room.inputs.save;
+            options.secret = room.keepSecret ? room.lastSecret : 0;
+            room.keepSecret = false;
             if (!room.lobby.Host(std::move(options)))
                 return false;
+            room.lastSecret = room.lobby.Secret();
             room.localAddress = online_page::LocalAddress();
             if (m_shots.empty())
                 room.router.Open(port, room.automatic);

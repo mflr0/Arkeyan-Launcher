@@ -161,6 +161,15 @@ The public addresses come from one STUN binding request (RFC 5389, `src/launcher
 and over IPv6, to `stun.l.google.com:19302`, else `stun.cloudflare.com:3478`; only the mapped address of the answer is
 read. Without an answer the code holds the computer's local address.
 
+## Play together again
+
+When a session stops, the room is set up again with the same code once the saves and figures are back. The game's
+banner (R or Y while it waits for the other player) and its F3 menu after a session ("Play together again") quit with
+`online-replay.txt` in the session's saves: the host's launcher reopens its room with the last secret and port, the
+guest's joins the code it has, again every 3 seconds for 2 minutes while the host's room is not there yet. A game that
+stopped without writing `online-ended.txt` (a crash; closing the window writes `quit`) opens the room's page with
+"Your game stopped during the session" and **Try again**, which does the same. Both start from the host's last save.
+
 ## The log
 
 The room writes `[online]` lines to the launcher's output, in words and never with an address (players share their
