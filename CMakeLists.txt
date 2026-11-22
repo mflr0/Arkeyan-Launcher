@@ -160,6 +160,7 @@ add_library(ArkeyanLauncherCore STATIC
     src/launcher/ui/components/buttons.cpp
     src/launcher/ui/components/inputs.cpp
     src/launcher/ui/components/layout.cpp
+    src/launcher/ui/components/cards.cpp
     src/launcher/ui/components/feedback.cpp
     src/launcher/ui/components/format.cpp
     src/launcher/ui/components/navigation_model.cpp

@@ -278,7 +278,6 @@ Details	Detaljer
 Difficulty	Vanskelighetsgrad
 Disc	Plate
 Disc checked	Plate kontrollert
-Disc image	Diskbilde
 Disc not found	Fant ikke platen
 Doubles the game's textures from your disc. About {} of disk, a few minutes.	Dobler spillets teksturer fra platen din. Ca. {} diskplass, noen minutter.
 Down	Ned
@@ -718,7 +717,6 @@ Same	Samme
 Same as text	Samme som tekst
 Save	Lagre
 Save as...	Lagre som...
-Save backups	Sikkerhetskopier av lagringer
 Save to Desktop	Lagre på skrivebordet
 Saved	Lagret
 Saved gamepad (not connected)	Lagret håndkontroll (ikke tilkoblet)
@@ -1268,3 +1266,4 @@ Help	Hjelp
 Keys for all games	Taster for alle spill
 Toy Box shortcuts	Snarveier til Toy Box
 Manage profiles...	Administrer profiler...
+Folder	Mappe

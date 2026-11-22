@@ -277,7 +277,6 @@ Details	Dettagli
 Difficulty	Difficoltà
 Disc	Disco
 Disc checked	Disco verificato
-Disc image	Immagine disco
 Disc not found	Disco non trovato
 Doubles the game's textures from your disc. About {} of disk, a few minutes.	Raddoppia le texture del gioco dal tuo disco. Circa {} di spazio, alcuni minuti.
 Down	Giù
@@ -717,7 +716,6 @@ Same	Uguale
 Same as text	Come il testo
 Save	Salva
 Save as...	Salva come...
-Save backups	Backup dei salvataggi
 Save to Desktop	Salva sulla Scrivania
 Saved	Salvato
 Saved gamepad (not connected)	Gamepad salvato (non collegato)
@@ -1267,3 +1265,4 @@ Help	Aiuto
 Keys for all games	Tasti per tutti i giochi
 Toy Box shortcuts	Scorciatoie della Toy Box
 Manage profiles...	Gestisci i profili...
+Folder	Cartella

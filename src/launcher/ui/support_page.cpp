@@ -142,16 +142,12 @@ namespace launcher_ui
         if (!m_reportFile.empty())
             ui::Text(ui::TextStyle::Caption, Tf("Report saved: {}", m_reportFile).c_str(), ui::color::Dim);
 
-        ui::ButtonOptions fold;
-        fold.kind = ui::ButtonKind::Ghost;
-        fold.trailing = m_reportDetails ? ui::Icon::ChevronUp : ui::Icon::ChevronDown;
-        if (ui::Button(Tr("See what the report contains"), fold))
-            m_reportDetails = !m_reportDetails;
-        if (m_reportDetails)
+        if (ui::BeginDisclosure("##reportcontents", Tr("See what the report contains"), &m_reportDetails))
         {
-            // What the window leaves under the steps, less the actions' row.
+            // What the window leaves under the steps, less the copy's row, the fold's end and the actions' row.
             const float room = ImGui::GetIO().DisplaySize.y - 2 * ui::space::XL - ImGui::GetCursorPosY() -
-                               ui::height::Normal - 2 * ui::space::L - ui::ModalLegendHeight();
+                               2 * ui::height::Normal - 5 * ui::space::S - ui::space::XS - ui::space::L -
+                               ui::ModalLegendHeight();
             ui::BeginCard("##reporttext",
                 ImVec2(0, std::clamp(room, 2.0f * ui::height::Large, 6.0f * ui::height::Large)),
                 { .inset = true, .padding = ui::space::M });
@@ -174,8 +170,9 @@ namespace launcher_ui
                 static const SDL_DialogFileFilter Filters[] = { { "Text file", "txt" } };
                 SDL_ShowSaveFileDialog(SaveReport, new std::string(m_reportText), m_window, Filters, 1, start.c_str());
             }
-            ImGui::SameLine(0, ui::space::S);
+            ui::EndDisclosure();
         }
+        ImGui::Dummy(ImVec2(0, ui::space::XS));
         // Not ModalActions: alone there, Close would take the first focus from step 1.
         const char* close = Tr("Close");
         ui::AlignRight(ui::ButtonWidth(close));

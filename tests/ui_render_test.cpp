@@ -238,7 +238,7 @@ int UiRenderChecks(const std::filesystem::path& scratch)
             expect(ImGui::GetCursorScreenPos().y - at == bare, "every disclosure row is as tall");
             if (ui::BeginDisclosure("##open", "One", &opened))
             {
-                expect(ImGui::GetCursorScreenPos().x > left, "what is unfolded lines up under the title");
+                expect(ImGui::GetCursorScreenPos().x == left, "what is unfolded lines up under the title");
                 ui::EndDisclosure();
             }
             else

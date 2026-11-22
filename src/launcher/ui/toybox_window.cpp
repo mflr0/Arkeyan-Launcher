@@ -22,6 +22,9 @@ namespace launcher_ui
 {
     namespace
     {
+        // The smallest window, in the launcher's points.
+        constexpr float ToyboxMinW = 640, ToyboxMinH = 480;
+
         fs::path PlaceFile() { return LauncherDataFolder() / "toybox-window.ini"; }
         // The launcher asks a window already open to come to the front by leaving this
         // file; the window removes it.
@@ -189,6 +192,8 @@ namespace launcher_ui
     void App::PlaceToyboxWindow()
     {
         const Place place = ReadPlace();
+        // Before the size, which the main window's minimum would raise.
+        SDL_SetWindowMinimumSize(m_window, int(ToyboxMinW * m_uiScale), int(ToyboxMinH * m_uiScale));
         if (OnADisplay(place))
         {
             SDL_SetWindowSize(m_window, place.w, place.h);
@@ -201,7 +206,6 @@ namespace launcher_ui
         }
         const std::string title = fmt::format("{} · {}", Tr("Toy Box"), GameName(m_toybox, GameNameForm::Short));
         SDL_SetWindowTitle(m_window, title.c_str());
-        SDL_SetWindowMinimumSize(m_window, 640, 480);
     }
 
     void App::SaveToyboxPlace()
@@ -298,7 +302,9 @@ namespace launcher_ui
         const ImVec2 size = ImGui::GetIO().DisplaySize;
         ImGui::SetNextWindowPos(ImVec2(0, 0));
         ImGui::SetNextWindowSize(size);
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(Pad + 8, Pad + 4));
+        // Narrower margins under the launcher's smallest size: the room is the seats' labels' and the shelf's.
+        const ImVec2 margin(size.x < WindowMinW ? ui::space::M : Pad + 8, size.y < WindowMinH ? ui::space::M : Pad + 4);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, margin);
         ImGui::Begin("##page", nullptr,
             ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBackground |
                 ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoBringToFrontOnFocus);

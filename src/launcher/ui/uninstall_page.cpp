@@ -76,6 +76,7 @@ namespace launcher_ui
         options.kind = ui::ButtonKind::Danger; // red, as the dialog's own button: it removes everything
         options.icon = ui::Icon::Trash;
         options.disabled = busy;
+        ui::AlignRight(ui::ButtonWidth(Tr("Uninstall everything..."), options));
         if (ui::Button(Tr("Uninstall everything..."), options))
             OpenUninstall();
     }
@@ -160,6 +161,7 @@ namespace launcher_ui
                 ui::ButtonOptions back;
                 back.kind = ui::ButtonKind::Ghost;
                 back.icon = ui::Icon::ChevronLeft;
+                ui::AlignRight(ui::ButtonWidth(Tr("Back"), back));
                 if (ui::Button(Tr("Back"), back))
                     m_un.stage = UninstallStage::Closed;
             }
@@ -167,6 +169,7 @@ namespace launcher_ui
             {
                 ui::ButtonOptions quit;
                 quit.kind = ui::ButtonKind::Primary;
+                ui::AlignRight(ui::ButtonWidth(Tr("Quit"), quit));
                 if (ui::Button(Tr("Quit"), quit))
                     m_running = false;
             }
@@ -208,8 +211,13 @@ namespace launcher_ui
         ui::Checkbox(Tr("Also delete my saves and my figures"), &m_un.tick);
         if (plan.Has(Group::Figures))
         {
+            const ui::ButtonOptions first{ .icon = ui::Icon::ArrowUp };
+            const float width = ui::ButtonWidth(Tr("Export first"), first);
             ImGui::SameLine(0, ui::space::M);
-            if (ui::Button(Tr("Export first"), { .icon = ui::Icon::ArrowUp }))
+            if (ImGui::GetContentRegionAvail().x < width) // no room beside the tick: under it
+                ImGui::NewLine();
+            ui::AlignRight(width);
+            if (ui::Button(Tr("Export first"), first))
                 ExportFiguresFirst();
         }
         note(mine == 0 ? Tr("No saves or figures yet.")
@@ -252,7 +260,7 @@ namespace launcher_ui
         remove.tooltip = Tr(HoldHint);
         const float actions =
             ui::ButtonWidth(Tr("Cancel"), cancel) + ui::space::S + ui::ButtonWidth(Tr("Uninstall everything"), remove);
-        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + std::max(0.0f, ImGui::GetContentRegionAvail().x - actions));
+        ui::AlignRight(actions);
         if (ui::Button(Tr("Cancel"), cancel))
             m_un = {};
         else

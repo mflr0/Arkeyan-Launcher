@@ -5,6 +5,7 @@
 #include "launcher/ui/launcher_app.h"
 #include "launcher/env.h"
 #include "shared/collection/datadir.h"
+#include "launcher/ui/components/figure_card.h"
 #include "launcher/ui/launcher_ui.h"
 #include "launcher/ui/seat_rows.h"
 #include "shared/collection/icons.h"
@@ -987,13 +988,6 @@ namespace launcher_ui
             }
         }
 
-        // A card's fill: the surface (raised under the pointer or the focus) at the elevation's alpha, faded by `fade`.
-        ImU32 CardFill(bool raised, float fade = 1)
-        {
-            return ui::Col(
-                raised ? ui::color::Raised : ui::color::Surface, fade * float(ui::elevation::Card.fillAlpha) / 255.0f);
-        }
-
     }
 
     void PutText(ImDrawList* draw, ImVec2 at, ui::TextStyle style, bool bold, unsigned color, const std::string& text,
@@ -1458,28 +1452,20 @@ namespace launcher_ui
         // figure". Read only: only lifting it off the portal changes it.
         const toyboxlink::Seat& real = m_model.liveSeats[seat];
         const collection::Toy* toy = real.known ? collection::Catalogue::Get().Find(real.type) : nullptr;
-        const ImVec2 picture(at.x + SeatPad, at.y + SeatPad);
-        const float tx = picture.x + SeatPicture + ui::space::S, room = end.x - tx - SeatPad;
-        const float top =
-            at.y + std::round((SeatHeight - (2 * ui::type::Caption + ui::type::Body + 2 * ui::space::XXS)) / 2);
-        const float second = top + ui::type::Caption + ui::space::XXS, third = second + ui::type::Body + ui::space::XXS;
+        const ui::SeatLayout layout(at, end, SeatPad, SeatPicture, SeatHeight);
         std::string name = Tr("A real figure");
         if (toy != nullptr)
         {
             const collection::VariantInfo info = collection::Catalogue::Get().Describe(toy, real.variant);
-            DrawIcon(draw, toy, info.kind, picture, SeatPicture, false, real.variant);
+            DrawIcon(draw, toy, info.kind, layout.picture, SeatPicture, false, real.variant);
             name = info.name.empty() ? toy->name : info.name;
         }
         else
-        {
-            const ImVec2 box(picture.x + SeatPicture, picture.y + SeatPicture);
-            draw->AddRectFilled(picture, box, ui::Col(ui::color::Inset), ui::radius::Control);
-            ui::DrawIcon(draw, ui::Icon::Circle, ImVec2(picture.x + SeatPicture / 2, picture.y + SeatPicture / 2),
-                ui::icon::Normal, ui::Col(ui::color::Dim));
-        }
-        PutText(draw, ImVec2(tx, second), ui::TextStyle::Body, true, ui::color::Ink, name, room);
-        PutText(draw, ImVec2(tx, third), ui::TextStyle::Caption, false, ui::color::Success,
-            Tr("Real figure · on the portal"), room);
+            ui::DrawFigurePlaceholder(draw, layout.picture, SeatPicture, ui::Icon::Circle, false, false);
+        PutText(
+            draw, ImVec2(layout.textX, layout.second), ui::TextStyle::Body, true, ui::color::Ink, name, layout.room);
+        PutText(draw, ImVec2(layout.textX, layout.third), ui::TextStyle::Caption, false, ui::color::Success,
+            Tr("Real figure · on the portal"), layout.room);
     }
 
     void CollectionPage::DrawSeatPicture(ImDrawList* draw, const Figure& figure, ImVec2 at, float size)
@@ -1617,24 +1603,18 @@ namespace launcher_ui
                 ui::OpenMenu("##seatmenu");
             }
             const bool choosing = m_choosing == int(i), ringed = choosing || target;
-            draw->AddRectFilled(at, end, CardFill(ringed || hovered || nav), ui::radius::Card);
-            draw->AddRect(at, end,
-                ui::Col(ringed    ? ui::color::AccentFill
-                        : hovered ? ui::color::Edge
-                                  : ui::color::Hairline),
-                ui::radius::Card, 0, ringed ? ui::stroke::Edge : ui::stroke::Hairline);
+            ui::DrawFigureFrame(draw, at, end,
+                { .raised = ringed || hovered || nav, .accent = ringed, .edged = hovered, .thick = ringed });
             const int seatVertices = draw->VtxBuffer.Size;
-            const ImVec2 picture(at.x + SeatPad, at.y + SeatPad);
             // Three lines beside the picture: the seat (leaving room for the X at the corner), the figure's name, its level.
-            const float tx = picture.x + SeatPicture + ui::space::S, room = end.x - tx - SeatPad;
+            const ui::SeatLayout layout(at, end, SeatPad, SeatPicture, SeatHeight);
+            const ImVec2 picture = layout.picture;
+            const float tx = layout.textX, room = layout.room;
             const bool cross = occupied && editable && !(figure != nullptr && SeatBusy(*figure));
             const float crossRoom = room - (cross ? ui::space::L : 0);
-            const float top =
-                at.y + std::round((SeatHeight - (2 * ui::type::Caption + ui::type::Body + 2 * ui::space::XXS)) / 2);
-            const float second = top + ui::type::Caption + ui::space::XXS,
-                        third = second + ui::type::Body + ui::space::XXS;
-            PutText(draw, ImVec2(tx, top), ui::TextStyle::Caption, false, choosing ? ui::color::Info : ui::color::Dim,
-                SeatName(i), crossRoom);
+            const float second = layout.second, third = layout.third;
+            PutText(draw, ImVec2(tx, layout.first), ui::TextStyle::Caption, false,
+                choosing ? ui::color::Info : ui::color::Dim, SeatName(i), crossRoom);
             if (m_model.RealSeat(i))
                 DrawRealSeat(draw, i, at, end);
             else if (occupied && figure != nullptr)
@@ -1648,7 +1628,6 @@ namespace launcher_ui
             else
             {
                 // Empty, or a figure the collection no longer has (deleted, moved): the seat can still be emptied.
-                const ImVec2 box(picture.x + SeatPicture, picture.y + SeatPicture);
                 // An empty seat's +: Add a figure for it (the rest of the seat chooses among the shelf's figures).
                 bool plus = false;
                 if (!occupied && editable)
@@ -1664,11 +1643,7 @@ namespace launcher_ui
                     ImGui::PopID();
                 }
                 const bool lit = choosing || plus;
-                draw->AddRectFilled(picture, box, ui::Col(ui::color::Inset), ui::radius::Control);
-                draw->AddRect(picture, box, ui::Col(lit ? ui::color::AccentFill : ui::color::Hairline),
-                    ui::radius::Control, 0, ui::stroke::Edge);
-                ui::DrawIcon(draw, ui::Icon::Plus, ImVec2(picture.x + SeatPicture / 2, picture.y + SeatPicture / 2),
-                    ui::icon::Normal, ui::Col(lit ? ui::color::AccentFill : ui::color::Dim));
+                ui::DrawFigurePlaceholder(draw, picture, SeatPicture, ui::Icon::Plus, true, lit);
                 PutText(draw, ImVec2(tx, second), ui::TextStyle::Body, true,
                     occupied ? ui::color::Danger : ui::color::InkSoft, occupied ? Tr("Missing figure") : Tr("Empty"),
                     room);
@@ -1746,7 +1721,8 @@ namespace launcher_ui
             return count > 0 ? fmt::format("{} ({})", text, count) : text;
         };
         ui::ButtonOptions button;
-        button.trailing = ui::Icon::ChevronDown;
+        // Like a Select: the chevron up while its menu is open.
+        button.trailing = ImGui::IsPopupOpen("##filtersmenu") ? ui::Icon::ChevronUp : ui::Icon::ChevronDown;
         button.tooltip = Tr("Sort and filter");
         // As wide as its longest text, so that neither it nor the search moves.
         float width = 0;
@@ -2012,19 +1988,15 @@ namespace launcher_ui
         const ImVec2 end(at.x + width, at.y + height), picture(at.x + ui::space::S, at.y + ui::space::S);
         const int seat = m_model.SeatOf(figure.path);
         const bool selected = m_selected == figure.path && focused;
-        draw->AddRectFilled(at, end, CardFill(hovered), ui::radius::Card);
-        draw->AddRect(at, end,
-            ui::Col(seat >= 0             ? ui::color::AccentFill
-                    : selected || hovered ? ui::color::Edge
-                                          : ui::color::Hairline),
-            ui::radius::Card, 0, seat >= 0 || selected ? ui::stroke::Edge : ui::stroke::Hairline);
+        ui::DrawFigureFrame(draw, at, end,
+            { .raised = hovered, .accent = seat >= 0, .edged = selected || hovered, .thick = seat >= 0 || selected });
         if (const collection::Card card = CardOf(figure); !DrawSwapper(draw, card, picture, art))
         {
             DrawIcon(draw, figure.toy, figure.Kind(), picture, art, false, figure.variant, HeldVillain(figure));
             { // the busts end flat: fade their foot into the card
                 const ImVec2 top(picture.x, picture.y + art - ui::space::L), foot(picture.x + art, picture.y + art + 1);
                 const ImU32 clear = ui::Col(hovered ? ui::color::Raised : ui::color::Surface, 0),
-                            solid = CardFill(hovered);
+                            solid = ui::FigureCardFill(hovered);
                 draw->AddRectFilledMultiColor(top, foot, clear, clear, solid, solid);
             }
             if (card.Swapper())

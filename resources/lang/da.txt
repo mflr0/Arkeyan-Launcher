@@ -277,7 +277,6 @@ Details	Detaljer
 Difficulty	Sværhedsgrad
 Disc	Disk
 Disc checked	Disk kontrolleret
-Disc image	Diskaftryk
 Disc not found	Disken blev ikke fundet
 Doubles the game's textures from your disc. About {} of disk, a few minutes.	Fordobler spillets teksturer fra din disk. Ca. {} diskplads, nogle minutter.
 Down	Ned
@@ -717,7 +716,6 @@ Same	Samme
 Same as text	Samme som tekst
 Save	Gem
 Save as...	Gem som...
-Save backups	Gem backups
 Save to Desktop	Gem på skrivebordet
 Saved	Gemt
 Saved gamepad (not connected)	Gemt gamepad (ikke tilsluttet)
@@ -1267,3 +1265,4 @@ Help	Hjælp
 Keys for all games	Taster til alle spil
 Toy Box shortcuts	Genveje til Toy Box
 Manage profiles...	Administrer profiler...
+Folder	Mappe

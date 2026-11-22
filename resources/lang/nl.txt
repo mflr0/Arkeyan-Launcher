@@ -277,7 +277,6 @@ Details	Details
 Difficulty	Moeilijkheid
 Disc	Schijf
 Disc checked	Schijf gecontroleerd
-Disc image	Schijfimage
 Disc not found	Schijf niet gevonden
 Doubles the game's textures from your disc. About {} of disk, a few minutes.	Verdubbelt de texturen van het spel vanaf je schijf. Ongeveer {} schijfruimte, een paar minuten.
 Down	Omlaag
@@ -717,7 +716,6 @@ Same	Gelijk
 Same as text	Zelfde als tekst
 Save	Opslaan
 Save as...	Opslaan als...
-Save backups	Back-ups van savegames
 Save to Desktop	Op bureaublad opslaan
 Saved	Opgeslagen
 Saved gamepad (not connected)	Opgeslagen gamepad (niet aangesloten)
@@ -1267,3 +1265,4 @@ Help	Help
 Keys for all games	Toetsen voor alle games
 Toy Box shortcuts	Toy Box-sneltoetsen
 Manage profiles...	Profielen beheren...
+Folder	Map

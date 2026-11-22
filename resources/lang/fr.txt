@@ -136,7 +136,6 @@ Deleting saves and data frees {}.	Supprimer sauvegardes et données libère {}.
 Frees {}. Saves and settings are kept.	Libère {}. Les sauvegardes et les réglages sont gardés.
 Desktop shortcut	Raccourci sur le bureau
 Disc	Disque
-Disc image	Image disque
 Disc not found	Disque introuvable
 Downloading Arkeyan Launcher	Téléchargement d'Arkeyan Launcher
 Downloading the game tools	Téléchargement des outils du jeu
@@ -322,7 +321,6 @@ Retry	Réessayer
 {} can't be verified, so it wasn't installed	{} ne peut pas être vérifié : rien n'a été installé
 {} points outside its GitHub release, so it wasn't installed	{} pointe en dehors de sa release GitHub : rien n'a été installé
 Save as...	Enregistrer sous...
-Save backups	Copies de secours des sauvegardes
 Saved gamepad (not connected)	Manette enregistrée (non connectée)
 Saves	Sauvegardes
 Saves and data deleted	Sauvegardes et données supprimées
@@ -1297,3 +1295,4 @@ Help	Aide
 Keys for all games	Touches pour tous les jeux
 Toy Box shortcuts	Raccourcis de la Toy Box
 Manage profiles...	Gérer les profils...
+Folder	Dossier

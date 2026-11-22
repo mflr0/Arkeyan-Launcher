@@ -33,7 +33,7 @@ component has becomes a component (or an option of one) first, with its states d
   pages, disc verification and the screenshot tests.
 - `src/launcher/install_checklist.{h,cpp}`, `ui/install_page.cpp` - the install card (docs/install.md);
   `game_run.{h,cpp}`, `ui/support_page.cpp` - game logs, the crash dialog, the portal test (docs/support.md);
-  `updater.{h,cpp}`, `ui/update_page.cpp` - updates, the banner and About (docs/updates.md);
+  `updater.{h,cpp}`, `ui/update_page.cpp` - updates, the banner and Help's About (docs/updates.md);
   `shared/mini_json.{h,cpp}` - the JSON reader for GitHub's answer.
 - `src/launcher/ui/collection_*.{h,cpp}` - the collection page on the shared library: the portal at the next start, the bar, the shelf, the figure sheet, Add a figure, Manage (`docs/collection_ui.md`).
 - `src/launcher/ui/game_look.cpp` - the game page in each game's own look: the main action's options (`DrawMainAction`), the logo's
@@ -282,9 +282,16 @@ portal names prominent and empty seats as tall as occupied ones, without changin
 ### Settings rows
 | | |
 |---|---|
-| When | Every setting: the one settings idiom (Video, Controls, Launcher, the game tabs). |
+| When | Every setting: the one settings idiom (the launcher's tabs, the game tabs). |
 | API | `if (ui::BeginSettings(id)) { ui::SettingRow(label, hint, note); <its control>; ...; ui::EndSettings(); }`; the control column is `SettingControl` (320) wide, rows at least `Large`, a hairline between them. The label is drawn once the control is, centred on it (one line: its capitals on the control's middle; with a hint: the two as a block); a hint on two lines moves the control down to the block's middle. `note`: a small word after the label, on its baseline (a key's pad button). The hint is drawn, not an item (a table lowers a row's text items to its fields' baseline). **One alignment rule: every control ends on the column's right edge.** A Select, a field or a slider fills the column; a Button, Pill, IconButton, Toggle, Checkbox, Segmented, KeyButton or KeyCap that starts the column's line moves there by itself (`ui::SettingControl`, which they call); `ui::AlignRight(width)` does it for a group of buttons; `BeginSettings(id, controlWidth)` widens the control column for a row of buttons that needs it (never narrower than 320). The table doesn't clip its columns (`ImGuiTableFlags_NoClip`): a control at a column's edge keeps its whole focus ring. |
 | States | Those of its controls. |
+
+### Disclosure (fold)
+| | |
+|---|---|
+| When | A row that unfolds what is under it: on every page and in every dialog, the only fold. |
+| API | `if (ui::BeginDisclosure(id, title, &open, DisclosureOptions{summary, action, actionPressed, actionOptions, reveal, divider, disabled})) { ...; ui::EndDisclosure(); }` (`components/layout.h`). `summary`: the state, under the title; `action`: a button of the row's own, before the chevron; `reveal`: scroll to it (a link to the section). |
+| States | The whole row opens and closes it; the chevron at the right end, right when closed, down when open. |
 
 ### SectionHeader
 | | |
@@ -359,7 +366,7 @@ portal names prominent and empty seats as tall as occupied ones, without changin
 ### KeyButton
 | | |
 |---|---|
-| When | A key bound to an action, to press and change (a game's Keyboard tab). |
+| When | A key bound to an action, to press and change (a game's Controls tab, Keyboard). |
 | API | `bool ui::KeyButton(id, key, KeyButtonOptions{capturing, conflict, tooltip})`, `ui::KeyButtonWidth(key, options)`: a key cap, `Normal` high and at least as wide, as wide as its name needs; its side shows 3 points under the face (the face is the item, what lines up with a row). |
 | States | Hover, pressed (the face goes down onto its side), focus ring (around face and side); `capturing`: the accent, "..." (the next key is the new one, Escape cancels); `conflict`: a warning icon and a warning edge, the tooltip says another action has this key. |
 
@@ -372,6 +379,8 @@ portal names prominent and empty seats as tall as occupied ones, without changin
 
 ## Consistency
 Phase B applies these on every screen it touches.
+- **One fold, one dropdown, one menu**, the same in the launcher's settings, a game's and the dialogs: content that unfolds
+  in place is a Disclosure (never a chevron Button or a ListRow), one choice among many a Select, a list of actions a Menu.
 - **A game's colour**: its sidebar badge is its `GameStyle::glow` (Imaginators its `bottom`, the deep blue of its card, apart
   from Spyro's Adventure's sky blue), the initials white or dark, whichever reads. On that game's pages the selected tab's
   line, the step in progress, the progress bars and the focus ring wear it too (`Context::accent`); switches, sliders and
@@ -404,13 +413,13 @@ Phase B applies these on every screen it touches.
   | Meaning | Icon | Kind |
   |---|---|---|
   | Opens a folder of the system ("Show in folder", "Open logs folder", "Game files", "Logs") | `Folder` | Secondary |
-  | Opens a web page ("Report a bug", "GitHub", "Licenses", "Release page") | `External` | Secondary / Ghost |
+  | Opens a web page ("Open GitHub", "GitHub", "Licenses", "Release page") | `External` | Secondary / Ghost |
   | Takes something out of the launcher ("Export for ...", "Export everything...", "Export first") | `ArrowUp` | Secondary |
   | Brings something in ("Import files...") | `Download` | Primary / Secondary |
   | Installs a game | `Download`; updates (the page's action, "Update all") `Update` | Primary |
   | Stops a running job or game | `Stop` | Secondary / the danger outline |
   | Back | `ChevronLeft` | Ghost |
-  | Opens a menu or a list (a filter, "Put on the portal", "Details") | `ChevronDown` after the label (`ChevronUp` while open) | as the page |
+  | Opens a menu or a list (a filter, "Put on the portal"); never a fold (Disclosure) | `ChevronDown` after the label (`ChevronUp` while open) | as the page |
   | Deletes or resets, hold button | the hold's timer (set by `hold`, an icon of its own is ignored) | Danger |
   | Deletes, no hold (a confirmation follows: "Uninstall everything...", the dialog's button) | `Trash` | Danger |
   | Cancel, Close, Later, Save, Copy, Retry, Resume, Quit, Edit, Put back, Restore, Remove (a disc) | none | as the page |
@@ -448,7 +457,7 @@ only what each line says was not possible: see "Done" at the end of this part.
   become Title and Caption; Collection and Settings rows are ListRows with icons.
 - Home: "LIBRARY" (`HeadlineSize`) is Display, sentence case; the cards (`CardRadius = RadiusLarge`, the hand-drawn shadow, the
   `IM_COL32` fade) use `radius::Panel` and the elevation tokens; their status dot `ui::DrawStatusIcon`; the coming-later chips
-  (drawn by hand) are Badges or Pills; "Report a bug" is a Button (`overArt`); the GitHub mark an IconButton
+  (drawn by hand) are Badges or Pills; "Report a problem" is a Button (`overArt`); the GitHub mark an IconButton
   (needs an image icon).
 - Play: the disc lines (`SmallSize`, `PushFont` by hand) are Text styles; the disc check's `ProgressBar(360, 8)` an
   IndeterminateBar once it reaches its end (the "frozen at 98 %" look); "Use it for {}" a Primary Button; "Change disc..." a
@@ -469,7 +478,7 @@ logo or initial in the image slot, its version as the note, at the right end of 
 ready; Error: every disc problem and a failed build; Neutral: not opened yet), the install's thin bar on the row's foot; the four
 games not out yet are one "Coming later" row with their number (a click opens a menu listing them, not pressable: the column never changes height); Collection and Settings are
 rows with icons; the title is Title-size, fitted, and Caption beside it. Home: "Library" Display, cards on `radius::Panel` with the
-elevation shadow and the Scrim fade, the status a `StatusPill`, "Coming later" Badges, "Report a bug" a Button and the GitHub mark an
+elevation shadow and the Scrim fade, the status a `StatusPill`, "Coming later" Badges, "Report a problem" a Button and the GitHub mark an
 `IconButton` with an `image`. Game page: one **disc block** card (file, "Change disc..." Button, a StatusPill for the disc, the
 install or update note, "Play without updating" a Ghost Button, "Use it for {}" a Primary Button); the disc check's bar is an
 `IndeterminateBar` once it passes 97 % (the main action sweeps too: `MainAction::indeterminate`); **first run** (no disc): a dashed
@@ -506,7 +515,7 @@ button with `ChevronLeft` on a game's). Every setting is a settings row (`ui::Be
 the column (`App::SettingSelect` for a choice kept in the settings file); what is an action rather than a setting (the disc,
 game data, folders, saves, the game tab's buttons, the data folder, "Remove Arkeyan Launcher") is a `SectionHeader` with its
 subtitle, then Buttons at their label's width. States are `StatusPill`s (verified, checking, wrong disc, copied, interrupted,
-damaged, the portal test), never a coloured line. The Keyboard tab (2026-10-28 review): what to do in one
+damaged, the portal test), never a coloured line. The Keyboard page (Controls tab; 2026-10-28 review): what to do in one
 line ("Choose a key to change it.", or which key is awaited), then the **movement** as a cross of four `KeyButton`s (up over
 down, left and right beside it: the player's letters, Z Q S D on AZERTY, W A S D on QWERTY) titled "Movement" with the
 stick after it, the **right stick's** as another cross when the game uses it (titled with its action, "Shake / Insert /
@@ -515,18 +524,18 @@ column's right); a key being changed is the accent with "...", a key two actions
 does not set itself (it follows the global layout or its default) in normal text, one it sets with an accent dot at
 the row's left and a reset arrow (an `IconButton` with `Icon::Reset` before the
 control; one beside a cross's title for its four keys); one Danger hold "Reset to defaults". Launcher settings >
-Controls (`ui/controls_page.cpp`) has, under the controller choice, the Mouse switch and the Rumble, then two folded
-sections, Toy Box shortcuts and, first, **Keys for all games**: one settings table with two control columns
+Controls (`ui/controls_page.cpp`) has, under the controller choice, the Mouse switch and the Rumble, then two
+Disclosures, Toy Box shortcuts and, first, **Keys for all games**: one settings table with two control columns
 headed Keyboard and Controller (`ui::BeginSettings` with a second width), a row per shared action (its key cap, its pad button's
 list; a dash where a side has none), never dimmed. The Toy Box keys are key caps in settings rows, two columns at the
 row's right: the keyboard's and physical controller pickers named for the pad in use or chosen, else Xbox's. Swap wheel
 captures one held button; Open the Toy Box and Game menu capture two different buttons in order (Escape cancels).
 Add and clear figures keep a controller dash; Game menu shows its fixed F3 key. A controller shortcut used by a game's
 action is marked red, except the default Back/View, Back/View + Y and Back/View + Start buttons. The section ends with a
-hold Reset to defaults for the global controller buttons, rumble and shortcuts. The Controller tab shows an unchanged button by its own name ("A").
+hold Reset to defaults for the global controller buttons, rumble and shortcuts. The Controller page shows an unchanged button by its own name ("A").
 Save backups are ListRows (when, files, size) with a Danger hold "Restore" beside each; the update check's last time and the
 backups' times use `FormatWhen`. The problem report is `ui::BeginModal(Large)`: settings rows (the Game select, 1 Save the report,
-2 Open GitHub, the step to take Primary), then "See what the report contains", folded, with the text, Copy and Save as...; Close
+2 Open GitHub, the step to take Primary), then "See what the report contains", a Disclosure, with the text, Copy and Save as...; Close
 at the right (a Button: step 1 keeps the first focus). Uninstall's list is ListRows with the size as `trailing` (not focusable: nobody presses them), "Also delete my saves
 and my figures" a Checkbox, Cancel then the Danger hold "Uninstall everything" at the right. Text is Caption, Body and Display
 through `ui::Text`; the portal test's verdicts name the game with `GameName`. The shots are listed in "Screenshot test"
@@ -561,7 +570,7 @@ pad legend closes the page while a pad is in use. The list that follows is what 
   backups' chips a Select or ListRows; "Move {} to the trash" Danger, not Primary.
 
 **Inconsistencies seen, for phase B to fix**
-(Done in the settings part: 1 for "LAUNCHER SETTINGS", 4 for the save backups, 6, 7 for "Create", 9 and 10 on the settings screens, 12 for the problem report, 13. Done: the Keyboard tab's warning is an icon, not red alone.)
+(Done in the settings part: 1 for "LAUNCHER SETTINGS", 4 for the save backups, 6, 7 for "Create", 9 and 10 on the settings screens, 12 for the problem report, 13. Done: the Keyboard page's warning is an icon, not red alone.)
 (Collection: every item that names it is done: casing, ellipsis, dates, hold wording, Primary, text sizes, raw colours, the
 shells, the toast kinds.)
 1. Casing: page titles written in capitals in the source ("LIBRARY", "COLLECTION", "LAUNCHER SETTINGS", "ADD A FIGURE",
@@ -590,7 +599,7 @@ shells, the toast kinds.)
     (Done: every toast says its kind.)
 
 ## Layout
-The launcher opens on Home, the menu page (the ARKEYAN LAUNCHER title goes back to it): empty for now, with "Report a bug" (a new
+The launcher opens on Home, the menu page (the ARKEYAN LAUNCHER title goes back to it): empty for now, with "Report a problem" (a new
 GitHub issue) and the GitHub link bottom right. The launcher's own language is in Settings > General > Language
 (`docs/translations.md`); the game's text and voice languages are in that game's settings (Sound and language tab). The game shown last is selected in the sidebar (`[launcher] game=`); the other is one click away.
 1. Left sidebar (grey, fixed width) - the seven games as full-width rows (Spyro's Adventure, Giants, Swap Force, Trap Team, SuperChargers
@@ -643,13 +652,13 @@ GitHub issue) and the GitHub link bottom right. The launcher's own language is i
      disc may hold Polish, Russian, Czech, Hungarian, Turkish, Greek, Japanese, Korean and Chinese (`docs/settings.md`, "Languages a
      disc holds"): Russian, Greek, Japanese, Korean and Chinese are named by the launcher's own word (the font has no glyphs for
      them), translated; a code nobody knows in the stored list is ignored.
-   - Disc: the image's file name and state; **Choose... / Change...**, **Remove** (the launcher forgets it; the file is not
+   - Manage > Disc: the image's file name and state; **Choose... / Change...**, **Remove** (the launcher forgets it; the file is not
      touched), **Show in folder**. Disabled while the disc check or an install runs. Once the disc is verified, its pill is
      the image check's (docs/install.md, "Image check"): "Checking files, 45 %", then "Good copy", "Readable" (no good copy
      of this edition to compare with) or "Damaged copy", with one line saying what was found; **Check again** reads it
      again. When the game plays from its copied data, the same pill is the copy's.
-   - Saves: **Open saves folder** and the save backups with Restore (held, refused while the game runs).
-   - Game: **Create** (under Desktop shortcut), the folders, the built game with **Reinstall** (held), **Clear caches**,
+   - Manage > Saves: **Open saves folder** and the save backups with Restore (held, refused while the game runs).
+   - Manage, the rest: **Create** (under Desktop shortcut), the folders, the built game with **Reinstall** (held), **Clear caches**,
      **Delete saves and data** (held), **Remove game** (held), each with the size it frees and what it keeps
      (docs/install.md, "Delete data, uninstall").
 
@@ -660,7 +669,7 @@ glyphs and the portal stay in the launcher's settings** because the games read t
 sections and the same hardware: a game page would only show the same values twice. **The keys, the mouse and the pad are a global
 layout with each game's own lines over it** (0.9.9): Launcher settings > Controls holds what every game inherits: the actions every game has (All games: the moves, Stats / Info,
 Pause), keyboard and controller side by side. What each game names its own way (Giants' X is "Attack 2", Spyro's Adventure's is
-"2nd Power") is set on that game's Keyboard and Controller tabs, which also change an All games row for that game only
+"2nd Power") is set on that game's Controls tab (Keyboard or Controller), which also change an All games row for that game only
 (`game_keys.h`).
 
 The launcher opens on **Home**, the menu page (the ARKEYAN LAUNCHER title goes back to it): a **top block** (Continue: the
@@ -693,9 +702,8 @@ every game shows its real state and art at once ("Update all" on Home's title li
    state, commands and controller picker sit on it, with the collection's portal at the right. There is no bottom bar.
    - The speaker at the top right switches game music on or off for every game; it is shown only when the disc theme is cached.
 3. Collection - see below.
-4. Settings (the gear) - Graphics, Controls (device, portal), Language, Game data, About. Clicking a game
-   goes back to Play; clicking the gear again, or B / Escape, goes back to the page you came from. The game page's settings
-   button opens it too, until each game has a settings page of its own (another branch).
+4. Settings (the gear) - General, Controls, Portal, Help. Clicking a game goes back to Play; clicking the gear again,
+   or B / Escape, goes back to the page you came from. A game's own settings open from its Play page ("Structure").
 
 ## Game page hero
 The page keeps XL margins and an L gap between two columns. The left contains the disc's logo, fitted with its aspect
@@ -901,7 +909,7 @@ them and saves them, the launcher never edits a save.
   game during an addition, chests waiting for another slot).
 
 ## Game data (copy the disc's files, no disc image afterwards)
-Game settings > Disc has two sections: **Disc image** (choose, change, remove, show in folder) and **Game data**, which copies the
+Game settings > Manage > Disc has two sections: **Disc image** (choose, change, remove, show in folder) and **Game data**, which copies the
 disc's files (about the image's size, 8 GB) into `<data>/<Game>/gamedata/` so the disc image is no longer needed. The default is
 unchanged: nothing is copied and the game reads the disc image. The files, the manifest and the checks are ArkeyanRuntime's
 `game_data.{h,cpp}` (`docs/runtime/host/game_data.md` there); the job and the choice of source are `src/launcher/game_copy.{h,cpp}`;
@@ -1057,7 +1065,7 @@ its existing layout and shortcuts; pad-only legends and extra banner height are 
 | Game page | LB RB Pages, Y Game settings when no game is running, A Select, B Back. |
 | Install card and compact installation progress | The game-page legend plus X Show details / Hide details. A selects the enabled Retry, Resume, Copy log, Logs, details or Cancel control. Opening a detailed card focuses its first enabled footer action. |
 | Settings: General, Controls, Portal, Help | LB RB Pages, LT RT Tabs, A Select, B Back. B closes the uninstall list before leaving Settings. The profile editor's ten color choices use the shared focus ring and navigation stops. |
-| Game settings: Video, Keyboard, Controller, Sound, Language, Disc, Saves, Game | LB RB Pages, LT RT Tabs, A Select, B Back to the game page. |
+| Game settings: Picture, Controls, Sound and language, Manage | LB RB Pages, LT RT Tabs, A Select, B Back to the game page. |
 | Achievements | LB RB Pages, A Select, B Back to the game page. |
 | Collection | LB RB Pages, the available X action, Y Search, LT RT Other seat when seats exist, A Select, B Back. |
 | Figure sheet, Add a figure | A Select, B Close; Edit and Change the top/bottom use B Back for their inner step. |
@@ -1104,7 +1112,7 @@ B and tab bumper behavior; it requires a window and is separate from the standal
 - **Copy.** New and changed sentences sit at the top of their file (`namespace strings`), ready for #4.
 
 ## Desktop shortcut
-Game settings > Game > Desktop shortcut > **Create** (enabled once the disc is verified: the icon comes from it) puts a launcher for
+Game settings > Manage > Desktop shortcut > **Create** (enabled once the disc is verified: the icon comes from it) puts a launcher for
 that game on the Desktop. It starts Arkeyan Launcher as `ArkeyanLauncher --game <id> --play`: the window opens on that game's page, checks the
 disc, and starts the game as soon as it is ready. If it can't (no disc, a failed check, the game not built yet) the window stays
 open and says why, so the shortcut never leaves the player with nothing. Made again, it replaces the old one.
@@ -1297,7 +1305,7 @@ games and Coming later, A into Collection, Y for the search, the D-pad to a seat
 shelf) and A to put a card there, X for a card's sheet, B back, then down to Settings, A, RT to its Controls tab, Escape. Each step's page is checked ("FAIL nav step";
 a timeout stops a run that went astray); `ArkeyanLauncherTest` runs it (`NavChecks`).
 With `SKY_LAUNCHER_TEST_PADWALK=1` it walks every page, tab and dialog with the pad ("Navigation model"; `pad_walk.cpp`):
-`00-first-start` to `50-ssa-sound` (`50-` the Sound tab, 0.9.4; since 0.9.2 with the Profiles menu, editor and tab, the file check's dialog, the pages and game settings of Trap Team, SuperChargers and Imaginators with their portal panel and Toy Box button), each shot as a pad player arrives there, then walked, every result a `padwalk` line
+`00-first-start` to `50-ssa-sound` (`50-` the Sound tab, 0.9.4; since 0.9.2 with the profile menu, editor and dialog, the file check's dialog, the pages and game settings of Trap Team, SuperChargers and Imaginators with their portal panel and Toy Box button), each shot as a pad player arrives there, then walked, every result a `padwalk` line
 (`FAIL padwalk` for a stop never reached, a move out of reading order, B or LB / RB not doing their job). The Spyro's Adventure
 views want `SKY_LAUNCHER_TEST_DROP`; without a disc they show its no-disc state. `SKY_SAVE_DIR` and `SKY_COLLECTION` scratch.
 With `SKY_LAUNCHER_TEST_INSTALL=1` and `SKY_LAUNCHER_KIT=$PWD/build/fake-kit` it shows the install screens instead
@@ -1355,8 +1363,8 @@ first stop with its ring.
 shoots one game at a time ("A game running"): `running-1-game`, `running-2-other`, `running-3-ended`.
 `SKY_LAUNCHER_TEST_GAMETABS=<game>` shoots every tab of that game's settings, FSR 3 and frame generation on so their rows show
 (`tabs-<game>-<NN>-<tab>`; `SKY_LAUNCHER_LANGUAGE` the language, `SKY_LAUNCHER_TEST_SIZE=1280x1650` a window tall enough for the Picture tab).
-`SKY_LAUNCHER_TEST_KEYS=1` shoots each game's Keyboard tab (`keys-<game>` for the six games; `SKY_LAUNCHER_LANGUAGE=fr` for the French ones).
-`SKY_LAUNCHER_TEST_PAD=1` shoots each game's Controller tab with a few buttons given other jobs (`pad-ssa`, `pad-giants`, `pad-swapforce`)
+`SKY_LAUNCHER_TEST_KEYS=1` shoots each game's Controls tab on Keyboard (`keys-<game>` for the six games; `SKY_LAUNCHER_LANGUAGE=fr` for the French ones).
+`SKY_LAUNCHER_TEST_PAD=1` shoots each game's Controls tab on Controller with a few buttons given other jobs (`pad-ssa`, `pad-giants`, `pad-swapforce`)
 and Swap Force's Manage tab with Nightmare from the start on (`game-swapforce`).
 `SKY_LAUNCHER_TEST_LOGO=1` shoots each game's page (`logo-ssa`, `logo-giants`, `logo-swapforce`) from the art already cached in
 `SKYLANDERS_DATA`; `SKY_LAUNCHER_TEST_SIZE=<w>x<h>` sets the window (the default one, a large one).

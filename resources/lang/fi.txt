@@ -278,7 +278,6 @@ Details	Tiedot
 Difficulty	Vaikeustaso
 Disc	Levy
 Disc checked	Levy tarkistettu
-Disc image	Levykuva
 Disc not found	Levyä ei löytynyt
 Doubles the game's textures from your disc. About {} of disk, a few minutes.	Kaksinkertaistaa pelin tekstuurit levyltäsi. Noin {} levytilaa, muutama minuutti.
 Down	Alas
@@ -718,7 +717,6 @@ Same	Sama
 Same as text	Sama kuin teksti
 Save	Tallenna
 Save as...	Tallenna nimellä...
-Save backups	Tallennuskopiot
 Save to Desktop	Tallenna työpöydälle
 Saved	Tallennettu
 Saved gamepad (not connected)	Tallennettu peliohjain (ei kytketty)
@@ -1268,3 +1266,4 @@ Help	Ohje
 Keys for all games	Kaikkien pelien näppäimet
 Toy Box shortcuts	Toy Boxin pikanäppäimet
 Manage profiles...	Hallitse profiileja...
+Folder	Kansio

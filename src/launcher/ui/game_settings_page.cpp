@@ -451,7 +451,6 @@ namespace launcher_ui
 
     void App::DrawGameDisc()
     {
-        ui::SectionHeader(Tr("Disc image"), nullptr, false);
         if (m_s->fromCopy)
         {
             // The game plays from its copied game data: the image is not used, so its buttons are not offered.
@@ -551,9 +550,9 @@ namespace launcher_ui
             RefreshSaveBackups();
         const bool running =
             savebackup::GameRunning(savebackup::Root(m_s->game.id)) || m_session.Running() == m_s->game.id;
-        ui::SectionHeader(Tr("Save backups"),
+        ui::Text(ui::TextStyle::Caption,
             running ? Tr("The game is running: quit it to restore a backup.") : Tr("Earlier versions of your saves."),
-            false);
+            ui::color::Dim);
         ui::ButtonOptions folder;
         folder.icon = ui::Icon::Folder;
         if (ui::Button(Tr("Show in folder"), folder))
@@ -851,8 +850,6 @@ namespace launcher_ui
         if (!m_s->saveBackupsLoaded)
             RefreshSaveBackups();
         const GameFolders folders = FoldersOf(m_s->game.id);
-        // One set of IDs for the rows: the tables split around the unfolded one, and the focus must stay on its chevron.
-        const ImGuiID rows = ImGui::GetID("##managerows");
         ui::ButtonOptions folder;
         folder.icon = ui::Icon::Folder;
         const char* const files = Tr("Game files");
@@ -860,44 +857,58 @@ namespace launcher_ui
         const float foldersWidth = ui::ButtonWidth(files, folder) + ui::space::S + ui::ButtonWidth(figures, folder);
         const float column = std::max(float(ui::height::SettingControl), foldersWidth);
 
-        auto chevron = [&](const char* id, GameSection section) {
-            const bool open = m_gameManage == section;
-            if (ui::IconButton(id, open ? ui::Icon::ChevronDown : ui::Icon::ChevronRight, Tr("Details")))
+        // The rows share their edges: a disclosure's title and the hairlines start where a settings row's label does.
+        bool first = true;
+        auto hairline = [&] {
+            if (std::exchange(first, false))
+                return;
+            const ImVec2 at = ImGui::GetCursorScreenPos();
+            ImGui::GetWindowDrawList()->AddLine(ImVec2(at.x, at.y + 0.5f),
+                ImVec2(at.x + ImGui::GetContentRegionAvail().x, at.y + 0.5f),
+                ui::Col(ui::color::Hairline, 110 / 255.0f), ui::stroke::Hairline);
+        };
+        auto settings = [&](const char* id, auto&& draw) {
+            hairline();
+            if (ui::BeginSettings(id, column))
             {
-                m_gameManage = open ? GameSection::None : section;
-                m_gameSectionScroll = 0;
-            }
-            if (open && m_gameSectionScroll > 0)
-            {
-                m_gameSectionScroll--;
-                ImGui::ScrollToItem(ImGuiScrollFlags_AlwaysCenterY);
+                draw();
+                ui::EndSettings();
             }
         };
-        bool table = ui::BeginSettings("##manage", column);
-        // The content of an unfolded row takes the card's whole width: the table stops for it.
-        auto unfolded = [&](GameSection section, auto&& draw, const char* next) {
-            if (m_gameManage != section)
-                return;
-            if (table)
-                ui::EndSettings();
-            ImGui::Dummy(ImVec2(0, ui::space::XS));
-            draw();
-            ImGui::Dummy(ImVec2(0, ui::space::S));
-            table = next != nullptr && ui::BeginSettings(next, column);
+        // One unfolded at a time; a link's section is scrolled into view.
+        auto disclosure = [&](const char* id, const char* title, GameSection section, ui::DisclosureOptions options,
+                              auto&& draw) {
+            hairline();
+            options.divider = false;
+            options.reveal = m_gameManage == section && m_gameSectionScroll > 0;
+            if (options.reveal)
+                m_gameSectionScroll--;
+            const bool wasOpen = m_gameManage == section;
+            bool open = wasOpen;
+            const bool shown = ui::BeginDisclosure(id, title, &open, options);
+            if (open != wasOpen)
+            {
+                m_gameManage = open ? section : GameSection::None;
+                m_gameSectionScroll = 0;
+            }
+            if (shown)
+            {
+                draw();
+                ui::EndDisclosure();
+            }
         };
 
         // The games whose Nightmare the game locks until the story is beaten: offered at once, the save is not changed
         // ([<game>] nightmare_from_start).
-        if (table && NightmareFromStartOffered(m_s->game.id))
-        {
-            ui::SettingRow(Tr("Nightmare from the start"), Tr("Before you beat the game. Your save is untouched."),
-                Tr("Difficulty"));
-            bool value = ParseBool(SettingGet(m_config, m_s->game.id, "nightmare_from_start", "0"));
-            if (ui::Toggle("##nightmarefromstart", &value))
-                Set(m_s->game.id, "nightmare_from_start", value ? "1" : "0");
-        }
+        if (NightmareFromStartOffered(m_s->game.id))
+            settings("##manage", [&] {
+                ui::SettingRow(Tr("Nightmare from the start"), Tr("Before you beat the game. Your save is untouched."),
+                    Tr("Difficulty"));
+                bool value = ParseBool(SettingGet(m_config, m_s->game.id, "nightmare_from_start", "0"));
+                if (ui::Toggle("##nightmarefromstart", &value))
+                    Set(m_s->game.id, "nightmare_from_start", value ? "1" : "0");
+            });
 
-        if (table)
         {
             std::string state;
             switch (m_s->disc)
@@ -911,43 +922,35 @@ namespace launcher_ui
                                           : DiscFileName(m_s->discPath);
                 break;
             }
-            ui::SettingRow(Tr("Disc"), state.c_str());
-            ImGui::PushOverrideID(rows);
-            ui::ButtonOptions choose;
-            // Primary: the disc to choose (again).
-            choose.kind =
-                m_s->discPath.empty() || DiscDamaged(*m_s) ? ui::ButtonKind::Primary : ui::ButtonKind::Secondary;
-            choose.disabled = Installing() || m_s->disc == DiscState::Verifying || m_s->copyJob.Running();
-            const char* label = m_s->discPath.empty() ? Tr("Choose...") : Tr("Change...");
-            ui::AlignRight(ui::height::Normal + (m_s->fromCopy ? 0 : ui::ButtonWidth(label, choose) + ui::space::S));
+            ui::DisclosureOptions disc;
+            disc.summary = state.c_str();
+            bool change = false;
             if (!m_s->fromCopy) // the image is not used then
             {
-                if (ui::Button(label, choose))
-                    Browse();
-                ImGui::SameLine(0, ui::space::S);
+                disc.action = m_s->discPath.empty() ? Tr("Choose...") : Tr("Change...");
+                disc.actionPressed = &change;
+                // Primary: the disc to choose (again).
+                disc.actionOptions.kind =
+                    m_s->discPath.empty() || DiscDamaged(*m_s) ? ui::ButtonKind::Primary : ui::ButtonKind::Secondary;
+                disc.actionOptions.disabled =
+                    Installing() || m_s->disc == DiscState::Verifying || m_s->copyJob.Running();
             }
-            chevron("##disc", GameSection::Disc);
-            ImGui::PopID();
+            disclosure("##disc", Tr("Disc"), GameSection::Disc, disc, [&] { DrawGameDisc(); });
+            if (change)
+                Browse();
         }
-        unfolded(GameSection::Disc, [&] { DrawGameDisc(); }, "##manageafterdisc");
 
-        if (table)
         {
             const size_t count = m_s->saveBackups.size();
             const std::string backups = count == 0   ? std::string(Tr("No backups yet."))
                                         : count == 1 ? Tf("{} backup", count)
                                                      : Tf("{} backups", count);
-            ui::SettingRow(Tr("Saves"), backups.c_str());
-            ImGui::PushOverrideID(rows);
-            ui::AlignRight(ui::height::Normal);
-            chevron("##saves", GameSection::Saves);
-            ImGui::PopID();
+            ui::DisclosureOptions saves;
+            saves.summary = backups.c_str();
+            disclosure("##saves", Tr("Saves"), GameSection::Saves, saves, [&] { DrawSaveBackups(); });
         }
-        unfolded(GameSection::Saves, [&] { DrawSaveBackups(); }, "##manageaftersaves");
 
-        if (table)
-        {
-            ImGui::PushOverrideID(rows);
+        settings("##manageactions", [&] {
             const bool disc = m_s->disc == DiscState::Ready;
             ui::SettingRow(Tr("Desktop shortcut"), disc ? nullptr : Tr("Choose the disc image first."));
             ui::ButtonOptions shortcut;
@@ -973,15 +976,8 @@ namespace launcher_ui
                 std::string path = m_s->collection->Folder();
                 OpenFolder(std::filesystem::path(std::u8string(path.begin(), path.end())));
             }
-
-            ui::SettingRow(Tr("Repair or uninstall"));
-            ui::AlignRight(ui::height::Normal);
-            chevron("##repair", GameSection::Repair);
-            ImGui::PopID();
-        }
-        unfolded(GameSection::Repair, [&] { DrawGameRepair(); }, nullptr);
-        if (table)
-            ui::EndSettings();
+        });
+        disclosure("##repair", Tr("Repair or uninstall"), GameSection::Repair, {}, [&] { DrawGameRepair(); });
         DrawPortableDialog();
     }
 

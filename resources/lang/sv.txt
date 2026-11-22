@@ -278,7 +278,6 @@ Details	Detaljer
 Difficulty	Svårighetsgrad
 Disc	Skiva
 Disc checked	Skivan är kontrollerad
-Disc image	Skivavbild
 Disc not found	Skivan hittades inte
 Doubles the game's textures from your disc. About {} of disk, a few minutes.	Fördubblar spelets texturer från din skiva. Cirka {} diskutrymme, några minuter.
 Down	Ned
@@ -718,7 +717,6 @@ Same	Samma
 Same as text	Samma som texten
 Save	Spara
 Save as...	Spara som...
-Save backups	Säkerhetskopior av sparfiler
 Save to Desktop	Spara på skrivbordet
 Saved	Sparad
 Saved gamepad (not connected)	Sparad spelkontroll (inte ansluten)
@@ -1268,3 +1266,4 @@ Help	Hjälp
 Keys for all games	Tangenter för alla spel
 Toy Box shortcuts	Genvägar till Toy Box
 Manage profiles...	Hantera profiler...
+Folder	Mapp

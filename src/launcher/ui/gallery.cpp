@@ -28,6 +28,7 @@ namespace launcher_ui
             { "modal-danger", "Modal: danger" },
             { "menu-tooltip", "Menu, tooltip" },
             { "select-open", "Select, open" },
+            { "disclosure", "Disclosure, beside select and menu" },
             { "game-stopped", "The game stopped unexpectedly" },
         };
         constexpr int PageCount = int(std::size(Pages));
@@ -682,7 +683,79 @@ namespace launcher_ui
             }
             break;
         }
-        case 12: // The crash dialog (game_stopped.cpp), as a game started here that stopped would show it
+        case 12: // Disclosure: the one fold, in each state, and the two controls that drop down instead
+        {
+            if (!ImGui::BeginTable("##folds", 2, ImGuiTableFlags_SizingStretchSame))
+                break;
+            ImGui::TableNextColumn();
+            for (int c = 0; c < 5; c++)
+            {
+                Caption(fmt::format("Closed: {}", States[c].name).c_str());
+                ImGui::PushID(c);
+                bool open = false;
+                ui::DisclosureOptions options;
+                options.disabled = States[c].disabled;
+                Preview(States[c]);
+                if (ui::BeginDisclosure("##fold", Tr("Saves"), &open, options))
+                    ui::EndDisclosure();
+                ImGui::PopID();
+            }
+            Caption("Open");
+            static bool unfolded = true, startup = true;
+            if (ui::BeginDisclosure("##open", Tr("Saves"), &unfolded))
+            {
+                ui::Toggle(Tr("Check at startup"), &startup);
+                ui::EndDisclosure();
+            }
+
+            ImGui::TableNextColumn();
+            struct FoldCase
+            {
+                const char* name;
+                bool open, summary, action, disabled;
+            };
+            const FoldCase folds[] = {
+                { "Summary", false, true, false, false },
+                { "Action", false, false, true, false },
+                { "Summary and action", false, true, true, false },
+                { "Open, summary and action", true, true, true, false },
+                { "Disabled, summary and action", false, true, true, true },
+            };
+            for (const FoldCase& fold : folds)
+            {
+                Caption(fold.name);
+                ImGui::PushID(fold.name);
+                bool open = fold.open;
+                ui::DisclosureOptions options;
+                options.summary = fold.summary ? Tr("System default") : nullptr;
+                options.action = fold.action ? Tr("Change...") : nullptr;
+                options.disabled = fold.disabled;
+                if (ui::BeginDisclosure("##fold", Tr("Disc"), &open, options))
+                {
+                    ui::Toggle(Tr("Fullscreen"), &startup);
+                    ui::EndDisclosure();
+                }
+                ImGui::PopID();
+            }
+            Caption("Not folds: a select picks one value, a menu runs a command");
+            ui::SelectOptions select;
+            select.width = 240;
+            if (ui::BeginSelect("##beside", Tr("Automatic"), select))
+                ui::EndSelect();
+            ImGui::SameLine(0, ui::space::S);
+            ui::PillOptions more;
+            more.icon = ui::Icon::More;
+            if (ui::Pill(Tr("Edit"), more))
+                ui::OpenMenu("##besidemenu");
+            if (ui::BeginMenu("##besidemenu"))
+            {
+                ui::MenuItem(Tr("Show in folder"), { ui::Icon::Folder });
+                ui::EndMenu();
+            }
+            ImGui::EndTable();
+            break;
+        }
+        case 13: // The crash dialog (game_stopped.cpp), as a game started here that stopped would show it
         {
             Caption("The game stopped unexpectedly: Report, Copy log, Close");
             if (!m_gameStopped)
@@ -691,7 +764,7 @@ namespace launcher_ui
         }
         }
         ImGui::End();
-        if (page == 12)
+        if (page == 13)
             DrawGameStopped();
         else
             m_gameStopped.reset();

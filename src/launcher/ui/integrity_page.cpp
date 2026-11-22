@@ -179,23 +179,20 @@ namespace launcher_ui
         if (ui::BeginModal("##integrity", Tr("Files missing or changed"), &open, ui::ModalSize::Medium))
         {
             ui::Text(ui::TextStyle::Body, what.c_str(), ui::color::Ink, 0, true);
+            ui::Text(ui::TextStyle::Body, how.c_str(), ui::color::InkSoft);
             ImGui::Dummy(ImVec2(0, ui::space::XS));
             ui::Text(ui::TextStyle::Body,
                 Tr("An antivirus often does this: it may have put the file in quarantine. Restore it from the "
                    "antivirus's quarantine, or add an exclusion for this folder:"),
                 ui::color::InkSoft);
-            ui::Text(ui::TextStyle::Body, datadir::Text(finding.folder.lexically_normal()).c_str(), ui::color::Ink);
-            ImGui::Dummy(ImVec2(0, ui::space::XS));
-            ui::Text(ui::TextStyle::Body, how.c_str(), ui::color::InkSoft);
+            if (ui::BeginSettings("##integrityrows"))
+            {
+                ui::SettingRow(Tr("Folder"), datadir::Text(finding.folder.lexically_normal()).c_str());
+                if (ui::Button(Tr("Open the folder"), { .icon = ui::Icon::External }) && !OpenFolder(finding.folder))
+                    Toast(Tr("Couldn't open the folder"), ui::ToastKind::Error);
+                ui::EndSettings();
+            }
             const ui::ModalResult result = ui::ModalActions(&open, chosen ? nullptr : Tr("Repair"), Tr("Close"));
-            // The folder at the left of the actions' row.
-            const float actionsY = ImGui::GetItemRectMin().y, afterY = ImGui::GetCursorPosY();
-            ImGui::SetCursorScreenPos(ImVec2(ImGui::GetWindowPos().x + ImGui::GetCursorStartPos().x, actionsY));
-            if (ui::Button(Tr("Open the folder"), { .kind = ui::ButtonKind::Ghost, .icon = ui::Icon::External }) &&
-                !OpenFolder(finding.folder))
-                Toast(Tr("Couldn't open the folder"), ui::ToastKind::Error);
-            ImGui::SetCursorPosY(afterY);
-            ImGui::Dummy(ImVec2(0, 0));
             ui::EndModal();
             repaired = result == ui::ModalResult::Confirm;
         }

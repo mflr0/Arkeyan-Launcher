@@ -68,14 +68,14 @@ namespace launcher_ui
                 Tr("Every download is checked against the release's SHA-256 before it runs, and every release is built "
                    "from the public source."),
                 ui::color::Dim);
+            if (ui::BeginSettings("##defenderrows"))
+            {
+                ui::SettingRow(Tr("Why this happens"));
+                if (ui::Button(Tr("Open GitHub"), { .icon = ui::Icon::External }))
+                    SDL_OpenURL(AlertsUrl);
+                ui::EndSettings();
+            }
             go = ui::ModalActions(&open, Tr("Continue"), Tr("Not now")) == ui::ModalResult::Confirm;
-            // Why, at the left of the actions' row.
-            const float actionsY = ImGui::GetItemRectMin().y, afterY = ImGui::GetCursorPosY();
-            ImGui::SetCursorScreenPos(ImVec2(ImGui::GetWindowPos().x + ImGui::GetCursorStartPos().x, actionsY));
-            if (ui::Button(Tr("Why this happens"), { .kind = ui::ButtonKind::Ghost, .icon = ui::Icon::External }))
-                SDL_OpenURL(AlertsUrl);
-            ImGui::SetCursorPosY(afterY);
-            ImGui::Dummy(ImVec2(0, 0));
             ui::EndModal();
         }
         if (open)
