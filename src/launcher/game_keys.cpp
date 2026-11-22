@@ -718,8 +718,10 @@ bool ToyboxKeyConflict(const LauncherConfig& config, const ToyboxKey& key)
 
 namespace
 {
-    constexpr ToyboxPad PadShortcuts[] = { { "pad_wheel", N_("Swap wheel"), { 9, -1 } },
-        { "pad_toybox", N_("Open the Toy Box"), { 9, 3 } }, { "pad_menu", N_("Game menu"), { 9, 8 } } };
+    constexpr ToyboxPad PadShortcuts[] = { { "pad_wheel", N_("Swap wheel"), { 9, -1 }, 1 },
+        { "pad_toybox", N_("Open the Toy Box"), { 9, 3 } }, { "pad_menu", N_("Game menu"), { 9, 8 } },
+        { "pad_toybox_add", N_("Add a figure"), { -1, -1 } },
+        { "pad_toybox_clear", N_("Clear the figures"), { -1, -1 } } };
 
     int PhysicalButton(std::string_view name)
     {
@@ -740,11 +742,13 @@ std::array<int, 2> ToyboxPadValue(const LauncherConfig& config, const ToyboxPad&
     if (value == nullptr)
         return binding.fallback;
     const size_t plus = value->find('+');
-    if (binding.fallback[1] < 0)
+    if (binding.buttons == 1)
     {
         const int button = PhysicalButton(*value);
         return button < 0 ? binding.fallback : std::array<int, 2>{ button, -1 };
     }
+    if (*value == "none")
+        return { -1, -1 };
     if (plus == std::string::npos)
         return binding.fallback;
     const int first = PhysicalButton(std::string_view(*value).substr(0, plus));
@@ -755,8 +759,8 @@ std::array<int, 2> ToyboxPadValue(const LauncherConfig& config, const ToyboxPad&
 void SetToyboxPad(LauncherConfig& config, const ToyboxPad& binding, std::array<int, 2> buttons)
 {
     if (buttons[0] < 0 || buttons[0] >= PadButtonTotal ||
-        (binding.fallback[1] < 0 ? buttons[1] != -1
-                                 : buttons[1] < 0 || buttons[1] >= PadButtonTotal || buttons[0] == buttons[1]))
+        (binding.buttons == 1 ? buttons[1] != -1
+                              : buttons[1] < 0 || buttons[1] >= PadButtonTotal || buttons[0] == buttons[1]))
         return;
     std::string value = PadNames[size_t(buttons[0])];
     if (buttons[1] >= 0)
@@ -764,9 +768,18 @@ void SetToyboxPad(LauncherConfig& config, const ToyboxPad& binding, std::array<i
     config["input"][binding.line] = value;
 }
 
+bool ToyboxPadOwn(const LauncherConfig& config, const ToyboxPad& binding)
+{
+    return Find(config, "input", binding.line) != nullptr;
+}
+
+void ResetToyboxPad(LauncherConfig& config, const ToyboxPad& binding) { Erase(config, "input", binding.line); }
+
 std::string ToyboxPadName(const LauncherConfig& config, const ToyboxPad& binding, PadFamily family)
 {
     const auto buttons = ToyboxPadValue(config, binding);
+    if (buttons[0] < 0)
+        return {};
     std::string name = PadButtonLabel(buttons[0], family);
     if (buttons[1] >= 0)
         name += " + " + PadButtonLabel(buttons[1], family);

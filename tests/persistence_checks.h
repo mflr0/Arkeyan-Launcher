@@ -31,19 +31,40 @@ inline void ConfigPersistenceChecks(const std::filesystem::path& scratch)
     {
         LauncherConfig pad;
         const auto bindings = ToyboxPads();
-        EXPECT(bindings.size() == 3);
+        EXPECT(bindings.size() == 5);
         const std::array<int, 2> wheel = { 9, -1 }, toybox = { 9, 3 }, menu = { 9, 8 };
         EXPECT(ToyboxPadValue(pad, bindings[0]) == wheel && ToyboxPadValue(pad, bindings[1]) == toybox &&
                ToyboxPadValue(pad, bindings[2]) == menu);
         for (const ToyboxPad& binding : bindings)
         {
             EXPECT(!ToyboxPadConflict(pad, binding) && !IsPadRemapLine(binding.line));
-            for (const char* invalid : { "", "unknown", "none", "back+unknown", "back+back", "a+b+x", "+y", "a+" })
+            for (const char* invalid : { "", "unknown", "back+unknown", "back+back", "a+b+x", "+y", "a+" })
             {
                 pad["input"][binding.line] = invalid;
                 EXPECT(ToyboxPadValue(pad, binding) == binding.fallback);
             }
+            // "none" unbinds a two-button shortcut; the wheel always has its button.
+            pad["input"][binding.line] = "none";
+            const std::array<int, 2> none = { -1, -1 };
+            EXPECT(ToyboxPadValue(pad, binding) == (binding.buttons == 1 ? binding.fallback : none));
             pad["input"].erase(binding.line);
+        }
+        // Add and Clear: not bound by default, set like the Toy Box's, reset back to none.
+        {
+            const std::array<int, 2> none = { -1, -1 }, backB = { 9, 1 };
+            EXPECT(std::string(bindings[3].line) == "pad_toybox_add" &&
+                   std::string(bindings[4].line) == "pad_toybox_clear");
+            EXPECT(ToyboxPadValue(pad, bindings[3]) == none && ToyboxPadValue(pad, bindings[4]) == none);
+            EXPECT(ToyboxPadName(pad, bindings[4], PadFamily::Xbox360).empty());
+            EXPECT(!ToyboxPadConflict(pad, bindings[4]) && !ToyboxPadOwn(pad, bindings[4]));
+            SetToyboxPad(pad, bindings[4], { 9, 1 });
+            EXPECT(pad["input"]["pad_toybox_clear"] == "back+b" && ToyboxPadValue(pad, bindings[4]) == backB);
+            EXPECT(ToyboxPadOwn(pad, bindings[4]));
+            EXPECT(ToyboxPadConflict(pad, bindings[4])); // B is a game's action
+            ResetToyboxPad(pad, bindings[4]);
+            EXPECT(pad["input"].count("pad_toybox_clear") == 0 && ToyboxPadValue(pad, bindings[4]) == none);
+            const std::string portable = PortableKeys(pad, "ssa");
+            EXPECT(portable.find("pad_toybox_add=") == std::string::npos);
         }
         pad["ssa.input"]["pad_wheel"] = "a"; // a game cannot override these physical buttons
         EXPECT(ToyboxPadValue(pad, bindings[0]) == wheel);

@@ -738,7 +738,7 @@ namespace launcher_ui
         }
         if (button >= 0)
         {
-            if (m_toyboxPadCapturing->fallback[1] >= 0 && m_toyboxPadFirst < 0)
+            if (m_toyboxPadCapturing->buttons == 2 && m_toyboxPadFirst < 0)
                 m_toyboxPadFirst = button;
             else if (button != m_toyboxPadFirst)
             {
@@ -763,7 +763,11 @@ namespace launcher_ui
             // Physical shortcuts stay independent of the games' button remaps.
             for (int row = 0; row < 5; row++)
             {
-                const ToyboxPad* pad = row == 0 ? &pads[0] : row == 1 ? &pads[1] : row == 4 ? &pads[2] : nullptr;
+                const ToyboxPad* pad = row == 0   ? &pads[0]
+                                       : row == 1 ? &pads[1]
+                                       : row == 2 ? &pads[3]
+                                       : row == 3 ? &pads[4]
+                                                  : &pads[2];
                 const ToyboxKey* key = row >= 1 && row <= 3 ? &keys[size_t(row - 1)] : nullptr;
                 const char* label = key != nullptr ? key->label : pad->label;
                 ui::SettingRow(Tr(label), row == 0 ? Tr("Hold to open the swap wheel.") : nullptr);
@@ -793,30 +797,36 @@ namespace launcher_ui
                 else
                     NoControl(true);
                 ImGui::TableSetColumnIndex(2);
-                if (pad != nullptr)
+                ui::KeyButtonOptions options;
+                options.capturing = m_toyboxPadCapturing == pad;
+                options.conflict = ToyboxPadConflict(m_config, *pad);
+                options.tooltip = options.conflict    ? Tr("This button is used by another action")
+                                  : pad->buttons == 1 ? Tr("Press a button (Escape cancels).")
+                                                      : Tr("Press two buttons in order (Escape cancels).");
+                std::string name = ToyboxPadName(m_config, *pad, PadFamilyNow());
+                if (name.empty())
+                    name = Dash;
+                if (options.capturing && m_toyboxPadFirst >= 0)
+                    name = PadButtonLabel(m_toyboxPadFirst, PadFamilyNow()) + " + ...";
+                const Hit hit = KeyCapControl(
+                    pad->line, name.c_str(), options, ToyboxPadOwn(m_config, *pad) ? Tr(strings::UseDefault) : nullptr);
+                if (hit == Hit::Reset)
                 {
-                    ui::KeyButtonOptions options;
-                    options.capturing = m_toyboxPadCapturing == pad;
-                    options.conflict = ToyboxPadConflict(m_config, *pad);
-                    options.tooltip = options.conflict       ? Tr("This button is used by another action")
-                                      : pad->fallback[1] < 0 ? Tr("Press a button (Escape cancels).")
-                                                             : Tr("Press two buttons in order (Escape cancels).");
-                    std::string name = ToyboxPadName(m_config, *pad, PadFamilyNow());
-                    if (options.capturing && m_toyboxPadFirst >= 0)
-                        name = PadButtonLabel(m_toyboxPadFirst, PadFamilyNow()) + " + ...";
-                    if (KeyCapControl(pad->line, name.c_str(), options, nullptr) == Hit::Pressed)
-                    {
-                        m_capturing = nullptr;
-                        m_mouseCapturing = nullptr;
-                        m_toyboxCapturing = nullptr;
-                        m_toyboxPadCapturing = pad;
-                        m_toyboxPadBlockInput = true;
-                        m_toyboxPadFirst = -1;
-                        m_toyboxPadTriggers = {};
-                    }
+                    ResetToyboxPad(m_config, *pad);
+                    m_toyboxPadCapturing = nullptr;
+                    if (!SaveConfig())
+                        Toast(Tr("Couldn't save the settings"), ui::ToastKind::Error);
                 }
-                else
-                    NoControl(true);
+                else if (hit == Hit::Pressed)
+                {
+                    m_capturing = nullptr;
+                    m_mouseCapturing = nullptr;
+                    m_toyboxCapturing = nullptr;
+                    m_toyboxPadCapturing = pad;
+                    m_toyboxPadBlockInput = true;
+                    m_toyboxPadFirst = -1;
+                    m_toyboxPadTriggers = {};
+                }
             }
             ui::EndSettings();
         }
@@ -825,9 +835,9 @@ namespace launcher_ui
                 Tf("Press a key for \"{}\" (Escape cancels)", Tr(m_toyboxCapturing->label)).c_str(), ui::color::Ink);
         if (m_toyboxPadCapturing != nullptr)
             ui::Text(ui::TextStyle::Caption,
-                Tr(m_toyboxPadFirst >= 0                    ? N_("Press the second button (Escape cancels).")
-                    : m_toyboxPadCapturing->fallback[1] < 0 ? N_("Press a button (Escape cancels).")
-                                                            : N_("Press two buttons in order (Escape cancels).")),
+                Tr(m_toyboxPadFirst >= 0                 ? N_("Press the second button (Escape cancels).")
+                    : m_toyboxPadCapturing->buttons == 1 ? N_("Press a button (Escape cancels).")
+                                                         : N_("Press two buttons in order (Escape cancels).")),
                 ui::color::Ink);
     }
 }

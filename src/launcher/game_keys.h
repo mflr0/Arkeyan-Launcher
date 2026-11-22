@@ -151,15 +151,21 @@ std::string ToyboxKeyName(const LauncherConfig& config, const ToyboxKey& key);
 // True when another Toy Box key, or a key of any game, has the same key.
 bool ToyboxKeyConflict(const LauncherConfig& config, const ToyboxKey& key);
 
-// Physical controller shortcuts in [input] only; a negative second button means one held button.
+// Physical controller shortcuts in [input] only: one held button (the wheel) or two in order. A two-button shortcut
+// can be "none", { -1, -1 } (Add and Clear by default).
 struct ToyboxPad
 {
     const char* line;
     const char* label;
     std::array<int, 2> fallback;
+    int buttons = 2;
 };
 std::span<const ToyboxPad> ToyboxPads();
 std::array<int, 2> ToyboxPadValue(const LauncherConfig& config, const ToyboxPad& binding);
 void SetToyboxPad(LauncherConfig& config, const ToyboxPad& binding, std::array<int, 2> buttons);
+// The shortcut has its own line; resetting removes it, back to the default.
+bool ToyboxPadOwn(const LauncherConfig& config, const ToyboxPad& binding);
+void ResetToyboxPad(LauncherConfig& config, const ToyboxPad& binding);
+// Empty when not bound.
 std::string ToyboxPadName(const LauncherConfig& config, const ToyboxPad& binding, PadFamily family);
 bool ToyboxPadConflict(const LauncherConfig& config, const ToyboxPad& binding);
