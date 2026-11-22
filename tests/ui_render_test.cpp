@@ -2,6 +2,7 @@
 #include "launcher/i18n.h"
 #include "launcher/game_names.h"
 #include "launcher/ui/collection_page.h"
+#include "launcher/ui/components/buttons.h"
 #include "launcher/ui/components/feedback.h"
 #include "launcher/ui/components/inputs.h"
 #include "launcher/ui/components/layout.h"
@@ -243,6 +244,12 @@ int UiRenderChecks(const std::filesystem::path& scratch)
             }
             else
                 expect(false, "an open disclosure draws what is under it");
+        });
+        // A hold button is its words alone: the same timer on four buttons in a row said nothing and read as one action.
+        drawTabs(plain, ui::Glyphs::Keyboard, [&](ImDrawList*, int) {
+            ui::ButtonOptions hold;
+            hold.hold = true;
+            expect(ui::ButtonWidth("One", hold) == ui::ButtonWidth("One", {}), "a hold button has no icon of its own");
         });
         // The sidebar's badges are their games' colours, Imaginators the deep blue of its card beside Spyro's sky blue.
         for (const LauncherGameEntry& entry : LauncherGameCatalog({}))

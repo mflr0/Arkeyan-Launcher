@@ -135,7 +135,7 @@ namespace ui
             return ImGui::GetContentRegionAvail().x;
         const char* end = LabelEnd(label);
         float text = TextSize(LabelStyle(options.size), label, end, true).x;
-        bool lead = options.icon != Icon::None || options.loading || options.hold;
+        bool lead = options.icon != Icon::None || options.loading;
         float content = text + (lead ? IconSize + (end != label ? space::XS : 0) : 0) + TrailingWidth(options.trailing);
         return std::max(options.width, std::ceil(content + 2 * SidePad(options.size)));
     }
@@ -197,7 +197,7 @@ namespace ui
                 Col(sweep, 0.55f), rounding);
         }
         // A hold button shows what it does (a bin for a removal) when it says so; the timer only when it has no icon of its own.
-        Icon icon = options.hold && options.icon == Icon::None ? Icon::Hold : options.icon;
+        Icon icon = options.icon; // a hold button has none of its own: the sweep and the hint say how it works
         DrawContent(draw, min, max, label, LabelStyle(options.size), icon, options.loading, options.trailing, paint.ink,
             state.pressed);
         ImGui::EndDisabled();

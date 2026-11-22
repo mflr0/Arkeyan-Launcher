@@ -167,13 +167,10 @@ Choose your {} disc image	Vælg dit {}-diskaftryk
 Choose...	Vælg...
 Chrome	Chrome
 Circle	Cirkel
-Clean up	Ryd op
 Clear all	Ryd alt
 Clear caches	Ryd cache
 Clear search and filters	Ryd søgning og filtre
 Clear the figures	Fjern figurerne
-Clearing caches frees {}.	Rydning af cache frigør {}.
-Clearing caches frees {}; deleting saves and data frees {} more.	Rydning af cache frigør {}; sletning af gemte spil og data frigør yderligere {}.
 Click or turn the wheel	Klik eller drej hjulet
 Click, then press a mouse button or turn the wheel (Escape cancels).	Klik, og tryk derefter på en museknap eller drej hjulet (Escape annullerer).
 Click: put it on {}	Klik: læg den på {}
@@ -269,7 +266,6 @@ Delete	Slet
 Delete saves and data	Slet gemte spil og data
 Delete...	Slet...
 Deleted figures are kept 30 days.	Slettede figurer gemmes i 30 dage.
-Deleting saves and data frees {}.	Sletning af gemte spil og data frigør {}.
 Designed by dorydev, made by mflr0, UI/UX by Gumelia.	Designet af dorydev, lavet af mflr0, UI/UX af Gumelia.
 Desktop shortcut	Genvej på skrivebordet
 Desktop shortcuts	Genveje på skrivebordet
@@ -1266,3 +1262,6 @@ Keys for all games	Taster til alle spil
 Toy Box shortcuts	Genveje til Toy Box
 Manage profiles...	Administrer profiler...
 Folder	Mappe
+Caches	Cacher
+Saves and data	Gemte spil og data
+Frees {}.	Frigør {}.

@@ -167,13 +167,10 @@ Choose your {} disc image	Elige tu imagen de disco de {}
 Choose...	Elegir...
 Chrome	Cromado
 Circle	Círculo
-Clean up	Limpiar
 Clear all	Quitar todo
 Clear caches	Vaciar cachés
 Clear search and filters	Borrar búsqueda y filtros
 Clear the figures	Quitar las figuras
-Clearing caches frees {}.	Vaciar las cachés libera {}.
-Clearing caches frees {}; deleting saves and data frees {} more.	Vaciar las cachés libera {}; borrar partidas y datos libera {} más.
 Click or turn the wheel	Haz clic o gira la rueda
 Click, then press a mouse button or turn the wheel (Escape cancels).	Haz clic y pulsa un botón del ratón o gira la rueda (Escape cancela).
 Click: put it on {}	Clic: ponerla en {}
@@ -269,7 +266,6 @@ Delete	Borrar
 Delete saves and data	Borrar partidas y datos
 Delete...	Borrar...
 Deleted figures are kept 30 days.	Las figuras borradas se guardan 30 días.
-Deleting saves and data frees {}.	Borrar partidas y datos libera {}.
 Designed by dorydev, made by mflr0, UI/UX by Gumelia.	Diseñado por dorydev, creado por mflr0, UI/UX por Gumelia.
 Desktop shortcut	Acceso en Escritorio
 Desktop shortcuts	Accesos en Escritorio
@@ -1266,3 +1262,6 @@ Keys for all games	Teclas para todos los juegos
 Toy Box shortcuts	Atajos de Toy Box
 Manage profiles...	Gestionar perfiles...
 Folder	Carpeta
+Caches	Cachés
+Saves and data	Partidas y datos
+Frees {}.	Libera {}.

@@ -179,7 +179,7 @@ portal names prominent and empty seats as tall as occupied ones, without changin
 |---|---|
 | When | Any action. `Primary`: the one action a page or dialog is for (one in view). `Secondary`: every other. `Danger`: what deletes, resets or overwrites (always `hold`, or inside a danger dialog). `Ghost`: a quiet action in a toolbar or a row. |
 | API | `bool ui::Button(label, ButtonOptions{kind, size, icon, trailing, width, disabled, loading, hold, overArt, tooltip})`, `ui::ButtonWidth(label, options)`. `size`: Small 32, Normal 40, Large 56 (Label text). `width` 0: the label's; > 0: at least; < 0: the available width. `trailing` `ChevronDown` for one that opens a list. `overArt`: the band's greys, on the game's art. |
-| States | Normal; hover (lighter); focus (ring); pressed (darker, the label 1 point lower); disabled (0.45 alpha); loading (a spinner before the label, not pressable). Hold: a timer icon in place of the icon; held, a sweep fills it (`HoldConfirm`, one second; Space, Enter and A hold it too; leaving or letting go cancels); its hint "Hold to confirm" (or `tooltip`) shows under it on hover, on focus and for 2.5 s after a tap too short. |
+| States | Normal; hover (lighter); focus (ring); pressed (darker, the label 1 point lower); disabled (0.45 alpha); loading (a spinner before the label, not pressable). Hold: no icon of its own; held, a sweep fills it (`HoldConfirm`, one second; Space, Enter and A hold it too; leaving or letting go cancels); its hint "Hold to confirm" (or `tooltip`) shows under it on hover, on focus and for 2.5 s after a tap too short. |
 
 ### MainAction
 | | |
@@ -420,7 +420,7 @@ Phase B applies these on every screen it touches.
   | Stops a running job or game | `Stop` | Secondary / the danger outline |
   | Back | `ChevronLeft` | Ghost |
   | Opens a menu or a list (a filter, "Put on the portal"); never a fold (Disclosure) | `ChevronDown` after the label (`ChevronUp` while open) | as the page |
-  | Deletes or resets, hold button | the hold's timer (set by `hold`, an icon of its own is ignored) | Danger |
+  | Holds to confirm | none (the sweep and the hint say it) | Danger where data is lost, else Secondary |
   | Deletes, no hold (a confirmation follows: "Uninstall everything...", the dialog's button) | `Trash` | Danger |
   | Cancel, Close, Later, Save, Copy, Retry, Resume, Quit, Edit, Put back, Restore, Remove (a disc) | none | as the page |
 
@@ -1095,7 +1095,7 @@ B and tab bumper behavior; it requires a window and is separate from the standal
   `hold_confirm.h`): Reset and Delete (Figure page), Delete for good (trash), Mark as not in use (a stale lock), Restore
   (a save backup), Reset to defaults (a game's keyboard and controller), Reinstall, Delete saves and data, Remove game. The fill shows the time; releasing, or the pointer
   leaving, cancels; it acts once per press; Space, Enter and the pad's A hold it too. The label is a plain verb, the
-  instruction is its hint under it (`ui::Button` with `hold`: a timer icon on the button, "Hold to confirm" or the
+  instruction is its hint under it (`ui::Button` with `hold`: no icon, "Hold to confirm" or the
   button's own sentence on hover, on keyboard and pad focus, and for 2.5 s after a tap too short, so a pad or touch player
   sees how it works). Buttons are told apart by their ImGui ID.
 - **Quitting.** The window's close, Cmd+Q or Alt+F4 during an install asks: Keep installing (default) or Quit.

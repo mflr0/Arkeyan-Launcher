@@ -165,13 +165,10 @@ Choose your {} disc image	Wähle dein Disc-Abbild von {}
 Choose...	Wählen...
 Chrome	Chrom
 Circle	Kreis
-Clean up	Aufräumen
 Clear all	Alle entfernen
 Clear caches	Caches leeren
 Clear search and filters	Suche und Filter zurücksetzen
 Clear the figures	Figuren entfernen
-Clearing caches frees {}.	Caches leeren gibt {} frei.
-Clearing caches frees {}; deleting saves and data frees {} more.	Caches leeren gibt {} frei; Spielstände und Daten löschen gibt {} mehr frei.
 Click or turn the wheel	Klicken oder Rad drehen
 Click, then press a mouse button or turn the wheel (Escape cancels).	Klicke, dann drücke eine Maustaste oder drehe das Rad (Esc bricht ab).
 Click: put it on {}	Klick: auf {} stellen
@@ -267,7 +264,6 @@ Delete	Löschen
 Delete saves and data	Spielstände und Daten löschen
 Delete...	Löschen...
 Deleted figures are kept 30 days.	Gelöschte Figuren bleiben 30 Tage erhalten.
-Deleting saves and data frees {}.	Spielstände und Daten löschen gibt {} frei.
 Designed by dorydev, made by mflr0, UI/UX by Gumelia.	Entworfen von dorydev, gebaut von mflr0, UI/UX von Gumelia.
 Desktop shortcut	Desktop-Verknüpfung
 Desktop shortcuts	Desktop-Verknüpfungen
@@ -1264,3 +1260,6 @@ Keys for all games	Tasten für alle Spiele
 Toy Box shortcuts	Toy-Box-Kurzbefehle
 Manage profiles...	Profile verwalten...
 Folder	Ordner
+Caches	Caches
+Saves and data	Spielstände und Daten
+Frees {}.	Gibt {} frei.

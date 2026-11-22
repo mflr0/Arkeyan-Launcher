@@ -998,36 +998,45 @@ namespace launcher_ui
             return options;
         };
 
-        ui::SectionHeader(
-            Tr("Game"), !m_s->installed.runtime.empty() ? Tr("Built for this disc.") : Tr("Not built yet."), false);
-        if (ui::Button(Tr(strings::Reinstall), hold(ui::ButtonKind::Secondary, Tr(strings::ReinstallHint),
-                                                   busy || running || m_s->installed.runtime.empty())) &&
+        // Settings rows, as the rest of the tab: what it is and what it frees on the left, one column of buttons on the right.
+        const bool built = !m_s->installed.runtime.empty();
+        const uint64_t caches = m_s->dataSizes.caches, saves = m_s->dataSizes.saves;
+        auto freeable = [&](uint64_t bytes) {
+            return running     ? std::string(Tr("The game is running: quit it first."))
+                   : bytes > 0 ? Tf("Frees {}.", Freed(bytes))
+                               : std::string();
+        };
+        const std::string cachesHint = freeable(caches), savesHint = freeable(saves),
+                          gameHint = Tf("Frees {}. Saves and settings are kept.", Freed(m_s->dataSizes.installed));
+        float width = 0;
+        for (const char* label :
+            { Tr(strings::Reinstall), Tr("Clear caches"), Tr(strings::DeleteData), Tr(strings::Uninstall) })
+            width = std::max(width, ui::ButtonWidth(label));
+        if (!ui::BeginSettings("##repair", std::max(width, float(ui::height::SettingControl))))
+            return;
+        auto action = [&](const char* label, ui::ButtonKind kind, const char* tooltip, bool disabled) {
+            ui::ButtonOptions options = hold(kind, tooltip, disabled);
+            options.width = width;
+            ui::AlignRight(width);
+            return ui::Button(label, options);
+        };
+        ui::SettingRow(Tr("Game"), built ? Tr("Built for this disc.") : Tr("Not built yet."));
+        if (action(Tr(strings::Reinstall), ui::ButtonKind::Secondary, Tr(strings::ReinstallHint),
+                busy || running || !built) &&
             !Installing())
             StartInstall();
-
-        const uint64_t caches = m_s->dataSizes.caches, saves = m_s->dataSizes.saves;
-        const bool built = !m_s->installed.runtime.empty();
-        std::string cleanHelp =
-            caches != 0 && saves != 0
-                ? Tf("Clearing caches frees {}; deleting saves and data frees {} more.", Freed(caches), Freed(saves))
-            : caches != 0 ? Tf("Clearing caches frees {}.", Freed(caches))
-            : saves != 0  ? Tf("Deleting saves and data frees {}.", Freed(saves))
-                          : std::string();
-        ui::SectionHeader(Tr("Clean up"), running             ? Tr("The game is running: quit it first.")
-                                          : cleanHelp.empty() ? nullptr
-                                                              : cleanHelp.c_str());
-        if (ui::Button(Tr("Clear caches"), hold(ui::ButtonKind::Secondary, Tr(strings::ClearCachesHint),
-                                               busy || running || !built || caches == 0)))
+        ui::SettingRow(Tr("Caches"), cachesHint.empty() ? nullptr : cachesHint.c_str());
+        if (action(Tr("Clear caches"), ui::ButtonKind::Secondary, Tr(strings::ClearCachesHint),
+                busy || running || !built || caches == 0))
             RunDataAction(ClearGameCaches(folders), N_("Caches cleared"));
-        ImGui::SameLine(0, ui::space::S);
-        if (ui::Button(Tr(strings::DeleteData),
-                hold(ui::ButtonKind::Danger, Tr(strings::DeleteDataHint), busy || running || !built || saves == 0)))
+        ui::SettingRow(Tr("Saves and data"), savesHint.empty() ? nullptr : savesHint.c_str());
+        if (action(Tr(strings::DeleteData), ui::ButtonKind::Danger, Tr(strings::DeleteDataHint),
+                busy || running || !built || saves == 0))
             RunDataAction(DeleteGameData(folders), N_("Saves and data deleted"));
-
-        ui::SectionHeader(
-            Tr("Uninstall"), Tf("Frees {}. Saves and settings are kept.", Freed(m_s->dataSizes.installed)).c_str());
-        if (ui::Button(Tr(strings::Uninstall), hold(ui::ButtonKind::Danger, Tr(strings::UninstallHint),
-                                                   busy || running || m_s->installed.runtime.empty())))
+        ui::SettingRow(Tr("Uninstall"), gameHint.c_str());
+        if (action(
+                Tr(strings::Uninstall), ui::ButtonKind::Danger, Tr(strings::UninstallHint), busy || running || !built))
             RunUninstall(UninstallGame(folders, m_config));
+        ui::EndSettings();
     }
 }

@@ -29,7 +29,7 @@ namespace ui
         float width = 0;            // 0: the label's; > 0: at least this; < 0: the available width
         bool disabled = false;
         bool loading = false;       // a spinner in place of the icon; not pressable meanwhile
-        bool hold = false; // acts once held for a second (HoldConfirm); a timer icon and "Hold to confirm" say so
+        bool hold = false; // acts once held for a second (HoldConfirm): no icon, the sweep and "Hold to confirm" say so
         bool overArt = false; // on the game's art or the band: the band's darker greys (Secondary and Ghost)
         const char* tooltip = nullptr; // also the hint of a hold button (default "Hold to confirm")
     };

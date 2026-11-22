@@ -168,13 +168,10 @@ Choose your {} disc image	Välj din skivavbild för {}
 Choose...	Välj...
 Chrome	Krom
 Circle	Cirkel
-Clean up	Städa upp
 Clear all	Rensa allt
 Clear caches	Rensa cacheminnen
 Clear search and filters	Rensa sökning och filter
 Clear the figures	Ta bort figurerna
-Clearing caches frees {}.	Att rensa cacheminnen frigör {}.
-Clearing caches frees {}; deleting saves and data frees {} more.	Att rensa cacheminnen frigör {}; att radera sparfiler och data frigör {} till.
 Click or turn the wheel	Klicka eller vrid hjulet
 Click, then press a mouse button or turn the wheel (Escape cancels).	Klicka och tryck sedan på en musknapp eller vrid hjulet (Escape avbryter).
 Click: put it on {}	Klicka: lägg på {}
@@ -270,7 +267,6 @@ Delete	Radera
 Delete saves and data	Radera sparfiler och data
 Delete...	Radera...
 Deleted figures are kept 30 days.	Raderade figurer sparas i 30 dagar.
-Deleting saves and data frees {}.	Att radera sparfiler och data frigör {}.
 Designed by dorydev, made by mflr0, UI/UX by Gumelia.	Design av dorydev, gjord av mflr0, UI/UX av Gumelia.
 Desktop shortcut	Skrivbordsgenväg
 Desktop shortcuts	Skrivbordsgenvägar
@@ -1267,3 +1263,6 @@ Keys for all games	Tangenter för alla spel
 Toy Box shortcuts	Genvägar till Toy Box
 Manage profiles...	Hantera profiler...
 Folder	Mapp
+Caches	Cacheminnen
+Saves and data	Sparfiler och data
+Frees {}.	Frigör {}.

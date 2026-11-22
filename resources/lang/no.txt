@@ -168,13 +168,10 @@ Choose your {} disc image	Velg diskbildet for {}
 Choose...	Velg...
 Chrome	Krom
 Circle	Sirkel
-Clean up	Rydd opp
 Clear all	Fjern alle
 Clear caches	Tøm hurtigbuffere
 Clear search and filters	Fjern søk og filtre
 Clear the figures	Fjern figurene
-Clearing caches frees {}.	Å tømme hurtigbuffere frigjør {}.
-Clearing caches frees {}; deleting saves and data frees {} more.	Å tømme hurtigbuffere frigjør {}; å slette lagringer og data frigjør {} til.
 Click or turn the wheel	Klikk eller drei hjulet
 Click, then press a mouse button or turn the wheel (Escape cancels).	Klikk, og trykk deretter en museknapp eller drei hjulet (Escape avbryter).
 Click: put it on {}	Klikk: sett den på {}
@@ -270,7 +267,6 @@ Delete	Slett
 Delete saves and data	Slett lagringer og data
 Delete...	Slett...
 Deleted figures are kept 30 days.	Slettede figurer beholdes i 30 dager.
-Deleting saves and data frees {}.	Å slette lagringer og data frigjør {}.
 Designed by dorydev, made by mflr0, UI/UX by Gumelia.	Designet av dorydev, laget av mflr0, UI/UX av Gumelia.
 Desktop shortcut	Skrivebordssnarvei
 Desktop shortcuts	Skrivebordssnarveier
@@ -1267,3 +1263,6 @@ Keys for all games	Taster for alle spill
 Toy Box shortcuts	Snarveier til Toy Box
 Manage profiles...	Administrer profiler...
 Folder	Mappe
+Caches	Hurtigbuffere
+Saves and data	Lagringer og data
+Frees {}.	Frigjør {}.
