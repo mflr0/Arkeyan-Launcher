@@ -247,6 +247,11 @@ Couldn't write to the game folder.	Kan niet naar de spelmap schrijven.
 Create	Aanmaken
 Create the profile	Profiel aanmaken
 Create the {} starter pack	Starterpakket van {} aanmaken
+No {} Skylanders yet	Nog geen Skylanders van {}
+Create starter pack	Starterpakket aanmaken
+The starter pack is in your collection	Het starterpakket zit in je collectie
+Already in your collection	Al in je collectie
+Couldn't create the starter pack	Kon het starterpakket niet aanmaken
 Create {}	{} aanmaken
 Created {}	{} aangemaakt
 Creation Crystals	Creation Crystals

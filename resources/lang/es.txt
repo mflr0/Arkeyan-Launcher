@@ -247,6 +247,11 @@ Couldn't write to the game folder.	No se pudo escribir en la carpeta del juego.
 Create	Crear
 Create the profile	Crear el perfil
 Create the {} starter pack	Crear el pack inicial de {}
+No {} Skylanders yet	Aún no tienes Skylanders de {}
+Create starter pack	Crear el pack inicial
+The starter pack is in your collection	El pack inicial está en tu colección
+Already in your collection	Ya está en tu colección
+Couldn't create the starter pack	No se pudo crear el pack inicial
 Create {}	Crear {}
 Created {}	Creado: {}
 Creation Crystals	Cristales de Creación

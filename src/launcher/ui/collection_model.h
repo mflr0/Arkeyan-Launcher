@@ -115,6 +115,9 @@ namespace launcher_ui
         std::vector<std::string> LeftoverLocks() const;
         bool CanEditSeats() const;
         bool Incompatible(const collection::Figure& figure) const;
+        // The banner that offers the game's starter pack above the shelf (collection::OffersStarterPack): not for an
+        // empty collection (its empty state offers the pack), nor while choosing a figure for a seat.
+        bool ShowsStarterBanner(bool realPortal, bool choosing) const;
         // Puts the figure on the seat (taking it off any other seat), or clears the seat with an empty path, and writes
         // the session file. False when the seats cannot be changed now or the game cannot read the figure.
         bool SetSeat(size_t seat, const std::string& path);

@@ -161,6 +161,12 @@ At the first visit to the page (`CollectionPage::Open`):
   Under the bar, only when something is on, the **tags**: one filter Chip per filter (a check; a click turns it off), **Clear
   all**, and the count at the right ("12 figures", "1 figure"; French "12 figurines"). Nothing matches: an EmptyState "No figure
   matches" with "Clear search and filters"; an empty collection: an EmptyState with "Add a figure" and, under it, "Create the <game> starter pack" (the game chosen: its starter pack's figures).
+- **The starter pack's banner**, between the seats and the search: while the player has figures but no character that
+  first came with the game chosen (`collection::OffersStarterPack`: a Giant is none for Swap Force; nor a trap, an item,
+  a vehicle, a sidekick in Giants), a card says "No Swap Force Skylanders yet", what the box holds, and has **Create
+  starter pack**. Not with a real portal plugged in, nor while choosing for a seat. It makes only what is missing
+  (`collection::CreateStarterPack`; each game's box is the catalogue's `starter`) and leaves the portal as it is, then a
+  toast: "The starter pack is in your collection".
 - **The smart search** (`collection::SearchMatches`, shared with the game): the words all have to match; a name
   (label, nickname, toy, version, file), an element ("fire", "feu"), a game ("giants", "swap force"), a type ("item",
   "objet", "adventure", "mini", "swapper"), a version ("legendary", "lightcore"), "level 10" / "niveau 10"; case and
@@ -275,6 +281,8 @@ At the first visit to the page (`CollectionPage::Open`):
   for the old one keeps the old bytes), Import size limit and a write that dies half-way, same-serial Import, Export that
   never overwrites, nickname and label rules, names (reserved, long, case-only), Tidy keeping the seated starter, and sixteen
   processes taking one lock (exactly one wins). `CollectionChecks` adds the lock of a live process that is not the game.
+- `ArkeyanLauncherTest` (`StarterPackChecks`, issue #247): each game's pack is its own box; the banner's rule (an empty
+  collection, another game's figure, a real portal, choosing for a seat, a character of the game).
 - `ArkeyanLauncherTest` (`CollectionChecks`): library, migration (originals intact, second pass copies none), stats,
   backups, restore, reset, duplicate, trash, import dedupe, JSON locks (live, stale), seats and `portal.txt`, live
   refresh, settings move, unknown toy naming, icons for every catalogue toy (and the family's mark on items and packs),

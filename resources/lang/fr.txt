@@ -698,6 +698,11 @@ Silver	Argent
 Skylanders	Skylanders
 Standard	Standard
 Create the {} starter pack	Créer le starter pack {}
+No {} Skylanders yet	Aucun Skylander de {} pour l'instant
+Create starter pack	Créer le starter pack
+The starter pack is in your collection	Le starter pack est dans votre collection
+Already in your collection	Déjà dans votre collection
+Couldn't create the starter pack	Impossible de créer le starter pack
 SuperChargers	SuperChargers
 Swap Force bottoms	Swap Force (bas)
 Swap Force tops	Swap Force (haut)

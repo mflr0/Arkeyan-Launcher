@@ -152,6 +152,10 @@ namespace launcher_ui
         void TakeOff(size_t seat);
         void Choose(int seat); // the next card picked goes on this seat; -1: stop choosing
         void DrawBar();
+        // The starter pack of the game chosen: the banner above the shelf, and its creation (the empty state's too).
+        void DrawStarterBanner();
+        bool RealPortalInUse() const;
+        void CreateStarterPack();
         void DrawFilters(int active);
         void DrawTags();
         void ClearFilters();
@@ -269,6 +273,8 @@ namespace launcher_ui
         std::vector<collection::Figure> m_list;
         std::vector<collection::Section> m_sections;
         int m_hiddenStarters = 0;
+        bool m_starterBanner = false; // Rebuild: CollectionModel::ShowsStarterBanner
+        std::string m_starterNames; // what the box of the game's starter pack holds
         ShelfFilter m_filter; // Element, Game, Type, Sort (the search is m_search)
         char m_search[64] = {};
         bool m_openFilters = false; // the screenshot test opens the Filters panel, and closes it at the next screen

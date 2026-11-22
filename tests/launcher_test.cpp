@@ -1197,6 +1197,44 @@ namespace
     }
 }
 
+// The starter pack (issue #247): each game's own box, and the banner while the player has no character of the game.
+// Runs after SweepChecks, in its collection folder; the figures it makes go to the trash.
+static void StarterPackChecks()
+{
+    const collection::Catalogue& catalogue = collection::Catalogue::Get();
+    for (const collection::Game& game : catalogue.Games())
+    {
+        EXPECT(!game.starter.empty());
+        for (const collection::StarterFigure& starter : game.starter)
+        {
+            const collection::Toy* toy = catalogue.Find(starter.type);
+            const collection::Game* origin =
+                toy != nullptr ? catalogue.Origin(*toy, collection::StarterVariant(starter)) : nullptr;
+            EXPECT(origin != nullptr && origin->id == game.id); // not Spyro's Adventure's box in every game
+        }
+    }
+
+    launcher_ui::CollectionModel model;
+    model.gameId = "swapforce";
+    EXPECT(!model.ShowsStarterBanner(false, false)); // an empty collection: the empty state's button
+    collection::Figure giant, swapper;
+    const std::string giantPath = collection::Create(112);
+    EXPECT(collection::Read(giantPath, giant));
+    model.figures = { giant };
+    EXPECT(model.ShowsStarterBanner(false, false)); // a Giant is no Swap Force character
+    EXPECT(!model.ShowsStarterBanner(true, false)); // a real portal
+    EXPECT(!model.ShowsStarterBanner(false, true)); // choosing for a seat
+    const collection::SwapperPaths made = collection::CreateSwapper(2015, 1015);
+    EXPECT(collection::Read(made.top, swapper));
+    model.figures = { giant, swapper };
+    EXPECT(!model.ShowsStarterBanner(false, false));
+    model.gameId = "imaginators";
+    EXPECT(model.ShowsStarterBanner(false, false)); // the game chosen decides
+    for (const std::string& path : { giantPath, made.top, made.bottom })
+        EXPECT(collection::Delete(path));
+    printf("Collection: starter packs checked\n");
+}
+
 // The Collection bug sweep (issue #9) on the shared library: backups that follow the figure, atomic writes, names, imports,
 // exports, labels, nicknames, locks and the seats of Tidy. Runs after CollectionChecks, in its collection folder.
 static void SweepChecks(const std::filesystem::path& scratch)
@@ -3027,6 +3065,7 @@ static int RunChecks(int argc, char** argv)
     {
         CollectionChecks(scratch);
         SweepChecks(scratch);
+        StarterPackChecks();
         return g_failures == 0 ? 0 : 1;
     }
     if (skyenv::Get("SKY_LAUNCHER_TEST_TOYBOX_ONLY") != nullptr) // only the Toy Box window's link (quick to rerun)
@@ -3069,6 +3108,7 @@ static int RunChecks(int argc, char** argv)
         return g_failures == 0 ? 0 : 1;
     CollectionChecks(scratch);
     SweepChecks(scratch);
+    StarterPackChecks();
     if (skyenv::Get("SKY_LAUNCHER_TEST_AUDIT_ONLY") != nullptr)
         return g_failures == 0 ? 0 : 1;
     PictureChecks(scratch);

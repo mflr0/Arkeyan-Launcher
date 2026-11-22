@@ -873,6 +873,90 @@ namespace collection
         return created;
     }
 
+    uint16_t StarterVariant(const StarterFigure& starter)
+    {
+        if (starter.variant != 0)
+            return starter.variant;
+        const Toy* toy = Catalogue::Get().Find(starter.type);
+        return toy != nullptr ? StandardVariant(*toy) : uint16_t(0);
+    }
+
+    std::vector<std::string> StarterPackNames(const std::string& game)
+    {
+        const Catalogue& catalogue = Catalogue::Get();
+        const Game* info = catalogue.FindGame(game);
+        if (info == nullptr)
+            return {};
+        std::vector<std::string> names;
+        for (const StarterFigure& starter : info->starter)
+        {
+            const Toy* toy = catalogue.Find(starter.type);
+            if (toy == nullptr)
+                continue;
+            std::string name = catalogue.Describe(toy, StarterVariant(starter)).name;
+            const std::string half = " (top)";
+            if (toy->category == Category::SwapTop && name.ends_with(half))
+                name.resize(name.size() - half.size());
+            names.push_back(std::move(name));
+        }
+        return names;
+    }
+
+    bool HasCharacterOf(const std::string& game, const std::vector<Figure>& figures)
+    {
+        const Catalogue& catalogue = Catalogue::Get();
+        const Game* info = catalogue.FindGame(game);
+        if (info == nullptr)
+            return false;
+        // A character is what one of the players' places takes: the seats say it per game (a sidekick sits on the
+        // item's place in the game that brought them).
+        auto playable = [&](Category category) {
+            if (category == Category::Vehicle || category == Category::SwapBottom)
+                return false;
+            return std::any_of(info->seats.begin(), info->seats.end(), [&](const Seat& seat) {
+                return seat.player > 0 &&
+                       std::find(seat.accepts.begin(), seat.accepts.end(), category) != seat.accepts.end();
+            });
+        };
+        return std::any_of(figures.begin(), figures.end(), [&](const Figure& figure) {
+            return figure.toy != nullptr && playable(figure.toy->category) &&
+                   catalogue.Origin(*figure.toy, figure.variant) == info && !UntouchedStarter(figure);
+        });
+    }
+
+    bool OffersStarterPack(const std::string& game, const std::vector<Figure>& figures, bool realPortal)
+    {
+        if (realPortal)
+            return false;
+        const Game* info = Catalogue::Get().FindGame(game);
+        return info != nullptr && !info->starter.empty() && !HasCharacterOf(game, figures);
+    }
+
+    StarterPackResult CreateStarterPack(const std::string& game, const std::vector<Figure>& figures)
+    {
+        const Catalogue& catalogue = Catalogue::Get();
+        const Game* info = catalogue.FindGame(game);
+        if (info == nullptr)
+            return {};
+        StarterPackResult result;
+        for (const StarterFigure& starter : info->starter)
+        {
+            const uint16_t variant = StarterVariant(starter);
+            if (std::any_of(figures.begin(), figures.end(), [&](const Figure& figure) {
+                    return figure.type == starter.type && figure.variant == variant && !UntouchedStarter(figure);
+                }))
+                continue;
+            const Toy* toy = catalogue.Find(starter.type);
+            bool made = false;
+            if (toy != nullptr && toy->category == Category::SwapTop)
+                made = !CreateSwapper(starter.type, MatchingHalf(starter.type), variant).top.empty();
+            else if (toy != nullptr)
+                made = !Create(starter.type, variant).empty();
+            (made ? result.made : result.failed)++;
+        }
+        return result;
+    }
+
     bool WriteStats(const std::string& path, const figures::FigureStats& stats, std::string* error)
     {
         if (GetLock(path).Busy())

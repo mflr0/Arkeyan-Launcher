@@ -503,8 +503,9 @@ namespace launcher_ui
     // The shelf: the filters, the search and the seat being chosen for, cut into the shelf's sections.
     void CollectionPage::Rebuild()
     {
-        std::string key = fmt::format("{}|{}|{}|{}|{}|{}|{}|{}", m_generation, m_search, m_choosing, m_filter.element,
-            m_filter.game, m_filter.category, int(m_filter.sort), m_model.gameId);
+        const bool realPortal = RealPortalInUse();
+        std::string key = fmt::format("{}|{}|{}|{}|{}|{}|{}|{}|{}", m_generation, m_search, m_choosing,
+            m_filter.element, m_filter.game, m_filter.category, int(m_filter.sort), m_model.gameId, realPortal);
         if (key == m_listKey)
             return;
         m_listKey = key;
@@ -512,6 +513,59 @@ namespace launcher_ui
         filter.text = m_search;
         filter.seat = m_choosing;
         m_sections = m_model.Shelf(filter, m_list, &m_hiddenStarters);
+        m_starterBanner = m_model.ShowsStarterBanner(realPortal, m_choosing >= 0);
+        m_starterNames.clear();
+        for (const std::string& name : collection::StarterPackNames(m_model.gameId))
+            m_starterNames += (m_starterNames.empty() ? "" : ", ") + name;
+    }
+
+    bool CollectionPage::RealPortalInUse() const
+    {
+        if (m_app.m_portal.Current().connected)
+            return true;
+        // The Toy Box window: the game says which seats hold a real figure.
+        const collection::Game* game = m_model.Game();
+        if (game == nullptr || !m_model.Live())
+            return false;
+        for (size_t seat = 0; seat < game->seats.size(); seat++)
+            if (m_model.RealSeat(seat))
+                return true;
+        return false;
+    }
+
+    void CollectionPage::CreateStarterPack()
+    {
+        const collection::StarterPackResult result = collection::CreateStarterPack(m_model.gameId, m_model.figures);
+        Reload();
+        if (result.failed > 0)
+            Toast(Tr("Couldn't create the starter pack"), ui::ToastKind::Error);
+        else if (result.made == 0)
+            Toast(Tr("Already in your collection"), ui::ToastKind::Info);
+        else
+            Toast(Tr("The starter pack is in your collection"), ui::ToastKind::Success);
+    }
+
+    void CollectionPage::DrawStarterBanner()
+    {
+        // Whose pack, what its box holds, and the button that creates it.
+        constexpr float TextH = ui::type::Body + ui::space::XXS + ui::type::Caption;
+        const float inner = std::max(TextH, float(ui::height::Normal));
+        ui::BeginCard("##starterpack", ImVec2(0, inner + 2 * ui::space::S), { .padding = ui::space::S });
+        const ImVec2 at = ImGui::GetCursorScreenPos();
+        const float right = at.x + ImGui::GetContentRegionAvail().x;
+        ui::ButtonOptions create;
+        create.kind = ui::ButtonKind::Primary;
+        const float createW = ui::ButtonWidth(Tr("Create starter pack"), create);
+        const float room = right - createW - ui::space::M - at.x, textY = at.y + (inner - TextH) / 2;
+        ImDrawList* draw = ImGui::GetWindowDrawList();
+        PutText(draw, ImVec2(at.x, textY), ui::TextStyle::Body, true, ui::color::Ink,
+            Tf("No {} Skylanders yet", GameName(m_model.gameId.c_str(), GameNameForm::Short)), room);
+        PutText(draw, ImVec2(at.x, textY + ui::type::Body + ui::space::XXS), ui::TextStyle::Caption, false,
+            ui::color::InkSoft, m_starterNames, room);
+        ImGui::SetCursorScreenPos(ImVec2(right - createW, at.y + (inner - ui::height::Normal) / 2));
+        if (ui::Button(Tr("Create starter pack"), create))
+            CreateStarterPack();
+        ui::EndCard();
     }
 
     std::string WithoutHalf(std::string name)
@@ -943,6 +997,8 @@ namespace launcher_ui
         m_app.BeginPageColumn("##collectioncolumn", width);
         DrawHeader(width);
         DrawSeats(width);
+        if (m_starterBanner)
+            DrawStarterBanner();
         DrawBar();
         // The shelf has room round its cards (their focus rings, the choose banner's border).
         const bool pad = ui::Ctx().glyphs != ui::Glyphs::Keyboard;
@@ -1933,33 +1989,8 @@ namespace launcher_ui
                     Tf("Create the {} starter pack", GameName(m_model.gameId.c_str(), GameNameForm::Short));
                 ImGui::SetCursorPosX(ImGui::GetCursorPosX() +
                                      (ImGui::GetContentRegionAvail().x - ui::ButtonWidth(label.c_str(), starters)) / 2);
-                if (ui::Button(label.c_str(), starters))
-                {
-                    // The figures in the box of each game's starter pack.
-                    if (m_model.gameId == "giants")
-                    {
-                        collection::Create(112); // Tree Rex
-                        collection::Create(100); // Jet-Vac
-                        collection::Create(32, 0x1801); // Series 2 Cynder
-                    }
-                    else if (m_model.gameId == "swapforce")
-                    {
-                        collection::CreateSwapper(2015, 1015); // Wash Buckler
-                        collection::CreateSwapper(2004, 1004); // Blast Zone
-                        collection::Create(26, 0x2805); // Ninja Stealth Elf
-                    }
-                    else if (m_model.gameId == "trapteam")
-                    {
-                        collection::Create(462); // Snap Shot
-                        collection::Create(476); // Food Fight
-                        collection::Create(211, 0x3001); // a Water Trap
-                        collection::Create(217, 0x3003); // a Life Trap
-                    }
-                    else
-                        for (uint16_t type : { 16, 14, 19 }) // Spyro, Gill Grunt, Trigger Happy
-                            collection::Create(type);
-                    Reload();
-                }
+                if (!m_starterNames.empty() && ui::Button(label.c_str(), starters))
+                    CreateStarterPack();
             }
             else if (ui::EmptyState(ui::Icon::Search,
                          m_choosing >= 0 && !filtered ? Tr("Nothing for this seat yet") : Tr("No figure matches"),

@@ -111,6 +111,14 @@ namespace collection
         int vault = 0; // its place in the game's villain vault
     };
 
+    // One figure in the box of a game's starter pack: a toy and its variant (0: the toy's standard one). A swapper is
+    // listed by its top.
+    struct StarterFigure
+    {
+        uint16_t type = 0;
+        uint16_t variant = 0;
+    };
+
     struct Game
     {
         std::string id, name;
@@ -118,6 +126,8 @@ namespace collection
         std::vector<uint16_t> accepts; // toy types the game reads, in the game's order
         std::vector<std::string> acceptsGames; // ...or every toy that first came with these games
         std::vector<uint16_t> rejects; // platform exclusions, overriding accepts and acceptsGames
+        // The figures in the box of the game's starter pack. JSON: "starter", "112" or "32:0x1801", as `portraits`.
+        std::vector<StarterFigure> starter;
         std::map<uint16_t, std::string> names; // the game's internal character names (SSA: portraits)
         std::map<uint16_t, std::string> images; // other toys' pictures among the game's UI images
         // One picture per toy family among the game's UI images (SSA's magic item, location and sidekick icons): the
