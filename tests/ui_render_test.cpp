@@ -179,7 +179,7 @@ int UiRenderChecks(const std::filesystem::path& scratch)
             };
             expect(count('T') == 2 && count('B') == 0, "the tab caps name LT and RT, the buttons that change tab");
         });
-        const char* const game[] = { "Video", "Keyboard", "Controller", "Sound", "Language", "Disc", "Saves", "Game" };
+        const char* const game[] = { "Picture", "Controls", "Sound and language", "Manage" };
         const char* const launcher[] = { "Controls", "Launcher", "Support", "About", "Profiles" };
         for (const auto& lang : i18n::Languages())
         {
@@ -223,6 +223,27 @@ int UiRenderChecks(const std::filesystem::path& scratch)
             expect(coloured(draw, from), "a progress bar wears the game's colour");
         });
         ui::Ctx().accent = savedAccent;
+        // The one fold: what it holds shows only open, lined up under the title; a summary or an action keeps the row's height.
+        drawTabs(plain, ui::Glyphs::Keyboard, [&](ImDrawList*, int) {
+            bool closed = false, opened = true;
+            const float left = ImGui::GetCursorScreenPos().x;
+            float at = ImGui::GetCursorScreenPos().y;
+            expect(!ui::BeginDisclosure("##closed", "One", &closed), "a closed disclosure draws nothing under it");
+            const float bare = ImGui::GetCursorScreenPos().y - at;
+            ui::DisclosureOptions full;
+            full.summary = "Six";
+            full.action = "One";
+            at = ImGui::GetCursorScreenPos().y;
+            expect(!ui::BeginDisclosure("##full", "One", &closed, full), "a closed row with an action stays closed");
+            expect(ImGui::GetCursorScreenPos().y - at == bare, "every disclosure row is as tall");
+            if (ui::BeginDisclosure("##open", "One", &opened))
+            {
+                expect(ImGui::GetCursorScreenPos().x > left, "what is unfolded lines up under the title");
+                ui::EndDisclosure();
+            }
+            else
+                expect(false, "an open disclosure draws what is under it");
+        });
         // The sidebar's badges are their games' colours, Imaginators the deep blue of its card beside Spyro's sky blue.
         for (const LauncherGameEntry& entry : LauncherGameCatalog({}))
         {

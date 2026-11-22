@@ -1,8 +1,8 @@
-// A game's own settings (the Settings button on its Play page), what a player looks for first on the left: Video (display, image
-// quality, textures), Keyboard, Controller, Sound, Language, then the game's files: Disc, Saves and Game (shortcut, folders,
-// reinstall, delete data, uninstall). Arkeyan Launcher's own settings and what all games share (the controller, the global
-// keys) are in the gear's Settings (launcher_ui.cpp, controls_page.cpp). The video keys are the game's own copy in
-// [<game>.video] (game_settings.h); its Keyboard and Controller tabs are in controls_page.cpp (game_keys.h).
+// A game's own settings (the Settings button on its Play page), in four tabs: Picture, Controls (Keyboard or Controller),
+// Sound and language, and Manage (difficulty, disc, saves, shortcut, portable copy, folders, repair or uninstall). Arkeyan
+// Launcher's own settings and what all games share (the controller, the global keys) are in the gear's Settings
+// (launcher_ui.cpp, controls_page.cpp). The video keys are the game's own copy in [<game>.video] (game_settings.h); the
+// keyboard and controller pages are in controls_page.cpp (game_keys.h).
 #include "launcher/ui/launcher_app.h"
 #include "launcher/env.h"
 #include "launcher/shortcut.h"
@@ -37,6 +37,11 @@ namespace launcher_ui
             constexpr const char* Uninstall = N_("Remove game");
             constexpr const char* UninstallHint = N_("Hold to delete the built game. Saves are kept.");
             constexpr const char* OpenFigures = N_("Figures");
+        }
+
+        std::string DiscFileName(const std::string& path)
+        {
+            return LauncherMiddleEllipsis(datadir::Text(datadir::FromText(path).filename()), 60);
         }
 
         // "12.3 GB" for what a button would free, nothing for less than a megabyte of noise.
@@ -75,30 +80,60 @@ namespace launcher_ui
         const char* title = GameName(m_s->game.id, GameNameForm::Full);
         BeginSettingsPage("##gamesettingscolumn", title != nullptr ? title : m_s->game.name, true);
 
-        static const char* const Tabs[] = { N_("Video"), N_("Keyboard"), N_("Controller"), N_("Sound"), N_("Language"),
-            N_("Disc"), N_("Saves"), N_("Game") };
+        static const char* const Tabs[] = { N_("Picture"), N_("Controls"), N_("Sound and language"), N_("Manage") };
         int tab = int(m_gameTab);
         DrawTabBar(Tabs, int(std::size(Tabs)), &tab);
         m_gameTab = GameTab(tab);
         BeginCard("##gamesettings", ImVec2(0, 0), ImGuiChildFlags_AutoResizeY);
         switch (m_gameTab)
         {
-        case GameTab::Video: DrawGameVideo(); break;
-        case GameTab::Keyboard: DrawGameKeyboard(); break;
-        case GameTab::Controller: DrawGameController(); break;
-        case GameTab::Sound: DrawGameSound(); break;
-        case GameTab::Language: DrawGameLanguage(); break;
-        case GameTab::Disc: DrawGameDisc(); break;
-        case GameTab::Saves: DrawSaveBackups(); break;
-        case GameTab::Game: DrawGameTab(); break;
+        case GameTab::Picture: DrawGameVideo(); break;
+        case GameTab::Controls: DrawGameControls(); break;
+        case GameTab::Sound:
+            ui::SectionHeader(Tr("Sound"), nullptr, false);
+            DrawGameSound();
+            ui::SectionHeader(Tr("Language"));
+            DrawGameLanguage();
+            break;
+        case GameTab::Manage: DrawGameManage(); break;
         }
         EndCard();
         if (m_testHdTex)
-            ImGui::SetScrollHereY(1.0f); // the texture pack screenshots show the bottom of the Video tab
+            ImGui::SetScrollHereY(1.0f); // the texture pack screenshots show the bottom of the Picture tab
         EndSettingsPage();
     }
 
-    // ---- Video, sound and language --------------------------------------------------------------------------------------
+    // Where a link lands: the tab, with its section selected or unfolded.
+    void App::ShowGameTab(GameTab tab, GameSection section)
+    {
+        m_gameTab = tab;
+        if (tab == GameTab::Controls && section != GameSection::None)
+            m_gameControls = section;
+        if (tab == GameTab::Manage)
+        {
+            m_gameManage = section;
+            m_gameSectionScroll = section == GameSection::None ? 0 : 2;
+        }
+        m_testFocusView = -1; // two links can share a tab
+    }
+
+    void App::DrawGameControls()
+    {
+        const char* const pages[] = { Tr("Keyboard"), Tr("Controller") };
+        int page = m_gameControls == GameSection::Controller ? 1 : 0;
+        if (ui::Segmented("##controlspage", pages, &page))
+        {
+            m_gameControls = page == 1 ? GameSection::Controller : GameSection::Keyboard;
+            m_capturing = nullptr; // a key waited for on the page that is left
+        }
+        ImGui::Dummy(ImVec2(0, ui::space::XS));
+        if (page == 1)
+            DrawGameController();
+        else
+            DrawGameKeyboard();
+    }
+
+    // ---- Picture, sound and language --------------------------------------------------------------------------------------
 
     // window_size (game_settings.h): Last used (no key), four sizes, or Custom's own width and height.
     void App::DrawWindowSize(const char* video)
@@ -336,25 +371,11 @@ namespace launcher_ui
             ui::EndSettings();
         }
 
-        // The game's HD textures (made from the disc). The player's own packs, their folder and the dump that makes them are
-        // greyed and off until custom packs come (0.9.4): PLAY passes texture_packs=0 and texture_dump=0 (ApplyGameVideo).
+        // The game's HD textures (made from the disc). PLAY still passes texture_packs=0 and texture_dump=0 (ApplyGameVideo).
         ui::SectionHeader(Tr("Textures"));
         if (ui::BeginSettings("##textures"))
         {
             DrawHdTextures();
-            auto later = [&](const char* label, const char* hint, const char* id) {
-                const std::string text = std::string(Tr(hint)) + "\n" + Tr("Coming later");
-                ui::SettingRow(Tr(label), text.c_str());
-                bool off = false;
-                ui::Toggle(id, &off, true);
-            };
-            later(N_("Custom texture packs"), N_("Replaces the game's textures with your pack."), "##texturepacks");
-            ui::SettingRow(Tr("Custom packs folder"), nullptr);
-            ui::ButtonOptions folder;
-            folder.icon = ui::Icon::Folder;
-            folder.disabled = true;
-            ui::Button(Tr("Show in folder"), folder);
-            later(N_("Dump textures"), N_("For pack makers: saves the textures as DDS files."), "##texturedump");
             ui::EndSettings();
         }
         DrawHdStatus();
@@ -431,14 +452,11 @@ namespace launcher_ui
     void App::DrawGameDisc()
     {
         ui::SectionHeader(Tr("Disc image"), nullptr, false);
-        auto filename = [](const std::string& path) {
-            return LauncherMiddleEllipsis(datadir::Text(datadir::FromText(path).filename()), 60);
-        };
         if (m_s->fromCopy)
         {
             // The game plays from its copied game data: the image is not used, so its buttons are not offered.
             const std::string iso = SettingGet(m_config, m_s->game.id, "iso");
-            ui::Text(ui::TextStyle::Body, iso.empty() ? Tr("None chosen.") : filename(iso).c_str());
+            ui::Text(ui::TextStyle::Body, iso.empty() ? Tr("None chosen.") : DiscFileName(iso).c_str());
             ui::Text(ui::TextStyle::Caption, Tr("Not needed: the game plays from its copied data."), ui::color::Dim);
             ImGui::Dummy(ImVec2(0, ui::space::XXS));
             DrawDiscCheck(); // of the copy
@@ -446,8 +464,8 @@ namespace launcher_ui
         }
         else
         {
-            ui::Text(
-                ui::TextStyle::Body, m_s->discPath.empty() ? Tr("None chosen yet.") : filename(m_s->discPath).c_str());
+            ui::Text(ui::TextStyle::Body,
+                m_s->discPath.empty() ? Tr("None chosen yet.") : DiscFileName(m_s->discPath).c_str());
             const GameInfo* other = nullptr;
             switch (m_s->disc)
             {
@@ -472,14 +490,6 @@ namespace launcher_ui
                     UseDiscForOtherGame();
                 ImGui::SameLine(0, ui::space::S);
             }
-            ui::ButtonOptions choose;
-            choose.kind = (other != nullptr || !m_s->discPath.empty()) && !DiscDamaged(*m_s)
-                              ? ui::ButtonKind::Secondary
-                              : ui::ButtonKind::Primary; // Primary: the disc to choose (again)
-            choose.disabled = busy;
-            if (ui::Button(m_s->discPath.empty() ? Tr("Choose...") : Tr("Change..."), choose))
-                Browse();
-            ImGui::SameLine(0, ui::space::S);
             ui::ButtonOptions remove;
             remove.disabled = busy || m_s->discPath.empty();
             if (ui::Button(Tr("Remove"), remove))
@@ -655,41 +665,55 @@ namespace launcher_ui
                 StartPortableExport(datadir::FromText(std::exchange(g_portableFolder, std::string())));
         }
         const bool built = !m_s->installed.runtime.empty(), ready = built && m_s->disc == DiscState::Ready;
-        ui::SectionHeader(Tr("Portable copy"),
-            !built   ? Tr("Install the game first.")
-            : !ready ? Tr("Choose the disc image first.")
-                     : Tr("The game in one file: it plays without the launcher or the disc image."));
-        auto note = [](const std::string& text) { ui::Text(ui::TextStyle::Caption, text.c_str(), ui::color::Dim); };
-        if (m_s->portableJob.Running())
+        const bool running = m_s->portableJob.Running();
+        std::string hint = !built   ? Tr("Install the game first.")
+                           : !ready ? Tr("Choose the disc image first.")
+                                    : Tr("The game in one file: it plays without the launcher or the disc image.");
+        if (running)
         {
             const uint64_t total = m_s->portableJob.Total();
-            note(total == 0
-                     ? Tr("Exporting...")
-                     : Tf("Exporting: {} of {}", ui::FormatSize(m_s->portableJob.Bytes()), ui::FormatSize(total)));
+            hint = total == 0
+                       ? std::string(Tr("Exporting..."))
+                       : Tf("Exporting: {} of {}", ui::FormatSize(m_s->portableJob.Bytes()), ui::FormatSize(total));
+        }
+        else if (!m_s->portableMessage.empty())
+            hint = m_s->portableMessage;
+        ui::SettingRow(Tr("Portable copy"), hint.c_str());
+        if (running)
+        {
             ui::ProgressBar(m_s->portableJob.Fraction(), -1, true);
-            ImGui::Dummy(ImVec2(0, ui::space::XXS));
-            if (ui::Button(Tr("Stop"), { .icon = ui::Icon::Stop }))
+            ui::ButtonOptions stop;
+            stop.icon = ui::Icon::Stop;
+            ui::AlignRight(ui::ButtonWidth(Tr("Stop"), stop));
+            if (ui::Button(Tr("Stop"), stop))
                 m_s->portableJob.Cancel();
             return;
         }
         ui::ButtonOptions exportOptions;
         exportOptions.icon = ui::Icon::ArrowUp; // out of the launcher, as every export
         exportOptions.disabled = !ready || Installing();
-        if (ui::Button(Tf("Export for {}", SystemName()).c_str(), exportOptions))
+        const std::string label = Tf("Export for {}", SystemName());
+        const bool saved = !m_s->portablePath.empty();
+        ui::AlignRight(ui::ButtonWidth(label.c_str(), exportOptions) + (saved ? ui::space::S + ui::height::Normal : 0));
+        if (ui::Button(label.c_str(), exportOptions))
         {
             m_portableAsk = true;
             OpenPortableExport();
         }
-        if (!m_s->portablePath.empty())
+        if (saved)
         {
             ImGui::SameLine(0, ui::space::S);
-            ui::ButtonOptions folder;
-            folder.icon = ui::Icon::Folder;
-            if (ui::Button(Tr("Show in folder"), folder) && !OpenFolder(m_s->portablePath.parent_path()))
+            if (ui::IconButton("##portablefolder", ui::Icon::Folder, Tr("Show in folder")) &&
+                !OpenFolder(m_s->portablePath.parent_path()))
                 Toast(Tr("Couldn't open the folder"), ui::ToastKind::Error);
         }
-        if (!m_s->portableMessage.empty())
-            note(m_s->portableMessage);
+    }
+
+    void App::DrawPortableDialog()
+    {
+        const bool ready = !m_s->installed.runtime.empty() && m_s->disc == DiscState::Ready;
+        if (m_s->portableJob.Running())
+            return;
 
         // What the copy is, before anything is written: only for a game that is installed and has its disc (not "Up to 0 bytes").
         if (!ready)
@@ -822,69 +846,166 @@ namespace launcher_ui
             result.ok ? ui::ToastKind::Success : ui::ToastKind::Error);
     }
 
-    void App::DrawGameTab()
+    void App::DrawGameManage()
+    {
+        if (!m_s->saveBackupsLoaded)
+            RefreshSaveBackups();
+        const GameFolders folders = FoldersOf(m_s->game.id);
+        // One set of IDs for the rows: the tables split around the unfolded one, and the focus must stay on its chevron.
+        const ImGuiID rows = ImGui::GetID("##managerows");
+        ui::ButtonOptions folder;
+        folder.icon = ui::Icon::Folder;
+        const char* const files = Tr("Game files");
+        const char* const figures = Tr(strings::OpenFigures);
+        const float foldersWidth = ui::ButtonWidth(files, folder) + ui::space::S + ui::ButtonWidth(figures, folder);
+        const float column = std::max(float(ui::height::SettingControl), foldersWidth);
+
+        auto chevron = [&](const char* id, GameSection section) {
+            const bool open = m_gameManage == section;
+            if (ui::IconButton(id, open ? ui::Icon::ChevronDown : ui::Icon::ChevronRight, Tr("Details")))
+            {
+                m_gameManage = open ? GameSection::None : section;
+                m_gameSectionScroll = 0;
+            }
+            if (open && m_gameSectionScroll > 0)
+            {
+                m_gameSectionScroll--;
+                ImGui::ScrollToItem(ImGuiScrollFlags_AlwaysCenterY);
+            }
+        };
+        bool table = ui::BeginSettings("##manage", column);
+        // The content of an unfolded row takes the card's whole width: the table stops for it.
+        auto unfolded = [&](GameSection section, auto&& draw, const char* next) {
+            if (m_gameManage != section)
+                return;
+            if (table)
+                ui::EndSettings();
+            ImGui::Dummy(ImVec2(0, ui::space::XS));
+            draw();
+            ImGui::Dummy(ImVec2(0, ui::space::S));
+            table = next != nullptr && ui::BeginSettings(next, column);
+        };
+
+        // The games whose Nightmare the game locks until the story is beaten: offered at once, the save is not changed
+        // ([<game>] nightmare_from_start).
+        if (table && NightmareFromStartOffered(m_s->game.id))
+        {
+            ui::SettingRow(Tr("Nightmare from the start"), Tr("Before you beat the game. Your save is untouched."),
+                Tr("Difficulty"));
+            bool value = ParseBool(SettingGet(m_config, m_s->game.id, "nightmare_from_start", "0"));
+            if (ui::Toggle("##nightmarefromstart", &value))
+                Set(m_s->game.id, "nightmare_from_start", value ? "1" : "0");
+        }
+
+        if (table)
+        {
+            std::string state;
+            switch (m_s->disc)
+            {
+            case DiscState::None: state = Tr("None chosen yet."); break;
+            case DiscState::Verifying: state = m_s->verify.Stage() + "..."; break;
+            case DiscState::Failed: state = SlotStatus(m_s).text; break;
+            case DiscState::Ready:
+                state = DiscDamaged(*m_s) ? std::string(Tr("Damaged copy"))
+                        : m_s->fromCopy   ? std::string(Tr("No disc image needed."))
+                                          : DiscFileName(m_s->discPath);
+                break;
+            }
+            ui::SettingRow(Tr("Disc"), state.c_str());
+            ImGui::PushOverrideID(rows);
+            ui::ButtonOptions choose;
+            // Primary: the disc to choose (again).
+            choose.kind =
+                m_s->discPath.empty() || DiscDamaged(*m_s) ? ui::ButtonKind::Primary : ui::ButtonKind::Secondary;
+            choose.disabled = Installing() || m_s->disc == DiscState::Verifying || m_s->copyJob.Running();
+            const char* label = m_s->discPath.empty() ? Tr("Choose...") : Tr("Change...");
+            ui::AlignRight(ui::height::Normal + (m_s->fromCopy ? 0 : ui::ButtonWidth(label, choose) + ui::space::S));
+            if (!m_s->fromCopy) // the image is not used then
+            {
+                if (ui::Button(label, choose))
+                    Browse();
+                ImGui::SameLine(0, ui::space::S);
+            }
+            chevron("##disc", GameSection::Disc);
+            ImGui::PopID();
+        }
+        unfolded(GameSection::Disc, [&] { DrawGameDisc(); }, "##manageafterdisc");
+
+        if (table)
+        {
+            const size_t count = m_s->saveBackups.size();
+            const std::string backups = count == 0   ? std::string(Tr("No backups yet."))
+                                        : count == 1 ? Tf("{} backup", count)
+                                                     : Tf("{} backups", count);
+            ui::SettingRow(Tr("Saves"), backups.c_str());
+            ImGui::PushOverrideID(rows);
+            ui::AlignRight(ui::height::Normal);
+            chevron("##saves", GameSection::Saves);
+            ImGui::PopID();
+        }
+        unfolded(GameSection::Saves, [&] { DrawSaveBackups(); }, "##manageaftersaves");
+
+        if (table)
+        {
+            ImGui::PushOverrideID(rows);
+            const bool disc = m_s->disc == DiscState::Ready;
+            ui::SettingRow(Tr("Desktop shortcut"), disc ? nullptr : Tr("Choose the disc image first."));
+            ui::ButtonOptions shortcut;
+            shortcut.disabled = !disc;
+            if (ui::Button(Tr("Create"), shortcut))
+                CreateShortcut();
+
+            DrawPortableExport();
+
+            ui::SettingRow(Tr("Folders"));
+            ui::AlignRight(foldersWidth);
+            if (ui::Button(files, folder))
+            {
+                std::error_code error;
+                std::filesystem::create_directories(folders.game, error);
+                if (!OpenFolder(folders.game))
+                    Toast(Tr("Couldn't open the folder"), ui::ToastKind::Error);
+            }
+            ImGui::SameLine(0, ui::space::S);
+            if (ui::Button(figures, folder))
+            {
+                SDL_CreateDirectory(m_s->collection->Folder().c_str());
+                std::string path = m_s->collection->Folder();
+                OpenFolder(std::filesystem::path(std::u8string(path.begin(), path.end())));
+            }
+
+            ui::SettingRow(Tr("Repair or uninstall"));
+            ui::AlignRight(ui::height::Normal);
+            chevron("##repair", GameSection::Repair);
+            ImGui::PopID();
+        }
+        unfolded(GameSection::Repair, [&] { DrawGameRepair(); }, nullptr);
+        if (table)
+            ui::EndSettings();
+        DrawPortableDialog();
+    }
+
+    void App::DrawGameRepair()
     {
         if (!m_s->dataSizesLoaded)
             RefreshDataSizes();
         const GameFolders folders = FoldersOf(m_s->game.id);
         const bool busy = Installing() || m_s->hdJob.Running() || m_s->portableJob.Running(),
                    running = GameIsRunning(folders) || m_session.Running() == m_s->game.id;
-        auto hold = [](const char* tooltip, bool disabled = false) {
+        // Red only where saves or the game are lost.
+        auto hold = [](ui::ButtonKind kind, const char* tooltip, bool disabled) {
             ui::ButtonOptions options;
-            options.kind = ui::ButtonKind::Danger;
+            options.kind = kind;
             options.hold = true;
             options.tooltip = tooltip;
             options.disabled = disabled;
             return options;
         };
 
-        // The games whose Nightmare the game locks until the story is beaten: offered at once, the save is not changed
-        // ([<game>] nightmare_from_start).
-        const bool lockedNightmare = NightmareFromStartOffered(m_s->game.id);
-        if (lockedNightmare)
-        {
-            ui::SectionHeader(Tr("Difficulty"), nullptr, false);
-            if (ui::BeginSettings("##nightmare"))
-            {
-                ui::SettingRow(Tr("Nightmare from the start"), Tr("Before you beat the game. Your save is untouched."));
-                bool value = ParseBool(SettingGet(m_config, m_s->game.id, "nightmare_from_start", "0"));
-                if (ui::Toggle("##nightmarefromstart", &value))
-                    Set(m_s->game.id, "nightmare_from_start", value ? "1" : "0");
-                ui::EndSettings();
-            }
-        }
-
-        ui::SectionHeader(Tr("Desktop shortcut"),
-            m_s->disc != DiscState::Ready ? Tr("Choose the disc image first.") : nullptr, lockedNightmare);
-        ui::ButtonOptions shortcut;
-        shortcut.disabled = m_s->disc != DiscState::Ready;
-        if (ui::Button(Tr("Create"), shortcut))
-            CreateShortcut();
-
-        DrawPortableExport();
-
-        ui::SectionHeader(Tr("Folders"));
-        ui::ButtonOptions folder;
-        folder.icon = ui::Icon::Folder;
-        if (ui::Button(Tr("Game files"), folder))
-        {
-            std::error_code error;
-            std::filesystem::create_directories(folders.game, error);
-            if (!OpenFolder(folders.game))
-                Toast(Tr("Couldn't open the folder"), ui::ToastKind::Error);
-        }
-        ImGui::SameLine(0, ui::space::S);
-        if (ui::Button(Tr(strings::OpenFigures), folder))
-        {
-            SDL_CreateDirectory(m_s->collection->Folder().c_str());
-            std::string figures = m_s->collection->Folder();
-            OpenFolder(std::filesystem::path(std::u8string(figures.begin(), figures.end())));
-        }
-
         ui::SectionHeader(
-            Tr("Game"), !m_s->installed.runtime.empty() ? Tr("Built for this disc.") : Tr("Not built yet."));
-        if (ui::Button(Tr(strings::Reinstall),
-                hold(Tr(strings::ReinstallHint), busy || running || m_s->installed.runtime.empty())) &&
+            Tr("Game"), !m_s->installed.runtime.empty() ? Tr("Built for this disc.") : Tr("Not built yet."), false);
+        if (ui::Button(Tr(strings::Reinstall), hold(ui::ButtonKind::Secondary, Tr(strings::ReinstallHint),
+                                                   busy || running || m_s->installed.runtime.empty())) &&
             !Installing())
             StartInstall();
 
@@ -899,18 +1020,18 @@ namespace launcher_ui
         ui::SectionHeader(Tr("Clean up"), running             ? Tr("The game is running: quit it first.")
                                           : cleanHelp.empty() ? nullptr
                                                               : cleanHelp.c_str());
-        if (ui::Button(
-                Tr("Clear caches"), hold(Tr(strings::ClearCachesHint), busy || running || !built || caches == 0)))
+        if (ui::Button(Tr("Clear caches"), hold(ui::ButtonKind::Secondary, Tr(strings::ClearCachesHint),
+                                               busy || running || !built || caches == 0)))
             RunDataAction(ClearGameCaches(folders), N_("Caches cleared"));
         ImGui::SameLine(0, ui::space::S);
-        if (ui::Button(
-                Tr(strings::DeleteData), hold(Tr(strings::DeleteDataHint), busy || running || !built || saves == 0)))
+        if (ui::Button(Tr(strings::DeleteData),
+                hold(ui::ButtonKind::Danger, Tr(strings::DeleteDataHint), busy || running || !built || saves == 0)))
             RunDataAction(DeleteGameData(folders), N_("Saves and data deleted"));
 
         ui::SectionHeader(
             Tr("Uninstall"), Tf("Frees {}. Saves and settings are kept.", Freed(m_s->dataSizes.installed)).c_str());
-        if (ui::Button(Tr(strings::Uninstall),
-                hold(Tr(strings::UninstallHint), busy || running || m_s->installed.runtime.empty())))
+        if (ui::Button(Tr(strings::Uninstall), hold(ui::ButtonKind::Danger, Tr(strings::UninstallHint),
+                                                   busy || running || m_s->installed.runtime.empty())))
             RunUninstall(UninstallGame(folders, m_config));
     }
 }

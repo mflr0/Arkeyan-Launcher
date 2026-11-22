@@ -232,6 +232,8 @@ std::string launcher_report::Redact(const std::string& text, const Identity& ide
         AddPathRules(rules, identity.isoFolder, "<iso folder>");
     if (!identity.gamesFolder.empty()) // a drive's name often is the player's
         AddPathRules(rules, identity.gamesFolder, "<games folder>");
+    for (const std::string& folder : identity.otherFolders)
+        AddPathRules(rules, folder, "<folder>");
 
     if (!identity.homeFolder.empty())
         AddPathRules(rules, identity.homeFolder, "~");
@@ -347,7 +349,7 @@ std::string launcher_report::BuildReport(const Sources& sources)
     Section(report, "launcher.ini", sources.settingsFile);
     Section(report, "migration.log", sources.logFolder / "migration.log");
     // One copy of the last run (the game's own log and the launcher's capture hold the same lines), then the run before.
-    const GameLog lastRun = !sources.lastRun.file.empty()
+    const GameLog lastRun = !sources.lastRun.file.empty() || !sources.lastRun.game.empty()
                                 ? sources.lastRun
                                 : NewestGameLog(sources.logFolder / CaptureLogName,
                                       { { std::string(), runtime_names::ReadLog(sources.runtimeFolder) } });
@@ -375,6 +377,26 @@ std::string launcher_report::BuildReport(const Sources& sources)
     identity.userName = sources.userName;
     identity.computerName = sources.computerName;
     identity.homeFolder = sources.homeFolder;
+    // launcher.ini goes in whole: the folders it names (every game's disc, the Games folder) may be the player's name.
+    std::istringstream settings(ReadFile(sources.settingsFile));
+    for (std::string line; std::getline(settings, line);)
+    {
+        if (!line.empty() && line.back() == '\r')
+            line.pop_back();
+        const size_t equals = line.find('=');
+        if (equals == std::string::npos)
+            continue;
+        std::string key = line.substr(0, equals), folder = line.substr(equals + 1);
+        key.erase(key.find_last_not_of(" \t") + 1);
+        folder.erase(0, folder.find_first_not_of(" \t"));
+        const size_t slash = folder.find_last_of("/\\"); // both spellings: a report can quote another system's path
+        if (slash == std::string::npos || (key != "iso" && key != "games"))
+            continue;
+        if (key == "iso")
+            folder.erase(slash);
+        if (folder.size() > 3) // never a bare drive: "D:" would be replaced all over the report
+            identity.otherFolders.push_back(folder);
+    }
     if (!sources.iso.empty())
     {
         fs::path folder = fs::path(std::u8string(sources.iso.begin(), sources.iso.end())).parent_path();

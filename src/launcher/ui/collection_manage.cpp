@@ -530,6 +530,7 @@ namespace launcher_ui
         m_details = false;
         m_confirm.clear();
         m_choosing = -1;
+        m_searchChoosing = m_allGames = false;
         m_filter = ShelfFilter{};
         m_search[0] = 0;
         m_addSearch[0] = 0;

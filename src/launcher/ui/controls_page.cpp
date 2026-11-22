@@ -1,7 +1,7 @@
 // The keys, mouse and pad: a game's Keyboard and Controller tabs (its Settings) and, in the gear's Settings > Controls, the
 // global layout every game inherits (game_keys.h): "All games" (the moves, Back, Pause: a Keyboard and a Controller
 // column, stored in [input]), the mouse switch, the rumble and the Toy Box's keys. A game's own actions are set on its
-// tabs only. On a game's tab a value the game does not set itself is dimmed; one it sets has a reset arrow
+// tabs only. On a game's tab every value reads the same (dimmed read as disabled); one it sets has a dot and a reset arrow
 // (docs/settings.md, "The global layout and each game's keys").
 #include "launcher/ui/launcher_app.h"
 #include <fmt/format.h>
@@ -15,9 +15,8 @@ namespace launcher_ui
             constexpr const char* ResetKeys = N_("Reset to defaults");
             constexpr const char* ResetKeysHint = N_("Hold to reset every key of this game.");
             constexpr const char* ResetPadHint = N_("Hold to reset every button of this game.");
-            constexpr const char* UseGlobal = N_("Use the global setting");
-            constexpr const char* UseDefault = N_("Use the default");
-            constexpr const char* Dimmed = N_("Dimmed values follow Launcher settings.");
+            constexpr const char* UseCommon = N_("Back to the common setting");
+            constexpr const char* DotLegend = N_("A dot marks what was changed for this game.");
             constexpr const char* GlobalIntro = N_("Games use these unless their own settings change them.");
             constexpr const char* Buttons = N_("Buttons");
             constexpr const char* StatsInfo = N_("Stats / Info"); // Back: each game names it its own way
@@ -32,10 +31,39 @@ namespace launcher_ui
 
         constexpr const char* Dash = "\xE2\x80\x94";
 
-        // The reset arrow's words: a shared row goes back to the global layout, a game's own row to its default.
-        const char* ResetTip(bool own, bool shared)
+        // Room left of a game's rows for their dots, so a label does not move when its value changes.
+        constexpr float DotGutter = ui::space::M;
+
+        // The reset arrow's words.
+        const char* ResetTip(bool own) { return own ? Tr(strings::UseCommon) : nullptr; }
+
+        // The dot of a value set for this game, in the gutter before `x`.
+        void OwnDot(float x, float middle)
         {
-            return own ? Tr(shared ? strings::UseGlobal : strings::UseDefault) : nullptr;
+            const ImVec2 at = ImGui::GetWindowPos(), size = ImGui::GetWindowSize();
+            ImDrawList* draw = ImGui::GetWindowDrawList();
+            draw->PushClipRect(at, ImVec2(at.x + size.x, at.y + size.y)); // a table clips at its labels' edge
+            draw->AddCircleFilled(
+                ImVec2(x - DotGutter / 2, std::round(middle)), ui::space::XXS * 0.75f, ui::Col(ui::Ctx().accent));
+            draw->PopClipRect();
+        }
+
+        // Right after SettingRow, before the row's control (`height`).
+        void MarkOwnRow(bool own, float height = ui::height::Normal)
+        {
+            if (!own)
+                return;
+            ImGui::TableSetColumnIndex(0);
+            const ImVec2 at = ImGui::GetCursorScreenPos();
+            OwnDot(at.x, at.y + height / 2);
+            ImGui::TableSetColumnIndex(1);
+        }
+
+        void DrawDotLegend()
+        {
+            const ImVec2 at = ImGui::GetCursorScreenPos();
+            OwnDot(at.x, at.y + ui::CapMiddle(ui::TextStyle::Caption));
+            ui::Text(ui::TextStyle::Caption, Tr(strings::DotLegend), ui::color::Dim);
         }
 
         // A key cap on the control column's right edge, the reset arrow before it.
@@ -79,10 +107,9 @@ namespace launcher_ui
         }
 
         // A select filling the control column, the reset arrow before it. True when the select is open.
-        bool SelectControl(const char* id, const char* preview, bool inherited, const char* resetTip, bool* reset)
+        bool SelectControl(const char* id, const char* preview, const char* resetTip, bool* reset)
         {
             ui::SelectOptions options;
-            options.inherited = inherited;
             if (resetTip != nullptr)
             {
                 const float avail = ImGui::GetContentRegionAvail().x;
@@ -157,7 +184,6 @@ namespace launcher_ui
             ui::KeyButtonOptions options;
             options.capturing = m_capturing == &key && m_captureGame == game;
             options.conflict = GameKeyConflict(m_config, game, key);
-            options.inherited = !GameKeyOwn(m_config, game, key);
             return options;
         };
         auto keyCap = [&](const GameKey& key) {
@@ -214,7 +240,9 @@ namespace launcher_ui
             bool own = false;
             for (const GameKey* key : four)
                 own = own || GameKeyOwn(m_config, game, *key);
-            if (const char* tip = ResetTip(own, SharedAction(cross.up->action)))
+            if (own)
+                OwnDot(x, origin.y + ui::CapMiddle(ui::TextStyle::Body, true));
+            if (const char* tip = ResetTip(own))
             {
                 ImGui::SetCursorScreenPos(ImVec2(noteEnd + ui::space::XS,
                     std::round(origin.y + ui::CapMiddle(ui::TextStyle::Body, true) - ui::height::Small / 2)));
@@ -259,10 +287,8 @@ namespace launcher_ui
         ui::KeyButtonOptions options;
         options.capturing = m_capturing == &key && m_captureGame == game;
         options.conflict = global ? GlobalKeyConflict(m_config, key) : GameKeyConflict(m_config, game, key);
-        options.inherited = !global && !own;
         options.tooltip = options.conflict ? Tr("This key is used by another action") : purpose.c_str();
-        switch (KeyCapControl(
-            key.action, shown.c_str(), options, global ? nullptr : ResetTip(own, SharedAction(key.action))))
+        switch (KeyCapControl(key.action, shown.c_str(), options, global ? nullptr : ResetTip(own)))
         {
         case Hit::Pressed:
             m_toyboxPadCapturing = nullptr;
@@ -296,6 +322,7 @@ namespace launcher_ui
                 continue;
             const std::string pad = "(" + PadButtonName(key, family) + ")";
             ui::SettingRow(Tr(key.label), nullptr, pad.c_str());
+            MarkOwnRow(GameKeyOwn(m_config, game, key));
             DrawKeyCap(game, key, Purpose(key, family));
         }
         ui::EndSettings();
@@ -314,12 +341,12 @@ namespace launcher_ui
                                       : stored.empty() ? std::string(Dash)
                                                        : MouseDisplayName(stored);
             const bool own = GameMouseButtonOwn(m_config, game, key);
+            MarkOwnRow(own);
             ui::KeyButtonOptions options;
             options.capturing = capturing;
-            options.inherited = !own;
             options.tooltip = Tr("Click, then press a mouse button or turn the wheel (Escape cancels).");
             const std::string id = std::string("mouse_") + key.action;
-            switch (KeyCapControl(id.c_str(), shown.c_str(), options, ResetTip(own, SharedAction(key.action))))
+            switch (KeyCapControl(id.c_str(), shown.c_str(), options, ResetTip(own)))
             {
             case Hit::Pressed:
                 m_toyboxPadCapturing = nullptr;
@@ -352,17 +379,19 @@ namespace launcher_ui
             return word.empty() ? name : name + " (" + word + ")";
         };
         const int target = global ? GlobalPadTarget(m_config, button) : PadTarget(m_config, game, button);
-        const std::string preview = target == button ? std::string(Tr("Default"))
-                                    : target < 0     ? std::string(Tr("Nothing"))
-                                                     : describe(target);
+        // A game's row names the button it really acts as: its own name when nothing remaps it.
+        const std::string preview = target == button
+                                        ? (global ? std::string(Tr("Default")) : PadButtonLabel(button, family))
+                                    : target < 0 ? std::string(Tr("Nothing"))
+                                                 : describe(target);
         const bool own = !global && PadOwn(m_config, game, button);
         bool reset = false;
         ImGui::PushID(button);
-        if (SelectControl("##job", preview.c_str(), !global && !own,
-                global ? nullptr : ResetTip(own, SharedPadButton(button)), &reset))
+        if (SelectControl("##job", preview.c_str(), global ? nullptr : ResetTip(own), &reset))
         {
             int chosen = -2;
-            if (ui::SelectOption(Tr("Default"), target == button))
+            const std::string ownName = global ? std::string(Tr("Default")) : describe(button);
+            if (ui::SelectOption((ownName + "##own").c_str(), target == button))
                 chosen = button;
             for (int other = 0; other < PadButtonTotal; other++)
                 if (other != button &&
@@ -400,6 +429,7 @@ namespace launcher_ui
             const std::string note = word.empty() ? std::string() : "(" + word + ")";
             const std::string name = PadButtonLabel(button, family);
             ui::SettingRow(name.c_str(), nullptr, note.empty() ? nullptr : note.c_str());
+            MarkOwnRow(PadOwn(m_config, game, button));
             DrawPadSelect(game, button);
         }
     }
@@ -418,9 +448,10 @@ namespace launcher_ui
                 if (level == choice.value)
                     preview = Tr(choice.label);
             const bool own = !scope.empty() && RumbleOwn(m_config, scope, player);
+            MarkOwnRow(own);
             bool reset = false;
             ImGui::PushID(player);
-            if (SelectControl("##rumble", preview, !scope.empty() && !own, ResetTip(own, true), &reset))
+            if (SelectControl("##rumble", preview, ResetTip(own), &reset))
             {
                 for (size_t i = 0; i < levels.size(); i++)
                     if (ui::SelectOption(Tr(RumbleChoices[i].label), level == levels[i]))
@@ -452,7 +483,8 @@ namespace launcher_ui
             capturing ? Tf("Press a key for \"{}\" (Escape cancels)", Purpose(*m_capturing, family)).c_str()
                       : Tr("Choose a key to change it."),
             capturing ? ui::color::Ink : ui::color::Dim);
-        ui::Text(ui::TextStyle::Caption, Tr(strings::Dimmed), ui::color::Dim);
+        ImGui::Indent(DotGutter);
+        DrawDotLegend();
         ImGui::Dummy(ImVec2(0, ui::space::XS));
         DrawKeyCrosses(game, keys);
         DrawKeyRows(game, keys);
@@ -464,7 +496,9 @@ namespace launcher_ui
         {
             ui::SettingRow(Tr("Use the mouse"), nullptr);
             bool on = GameMouseOn(m_config, game);
-            const Hit hit = ToggleControl("##mouseon", &on, ResetTip(GameMouseOwn(m_config, game), true));
+            const bool own = GameMouseOwn(m_config, game);
+            MarkOwnRow(own, ui::height::Small);
+            const Hit hit = ToggleControl("##mouseon", &on, ResetTip(own));
             if (hit != Hit::None)
             {
                 if (hit == Hit::Reset)
@@ -494,6 +528,7 @@ namespace launcher_ui
             m_mouseCapturing = nullptr;
             Toast(Tr("Keyboard bindings reset"), ui::ToastKind::Success);
         }
+        ImGui::Unindent(DotGutter);
     }
 
     // A game's rumble and pad buttons ([<game>.input] over the global layout; game_keys.h).
@@ -501,7 +536,8 @@ namespace launcher_ui
     {
         const std::string& game = m_s->game.id;
         ui::Text(ui::TextStyle::Body, Tr("Choose what each button does."), ui::color::Dim);
-        ui::Text(ui::TextStyle::Caption, Tr(strings::Dimmed), ui::color::Dim);
+        ImGui::Indent(DotGutter);
+        DrawDotLegend();
         ui::SectionHeader(Tr("Rumble"), nullptr, false);
         if (ui::BeginSettings("##rumble"))
         {
@@ -526,16 +562,60 @@ namespace launcher_ui
                 Toast(Tr("Couldn't save the settings"), ui::ToastKind::Error);
             Toast(Tr("Controller buttons reset"), ui::ToastKind::Success);
         }
+        ImGui::Unindent(DotGutter);
     }
 
-    // Settings > Controls, under the controller choice: "All games" (a row per shared action, its key and its pad button
-    // side by side, then the pad buttons no game names: the sticks' clicks, the D-pad), the mouse switch, the rumble and
-    // the Toy Box's keys, all in [input].
+    // A section that starts folded: its title is the row that opens and closes it.
+    bool App::DrawFold(const char* title, bool* open)
+    {
+        ImGui::Dummy(ImVec2(0, ui::space::XS));
+        ui::ListRowOptions row;
+        row.icon = *open ? ui::Icon::ChevronDown : ui::Icon::ChevronRight;
+        row.titleStyle = ui::TextStyle::Title;
+        if (ui::ListRow(title, row))
+        {
+            *open = !*open;
+            m_capturing = nullptr; // a key being waited for would be out of sight
+            m_toyboxCapturing = nullptr;
+            m_toyboxPadCapturing = nullptr;
+        }
+        return *open;
+    }
+
+    // Settings > Controls, under the controller choice: the mouse switch, the rumble, then folded "Keys for all games" (a
+    // row per shared action, its key and its pad button side by side, then the pad buttons no game names: the sticks'
+    // clicks, the D-pad) and the Toy Box's shortcuts, all in [input].
     void App::DrawGlobalControls()
+    {
+        ui::SectionHeader(Tr("Mouse"), Tr("Left click: attack 1. Right click: attack 2. The game keeps the pointer."));
+        if (ui::BeginSettings("##globalmouse"))
+        {
+            ui::SettingRow(Tr("Use the mouse"), nullptr);
+            bool on = GlobalMouseOn(m_config);
+            if (ToggleControl("##mouseon", &on, nullptr) == Hit::Pressed)
+            {
+                SetGameMouseOn(m_config, "", on);
+                if (!SaveConfig())
+                    Toast(Tr("Couldn't save the settings"), ui::ToastKind::Error);
+            }
+            ui::EndSettings();
+        }
+        ui::SectionHeader(Tr("Rumble"));
+        if (ui::BeginSettings("##globalrumble"))
+        {
+            DrawRumbleRows("");
+            ui::EndSettings();
+        }
+        if (DrawFold(Tr("Keys for all games"), &m_globalKeysOpen))
+            DrawGlobalKeys();
+        if (DrawFold(Tr("Toy Box shortcuts"), &m_toyboxShortcutsOpen))
+            DrawToyboxKeys();
+    }
+
+    void App::DrawGlobalKeys()
     {
         const PadFamily family = PadFamilyNow();
         const bool capturing = m_capturing != nullptr && m_captureGame.empty();
-        ui::SectionHeader(Tr("All games"));
         ui::Text(ui::TextStyle::Caption,
             capturing ? Tf("Press a key for \"{}\" (Escape cancels)", GlobalPurpose(*m_capturing)).c_str()
                       : Tr(strings::GlobalIntro),
@@ -585,27 +665,6 @@ namespace launcher_ui
             }
             ui::EndSettings();
         }
-
-        ui::SectionHeader(Tr("Mouse"), Tr("Left click: attack 1. Right click: attack 2. The game keeps the pointer."));
-        if (ui::BeginSettings("##globalmouse"))
-        {
-            ui::SettingRow(Tr("Use the mouse"), nullptr);
-            bool on = GlobalMouseOn(m_config);
-            if (ToggleControl("##mouseon", &on, nullptr) == Hit::Pressed)
-            {
-                SetGameMouseOn(m_config, "", on);
-                if (!SaveConfig())
-                    Toast(Tr("Couldn't save the settings"), ui::ToastKind::Error);
-            }
-            ui::EndSettings();
-        }
-        ui::SectionHeader(Tr("Rumble"));
-        if (ui::BeginSettings("##globalrumble"))
-        {
-            DrawRumbleRows("");
-            ui::EndSettings();
-        }
-        DrawToyboxKeys();
     }
 
     bool App::CaptureToyboxPad(const SDL_Event& event)
@@ -670,7 +729,6 @@ namespace launcher_ui
 
     void App::DrawToyboxKeys()
     {
-        ui::SectionHeader(Tr("Toy Box keys"));
         const auto keys = ToyboxKeys();
         const auto pads = ToyboxPads();
         if (ui::BeginSettings("##toyboxkeys", 170, 250))

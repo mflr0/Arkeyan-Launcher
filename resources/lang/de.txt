@@ -1264,3 +1264,23 @@ Swap players?	Spieler tauschen?
 Swap	Tauschen
 {} goes on {}, and {} on {}.	{} kommt auf {} und {} auf {}.
 Players swapped	Spieler getauscht
+Search {} figure	{} Figur durchsuchen
+Search {} figures	{} Figuren durchsuchen
+Back to the common setting	Zurück zur gemeinsamen Einstellung
+A dot marks what was changed for this game.	Ein Punkt markiert, was für dieses Spiel geändert wurde.
+Sound and language	Ton und Sprache
+Repair or uninstall	Reparieren oder deinstallieren
+Get started	Erste Schritte
+Choose a disc	Disc wählen
+Drop an .iso here, or choose it.	Ziehe eine .iso hierher oder wähle sie aus.
+1. Choose a disc   2. Install   3. Play	1. Disc wählen   2. Installieren   3. Spielen
+Save the report	Bericht speichern
+Open GitHub	GitHub öffnen
+Anonymous: your names are removed.	Anonym: Deine Namen werden entfernt.
+Attach the saved report to the issue.	Den gespeicherten Bericht an das Issue anhängen.
+See what the report contains	Inhalt des Berichts ansehen
+General	Allgemein
+Help	Hilfe
+Keys for all games	Tasten für alle Spiele
+Toy Box shortcuts	Toy-Box-Kurzbefehle
+Manage profiles...	Profile verwalten...

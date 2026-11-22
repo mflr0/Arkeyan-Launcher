@@ -291,22 +291,27 @@ namespace launcher_ui
     }
     enum class SettingsTab
     {
+        General,
         Controls,
-        Launcher,
-        Support,
-        About,
-        Profiles
+        Portal,
+        Help
     };
     enum class GameTab
     {
-        Video,
+        Picture,
+        Controls,
+        Sound, // and language
+        Manage
+    };
+    // The part of a game tab a link opens: one of Controls' two pages, or one of Manage's folded rows.
+    enum class GameSection
+    {
+        None,
         Keyboard,
         Controller,
-        Sound,
-        Language,
         Disc,
         Saves,
-        Game
+        Repair
     };
     enum class DiscState
     {
@@ -579,7 +584,12 @@ namespace launcher_ui
         void DrawProfileButton();
         void OpenProfileEditor(const std::string& id); // empty: a new profile
         void DrawProfileEditor();
-        void DrawProfilesTab(); // Launcher settings > Profiles
+        void DrawProfiles(); // the profile menu's Manage profiles dialog, and the editor over it
+        bool m_profilesOpen = false;
+        bool m_globalKeysOpen = false, m_toyboxShortcutsOpen = false; // Settings > Controls' folded sections
+        void DrawGlobalKeys();
+        bool DrawFold(const char* title, bool* open);
+        void DrawPortalTab();
         std::string m_profileToRemove; // the profile whose removal waits for its confirmation
         const ArtTexture* AchievementIcon(const std::filesystem::path& image);
         void DrawGameVideo();
@@ -588,12 +598,12 @@ namespace launcher_ui
         void DrawGameKeyboard();
         void DrawGameLanguage();
         void DrawGameDisc();
-        void DrawGameData(); // game_data_page.cpp: the Disc tab's "Game data" section
+        void DrawGameData(); // game_data_page.cpp: the Disc section's "Game data" section
         void StartCopy();
         void FinishCopy();
         void RemoveCopy();
         // game_data_page.cpp: the image check. Wanted once a disc is verified (its kept result read back when the file
-        // is unchanged), run by RunDiscChecks, shown as the Disc tab's pill; the dialog after a game whose movies didn't
+        // is unchanged), run by RunDiscChecks, shown as the Disc section's pill; the dialog after a game whose movies didn't
         // open (OfferDiscCheck, from PollGame).
         void WantDiscCheck(bool again = false); // again: "Check again", the kept result is forgotten
         void RunDiscChecks(); // starts the next wanted check (all slots)
@@ -602,7 +612,7 @@ namespace launcher_ui
         void ContinueAfterCheck(); // an install waiting for the check
         static bool DiscDamaged(const GameSlot& slot); // checked, and not to be installed or copied
         static bool DiscChecking(const GameSlot& slot); // verified, the check not done yet
-        void DrawDiscCheck(); // the Disc tab's pill and its line
+        void DrawDiscCheck(); // the Disc section's pill and its line
         void DrawCheckAgain();
         void OfferDiscCheck(const GameInfo& game);
         void DrawDiscOffer();
@@ -611,7 +621,11 @@ namespace launcher_ui
         void DrawSaveBackups();
         void RefreshSaveBackups();
         void RestoreSaveBackup(const std::string& stamp);
-        void DrawGameTab();
+        void ShowGameTab(GameTab tab, GameSection section = GameSection::None);
+        void DrawGameControls();
+        void DrawGameManage();
+        void DrawGameRepair();
+        void DrawPortableDialog();
         void DrawGameController();
         void DrawUpdateAll(ImVec2 right);
         void DrawDataActions();
@@ -626,7 +640,7 @@ namespace launcher_ui
         void StartHdTextures(bool on);
         void FinishHdTextures();
         bool AnyHdTextures() const;
-        void DrawPortableExport(); // the Game tab's "Portable copy": the button, the message, the progress
+        void DrawPortableExport(); // Manage's "Portable copy" row: the button, the message, the progress
         void OpenPortableExport(); // reads what the export dialog shows
         void StartPortableExport(const std::filesystem::path& folder);
         void FinishPortableExport();
@@ -674,6 +688,7 @@ namespace launcher_ui
         void DrawPortalResult(); // and what the test found, under the table
         void DrawLogs();
         void OpenProblemReport();
+        void BuildProblemReport();
         void DrawProblemReport();
         void DrawToast();
         void DrawQuitPrompt();
@@ -837,6 +852,11 @@ namespace launcher_ui
         void
         UseDiscForOtherGame(); // the disc check found the other supported game's disc: switch to it and set the disc
         void Browse();
+        std::string m_homeDisc; // a disc given on Home, until its check says whose it is
+        const GameInfo* m_homeLast = nullptr; // Home's cache: the game played last, and its play time
+        progress::PlayTime m_homePlay;
+        std::string m_homeRunning, m_homeProfile;
+        int m_homeFrame = -2;
         bool DiscStillThere(); // false, and the disc's line says so, when the verified image is gone
         void Set(const char* section, const char* key, const std::string& value);
         // A message at the bottom right: an Error stays until it is closed; Info and Success go by themselves.
@@ -912,8 +932,10 @@ namespace launcher_ui
         bool m_focusShow = false; // the focus request came from the keyboard or the pad: show the ring
         bool m_backTaken = false; // last frame, something else answered B / Escape (a menu, a dialog, a field)
         bool m_pagesTaken = false; // last frame, LB / RB were not the pages' (a menu, a dialog, a field)
-        SettingsTab m_tab = SettingsTab::Controls;
-        GameTab m_gameTab = GameTab::Video;
+        SettingsTab m_tab = SettingsTab::General;
+        GameTab m_gameTab = GameTab::Picture;
+        GameSection m_gameControls = GameSection::Keyboard, m_gameManage = GameSection::None;
+        int m_gameSectionScroll = 0; // frames left to bring the linked section into view (its size needs one)
         // Window size: Custom chosen (it stays shown on a preset value), and the width and height being typed, filled from
         // the saved value each time it changes (`m_windowSizeShown`).
         bool m_windowSizeCustom = false;
@@ -956,6 +978,9 @@ namespace launcher_ui
         launcher_portal::Watcher m_portal;
         bool m_reportOpen = false; // "Report a problem" shown (support_page.cpp)
         std::string m_reportText;
+        std::string m_reportGame; // the game picked in the dialog
+        std::string m_reportFile; // the saved report's name, without its folder
+        bool m_reportDetails = false;
 
         // Updates (update_page.cpp).
         UpdateManager m_updates;
@@ -1157,7 +1182,7 @@ namespace launcher_ui
             false; // SKY_LAUNCHER_TEST_EXPERIMENTAL=<id> (or the older _TRAPTEAM): a later game's page and Home card
         std::string m_testExperimentalGame;
         bool m_testProfiles =
-            false; // SKY_LAUNCHER_TEST_PROFILES: the profile button, its menu, the editor, a switch, Settings > Profiles
+            false; // SKY_LAUNCHER_TEST_PROFILES: the profile button, its menu, the editor, a switch, the profiles dialog
         bool m_testOpenProfileMenu = false;
         void TestProfilesScript(uint64_t now);
         bool m_testSidebar =

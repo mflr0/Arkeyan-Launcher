@@ -105,7 +105,7 @@ At the first visit to the page (`CollectionPage::Open`):
   portal has six slots (see "Swappers"): `SeatFirstSlot` and `SlotSeat` map the seats to them.
 - **While the game runs** the seats are read-only here, with a **Toy Box window** button beside "<game> is running": the Toy
   Box window is this page, live, the seats changed through the game (`toybox_window.md`).
-- **Which games**: over the seats, "On the portal for" and a Select ("Spyro's Adventure", as narrow as the longest name, with a
+- **Which games**: beside the title, a Select ("Spyro's Adventure", as narrow as the longest name, with a
   tooltip) lists the games that can start with prepared seats,
   those the launcher has a runtime for (`SessionFile` not empty): Spyro's Adventure, Giants (Player 1, Player 2, Item or
   adventure) and Swap Force (Player 1, Player 2, Magic item, Adventure). The page opens on the game chosen in the sidebar
@@ -115,7 +115,7 @@ At the first visit to the page (`CollectionPage::Open`):
   players' seats first (players and vehicles), then the shared ones (item, adventure, trap), each row sharing the width
   (`launcher/ui/seat_rows.h`). Imaginators' seven seats take two; Spyro's Adventure's four take two in a narrow
   window. Only the drawing order changes: a seat keeps its index (the session file, dragging, LT / RT).
-- **Placing, two steps**: click a seat (A on it, or LT / RT), it lights up and the bar says "Choose a figure for Player 1 ·
+- **Placing, two steps**: click a seat (A on it, or LT / RT), it lights up and a banner in the bar's place says "Choose a figure for Player 1 ·
   only what Spyro's Adventure reads"; the shelf then shows only what goes there and the game reads; click a figure: it
   goes on the seat ("Player 1: Splash's"), and the choosing ends. Click the seat again, Cancel, B or Escape stops
   choosing. Dragging a card onto a seat also works; a figure already on the other seat moves (it is on one seat only).
@@ -159,11 +159,12 @@ At the first visit to the page (`CollectionPage::Open`):
   the bar.
 - **The seats** (above).
 - **The bar** (2026-10-27, the Toy Box's too, same words and order; `docs/runtime/host/toybox_ux.md` of the game's repo
-  holds the design): the **search field** first and wide ("Name, element, game, level..."), then one **Sort and filter**
+  holds the design): the **search field** first and wide ("Search 20 figures"), then one **Sort and filter**
   button (its tooltip) that says the sort and how many filters are on ("Sort: Element (2)"), as wide as its longest text.
   It opens a small panel: **Sort by** (a Select), a divider, **Show only** over three Selects, **Element**, **Works in**
   (the toys a game reads: Giants reads every Spyro's Adventure toy, Spyro's Adventure no Giants toy) and **Type** (the
-  types the collection has), then **Clear all** (it keeps the sort).
+  types the collection has), then **Clear all** (it keeps the sort). Works in starts on the shown game: the shelf hides
+  what it can't take; All games shows those too, dimmed, to manage them.
   Under the bar, only when something is on, the **tags**: one filter Chip per filter (a check; a click turns it off), **Clear
   all**, and the count at the right ("12 figures", "1 figure"; French "12 figurines"). Nothing matches: an EmptyState "No figure
   matches" with "Clear search and filters"; an empty collection: an EmptyState with "Add a figure" and, under it, "Create the <game> starter pack" (the game chosen: its starter pack's figures).

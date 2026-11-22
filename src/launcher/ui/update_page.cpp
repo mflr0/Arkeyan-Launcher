@@ -495,9 +495,6 @@ namespace launcher_ui
         ImGui::SameLine(0, ui::space::S);
         if (ui::Button(Tr("Licenses"), web))
             SDL_OpenURL((std::string(Project) + "/blob/main/THIRD_PARTY_NOTICES.md").c_str());
-        ImGui::SameLine(0, ui::space::S);
-        if (ui::Button(Tr("Report a bug"), web))
-            SDL_OpenURL((std::string(Project) + "/issues/new").c_str());
         ImGui::Dummy(ImVec2(0, ui::space::XS));
         ui::Text(ui::TextStyle::Caption,
             Tr("Skylanders, Spyro and Activision are trademarks of Activision Publishing, Inc. This project is not "
@@ -586,7 +583,7 @@ namespace launcher_ui
         case 2:
             m_whatsNewOpen = false;
             m_page = Page::Settings;
-            m_tab = SettingsTab::Launcher; // the updates are in the launcher's tab
+            m_tab = SettingsTab::General; // the updates are in the General tab
             m_updateDoneNote.clear();
             m_testAt = now + 500;
             break;

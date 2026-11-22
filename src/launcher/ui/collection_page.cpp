@@ -512,6 +512,7 @@ namespace launcher_ui
     {
         m_model.gameId = id;
         m_choosing = -1;
+        m_searchChoosing = false;
         Reload();
     }
 
@@ -520,13 +521,15 @@ namespace launcher_ui
     {
         const bool realPortal = RealPortalInUse();
         std::string key = fmt::format("{}|{}|{}|{}|{}|{}|{}|{}|{}", m_generation, m_search, m_choosing,
-            m_filter.element, m_filter.game, m_filter.category, int(m_filter.sort), m_model.gameId, realPortal);
+            m_filter.element, m_filter.game + (m_allGames ? "*" : ""), m_filter.category, int(m_filter.sort),
+            m_model.gameId, realPortal);
         if (key == m_listKey)
             return;
         m_listKey = key;
         ShelfFilter filter = m_filter;
         filter.text = m_search;
         filter.seat = m_choosing;
+        filter.fitsGame = !m_allGames;
         m_sections = m_model.Shelf(filter, m_list, &m_hiddenStarters);
         m_starterBanner = m_model.ShowsStarterBanner(realPortal, m_choosing >= 0);
         m_starterNames.clear();
@@ -753,6 +756,7 @@ namespace launcher_ui
         }
         if (seat != m_choosing)
         {
+            m_searchChoosing = false;
             m_generation++;
             m_shelfTop = seat >= 0; // choosing starts at the shelf's first row, never under a half-hidden one
         }
@@ -1055,31 +1059,92 @@ namespace launcher_ui
         ui::Text(ui::TextStyle::Display, m_model.Live() ? Tr("Toy Box") : Tr("Collection"), ui::color::Ink,
             -1); // the window is the Toy Box
         const ImVec2 title = ImGui::GetItemRectSize();
-        // The real portal's state beside the title, centred on its capitals (a pill, as on the game page).
-        if (!m_app.m_portal.Current().Line().empty())
-        {
-            ImGui::SetCursorScreenPos(ImVec2(ImGui::GetItemRectMax().x + ui::space::M,
-                std::round(top.y + ui::CapMiddle(ui::TextStyle::Display) - ui::PillHeight / 2)));
-            m_app.DrawPortalStatus();
-        }
+        float x = ImGui::GetItemRectMax().x + ui::space::M;
+        const int shown = int(m_model.figures.size()) - m_hiddenStarters;
+        const size_t favourites =
+            std::count_if(m_model.figures.begin(), m_model.figures.end(), [](const Figure& f) { return f.favourite; });
+        std::string summary = FigureCountText(shown);
+        if (favourites > 0)
+            summary += favourites == 1 ? Tf(" · {} favorite", favourites) : Tf(" · {} favorites", favourites);
+        ui::Tooltip(summary.c_str());
 
-        // Add a figure, and the rest of the collection's work under Manage.
+        // Add a figure, and the rest of the collection's work under "...".
         ui::ButtonOptions add;
         add.kind = ui::ButtonKind::Primary;
         add.icon = ui::Icon::Plus;
-        ui::ButtonOptions manage;
-        manage.trailing = ui::Icon::ChevronDown;
-        const float addWidth = ui::ButtonWidth(Tr("Add a figure"), add),
-                    manageWidth = ui::ButtonWidth(Tr("Manage"), manage);
+        const float addWidth = ui::ButtonWidth(Tr("Add a figure"), add);
         // On the title's line: the buttons' middle on its capitals' middle.
-        const float buttonsY = std::round(top.y + ui::CapMiddle(ui::TextStyle::Display) - ui::height::Normal / 2);
+        const float middle = top.y + ui::CapMiddle(ui::TextStyle::Display);
+        const float buttonsY = std::round(middle - ui::height::Normal / 2);
         const float row = std::max(title.y, buttonsY + ui::height::Normal - top.y);
-        ImGui::SetCursorScreenPos(ImVec2(top.x + width - addWidth - ui::space::S - manageWidth, buttonsY));
+        const float addX = top.x + width - addWidth - ui::space::S - ui::height::Normal;
+        const float end = addX - ui::space::M;
+
+        // The game the seats are for, then what still has room before the buttons.
+        const bool running = !m_model.Live() && m_model.RunningGame() == m_model.gameId;
+        const bool hasWindow = running && m_app.m_session.Running() == m_model.gameId;
+        if (m_model.Live())
+            DrawLiveLine(ImVec2(x, buttonsY), end - x);
+        else
+        {
+            ui::SelectOptions games;
+            for (const collection::Game& g : collection::Catalogue::Get().Games())
+                if (!SessionFile(g).empty())
+                    games.width = std::max(games.width, ui::SelectWidth(ShortGameName(g.id).c_str()));
+            games.width = std::max(2 * ui::height::Normal, std::min(games.width, end - x));
+            ImGui::SetCursorScreenPos(ImVec2(x, buttonsY));
+            if (ui::BeginSelect("##portalgame", ShortGameName(m_model.gameId).c_str(), games))
+            {
+                for (const collection::Game& g : collection::Catalogue::Get().Games())
+                    if (!SessionFile(g).empty() &&
+                        ui::SelectOption(ShortGameName(g.id).c_str(), g.id == m_model.gameId))
+                        SelectPortalGame(g.id);
+                ui::EndSelect();
+            }
+            else
+                ui::Tooltip(Tr("The figures on the portal when the game starts"));
+            x += games.width + ui::space::M;
+            auto pillFits = [&](const std::string& text) {
+                return x + ui::PillWidth(text.c_str()) + ui::space::L <= end;
+            };
+            const float pillY = std::round(middle - ui::PillHeight / 2);
+            if (hasWindow)
+            {
+                // Its Toy Box in a window of its own, beside the game (toybox_window.cpp).
+                const ui::ButtonOptions window{ .kind = ui::ButtonKind::Secondary,
+                    .size = ui::Size::Small,
+                    .tooltip = Tr("The Toy Box in its own window, to keep beside the game") };
+                const float w = ui::ButtonWidth(Tr("Toy Box window"), window);
+                if (x + w <= end)
+                {
+                    ImGui::SetCursorScreenPos(ImVec2(x, std::round(middle - ui::height::Small / 2)));
+                    if (ui::Button(Tr("Toy Box window"), window))
+                        m_app.OpenToyboxWindow();
+                    x += w + ui::space::S;
+                }
+            }
+            if (running)
+            {
+                const std::string text = Tf("{} is running: use its Toy Box", ShortGameName(m_model.gameId));
+                if (pillFits(text))
+                {
+                    ImGui::SetCursorScreenPos(ImVec2(x, pillY));
+                    ui::StatusPill(ui::Status::Info, text.c_str());
+                }
+            }
+            else if (const std::string portal = m_app.m_portal.Current().Line(); !portal.empty() && pillFits(portal))
+            {
+                ImGui::SetCursorScreenPos(ImVec2(x, pillY));
+                m_app.DrawPortalStatus();
+            }
+        }
+
+        ImGui::SetCursorScreenPos(ImVec2(addX, buttonsY));
         if (ui::Button(Tr("Add a figure"), add))
             OpenAdd();
         m_app.TakeFocus(FocusTo::Page);
         ImGui::SameLine(0, ui::space::S);
-        if (ui::Button(Tr("Manage"), manage) || m_testMenu == 1)
+        if (ui::IconButton("##manage", ui::Icon::More, Tr("Manage"), { ui::ButtonKind::Secondary }) || m_testMenu == 1)
         {
             ui::OpenMenu("##collectionmenu", { .alignRight = true });
             m_testMenu = 0;
@@ -1104,19 +1169,18 @@ namespace launcher_ui
                 std::string folder = collection::Folder();
                 OpenFolder(std::filesystem::path(std::u8string(folder.begin(), folder.end())));
             }
+            // Here whatever the header's width.
+            if (m_model.Live())
+            {
+                const bool withGame = m_app.ToyboxWithGame();
+                if (ui::MenuItem(Tr("Open with the game"), { .checked = withGame }))
+                    m_app.SetToyboxWithGame(!withGame);
+            }
+            else if (hasWindow && ui::MenuItem(Tr("Toy Box window")))
+                m_app.OpenToyboxWindow();
             ui::EndMenu();
         }
-        // What the page holds, under the title.
-        ImGui::SetCursorScreenPos(ImVec2(top.x, top.y + row + ui::space::XXS));
-        const int shown = int(m_model.figures.size()) - m_hiddenStarters;
-        const size_t favourites =
-            std::count_if(m_model.figures.begin(), m_model.figures.end(), [](const Figure& f) { return f.favourite; });
-        std::string summary = FigureCountText(shown);
-        if (favourites > 0)
-            summary += favourites == 1 ? Tf(" · {} favorite", favourites) : Tf(" · {} favorites", favourites);
-        ui::Text(ui::TextStyle::Caption, summary.c_str(), ui::color::InkSoft, -1);
-        ImGui::SetCursorScreenPos(
-            ImVec2(top.x, ImGui::GetCursorScreenPos().y - ImGui::GetStyle().ItemSpacing.y + ui::space::L));
+        ImGui::SetCursorScreenPos(ImVec2(top.x, top.y + row + ui::space::M));
     }
 
     void CollectionPage::DrawSeatMenu()
@@ -1215,8 +1279,8 @@ namespace launcher_ui
         const collection::Game* game = m_model.Game();
         // Every seat the game has, as in its Collection: Trap Team's trap, SuperChargers' vehicles, the adventure pack.
         const size_t count = game != nullptr ? game->seats.size() : 0;
-        const float rowH =
-            count == 0 ? 0 : (at.y + size.y - ui::space::M - rowsY - (count - 1) * ui::space::XS) / count;
+        const float portalY = at.y + size.y - ui::space::M - ui::height::Small; // the portal's line, under the seats
+        const float rowH = count == 0 ? 0 : (portalY - ui::space::XS - rowsY - (count - 1) * ui::space::XS) / count;
         // A real portal plugged in: the seats of the session file are not on the game's portal. Player 1 as the game
         // plays it; the other seats are only known to the Toy Box window, over its link.
         bool realPortal = false;
@@ -1311,50 +1375,79 @@ namespace launcher_ui
             ui::Text(ui::TextStyle::Body, Tr("The other seats: in the Toy Box window"), ui::color::Dim,
                 size.x - 2 * ui::space::M);
         }
+        // The portal the game has: a link to its settings, plain words while the game runs (the seats do not move).
+        const launcher_portal::Status portal = m_app.m_testPortal ? *m_app.m_testPortal : m_app.m_portal.Current();
+        const char* portalName = (live ? realPortal : portal.connected) ? Tr("Portal") : Tr("Virtual portal");
+        if (live)
+        {
+            ImGui::SetCursorScreenPos(ImVec2(at.x + ui::space::M,
+                std::round(portalY + ui::height::Small / 2 - ui::CapMiddle(ui::TextStyle::Caption))));
+            ui::Text(ui::TextStyle::Caption, portalName, ui::color::Dim, -1);
+        }
+        else
+        {
+            const std::string tip =
+                portal.Line() + "\n" + Tr("Without a real portal, the game uses its virtual one (the Toy Box).");
+            ImGui::SetCursorScreenPos(ImVec2(at.x + ui::space::M, portalY));
+            if (ui::Button((std::string(portalName) + "##hero-portal-link").c_str(),
+                    { .kind = ui::ButtonKind::Ghost,
+                        .size = ui::Size::Small,
+                        .icon = portal.connected ? ui::IconOf(ui::Status::Success) : ui::Icon::None,
+                        .trailing = ui::Icon::ChevronRight,
+                        .overArt = true,
+                        .tooltip = tip.c_str() }))
+            {
+                m_app.m_tab = SettingsTab::Portal;
+                m_app.GoTo(Page::Settings);
+            }
+        }
+        if (m_app.m_testInstall)
+        {
+            const ImVec2 min = ImGui::GetItemRectMin(), max = ImGui::GetItemRectMax();
+            m_app.m_drawn["install-portal-rect"] = fmt::format("{},{},{},{}", min.x, min.y, max.x, max.y);
+        }
         ImGui::PopStyleVar();
         ui::EndCard();
     }
 
-    void CollectionPage::DrawLiveLine()
+    void CollectionPage::DrawLiveLine(ImVec2 at, float room)
     {
         using State = toyboxlinkclient::Client::State;
-        const ImVec2 line = ImGui::GetCursorScreenPos();
-        const float width = ImGui::GetContentRegionAvail().x;
-        ImGui::SetCursorScreenPos(
-            ImVec2(line.x, std::round(line.y + ui::height::Normal / 2 - ui::CapMiddle(ui::TextStyle::Body))));
-        ui::Text(ui::TextStyle::Body, Tf("On the portal of {}", ShortGameName(m_model.gameId)).c_str(),
-            ui::color::InkSoft, -1, true);
         const State state = m_model.live->Current();
-        const float pillY = std::round(line.y + (ui::height::Normal - ui::PillHeight) / 2);
-        ImGui::SetCursorScreenPos(ImVec2(ImGui::GetItemRectMax().x + ui::space::M, pillY));
-        if (state == State::Connected)
+        const float middle = at.y + ui::height::Normal / 2;
+        const bool connected = state == State::Connected;
+        const char* text = connected                       ? Tr("Live")
+                           : state == State::OtherVersion  ? (m_model.live->GameVersion() > toyboxlink::Version
+                                                                     ? Tr("The game is newer: update the launcher")
+                                                                     : Tr("The game is older: update it"))
+                           : state == State::Busy          ? Tr("Another Toy Box window has this game")
+                           : m_app.ToyboxGameWithoutLink() ? Tr("The game is older: update it")
+                                                           : Tr("Waiting for the game...");
+        const bool warning =
+            !connected && state != State::Busy && (state == State::OtherVersion || m_app.ToyboxGameWithoutLink());
+        // The state before the game's name, which the seats and the game's own window say too.
+        const float stateWidth = connected ? ui::BadgeSize(text).x : ui::PillWidth(text) + ui::space::L;
+        ImDrawList* draw = ImGui::GetWindowDrawList();
+        if (stateWidth > room)
         {
-            const ImVec2 badge = ui::BadgeSize(Tr("Live"));
-            ImGui::SetCursorScreenPos(
-                ImVec2(ImGui::GetCursorScreenPos().x, std::round(line.y + (ui::height::Normal - badge.y) / 2)));
-            ui::Badge(Tr("Live"), ui::color::Success);
+            PutText(draw, ImVec2(at.x, middle - ui::type::Caption / 2), ui::TextStyle::Caption, false,
+                warning ? ui::color::Warning : ui::color::InkSoft, text, room);
+            return;
         }
-        else if (state == State::OtherVersion)
-            ui::StatusPill(ui::Status::Warning, m_model.live->GameVersion() > toyboxlink::Version
-                                                    ? Tr("The game is newer: update the launcher")
-                                                    : Tr("The game is older: update it"));
-        else if (state == State::Busy)
-            ui::StatusPill(ui::Status::Info, Tr("Another Toy Box window has this game"));
-        else if (m_app.ToyboxGameWithoutLink())
-            ui::StatusPill(ui::Status::Warning, Tr("The game is older: update it"));
-        else
-            ui::StatusPill(ui::Status::Info, Tr("Waiting for the game..."));
-        // The window opens with the game from now on (docs/toybox_window.md).
-        bool withGame = m_app.ToyboxWithGame();
-        const char* label = Tr("Open with the game");
-        ui::PushText(ui::TextStyle::Body);
-        const float labelW = ImGui::CalcTextSize(label).x + ui::height::Mark + ui::space::S;
-        ui::PopText();
         ImGui::SetCursorScreenPos(
-            ImVec2(line.x + width - labelW, std::round(line.y + (ui::height::Normal - ui::height::Small) / 2)));
-        if (ui::Checkbox(label, &withGame))
-            m_app.SetToyboxWithGame(withGame);
-        ui::Tooltip(Tr("The Toy Box window opens each time you play"));
+            ImVec2(at.x, std::round(middle - (connected ? ui::BadgeSize(text).y : ui::PillHeight) / 2)));
+        if (connected)
+            ui::Badge(text, ui::color::Success);
+        else
+            ui::StatusPill(warning ? ui::Status::Warning : ui::Status::Info, text);
+        const std::string game = Tf("On the portal of {}", ShortGameName(m_model.gameId));
+        const float left = stateWidth + ui::space::M;
+        ui::PushText(ui::TextStyle::Body, true);
+        const bool named = left + ImGui::CalcTextSize(game.c_str()).x <= room;
+        ui::PopText();
+        if (named)
+            PutText(draw, ImVec2(at.x + left, middle - ui::type::Body / 2), ui::TextStyle::Body, true,
+                ui::color::InkSoft, game.c_str(), room - left);
     }
 
     void CollectionPage::DrawRealSeat(ImDrawList* draw, size_t seat, ImVec2 at, ImVec2 end)
@@ -1408,58 +1501,11 @@ namespace launcher_ui
 
     void CollectionPage::DrawSeats(float width)
     {
-        const collection::Game* game = m_model.Game();
         ImDrawList* draw = ImGui::GetWindowDrawList();
-        const std::string live = m_model.RunningGame() == m_model.gameId ? m_model.gameId : std::string();
         const bool editable = m_model.CanEditSeats();
-
-        // Over the seats: the game they are for (the games that can start with prepared seats), and the game running, if it is
-        // that one (its Toy Box has the portal then).
-        const ImVec2 line = ImGui::GetCursorScreenPos();
-        const float textY = std::round(line.y + ui::height::Normal / 2 - ui::CapMiddle(ui::TextStyle::Body));
-        if (m_model.Live())
-            DrawLiveLine();
-        else
-        {
-            ImGui::SetCursorScreenPos(ImVec2(line.x, textY));
-            ui::Text(ui::TextStyle::Body, Tr("On the portal for"), ui::color::InkSoft, -1);
-            ui::SelectOptions selectOptions;
-            for (const collection::Game& g : collection::Catalogue::Get().Games())
-                if (!SessionFile(g).empty())
-                    selectOptions.width = std::max(selectOptions.width, ui::SelectWidth(ShortGameName(g.id).c_str()));
-            ImGui::SetCursorScreenPos(ImVec2(ImGui::GetItemRectMax().x + ui::space::XS, line.y));
-            if (ui::BeginSelect("##portalgame", ShortGameName(m_model.gameId).c_str(), selectOptions))
-            {
-                for (const collection::Game& g : collection::Catalogue::Get().Games())
-                    if (!SessionFile(g).empty() &&
-                        ui::SelectOption(ShortGameName(g.id).c_str(), g.id == m_model.gameId))
-                        SelectPortalGame(g.id);
-                ui::EndSelect();
-            }
-            else
-                ui::Tooltip(Tr("The figures on the portal when the game starts"));
-            if (!live.empty())
-            {
-                ImGui::SetCursorScreenPos(ImVec2(ImGui::GetItemRectMax().x + ui::space::M,
-                    std::round(line.y + (ui::height::Normal - ui::PillHeight) / 2)));
-                ui::StatusPill(ui::Status::Info, Tf("{} is running: use its Toy Box", ShortGameName(live)).c_str());
-                if (m_app.m_session.Running() == live)
-                {
-                    // Its Toy Box in a window of its own, beside the game (toybox_window.cpp).
-                    const ui::ButtonOptions window{ .kind = ui::ButtonKind::Secondary,
-                        .size = ui::Size::Small,
-                        .tooltip = Tr("The Toy Box in its own window, to keep beside the game") };
-                    ImGui::SetCursorScreenPos(ImVec2(ImGui::GetItemRectMax().x + ui::space::S,
-                        std::round(line.y + (ui::height::Normal - ui::height::Small) / 2)));
-                    if (ui::Button(Tr("Toy Box window"), window))
-                        m_app.OpenToyboxWindow();
-                }
-            }
-        }
-        ImGui::SetCursorScreenPos(ImVec2(line.x, line.y + ui::height::Normal + ui::space::S));
-        // Choosing another game above reloads the seats at once: the game read before may have more of them (Trap Team
-        // and SuperChargers have 5, Giants 3), so read it again and never go past the seats loaded (issue #45).
-        game = m_model.Game();
+        // Choosing another game in the header reloads the seats at once: the game read before may have more of them (Trap
+        // Team and SuperChargers have 5, Giants 3), so read it here and never go past the seats loaded (issue #45).
+        const collection::Game* game = m_model.Game();
         if (game == nullptr)
             return;
 
@@ -1657,34 +1703,42 @@ namespace launcher_ui
     void CollectionPage::DrawBar()
     {
         const collection::Game* game = m_model.Game();
-        if (m_choosing >= 0 && game != nullptr)
+        const bool choosing = m_choosing >= 0 && game != nullptr;
+        const int active = (m_filter.element >= 0) + (!m_filter.game.empty() || m_allGames) + (m_filter.category >= 0);
+        const std::string seat = choosing ? Tf("Choose a figure for {}", SeatName(size_t(m_choosing))) : std::string();
+        ui::ButtonOptions cancel;
+        const float cancelWidth = choosing ? ui::ButtonWidth(Tr("Cancel"), cancel) + ui::space::S : 0;
+        if (choosing && !m_searchChoosing && active == 0 && m_search[0] == 0)
         {
-            // Choosing for a seat: the shelf shows only what goes there.
-            ui::BeginCard("##choosing", ImVec2(0, ui::height::Large), { .padding = ui::space::XS });
+            // Choosing for a seat: the banner takes the bar's row, so the shelf stays put; its search brings the bar back.
             const ImVec2 at = ImGui::GetCursorScreenPos();
             const float right = at.x + ImGui::GetContentRegionAvail().x, middle = at.y + ui::height::Normal / 2;
+            const float searchX = right - cancelWidth - ui::height::Normal;
+            const float room = searchX - ui::space::S - at.x;
             ImDrawList* draw = ImGui::GetWindowDrawList();
-            const std::string text = Tf("Choose a figure for {}", SeatName(size_t(m_choosing)));
+            PutText(draw, ImVec2(at.x, middle - ui::type::Body / 2), ui::TextStyle::Body, true, ui::color::Info,
+                seat.c_str(), room);
             ui::PushText(ui::TextStyle::Body, true);
-            const float textWidth = ImGui::CalcTextSize(text.c_str()).x;
-            ui::DrawText(
-                draw, ImVec2(at.x + ui::space::S, middle - ui::type::Body / 2), ui::Col(ui::color::Ink), text.c_str());
+            const float after = ImGui::CalcTextSize(seat.c_str()).x + ui::space::S;
             ui::PopText();
+            const std::string only = Tf("only what {} reads", ShortGameName(m_model.gameId));
             ui::PushText(ui::TextStyle::Caption);
-            ui::DrawText(draw, ImVec2(at.x + ui::space::S + textWidth + ui::space::S, middle - ui::type::Caption / 2),
-                ui::Col(ui::color::InkSoft), Tf("only what {} reads", ShortGameName(m_model.gameId)).c_str());
+            const bool explained = after + ImGui::CalcTextSize(only.c_str()).x <= room;
             ui::PopText();
-            ui::ButtonOptions cancel;
-            cancel.size = ui::Size::Normal;
-            ImGui::SetCursorScreenPos(ImVec2(right - ui::ButtonWidth(Tr("Cancel"), cancel), at.y));
+            if (explained)
+                PutText(draw, ImVec2(at.x + after, middle - ui::type::Caption / 2), ui::TextStyle::Caption, false,
+                    ui::color::InkSoft, only.c_str(), room - after);
+            ImGui::SetCursorScreenPos(ImVec2(searchX, at.y));
+            if (ui::IconButton("##choosesearch", ui::Icon::Search, Tr("Search")))
+                m_searchChoosing = m_focusSearch = true;
+            ImGui::SameLine(0, ui::space::S);
             if (ui::Button(Tr("Cancel"), cancel))
                 Choose(-1);
-            ui::EndCard();
+            return;
         }
 
         // The search first and wide, then Sort and filter, one button that says the sort and how many filters are on;
         // when a filter is on, its chip, Clear all and the count of figures found.
-        const int active = (m_filter.element >= 0) + !m_filter.game.empty() + (m_filter.category >= 0);
         auto buttonText = [](collection::Sort sort, int count) {
             const std::string text = Tf("Sort: {}", SortText(sort));
             return count > 0 ? fmt::format("{} ({})", text, count) : text;
@@ -1697,14 +1751,19 @@ namespace launcher_ui
         for (int sort = 0; sort < int(collection::Sort::Count); sort++)
             width = std::max(width, ui::ButtonWidth(buttonText(collection::Sort(sort), FilterCount).c_str(), button));
         button.width = width;
-        const float searchWidth =
-            std::max(ui::height::SettingControl / 2, ImGui::GetContentRegionAvail().x - width - ui::space::S);
+        const float searchWidth = std::max(
+            ui::height::SettingControl / 2, ImGui::GetContentRegionAvail().x - width - ui::space::S - cancelWidth);
+        const int count = FoundCount();
+        const std::string hint = choosing     ? seat
+                                 : count == 0 ? std::string(Tr("Search"))
+                                 : count == 1 ? Tf("Search {} figure", count)
+                                              : Tf("Search {} figures", count);
         if (m_focusSearch)
         {
             ImGui::SetKeyboardFocusHere();
             m_focusSearch = false;
         }
-        ui::SearchField("##search", m_search, sizeof(m_search), Tr("Name, element, game, level..."), searchWidth);
+        ui::SearchField("##search", m_search, sizeof(m_search), hint.c_str(), searchWidth);
         ImGui::SameLine(0, ui::space::S);
 
         // One id whatever it says: the focus stays on it when the sort changes.
@@ -1712,6 +1771,12 @@ namespace launcher_ui
         if (pressed || m_openFilters)
             ui::OpenMenu("##filtersmenu", { .alignRight = true });
         m_openFilters = false;
+        if (choosing)
+        {
+            ImGui::SameLine(0, ui::space::S);
+            if (ui::Button(Tr("Cancel"), cancel))
+                Choose(-1);
+        }
         DrawFilters(active);
         DrawTags();
     }
@@ -1766,12 +1831,24 @@ namespace launcher_ui
                     if (ui::SelectOption(ElementName(element).c_str(), m_filter.element == int(element)))
                         m_filter.element = int(element);
             });
-        row(N_("Works in"), "##game", m_filter.game.empty() ? Tr("All games") : ShortGameName(m_filter.game), [&] {
-            if (ui::SelectOption(Tr("All games"), m_filter.game.empty()))
+        const bool shownGame = m_filter.game.empty() && !m_allGames;
+        const std::string worksIn = shownGame    ? ShortGameName(m_model.gameId)
+                                    : m_allGames ? std::string(Tr("All games"))
+                                                 : ShortGameName(m_filter.game);
+        row(N_("Works in"), "##game", worksIn, [&] {
+            if (ui::SelectOption(Tr("All games"), m_allGames))
+            {
                 m_filter.game.clear();
+                m_allGames = true;
+            }
             for (const collection::Game& g : collection::Catalogue::Get().Games())
-                if (ui::SelectOption(ShortGameName(g.id).c_str(), m_filter.game == g.id))
-                    m_filter.game = g.id;
+                if (ui::SelectOption(
+                        ShortGameName(g.id).c_str(), shownGame ? g.id == m_model.gameId : m_filter.game == g.id))
+                {
+                    // The shown game is the shelf's default, not a filter.
+                    m_filter.game = g.id == m_model.gameId ? std::string() : g.id;
+                    m_allGames = false;
+                }
         });
         row(N_("Type"), "##type", m_filter.category >= 0 ? CategoryLabel(Category(m_filter.category)) : Tr("All types"),
             [&] {
@@ -1799,6 +1876,7 @@ namespace launcher_ui
         ShelfFilter cleared;
         cleared.sort = m_filter.sort; // the order is not a filter
         m_filter = cleared;
+        m_allGames = false;
     }
 
     // What is on, as chips (a click turns one off; the search is the field's own text), Clear all, and how many figures are found.
@@ -1816,6 +1894,8 @@ namespace launcher_ui
                 ElementInk(collection::Element(m_filter.element)), 0 });
         if (!m_filter.game.empty())
             tags.push_back({ Tf("Works in {}", ShortGameName(m_filter.game)), 0, 1 });
+        if (m_allGames)
+            tags.push_back({ Tr("All games"), 0, 3 });
         if (m_filter.category >= 0)
             tags.push_back({ CategoryLabel(Category(m_filter.category)), 0, 2 });
         if (tags.empty() && m_search[0] == 0)
@@ -1850,6 +1930,7 @@ namespace launcher_ui
         case 0: m_filter.element = -1; break;
         case 1: m_filter.game.clear(); break;
         case 2: m_filter.category = -1; break;
+        case 3: m_allGames = false; break;
         default: break;
         }
     }
@@ -2037,6 +2118,12 @@ namespace launcher_ui
                 if (!m_starterNames.empty() && ui::Button(label.c_str(), starters))
                     CreateStarterPack();
             }
+            else if (m_choosing < 0 && !filtered && !m_allGames)
+            {
+                // Every figure is another game's.
+                if (ui::EmptyState(ui::Icon::Search, Tr("No figure matches"), Tr("All games")))
+                    m_allGames = true;
+            }
             else if (ui::EmptyState(ui::Icon::Search,
                          m_choosing >= 0 && !filtered ? Tr("Nothing for this seat yet") : Tr("No figure matches"),
                          filtered ? Tr("Clear search and filters") : nullptr))
@@ -2130,7 +2217,10 @@ namespace launcher_ui
                 Choose(std::min(last, m_choosing + 1));
         }
         if (search)
+        {
             m_focusSearch = true;
+            m_searchChoosing = m_choosing >= 0; // the banner gives its row to the field
+        }
         if (sheet)
         {
             const std::string& path = !m_hovered.empty() ? m_hovered : m_selected;

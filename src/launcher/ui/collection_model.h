@@ -76,6 +76,7 @@ namespace launcher_ui
         std::string
             text; // the smart search (collection::SearchMatches): names, elements, games, types, versions, levels
         collection::Sort sort = collection::DefaultSort;
+        bool fitsGame = false; // with no `game`: without the toys the shown game can't take
         int seat = -1; // choosing for this seat of the model's game: only what goes there and the game reads
     };
 

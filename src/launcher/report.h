@@ -16,6 +16,8 @@ namespace launcher_report
         std::string computerName; // the machine's name ("MacBook-Pro.local"); empty when unknown
         std::string homeFolder;   // the account's home path (/Users/alice, C:\Users\alice, /home/alice)
         std::string isoFolder;    // the folder holding the chosen disc image
+        std::vector<std::string>
+            otherFolders; // the other folders launcher.ini names (each game's disc, the Games folder)
         std::string gamesFolder; // the Games folder ([launcher] games=, another drive's path); empty: the data folder
     };
 
@@ -48,7 +50,7 @@ namespace launcher_report
             runtimeFolder; // <data>/SSA: Arkeyan.log (SSARecomp.log from older kits), install.log, install-logs/
         std::filesystem::path logFolder; // <data>/logs: skylauncher-game.log, migration.log
         std::filesystem::path settingsFile; // <data>/launcher.ini
-        GameLog lastRun; // the last run's log (LastGameLog); empty: the newest in the two folders above
+        GameLog lastRun; // the run's log (only a game: it has none); empty: the newest in the two folders above
         Versions versions;
         std::string iso;
         std::string userName, computerName, homeFolder; // for the redaction

@@ -1061,7 +1061,7 @@ Edit my profile	Modifier mon profil
 Edit profile	Modifier le profil
 New profile	Nouveau profil
 Nickname	Surnom
-Picture	Photo
+Picture	Image
 Import an image...	Importer une image...
 Initials	Initiales
 Color	Couleur
@@ -1296,3 +1296,23 @@ Swap players?	Échanger les joueurs ?
 Swap	Échanger
 {} goes on {}, and {} on {}.	{} va sur {}, et {} sur {}.
 Players swapped	Joueurs échangés
+Search {} figure	Rechercher parmi {} figurine
+Search {} figures	Rechercher parmi {} figurines
+Back to the common setting	Revenir au réglage commun
+A dot marks what was changed for this game.	Un point marque ce qui a été modifié pour ce jeu.
+Sound and language	Son et langue
+Repair or uninstall	Réparer ou désinstaller
+Get started	Pour commencer
+Choose a disc	Choisir un disque
+Drop an .iso here, or choose it.	Déposez un .iso ici ou choisissez-le.
+1. Choose a disc   2. Install   3. Play	1. Choisir un disque   2. Installer   3. Jouer
+Save the report	Enregistrer le rapport
+Open GitHub	Ouvrir GitHub
+Anonymous: your names are removed.	Anonyme : vos noms sont retirés.
+Attach the saved report to the issue.	Joignez le rapport enregistré à l'issue.
+See what the report contains	Voir ce que contient le rapport
+General	Général
+Help	Aide
+Keys for all games	Touches pour tous les jeux
+Toy Box shortcuts	Raccourcis de la Toy Box
+Manage profiles...	Gérer les profils...

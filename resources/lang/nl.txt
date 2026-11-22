@@ -1266,3 +1266,23 @@ Swap players?	Spelers wisselen?
 Swap	Wisselen
 {} goes on {}, and {} on {}.	{} gaat naar {} en {} naar {}.
 Players swapped	Spelers gewisseld
+Search {} figure	Zoek in {} figuur
+Search {} figures	Zoek in {} figuren
+Back to the common setting	Terug naar de gedeelde instelling
+A dot marks what was changed for this game.	Een stip markeert wat voor dit spel is gewijzigd.
+Sound and language	Geluid en taal
+Repair or uninstall	Repareren of verwijderen
+Get started	Aan de slag
+Choose a disc	Schijf kiezen
+Drop an .iso here, or choose it.	Sleep een .iso hierheen of kies er een.
+1. Choose a disc   2. Install   3. Play	1. Schijf kiezen   2. Installeren   3. Spelen
+Save the report	Rapport opslaan
+Open GitHub	GitHub openen
+Anonymous: your names are removed.	Anoniem: je namen worden verwijderd.
+Attach the saved report to the issue.	Voeg het opgeslagen rapport toe aan de issue.
+See what the report contains	Bekijk wat het rapport bevat
+General	Algemeen
+Help	Help
+Keys for all games	Toetsen voor alle games
+Toy Box shortcuts	Toy Box-sneltoetsen
+Manage profiles...	Profielen beheren...

@@ -1267,3 +1267,23 @@ Swap players?	Byta spelare?
 Swap	Byt
 {} goes on {}, and {} on {}.	{} går till {} och {} till {}.
 Players swapped	Spelarna bytte plats
+Search {} figure	Sök bland {} figur
+Search {} figures	Sök bland {} figurer
+Back to the common setting	Tillbaka till den gemensamma inställningen
+A dot marks what was changed for this game.	En prick markerar det som har ändrats för det här spelet.
+Sound and language	Ljud och språk
+Repair or uninstall	Reparera eller avinstallera
+Get started	Kom igång
+Choose a disc	Välj en skiva
+Drop an .iso here, or choose it.	Släpp en .iso här, eller välj den.
+1. Choose a disc   2. Install   3. Play	1. Välj en skiva   2. Installera   3. Spela
+Save the report	Spara rapporten
+Open GitHub	Öppna GitHub
+Anonymous: your names are removed.	Anonymt: dina namn tas bort.
+Attach the saved report to the issue.	Bifoga den sparade rapporten i ärendet.
+See what the report contains	Se vad rapporten innehåller
+General	Allmänt
+Help	Hjälp
+Keys for all games	Tangenter för alla spel
+Toy Box shortcuts	Genvägar till Toy Box
+Manage profiles...	Hantera profiler...

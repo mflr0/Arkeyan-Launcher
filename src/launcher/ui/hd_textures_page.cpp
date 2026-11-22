@@ -205,7 +205,7 @@ namespace launcher_ui
             RecordInstalledGame(m_config, m_s->check.xexSha256, datadir::Text(runtime), "0.9.1", "0.1.0");
             RefreshInstall();
             m_page = Page::GameSettings;
-            m_gameTab = GameTab::Video;
+            ShowGameTab(GameTab::Picture);
             expect(!HdTexturesWanted(*m_s), "off by default");
             shoot("1-off");
             return;

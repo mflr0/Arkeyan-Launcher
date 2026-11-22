@@ -1267,3 +1267,23 @@ Swap players?	Vaihdetaanko pelaajat?
 Swap	Vaihda
 {} goes on {}, and {} on {}.	{} menee paikalle {} ja {} paikalle {}.
 Players swapped	Pelaajat vaihdettu
+Search {} figure	Hae {} hahmosta
+Search {} figures	Hae {} hahmosta
+Back to the common setting	Palaa yhteiseen asetukseen
+A dot marks what was changed for this game.	Piste merkitsee tätä peliä varten muutetut asetukset.
+Sound and language	Ääni ja kieli
+Repair or uninstall	Korjaa tai poista asennus
+Get started	Aloita
+Choose a disc	Valitse levy
+Drop an .iso here, or choose it.	Pudota .iso tähän tai valitse se.
+1. Choose a disc   2. Install   3. Play	1. Valitse levy   2. Asenna   3. Pelaa
+Save the report	Tallenna raportti
+Open GitHub	Avaa GitHub
+Anonymous: your names are removed.	Nimetön: nimesi poistetaan.
+Attach the saved report to the issue.	Liitä tallennettu raportti issueen.
+See what the report contains	Katso, mitä raportti sisältää
+General	Yleiset
+Help	Ohje
+Keys for all games	Kaikkien pelien näppäimet
+Toy Box shortcuts	Toy Boxin pikanäppäimet
+Manage profiles...	Hallitse profiileja...

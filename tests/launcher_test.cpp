@@ -817,6 +817,11 @@ namespace
             model.Shelf(forPlayer, shown);
             EXPECT(!shown.empty() && std::all_of(shown.begin(), shown.end(),
                                          [](const collection::Figure& f) { return collection::HasProgress(f); }));
+            launcher_ui::ShelfFilter fits;
+            fits.fitsGame = true;
+            model.Shelf(fits, shown);
+            EXPECT(std::none_of(
+                shown.begin(), shown.end(), [&](const collection::Figure& f) { return model.Incompatible(f); }));
             launcher_ui::ShelfFilter water;
             water.element = int(collection::Element::Water);
             model.Shelf(water, shown);

@@ -29,6 +29,10 @@ SavedReport SaveProblemReport(const std::string& configPath, const LauncherConfi
 // Saves a report already built (the Support page shows it before it is saved).
 SavedReport SaveProblemReportText(const std::string& text, bool show = true);
 
+// Opens a new GitHub issue about the game, for the player to attach the report to; only a button calls it. `reportFile` is
+// the saved report's name without its folder (empty: not saved yet).
+void OpenProblemIssue(const GameInfo& game, const std::string& reportFile);
+
 // The crash dialog's Report: writes the same report file as Settings > Support, shows it in the file manager and opens a
 // GitHub issue to attach it to.
 void ReportGameStopped(const GameInfo& game, int exitCode, const std::string& configPath, const LauncherConfig& config,

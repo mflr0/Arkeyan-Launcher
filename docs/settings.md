@@ -138,8 +138,8 @@ game's section; PLAY copies nothing. `device`, `gamepad`, `glyphs` and the Toy B
   Controller side only. All stored in `[input]`. Then the **Mouse** switch, the **Rumble** of both players, the **Toy Box keys**,
   and the Portal of Power. A game's own actions (Jump, Attack 1...) are set on that game's tabs only, in `[<game>.input]`.
 - **A game's Keyboard and Controller tabs** list all its rows. A value the game does not set itself (it follows the global layout,
-  or its default) is **dimmed**; one it sets is in normal text with a **reset arrow** (`GameKeyOwn`, `PadOwn`, `RumbleOwn`,
-  `GameMouseOwn`, `GameMouseButtonOwn`): an All games row goes back to the global value, a game's own row to its default.
+  or its default) is in normal text; one it sets has a **dot** and a **reset arrow** (`GameKeyOwn`, `PadOwn`, `RumbleOwn`,
+  `GameMouseOwn`, `GameMouseButtonOwn`): it goes back to the common setting (a game's own row: its default).
   **Reset to defaults** (held) takes every key and mouse line of the game (Keyboard tab), or every pad and rumble line
   (Controller tab): the All games rows take the global values again, the game's own rows their defaults.
 - A game's value equal to the global one is no line (`SetGameKey`, `SetPadTarget`, `SetRumbleLevel`, `SetGameMouseOn`): the game
@@ -216,7 +216,7 @@ written in `[input]` by hand reaches every game.
 The game's settings page has a **Controller** tab beside Keyboard (`src/launcher/game_keys.{h,cpp}`, `ui/controls_page.cpp`): each of
 the pad's 16 buttons (A B X Y, LB RB LT RT, Start, Back, the two stick clicks, the D-pad's four directions), named as the pad in
 use prints it (the same family as the Keyboard tab's brackets: Cross on a PS5, B on a Switch for the 360's A), has a list that says
-**whose job it does**: its own ("Default", "Par défaut"), another button's (shown with the game's word for that job: "B (Attack 3 / Back)"),
+**whose job it does**: its own (shown by its name: "A"), another button's (shown with the game's word for that job: "B (Attack 3 / Back)"),
 or Nothing. Above, the **Rumble** of Player 1 and Player 2: Off, Low, Normal, Strong.
 
 - Stored as the keys are: `pad_<button>=<button>|none` and `rumble_p1` / `rumble_p2` in `[input]` for every game (Settings >

@@ -147,7 +147,8 @@ namespace launcher_ui
 
     ImTextureRef Ref(SDL_Texture* texture) { return ImTextureRef(ImTextureID(intptr_t(texture))); }
 
-    std::string ChooseIsoDialog(SDL_Window* window, const GameInfo& game, const std::string& previous)
+    std::string ChooseIsoDialog(
+        SDL_Window* window, const GameInfo& game, const std::string& previous, const char* prompt = nullptr)
     {
         static const SDL_DialogFileFilter filters[] = { { "Xbox 360 disc image (.iso)", "iso" } };
         struct Result
@@ -160,7 +161,7 @@ namespace launcher_ui
         SDL_SetPointerProperty(
             properties, SDL_PROP_FILE_DIALOG_FILTERS_POINTER, const_cast<SDL_DialogFileFilter*>(filters));
         SDL_SetNumberProperty(properties, SDL_PROP_FILE_DIALOG_NFILTERS_NUMBER, 1);
-        std::string title = Tf("Choose your {} disc image", game.name);
+        std::string title = prompt != nullptr ? prompt : Tf("Choose your {} disc image", game.name);
         SDL_SetStringProperty(properties, SDL_PROP_FILE_DIALOG_TITLE_STRING, title.c_str());
         SDL_SetPointerProperty(properties, SDL_PROP_FILE_DIALOG_WINDOW_POINTER, window);
         if (!previous.empty())
@@ -641,6 +642,18 @@ namespace launcher_ui
         m_s = shown;
         SetActiveGame(m_s->game.id);
         RunDiscChecks();
+        // A disc given on Home names no game: the one it holds is taken without asking.
+        if (!m_homeDisc.empty())
+        {
+            if (m_s->discPath != m_homeDisc)
+                m_homeDisc.clear(); // the player went on to something else
+            else if (m_s->disc != DiscState::Verifying)
+            {
+                m_homeDisc.clear();
+                if (m_s->disc == DiscState::Failed && m_s->check.status == GameSourceStatus::WrongGame)
+                    UseDiscForOtherGame();
+            }
+        }
     }
 
     void App::Shutdown()
@@ -908,6 +921,7 @@ namespace launcher_ui
                 Toast(Tr("Wait for the installation to finish"));
             else if (event.drop.data != nullptr)
             {
+                m_homeDisc = m_page == Page::Home ? event.drop.data : "";
                 m_page = Page::Play;
                 StartVerify(event.drop.data);
             }
@@ -1996,8 +2010,8 @@ namespace launcher_ui
         ImGui::PopStyleColor();
     }
 
-    // The launcher's menu, opened by the ARKEYAN LAUNCHER title: the games as a library (a card each, with its art from the
-    // player's disc), the games still to come under them, the project's links bottom right.
+    // The launcher's menu: what to do next, the games as a card each (its art from the player's disc), then the games still
+    // to come and the project's links.
     // "Update all" at the right of the Home title when two or more games have an update: one click updates them one after the
     // other. While it runs the game and its progress show in its place, with Cancel.
     void App::DrawUpdateAll(ImVec2 right)
@@ -2059,45 +2073,142 @@ namespace launcher_ui
         const ImVec2 origin = ImGui::GetCursorScreenPos();
         const float width = ImGui::GetContentRegionAvail().x;
 
-        // The page's title, its line under it (XS), the cards a section's air (L) below.
-        float top = origin.y;
-        ui::PushText(ui::TextStyle::Display);
-        ui::DrawText(draw, origin, ui::Col(ui::color::Ink), Tr("Library"));
-        ui::PopText();
-        top += ui::type::Display + ui::space::XS;
-        ui::PushText(ui::TextStyle::Body);
-        ui::DrawText(draw, ImVec2(origin.x, top), ui::Col(ui::color::Dim), Tr("Game art comes from your own disc."));
-        ui::PopText();
-        top += ui::type::Body + ui::space::L;
-        ImGui::SetCursorScreenPos(ImVec2(origin.x, top));
-        DrawUpdateAll(ImVec2(origin.x + width, origin.y));
-
-        // The playable games: a card each, the game's painting behind its logo, its state at the bottom.
         std::vector<const LauncherGameEntry*> playable, later;
         for (const LauncherGameEntry& entry : LauncherGameCatalog(m_config))
             (entry.enabled && FindGame(entry.id) != nullptr ? playable : later).push_back(&entry);
-        const float gap = ui::space::L;
-        // Two games a row: room for the logo and the text.
-        constexpr size_t Columns = 2;
+
+        // The play times are files: read when Home opens, the profile changes or a game starts or stops.
+        const int frame = ImGui::GetFrameCount();
+        if (frame != m_homeFrame + 1 || m_homeRunning != m_session.Running() || m_homeProfile != m_profiles.active)
+        {
+            m_homeProfile = m_profiles.active;
+            m_homeRunning = m_session.Running();
+            m_homeLast = nullptr;
+            m_homePlay = {};
+            for (const LauncherGameEntry* entry : playable)
+                if (const std::filesystem::path folder = progress::Folder(entry->id); !folder.empty())
+                    if (const progress::PlayTime play = progress::ReadPlayTime(folder);
+                        play.lastEnd > m_homePlay.lastEnd)
+                    {
+                        m_homePlay = play;
+                        m_homeLast = FindGame(entry->id);
+                    }
+        }
+        m_homeFrame = frame;
+
+        // The top block: the game played last, else an installed one (the shown game first), else how to start.
+        GameSlot* next = m_homeLast != nullptr ? &SlotFor(*m_homeLast) : nullptr;
+        const bool played = next != nullptr;
+        if (!played && !m_s->installed.runtime.empty())
+            next = m_s;
+        if (next == nullptr)
+            for (const LauncherGameEntry* entry : playable)
+                if (GameSlot& slot = SlotFor(*FindGame(entry->id)); !slot.installed.runtime.empty())
+                {
+                    next = &slot;
+                    break;
+                }
+        // What is installed is known once the disc is read: no "Get started" in the meantime.
+        if (next == nullptr)
+            for (const LauncherGameEntry* entry : playable)
+                if (GameSlot& slot = SlotFor(*FindGame(entry->id)); SlotStatus(&slot).state == SlotState::Checking)
+                {
+                    next = &slot;
+                    break;
+                }
+        const SlotLine nextLine = next != nullptr ? SlotStatus(next) : SlotLine{};
+        const char* heading = next == nullptr ? Tr("Get started") : played ? Tr("Continue") : nextLine.text.c_str();
+        std::string first, second;
+        ui::ButtonOptions action;
+        action.kind = ui::ButtonKind::Primary;
+        action.size = ui::Size::Large;
+        std::string label;
+        if (next == nullptr)
+        {
+            first = Tr("Drop an .iso here, or choose it.");
+            second = Tr("1. Choose a disc   2. Install   3. Play");
+            label = Tr("Choose a disc");
+            action.icon = ui::Icon::Disc;
+        }
+        else
+        {
+            first = GameName(next->game.id);
+            if (played)
+                second = Tf("{} played", FormatPlayTime(m_homePlay.totalSeconds)) + " \xC2\xB7 " +
+                         Tf("Last played: {}", FormatLastPlayed(m_homePlay.lastEnd, int64_t(std::time(nullptr))));
+            label = nextLine.button;
+            action.disabled = !nextLine.buttonEnabled;
+            action.icon = next->disc != DiscState::Ready ? ui::Icon::Disc
+                          : NeedsInstall(*next)          ? ui::Icon::Download
+                          : UpdateAvailable(*next)       ? ui::Icon::Update
+                                                         : ui::Icon::Play;
+        }
+        float top = origin.y;
+        ui::PushText(ui::TextStyle::Display);
+        ui::DrawText(draw, origin, ui::Col(ui::color::Ink), heading);
+        ui::PopText();
+        DrawUpdateAll(ImVec2(origin.x + width, origin.y));
+        top += ui::type::Display + ui::space::S;
+        const float actionW = ui::ButtonWidth(label.c_str(), action);
+        const float textW = std::max(1.0f, width - actionW - ui::space::L);
+        auto fitted = [&](ImFont* font, float textSize, float y, const std::string& text, unsigned color) {
+            ImGui::PushFont(font, ui::FitSize(font, textSize, text.c_str(), textW));
+            ui::DrawText(draw, ImVec2(origin.x, y), ui::Col(color), text.c_str());
+            ImGui::PopFont();
+        };
+        fitted(ui::Ctx().fonts.bold, next != nullptr ? ui::type::Title : ui::type::Body, top, first, ui::color::Ink);
+        fitted(ui::Ctx().fonts.text, ui::type::Body, top + ui::height::Large - ui::type::Body - ui::space::XXS, second,
+            ui::color::InkSoft);
+        ImGui::SetCursorScreenPos(ImVec2(origin.x + width - actionW, top));
+        const bool act = ui::Button((label + "##home-main").c_str(), action);
+        if (!action.disabled)
+            TakeFocus(FocusTo::Page);
+        if (act && next == nullptr)
+        {
+            const std::string path = ChooseIsoDialog(m_window, m_s->game, "", Tr("Choose a disc"));
+            if (!path.empty())
+            {
+                m_homeDisc = path;
+                GoTo(Page::Play);
+                StartVerify(path);
+            }
+            return;
+        }
+        if (act)
+        {
+            if (next != m_s)
+                SelectGame(next->game);
+            GoTo(Page::Play);
+            // The game page's main action (DrawPlayAction).
+            if (m_s->disc == DiscState::Verifying)
+                return; // its first visit reads the disc
+            if (m_s->disc != DiscState::Ready)
+                Browse();
+            else if (NeedsInstall() || UpdateAvailable())
+                StartInstall();
+            else
+                PlayNow();
+            return;
+        }
+        top += ui::height::Large + ui::space::L;
+        ImGui::SetCursorScreenPos(ImVec2(origin.x, top));
+
+        // The playable games: a card each, the game's painting behind its logo or short name, its state at the bottom.
+        const float gap = ui::space::M;
+        constexpr size_t Columns = 3;
         const size_t rows = std::max<size_t>((playable.size() + Columns - 1) / Columns, 1);
         const float cardW = (width - gap * float(Columns - 1)) / float(Columns);
         const float legendH = PlayBandH(); // the pad legend's band at the foot, as on the game page
-        const float below = ui::space::XL + ui::SizeOf(ui::TextStyle::Caption) + 3 * ui::height::Normal +
-                            legendH; // the coming-later row and the links
-        const float cardH = std::min(
-            cardW * 0.5f, (size.y - origin.y - below - ui::height::Large - gap * float(rows - 1)) / float(rows));
+        // The coming-later row, the links and the legend.
+        const float below = ui::space::L + ui::type::Caption + ui::space::XS + ui::BadgeSize("M").y + ui::space::S +
+                            ui::height::Normal + ui::space::M + legendH;
+        const float cardH = std::min(cardW * 0.75f, (size.y - top - below - gap * float(rows - 1)) / float(rows));
         const ImVec2 row = ImGui::GetCursorScreenPos();
-        // Every card says the game's full name, all at one size: the largest at which the longest fits (never cut, never
-        // the short name on one card and the full name on another). A card without the disc's logo shows the short name in
-        // its place, like a logo's big word, at one size too.
-        float nameSize = ui::type::Title, logoNameSize = ui::type::Display;
+        // One name a card: the disc's logo, else the short name like a logo's big word, all at one size.
+        float logoNameSize = ui::type::Display;
         for (const LauncherGameEntry* entry : playable)
-        {
-            nameSize = std::min(nameSize,
-                ui::FitSize(ui::Ctx().fonts.bold, ui::type::Title, GameName(entry->id), cardW - 2 * ui::space::L));
             logoNameSize = std::min(logoNameSize, ui::FitSize(ui::Ctx().fonts.title, ui::type::Display,
                                                       GameName(entry->id, GameNameForm::Short), cardW * 0.84f));
-        }
         for (size_t i = 0; i < playable.size(); i++)
         {
             const LauncherGameEntry& entry = *playable[i];
@@ -2114,7 +2225,7 @@ namespace launcher_ui
                     SelectGame(*FindGame(entry.id));
                 GoTo(Page::Play);
             }
-            if (std::string_view(entry.id) == m_s->game.id) // the page's first focus: the game shown last
+            if (action.disabled && std::string_view(entry.id) == m_s->game.id) // the main action can't take the focus
                 TakeFocus(FocusTo::Page);
             if (hovered)
                 ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
@@ -2141,7 +2252,7 @@ namespace launcher_ui
             ui::GradientRect(draw, ImVec2(at.x, at.y + cardH * 0.45f), end, ui::Col(ui::color::Scrim, 0),
                 ui::Col(ui::color::Scrim, 0.92f), ui::radius::Panel, ImDrawFlags_RoundCornersBottom);
             // The logo above the name and the state: what the text takes at the foot is left out of its box.
-            const float textH = ui::space::L + ui::PillHeight + ui::space::XS + nameSize + ui::space::S;
+            const float textH = ui::space::S + ui::PillHeight + ui::space::XS;
             const float logoTop = at.y + ui::space::S, logoH = std::max(0.0f, cardH - textH - ui::space::S);
             if (const ArtTexture* logo = CachedArt(entry.id, LauncherAssets::Role::Logo, 640))
                 DrawLogo(draw, *logo, ImVec2(at.x + cardW * 0.12f, logoTop), ImVec2(cardW * 0.76f, logoH));
@@ -2157,15 +2268,13 @@ namespace launcher_ui
             }
             GameSlot* slot = &SlotFor(*FindGame(entry.id));
             const SlotLine line = SlotStatus(slot);
-            // The full name, at the row's size, and under it (XS) the state in a word and a shape; the card's padding (L) at
-            // the left and the foot.
-            const float pillTop = end.y - ui::space::L - ui::PillHeight;
-            ImGui::PushFont(ui::Ctx().fonts.bold, nameSize);
-            draw->AddText(ImVec2(at.x + ui::space::L, pillTop - ui::space::XS - nameSize), ui::Col(ui::color::Ink),
-                GameName(entry.id));
-            ImGui::PopFont();
-            ImGui::SetCursorScreenPos(ImVec2(at.x + ui::space::L, pillTop));
-            ui::StatusPill(StatusOf(line.state), line.text.c_str(), IconOf(line.state));
+            // The state in a word and a shape, cut to the card.
+            ImGui::SetCursorScreenPos(ImVec2(at.x + ui::space::S, end.y - ui::space::S - ui::PillHeight));
+            ui::PushText(ui::TextStyle::Caption);
+            const std::string shown =
+                ui::Ellipsize(line.text.c_str(), cardW - 2 * ui::space::S - 2 * ui::space::M - ui::icon::Small);
+            ui::PopText();
+            ui::StatusPill(StatusOf(line.state), shown.c_str(), IconOf(line.state));
             if (m_testSidebar)
                 m_drawn[std::string("home:") + entry.id] = line.text;
             // Under the pointer: the game's own colour around the card.
@@ -2174,8 +2283,8 @@ namespace launcher_ui
             if (state.focused) // around the card (its state pill is the last item drawn)
                 ui::FocusRing(at, end, ui::radius::Panel);
         }
-        // The games still to come, a section's air (XL) below: their names, in their colours, quietly.
-        const float laterTop = row.y + float(rows) * cardH + gap * float(rows - 1) + ui::space::XL;
+        // The games still to come, a section's air (L) below: their names, in their colours, quietly.
+        const float laterTop = row.y + float(rows) * cardH + gap * float(rows - 1) + ui::space::L;
         ui::PushText(ui::TextStyle::Caption, true);
         ui::DrawText(draw, ImVec2(row.x, laterTop), ui::Col(ui::color::Dim), Tr("COMING LATER"));
         ui::PopText();
@@ -2193,18 +2302,17 @@ namespace launcher_ui
             ui::Badge(later[i]->name, ui::Mix(ui::color::Surface, later[i]->accent, 0.35f), ui::color::Ink);
         }
 
-        // The project's links, bottom right: Report a bug, the Discord mark and the GitHub mark.
+        // The project's links, bottom right: Report a problem, the Discord mark and the GitHub mark.
         const float mark = ui::HeightOf(ui::Size::Normal);
         ui::ButtonOptions report;
         report.overArt = true;
-        report.icon = ui::Icon::External; // a web page, as About's links
-        report.tooltip = Tr("Opens a new issue on GitHub");
-        const float reportW = ui::ButtonWidth(Tr("Report a bug"), report);
-        const ImVec2 iconAt(size.x - ui::space::XL - mark, size.y - legendH - ui::space::XL - mark);
+        report.icon = ui::Icon::Warning;
+        const float reportW = ui::ButtonWidth(Tr("Report a problem"), report);
+        const ImVec2 iconAt(size.x - ui::space::XL - mark, size.y - legendH - ui::space::M - mark);
         const ImVec2 discordAt(iconAt.x - ui::space::S - mark, iconAt.y);
         ImGui::SetCursorScreenPos(ImVec2(discordAt.x - ui::space::S - reportW, iconAt.y));
-        if (ui::Button(Tr("Report a bug"), report))
-            SDL_OpenURL((std::string(Project) + "/issues/new").c_str());
+        if (ui::Button(Tr("Report a problem"), report))
+            OpenProblemReport();
         ImGui::SetCursorScreenPos(discordAt);
         ui::IconButtonOptions discord;
         discord.overArt = true;
@@ -2469,7 +2577,7 @@ namespace launcher_ui
             m_drawn["hero-pickers"] = running ? "hidden" : "shown";
         if (!running)
         {
-            // These are the same device choices and portal settings as the previous page.
+            // These are the same device choices as in Settings.
             const std::string device = CurrentDevice();
             const std::string deviceName = device == "auto"       ? Tr("Automatic")
                                            : device == "keyboard" ? Tr("Keyboard")
@@ -2483,16 +2591,6 @@ namespace launcher_ui
             picker.tooltip = pickerTip.c_str();
             const float pickerW = std::min(ui::PillWidth(pickerId.c_str(), picker), ControllerW);
             picker.width = pickerW;
-            const launcher_portal::Status portal = m_testPortal ? *m_testPortal : m_portal.Current();
-            const std::string portalId =
-                std::string(portal.connected ? Tr("Portal") : Tr("Virtual portal")) + "##portal";
-            const std::string portalTip = portal.Line() + "\n" + Tr(strings::PortalTip);
-            ui::PillOptions portalPill;
-            portalPill.icon = ui::IconOf(ui::Status::Success);
-            portalPill.iconColor = ui::ColorOf(ui::Status::Success);
-            portalPill.trailing = ui::Icon::ChevronRight; // it opens its settings: no menu
-            portalPill.overArt = true;
-            portalPill.tooltip = portalTip.c_str();
             // The controller picker: what the game listens to, a menu of the choices above it (the pad icon says what it picks, the
             // tooltip says it in words).
             ImGui::SetCursorScreenPos(ImVec2(left, pillY));
@@ -2520,20 +2618,6 @@ namespace launcher_ui
                         SetDevice(value);
                 }
                 ui::EndMenu();
-            }
-            // The portal's state, in a word and a shape: a real portal plugged in, or not (the game then has its virtual one).
-            {
-                ImGui::SetCursorScreenPos(ImVec2(left + pickerW + ui::space::S, pillY));
-                if (ui::Pill(portalId.c_str(), portalPill))
-                {
-                    m_tab = SettingsTab::Controls;
-                    GoTo(Page::Settings);
-                }
-                if (m_testInstall)
-                {
-                    const ImVec2 min = ImGui::GetItemRectMin(), max = ImGui::GetItemRectMax();
-                    m_drawn["install-portal-rect"] = fmt::format("{},{},{},{}", min.x, min.y, max.x, max.y);
-                }
             }
         }
     }
@@ -2636,7 +2720,9 @@ namespace launcher_ui
     void App::DrawPlayDiscActions(const PlayState& play, ImVec2 at, float leftW, float pillY)
     {
         const float left = at.x;
-        if (play.ready && !play.detailed && !play.installing && !play.running && !m_s->fromCopy)
+        // A good disc is changed in the game's settings; the main button chooses one when there is none.
+        const bool otherDisc = play.ready && !play.detailed && !play.installing && !play.running && DiscDamaged(*m_s);
+        if (otherDisc)
         {
             ImGui::SetCursorScreenPos(ImVec2(left, at.y));
             if (ui::Button(
@@ -2659,7 +2745,7 @@ namespace launcher_ui
         }
         if (play.ready && !play.detailed && !m_s->fromCopy && m_s->copy.state == gamedata::State::Damaged)
         {
-            ImGui::SetCursorScreenPos(ImVec2(left, at.y + ui::height::Normal));
+            ImGui::SetCursorScreenPos(ImVec2(left, otherDisc ? at.y + ui::height::Normal : at.y));
             ui::StatusPill(ui::Status::Error, Tr("Game data damaged: using the disc image."));
         }
     }
@@ -2748,7 +2834,7 @@ namespace launcher_ui
         ui::Tooltip(Tr(strings::PortalTip));
     }
 
-    // Settings > Controls: the controller, the global layout every game inherits (controls_page.cpp), the portal.
+    // Settings > Controls: the controller, then what every game inherits (controls_page.cpp).
     void App::DrawControls()
     {
         const std::string current = CurrentDevice();
@@ -2773,17 +2859,21 @@ namespace launcher_ui
             ui::EndSettings();
         }
         DrawGlobalControls();
+    }
 
-        ui::SectionHeader(Tr("Portal of Power"));
+    void App::DrawPortalTab()
+    {
+        ui::SectionHeader(Tr("Portal of Power"), nullptr, false);
+        DrawPortalStatus();
         if (ui::BeginSettings("##portal"))
         {
             ui::SettingRow(Tr("Portal"), nullptr);
             SettingSelect("##portal", "portal", "mode", PortalChoices, 0);
+            DrawPortalTest();
             ui::SettingRow(Tr("Auto-open Toy Box"), Tr("Opens the Toy Box when the game asks for a figure."));
             bool autoOpen = ParseBool(SettingGet(m_config, "portal", "toybox_auto_open", "1"));
             if (ui::Toggle("##toyboxautoopen", &autoOpen))
                 Set("portal", "toybox_auto_open", autoOpen ? "1" : "0");
-            DrawPortalTest();
             ui::EndSettings();
         }
         DrawPortalResult();
@@ -2855,31 +2945,35 @@ namespace launcher_ui
         ImGui::Dummy(ImVec2(0, ui::space::XS));
     }
 
-    // The launcher's settings, apart from any game's: the controller (all games read the same), the launcher
-    // itself, support and About. Each game has its own settings page (game_settings_page.cpp).
+    // The launcher's settings, apart from any game's: the launcher itself, the controls all games share, the portal and
+    // help. Each game has its own settings page (game_settings_page.cpp).
     void App::DrawSettings()
     {
         // A centred column: settings read badly when they stretch across a wide window.
         BeginSettingsPage("##settingscolumn", Tr("Launcher settings"), false);
 
-        static const char* const Tabs[] = { N_("Controls"), N_("Launcher"), N_("Support"), N_("About"),
-            N_("Profiles") };
+        static const char* const Tabs[] = { N_("General"), N_("Controls"), N_("Portal"), N_("Help") };
         int tab = int(m_tab);
         DrawTabBar(Tabs, int(std::size(Tabs)), &tab);
-        m_tab = m_uninstalled ? SettingsTab::Launcher
+        m_tab = m_uninstalled ? SettingsTab::General
                               : SettingsTab(tab); // once uninstalled the window shows the result only
         BeginCard("##settings", ImVec2(0, 0), ImGuiChildFlags_AutoResizeY);
         switch (m_tab)
         {
+        case SettingsTab::General: DrawLauncherTab(); break;
         case SettingsTab::Controls: DrawControls(); break;
-        case SettingsTab::Launcher: DrawLauncherTab(); break;
-        case SettingsTab::Support: DrawSupport(); break;
-        case SettingsTab::About: DrawAbout(); break;
-        case SettingsTab::Profiles: DrawProfilesTab(); break;
+        case SettingsTab::Portal: DrawPortalTab(); break;
+        case SettingsTab::Help:
+            DrawSupport();
+            ui::SectionHeader(Tr("About"));
+            ImGui::PushID("##about");
+            DrawAbout();
+            ImGui::PopID();
+            break;
         }
         EndCard();
-        if (m_testUninstall && m_testScrollEnd)
-            ImGui::SetScrollHereY(1.0f); // the screenshot test shows the bottom of the tab
+        if (m_testScrollEnd)
+            ImGui::SetScrollHereY(1.0f); // the screenshot tests show the bottom of the tab
         EndSettingsPage();
     }
 
@@ -3053,7 +3147,7 @@ namespace launcher_ui
         RequestFocus(FocusTo::Page);
     }
 
-    // B / Escape when nothing else took it, one step back: out of the uninstall list (the Launcher tab stays), out of a game's
+    // B / Escape when nothing else took it, one step back: out of the uninstall list (the General tab stays), out of a game's
     // settings or achievements to its page, out of any other page to Home, and on Home to the sidebar.
     void App::Back()
     {
@@ -3289,7 +3383,7 @@ namespace launcher_ui
             DrawWhatsNew();
             DrawDowngrade();
             DrawIntegrity();
-            DrawProfileEditor();
+            DrawProfiles();
             DrawProblemReport();
             DrawQuitPrompt();
             DrawDefenderNotice();
@@ -3406,8 +3500,8 @@ namespace launcher_ui
                         const std::string& label = ui::Ctx().testNavigationLabels[id];
                         showSubmitted |= label == Tr("Show the game");
                         expect(label.find("##controller") == std::string::npos &&
-                                   label.find("##portal") == std::string::npos && label != "##gamesettings",
-                            "no controller, portal or settings picker in navigation");
+                                   label.find("##hero-portal-link") == std::string::npos && label != "##gamesettings",
+                            "no controller picker, portal link or settings button in navigation");
                     }
                     expect(showSubmitted == (m_drawn["hero-show"] == "shown"),
                         "Show is submitted only with a game window");
@@ -4215,8 +4309,7 @@ namespace launcher_ui
             { ImGuiKey_Escape }, // 45: B: out of the search
             { ImGuiKey_UpArrow }, // 46: up: to the seats, above the bar
             { ImGuiKey_Space }, // 47: A: choosing for that seat (lit, the bar says so)
-            { ImGuiKey_DownArrow, ImGuiKey_DownArrow,
-                ImGuiKey_DownArrow }, // 48: down: Cancel (choosing), the search's row, the shelf's first row
+            { ImGuiKey_DownArrow }, // 48: down: the shelf's first row (the banner's buttons are off to the right)
             { ImGuiKey_Space }, // 49: A: it goes on the seat, the choosing ends
             { ImGuiKey_GamepadFaceLeft }, // 50: X: the focused card's sheet
             { ImGuiKey_GamepadFaceRight, ImGuiKey_GamepadFaceRight,
@@ -4224,7 +4317,7 @@ namespace launcher_ui
             // (a frame late: in the next step, downs would move the grid)
             { ImGuiKey_DownArrow, ImGuiKey_DownArrow, ImGuiKey_DownArrow, ImGuiKey_DownArrow, ImGuiKey_DownArrow,
                 ImGuiKey_DownArrow, ImGuiKey_DownArrow, ImGuiKey_DownArrow, ImGuiKey_Space,
-                ImGuiKey_GamepadR2 }, // 52: down to Settings, A, RT: Settings > Launcher
+                ImGuiKey_GamepadR2 }, // 52: down to Settings, A, RT: Settings > Controls
             { ImGuiKey_Escape }, // 53: Escape: back to Home
         };
         // Where each step's keys must have led (checked when the next step begins): the sidebar's rows, the collection, the
@@ -4250,7 +4343,7 @@ namespace launcher_ui
         case 4: expect(m_page == Page::Collection, "A on the sidebar's Collection row opens the collection"); break;
         case 12: expect(m_page == Page::Home, "B, B close the sheet and the collection"); break;
         case 13:
-            expect(m_page == Page::Settings && m_tab == SettingsTab::Launcher, "Settings, then RT: its Launcher tab");
+            expect(m_page == Page::Settings && m_tab == SettingsTab::Controls, "Settings, then RT: its Controls tab");
             break;
         case 14: expect(m_page == Page::Home, "Escape leaves Settings for Home"); break;
         default: break;
@@ -4425,7 +4518,7 @@ namespace launcher_ui
                     return;
                 ssa.installed.runtime = "fixture"; // the Test button on (once the disc check is done: it sets the slot)
                 m_page = Page::Settings;
-                m_tab = SettingsTab::Controls;
+                m_tab = SettingsTab::Portal;
                 m_probe.result = ParsePortalProbe(m_testStep == 0 ? silent : found);
                 m_probe.ran = true;
                 m_probe.done = true;
@@ -4453,11 +4546,13 @@ namespace launcher_ui
             switch (m_testStep)
             {
             case 0: break;
-            case 1: break; // the Toy Box row: its hint is a line under its label (no info icon)
+            case 1: // the Toy Box row: its hint is a line under its label (no info icon)
+                m_tab = SettingsTab::Portal;
+                break;
             case 2:
             case 3:
             {
-                m_tab = SettingsTab::Launcher;
+                m_tab = SettingsTab::General;
                 GameSlot& giants = SlotFor(*FindGame("giants"));
                 giants.disc = DiscState::Ready;
                 giants.installed.runtime = "fixture";
@@ -4483,8 +4578,11 @@ namespace launcher_ui
                 }
                 break;
             }
-            case 4: m_tab = SettingsTab::Support; break;
-            case 5: m_tab = SettingsTab::About; break;
+            case 4: m_tab = SettingsTab::Help; break;
+            case 5:
+                m_tab = SettingsTab::Help;
+                m_testScrollEnd = true; // About ends the tab
+                break;
             case 6:
             case 7:
             case 8:
@@ -4508,7 +4606,7 @@ namespace launcher_ui
         const bool pad = m_testScreens == 2;
         auto shoot = [&](const char* name, Page page, uint64_t wait) {
             m_page = page;
-            m_gameTab = GameTab::Keyboard;
+            ShowGameTab(GameTab::Controls, GameSection::Keyboard);
             m_focusTo = FocusTo::Page;
             m_focusShow = pad;
             ImGui::SetNavCursorVisible(pad);
@@ -4776,7 +4874,7 @@ namespace launcher_ui
         if (m_testPad)
         {
             // Each game's Controller tab (SKY_LAUNCHER_TEST_PAD): with a few buttons given other jobs, to see the rows; Swap Force's
-            // Game tab has the Nightmare option (a second shot).
+            // Manage tab has the Nightmare option (a second shot).
             static const char* const Games[] = { "ssa", "giants", "swapforce" };
             if (m_testStep >= int(std::size(Games)) + 1)
             {
@@ -4790,7 +4888,7 @@ namespace launcher_ui
                 SetPadTarget(m_config, Games[m_testStep], 6, -1); // LT is off
                 m_config[GameInputSection(Games[m_testStep])]["rumble_p2"] = "low";
                 m_page = Page::GameSettings;
-                m_gameTab = GameTab::Controller;
+                ShowGameTab(GameTab::Controls, GameSection::Controller);
                 m_testShot = fmt::format("pad-{}", Games[m_testStep]);
             }
             else
@@ -4798,7 +4896,7 @@ namespace launcher_ui
                 SelectGame(*FindGame("swapforce"));
                 m_config["swapforce"]["nightmare_from_start"] = "1";
                 m_page = Page::GameSettings;
-                m_gameTab = GameTab::Game;
+                ShowGameTab(GameTab::Manage);
                 m_testShot = "game-swapforce";
             }
             m_testAt = now + 600;
@@ -4808,10 +4906,18 @@ namespace launcher_ui
         {
             // Each tab of one game's settings, FSR 3 and frame generation on so their rows show (set SKY_LAUNCHER_LANGUAGE for the
             // language, SKY_LAUNCHER_TEST_SIZE=<w>x<h> a window tall enough for the longest tab). Shots "tabs-<game>-<NN>-<tab>".
-            static const std::pair<GameTab, const char*> Tabs[] = { { GameTab::Video, "video" },
-                { GameTab::Keyboard, "keyboard" }, { GameTab::Controller, "controller" }, { GameTab::Sound, "sound" },
-                { GameTab::Language, "language" }, { GameTab::Disc, "disc" }, { GameTab::Saves, "saves" },
-                { GameTab::Game, "game" } };
+            struct TabShot
+            {
+                GameTab tab;
+                GameSection section;
+                const char* name;
+            };
+            static const TabShot Tabs[] = { { GameTab::Picture, GameSection::None, "picture" },
+                { GameTab::Controls, GameSection::Keyboard, "keyboard" },
+                { GameTab::Controls, GameSection::Controller, "controller" },
+                { GameTab::Sound, GameSection::None, "sound" }, { GameTab::Manage, GameSection::None, "manage" },
+                { GameTab::Manage, GameSection::Disc, "disc" }, { GameTab::Manage, GameSection::Saves, "saves" },
+                { GameTab::Manage, GameSection::Repair, "repair" } };
             if (m_testStep == 0)
                 if (const char* size = LauncherEnv("SKY_LAUNCHER_TEST_SIZE"))
                 {
@@ -4830,15 +4936,15 @@ namespace launcher_ui
             m_config[video]["upscaler"] = "fsr3";
             m_config[video]["fsr_frame_generation"] = "on";
             m_page = Page::GameSettings;
-            m_gameTab = Tabs[m_testStep].first;
-            m_testShot = fmt::format("tabs-{}-{:02}-{}", m_testGameTabs, m_testStep, Tabs[m_testStep].second);
+            ShowGameTab(Tabs[m_testStep].tab, Tabs[m_testStep].section);
+            m_testShot = fmt::format("tabs-{}-{:02}-{}", m_testGameTabs, m_testStep, Tabs[m_testStep].name);
             m_testAt = now + 600;
             return;
         }
         if (m_testKeys)
         {
             // Each game's Keyboard tab (set SKY_LAUNCHER_LANGUAGE for the language of the shots; SKY_LAUNCHER_TEST_SIZE=<w>x<h> a
-            // taller window to see the Mouse section), then Settings > Portal and its Toy Box keys.
+            // taller window to see the Mouse section), then Settings > Controls and its Toy Box shortcuts.
             static const char* const Games[] = { "ssa", "giants", "swapforce", "trapteam", "superchargers",
                 "imaginators" };
             if (m_testStep == 0)
@@ -4852,6 +4958,7 @@ namespace launcher_ui
             {
                 m_page = Page::Settings;
                 m_tab = SettingsTab::Controls;
+                m_toyboxShortcutsOpen = true;
                 m_testShot = "keys-toybox";
                 m_testAt = now + 600;
                 return;
@@ -4863,7 +4970,7 @@ namespace launcher_ui
             }
             SelectGame(*FindGame(Games[m_testStep]));
             m_page = Page::GameSettings;
-            m_gameTab = GameTab::Keyboard;
+            ShowGameTab(GameTab::Controls, GameSection::Keyboard);
             m_testShot = fmt::format("keys-{}", Games[m_testStep]);
             m_testAt = now + 600;
             return;
@@ -4999,7 +5106,7 @@ namespace launcher_ui
             break;
         case 2:
             m_page = Page::GameSettings;
-            m_gameTab = GameTab::Video;
+            ShowGameTab(GameTab::Picture);
             m_testAt = now + 400;
             break;
         case 3:
@@ -5035,24 +5142,24 @@ namespace launcher_ui
             break;
         case 9:
             m_page = Page::GameSettings;
-            m_gameTab = GameTab::Language;
+            ShowGameTab(GameTab::Sound);
             m_testAt = now + 400;
             break;
         case 10:
-            m_gameTab = GameTab::Disc;
+            ShowGameTab(GameTab::Manage, GameSection::Disc);
             m_testAt = now + 400;
             break;
         case 11:
-            m_gameTab = GameTab::Saves;
+            ShowGameTab(GameTab::Manage, GameSection::Saves);
             m_testAt = now + 400;
             break;
         case 12:
-            m_gameTab = GameTab::Game;
+            ShowGameTab(GameTab::Manage, GameSection::Repair);
             m_testAt = now + 400;
             break;
         case 13:
             m_page = Page::Settings;
-            m_tab = SettingsTab::Launcher;
+            m_tab = SettingsTab::General;
             m_testAt = now + 400;
             break;
         case 14:
@@ -5078,17 +5185,19 @@ namespace launcher_ui
             m_lastPage = Page::Home;
             m_testAt = now + uint64_t(LogoDropMs / 8);
             break;
-        case 16: // the launcher's Support and About tabs, and the problem report over Support
+        case 16: // the launcher's Help tab, its About, and the problem report over it
             m_page = Page::Settings;
-            m_tab = SettingsTab::Support;
+            m_tab = SettingsTab::Help;
             m_testAt = now + 400;
             break;
         case 17:
-            m_tab = SettingsTab::About;
+            m_tab = SettingsTab::Help;
+            m_testScrollEnd = true;
             m_testAt = now + 400;
             break;
         case 18:
-            m_tab = SettingsTab::Support;
+            m_testScrollEnd = false;
+            m_tab = SettingsTab::Help;
             OpenProblemReport();
             m_testAt = now + 500;
             break;

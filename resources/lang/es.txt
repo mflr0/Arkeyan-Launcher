@@ -1266,3 +1266,23 @@ Swap players?	¿Intercambiar jugadores?
 Swap	Intercambiar
 {} goes on {}, and {} on {}.	{} va a {} y {} a {}.
 Players swapped	Jugadores intercambiados
+Search {} figure	Buscar en {} figura
+Search {} figures	Buscar en {} figuras
+Back to the common setting	Volver al ajuste común
+A dot marks what was changed for this game.	Un punto indica lo que se ha cambiado para este juego.
+Sound and language	Sonido e idioma
+Repair or uninstall	Reparar o desinstalar
+Get started	Primeros pasos
+Choose a disc	Elegir un disco
+Drop an .iso here, or choose it.	Suelta un .iso aquí o elígelo.
+1. Choose a disc   2. Install   3. Play	1. Elegir un disco   2. Instalar   3. Jugar
+Save the report	Guardar el informe
+Open GitHub	Abrir GitHub
+Anonymous: your names are removed.	Anónimo: se quitan tus nombres.
+Attach the saved report to the issue.	Adjunta el informe guardado a la incidencia.
+See what the report contains	Ver qué contiene el informe
+General	General
+Help	Ayuda
+Keys for all games	Teclas para todos los juegos
+Toy Box shortcuts	Atajos de Toy Box
+Manage profiles...	Gestionar perfiles...

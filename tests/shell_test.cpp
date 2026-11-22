@@ -1381,6 +1381,21 @@ namespace
         SHELL_EXPECT(launcher_report::Redact("before /Users/alice after", identity) == "before ~ after");
         SHELL_EXPECT(launcher_report::Redact("", identity).empty());
 
+        // launcher.ini names every game's disc and the Games folder: none of those folders is in a report, whatever game
+        // it is for.
+        {
+            const std::filesystem::path other = scratch / "reportfolders";
+            std::filesystem::create_directories(other);
+            WriteBytes(other / "launcher.ini", "[launcher]\ngames=E:\\Alice SSD\\Games\n[ssa]\niso=D:\\Discs\\SSA.iso\n"
+                                               "[giants]\niso=/Volumes/Alice Backup/Giants.iso\n");
+            launcher_report::Sources paths;
+            paths.settingsFile = other / "launcher.ini";
+            paths.runtimeFolder = paths.logFolder = other;
+            paths.iso = "D:\\Discs\\SSA.iso";
+            const std::string anonymous = launcher_report::BuildReport(paths);
+            SHELL_EXPECT(anonymous.find("Alice SSD") == std::string::npos);
+            SHELL_EXPECT(anonymous.find("Alice Backup") == std::string::npos);
+        }
         // The whole report: every file, the versions and the GPU line, all redacted.
         std::filesystem::path data = scratch / "reportdata";
         std::filesystem::path game = data / "SSA";
