@@ -180,7 +180,7 @@ int UiRenderChecks(const std::filesystem::path& scratch)
             expect(count('T') == 2 && count('B') == 0, "the tab caps name LT and RT, the buttons that change tab");
         });
         const char* const game[] = { "Picture", "Controls", "Sound and language", "Manage" };
-        const char* const launcher[] = { "Controls", "Launcher", "Support", "About", "Profiles" };
+        const char* const launcher[] = { "General", "Controls", "Portal", "Help" };
         for (const auto& lang : i18n::Languages())
         {
             i18n::SetLanguage(lang.code);

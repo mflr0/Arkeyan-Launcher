@@ -73,7 +73,6 @@ Anisotropic 16x	Anisotroop 16x
 Anisotropic 2x	Anisotroop 2x
 Anisotropic 4x	Anisotroop 4x
 Anisotropic 8x	Anisotroop 8x
-Anonymous: your names are removed. Save it, then add it to a GitHub issue.	Anoniem: je namen worden verwijderd. Sla het op en voeg het toe aan een GitHub-issue.
 Appears once the game's disc is checked.	Verschijnt zodra de schijf van het spel is gecontroleerd.
 Apr	apr.
 Arkeyan Launcher can't remove itself from here: delete it by hand.	Arkeyan Launcher kan zichzelf hier niet verwijderen: verwijder het handmatig.
@@ -290,7 +289,6 @@ Drag Arkeyan Launcher to Applications, replacing the old one.	Sleep Arkeyan Laun
 Drift (vehicle)	Driften (voertuig)
 Drop figure files or a folder on the window.	Sleep figuurbestanden of een map naar het venster.
 Drop to 30 FPS when needed	Terugschakelen naar 30 FPS indien nodig
-Dump textures	Texturen dumpen
 Duplicate	Dupliceren
 Duplicated: 	Gedupliceerd: 
 Each has its own Toy Box, saves, keys and achievements.	Elk heeft zijn eigen Toy Box, savegames, toetsen en prestaties.
@@ -339,7 +337,6 @@ Finishing	Afronden
 Fire	Vuur
 Flocked	Fluwelen
 Folders	Mappen
-For pack makers: saves the textures as DDS files.	Voor pakketmakers: slaat de texturen op als DDS-bestanden.
 For {}	Voor {}
 Forward side button	Zijknop voor
 Found	Gevonden
@@ -376,7 +373,6 @@ Width	Breedte
 Height	Hoogte
 {} or more	{} of meer
 Game	Spel
-Game art comes from your own disc.	De afbeeldingen van het spel komen van je eigen schijf.
 Game data	Spelgegevens
 Game data copies	Kopieën van spelgegevens
 Game data damaged	Spelgegevens beschadigd
@@ -405,7 +401,6 @@ GitHub says: {}	GitHub zegt: {}
 Glow in the Dark	Glow in the Dark
 Gold	Goud
 Greek	Grieks
-Custom texture packs	Eigen texturepakketten
 Use HD textures	HD-textures gebruiken
 HD textures ready	HD-textures klaar
 HD textures removed	HD-textures verwijderd
@@ -479,7 +474,6 @@ Last played	Laatst gespeeld
 Last played: {}	Laatst gespeeld: {}
 Later	Later
 Later games	Latere spellen
-Launcher	Launcher
 Launcher settings	Launcher-instellingen
 Left	Links
 Left Alt	Linker Alt
@@ -490,7 +484,6 @@ Left click: attack 1. Right click: attack 2. The game keeps the pointer.	Linkerm
 Legendary	Legendarisch
 Level in {}	Niveau in {}
 Level {}	Niveau {}
-Library	Bibliotheek
 Licenses	Licenties
 Life	Leven
 Light	Licht
@@ -511,7 +504,6 @@ Magic item	Item
 Making the HD textures	HD-textures worden gemaakt
 Making the HD textures. You can keep using the launcher; the game waits.	HD-textures worden gemaakt. Je kunt de launcher blijven gebruiken; het spel wacht.
 Manage	Beheren
-Manage profiles	Profielen beheren
 Mar	mrt.
 Mark as not in use	Markeren als niet in gebruik
 Mark as not in use · {}	Markeren als niet in gebruik · {}
@@ -538,7 +530,6 @@ My Team	Mijn team
 Name	Naam
 Name (optional)	Naam (optioneel)
 Name this toy	Geef dit poppetje een naam
-Name, element, game, level...	Naam, element, spel, niveau...
 Named: shown at the next start	Benoemd: zichtbaar bij de volgende start
 Native PC ports	Native pc-ports
 Native PC ports of Skylanders. No game code or art: it comes from your disc.	Native pc-ports van Skylanders. Geen spelcode of afbeeldingen: die komen van je eigen schijf.
@@ -599,7 +590,6 @@ Older folders	Oudere mappen
 On	Aan
 On its own	Op zichzelf
 On the portal	Op de portal
-On the portal for	Op de portal voor
 On the portal in {}: read-only	Op de portal in {}: alleen-lezen
 On the wheel	Op het wiel
 On the wheel: {}	Op het wiel: {}
@@ -611,7 +601,6 @@ Open logs folder	Logmap openen
 Open the Toy Box	De Toy Box openen
 Open the folder	De map openen
 Opening the disc image	Het schijfimage openen
-Opens a new issue on GitHub	Opent een nieuw issue op GitHub
 Opens the Toy Box when the game asks for a figure.	Opent de Toy Box wanneer het spel om een figuur vraagt.
 Or drop your .iso on this window. It stays on this computer.	Of sleep je .iso naar dit venster. Het blijft op deze computer.
 Original resolution	Originele resolutie
@@ -697,7 +686,6 @@ Repair builds the game again from your disc.	Herstellen bouwt het spel opnieuw o
 Repair downloads the game tools again.	Herstellen downloadt de spelhulpmiddelen opnieuw.
 Repair needs the disc of {}	Voor herstellen is de schijf van {} nodig
 Repair the copy	De kopie herstellen
-Replaces the game's textures with your pack.	Vervangt de texturen van het spel door je pakket.
 Report	Rapporteren
 Report a bug	Een bug melden
 Report a problem	Een probleem melden
@@ -785,7 +773,6 @@ Stopping keeps the files already copied.	Als je stopt, blijven de al gekopieerde
 Stopping...	Stoppen...
 Strong	Sterk
 SuperChargers	SuperChargers
-Support	Ondersteuning
 Swap Force bottoms	Swap Force-onder
 Swap Force tops	Swap Force-boven
 Swapper	Swapper
@@ -798,7 +785,6 @@ Test	Test
 Test the portal	De portal testen
 Testing...	Testen...
 Texture filtering	Texturefiltering
-Custom packs folder	Map met eigen pakketten
 That's a folder: choose the disc image (.iso).	Dat is een map: kies het schijfimage (.iso).
 The 3D scene at the console's size.	De 3D-scène op de grootte van de console.
 The HD textures stopped before they were made.	De HD-textures zijn gestopt voordat ze klaar waren.
@@ -874,7 +860,6 @@ Total	Totaal
 Touchpad	Touchpad
 Toy	Poppetje
 Toy Box	Toy Box
-Toy Box keys	Toy Box-toetsen
 Toy type {}	Type poppetje {}
 Translating the game code	De spelcode vertalen
 Translating the shaders	De shaders vertalen
@@ -1121,7 +1106,6 @@ Real figure · on the portal	Echte figuur · op de portal
 Start a game first	Start eerst een spel
 The Toy Box in its own window, to keep beside the game	De Toy Box in een eigen venster, naast het spel
 The other seats: in the Toy Box window	De andere plekken: in het Toy Box-venster
-The Toy Box window opens each time you play	Het Toy Box-venster opent elke keer dat je speelt
 The game cannot read this figure there	Het spel kan deze figuur daar niet lezen
 The game did not find this figure	Het spel vond deze figuur niet
 The game has no virtual portal now	Het spel heeft nu geen virtuele portal
@@ -1207,9 +1191,6 @@ The disc image of {} is damaged	Het schijfimage van {} is beschadigd
 Reset to defaults	Terug naar standaard
 Hold to reset every key of this game.	Houd ingedrukt om alle toetsen van dit spel te resetten.
 Hold to reset every button of this game.	Houd ingedrukt om alle knoppen van dit spel te resetten.
-Use the global setting	Algemene instelling gebruiken
-Use the default	Standaard gebruiken
-Dimmed values follow Launcher settings.	Gedimde waarden volgen de Launcher-instellingen.
 Games use these unless their own settings change them.	De spellen gebruiken deze, tenzij hun eigen instellingen ze wijzigen.
 Buttons	Knoppen
 Stats / Info	Statistieken / Info

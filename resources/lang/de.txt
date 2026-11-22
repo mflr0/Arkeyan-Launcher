@@ -71,7 +71,6 @@ Anisotropic 16x	Anisotrop 16x
 Anisotropic 2x	Anisotrop 2x
 Anisotropic 4x	Anisotrop 4x
 Anisotropic 8x	Anisotrop 8x
-Anonymous: your names are removed. Save it, then add it to a GitHub issue.	Anonym: Deine Namen werden entfernt. Speichere ihn und hänge ihn an ein GitHub-Issue.
 Appears once the game's disc is checked.	Erscheint, sobald die Disc des Spiels geprüft ist.
 Apr	Apr.
 Arkeyan Launcher can't remove itself from here: delete it by hand.	Arkeyan Launcher kann sich hier nicht selbst entfernen: Lösche ihn von Hand.
@@ -288,7 +287,6 @@ Drag Arkeyan Launcher to Applications, replacing the old one.	Ziehe Arkeyan Laun
 Drift (vehicle)	Driften (Fahrzeug)
 Drop figure files or a folder on the window.	Ziehe Figurendateien oder einen Ordner auf das Fenster.
 Drop to 30 FPS when needed	Bei Bedarf auf 30 FPS senken
-Dump textures	Texturen sichern
 Duplicate	Duplizieren
 Duplicated: 	Dupliziert: 
 Each has its own Toy Box, saves, keys and achievements.	Jedes hat seine eigene Toy Box, Spielstände, Tasten und Erfolge.
@@ -337,7 +335,6 @@ Finishing	Abschluss
 Fire	Feuer
 Flocked	Beflockt
 Folders	Ordner
-For pack makers: saves the textures as DDS files.	Für Pack-Ersteller: sichert die Texturen als DDS-Dateien.
 For {}	Für {}
 Forward side button	Seitentaste vorn
 Found	Gefunden
@@ -374,7 +371,6 @@ Width	Breite
 Height	Höhe
 {} or more	{} oder mehr
 Game	Spiel
-Game art comes from your own disc.	Die Spielgrafik stammt von deiner eigenen Disc.
 Game data	Spieldaten
 Game data copies	Spieldaten-Kopien
 Game data damaged	Spieldaten beschädigt
@@ -403,7 +399,6 @@ GitHub says: {}	GitHub sagt: {}
 Glow in the Dark	Leuchtet im Dunkeln
 Gold	Gold
 Greek	Griechisch
-Custom texture packs	Eigene Texturpakete
 Use HD textures	HD-Texturen verwenden
 HD textures ready	HD-Texturen fertig
 HD textures removed	HD-Texturen entfernt
@@ -477,7 +472,6 @@ Last played	Zuletzt gespielt
 Last played: {}	Zuletzt gespielt: {}
 Later	Später
 Later games	Spätere Spiele
-Launcher	Launcher
 Launcher settings	Launcher-Einstellungen
 Left	Links
 Left Alt	Alt links
@@ -488,7 +482,6 @@ Left click: attack 1. Right click: attack 2. The game keeps the pointer.	Linkskl
 Legendary	Legendär
 Level in {}	Stufe in {}
 Level {}	Stufe {}
-Library	Bibliothek
 Licenses	Lizenzen
 Life	Leben
 Light	Licht
@@ -509,7 +502,6 @@ Magic item	Item
 Making the HD textures	HD-Texturen werden erstellt
 Making the HD textures. You can keep using the launcher; the game waits.	HD-Texturen werden erstellt. Du kannst den Launcher weiter nutzen; das Spiel wartet.
 Manage	Verwalten
-Manage profiles	Profile verwalten
 Mar	März
 Mark as not in use	Als nicht benutzt markieren
 Mark as not in use · {}	Als nicht benutzt markieren · {}
@@ -536,7 +528,6 @@ My Team	Mein Team
 Name	Name
 Name (optional)	Name (optional)
 Name this toy	Figur benennen
-Name, element, game, level...	Name, Element, Spiel, Stufe...
 Named: shown at the next start	Benannt: wird beim nächsten Start angezeigt
 Native PC ports	Native PC-Ports
 Native PC ports of Skylanders. No game code or art: it comes from your disc.	Native PC-Ports von Skylanders. Kein Spielcode und keine Grafik: Alles stammt von deiner Disc.
@@ -597,7 +588,6 @@ Older folders	Ältere Ordner
 On	An
 On its own	Von selbst
 On the portal	Auf dem Portal
-On the portal for	Auf dem Portal für
 On the portal in {}: read-only	Auf dem Portal in {}: schreibgeschützt
 On the wheel	Auf dem Rad
 On the wheel: {}	Auf dem Rad: {}
@@ -609,7 +599,6 @@ Open logs folder	Log-Ordner öffnen
 Open the Toy Box	Toy Box öffnen
 Open the folder	Ordner öffnen
 Opening the disc image	Disc-Abbild wird geöffnet
-Opens a new issue on GitHub	Öffnet ein neues Issue auf GitHub
 Opens the Toy Box when the game asks for a figure.	Öffnet die Toy Box, wenn das Spiel nach einer Figur fragt.
 Or drop your .iso on this window. It stays on this computer.	Oder ziehe deine .iso auf dieses Fenster. Sie bleibt auf diesem Computer.
 Original resolution	Originalauflösung
@@ -695,7 +684,6 @@ Repair builds the game again from your disc.	Reparieren baut das Spiel neu aus d
 Repair downloads the game tools again.	Reparieren lädt die Spiel-Tools erneut.
 Repair needs the disc of {}	Reparieren braucht die Disc von {}
 Repair the copy	Kopie reparieren
-Replaces the game's textures with your pack.	Ersetzt die Texturen des Spiels durch dein Pack.
 Report	Melden
 Report a bug	Fehler melden
 Report a problem	Problem melden
@@ -783,7 +771,6 @@ Stopping keeps the files already copied.	Beim Stoppen bleiben die schon kopierte
 Stopping...	Wird gestoppt...
 Strong	Stark
 SuperChargers	SuperChargers
-Support	Support
 Swap Force bottoms	Swap-Force-Unterteile
 Swap Force tops	Swap-Force-Oberteile
 Swapper	Swapper
@@ -796,7 +783,6 @@ Test	Test
 Test the portal	Portal testen
 Testing...	Teste...
 Texture filtering	Texturfilterung
-Custom packs folder	Ordner für eigene Pakete
 That's a folder: choose the disc image (.iso).	Das ist ein Ordner: Wähle das Disc-Abbild (.iso).
 The 3D scene at the console's size.	Die 3D-Szene in der Größe der Konsole.
 The HD textures stopped before they were made.	Die HD-Texturen wurden gestoppt, bevor sie fertig waren.
@@ -872,7 +858,6 @@ Total	Gesamt
 Touchpad	Touchpad
 Toy	Figur
 Toy Box	Toy Box
-Toy Box keys	Toy-Box-Tasten
 Toy type {}	Figurentyp {}
 Translating the game code	Spielcode wird übersetzt
 Translating the shaders	Shader werden übersetzt
@@ -1119,7 +1104,6 @@ Real figure · on the portal	Echte Figur · auf dem Portal
 Start a game first	Starte zuerst ein Spiel
 The Toy Box in its own window, to keep beside the game	Die Toy Box in einem eigenen Fenster, neben dem Spiel
 The other seats: in the Toy Box window	Die anderen Plätze: im Toy-Box-Fenster
-The Toy Box window opens each time you play	Das Toy-Box-Fenster öffnet sich bei jedem Spielstart
 The game cannot read this figure there	Das Spiel kann diese Figur dort nicht lesen
 The game did not find this figure	Das Spiel hat diese Figur nicht gefunden
 The game has no virtual portal now	Das Spiel hat gerade kein virtuelles Portal
@@ -1205,9 +1189,6 @@ The disc image of {} is damaged	Das Disc-Abbild von {} ist beschädigt
 Reset to defaults	Auf Standard zurücksetzen
 Hold to reset every key of this game.	Halte gedrückt, um alle Tasten dieses Spiels zurückzusetzen.
 Hold to reset every button of this game.	Halte gedrückt, um alle Controller-Tasten dieses Spiels zurückzusetzen.
-Use the global setting	Globale Einstellung verwenden
-Use the default	Standard verwenden
-Dimmed values follow Launcher settings.	Abgeblendete Werte folgen den Launcher-Einstellungen.
 Games use these unless their own settings change them.	Die Spiele nutzen diese, außer ihre eigenen Einstellungen ändern sie.
 Buttons	Tasten
 Stats / Info	Werte / Info

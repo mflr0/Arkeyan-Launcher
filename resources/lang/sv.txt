@@ -74,7 +74,6 @@ Anisotropic 16x	Anisotropisk 16x
 Anisotropic 2x	Anisotropisk 2x
 Anisotropic 4x	Anisotropisk 4x
 Anisotropic 8x	Anisotropisk 8x
-Anonymous: your names are removed. Save it, then add it to a GitHub issue.	Anonym: dina namn tas bort. Spara den och lägg sedan till den i ett GitHub-ärende.
 Appears once the game's disc is checked.	Visas när spelets skiva har kontrollerats.
 Apr	apr.
 Arkeyan Launcher can't remove itself from here: delete it by hand.	Arkeyan Launcher kan inte ta bort sig själv härifrån: radera den manuellt.
@@ -291,7 +290,6 @@ Drag Arkeyan Launcher to Applications, replacing the old one.	Dra Arkeyan Launch
 Drift (vehicle)	Drifta (fordon)
 Drop figure files or a folder on the window.	Släpp figurfiler eller en mapp i fönstret.
 Drop to 30 FPS when needed	Sänk till 30 FPS vid behov
-Dump textures	Dumpa texturer
 Duplicate	Duplicera
 Duplicated: 	Duplicerad: 
 Each has its own Toy Box, saves, keys and achievements.	Varje profil har egen Toy Box, egna sparfiler, tangenter och prestationer.
@@ -340,7 +338,6 @@ Finishing	Slutför
 Fire	Eld
 Flocked	Flockad
 Folders	Mappar
-For pack makers: saves the textures as DDS files.	För paketskapare: sparar texturerna som DDS-filer.
 For {}	För {}
 Forward side button	Främre sidoknapp
 Found	Hittad
@@ -377,7 +374,6 @@ Width	Bredd
 Height	Höjd
 {} or more	{} eller mer
 Game	Spel
-Game art comes from your own disc.	Spelets grafik kommer från din egen skiva.
 Game data	Speldata
 Game data copies	Speldatakopior
 Game data damaged	Speldata skadad
@@ -406,7 +402,6 @@ GitHub says: {}	GitHub säger: {}
 Glow in the Dark	Glow in the Dark
 Gold	Guld
 Greek	Grekiska
-Custom texture packs	Egna texturpaket
 Use HD textures	Använd HD-texturer
 HD textures ready	HD-texturerna är klara
 HD textures removed	HD-texturerna är borttagna
@@ -480,7 +475,6 @@ Last played	Senast spelad
 Last played: {}	Senast spelad: {}
 Later	Senare
 Later games	Kommande spel
-Launcher	Launcher
 Launcher settings	Launcherinställningar
 Left	Vänster
 Left Alt	Vänster Alt
@@ -491,7 +485,6 @@ Left click: attack 1. Right click: attack 2. The game keeps the pointer.	Vänste
 Legendary	Legendarisk
 Level in {}	Nivå i {}
 Level {}	Nivå {}
-Library	Bibliotek
 Licenses	Licenser
 Life	Liv
 Light	Ljus
@@ -512,7 +505,6 @@ Magic item	Föremål
 Making the HD textures	Skapar HD-texturerna
 Making the HD textures. You can keep using the launcher; the game waits.	Skapar HD-texturerna. Du kan fortsätta använda launchern; spelet väntar.
 Manage	Hantera
-Manage profiles	Hantera profiler
 Mar	mars
 Mark as not in use	Markera som inte använd
 Mark as not in use · {}	Markera som inte använd · {}
@@ -539,7 +531,6 @@ My Team	Mitt lag
 Name	Namn
 Name (optional)	Namn (valfritt)
 Name this toy	Namnge figuren
-Name, element, game, level...	Namn, element, spel, nivå...
 Named: shown at the next start	Namngiven: visas vid nästa start
 Native PC ports	Nativa PC-portar
 Native PC ports of Skylanders. No game code or art: it comes from your disc.	Nativa PC-portar av Skylanders. Ingen spelkod eller grafik ingår: den kommer från din skiva.
@@ -600,7 +591,6 @@ Older folders	Äldre mappar
 On	På
 On its own	På egen hand
 On the portal	På portalen
-On the portal for	På portalen för
 On the portal in {}: read-only	På portalen i {}: skrivskyddad
 On the wheel	På hjulet
 On the wheel: {}	På hjulet: {}
@@ -612,7 +602,6 @@ Open logs folder	Öppna loggmappen
 Open the Toy Box	Öppna Toy Box
 Open the folder	Öppna mappen
 Opening the disc image	Öppnar skivavbilden
-Opens a new issue on GitHub	Öppnar ett nytt ärende på GitHub
 Opens the Toy Box when the game asks for a figure.	Öppnar Toy Box när spelet ber om en figur.
 Or drop your .iso on this window. It stays on this computer.	Eller släpp din .iso i det här fönstret. Den stannar på den här datorn.
 Original resolution	Originalupplösning
@@ -698,7 +687,6 @@ Repair builds the game again from your disc.	Reparera bygger spelet igen från d
 Repair downloads the game tools again.	Reparera hämtar spelverktygen igen.
 Repair needs the disc of {}	Reparera kräver skivan för {}
 Repair the copy	Reparera kopian
-Replaces the game's textures with your pack.	Ersätter spelets texturer med ditt paket.
 Report	Rapport
 Report a bug	Rapportera en bugg
 Report a problem	Rapportera ett problem
@@ -786,7 +774,6 @@ Stopping keeps the files already copied.	Om du stoppar behålls de redan kopiera
 Stopping...	Stoppar...
 Strong	Stark
 SuperChargers	SuperChargers
-Support	Support
 Swap Force bottoms	Swap Force-underdelar
 Swap Force tops	Swap Force-överdelar
 Swapper	Swapper
@@ -799,7 +786,6 @@ Test	Testa
 Test the portal	Testa portalen
 Testing...	Testar...
 Texture filtering	Texturfiltrering
-Custom packs folder	Mapp för egna paket
 That's a folder: choose the disc image (.iso).	Det är en mapp: välj skivavbilden (.iso).
 The 3D scene at the console's size.	3D-scenen i konsolens storlek.
 The HD textures stopped before they were made.	HD-texturerna stoppades innan de hade skapats.
@@ -875,7 +861,6 @@ Total	Totalt
 Touchpad	Pekplatta
 Toy	Figur
 Toy Box	Toy Box
-Toy Box keys	Toy Box-tangenter
 Toy type {}	Figurtyp {}
 Translating the game code	Översätter spelkoden
 Translating the shaders	Översätter shaders
@@ -1122,7 +1107,6 @@ Real figure · on the portal	Riktig figur · på portalen
 Start a game first	Starta ett spel först
 The Toy Box in its own window, to keep beside the game	Toy Box i ett eget fönster, bredvid spelet
 The other seats: in the Toy Box window	De andra platserna: i Toy Box-fönstret
-The Toy Box window opens each time you play	Toy Box-fönstret öppnas varje gång du spelar
 The game cannot read this figure there	Spelet kan inte läsa den här figuren där
 The game did not find this figure	Spelet hittade inte den här figuren
 The game has no virtual portal now	Spelet har ingen virtuell portal nu
@@ -1208,9 +1192,6 @@ The disc image of {} is damaged	Skivavbilden för {} är skadad
 Reset to defaults	Återställ till standard
 Hold to reset every key of this game.	Håll in för att återställa alla tangenter för det här spelet.
 Hold to reset every button of this game.	Håll in för att återställa alla knappar för det här spelet.
-Use the global setting	Använd den globala inställningen
-Use the default	Använd standard
-Dimmed values follow Launcher settings.	Nedtonade värden följer Launcherinställningar.
 Games use these unless their own settings change them.	Spelen använder dessa om inte deras egna inställningar ändrar dem.
 Buttons	Knappar
 Stats / Info	Statistik / Info

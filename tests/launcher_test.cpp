@@ -2428,8 +2428,8 @@ static void PadWalkChecks(const std::filesystem::path& scratch, const std::strin
     }
     EXPECT(views == 51);
     // The smallest window: the sidebar fits.
-    const std::string small = "SKY_LAUNCHER_TEST_SIZE=1024x680 SKY_LAUNCHER_TEST_PADWALK_VIEW=01- " + command;
-    EXPECT(std::system(small.c_str()) == 0);
+    const std::string smallWindow = "SKY_LAUNCHER_TEST_SIZE=1024x680 SKY_LAUNCHER_TEST_PADWALK_VIEW=01- " + command;
+    EXPECT(std::system(smallWindow.c_str()) == 0);
     std::ifstream smallOut(root / "out.txt");
     while (std::getline(smallOut, line))
     {
