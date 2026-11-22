@@ -169,6 +169,22 @@ int NavigationChecks()
         NAV_EXPECT(Pick(boxes, 1, NavDir::Right) == 0);
         NAV_EXPECT(Pick(boxes, 5, NavDir::Up) == 4); // in the shelf, up scrolls it back
     }
+    // The search over the shelf scrolled between its titles: the top row shows by less than its half, laid out mostly
+    // above the search's middle. Down from the search goes to that row, never past it.
+    {
+        std::vector<NavBox> boxes = { Box(1, 302, 248, 500, 40), Box(2, 302, 170, 129, 169),
+            Box(3, 302, 479, 129, 169) };
+        for (size_t i = 1; i < 3; i++)
+        {
+            boxes[i].clipY0 = 294;
+            boxes[i].clipY1 = 658;
+            boxes[i].window = 2;
+        }
+        NAV_EXPECT(Pick(boxes, 1, NavDir::Down) == 2);
+        boxes[1].y0 -= 180; // wholly scrolled out: never that one
+        boxes[1].y1 -= 180;
+        NAV_EXPECT(Pick(boxes, 1, NavDir::Down) == 3);
+    }
     // Settings and game settings: every tab has the same navigation contract, with a back control only on game settings.
     for (const bool game : { false, true })
     {

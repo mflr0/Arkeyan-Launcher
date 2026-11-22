@@ -2,7 +2,7 @@
 
 The launcher shows the same figures as the game and the Toy Box: ArkeyanRuntime's collection library (option A of
 `figures_overlap.md`, now done). **One model for both apps** (ArkeyanRuntime's `docs/runtime/host/toybox_ux.md`, the
-2026-10-26 redesign): the portal's seats on top, the shelf below (every figure once, favorites first), the same cards
+2026-10-26 redesign): the portal's seats on top, the shelf below (every figure once, in the sort's sections), the same cards
 and words, a sheet with three main actions. The look is dorydev's: the colours, fonts and widgets are untouched
 (`launcher_theme.h`).
 
@@ -154,10 +154,11 @@ At the first visit to the page (`CollectionPage::Open`):
   the bar.
 - **The seats** (above).
 - **The bar** (2026-10-27, the Toy Box's too, same words and order; `docs/runtime/host/toybox_ux.md` of the game's repo
-  holds the design): the **search field** first and wide ("Name, element, game, level..."), then the **order** (a Select,
-  "Sort: Recent": Recent, Name, Level, Element, Game; it is not a filter, so it is no chip and Clear all keeps it), then one
-  **Filters** button ("Filters · 2" when two are on) opening a small panel of three Selects, **Element**, **Works in** (the toys a game
-  reads: Giants reads every Spyro's Adventure toy, Spyro's Adventure no Giants toy) and **Type** (the types the collection has), and **Clear all**.
+  holds the design): the **search field** first and wide ("Name, element, game, level..."), then one **Sort and filter**
+  button (its tooltip) that says the sort and how many filters are on ("Sort: Element (2)"), as wide as its longest text.
+  It opens a small panel: **Sort by** (a Select), a divider, **Show only** over three Selects, **Element**, **Works in**
+  (the toys a game reads: Giants reads every Spyro's Adventure toy, Spyro's Adventure no Giants toy) and **Type** (the
+  types the collection has), then **Clear all** (it keeps the sort).
   Under the bar, only when something is on, the **tags**: one filter Chip per filter (a check; a click turns it off), **Clear
   all**, and the count at the right ("12 figures", "1 figure"; French "12 figurines"). Nothing matches: an EmptyState "No figure
   matches" with "Clear search and filters"; an empty collection: an EmptyState with "Add a figure" and, under it, "Create the <game> starter pack" (the game chosen: its starter pack's figures).
@@ -172,11 +173,17 @@ At the first visit to the page (`CollectionPage::Open`):
   "objet", "adventure", "mini", "swapper"), a version ("legendary", "lightcore"), "level 10" / "niveau 10"; case and
   accents do not matter, English and French both always work, and one typo is tolerated in a word of 5 letters or more
   ("giatns"). A swapper is found by either half and stays one card.
-- **Sort** (the Select of the bar): Recent (the default: favorites first, then what the game took, then by element), Name, Level (highest
-  first), Element, Game. The other four ignore favorites. `ShelfFilter::sort`.
-- **The shelf** (`CollectionModel::Shelf`, `collection::Group` Smart for the portal's game): every figure once,
-  favorites first, then the ones that game took (newest first), then by element; "Unknown toys" follow it.
-  Figures the selected game cannot read stay in their usual places for every sort, greyed, with "Not for <game>"
+- **Sort** (`ShelfFilter::sort`, `CollectionPage::ChangeSort`): Game (the default), Recent, Element, Category, Name,
+  Level (highest first), Favorites. Saved for the launcher alone, with each profile's collection
+  (`collection::GetSort("launcher")`; the Toy Box has its own).
+- **The shelf** (`CollectionModel::Shelf`, `collection::Shelf`): every figure once. Game, Element and Category cut it
+  into titled sections (`ui::SectionHeader`: the title and the count; none foldable, none empty); the other sorts are one
+  shelf, untitled. Game: the chosen game's section first, then the release order, a re-release with the game it came
+  out with. Element: the menus' order, then the toys without one, by family. Category: Skylanders (Giants, swappers,
+  Trap Masters, SuperChargers, Senseis included), Minis, Creation Crystals, Traps, Vehicles, Magic Items, Adventure
+  Packs, Trophies, Villains. In a section, and in Recent: favorites first, then the ones that game took (newest first),
+  then by element. "Unknown toys" follow.
+  Figures the selected game cannot read stay in their usual places and sections for every sort, greyed, with "Not for <game>"
   in the existing state line. Clicking one shows the existing incompatibility toast and leaves the seats unchanged;
   right click still opens its sheet. The saved `fold_foreign` setting has no effect on this shelf.
   The untouched starters the game made on its own

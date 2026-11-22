@@ -324,6 +324,10 @@ namespace collection
 
         bool operator==(const View&) const = default;
     };
+    // The shelf's sort (a SortId, search.h) as each app ("game", "launcher") last left it; empty until it is changed.
+    std::string GetSort(const std::string& app);
+    bool SetSort(const std::string& app, const std::string& id);
+
     View GetView(const std::string& game, const std::string& app);
     bool SetView(const std::string& game, const std::string& app, const View& view);
 

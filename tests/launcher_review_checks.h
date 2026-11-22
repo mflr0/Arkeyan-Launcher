@@ -447,6 +447,52 @@ namespace launcher_ui
                 expect(line != needs && line.ends_with("not owned"), "installed: the card shows what is owned");
                 expect(page.AddToyLine(*giantsToy, 0).ends_with("not owned"), "a game's own figure is unchanged");
             }
+            else if (mode == "sort")
+            {
+                // One button for the sort and the filters; the sort is saved and Clear all keeps it.
+                expect(
+                    !collection::Create(14).empty() && !collection::Create(200).empty(), "synthetic figures created");
+                page.Reload();
+                app.Frame();
+                app.Frame();
+                expect(page.m_filter.sort == collection::Sort::Game && !page.m_sections.empty() &&
+                           page.m_sections[0].kind == collection::Section::Kind::Game,
+                    "by game until the player picks a sort");
+                auto buttons = [&] {
+                    std::vector<uint32_t> found;
+                    for (const auto& [id, label] : ui::Ctx().testNavigationLabels)
+                        if (label.find("###sortandfilter") != std::string::npos)
+                            found.push_back(id);
+                    return found;
+                };
+                const std::vector<uint32_t> button = buttons();
+                expect(button.size() == 1, "one Sort and filter button");
+                page.ChangeSort(collection::Sort::Category);
+                app.Frame();
+                app.Frame();
+                expect(collection::GetSort("launcher") == "category" && collection::GetSort("game").empty(),
+                    "the sort is saved for the launcher alone");
+                expect(!page.m_sections.empty() && page.m_sections[0].kind == collection::Section::Kind::Category,
+                    "the sections follow the sort");
+                expect(buttons() == button, "the button keeps its id, so the focus, whatever it says");
+                if (button.size() == 1)
+                {
+                    ImGui::ActivateItemByID(button[0]);
+                    app.Frame();
+                    app.Frame();
+                    expect(ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopupId), "the button opens the panel");
+                }
+                page.m_filter.element = int(collection::Element::Water);
+                page.ClearFilters();
+                expect(page.m_filter.element < 0 && page.m_filter.sort == collection::Sort::Category,
+                    "Clear all keeps the sort");
+                page.m_filter.sort = collection::Sort::Game;
+                page.Open();
+                expect(page.m_filter.sort == collection::Sort::Category, "the sort comes back when the page opens");
+                expect(collection::SetSort("launcher", "name"), "another profile's sort");
+                page.ProfileChanged();
+                expect(page.m_filter.sort == collection::Sort::Name, "another profile brings its own sort");
+            }
             else if (mode == "seat-add")
             {
                 // An empty seat's + opens Add a figure for that seat, and the figure made there goes straight onto it;

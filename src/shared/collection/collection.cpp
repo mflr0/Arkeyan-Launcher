@@ -1949,6 +1949,21 @@ namespace collection
         });
     }
 
+    std::string GetSort(const std::string& app)
+    {
+        Json index = LoadJson(PathOf(IndexName));
+        return index["sorts"][app].AsString();
+    }
+
+    bool SetSort(const std::string& app, const std::string& id)
+    {
+        return UpdateIndex([&](Json& index) {
+            Json sorts = index["sorts"].IsObject() ? index["sorts"] : Json::Object();
+            sorts.Set(app, id);
+            index.Set("sorts", std::move(sorts));
+        });
+    }
+
     std::vector<WheelPlace> GetWheel(const std::string& game, const std::string& seat)
     {
         Json index = LoadJson(PathOf(IndexName));

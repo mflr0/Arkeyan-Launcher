@@ -804,7 +804,7 @@ namespace
                 for (size_t i : section.items)
                     paths.insert(shown[i].path);
             }
-            EXPECT(!shelf.empty() && shelf[0].kind == collection::Section::Kind::Shelf && hidden >= 0);
+            EXPECT(!shelf.empty() && shelf[0].kind == collection::Section::Kind::Game && hidden >= 0); // by game
             EXPECT(total == shown.size() && paths.size() == shown.size() &&
                    shown.size() + size_t(hidden) == model.figures.size());
             EXPECT(!shelf[0].items.empty() && shown[shelf[0].items[0]].favourite);
@@ -915,10 +915,20 @@ namespace
                     launcher_ui::ShelfFilter filter;
                     filter.sort = collection::Sort(sort);
                     auto sections = mixed.Shelf(filter, shown);
-                    EXPECT(sections.size() == 1 && sections[0].kind == collection::Section::Kind::Shelf);
                     if (sections.empty())
+                    {
+                        EXPECT(!sections.empty());
                         continue;
-                    const auto& items = sections[0].items;
+                    }
+                    const std::string id = collection::SortId(filter.sort);
+                    const bool titled = id == "game" || id == "element" || id == "category";
+                    std::vector<size_t> items;
+                    for (const collection::Section& section : sections)
+                    {
+                        EXPECT((section.kind != collection::Section::Kind::Shelf) == titled);
+                        EXPECT(section.kind != collection::Section::Kind::Foreign); // greyed in its own section
+                        items.insert(items.end(), section.items.begin(), section.items.end());
+                    }
                     EXPECT(items.size() == 6 && std::set<size_t>(items.begin(), items.end()).size() == 6);
                     EXPECT(shown[0].LastUsedIn("trapteam") == "2026-10-28" && shown[0].LastUsedIn("").empty());
                     if (filter.sort == collection::Sort::Recent)
@@ -930,11 +940,22 @@ namespace
                             names.push_back(collection::Fold(shown[i].DisplayName()));
                         EXPECT(std::is_sorted(names.begin(), names.end()));
                     }
-                    if (filter.sort == collection::Sort::Level || filter.sort == collection::Sort::Game)
+                    if (filter.sort == collection::Sort::Level)
                         EXPECT(items == std::vector<size_t>({ 0, 1, 2, 3, 4, 5 }));
+                    if (filter.sort == collection::Sort::Game)
+                    {
+                        // The chosen game first, then the release order, each with its title.
+                        EXPECT(sections.size() == 6 && sections[0].game == "trapteam");
+                        EXPECT(items == std::vector<size_t>({ 3, 0, 1, 2, 4, 5 }));
+                    }
+                    if (id == "category")
+                        EXPECT(sections.size() == 1 && sections[0].value == int(collection::Category::Core) &&
+                               items[0] == 5); // one family: favorites first
                 }
             }
+            EXPECT(collection::ParseSort("category") != collection::ParseSort("recent")); // the new sort
             launcher_ui::ShelfFilter filter;
+            EXPECT(filter.sort == collection::Sort::Game); // the default
             filter.game = "trapteam";
             mixed.Shelf(filter, shown);
             EXPECT(shown.size() == 4 &&
@@ -3265,8 +3286,8 @@ static int RunChecks(int argc, char** argv)
         g_failures += LevelNameDiscChecks();
     if (noDisc)
     {
-        for (const char* mode : { "backups", "sheet", "drag", "seat-add", "add-later", "pictures", "notes", "migration",
-                 "catalogue", "data", "uninstall", "paths" })
+        for (const char* mode : { "backups", "sheet", "drag", "seat-add", "add-later", "sort", "pictures", "notes",
+                 "migration", "catalogue", "data", "uninstall", "paths" })
         {
             const std::string root = (scratch / "review-ui" / mode).string();
             const char* arguments[] = { argv[0], "--review-ui", root.c_str(), mode, nullptr };

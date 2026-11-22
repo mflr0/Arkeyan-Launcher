@@ -1,6 +1,6 @@
 #pragma once
 
-// The Collection page: the portal at the next start (the seats of the chosen game), the bar (search, Filters), the shelf (every figure once, favorites first), the figure sheet, Add a figure and Manage
+// The Collection page: the portal at the next start (the seats of the chosen game), the bar (search, Sort and filter), the shelf (every figure once, in the sort's sections), the figure sheet, Add a figure and Manage
 // (docs/collection_ui.md). The figures are the shared collection's (ArkeyanRuntime's library); the
 // look is the launcher's. Drawn by App's widgets (a friend), in collection_page.cpp, collection_figure.cpp,
 // collection_add.cpp and collection_manage.cpp.
@@ -103,7 +103,11 @@ namespace launcher_ui
         // The pictures come from the disc once it is verified: drop the cached textures.
         void ClearIcons();
         // Another player profile became active: its Toy Box and its seats are read again.
-        void ProfileChanged() { Reload(); }
+        void ProfileChanged()
+        {
+            LoadSort();
+            Reload();
+        }
         // A dropped file or folder: figure dumps join the collection. False if it holds none (a disc image).
         bool Drop(const std::string& path);
         std::string Folder() const;
@@ -157,6 +161,8 @@ namespace launcher_ui
         bool RealPortalInUse() const;
         void CreateStarterPack();
         void DrawFilters(int active);
+        void LoadSort();
+        void ChangeSort(collection::Sort sort); // the player's choice: saved, the shelf back to its top
         void DrawTags();
         void ClearFilters();
         int FoundCount() const;
@@ -279,9 +285,10 @@ namespace launcher_ui
         int m_hiddenStarters = 0;
         bool m_starterBanner = false; // Rebuild: CollectionModel::ShowsStarterBanner
         std::string m_starterNames; // what the box of the game's starter pack holds
-        ShelfFilter m_filter; // Element, Game, Type, Sort (the search is m_search)
+        ShelfFilter m_filter; // Sort, Element, Works in, Type (the search is m_search)
         char m_search[64] = {};
-        bool m_openFilters = false; // the screenshot test opens the Filters panel, and closes it at the next screen
+        bool m_openFilters =
+            false; // the screenshot test opens the Sort and filter panel, and closes it at the next screen
         bool m_closeFilters = false;
         bool m_focusSearch = false; // Y, F3: the search box takes the keyboard next frame
         int m_choosing = -1; // the seat the next card goes on (a seat clicked, A, LT / RT); -1: browsing

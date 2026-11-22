@@ -47,14 +47,16 @@ namespace ui
             // That way as laid out and as seen; rows as seen (a stop scrolled out of its list is in no row of the page).
             const NavBox seen = Seen(b), from = Seen(s);
             const bool row = SameRow(seen, from);
+            // From outside its list a stop that shows is where it shows, however much of it is scrolled out.
+            const bool shows = b.window != s.window && seen.y1 - seen.y0 > 0.5f;
             switch (dir)
             {
             case NavDir::Down:
-                if (!row && MidY(b) > MidY(s) && MidY(seen) > MidY(from))
+                if (!row && (shows || MidY(b) > MidY(s)) && MidY(seen) > MidY(from))
                     ahead.push_back(&b);
                 break;
             case NavDir::Up:
-                if (!row && MidY(b) < MidY(s) && MidY(seen) < MidY(from))
+                if (!row && (shows || MidY(b) < MidY(s)) && MidY(seen) < MidY(from))
                     ahead.push_back(&b);
                 break;
             case NavDir::Right:

@@ -769,6 +769,11 @@ Skylanders, Spyro and Activision are trademarks of Activision Publishing, Inc. T
 Some figures are marked as in use, but their game is not running.	Joitakin hahmoja on merkitty käytössä oleviksi, mutta niiden peli ei ole käynnissä.
 Something went wrong while {}.	Jokin meni pieleen vaiheessa: {}.
 Sort: {}	Lajittelu: {}
+Sort by	Lajitteluperuste
+Show only	Näytä vain
+Category	Luokka
+Minis	Minit
+Sort and filter	Lajittele ja suodata
 Space	Välilyönti
 Speakers	Kaiuttimet
 Special Power / Back	Erikoisvoima / Takaisin

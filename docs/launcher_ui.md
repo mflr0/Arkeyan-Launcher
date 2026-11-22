@@ -526,8 +526,9 @@ through `ui::Text`; the portal test's verdicts name the game with `GameName`. Th
 
 **3. The Collection, its sheets and dialogs** (`collection_page.cpp`, `collection_figure.cpp`, `collection_add.cpp`,
 `collection_manage.cpp`) - **done (phase B, 2026-10-28)**. What was decided: the portal's game is a Select after "On the portal
-for" (tooltip says what it is) over the seats, the count under the title (review, 2026-10-29); Sort is a Select beside Filters (it is not a filter: no chip, Clear all keeps
-it) and Filters a Button opening a Menu with three Selects; the figure sheet, Add a figure and Manage are one `ui::Modal`
+for" (tooltip says what it is) over the seats, the count under the title (review, 2026-10-29); Sort and the filters share one
+Button, "Sort: Game", opening a Menu with the sort's Select over the three filters' (since 2026-11-22; the sort is not a
+filter: no chip, Clear all keeps it); the figure sheet, Add a figure and Manage are one `ui::Modal`
 (Large) whose title is the view's, Edit and "Change the bottom" being views of the sheet (B steps back); Reset and Delete ask
 in a danger `ConfirmDialog` (the hold is for the buttons in a list: Delete for good, Restore, Tidy, Mark as not in use); the
 sheet's "Restore a backup..." opens Manage > Backups on that figure (the Menu has no submenu); Edit is a settings list; the
@@ -998,7 +999,8 @@ and menu behaves the same way, the in-game Toy Box's:
   remember their position), else its first. Left and right stay in the row, else go to the
   nearest stop that way (the portal beside the game page's actions, a side panel). A page with columns says so
   (`ui::NavColumn`: the game page's actions are 0, its portal and the pills over the painting 1): up and down stay in their
-  column. A scrolling list scrolls on before the focus leaves it, and a move from outside a list never lands in its hidden part.
+  column. A scrolling list scrolls on before the focus leaves it, and a move from outside a list never lands in its hidden part
+  (a stop partly scrolled out is where its visible part is, however small that is).
   Nothing that way: the focus stays (no diagonal guess). A move never leaves its top window (the page, a dialog, a menu); the
   update banner, a window of its own over the page, joins the page's (`ui::NavJoin`: it is the page's top row). Tab keeps the
   reading order (the order the page draws).
@@ -1137,7 +1139,7 @@ so it runs beside the installed launcher). `main` decides first, before any wind
 ## Collection
 See `docs/collection_ui.md`: the page shows ArkeyanRuntime's shared collection (the game's folder, locks, favorites, backups
 and six-game catalogue) with the Toy Box's model: the portal at the next start (the game's seats on top), the bar
-(the search field and Filters: Element, Game, Type, Sort by; the tags), the shelf (every figure once, favorites first), the figure sheet (Put on the portal, Edit,
+(the search field and Sort and filter: Sort by, then Element, Works in, Type; the tags), the shelf (every figure once, in the sort's sections), the figure sheet (Put on the portal, Edit,
 Favorite, `...`, Details), Add a figure and Manage. The icons are the shown game's portraits from its disc, else the
 other game's, else the toy's family picture, else the generated ones (`figures::IconStyle`): "Disc art" below.
 

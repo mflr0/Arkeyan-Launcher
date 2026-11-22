@@ -762,6 +762,11 @@ Not available for {} yet	Pas encore disponible pour {}
 {}: {} taken off	{} : {} retirée
 Filters	Filtres
 Sort: {}	Tri : {}
+Sort by	Trier par
+Show only	Afficher seulement
+Category	Catégorie
+Minis	Minis
+Sort and filter	Trier et filtrer
 Clear all	Tout effacer
 Versions	Versions
 Change...	Changer...
