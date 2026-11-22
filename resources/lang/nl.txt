@@ -63,7 +63,6 @@ All elements	Alle elementen
 All games	Alle spellen
 All games are updated	Alle spellen zijn bijgewerkt
 All types	Alle typen
-Fits {}	Past op {}
 Also delete my saves and my figures	Ook mijn savegames en figuren verwijderen
 Alternate deco	Alternatieve versie
 AMD upscaling: faster, nearly as sharp (F3 in game).	AMD-opschaling: sneller, bijna even scherp (F3 in het spel).
@@ -168,13 +167,10 @@ Choose your {} disc image	Kies je schijfimage van {}
 Choose...	Kiezen...
 Chrome	Chroom
 Circle	Cirkel
-Clean up	Opruimen
 Clear all	Alles wissen
 Clear caches	Caches wissen
 Clear search and filters	Zoekopdracht en filters wissen
 Clear the figures	Figuren verwijderen
-Clearing caches frees {}.	Caches wissen maakt {} vrij.
-Clearing caches frees {}; deleting saves and data frees {} more.	Caches wissen maakt {} vrij; savegames en gegevens verwijderen nog {} extra.
 Click or turn the wheel	Klik of draai het wiel
 Click, then press a mouse button or turn the wheel (Escape cancels).	Klik en druk dan op een muisknop of draai het wiel (Escape annuleert).
 Click: put it on {}	Klik: op {} zetten
@@ -270,7 +266,6 @@ Delete	Verwijderen
 Delete saves and data	Savegames en gegevens verwijderen
 Delete...	Verwijderen...
 Deleted figures are kept 30 days.	Verwijderde figuren blijven 30 dagen bewaard.
-Deleting saves and data frees {}.	Savegames en gegevens verwijderen maakt {} vrij.
 Designed by dorydev, made by mflr0, UI/UX by Gumelia.	Ontworpen door dorydev, gemaakt door mflr0, UI/UX door Gumelia.
 Desktop shortcut	Snelkoppeling op bureaublad
 Desktop shortcuts	Snelkoppelingen op bureaublad
@@ -278,7 +273,6 @@ Details	Details
 Difficulty	Moeilijkheid
 Disc	Schijf
 Disc checked	Schijf gecontroleerd
-Disc image	Schijfimage
 Disc not found	Schijf niet gevonden
 Doubles the game's textures from your disc. About {} of disk, a few minutes.	Verdubbelt de texturen van het spel vanaf je schijf. Ongeveer {} schijfruimte, een paar minuten.
 Down	Omlaag
@@ -718,7 +712,6 @@ Same	Gelijk
 Same as text	Zelfde als tekst
 Save	Opslaan
 Save as...	Opslaan als...
-Save backups	Back-ups van savegames
 Save to Desktop	Op bureaublad opslaan
 Saved	Opgeslagen
 Saved gamepad (not connected)	Opgeslagen gamepad (niet aangesloten)
@@ -1268,4 +1261,9 @@ Help	Help
 Keys for all games	Toetsen voor alle games
 Toy Box shortcuts	Toy Box-sneltoetsen
 Manage profiles...	Profielen beheren...
+Folder	Map
+Caches	Caches
+Saves and data	Savegames en gegevens
+Frees {}.	Maakt {} vrij.
+Fits {}	Past op {}
 Use the default	Standaard gebruiken

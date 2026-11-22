@@ -25,11 +25,11 @@ namespace ui
         ButtonKind kind = ButtonKind::Secondary;
         Size size = Size::Normal;
         Icon icon = Icon::None;     // before the label
-        Icon trailing = Icon::None; // after it: ChevronDown for a button that opens a menu or a list
+        Icon trailing = Icon::None; // after it: ChevronDown (ChevronUp: open) for a menu or a list, as a Select's
         float width = 0;            // 0: the label's; > 0: at least this; < 0: the available width
         bool disabled = false;
         bool loading = false;       // a spinner in place of the icon; not pressable meanwhile
-        bool hold = false; // acts once held for a second (HoldConfirm); a timer icon and "Hold to confirm" say so
+        bool hold = false; // acts once held for a second (HoldConfirm): no icon, the sweep and "Hold to confirm" say so
         bool overArt = false; // on the game's art or the band: the band's darker greys (Secondary and Ghost)
         const char* tooltip = nullptr; // also the hint of a hold button (default "Hold to confirm")
     };
@@ -43,7 +43,7 @@ namespace ui
     struct PillOptions
     {
         Icon icon = Icon::None;
-        Icon trailing = Icon::None;
+        Icon trailing = Icon::None; // as a Button's
         const char* prefix = nullptr; // words before the icon, a dot between ("12 h 34", then "· trophy 6/38")
         unsigned iconColor = 0; // the icon in a state's colour (ColorOf); 0: the label's ink
         bool selected = false; // the accent fill: a pill that stands for a mode that is on
@@ -80,8 +80,8 @@ namespace ui
     bool KeyButton(const char* id, const char* key, const KeyButtonOptions& options = {});
     float KeyButtonWidth(const char* key, const KeyButtonOptions& options = {});
 
-    // The game page's big split button: the main action (PLAY, INSTALL, UPDATE, CHOOSE DISC) in the game's colours, and the
-    // game's settings in a gear segment on its right. height::MainWidth + height::MainGear by height::Main, at the cursor.
+    // The game page's main action (PLAY, INSTALL, UPDATE, CHOOSE DISC) in the game's colours, and the game's settings in a
+    // gear button space::S on its right, height::Main high, at the cursor; danger: Stop alone, height::Large high.
     struct MainActionOptions
     {
         const char* label = "";
@@ -92,7 +92,7 @@ namespace ui
         const char* gearTooltip = nullptr; // "Spyro's Adventure settings"
         bool takeFocus = false; // the main half takes the keyboard and pad focus this frame
         bool showFocus = false; // and shows its ring
-        bool separated = false; // hero: a quiet settings button, space::S after the main action
+        bool separated = true; // the gear always stands apart
         Icon icon = Icon::None;
         bool danger = false; // the running game's stop action
         float width = height::MainWidth;

@@ -12,7 +12,7 @@ In the "Skylanders" data folder (`%APPDATA%\Skylanders\` on Windows, `~/Library/
 | `SSA/install.log` (`.prev.log`), `SSA/install-logs/` | the launcher, Arkeyan-Builder | what Arkeyan-Builder printed during the install, and its own step logs kept after the build (docs/install.md) |
 | `logs/migration.log` | the first start after an update | what was moved from the older folders |
 
-Settings (the gear) > Support: **Report a problem** (one text file with the last logs, the crash location, the settings and the versions;
+Settings (the gear) > Help: **Report a problem** (one text file with the last logs, the crash location, the settings and the versions;
 see below), **Copy game log** and **Open logs folder** (`logs/`). `SKY_LAUNCHER_LOG_DIR` replaces both log folders (tests).
 
 **The last run** (0.9.5, `LastGameLog`, `src/launcher/game_run.cpp`): `Arkeyan.log` and `skylauncher-game.log` hold the

@@ -414,17 +414,18 @@ namespace ui
         ImDrawList* draw = ImGui::GetWindowDrawList();
         const ImVec2 min = ImGui::GetCursorScreenPos();
         const float width = ImGui::GetContentRegionAvail().x;
-        const ImVec2 max(min.x + width, min.y + height::Large);
+        // As high as a settings row: its control and the table's padding above and under it.
+        const float rowH = std::max(height::Large, height::Normal + 2 * space::S);
+        const ImVec2 max(min.x + width, min.y + rowH);
         const float chevronX = max.x - height::Normal;
         const float actionW = options.action != nullptr ? ButtonWidth(options.action, options.actionOptions) : 0;
         const float actionX = chevronX - actionW;
         // The focus's stop ends before the action, so the pad reaches both; the chevron is the pointer's twin of the row.
         const float stopEnd = options.action != nullptr ? actionX - space::S : max.x;
         if (options.divider)
-            draw->AddLine(ImVec2(min.x, min.y + 0.5f), ImVec2(max.x, min.y + 0.5f), Col(color::Hairline, 110 / 255.0f),
-                stroke::Hairline);
+            draw->AddLine(min, ImVec2(max.x, min.y), Col(color::Hairline, 110 / 255.0f), stroke::Hairline);
         ImGui::BeginDisabled(options.disabled);
-        bool toggled = Hit("##row", ImVec2(stopEnd - min.x, height::Large));
+        bool toggled = Hit("##row", ImVec2(stopEnd - min.x, rowH));
         if (options.reveal)
             ImGui::ScrollToItem(ImGuiScrollFlags_AlwaysCenterY);
         State state = ItemState(options.disabled);
@@ -432,23 +433,23 @@ namespace ui
         {
             ImGui::SetCursorScreenPos(ImVec2(chevronX, min.y));
             ImGui::PushItemFlag(ImGuiItemFlags_NoNav, true);
-            toggled |= ImGui::InvisibleButton("##chevron", ImVec2(max.x - chevronX, height::Large));
+            toggled |= ImGui::InvisibleButton("##chevron", ImVec2(max.x - chevronX, rowH));
             state.hovered |= ImGui::IsItemHovered();
             ImGui::PopItemFlag();
         }
         if (toggled)
             *open = !*open;
         if (state.hovered || state.pressed)
-            draw->AddRectFilled(min, ImVec2(max.x, max.y),
+            draw->AddRectFilled(ImVec2(min.x - space::XS, min.y), ImVec2(max.x + space::XS, max.y),
                 Col(state.pressed ? color::RaisedPressed : color::RaisedHover, 0.55f), radius::Control);
-        const float mid = std::round((min.y + max.y) / 2), x = min.x + space::XS;
+        const float mid = std::round((min.y + max.y) / 2), x = min.x; // a settings row's label edge
         const float room = stopEnd - space::XS - x - (options.action != nullptr ? 0 : height::Normal);
-        const float block = options.summary != nullptr ? CapTop(TextStyle::Body, true) + SizeOf(TextStyle::Body) +
+        const float block = options.summary != nullptr ? CapTop(TextStyle::Body) + SizeOf(TextStyle::Body) +
                                                              space::XXS + Baseline(TextStyle::Caption)
                                                        : 0;
-        const float top = options.summary != nullptr ? std::round(mid - block / 2)
-                                                     : std::round(mid - CapMiddle(TextStyle::Body, true));
-        PushText(TextStyle::Body, true);
+        const float top =
+            options.summary != nullptr ? std::round(mid - block / 2) : std::round(mid - CapMiddle(TextStyle::Body));
+        PushText(TextStyle::Body); // a settings row's label: the same weight
         DrawText(draw, ImVec2(x, top), Col(color::Ink), Ellipsize(title, room).c_str());
         PopText();
         if (options.summary != nullptr)
@@ -461,7 +462,10 @@ namespace ui
         DrawIcon(draw, *open ? Icon::ChevronDown : Icon::ChevronRight, ImVec2(chevronX + height::Normal / 2, mid),
             icon::Normal, Col(color::InkSoft));
         if (state.focused)
-            FocusRing(min, ImVec2(stopEnd, max.y), radius::Control);
+        {
+            const float out = focus::Offset + focus::Width / 2; // the ring stays in the row: the rows touch
+            FocusRing(ImVec2(min.x, min.y + out), ImVec2(stopEnd, max.y - out), radius::Control);
+        }
         if (options.action != nullptr)
         {
             ImGui::SetCursorScreenPos(ImVec2(actionX, mid - height::Normal / 2));
@@ -476,9 +480,7 @@ namespace ui
             ImGui::PopID();
             return false;
         }
-        // What is unfolded lines up under the title, with the same air on both sides.
-        ImGui::Indent(space::XS);
-        ImGui::PushItemWidth(-space::XS);
+        // No indent: what is unfolded lines up under the title and with the settings rows around it.
         ImGui::BeginGroup();
         return true;
     }
@@ -486,8 +488,6 @@ namespace ui
     void EndDisclosure()
     {
         ImGui::EndGroup();
-        ImGui::PopItemWidth();
-        ImGui::Unindent(space::XS);
         ImGui::Dummy(ImVec2(0, space::S));
         ImGui::PopID();
     }
@@ -669,32 +669,57 @@ namespace ui
 
     namespace
     {
-        constexpr ImGuiID AnchorX = 0x4D454E58, AnchorY = 0x4D454E59,
-                          AnchorPivot = 0x4D454E5A; // "MENX", "MENY", "MENZ": where a menu opens, by its id
-        constexpr float IconSlot =
-            space::L; // a menu row's room for its icon or check, kept when it has none (the labels align)
+        // "MENL", "MENT", "MENR", "MEND", "MENZ": the opener's rectangle and the side asked, by the menu's id
+        constexpr ImGuiID AnchorLeft = 0x4D454E4C, AnchorTop = 0x4D454E54, AnchorRight = 0x4D454E52,
+                          AnchorBottom = 0x4D454E44, AnchorSide = 0x4D454E5A;
+        constexpr int SideRight = 1, SideAbove = 2;
+        constexpr const char* MenuHasIcons = "##menuicons"; // in the menu's own storage
+
+        // Before the menu's window begins: as wide as its opener, on the side asked or the other one when that lacks
+        // room, and inside the window.
+        void PlaceMenu(ImGuiID key)
+        {
+            ImGuiStorage* storage = ImGui::GetStateStorage();
+            const ImVec2 min(storage->GetFloat(key ^ AnchorLeft), storage->GetFloat(key ^ AnchorTop)),
+                max(storage->GetFloat(key ^ AnchorRight), storage->GetFloat(key ^ AnchorBottom));
+            const int side = storage->GetInt(key ^ AnchorSide);
+            const ImGuiViewport* view = ImGui::GetMainViewport();
+            const ImVec2 from(view->WorkPos.x + space::XS, view->WorkPos.y + space::XS),
+                to(view->WorkPos.x + view->WorkSize.x - space::XS, view->WorkPos.y + view->WorkSize.y - space::XS);
+            const ImVec2 most(std::max(1.0f, to.x - from.x), std::max(1.0f, to.y - from.y));
+            ImGui::SetNextWindowSizeConstraints(ImVec2(std::clamp(max.x - min.x, 1.0f, most.x), 0), most);
+            char name[24];
+            ImFormatString(name, sizeof(name), "##Popup_%08x", key);
+            ImGuiWindow* window = ImGui::FindWindowByName(name);
+            // Not known on the menu's first frame, which is not shown.
+            const ImVec2 size =
+                window != nullptr && window->WasActive ? ImGui::CalcWindowNextAutoFitSize(window) : ImVec2(0, 0);
+            const float below = max.y + space::XS, above = min.y - space::XS - size.y;
+            const bool fitsBelow = below + size.y <= to.y, fitsAbove = above >= from.y;
+            const bool up = side & SideAbove ? fitsAbove || !fitsBelow : !fitsBelow && fitsAbove;
+            const float x = side & SideRight ? max.x - size.x : min.x;
+            ImGui::SetNextWindowPos(ImVec2(std::max(from.x, std::min(x, to.x - size.x)),
+                std::max(from.y, std::min(up ? above : below, to.y - size.y))));
+        }
     }
 
     void OpenMenu(const char* id, MenuAnchor anchor)
     {
         ImGuiStorage* storage = ImGui::GetStateStorage();
         const ImGuiID key = ImGui::GetID(id);
-        storage->SetFloat(key ^ AnchorX, anchor.alignRight ? ImGui::GetItemRectMax().x : ImGui::GetItemRectMin().x);
-        storage->SetFloat(key ^ AnchorY,
-            anchor.above ? ImGui::GetItemRectMin().y - space::XS : ImGui::GetItemRectMax().y + space::XS);
-        storage->SetInt(key ^ AnchorPivot, (anchor.alignRight ? 1 : 0) | (anchor.above ? 2 : 0));
+        const ImVec2 min = ImGui::GetItemRectMin(), max = ImGui::GetItemRectMax();
+        storage->SetFloat(key ^ AnchorLeft, min.x);
+        storage->SetFloat(key ^ AnchorTop, min.y);
+        storage->SetFloat(key ^ AnchorRight, max.x);
+        storage->SetFloat(key ^ AnchorBottom, max.y);
+        storage->SetInt(key ^ AnchorSide, (anchor.alignRight ? SideRight : 0) | (anchor.above ? SideAbove : 0));
         ImGui::OpenPopup(id);
     }
 
     bool BeginMenu(const char* id)
     {
-        ImGuiStorage* storage = ImGui::GetStateStorage();
-        const ImGuiID key = ImGui::GetID(id);
         if (ImGui::IsPopupOpen(id))
-            ImGui::SetNextWindowPos(ImVec2(storage->GetFloat(key ^ AnchorX), storage->GetFloat(key ^ AnchorY)),
-                ImGuiCond_Appearing,
-                ImVec2(storage->GetInt(key ^ AnchorPivot) & 1 ? 1.0f : 0.0f,
-                    storage->GetInt(key ^ AnchorPivot) & 2 ? 1.0f : 0.0f));
+            PlaceMenu(ImGui::GetID(id));
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(space::XS, space::XS));
         ImGui::PushStyleVar(ImGuiStyleVar_PopupRounding, radius::Control);
         ImGui::PushStyleVar(ImGuiStyleVar_PopupBorderSize, elevation::Raised.border);
@@ -709,35 +734,47 @@ namespace ui
         return open;
     }
 
+    // A row of a Select's list: the text at the left, the check at the right, the same fill and outline.
     bool MenuItem(const char* label, const MenuItemOptions& options)
     {
         const char* end = LabelEnd(label);
-        PushText(TextStyle::Body);
-        const float textW = ImGui::CalcTextSize(label, end).x;
-        const float lead = space::S + IconSlot,
-                    w = std::max(ImGui::GetContentRegionAvail().x, std::ceil(lead + textW + space::XL));
-        PopText();
-        const ImVec2 min = ImGui::GetCursorScreenPos(), max(min.x + w, min.y + height::Small);
+        // A menu with an icon keeps its room on every row (the labels align); one without has none.
+        ImGuiStorage* storage = ImGui::GetStateStorage();
+        const ImGuiID iconsKey = ImGui::GetCurrentWindow()->GetID(MenuHasIcons);
+        if (options.icon != Icon::None)
+            storage->SetBool(iconsKey, true);
+        const float lead = space::S + (storage->GetBool(iconsKey) ? icon::Small + space::XS : 0);
+        const float natural = lead + TextSize(TextStyle::Body, label, end).x + space::S + icon::Small + space::S;
+        const float w = std::max(ImGui::GetContentRegionAvail().x, std::ceil(natural));
+        const ImVec2 min = ImGui::GetCursorScreenPos(), max(min.x + w, min.y + height::Normal);
         ImGui::BeginDisabled(options.disabled);
-        const bool pressed = Hit(label, ImVec2(w, height::Small));
-        State state = ItemState(options.disabled);
+        const bool pressed = Hit(label, ImVec2(w, height::Normal)) && !options.disabled;
+        const State state = ItemState(options.disabled);
+        ImGui::EndDisabled(); // a disabled row is dimmed by its ink, as in a Select
+        if (options.checked && ImGui::IsWindowAppearing())
+            ImGui::SetItemDefaultFocus();
         ImDrawList* draw = ImGui::GetWindowDrawList();
-        if (state.hovered || state.pressed || state.focused)
-            draw->AddRectFilled(
-                min, max, Col(state.pressed ? color::RaisedPressed : color::RaisedHover), radius::Control);
-        const unsigned ink = options.danger ? color::Danger : color::Ink;
+        if (options.checked || state.hovered || state.pressed)
+            draw->AddRectFilled(min, max,
+                Col(state.pressed   ? color::RaisedPressed
+                    : state.hovered ? color::RaisedHover
+                                    : color::InsetActive),
+                radius::Control);
+        if (state.focused) // inside the row: the rows touch
+            draw->AddRect(min, max, Col(Ctx().accent), radius::Control, 0, focus::Width);
+        const unsigned ink = options.disabled ? color::Dim : options.danger ? color::Danger : color::Ink;
         const float mid = std::round((min.y + max.y) / 2);
-        Icon icon = options.checked ? Icon::Check : options.icon;
-        if (icon != Icon::None)
-            DrawIcon(draw, icon, ImVec2(min.x + space::S + IconSlot / 2 - space::XXS, mid), icon::Small,
-                Col(options.checked ? Ctx().accent : ink));
+        if (options.icon != Icon::None)
+            DrawIcon(draw, options.icon, ImVec2(min.x + space::S + icon::Small / 2, mid), icon::Small, Col(ink));
         PushText(TextStyle::Body);
         DrawText(draw, ImVec2(min.x + lead, std::round(mid - CapMiddle(TextStyle::Body))), Col(ink), label, end);
         PopText();
-        ImGui::EndDisabled();
-        if (pressed && !options.disabled)
+        if (options.checked)
+            DrawIcon(
+                draw, Icon::Check, ImVec2(max.x - space::S - icon::Small / 2, mid), icon::Small, Col(Ctx().accent));
+        if (pressed)
             ImGui::CloseCurrentPopup();
-        return pressed && !options.disabled;
+        return pressed;
     }
 
     void MenuSeparator()

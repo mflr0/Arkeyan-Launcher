@@ -64,7 +64,6 @@ All elements	Kaikki elementit
 All games	Kaikki pelit
 All games are updated	Kaikki pelit on päivitetty
 All types	Kaikki tyypit
-Fits {}	Sopii paikalle: {}
 Also delete my saves and my figures	Poista myös tallennukseni ja hahmoni
 Alternate deco	Toinen väritys
 AMD upscaling: faster, nearly as sharp (F3 in game).	AMD-skaalaus: nopeampi, lähes yhtä terävä (F3 pelissä).
@@ -169,13 +168,10 @@ Choose your {} disc image	Valitse pelin {} levykuva
 Choose...	Valitse...
 Chrome	Chrome
 Circle	Ympyrä
-Clean up	Siivoa
 Clear all	Tyhjennä kaikki
 Clear caches	Tyhjennä välimuistit
 Clear search and filters	Tyhjennä haku ja suodattimet
 Clear the figures	Poista hahmot
-Clearing caches frees {}.	Välimuistien tyhjennys vapauttaa {}.
-Clearing caches frees {}; deleting saves and data frees {} more.	Välimuistien tyhjennys vapauttaa {}; tallennusten ja tietojen poisto vapauttaa {} lisää.
 Click or turn the wheel	Klikkaa tai pyöritä rullaa
 Click, then press a mouse button or turn the wheel (Escape cancels).	Klikkaa ja paina hiiren painiketta tai pyöritä rullaa (Escape peruu).
 Click: put it on {}	Klikkaa: aseta paikalle {}
@@ -271,7 +267,6 @@ Delete	Poista
 Delete saves and data	Poista tallennukset ja tiedot
 Delete...	Poista...
 Deleted figures are kept 30 days.	Poistetut hahmot säilyvät 30 päivää.
-Deleting saves and data frees {}.	Tallennusten ja tietojen poisto vapauttaa {}.
 Designed by dorydev, made by mflr0, UI/UX by Gumelia.	Suunnittelu: dorydev, toteutus: mflr0, UI/UX: Gumelia.
 Desktop shortcut	Työpöydän pikakuvake
 Desktop shortcuts	Työpöydän pikakuvakkeet
@@ -279,7 +274,6 @@ Details	Tiedot
 Difficulty	Vaikeustaso
 Disc	Levy
 Disc checked	Levy tarkistettu
-Disc image	Levykuva
 Disc not found	Levyä ei löytynyt
 Doubles the game's textures from your disc. About {} of disk, a few minutes.	Kaksinkertaistaa pelin tekstuurit levyltäsi. Noin {} levytilaa, muutama minuutti.
 Down	Alas
@@ -719,7 +713,6 @@ Same	Sama
 Same as text	Sama kuin teksti
 Save	Tallenna
 Save as...	Tallenna nimellä...
-Save backups	Tallennuskopiot
 Save to Desktop	Tallenna työpöydälle
 Saved	Tallennettu
 Saved gamepad (not connected)	Tallennettu peliohjain (ei kytketty)
@@ -1269,4 +1262,9 @@ Help	Ohje
 Keys for all games	Kaikkien pelien näppäimet
 Toy Box shortcuts	Toy Boxin pikanäppäimet
 Manage profiles...	Hallitse profiileja...
+Folder	Kansio
+Caches	Välimuistit
+Saves and data	Tallennukset ja tiedot
+Frees {}.	Vapauttaa {}.
+Fits {}	Sopii paikalle: {}
 Use the default	Käytä oletusta

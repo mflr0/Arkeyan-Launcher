@@ -63,7 +63,6 @@ All elements	Alle elementer
 All games	Alle spil
 All games are updated	Alle spil er opdateret
 All types	Alle typer
-Fits {}	Passer på {}
 Also delete my saves and my figures	Slet også mine gemte spil og mine figurer
 Alternate deco	Alternativ farve
 AMD upscaling: faster, nearly as sharp (F3 in game).	AMD-opskalering: hurtigere, næsten lige så skarp (F3 i spillet).
@@ -168,13 +167,10 @@ Choose your {} disc image	Vælg dit {}-diskaftryk
 Choose...	Vælg...
 Chrome	Chrome
 Circle	Cirkel
-Clean up	Ryd op
 Clear all	Ryd alt
 Clear caches	Ryd cache
 Clear search and filters	Ryd søgning og filtre
 Clear the figures	Fjern figurerne
-Clearing caches frees {}.	Rydning af cache frigør {}.
-Clearing caches frees {}; deleting saves and data frees {} more.	Rydning af cache frigør {}; sletning af gemte spil og data frigør yderligere {}.
 Click or turn the wheel	Klik eller drej hjulet
 Click, then press a mouse button or turn the wheel (Escape cancels).	Klik, og tryk derefter på en museknap eller drej hjulet (Escape annullerer).
 Click: put it on {}	Klik: læg den på {}
@@ -270,7 +266,6 @@ Delete	Slet
 Delete saves and data	Slet gemte spil og data
 Delete...	Slet...
 Deleted figures are kept 30 days.	Slettede figurer gemmes i 30 dage.
-Deleting saves and data frees {}.	Sletning af gemte spil og data frigør {}.
 Designed by dorydev, made by mflr0, UI/UX by Gumelia.	Designet af dorydev, lavet af mflr0, UI/UX af Gumelia.
 Desktop shortcut	Genvej på skrivebordet
 Desktop shortcuts	Genveje på skrivebordet
@@ -278,7 +273,6 @@ Details	Detaljer
 Difficulty	Sværhedsgrad
 Disc	Disk
 Disc checked	Disk kontrolleret
-Disc image	Diskaftryk
 Disc not found	Disken blev ikke fundet
 Doubles the game's textures from your disc. About {} of disk, a few minutes.	Fordobler spillets teksturer fra din disk. Ca. {} diskplads, nogle minutter.
 Down	Ned
@@ -718,7 +712,6 @@ Same	Samme
 Same as text	Samme som tekst
 Save	Gem
 Save as...	Gem som...
-Save backups	Gem backups
 Save to Desktop	Gem på skrivebordet
 Saved	Gemt
 Saved gamepad (not connected)	Gemt gamepad (ikke tilsluttet)
@@ -1268,4 +1261,9 @@ Help	Hjælp
 Keys for all games	Taster til alle spil
 Toy Box shortcuts	Genveje til Toy Box
 Manage profiles...	Administrer profiler...
+Folder	Mappe
+Caches	Cacher
+Saves and data	Gemte spil og data
+Frees {}.	Frigør {}.
+Fits {}	Passer på {}
 Use the default	Brug standarden

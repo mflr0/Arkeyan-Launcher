@@ -13,6 +13,7 @@
 #include "launcher/problem_report.h"
 #include "launcher/single_instance.h"
 #include "launcher/ui/launcher_app.h"
+#include "launcher/ui/components/cards.h"
 #include "shared/collection/datadir.h"
 #include "shared/embedded_fonts.h"
 #include "assets/launcher_assets.h"
@@ -964,7 +965,9 @@ namespace launcher_ui
                 usable.h);
         }
 
-        SDL_SetWindowMinimumSize(m_window, int(WindowMinW * m_uiScale), int(WindowMinH * m_uiScale));
+        const bool toybox = ToyboxWindow(); // its own minimum (toybox_window.cpp): it sits beside the game
+        SDL_SetWindowMinimumSize(
+            m_window, int((toybox ? 640 : WindowMinW) * m_uiScale), int((toybox ? 480 : WindowMinH) * m_uiScale));
         if (resize && !(SDL_GetWindowFlags(m_window) & SDL_WINDOW_FULLSCREEN))
         {
             int w = int(WindowW * m_uiScale), h = int(WindowH * m_uiScale);
@@ -2144,24 +2147,16 @@ namespace launcher_ui
                           : UpdateAvailable(*next)       ? ui::Icon::Update
                                                          : ui::Icon::Play;
         }
-        float top = origin.y;
-        ui::PushText(ui::TextStyle::Display);
-        ui::DrawText(draw, origin, ui::Col(ui::color::Ink), heading);
-        ui::PopText();
+        ui::BannerOptions banner;
+        banner.heading = heading;
+        banner.title = first.c_str();
+        banner.detail = second.c_str();
+        banner.bigTitle = next != nullptr;
+        banner.action = label.c_str();
+        banner.actionId = "##home-main";
+        banner.button = action;
         DrawUpdateAll(ImVec2(origin.x + width, origin.y));
-        top += ui::type::Display + ui::space::S;
-        const float actionW = ui::ButtonWidth(label.c_str(), action);
-        const float textW = std::max(1.0f, width - actionW - ui::space::L);
-        auto fitted = [&](ImFont* font, float textSize, float y, const std::string& text, unsigned color) {
-            ImGui::PushFont(font, ui::FitSize(font, textSize, text.c_str(), textW));
-            ui::DrawText(draw, ImVec2(origin.x, y), ui::Col(color), text.c_str());
-            ImGui::PopFont();
-        };
-        fitted(ui::Ctx().fonts.bold, next != nullptr ? ui::type::Title : ui::type::Body, top, first, ui::color::Ink);
-        fitted(ui::Ctx().fonts.text, ui::type::Body, top + ui::height::Large - ui::type::Body - ui::space::XXS, second,
-            ui::color::InkSoft);
-        ImGui::SetCursorScreenPos(ImVec2(origin.x + width - actionW, top));
-        const bool act = ui::Button((label + "##home-main").c_str(), action);
+        const bool act = ui::Banner(origin, width, banner);
         if (!action.disabled)
             TakeFocus(FocusTo::Page);
         if (act && next == nullptr)
@@ -2196,7 +2191,7 @@ namespace launcher_ui
                 PlayNow();
             return;
         }
-        top += ui::height::Large + ui::space::L;
+        const float top = origin.y + ui::BannerBlockHeight();
         ImGui::SetCursorScreenPos(ImVec2(origin.x, top));
 
         // The playable games: a card each, the game's painting behind its logo or short name, its state at the bottom.
@@ -2213,19 +2208,16 @@ namespace launcher_ui
         // One name a card: the disc's logo, else the short name like a logo's big word, all at one size.
         float logoNameSize = ui::type::Display;
         for (const LauncherGameEntry* entry : playable)
-            logoNameSize = std::min(logoNameSize, ui::FitSize(ui::Ctx().fonts.title, ui::type::Display,
-                                                      GameName(entry->id, GameNameForm::Short), cardW * 0.84f));
+            logoNameSize =
+                std::min(logoNameSize, ui::GameCardNameSize(GameName(entry->id, GameNameForm::Short), cardW));
+        const ImVec2 cardSize(cardW, cardH);
         for (size_t i = 0; i < playable.size(); i++)
         {
             const LauncherGameEntry& entry = *playable[i];
-            const ImVec2 at(row.x + float(i % Columns) * (cardW + gap), row.y + float(i / Columns) * (cardH + gap)),
-                end(at.x + cardW, at.y + cardH);
-            ImGui::SetCursorScreenPos(at);
+            const ImVec2 at(row.x + float(i % Columns) * (cardW + gap), row.y + float(i / Columns) * (cardH + gap));
             ImGui::PushID(entry.id);
-            const bool pressed = ui::Hit("##card", ImVec2(cardW, cardH));
-            const bool hovered = ImGui::IsItemHovered();
-            const ui::State state = ui::ItemState();
-            if (pressed)
+            const ui::GameCardState state = ui::GameCardButton("##card", at, cardSize);
+            if (state.pressed)
             {
                 if (std::string_view(entry.id) != m_s->game.id)
                     SelectGame(*FindGame(entry.id));
@@ -2233,61 +2225,31 @@ namespace launcher_ui
             }
             if (action.disabled && std::string_view(entry.id) == m_s->game.id) // the main action can't take the focus
                 TakeFocus(FocusTo::Page);
-            if (hovered)
-                ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
             ImGui::PopID();
 
             const GameStyle& style = StyleOf(entry.id);
-            ui::SoftShadow(
-                draw, at, end, ui::radius::Panel, ui::space::XS, ui::space::S, ui::elevation::Raised.shadowAlpha);
+            ui::GameCardOptions card;
             if (const ArtTexture* art = CachedArt(entry.id, LauncherAssets::Role::HeroBackground, 640))
             {
-                float w, h;
-                SDL_GetTextureSize(art->texture, &w, &h);
-                float scale = std::max(cardW / w, cardH / h), u = cardW / (w * scale), v = cardH / (h * scale);
-                draw->AddImageRounded(Ref(art->texture), at, end, ImVec2((1 - u) / 2, (1 - v) / 2),
-                    ImVec2((1 + u) / 2, (1 + v) / 2), ui::Col(0xFFFFFF, hovered ? 1.0f : 0.88f), ui::radius::Panel);
-                draw->AddRectFilled(at, end, ui::Col(ui::color::Scrim, ArtDim), ui::radius::Panel);
+                card.art = Ref(art->texture);
+                SDL_GetTextureSize(art->texture, &card.artSize.x, &card.artSize.y);
+                card.artDim = ArtDim;
             }
-            else
-            {
-                // Not read yet: the game's colours, as its buttons have them.
-                ui::GradientRect(draw, at, end, Rgb(style.bottom), Rgb(style.outline), ui::radius::Panel);
-            }
-            // The bottom fades to dark for the name; the logo sits in the upper part.
-            ui::GradientRect(draw, ImVec2(at.x, at.y + cardH * 0.45f), end, ui::Col(ui::color::Scrim, 0),
-                ui::Col(ui::color::Scrim, 0.92f), ui::radius::Panel, ImDrawFlags_RoundCornersBottom);
-            // The logo above the name and the state: what the text takes at the foot is left out of its box.
-            const float textH = ui::space::S + ui::PillHeight + ui::space::XS;
-            const float logoTop = at.y + ui::space::S, logoH = std::max(0.0f, cardH - textH - ui::space::S);
+            // Until it is read: the game's colours, as its buttons have them.
+            card.fillTop = Rgb(style.bottom);
+            card.fillBottom = Rgb(style.outline);
+            card.hoverEdge = Rgb(style.glow);
             if (const ArtTexture* logo = CachedArt(entry.id, LauncherAssets::Role::Logo, 640))
-                DrawLogo(draw, *logo, ImVec2(at.x + cardW * 0.12f, logoTop), ImVec2(cardW * 0.76f, logoH));
-            else
-            {
-                // The short name in the title font, at the row's size.
-                const char* word = GameName(entry.id, GameNameForm::Short);
-                ImGui::PushFont(ui::Ctx().fonts.title, logoNameSize);
-                const ImVec2 text = ImGui::CalcTextSize(word);
-                draw->AddText(
-                    ImVec2(at.x + (cardW - text.x) / 2, logoTop + (logoH - text.y) / 2), ui::Col(ui::color::Ink), word);
-                ImGui::PopFont();
-            }
-            GameSlot* slot = &SlotFor(*FindGame(entry.id));
-            const SlotLine line = SlotStatus(slot);
-            // The state in a word and a shape, cut to the card.
-            ImGui::SetCursorScreenPos(ImVec2(at.x + ui::space::S, end.y - ui::space::S - ui::PillHeight));
-            ui::PushText(ui::TextStyle::Caption);
-            const std::string shown =
-                ui::Ellipsize(line.text.c_str(), cardW - 2 * ui::space::S - 2 * ui::space::M - ui::icon::Small);
-            ui::PopText();
-            ui::StatusPill(StatusOf(line.state), shown.c_str(), IconOf(line.state));
+                card.logo = [&, logo](ImVec2 logoAt, ImVec2 logoSize) { DrawLogo(draw, *logo, logoAt, logoSize); };
+            card.name = GameName(entry.id, GameNameForm::Short);
+            card.nameSize = logoNameSize;
+            const SlotLine line = SlotStatus(&SlotFor(*FindGame(entry.id)));
+            card.state = line.text.c_str();
+            card.status = StatusOf(line.state);
+            card.stateIcon = IconOf(line.state);
+            ui::DrawGameCard(at, cardSize, state, card);
             if (m_testSidebar)
                 m_drawn[std::string("home:") + entry.id] = line.text;
-            // Under the pointer: the game's own colour around the card.
-            draw->AddRect(at, end, hovered ? Rgb(style.glow) : ui::Col(ui::color::Ink, 0.11f), ui::radius::Panel, 0,
-                hovered ? ui::stroke::Selection : ui::stroke::Hairline);
-            if (state.focused) // around the card (its state pill is the last item drawn)
-                ui::FocusRing(at, end, ui::radius::Panel);
         }
         // The games still to come, a section's air (L) below: their names, in their colours, quietly.
         const float laterTop = row.y + float(rows) * cardH + gap * float(rows - 1) + ui::space::L;
@@ -3016,16 +2978,22 @@ namespace launcher_ui
         }
         ui::SectionHeader(Tr("Collection"));
         DrawFigurePictures();
-        ui::SectionHeader(Tr("Data folder"), Tr(strings::DataFolderHint));
+        ui::SectionHeader(Tr("Folders"));
         const std::string dataPath = datadir::Text(LauncherDataFolder()); // in the tooltip, not in the text
         ui::ButtonOptions folder;
         folder.icon = ui::Icon::Folder;
         folder.tooltip = dataPath.c_str();
-        if (ui::Button(Tr("Show in folder"), folder))
+        folder.width = -1; // the control column's, as the selects
+        if (ui::BeginSettings("##datafolder"))
         {
-            std::error_code error;
-            std::filesystem::create_directories(LauncherDataFolder(), error);
-            OpenFolder(LauncherDataFolder());
+            ui::SettingRow(Tr("Data folder"), Tr(strings::DataFolderHint));
+            if (ui::Button(Tr("Show in folder"), folder))
+            {
+                std::error_code error;
+                std::filesystem::create_directories(LauncherDataFolder(), error);
+                OpenFolder(LauncherDataFolder());
+            }
+            ui::EndSettings();
         }
         ImGui::PushID("##gamesfolder"); // its Show in folder is not the data folder's
         DrawGamesFolder();

@@ -428,8 +428,7 @@ namespace launcher_ui
         if (f.toy != nullptr)
         {
             ui::ButtonOptions picture;
-            picture.size = ui::Size::Small;
-            picture.kind = ui::ButtonKind::Ghost;
+            picture.width = Picture;
             picture.trailing = ui::Icon::ChevronDown;
             if (ui::Button(Tr("Figure picture"), picture) || m_testMenu == 4)
             {
@@ -514,7 +513,7 @@ namespace launcher_ui
         more.kind = ui::ButtonKind::Secondary;
         if (ui::IconButton("##figuremore", ui::Icon::More, Tr("More actions"), more) || m_testMenu == 2)
         {
-            ui::OpenMenu("##figuremenu");
+            ui::OpenMenu("##figuremenu", { .alignRight = true });
             m_testMenu = 0;
         }
         DrawFigureMenu(f, writable);
@@ -560,13 +559,11 @@ namespace launcher_ui
         }
         ImGui::Dummy(ImVec2(0, ui::space::XXS));
         DrawFigureFacts(f);
-        ui::ButtonOptions details;
-        details.kind = ui::ButtonKind::Ghost;
-        details.trailing = m_details ? ui::Icon::ChevronUp : ui::Icon::ChevronDown;
-        if (ui::Button(Tr("Details"), details))
-            m_details = !m_details;
-        if (m_details)
+        if (ui::BeginDisclosure("##detailsfold", Tr("Details"), &m_details))
+        {
             DrawDetails(f);
+            ui::EndDisclosure();
+        }
         ImGui::EndGroup();
         DrawConfirm(f);
     }

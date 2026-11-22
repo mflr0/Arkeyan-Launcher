@@ -189,13 +189,13 @@ namespace launcher_ui
             const std::vector<BackupRow> backups = Backups(figure.path); // a copy: Restore below reloads them
             if (backups.empty())
                 continue;
-            any = true;
-            const bool open = m_backupsOf == figure.path;
+            bool open = m_backupsOf == figure.path;
             const std::string count =
                 backups.size() == 1 ? Tf("{} backup", backups.size()) : Tf("{} backups", backups.size());
-            ui::ListRowOptions options;
-            options.trailing = count.c_str();
-            options.selected = open;
+            ui::DisclosureOptions options;
+            options.summary = count.c_str();
+            options.divider = any;
+            any = true;
             // An opened figure's copies (and their Restore buttons) are under its row: the row goes to the top, so they show.
             if (open && m_backupsScrolled != figure.path)
             {
@@ -203,12 +203,15 @@ namespace launcher_ui
                 ImGui::SetScrollHereY(0.0f);
             }
             ImGui::PushID(figure.path.c_str());
-            if (ui::ListRow(Name(figure).c_str(), options))
-                m_backupsOf = open ? std::string() : figure.path;
-            ImGui::PopID();
-            if (!open)
+            const bool wasOpen = open;
+            const bool unfolded = ui::BeginDisclosure("##fold", Name(figure).c_str(), &open, options);
+            if (open != wasOpen)
+                m_backupsOf = open ? figure.path : std::string();
+            if (!unfolded)
+            {
+                ImGui::PopID();
                 continue;
-            ImGui::Indent(ui::space::S - ui::space::XXS); // the copies' labels on the rows' titles' edge
+            }
             if (ui::BeginSettings("##backups"))
             {
                 for (const BackupRow& backup : backups)
@@ -220,8 +223,7 @@ namespace launcher_ui
                     restore.hold = true;
                     restore.disabled = !Writable(figure);
                     restore.tooltip = Tr("Hold to put this copy back.");
-                    ui::AlignRight(ui::ButtonWidth(Tr("Restore"), restore) + ui::space::S -
-                                   ui::space::XXS); // the rows' trailing edge
+                    ui::AlignRight(ui::ButtonWidth(Tr("Restore"), restore));
                     if (ui::Button(Tr("Restore"), restore))
                     {
                         std::string error;
@@ -234,7 +236,8 @@ namespace launcher_ui
                 }
                 ui::EndSettings();
             }
-            ImGui::Unindent(ui::space::S - ui::space::XXS);
+            ui::EndDisclosure();
+            ImGui::PopID();
         }
         if (!any)
             ui::EmptyState(ui::Icon::Info, Tr("No backups yet."));
@@ -299,8 +302,10 @@ namespace launcher_ui
                     field.hint = Tr("Its name");
                     ui::TextField("##unknownname", m_unknownName, sizeof(m_unknownName), field);
                     ui::SettingRow(Tr("Type"));
+                    ui::ButtonOptions save;
+                    save.kind = ui::ButtonKind::Primary;
                     ui::SelectOptions type;
-                    type.width = ui::height::SettingControl - ui::ButtonWidth(Tr("Save")) - ui::space::XS;
+                    type.width = ImGui::GetContentRegionAvail().x - ui::ButtonWidth(Tr("Save"), save) - ui::space::XS;
                     if (ui::BeginSelect("##unknowntype",
                             m_unknownCategory < 0 ? Tr("Choose a type")
                                                   : CategoryLabel(collection::Category(m_unknownCategory)).c_str(),
@@ -314,8 +319,6 @@ namespace launcher_ui
                         ui::EndSelect();
                     }
                     ImGui::SameLine(0, ui::space::XS);
-                    ui::ButtonOptions save;
-                    save.kind = ui::ButtonKind::Primary;
                     save.disabled = Trimmed(m_unknownName).empty() || m_unknownCategory < 0;
                     if (ui::Button(Tr("Save"), save))
                     {

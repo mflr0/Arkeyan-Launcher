@@ -63,7 +63,6 @@ All elements	Todos los elementos
 All games	Todos los juegos
 All games are updated	Todos los juegos están actualizados
 All types	Todos los tipos
-Fits {}	Va en {}
 Also delete my saves and my figures	Borrar también mis partidas y mis figuras
 Alternate deco	Decoración alternativa
 AMD upscaling: faster, nearly as sharp (F3 in game).	Escalado de AMD: más rápido, casi igual de nítido (F3 en el juego).
@@ -168,13 +167,10 @@ Choose your {} disc image	Elige tu imagen de disco de {}
 Choose...	Elegir...
 Chrome	Cromado
 Circle	Círculo
-Clean up	Limpiar
 Clear all	Quitar todo
 Clear caches	Vaciar cachés
 Clear search and filters	Borrar búsqueda y filtros
 Clear the figures	Quitar las figuras
-Clearing caches frees {}.	Vaciar las cachés libera {}.
-Clearing caches frees {}; deleting saves and data frees {} more.	Vaciar las cachés libera {}; borrar partidas y datos libera {} más.
 Click or turn the wheel	Haz clic o gira la rueda
 Click, then press a mouse button or turn the wheel (Escape cancels).	Haz clic y pulsa un botón del ratón o gira la rueda (Escape cancela).
 Click: put it on {}	Clic: ponerla en {}
@@ -270,7 +266,6 @@ Delete	Borrar
 Delete saves and data	Borrar partidas y datos
 Delete...	Borrar...
 Deleted figures are kept 30 days.	Las figuras borradas se guardan 30 días.
-Deleting saves and data frees {}.	Borrar partidas y datos libera {}.
 Designed by dorydev, made by mflr0, UI/UX by Gumelia.	Diseñado por dorydev, creado por mflr0, UI/UX por Gumelia.
 Desktop shortcut	Acceso en Escritorio
 Desktop shortcuts	Accesos en Escritorio
@@ -278,7 +273,6 @@ Details	Detalles
 Difficulty	Dificultad
 Disc	Disco
 Disc checked	Disco comprobado
-Disc image	Imagen de disco
 Disc not found	Disco no encontrado
 Doubles the game's textures from your disc. About {} of disk, a few minutes.	Duplica las texturas del juego desde tu disco. Unos {} de disco, unos minutos.
 Down	Abajo
@@ -718,7 +712,6 @@ Same	Igual
 Same as text	Igual que el texto
 Save	Guardar
 Save as...	Guardar como...
-Save backups	Copias de partidas
 Save to Desktop	Guardar en el Escritorio
 Saved	Guardado
 Saved gamepad (not connected)	Mando guardado (no conectado)
@@ -1268,4 +1261,9 @@ Help	Ayuda
 Keys for all games	Teclas para todos los juegos
 Toy Box shortcuts	Atajos de Toy Box
 Manage profiles...	Gestionar perfiles...
+Folder	Carpeta
+Caches	Cachés
+Saves and data	Partidas y datos
+Frees {}.	Libera {}.
+Fits {}	Va en {}
 Use the default	Usar el predeterminado

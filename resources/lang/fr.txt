@@ -88,8 +88,6 @@ Choose disc	Choisir le disque
 Choose...	Choisir...
 Choose your {} disc image	Choisissez l'image disque de {}
 Clear caches	Vider les caches
-Clearing caches frees {}.	Vider les caches libère {}.
-Clearing caches frees {}; deleting saves and data frees {} more.	Vider les caches libère {} ; supprimer sauvegardes et données en libère {} de plus.
 Choose a key to change it.	Choisissez une touche pour la modifier.
 Close	Fermer
 Coming later	Bientôt
@@ -130,13 +128,10 @@ Couldn't create the shortcut	Impossible de créer le raccourci
 Create	Créer
 Credits	Crédits
 Data folder	Dossier de données
-Clean up	Nettoyage
 Delete saves and data	Supprimer sauvegardes et données
-Deleting saves and data frees {}.	Supprimer sauvegardes et données libère {}.
 Frees {}. Saves and settings are kept.	Libère {}. Les sauvegardes et les réglages sont gardés.
 Desktop shortcut	Raccourci sur le bureau
 Disc	Disque
-Disc image	Image disque
 Disc not found	Disque introuvable
 Downloading Arkeyan Launcher	Téléchargement d'Arkeyan Launcher
 Downloading the game tools	Téléchargement des outils du jeu
@@ -322,7 +317,6 @@ Retry	Réessayer
 {} can't be verified, so it wasn't installed	{} ne peut pas être vérifié : rien n'a été installé
 {} points outside its GitHub release, so it wasn't installed	{} pointe en dehors de sa release GitHub : rien n'a été installé
 Save as...	Enregistrer sous...
-Save backups	Copies de secours des sauvegardes
 Saved gamepad (not connected)	Manette enregistrée (non connectée)
 Saves	Sauvegardes
 Saves and data deleted	Sauvegardes et données supprimées
@@ -542,7 +536,6 @@ Air	Air
 All elements	Tous les éléments
 All games	Tous les jeux
 All types	Tous les types
-Fits {}	Va sur {}
 Alternate deco	Autre déco
 At the next start of {}	Au prochain lancement de {}
 Back up now	Sauvegarder maintenant
@@ -1298,4 +1291,9 @@ Help	Aide
 Keys for all games	Touches pour tous les jeux
 Toy Box shortcuts	Raccourcis de la Toy Box
 Manage profiles...	Gérer les profils...
+Folder	Dossier
+Caches	Caches
+Saves and data	Sauvegardes et données
+Frees {}.	Libère {}.
+Fits {}	Va sur {}
 Use the default	Utiliser la valeur par défaut

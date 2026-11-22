@@ -1,6 +1,7 @@
 // Player profiles in the window (launcher/profiles.h, docs/profiles.md): the active profile's environment and settings, the
 // settings file split between the computer and the player, and a game's settings handed back after it ran.
 #include "launcher/ui/launcher_app.h"
+#include "launcher/ui/components/avatar.h"
 #include "launcher/profiles.h"
 #include "shared/collection/datadir.h"
 #include "shared/collection/catalogue.h"
@@ -160,21 +161,16 @@ namespace launcher_ui
                 found = m_avatars.emplace(path, LoadArt(m_renderer, path, false)).first;
             if (found->second)
             {
-                draw->AddImageRounded(ImTextureRef(ImTextureID(found->second.texture)),
-                    ImVec2(center.x - radius, center.y - radius), ImVec2(center.x + radius, center.y + radius),
-                    found->second.uv0, found->second.uv1, IM_COL32_WHITE, radius);
+                ui::Avatar(draw, center, radius,
+                    { .picture = ImTextureRef(ImTextureID(found->second.texture)),
+                        .hasPicture = true,
+                        .uv0 = found->second.uv0,
+                        .uv1 = found->second.uv1 });
                 return;
             }
         }
-        const unsigned color = ProfileColor(profile);
-        draw->AddCircleFilled(center, radius, ui::Col(color));
         const std::string initials = profiles::Initials(ProfileName(profile));
-        const float size = radius * 0.8f;
-        ImGui::PushFont(ui::Ctx().fonts.title, size);
-        const ImVec2 extent = ImGui::CalcTextSize(initials.c_str());
-        draw->AddText(ImVec2(center.x - extent.x / 2, center.y - extent.y / 2), ui::Col(ui::InkOn(color, 0x14141A)),
-            initials.c_str());
-        ImGui::PopFont();
+        ui::Avatar(draw, center, radius, { .color = ProfileColor(profile), .initials = initials.c_str() });
     }
 
     void App::DrawProfileButton()
@@ -190,7 +186,7 @@ namespace launcher_ui
         row.leadWidth = avatar + ui::space::S;
         row.image = [&](ImDrawList* draw, ImVec2 at, ImVec2 size) {
             const ImVec2 center(at.x + size.x / 2, at.y + size.y / 2);
-            draw->AddCircle(center, avatar / 2 + 2.5f, ui::Col(ProfileColor(active)), 0, 2.0f);
+            ui::AvatarRing(draw, center, avatar / 2, ProfileColor(active));
             DrawAvatar(draw, center, avatar / 2, active);
         };
         if (ui::ListRow((ProfileName(active) + "##profile").c_str(), row) || m_testOpenProfileMenu)
@@ -322,60 +318,67 @@ namespace launcher_ui
         const ImVec2 at = ImGui::GetCursorScreenPos();
         ImDrawList* draw = ImGui::GetWindowDrawList();
         const ImVec2 center(at.x + big / 2 + 4, at.y + big / 2 + 4);
-        draw->AddCircle(center, big / 2 + 4, ui::Col(ProfileColor(preview)), 0, 3.0f);
+        ui::AvatarRing(draw, center, big / 2, ProfileColor(preview));
         if (!editor.picture.empty())
         {
             auto found = m_avatars.find(editor.picture);
             if (found == m_avatars.end())
                 found = m_avatars.emplace(editor.picture, LoadArt(m_renderer, editor.picture, false)).first;
             if (found->second)
-                draw->AddImageRounded(ImTextureRef(ImTextureID(found->second.texture)),
-                    ImVec2(center.x - big / 2, center.y - big / 2), ImVec2(center.x + big / 2, center.y + big / 2),
-                    found->second.uv0, found->second.uv1, IM_COL32_WHITE, big / 2);
+                ui::Avatar(draw, center, big / 2,
+                    { .picture = ImTextureRef(ImTextureID(found->second.texture)),
+                        .hasPicture = true,
+                        .uv0 = found->second.uv0,
+                        .uv1 = found->second.uv1 });
         }
         else
             DrawAvatar(draw, center, big / 2, preview);
         ImGui::SetCursorScreenPos(ImVec2(at.x + big + ui::space::L, at.y));
         ImGui::BeginGroup();
-        ui::Text(ui::TextStyle::Caption, Tr("Nickname"), ui::color::InkSoft);
-        ui::TextField("##profilename", editor.name, sizeof(editor.name), { .hint = Tr("Player 1"), .width = 300 });
-        ImGui::Dummy(ImVec2(0, ui::space::XS));
-        ui::Text(ui::TextStyle::Caption, Tr("Picture"), ui::color::InkSoft);
-        if (ui::Button(Tr("Import an image..."), { .icon = ui::Icon::Folder }))
-            if (std::string chosen = ChoosePicture(m_window); !chosen.empty())
-            {
-                const std::filesystem::path scratch = profiles::Folder() / ".picture.png";
-                if (SquarePicture(chosen, scratch))
+        if (ui::BeginSettings("##profilefields"))
+        {
+            ui::SettingRow(Tr("Nickname"));
+            ui::TextField("##profilename", editor.name, sizeof(editor.name), { .hint = Tr("Player 1") });
+            ui::SettingRow(Tr("Picture"));
+            const bool canClear = preview.hasPicture || !editor.picture.empty();
+            const ui::ButtonOptions import{ .icon = ui::Icon::Folder }, clear{ .kind = ui::ButtonKind::Ghost };
+            ui::AlignRight(ui::ButtonWidth(Tr("Import an image..."), import) +
+                           (canClear ? ui::space::S + ui::ButtonWidth(Tr("Initials"), clear) : 0));
+            if (ui::Button(Tr("Import an image..."), import))
+                if (std::string chosen = ChoosePicture(m_window); !chosen.empty())
                 {
-                    m_avatars.erase(datadir::Text(scratch));
-                    editor.picture = datadir::Text(scratch);
-                    editor.removePicture = false;
+                    const std::filesystem::path scratch = profiles::Folder() / ".picture.png";
+                    if (SquarePicture(chosen, scratch))
+                    {
+                        m_avatars.erase(datadir::Text(scratch));
+                        editor.picture = datadir::Text(scratch);
+                        editor.removePicture = false;
+                    }
+                    else
+                        Toast(Tr("Couldn't read this image"), ui::ToastKind::Error);
                 }
-                else
-                    Toast(Tr("Couldn't read this image"), ui::ToastKind::Error);
+            if (canClear)
+            {
+                ImGui::SameLine(0, ui::space::S);
+                if (ui::Button(Tr("Initials"), clear))
+                    editor.picture.clear(), editor.removePicture = true;
             }
-        if (preview.hasPicture || !editor.picture.empty())
-        {
-            ImGui::SameLine(0, ui::space::S);
-            if (ui::Button(Tr("Initials"), { .kind = ui::ButtonKind::Ghost }))
-                editor.picture.clear(), editor.removePicture = true;
-        }
-        ImGui::Dummy(ImVec2(0, ui::space::XS));
-        ui::Text(ui::TextStyle::Caption, Tr("Color"), ui::color::InkSoft);
-        for (int color = 0; color < 10; color++)
-        {
-            if (color > 0)
-                ImGui::SameLine(0, ui::space::XS);
-            ImGui::PushID(color);
-            const ImVec2 dot = ImGui::GetCursorScreenPos();
-            if (ui::Hit("##colour", ImVec2(24, 24)))
-                editor.color = color;
-            ui::FocusRingIf(ui::ItemState(), ui::radius::Control);
-            const ImVec2 c(dot.x + 12, dot.y + 12);
-            draw->AddCircleFilled(c, 10, ui::Col(collection::ElementRgb(collection::Element(color))));
-            if (editor.color == color)
-                draw->AddCircle(c, 12.5f, ui::Col(0xFFFFFF), 0, 2.0f);
-            ImGui::PopID();
+            ui::SettingRow(Tr("Color"));
+            const float top = ImGui::GetCursorPosY();
+            ImGui::SetCursorPosY(top + (ui::height::Normal - ui::SwatchSize) / 2);
+            ui::AlignRight(ui::SwatchesWidth(10));
+            for (int color = 0; color < 10; color++)
+            {
+                if (color > 0)
+                    ImGui::SameLine(0, ui::space::XS);
+                ImGui::PushID(color);
+                if (ui::Swatch("##colour", collection::ElementRgb(collection::Element(color)), editor.color == color))
+                    editor.color = color;
+                ImGui::PopID();
+            }
+            ImGui::SetCursorPosY(top); // as high as a control, for the label centred on it
+            ImGui::Dummy(ImVec2(0, ui::height::Normal));
+            ui::EndSettings();
         }
         ImGui::EndGroup();
         ImGui::SetCursorScreenPos(ImVec2(at.x, std::max(ImGui::GetCursorScreenPos().y, at.y + big + 8) + ui::space::M));
@@ -426,44 +429,38 @@ namespace launcher_ui
         const bool running = !m_session.Running().empty();
         ui::Text(ui::TextStyle::Caption, Tr("Each has its own Toy Box, saves, keys and achievements."), ui::color::Dim);
         ImGui::Dummy(ImVec2(0, ui::space::XS));
+        const float avatar = 40, left = ImGui::GetCursorScreenPos().x;
+        if (ui::BeginSettings("##profilelist"))
         {
+            ImGui::Indent(avatar + ui::space::M); // the labels' column starts after the avatars
             for (const profiles::Profile& profile : m_profiles.profiles)
             {
-                ImGui::PushID(profile.id.c_str());
-                const ImVec2 at = ImGui::GetCursorScreenPos();
-                const float avatar = 40;
-                ImGui::Dummy(ImVec2(avatar, avatar));
-                DrawAvatar(
-                    ImGui::GetWindowDrawList(), ImVec2(at.x + avatar / 2, at.y + avatar / 2), avatar / 2, profile);
-                ImGui::SameLine(0, ui::space::M);
-                ImGui::BeginGroup();
                 const bool active = profile.id == m_profiles.active;
-                ui::Text(ui::TextStyle::Body,
-                    (active ? Tf("{} (active)", ProfileName(profile)) : ProfileName(profile)).c_str(), ui::color::Ink,
-                    0, true);
                 const GameInfo* last = profile.lastGame.empty() ? nullptr : FindGame(profile.lastGame);
-                ui::Text(ui::TextStyle::Caption,
+                ui::SettingRow((active ? Tf("{} (active)", ProfileName(profile)) : ProfileName(profile)).c_str(),
                     last != nullptr ? Tf("Last played: {}", GameName(last->id, GameNameForm::Short)).c_str()
-                                    : Tr("Not played yet"),
-                    ui::color::InkSoft);
-                ImGui::EndGroup();
-                ImGui::SameLine();
-                const float buttons = ui::ButtonWidth(Tr("Edit")) + ui::space::S + ui::ButtonWidth(Tr("Remove"));
-                ImGui::SetCursorPosX(ImGui::GetContentRegionMax().x - buttons);
+                                    : Tr("Not played yet"));
+                DrawAvatar(ImGui::GetWindowDrawList(),
+                    ImVec2(left + avatar / 2, ImGui::GetCursorScreenPos().y + ui::height::Normal / 2.0f), avatar / 2,
+                    profile);
+                ImGui::PushID(profile.id.c_str());
+                const ui::ButtonOptions remove{ .kind = ui::ButtonKind::Ghost,
+                    // The first profile is the data from before profiles, where it always was: it stays.
+                    .disabled = profile.First() || running };
+                ui::AlignRight(ui::ButtonWidth(Tr("Edit")) + ui::space::S + ui::ButtonWidth(Tr("Remove"), remove));
                 if (ui::Button(Tr("Edit")))
                     OpenProfileEditor(profile.id);
                 ImGui::SameLine(0, ui::space::S);
-                // The first profile is the data from before profiles, where it always was: it stays.
-                ImGui::BeginDisabled(profile.First() || running);
-                if (ui::Button(Tr("Remove"), { .kind = ui::ButtonKind::Ghost }))
+                if (ui::Button(Tr("Remove"), remove))
                     m_profileToRemove = profile.id;
-                ImGui::EndDisabled();
                 ImGui::PopID();
-                ImGui::Dummy(ImVec2(0, ui::space::XS));
             }
-            if (ui::Button(Tr("Add a profile"), { .icon = ui::Icon::Plus }))
-                OpenProfileEditor({});
+            ImGui::Unindent(avatar + ui::space::M);
+            ui::EndSettings();
         }
+        ImGui::Dummy(ImVec2(0, ui::space::XS));
+        if (ui::Button(Tr("Add a profile"), { .icon = ui::Icon::Plus }))
+            OpenProfileEditor({});
         if (const profiles::Profile* gone = m_profiles.Find(m_profileToRemove))
         {
             bool open = true;

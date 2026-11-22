@@ -10,7 +10,7 @@ the launcher's own settings belong to the computer and are shared by every profi
   profiles (the active one checked), then Add a profile, Edit my profile and Manage profiles. While a game runs, the
   profiles are greyed: one quits the game to change.
 - Changing profile reads its Toy Box, seats, saves, keys and achievements again, and shows its last game.
-- Launcher settings > Profiles: every profile with its last game, Edit and Remove (after a confirmation; the folder goes to
+- Manage profiles opens the Profiles dialog: every profile with its last game, Edit and Remove (after a confirmation; the folder goes to
   `<data>/profiles/.trash/`). The first profile cannot be removed.
 - The editor: the pseudo (letters with French accents, digits, space, `- _ . '`; anything else is dropped), Import an image
   (PNG or JPEG, cut to its middle square, kept at 256 px) or Initials, and the colour.
@@ -39,4 +39,4 @@ Toy Box's, `pad_`, `rumble_`, `mouse`, `mouse_`, `global`), and `[<game>]` `lang
 ## Tests
 `ArkeyanLauncherTest` runs `ProfilesChecks` (`tests/profiles_test.cpp`; alone with `SKY_LAUNCHER_TEST_PROFILES_ONLY=1`).
 `SKY_LAUNCHER_TEST_PROFILES=1` with `SKY_LAUNCHER_SHOTS` and scratch data folders shoots the sidebar, the profile menu,
-the new profile editor, a switch and Settings > Profiles (`profiles-01-sidebar` to `profiles-05-settings`).
+the new profile editor, a switch and the Profiles dialog (`profiles-01-sidebar` to `profiles-05-settings`).

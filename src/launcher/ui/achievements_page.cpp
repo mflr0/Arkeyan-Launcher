@@ -77,19 +77,20 @@ namespace launcher_ui
             progress.totalGamerscore > 0 ? float(progress.gamerscore) / float(progress.totalGamerscore) : 0.0f);
         if (std::string line = PlayTimeLine(progress.play, int64_t(std::time(nullptr))); !line.empty())
             ui::Text(ui::TextStyle::Caption, line.c_str(), ui::color::InkSoft);
-        ImGui::Dummy(ImVec2(0, ui::space::XS));
 
         ImDrawList* draw = ImGui::GetWindowDrawList();
         const float cardWidth = ImGui::GetContentRegionAvail().x;
         const float rightW = 4 * ui::height::Small; // the score and the date
         const float textX = Picture + ui::space::M, textW = cardWidth - textX - rightW - ui::space::M;
+        // A settings table's rows: its padding and least height, each hairline on the edge between two rows.
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(ImGui::GetStyle().ItemSpacing.x, 0));
         for (size_t i = 0; i < progress.rows.size(); i++)
         {
             const AchievementRow& row = progress.rows[i];
             const float descriptionH =
                 ui::TextSize(ui::TextStyle::Caption, row.description.c_str(), nullptr, false, textW).y;
             const float blockH = ui::type::Body + ui::space::XXS + descriptionH;
-            const float rowH = std::max(Picture, blockH) + 2 * ui::space::S;
+            const float rowH = std::max(ui::height::Large, std::max(Picture, blockH) + 2 * ui::space::S);
             const ImVec2 at = ImGui::GetCursorScreenPos();
             ImGui::Dummy(ImVec2(cardWidth, rowH));
             if (i > 0)
@@ -108,7 +109,7 @@ namespace launcher_ui
                     ui::Col(ui::color::Inset), ui::radius::Control);
             ui::PushText(ui::TextStyle::Body, true);
             ui::DrawText(draw, ImVec2(at.x + textX, top), ui::Col(row.unlocked ? ui::color::Ink : ui::color::Dim),
-                row.name.c_str());
+                ui::Ellipsize(row.name.c_str(), textW).c_str());
             ui::PopText();
             ui::PushText(ui::TextStyle::Caption);
             draw->AddText(ImGui::GetFont(), ImGui::GetFontSize(),
@@ -135,6 +136,7 @@ namespace launcher_ui
                 ui::PopText();
             }
         }
+        ImGui::PopStyleVar();
         EndCard();
         if (m_testAchievements && m_testStep >= 3)
             ImGui::SetScrollY(ImGui::GetScrollMaxY()); // the screenshot test's last rows

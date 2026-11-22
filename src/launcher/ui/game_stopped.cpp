@@ -30,21 +30,20 @@ namespace launcher_ui
                     game->name, m_gameStopped->exitCode)
                     .c_str(),
                 ui::color::Ink);
-            ImGui::Dummy(ImVec2(0, ui::space::S));
+            if (ui::BeginSettings("##stoppedrows"))
+            {
+                ui::SettingRow(Tr("Game log"));
+                if (ui::Button(Tr("Copy log"))) // the dialog stays open
+                {
+                    SDL_SetClipboardText(
+                        launcher_report::Anonymous(GameLogText(), launcher_report::CurrentIdentity("")).c_str());
+                    Toast(Tr("Log copied"), ui::ToastKind::Success);
+                }
+                ui::EndSettings();
+            }
             const ui::ModalResult result = ui::ModalActions(&open, Tr("Report"), Tr("Close"));
             if (result == ui::ModalResult::Confirm)
                 ReportGameStopped(*game, m_gameStopped->exitCode, m_configPath, m_config, m_gameStopped->iso);
-            // Copy log, at the left of the actions' row: the dialog stays open.
-            const float actionsY = ImGui::GetItemRectMin().y, afterY = ImGui::GetCursorPosY();
-            ImGui::SetCursorScreenPos(ImVec2(ImGui::GetWindowPos().x + ImGui::GetCursorStartPos().x, actionsY));
-            if (ui::Button(Tr("Copy log"), { .kind = ui::ButtonKind::Ghost }))
-            {
-                SDL_SetClipboardText(
-                    launcher_report::Anonymous(GameLogText(), launcher_report::CurrentIdentity("")).c_str());
-                Toast(Tr("Log copied"), ui::ToastKind::Success);
-            }
-            ImGui::SetCursorPosY(afterY);
-            ImGui::Dummy(ImVec2(0, 0));
             ui::EndModal();
         }
         if (!open)

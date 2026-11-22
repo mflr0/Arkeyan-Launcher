@@ -57,7 +57,9 @@ namespace launcher_ui
             note(Tf("Moving the games: {} of {}", ui::FormatSize(m_gamesMove.Done()), ui::FormatSize(total)));
             ui::ProgressBar(total == 0 ? 0.0f : float(double(m_gamesMove.Done()) / double(total)), -1, true);
             ImGui::Dummy(ImVec2(0, ui::space::XXS));
-            if (ui::Button(Tr("Stop"), { .icon = ui::Icon::Stop }))
+            const ui::ButtonOptions stop{ .icon = ui::Icon::Stop };
+            ui::AlignRight(ui::ButtonWidth(Tr("Stop"), stop));
+            if (ui::Button(Tr("Stop"), stop))
                 m_gamesMove.Stop();
             return;
         }
@@ -65,19 +67,30 @@ namespace launcher_ui
         const std::string name = current.empty()
                                      ? std::string(Tr("Data folder"))
                                      : datadir::Text(current.filename().empty() ? current : current.filename());
-        note(Tf("Now: {}", name));
         const std::string path = datadir::Text(current.empty() ? LauncherDataFolder() : current);
         ui::ButtonOptions choose;
         choose.disabled = busy;
+        ui::ButtonOptions folder;
+        folder.icon = ui::Icon::Folder;
+        folder.tooltip = path.c_str();
+        ui::ButtonOptions reset;
+        reset.disabled = busy;
+        // The buttons share the row's column; where they need over half the room, Use default takes a line of its own.
+        const float pair =
+            ui::ButtonWidth(Tr("Choose..."), choose) + ui::space::S + ui::ButtonWidth(Tr("Show in folder"), folder);
+        const float resetWidth = current.empty() ? 0.0f : ui::ButtonWidth(Tr("Use default"), reset);
+        const float all = current.empty() ? pair : pair + ui::space::S + resetWidth;
+        const bool oneLine = all <= ImGui::GetContentRegionAvail().x * 0.6f;
+        if (!ui::BeginSettings("##gamesfolderrow", oneLine ? all : std::max(pair, resetWidth)))
+            return;
+        ui::SettingRow(Tf("Now: {}", name).c_str());
+        ui::AlignRight(oneLine ? all : pair);
         if (ui::Button(Tr("Choose..."), choose))
         {
             const std::string start = datadir::Text(current.empty() ? LauncherDataFolder() : current);
             SDL_ShowOpenFolderDialog(GamesFolderChosen, nullptr, m_window, start.c_str(), false);
         }
         ImGui::SameLine(0, ui::space::S);
-        ui::ButtonOptions folder;
-        folder.icon = ui::Icon::Folder;
-        folder.tooltip = path.c_str();
         if (ui::Button(Tr("Show in folder"), folder))
         {
             std::error_code error;
@@ -88,12 +101,14 @@ namespace launcher_ui
         }
         if (!current.empty())
         {
-            ImGui::SameLine(0, ui::space::S);
-            ui::ButtonOptions reset;
-            reset.disabled = busy;
+            if (oneLine)
+                ImGui::SameLine(0, ui::space::S);
+            else
+                ui::AlignRight(resetWidth);
             if (ui::Button(Tr("Use default"), reset))
                 ChooseGamesFolder({});
         }
+        ui::EndSettings();
     }
 
     // A folder the player chose (empty: the data folder): checked, the room counted, then the games move.

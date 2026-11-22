@@ -46,28 +46,25 @@ namespace launcher_ui
             subtitle =
                 Tf("Save slot {} · {} in the pile · Room for {} more", chests.slot + 1, chests.pile, chests.room);
         ui::SectionHeader(Tr("Imaginite chests"), subtitle.c_str(), false);
-        ImGui::Dummy(ImVec2(0, ui::space::XS));
-        if (chests.waiting > 0)
-        {
-            const std::string line = chests.WaitingElsewhere() ? Tf("{} chests waiting for save slot {}",
-                                                                     chests.waiting, chests.waitingSlot + 1)
-                                                               : Tf("{} chests waiting", chests.waiting);
-            ui::Text(ui::TextStyle::Body, line.c_str(), ui::color::InkSoft);
-            ImGui::SameLine(0, ui::space::S);
-            if (ui::Button(Tr("Cancel"), { .size = ui::Size::Small }))
-            {
-                if (!CancelChests(progress::Folder(m_s->game.id)))
-                    Toast(Tr("Too late: the game already added them"), ui::ToastKind::Error);
-                RefreshChests(true);
-            }
-        }
-
         const int asked = std::accumulate(m_chestCounts.begin(), m_chestCounts.end(), 0);
         if (ui::BeginSettings("##chestkinds"))
         {
+            if (chests.waiting > 0)
+            {
+                const std::string line = chests.WaitingElsewhere() ? Tf("{} chests waiting for save slot {}",
+                                                                         chests.waiting, chests.waitingSlot + 1)
+                                                                   : Tf("{} chests waiting", chests.waiting);
+                ui::SettingRow(line.c_str());
+                if (ui::Button(Tr("Cancel")))
+                {
+                    if (!CancelChests(progress::Folder(m_s->game.id)))
+                        Toast(Tr("Too late: the game already added them"), ui::ToastKind::Error);
+                    RefreshChests(true);
+                }
+            }
             for (size_t i = 0; i < kinds.size(); i++)
             {
-                ui::SettingRow(Tr(kinds[i].label), nullptr);
+                ui::SettingRow(Tr(kinds[i].label));
                 int& count = m_chestCounts[i];
                 const int max = std::max(count, count + chests.room - asked);
                 count = std::clamp(count, 0, std::max(0, max));

@@ -104,7 +104,9 @@ namespace launcher_ui
             else
                 ui::IndeterminateBar();
             ImGui::Dummy(ImVec2(0, ui::space::XXS));
-            if (ui::Button(Tr("Stop"), { .icon = ui::Icon::Stop }))
+            const ui::ButtonOptions stop{ .icon = ui::Icon::Stop };
+            ui::AlignRight(ui::ButtonWidth(Tr("Stop"), stop));
+            if (ui::Button(Tr("Stop"), stop))
                 m_s->hdJob.Cancel();
             return;
         }

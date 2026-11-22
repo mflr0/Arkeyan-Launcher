@@ -35,6 +35,11 @@ namespace launcher_ui
         // Room left of a game's rows for their dots, so a label does not move when its value changes.
         constexpr float DotGutter = ui::space::M;
 
+        // A table of keys and pad buttons (the global layout, the Toy Box): its last column is a settings row's.
+        constexpr float KeyColumn = 170, PadColumn = ui::height::SettingControl;
+        // A game's table of selects: room for a reset arrow, so that its selects are as wide as the global layout's.
+        constexpr float OwnColumn = PadColumn + ui::height::Normal + ui::space::XS;
+
         // The reset arrow's words.
         // an action only this game has goes back to its default: it has no common setting.
         const char* ResetTip(bool own, bool shared)
@@ -111,19 +116,19 @@ namespace launcher_ui
             return hit;
         }
 
-        // A select filling the control column, the reset arrow before it. True when the select is open.
+        // A settings row's select on the control column's right edge, the reset arrow before it. True when the select is open.
         bool SelectControl(const char* id, const char* preview, const char* resetTip, bool* reset)
         {
+            const float resetW = resetTip != nullptr ? ui::height::Normal + ui::space::XS : 0;
             ui::SelectOptions options;
+            options.width = std::min(float(ui::height::SettingControl), ImGui::GetContentRegionAvail().x - resetW);
+            ui::AlignRight(resetW + options.width);
             if (resetTip != nullptr)
             {
-                const float avail = ImGui::GetContentRegionAvail().x;
-                ui::AlignRight(avail);
                 ImGui::PushID(id);
                 *reset = ui::IconButton("##reset", ui::Icon::Reset, resetTip);
                 ImGui::PopID();
                 ImGui::SameLine(0, ui::space::XS);
-                options.width = avail - ui::height::Normal - ui::space::XS;
             }
             return ui::BeginSelect(id, preview, options);
         }
@@ -545,13 +550,13 @@ namespace launcher_ui
         ImGui::Indent(DotGutter);
         DrawDotLegend();
         ui::SectionHeader(Tr("Rumble"), nullptr, false);
-        if (ui::BeginSettings("##rumble"))
+        if (ui::BeginSettings("##rumble", OwnColumn))
         {
             DrawRumbleRows(game);
             ui::EndSettings();
         }
         ui::SectionHeader(Tr(strings::Buttons));
-        if (ui::BeginSettings("##padmap"))
+        if (ui::BeginSettings("##padmap", OwnColumn))
         {
             DrawPadRows(game);
             ui::EndSettings();
@@ -571,21 +576,18 @@ namespace launcher_ui
         ImGui::Unindent(DotGutter);
     }
 
-    // A section that starts folded: its title is the row that opens and closes it.
+    // A section that starts folded. True: draw it, then ui::EndDisclosure().
     bool App::DrawFold(const char* title, bool* open)
     {
-        ImGui::Dummy(ImVec2(0, ui::space::XS));
-        ui::ListRowOptions row;
-        row.icon = *open ? ui::Icon::ChevronDown : ui::Icon::ChevronRight;
-        row.titleStyle = ui::TextStyle::Title;
-        if (ui::ListRow(title, row))
+        const bool wasOpen = *open;
+        const bool shown = ui::BeginDisclosure(title, title, open);
+        if (*open != wasOpen)
         {
-            *open = !*open;
             m_capturing = nullptr; // a key being waited for would be out of sight
             m_toyboxCapturing = nullptr;
             m_toyboxPadCapturing = nullptr;
         }
-        return *open;
+        return shown;
     }
 
     // Settings > Controls, under the controller choice: the mouse switch, the rumble, then folded "Keys for all games" (a
@@ -613,9 +615,15 @@ namespace launcher_ui
             ui::EndSettings();
         }
         if (DrawFold(Tr("Keys for all games"), &m_globalKeysOpen))
+        {
             DrawGlobalKeys();
+            ui::EndDisclosure();
+        }
         if (DrawFold(Tr("Toy Box shortcuts"), &m_toyboxShortcutsOpen))
+        {
             DrawToyboxKeys();
+            ui::EndDisclosure();
+        }
         // Under no fold: it resets the buttons and the rumble above as well as the shortcuts.
         ImGui::Dummy(ImVec2(0, ui::space::XS));
         ui::ButtonOptions reset;
@@ -640,7 +648,6 @@ namespace launcher_ui
             capturing ? Tf("Press a key for \"{}\" (Escape cancels)", GlobalPurpose(*m_capturing)).c_str()
                       : Tr(strings::GlobalIntro),
             capturing ? ui::color::Ink : ui::color::Dim);
-        constexpr float KeyColumn = 170, PadColumn = 250;
         if (ui::BeginSettings("##allgames", KeyColumn, PadColumn))
         {
             ImGui::TableNextRow();
@@ -751,7 +758,7 @@ namespace launcher_ui
     {
         const auto keys = ToyboxKeys();
         const auto pads = ToyboxPads();
-        if (ui::BeginSettings("##toyboxkeys", 170, 250))
+        if (ui::BeginSettings("##toyboxkeys", KeyColumn, PadColumn))
         {
             // Physical shortcuts stay independent of the games' button remaps.
             for (int row = 0; row < 5; row++)

@@ -69,6 +69,20 @@ namespace ui
         constexpr const char* PrefixDot = "\xC2\xB7"; // between a pill's prefix and its icon
         constexpr float TrailingSize = icon::Small; // the chevron after a label
 
+        // ChevronDown, ChevronUp while open: the button opens a menu or a list, and its chevron is a Select's.
+        bool OpensMenu(Icon trailing) { return trailing == Icon::ChevronDown || trailing == Icon::ChevronUp; }
+
+        float TrailingGap(Icon trailing) { return OpensMenu(trailing) ? space::XS : space::XXS; }
+
+        float TrailingWidth(Icon trailing) { return trailing == Icon::None ? 0 : TrailingGap(trailing) + TrailingSize; }
+
+        unsigned TrailingInk(Icon trailing, unsigned ink) // a filled button's chevron keeps the fill's ink
+        {
+            if (!OpensMenu(trailing) || ink == color::OnAccent)
+                return ink;
+            return trailing == Icon::ChevronUp ? color::Ink : color::InkSoft;
+        }
+
         // The content of a button: [prefix] [icon] label [trailing], centred in min..max, one point lower when pressed.
         void DrawContent(ImDrawList* draw, ImVec2 min, ImVec2 max, const char* label, TextStyle style, Icon icon,
             bool spinner, Icon trailing, unsigned ink, bool pressed, const char* prefix = nullptr,
@@ -81,8 +95,8 @@ namespace ui
                                       ? ImGui::CalcTextSize(prefix).x + ImGui::CalcTextSize(PrefixDot).x + 2 * space::XS
                                       : 0;
             bool hasText = end != label, lead = icon != Icon::None || spinner;
-            float width = prefixW + text.x + (lead ? IconSize + (hasText ? space::XS : 0) : 0) +
-                          (trailing != Icon::None ? TrailingSize + space::XXS : 0);
+            float width =
+                prefixW + text.x + (lead ? IconSize + (hasText ? space::XS : 0) : 0) + TrailingWidth(trailing);
             float x = std::round((min.x + max.x - width) / 2),
                   mid = std::round((min.y + max.y) / 2) + (pressed ? 1.0f : 0.0f);
             if (prefix != nullptr) // the words, then a dot XS apart from them and from the icon
@@ -101,8 +115,8 @@ namespace ui
             if (hasText) // the capitals' middle on the button's: the icons beside the label line up with it
                 DrawText(draw, ImVec2(x, std::round(mid - CapMiddle(style, true))), Col(ink), label, end);
             if (trailing != Icon::None)
-                DrawIcon(
-                    draw, trailing, ImVec2(x + text.x + space::XXS + TrailingSize / 2, mid), TrailingSize, Col(ink));
+                DrawIcon(draw, trailing, ImVec2(x + text.x + TrailingGap(trailing) + TrailingSize / 2, mid),
+                    TrailingSize, Col(TrailingInk(trailing, ink)));
             PopText();
         }
 
@@ -121,9 +135,8 @@ namespace ui
             return ImGui::GetContentRegionAvail().x;
         const char* end = LabelEnd(label);
         float text = TextSize(LabelStyle(options.size), label, end, true).x;
-        bool lead = options.icon != Icon::None || options.loading || options.hold;
-        float content = text + (lead ? IconSize + (end != label ? space::XS : 0) : 0) +
-                        (options.trailing != Icon::None ? TrailingSize + space::XXS : 0);
+        bool lead = options.icon != Icon::None || options.loading;
+        float content = text + (lead ? IconSize + (end != label ? space::XS : 0) : 0) + TrailingWidth(options.trailing);
         return std::max(options.width, std::ceil(content + 2 * SidePad(options.size)));
     }
 
@@ -184,7 +197,7 @@ namespace ui
                 Col(sweep, 0.55f), rounding);
         }
         // A hold button shows what it does (a bin for a removal) when it says so; the timer only when it has no icon of its own.
-        Icon icon = options.hold && options.icon == Icon::None ? Icon::Hold : options.icon;
+        Icon icon = options.icon; // a hold button has none of its own: the sweep and the hint say how it works
         DrawContent(draw, min, max, label, LabelStyle(options.size), icon, options.loading, options.trailing, paint.ink,
             state.pressed);
         ImGui::EndDisabled();
@@ -206,8 +219,7 @@ namespace ui
         const char* end = LabelEnd(label);
         float text = TextSize(TextStyle::Body, label, end, true).x;
         float content =
-            text + (options.icon != Icon::None ? IconSize + space::XS : 0) +
-            (options.trailing != Icon::None ? TrailingSize + space::XXS : 0) +
+            text + (options.icon != Icon::None ? IconSize + space::XS : 0) + TrailingWidth(options.trailing) +
             (options.prefix != nullptr ? TextSize(TextStyle::Body, options.prefix, nullptr, true).x +
                                              TextSize(TextStyle::Body, PrefixDot, nullptr, true).x + 2 * space::XS
                                        : 0);
@@ -331,18 +343,15 @@ namespace ui
 
     namespace
     {
-        // One half of the main action as drawn.
+        // The main action's face as drawn.
         struct Look
         {
-            bool hovered = false, held = false, enabled = true, busy = false;
+            bool hovered = false, held = false, enabled = true;
         };
 
-        // A fill in its state: lighter under the pointer (or the focus), darker pressed, greyed when disabled, dark and
-        // tinted when busy.
+        // A fill in its state: lighter under the pointer (or the focus), darker pressed, greyed when disabled.
         unsigned Shade(unsigned rgb, const Look& look)
         {
-            if (look.busy)
-                return Mix(rgb, color::OverArt, 0.78f);
             if (!look.enabled)
                 return Mix(rgb, 0x4A4A54, 0.7f);
             return look.held ? Lift(rgb, -0.1f) : look.hovered ? Lift(rgb, 0.1f) : rgb;
@@ -384,181 +393,129 @@ namespace ui
                 ImVec2(Snap((min.x + max.x - width) / 2), Snap((min.y + max.y) / 2 - (cap->Y0 + cap->Y1) / 2)), ink,
                 text);
         }
-    }
 
-    MainActionResult MainAction(const MainActionOptions& options)
-    {
-        if (options.separated)
+        // The running game's Stop: one quieter button in the danger colours, no gear.
+        MainActionResult StopAction(const MainActionOptions& options)
         {
             MainActionResult result;
-            const ImVec2 at = ImGui::GetCursorScreenPos();
-            const ImVec2 end(at.x + options.width, at.y + height::Main);
-            ImDrawList* draw = ImGui::GetWindowDrawList();
+            const ImVec2 at = ImGui::GetCursorScreenPos(), end(at.x + options.width, at.y + height::Large);
             result.mainCentre = ImVec2((at.x + end.x) / 2, (at.y + end.y) / 2);
-            result.gearCentre = ImVec2(end.x + space::S + height::MainGear / 2, result.mainCentre.y);
+            result.gearCentre = ImVec2(-1, -1);
             ImGui::BeginDisabled(!options.enabled);
-            if (Hit("##main", ImVec2(options.width, height::Main)))
+            if (Hit("##main", ImVec2(options.width, height::Large)))
                 result.hit = MainActionHit::Main;
-            ImGui::EndDisabled();
             State state = ItemState(!options.enabled);
             if (options.takeFocus && options.enabled)
             {
                 FocusLastItem(options.showFocus);
                 state.focused = options.showFocus;
             }
-            const bool busy = options.progress >= 0 || options.indeterminate;
-            // In the shown game's colours (its logo's, StyleOf) when it has them: the same gradient and ink as the joined
-            // button, so that each game's page has its own action.
-            const bool styled = options.style != nullptr && !options.danger && !busy;
-            const unsigned fill = busy                             ? color::OverArt
-                                  : options.danger                 ? color::OverArt
-                                  : state.pressed                  ? color::AccentFillPressed
-                                  : state.hovered || state.focused ? color::AccentFillHover
-                                                                   : color::AccentFill;
-            unsigned ink = busy ? color::Ink : options.danger ? color::Danger : color::OnAccent;
-            if (styled)
-            {
-                const LauncherTheme::GameStyle& style = *options.style;
-                const unsigned top = Mix(style.top, style.bottom, 0.2f), bottom = Mix(style.top, style.bottom, 0.58f);
-                Look look;
-                look.enabled = options.enabled;
-                look.hovered = options.enabled && (state.hovered || state.focused);
-                look.held = options.enabled && state.pressed;
-                GradientRect(draw, at, end, Col(Shade(top, look), options.enabled ? 1 : DisabledAlpha),
-                    Col(Shade(bottom, look), options.enabled ? 1 : DisabledAlpha), radius::Card,
-                    ImDrawFlags_RoundCornersAll);
-                draw->AddLine(ImVec2(at.x + radius::Card, at.y + 0.5f), ImVec2(end.x - radius::Card, at.y + 0.5f),
-                    Col(0xFFFFFF, options.enabled ? 0.27f : 0.1f));
-                ink = InkOn(Mix(top, bottom, 0.5f), style.outline);
-            }
-            else
-                draw->AddRectFilled(at, end, Col(fill, options.enabled || busy ? 1 : DisabledAlpha), radius::Card);
-            if (options.danger)
-                draw->AddRect(at, end, Col(color::Danger), radius::Card, 0, stroke::Edge);
-            std::string label = options.label;
-            if (options.progress >= 0 && !options.indeterminate)
-                label += " " + FormatPercent(options.progress);
-            const float lead = options.icon == Icon::None ? 0 : icon::Normal + space::S;
-            ImGui::PushFont(Ctx().fonts.title,
-                FitSize(Ctx().fonts.title, type::Title, label.c_str(), options.width - 2 * space::M - lead));
-            const float total = ImGui::CalcTextSize(label.c_str()).x + lead;
-            if (lead > 0)
-                DrawIcon(draw, options.icon,
-                    ImVec2(result.mainCentre.x - total / 2 + icon::Normal / 2, result.mainCentre.y), icon::Normal,
-                    Col(ink));
-            DrawCapsLabel(draw, ImVec2(at.x + lead, at.y), end, label.c_str(),
-                Col(ink, options.enabled || busy ? 1 : DisabledAlpha));
+            ImDrawList* draw = ImGui::GetWindowDrawList();
+            const unsigned fill = state.pressed                    ? color::DangerFillPressed
+                                  : state.hovered || state.focused ? color::DangerFillHover
+                                                                   : color::DangerFill;
+            draw->AddRectFilled(at, end, Col(fill, DisabledAlpha), radius::Control);
+            draw->AddRect(at, end, Col(color::Danger), radius::Control, 0, stroke::Edge);
+            const float lead = icon::Normal + space::S;
+            const float size =
+                FitSize(Ctx().fonts.title, type::Title, options.label, options.width - 2 * space::M - lead);
+            ImGui::PushFont(Ctx().fonts.title, size);
+            const float x = result.mainCentre.x - (lead + ImGui::CalcTextSize(options.label).x) / 2;
+            const float mid = result.mainCentre.y + (state.pressed ? stroke::Hairline : 0);
+            DrawIcon(draw, options.icon, ImVec2(x + icon::Normal / 2, mid), icon::Normal, Col(color::Danger));
+            DrawText(draw, ImVec2(x + lead, mid - CapMiddle(TextStyle::Title, false, size)), Col(color::Danger),
+                options.label);
             ImGui::PopFont();
-            if (options.progress >= 0 || options.indeterminate)
-                DrawProgress(draw, at, end, radius::Card, 0, Ctx().accent, options.progress, options.indeterminate);
-            FocusRingIf(state, radius::Card);
-
-            const ImVec2 gearAt(end.x + space::S, at.y), gearEnd(gearAt.x + height::MainGear, end.y);
-            ImGui::SetCursorScreenPos(gearAt);
-            if (Hit("##gamesettings", ImVec2(height::MainGear, height::Main)))
-                result.hit = MainActionHit::Settings;
-            State gear = ItemState();
-            if (options.takeFocus && !options.enabled)
-            {
-                FocusLastItem(options.showFocus);
-                gear.focused = options.showFocus;
-            }
-            draw->AddRectFilled(gearAt, gearEnd,
-                Col(gear.pressed   ? color::OverArtPressed
-                    : gear.hovered ? color::OverArtHover
-                                   : color::OverArt),
-                radius::Card);
-            draw->AddRect(gearAt, gearEnd, Col(color::OverArtEdge), radius::Card, 0, stroke::Hairline);
-            DrawIcon(draw, Icon::Gear, result.gearCentre, icon::Large, Col(color::Ink));
-            FocusRingIf(gear, radius::Card);
-            if (options.gearTooltip != nullptr && WantsTooltip(gear))
-                Bubble(options.gearTooltip, gearAt, gearEnd);
+            FocusRingIf(state, radius::Control);
+            ImGui::EndDisabled();
             return result;
         }
-        static constexpr LauncherTheme::GameStyle Launcher = { LauncherTheme::AccentHover, LauncherTheme::AccentDark,
-            LauncherTheme::AccentInk, LauncherTheme::Accent };
-        const LauncherTheme::GameStyle& style = options.style != nullptr ? *options.style : Launcher;
-        const float rounding = radius::Card;
-        ImDrawList* draw = ImGui::GetWindowDrawList();
+    }
+
+    MainActionResult MainAction(const MainActionOptions& options)
+    {
+        if (options.danger)
+            return StopAction(options);
         MainActionResult result;
         const ImVec2 at = ImGui::GetCursorScreenPos();
-        const ImVec2 mainMin = at, mainMax(at.x + height::MainWidth, at.y + height::Main);
-        const ImVec2 gearMin(mainMax.x, at.y), gearMax(mainMax.x + height::MainGear, mainMax.y);
-        result.mainCentre = ImVec2((mainMin.x + mainMax.x) / 2, (mainMin.y + mainMax.y) / 2);
-        result.gearCentre = ImVec2((gearMin.x + gearMax.x) / 2, (gearMin.y + gearMax.y) / 2);
-        const unsigned top = Mix(style.top, style.bottom, 0.2f), bottom = Mix(style.top, style.bottom, 0.58f),
-                       middle = Mix(top, bottom, 0.5f);
-        const bool busy = options.progress >= 0 || options.indeterminate;
-
-        // The label: busy, its percentage instead of the dots.
-        std::string label = options.label;
-        if (options.progress >= 0 && !options.indeterminate)
-        {
-            if (label.ends_with("..."))
-                label.resize(label.size() - 3);
-            label += " " + FormatPercent(options.progress);
-        }
-
-        // The main half (an id that keeps the focus when the label changes); the focused half is lit as under the pointer.
-        ImGui::PushStyleColor(ImGuiCol_NavCursor, 0); // the ring below instead of ImGui's
+        const ImVec2 end(at.x + options.width, at.y + height::Main);
+        ImDrawList* draw = ImGui::GetWindowDrawList();
+        result.mainCentre = ImVec2((at.x + end.x) / 2, (at.y + end.y) / 2);
+        result.gearCentre = ImVec2(end.x + space::S + height::MainGear / 2, result.mainCentre.y);
         ImGui::BeginDisabled(!options.enabled);
-        if (Hit("##main", ImVec2(height::MainWidth, height::Main)) && options.enabled)
+        if (Hit("##main", ImVec2(options.width, height::Main)))
             result.hit = MainActionHit::Main;
         ImGui::EndDisabled();
-        State mainState = ItemState(!options.enabled);
-        if (options.takeFocus)
+        State state = ItemState(!options.enabled);
+        if (options.takeFocus && options.enabled)
         {
             FocusLastItem(options.showFocus);
-            mainState.focused = mainState.focused || options.showFocus;
+            state.focused = options.showFocus;
         }
-        Look main;
-        main.enabled = options.enabled;
-        main.busy = busy;
-        main.hovered = options.enabled && (mainState.hovered || mainState.focused);
-        main.held = options.enabled && mainState.pressed;
-
-        SoftShadow(draw, ImVec2(mainMin.x, mainMin.y + 2), gearMax, rounding, 2, 6, 0.35f);
-        GradientRect(draw, mainMin, mainMax, Col(Shade(top, main)), Col(Shade(bottom, main)), rounding,
-            ImDrawFlags_RoundCornersLeft);
-        if (busy)
-            DrawProgress(draw, mainMin, mainMax, rounding, ImDrawFlags_RoundCornersLeft, middle, options.progress,
-                options.indeterminate);
-        draw->AddLine(ImVec2(mainMin.x + rounding, mainMin.y + 0.5f), ImVec2(mainMax.x, mainMin.y + 0.5f),
-            Col(0xFFFFFF, main.enabled ? 0.27f : 0.1f));
-        // The idle face's ink under the pointer and pressed (it never flips); the greyed or busy face's own otherwise.
-        unsigned ink = busy || !main.enabled ? InkOn(Shade(middle, main), style.outline) : InkOn(middle, style.outline);
-        const float labelW = height::MainWidth - 2 * (space::M + space::XXS);
-        ImGui::PushFont(Ctx().fonts.title, FitSize(Ctx().fonts.title, type::Title, label.c_str(), labelW));
-        DrawCapsLabel(draw, mainMin, mainMax, label.c_str(), Col(ink, main.enabled || busy ? 1.0f : 0.6f));
+        const bool busy = options.progress >= 0 || options.indeterminate;
+        // In the shown game's colours (its logo's, StyleOf) when it has them: so that each game's page has its own
+        // action.
+        const bool styled = options.style != nullptr && !busy;
+        const unsigned fill = busy                             ? color::OverArt
+                              : state.pressed                  ? color::AccentFillPressed
+                              : state.hovered || state.focused ? color::AccentFillHover
+                                                               : color::AccentFill;
+        unsigned ink = busy ? color::Ink : color::OnAccent;
+        if (styled)
+        {
+            const LauncherTheme::GameStyle& style = *options.style;
+            const unsigned top = Mix(style.top, style.bottom, 0.2f), bottom = Mix(style.top, style.bottom, 0.58f);
+            Look look;
+            look.enabled = options.enabled;
+            look.hovered = options.enabled && (state.hovered || state.focused);
+            look.held = options.enabled && state.pressed;
+            GradientRect(draw, at, end, Col(Shade(top, look), options.enabled ? 1 : DisabledAlpha),
+                Col(Shade(bottom, look), options.enabled ? 1 : DisabledAlpha), radius::Card,
+                ImDrawFlags_RoundCornersAll);
+            draw->AddLine(ImVec2(at.x + radius::Card, at.y + 0.5f), ImVec2(end.x - radius::Card, at.y + 0.5f),
+                Col(0xFFFFFF, options.enabled ? 0.27f : 0.1f));
+            ink = InkOn(Mix(top, bottom, 0.5f), style.outline);
+        }
+        else
+            draw->AddRectFilled(at, end, Col(fill, options.enabled || busy ? 1 : DisabledAlpha), radius::Card);
+        std::string label = options.label;
+        if (options.progress >= 0 && !options.indeterminate)
+            label += " " + FormatPercent(options.progress);
+        const float lead = options.icon == Icon::None ? 0 : icon::Normal + space::S;
+        ImGui::PushFont(Ctx().fonts.title,
+            FitSize(Ctx().fonts.title, type::Title, label.c_str(), options.width - 2 * space::M - lead));
+        const float total = ImGui::CalcTextSize(label.c_str()).x + lead;
+        if (lead > 0)
+            DrawIcon(draw, options.icon,
+                ImVec2(result.mainCentre.x - total / 2 + icon::Normal / 2, result.mainCentre.y), icon::Normal,
+                Col(ink));
+        DrawCapsLabel(
+            draw, ImVec2(at.x + lead, at.y), end, label.c_str(), Col(ink, options.enabled || busy ? 1 : DisabledAlpha));
         ImGui::PopFont();
+        if (options.progress >= 0 || options.indeterminate)
+            DrawProgress(draw, at, end, radius::Card, 0, Ctx().accent, options.progress, options.indeterminate);
+        FocusRingIf(state, radius::Card);
 
-        // The settings half: greyed with the main half, lit again when it is the one pointed at.
-        ImGui::SetCursorScreenPos(gearMin);
+        const ImVec2 gearAt(end.x + space::S, at.y), gearEnd(gearAt.x + height::MainGear, end.y);
+        ImGui::SetCursorScreenPos(gearAt);
         if (Hit("##gamesettings", ImVec2(height::MainGear, height::Main)))
             result.hit = MainActionHit::Settings;
-        State gearState = ItemState();
-        Look gear;
-        gear.hovered = gearState.hovered || gearState.focused;
-        gear.held = gearState.pressed;
-        gear.enabled = options.enabled || gear.hovered || gear.held;
-        GradientRect(draw, gearMin, gearMax, Col(Shade(top, gear)), Col(Shade(bottom, gear)), rounding,
-            ImDrawFlags_RoundCornersRight);
-        draw->AddLine(
-            ImVec2(gearMin.x, gearMin.y + 0.5f), ImVec2(gearMax.x - rounding, gearMin.y + 0.5f), Col(0xFFFFFF, 0.27f));
-        // The split: a dark hairline and a light one beside it, from edge to edge.
-        draw->AddLine(ImVec2(gearMin.x - 0.5f, gearMin.y + 1), ImVec2(gearMin.x - 0.5f, gearMax.y - 1),
-            Col(style.outline, 0.43f));
-        draw->AddLine(
-            ImVec2(gearMin.x + 0.5f, gearMin.y + 1), ImVec2(gearMin.x + 0.5f, gearMax.y - 1), Col(0xFFFFFF, 0.18f));
-        DrawIcon(draw, Icon::Gear, result.gearCentre, icon::Large,
-            Col(InkOn(middle, style.outline), gear.enabled ? 1.0f : 0.6f));
-        ImGui::PopStyleColor();
-        if (options.gearTooltip != nullptr && WantsTooltip(gearState))
-            Bubble(options.gearTooltip, gearMin, gearMax);
-
-        // One ring around the whole button for the keyboard and pad focus, in the game's colour.
-        if (mainState.focused || gearState.focused)
-            FocusRing(mainMin, gearMax, rounding);
+        State gear = ItemState();
+        if (options.takeFocus && !options.enabled)
+        {
+            FocusLastItem(options.showFocus);
+            gear.focused = options.showFocus;
+        }
+        draw->AddRectFilled(gearAt, gearEnd,
+            Col(gear.pressed   ? color::OverArtPressed
+                : gear.hovered ? color::OverArtHover
+                               : color::OverArt),
+            radius::Card);
+        draw->AddRect(gearAt, gearEnd, Col(color::OverArtEdge), radius::Card, 0, stroke::Hairline);
+        DrawIcon(draw, Icon::Gear, result.gearCentre, icon::Large, Col(color::Ink));
+        FocusRingIf(gear, radius::Card);
+        if (options.gearTooltip != nullptr && WantsTooltip(gear))
+            Bubble(options.gearTooltip, gearAt, gearEnd);
         return result;
     }
 }

@@ -61,7 +61,6 @@ All elements	Alle Elemente
 All games	Alle Spiele
 All games are updated	Alle Spiele sind aktuell
 All types	Alle Typen
-Fits {}	Passt auf {}
 Also delete my saves and my figures	Auch meine Spielstände und Figuren löschen
 Alternate deco	Alternatives Design
 AMD upscaling: faster, nearly as sharp (F3 in game).	AMD-Hochskalierung: schneller, fast so scharf (F3 im Spiel).
@@ -166,13 +165,10 @@ Choose your {} disc image	Wähle dein Disc-Abbild von {}
 Choose...	Wählen...
 Chrome	Chrom
 Circle	Kreis
-Clean up	Aufräumen
 Clear all	Alle entfernen
 Clear caches	Caches leeren
 Clear search and filters	Suche und Filter zurücksetzen
 Clear the figures	Figuren entfernen
-Clearing caches frees {}.	Caches leeren gibt {} frei.
-Clearing caches frees {}; deleting saves and data frees {} more.	Caches leeren gibt {} frei; Spielstände und Daten löschen gibt {} mehr frei.
 Click or turn the wheel	Klicken oder Rad drehen
 Click, then press a mouse button or turn the wheel (Escape cancels).	Klicke, dann drücke eine Maustaste oder drehe das Rad (Esc bricht ab).
 Click: put it on {}	Klick: auf {} stellen
@@ -268,7 +264,6 @@ Delete	Löschen
 Delete saves and data	Spielstände und Daten löschen
 Delete...	Löschen...
 Deleted figures are kept 30 days.	Gelöschte Figuren bleiben 30 Tage erhalten.
-Deleting saves and data frees {}.	Spielstände und Daten löschen gibt {} frei.
 Designed by dorydev, made by mflr0, UI/UX by Gumelia.	Entworfen von dorydev, gebaut von mflr0, UI/UX von Gumelia.
 Desktop shortcut	Desktop-Verknüpfung
 Desktop shortcuts	Desktop-Verknüpfungen
@@ -276,7 +271,6 @@ Details	Details
 Difficulty	Schwierigkeit
 Disc	Disc
 Disc checked	Disc geprüft
-Disc image	Disc-Abbild
 Disc not found	Disc nicht gefunden
 Doubles the game's textures from your disc. About {} of disk, a few minutes.	Verdoppelt die Texturen des Spiels von deiner Disc. Etwa {} Speicher, ein paar Minuten.
 Down	Runter
@@ -716,7 +710,6 @@ Same	Gleich
 Same as text	Wie der Text
 Save	Speichern
 Save as...	Speichern unter...
-Save backups	Sicherungen der Spielstände
 Save to Desktop	Auf dem Desktop speichern
 Saved	Gespeichert
 Saved gamepad (not connected)	Gespeichertes Gamepad (nicht verbunden)
@@ -1266,4 +1259,9 @@ Help	Hilfe
 Keys for all games	Tasten für alle Spiele
 Toy Box shortcuts	Toy-Box-Kurzbefehle
 Manage profiles...	Profile verwalten...
+Folder	Ordner
+Caches	Caches
+Saves and data	Spielstände und Daten
+Frees {}.	Gibt {} frei.
+Fits {}	Passt auf {}
 Use the default	Standard verwenden

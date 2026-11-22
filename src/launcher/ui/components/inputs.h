@@ -28,8 +28,9 @@ namespace ui
     bool Segmented(
         const char* id, std::span<const char* const> labels, int* current, float width = 0, bool disabled = false);
 
-    // A closed box with the chosen value and a chevron; its list opens under it. Between BeginSelect (true while open) and
-    // EndSelect, one SelectOption per choice: the chosen one has a check.
+    // A closed box with the chosen value and a chevron; its list, as wide as the box, opens under it, or above
+    // when it does not fit below. Between BeginSelect (true while open) and EndSelect, one SelectOption per choice
+    // (height::Normal): the chosen one has a check at its right.
     struct SelectOptions
     {
         float width = -1; // < 0: the available width

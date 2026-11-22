@@ -64,7 +64,6 @@ All elements	Alle elementer
 All games	Alle spill
 All games are updated	Alle spill er oppdatert
 All types	Alle typer
-Fits {}	Passer på {}
 Also delete my saves and my figures	Slett også lagringene og figurene mine
 Alternate deco	Alternativ dekor
 AMD upscaling: faster, nearly as sharp (F3 in game).	AMD-oppskalering: raskere, nesten like skarp (F3 i spillet).
@@ -169,13 +168,10 @@ Choose your {} disc image	Velg diskbildet for {}
 Choose...	Velg...
 Chrome	Krom
 Circle	Sirkel
-Clean up	Rydd opp
 Clear all	Fjern alle
 Clear caches	Tøm hurtigbuffere
 Clear search and filters	Fjern søk og filtre
 Clear the figures	Fjern figurene
-Clearing caches frees {}.	Å tømme hurtigbuffere frigjør {}.
-Clearing caches frees {}; deleting saves and data frees {} more.	Å tømme hurtigbuffere frigjør {}; å slette lagringer og data frigjør {} til.
 Click or turn the wheel	Klikk eller drei hjulet
 Click, then press a mouse button or turn the wheel (Escape cancels).	Klikk, og trykk deretter en museknapp eller drei hjulet (Escape avbryter).
 Click: put it on {}	Klikk: sett den på {}
@@ -271,7 +267,6 @@ Delete	Slett
 Delete saves and data	Slett lagringer og data
 Delete...	Slett...
 Deleted figures are kept 30 days.	Slettede figurer beholdes i 30 dager.
-Deleting saves and data frees {}.	Å slette lagringer og data frigjør {}.
 Designed by dorydev, made by mflr0, UI/UX by Gumelia.	Designet av dorydev, laget av mflr0, UI/UX av Gumelia.
 Desktop shortcut	Skrivebordssnarvei
 Desktop shortcuts	Skrivebordssnarveier
@@ -279,7 +274,6 @@ Details	Detaljer
 Difficulty	Vanskelighetsgrad
 Disc	Plate
 Disc checked	Plate kontrollert
-Disc image	Diskbilde
 Disc not found	Fant ikke platen
 Doubles the game's textures from your disc. About {} of disk, a few minutes.	Dobler spillets teksturer fra platen din. Ca. {} diskplass, noen minutter.
 Down	Ned
@@ -719,7 +713,6 @@ Same	Samme
 Same as text	Samme som tekst
 Save	Lagre
 Save as...	Lagre som...
-Save backups	Sikkerhetskopier av lagringer
 Save to Desktop	Lagre på skrivebordet
 Saved	Lagret
 Saved gamepad (not connected)	Lagret håndkontroll (ikke tilkoblet)
@@ -1269,4 +1262,9 @@ Help	Hjelp
 Keys for all games	Taster for alle spill
 Toy Box shortcuts	Snarveier til Toy Box
 Manage profiles...	Administrer profiler...
+Folder	Mappe
+Caches	Hurtigbuffere
+Saves and data	Lagringer og data
+Frees {}.	Frigjør {}.
+Fits {}	Passer på {}
 Use the default	Bruk standard

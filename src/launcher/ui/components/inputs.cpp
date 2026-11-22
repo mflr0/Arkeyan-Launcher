@@ -238,48 +238,61 @@ namespace ui
 
     namespace
     {
-        constexpr int SelectVars = 3, SelectColors = 2; // pushed for the list while it is open
+        constexpr int SelectVars = 2, SelectColors = 1; // pushed for the list while it is open
+        constexpr int SelectRows = 10;                  // seen at once, the others scrolled to
+        constexpr float SelectGap = space::XXS / 2;     // between two rows, as in a menu
+
+        // The list's height: at most SelectRows, and no more than fits on the larger side of the box.
+        float SelectHeight(const ImVec2& min, const ImVec2& max)
+        {
+            const ImGuiViewport* view = ImGui::GetMainViewport();
+            const float safe = ImGui::GetStyle().DisplaySafeAreaPadding.y;
+            const float room = std::max(min.y - (view->Pos.y + safe), view->Pos.y + view->Size.y - safe - max.y);
+            const float rows = SelectRows * height::Normal + (SelectRows - 1) * SelectGap + 2 * space::XS;
+            return std::max(height::Normal + 2 * space::XS, std::min(rows, std::floor(room) - 1));
+        }
     }
 
     float SelectWidth(const char* longest)
     {
-        return std::ceil(TextSize(TextStyle::Body, longest).x + space::M + space::XS + icon::Small + space::S + 1);
+        // A row of the list is what needs most: its margins and the check beside the text.
+        return std::ceil(
+            TextSize(TextStyle::Body, longest).x + 2 * (space::XS + space::S) + space::XS + icon::Small + 1);
     }
 
     bool BeginSelect(const char* id, const char* preview, const SelectOptions& options)
     {
         ImDrawList* draw = ImGui::GetWindowDrawList(); // the box's window, not the list's
-        const float width = options.width < 0 ? ImGui::GetContentRegionAvail().x : options.width;
-        PushField();
+        // ImGui truncates the box's width: the list gets that same width.
+        const float width =
+            std::max(1.0f, std::floor(options.width < 0 ? ImGui::GetContentRegionAvail().x : options.width));
+        PushField(space::XS); // BeginCombo pads the list's sides with the box's padding, so the value is drawn here
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(space::XS, space::XS));
         ImGui::PushStyleVar(ImGuiStyleVar_PopupBorderSize, elevation::Raised.border);
         ImGui::PushStyleColor(
             ImGuiCol_PopupBg, LauncherTheme::Rgb(elevation::Raised.fill, elevation::Raised.fillAlpha));
         const ImVec2 min = ImGui::GetCursorScreenPos(), max(min.x + width, min.y + height::Normal);
-        ImGui::SetNextItemWidth(width);
-        if (options.disabled)
-            ImGui::BeginDisabled();
+        const float mid = std::round((min.y + max.y) / 2);
         // The value cut with "..." before the chevron, never under it.
-        const std::string shown =
-            Ellipsize(preview, width - ImGui::GetStyle().FramePadding.x - space::XS - icon::Small - space::S);
-        if (options.inherited)
-            ImGui::PushStyleColor(ImGuiCol_Text, LauncherTheme::Rgb(color::Dim));
-        const bool open =
-            ImGui::BeginCombo(id, shown.c_str(), ImGuiComboFlags_NoArrowButton | ImGuiComboFlags_HeightLarge);
-        if (options.inherited)
-            ImGui::PopStyleColor();
+        const std::string shown = Ellipsize(preview, width - space::M - space::XS - icon::Small - space::S);
+        ImGui::SetNextItemWidth(width);
+        ImGui::SetNextWindowSizeConstraints(ImVec2(width, 0), ImVec2(width, SelectHeight(min, max)));
+        if (options.disabled) // not BeginDisabled(false): an open list is a window begun inside it
+            ImGui::BeginDisabled();
+        const bool open = ImGui::BeginCombo(id, nullptr, ImGuiComboFlags_NoArrowButton);
         if (options.disabled)
             ImGui::EndDisabled();
+        const State state = open ? State{} : ItemState(options.disabled);
+        if (!open)
+            NavItem(); // open, its list is the stops (ImGui's own moves)
+        ImGui::BeginDisabled(options.disabled);
+        DrawText(draw, ImVec2(min.x + space::M, std::round(mid - CapMiddle(TextStyle::Body))),
+            Col(options.inherited ? color::Dim : color::Ink), shown.c_str());
+        DrawIcon(draw, open ? Icon::ChevronUp : Icon::ChevronDown,
+            ImVec2(std::round(max.x - space::S - icon::Small / 2), mid), icon::Small, Col(color::InkSoft));
+        ImGui::EndDisabled();
         if (!open)
         {
-            NavItem(); // open, its list is the stops (ImGui's own moves)
-            State state = ItemState(options.disabled);
-            if (options.disabled)
-                ImGui::BeginDisabled();
-            DrawIcon(draw, Icon::ChevronDown, ImVec2(max.x - space::S - icon::Small / 2, (min.y + max.y) / 2),
-                icon::Small, Col(color::InkSoft));
-            if (options.disabled)
-                ImGui::EndDisabled();
             FocusRingIf(state, radius::Control);
             ImGui::PopStyleColor();
             ImGui::PopStyleVar(2);
@@ -288,48 +301,42 @@ namespace ui
         }
         draw->AddRect(ImVec2(min.x + 0.5f, min.y + 0.5f), ImVec2(max.x - 0.5f, max.y - 0.5f), Col(Ctx().accent),
             radius::Control, 0, stroke::Edge);
-        DrawIcon(draw, Icon::ChevronUp, ImVec2(max.x - space::S - icon::Small / 2, (min.y + max.y) / 2), icon::Small,
-            Col(color::Ink));
-        // The list's rows: height::Small, text centred on them, a little air between them.
-        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, space::XXS / 2));
-        ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0, 0.5f));
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, SelectGap));
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(space::S, 0));
-        ImGui::PushStyleColor(ImGuiCol_NavCursor, LauncherTheme::Rgb(Ctx().accent));
         ImGui::PushStyleColor(ImGuiCol_Text, LauncherTheme::Rgb(color::Ink));
         return true;
     }
 
     bool SelectOption(const char* label, bool selected, bool disabled)
     {
-        // ImGui's highlight is square: it is left out and drawn rounded under the row's text, with a check on the chosen row.
+        // ImGui's highlight is square and left out: drawn rounded, as a menu's, with a check at the right of the chosen row.
         ImDrawList* draw = ImGui::GetWindowDrawList();
-        draw->ChannelsSplit(2);
-        draw->ChannelsSetCurrent(1);
         ImGui::PushStyleColor(ImGuiCol_Header, 0);
         ImGui::PushStyleColor(ImGuiCol_HeaderHovered, 0);
         ImGui::PushStyleColor(ImGuiCol_HeaderActive, 0);
         const std::string id = std::string("##") + label; // the text is drawn below, inside the highlight's margin
-        const bool pressed = ImGui::Selectable(
-            id.c_str(), selected, disabled ? ImGuiSelectableFlags_Disabled : 0, ImVec2(0, height::Small));
+        // No padding by half the spacing: a row is exactly height::Normal and inside the list's padding.
+        int flags = ImGuiSelectableFlags_NoPadWithHalfSpacing;
+        if (disabled)
+            flags |= ImGuiSelectableFlags_Disabled;
+        const bool pressed = ImGui::Selectable(id.c_str(), selected, flags, ImVec2(0, height::Normal));
         ImGui::PopStyleColor(3);
         if (selected && ImGui::IsWindowAppearing())
             ImGui::SetItemDefaultFocus();
-        State state = ItemState(disabled);
-        ImVec2 min = ImGui::GetItemRectMin(), max = ImGui::GetItemRectMax();
+        const State state = ItemState(disabled);
+        const ImVec2 min = ImGui::GetItemRectMin(), max = ImGui::GetItemRectMax();
+        if (!disabled && (state.hovered || state.pressed || state.focused))
+            draw->AddRectFilled(
+                min, max, Col(state.pressed ? color::RaisedPressed : color::RaisedHover), radius::Control);
         const float mid = std::round((min.y + max.y) / 2);
+        const float room =
+            max.x - min.x - 2 * space::S - (selected ? icon::Small + space::XS : 0); // the check's, when there is one
+        const std::string text = Ellipsize(std::string(label, LabelEnd(label)).c_str(), room);
         DrawText(draw, ImVec2(min.x + space::S, std::round(mid - CapMiddle(TextStyle::Body))),
-            Col(disabled ? color::Dim : color::Ink), label, LabelEnd(label));
+            Col(disabled ? color::Dim : color::Ink), text.c_str());
         if (selected)
-            DrawIcon(
-                draw, Icon::Check, ImVec2(max.x - space::S - icon::Small / 2, mid), icon::Small, Col(Ctx().accent));
-        draw->ChannelsSetCurrent(0);
-        if (selected || state.hovered || state.pressed)
-            draw->AddRectFilled(min, max,
-                Col(state.pressed   ? color::RaisedPressed
-                    : state.hovered ? color::RaisedHover
-                                    : color::InsetActive),
-                radius::Control);
-        draw->ChannelsMerge();
+            DrawIcon(draw, Icon::Check, ImVec2(std::round(max.x - space::S - icon::Small / 2), mid), icon::Small,
+                Col(Ctx().accent));
         return pressed;
     }
 

@@ -63,7 +63,6 @@ All elements	Tutti gli elementi
 All games	Tutti i giochi
 All games are updated	Tutti i giochi sono aggiornati
 All types	Tutti i tipi
-Fits {}	Va su {}
 Also delete my saves and my figures	Elimina anche i miei salvataggi e le mie figure
 Alternate deco	Deco alternativa
 AMD upscaling: faster, nearly as sharp (F3 in game).	Upscaling AMD: più veloce, quasi altrettanto nitido (F3 nel gioco).
@@ -168,13 +167,10 @@ Choose your {} disc image	Scegli l'immagine disco di {}
 Choose...	Scegli...
 Chrome	Cromato
 Circle	Cerchio
-Clean up	Riordina
 Clear all	Cancella tutto
 Clear caches	Svuota cache
 Clear search and filters	Cancella ricerca e filtri
 Clear the figures	Rimuovi le figure
-Clearing caches frees {}.	Svuotare le cache libera {}.
-Clearing caches frees {}; deleting saves and data frees {} more.	Svuotare le cache libera {}; eliminare salvataggi e dati libera altri {}.
 Click or turn the wheel	Clicca o gira la rotella
 Click, then press a mouse button or turn the wheel (Escape cancels).	Clicca, poi premi un tasto del mouse o gira la rotella (Esc annulla).
 Click: put it on {}	Clic: mettila su {}
@@ -270,7 +266,6 @@ Delete	Elimina
 Delete saves and data	Elimina salvataggi e dati
 Delete...	Elimina...
 Deleted figures are kept 30 days.	Le figure eliminate si conservano 30 giorni.
-Deleting saves and data frees {}.	Eliminare salvataggi e dati libera {}.
 Designed by dorydev, made by mflr0, UI/UX by Gumelia.	Ideato da dorydev, realizzato da mflr0, UI/UX di Gumelia.
 Desktop shortcut	Collegamento sulla Scrivania
 Desktop shortcuts	Collegamenti sulla Scrivania
@@ -278,7 +273,6 @@ Details	Dettagli
 Difficulty	Difficoltà
 Disc	Disco
 Disc checked	Disco verificato
-Disc image	Immagine disco
 Disc not found	Disco non trovato
 Doubles the game's textures from your disc. About {} of disk, a few minutes.	Raddoppia le texture del gioco dal tuo disco. Circa {} di spazio, alcuni minuti.
 Down	Giù
@@ -718,7 +712,6 @@ Same	Uguale
 Same as text	Come il testo
 Save	Salva
 Save as...	Salva come...
-Save backups	Backup dei salvataggi
 Save to Desktop	Salva sulla Scrivania
 Saved	Salvato
 Saved gamepad (not connected)	Gamepad salvato (non collegato)
@@ -1268,4 +1261,9 @@ Help	Aiuto
 Keys for all games	Tasti per tutti i giochi
 Toy Box shortcuts	Scorciatoie della Toy Box
 Manage profiles...	Gestisci i profili...
+Folder	Cartella
+Caches	Cache
+Saves and data	Salvataggi e dati
+Frees {}.	Libera {}.
+Fits {}	Va su {}
 Use the default	Usa il predefinito
