@@ -532,6 +532,11 @@ namespace launcher_ui
                 expect(spyroToy != nullptr && itemToy != nullptr, "catalogue toys");
                 if (spyroToy == nullptr || itemToy == nullptr)
                     return 1;
+                expect(page.m_addFits && page.m_addCategory < 0 && page.MatchesAddToy(*spyroToy, "") &&
+                           !page.MatchesAddToy(*itemToy, ""),
+                    "the + lists only what its seat takes");
+                page.m_addFits = false;
+                expect(page.MatchesAddToy(*itemToy, ""), "All types widens the list");
                 // An item made from Player 2's + does not go there: Add a figure stays, offering the seat it fits.
                 page.m_addVersion = 0;
                 page.CreateAddFigure(itemToy, itemToy->name);
@@ -546,7 +551,10 @@ namespace launcher_ui
                     page.m_overlay == CollectionPage::Overlay::None && page.m_addSeat < 0, "and Add a figure closes");
                 // From the header's Add a figure, a new figure stays off the portal.
                 page.TakeOff(1);
+                page.m_addCategory = int(collection::Category::Trap);
                 page.OpenAdd();
+                expect(!page.m_addFits && page.m_addCategory < 0 && page.MatchesAddToy(*itemToy, ""),
+                    "Add a figure from the header opens on every type");
                 page.CreateAddFigure(spyroToy, spyroToy->name);
                 expect(page.m_model.seats[1].empty() && page.m_overlay == CollectionPage::Overlay::Add,
                     "Add a figure from the header puts nothing on a seat");

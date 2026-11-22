@@ -64,6 +64,7 @@ All elements	Kaikki elementit
 All games	Kaikki pelit
 All games are updated	Kaikki pelit on päivitetty
 All types	Kaikki tyypit
+Fits {}	Sopii paikalle: {}
 Also delete my saves and my figures	Poista myös tallennukseni ja hahmoni
 Alternate deco	Toinen väritys
 AMD upscaling: faster, nearly as sharp (F3 in game).	AMD-skaalaus: nopeampi, lähes yhtä terävä (F3 pelissä).
