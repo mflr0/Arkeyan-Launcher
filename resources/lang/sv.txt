@@ -1268,3 +1268,4 @@ Help	Hjälp
 Keys for all games	Tangenter för alla spel
 Toy Box shortcuts	Genvägar till Toy Box
 Manage profiles...	Hantera profiler...
+Use the default	Använd standard

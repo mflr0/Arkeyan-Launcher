@@ -1265,3 +1265,4 @@ Help	Hilfe
 Keys for all games	Tasten für alle Spiele
 Toy Box shortcuts	Toy-Box-Kurzbefehle
 Manage profiles...	Profile verwalten...
+Use the default	Standard verwenden

@@ -1268,3 +1268,4 @@ Help	Ohje
 Keys for all games	Kaikkien pelien näppäimet
 Toy Box shortcuts	Toy Boxin pikanäppäimet
 Manage profiles...	Hallitse profiileja...
+Use the default	Käytä oletusta

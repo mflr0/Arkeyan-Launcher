@@ -1267,3 +1267,4 @@ Help	Aiuto
 Keys for all games	Tasti per tutti i giochi
 Toy Box shortcuts	Scorciatoie della Toy Box
 Manage profiles...	Gestisci i profili...
+Use the default	Usa il predefinito

@@ -1267,3 +1267,4 @@ Help	Ayuda
 Keys for all games	Teclas para todos los juegos
 Toy Box shortcuts	Atajos de Toy Box
 Manage profiles...	Gestionar perfiles...
+Use the default	Usar el predeterminado

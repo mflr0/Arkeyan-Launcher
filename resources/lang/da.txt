@@ -1267,3 +1267,4 @@ Help	Hjælp
 Keys for all games	Taster til alle spil
 Toy Box shortcuts	Genveje til Toy Box
 Manage profiles...	Administrer profiler...
+Use the default	Brug standarden

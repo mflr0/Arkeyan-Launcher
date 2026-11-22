@@ -1268,3 +1268,4 @@ Help	Hjelp
 Keys for all games	Taster for alle spill
 Toy Box shortcuts	Snarveier til Toy Box
 Manage profiles...	Administrer profiler...
+Use the default	Bruk standard

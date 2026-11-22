@@ -1267,3 +1267,4 @@ Help	Help
 Keys for all games	Toetsen voor alle games
 Toy Box shortcuts	Toy Box-sneltoetsen
 Manage profiles...	Profielen beheren...
+Use the default	Standaard gebruiken

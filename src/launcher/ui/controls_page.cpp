@@ -16,6 +16,7 @@ namespace launcher_ui
             constexpr const char* ResetKeysHint = N_("Hold to reset every key of this game.");
             constexpr const char* ResetPadHint = N_("Hold to reset every button of this game.");
             constexpr const char* UseCommon = N_("Back to the common setting");
+            constexpr const char* UseDefault = N_("Use the default");
             constexpr const char* DotLegend = N_("A dot marks what was changed for this game.");
             constexpr const char* GlobalIntro = N_("Games use these unless their own settings change them.");
             constexpr const char* Buttons = N_("Buttons");
@@ -35,7 +36,11 @@ namespace launcher_ui
         constexpr float DotGutter = ui::space::M;
 
         // The reset arrow's words.
-        const char* ResetTip(bool own) { return own ? Tr(strings::UseCommon) : nullptr; }
+        // an action only this game has goes back to its default: it has no common setting.
+        const char* ResetTip(bool own, bool shared)
+        {
+            return own ? Tr(shared ? strings::UseCommon : strings::UseDefault) : nullptr;
+        }
 
         // The dot of a value set for this game, in the gutter before `x`.
         void OwnDot(float x, float middle)
@@ -242,7 +247,7 @@ namespace launcher_ui
                 own = own || GameKeyOwn(m_config, game, *key);
             if (own)
                 OwnDot(x, origin.y + ui::CapMiddle(ui::TextStyle::Body, true));
-            if (const char* tip = ResetTip(own))
+            if (const char* tip = ResetTip(own, SharedAction(cross.up->action)))
             {
                 ImGui::SetCursorScreenPos(ImVec2(noteEnd + ui::space::XS,
                     std::round(origin.y + ui::CapMiddle(ui::TextStyle::Body, true) - ui::height::Small / 2)));
@@ -288,7 +293,8 @@ namespace launcher_ui
         options.capturing = m_capturing == &key && m_captureGame == game;
         options.conflict = global ? GlobalKeyConflict(m_config, key) : GameKeyConflict(m_config, game, key);
         options.tooltip = options.conflict ? Tr("This key is used by another action") : purpose.c_str();
-        switch (KeyCapControl(key.action, shown.c_str(), options, global ? nullptr : ResetTip(own)))
+        switch (KeyCapControl(
+            key.action, shown.c_str(), options, global ? nullptr : ResetTip(own, SharedAction(key.action))))
         {
         case Hit::Pressed:
             m_toyboxPadCapturing = nullptr;
@@ -346,7 +352,7 @@ namespace launcher_ui
             options.capturing = capturing;
             options.tooltip = Tr("Click, then press a mouse button or turn the wheel (Escape cancels).");
             const std::string id = std::string("mouse_") + key.action;
-            switch (KeyCapControl(id.c_str(), shown.c_str(), options, ResetTip(own)))
+            switch (KeyCapControl(id.c_str(), shown.c_str(), options, ResetTip(own, SharedAction(key.action))))
             {
             case Hit::Pressed:
                 m_toyboxPadCapturing = nullptr;
@@ -387,7 +393,7 @@ namespace launcher_ui
         const bool own = !global && PadOwn(m_config, game, button);
         bool reset = false;
         ImGui::PushID(button);
-        if (SelectControl("##job", preview.c_str(), global ? nullptr : ResetTip(own), &reset))
+        if (SelectControl("##job", preview.c_str(), global ? nullptr : ResetTip(own, SharedPadButton(button)), &reset))
         {
             int chosen = -2;
             const std::string ownName = global ? std::string(Tr("Default")) : describe(button);
@@ -451,7 +457,7 @@ namespace launcher_ui
             MarkOwnRow(own);
             bool reset = false;
             ImGui::PushID(player);
-            if (SelectControl("##rumble", preview, ResetTip(own), &reset))
+            if (SelectControl("##rumble", preview, ResetTip(own, true), &reset))
             {
                 for (size_t i = 0; i < levels.size(); i++)
                     if (ui::SelectOption(Tr(RumbleChoices[i].label), level == levels[i]))
@@ -498,7 +504,7 @@ namespace launcher_ui
             bool on = GameMouseOn(m_config, game);
             const bool own = GameMouseOwn(m_config, game);
             MarkOwnRow(own, ui::height::Small);
-            const Hit hit = ToggleControl("##mouseon", &on, ResetTip(own));
+            const Hit hit = ToggleControl("##mouseon", &on, ResetTip(own, true));
             if (hit != Hit::None)
             {
                 if (hit == Hit::Reset)

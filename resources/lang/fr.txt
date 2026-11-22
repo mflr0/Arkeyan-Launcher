@@ -1297,3 +1297,4 @@ Help	Aide
 Keys for all games	Touches pour tous les jeux
 Toy Box shortcuts	Raccourcis de la Toy Box
 Manage profiles...	Gérer les profils...
+Use the default	Utiliser la valeur par défaut
