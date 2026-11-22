@@ -1078,7 +1078,7 @@ namespace launcher_ui
                      : name == "control-home"     ? Page::Home
                      : name == "control-settings" ? Page::Settings
                                                   : Page::Play;
-            m_gameTab = GameTab::Game;
+            ShowGameTab(GameTab::Manage, GameSection::Repair);
             m_testStep++;
             settledFrames = 0;
             m_testBegan = now + 200;
@@ -1172,7 +1172,7 @@ namespace launcher_ui
             break;
         case 6:
             m_page = Page::GameSettings;
-            m_gameTab = GameTab::Game;
+            ShowGameTab(GameTab::Manage, GameSection::Repair);
             m_testAt = now + 400;
             break;
         case 7:

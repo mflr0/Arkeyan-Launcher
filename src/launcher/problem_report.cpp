@@ -6,6 +6,7 @@
 #include "launcher/shortcut.h"
 #include "launcher/updater.h"
 #include "shared/collection/datadir.h"
+#include "shared/runtime_names.h"
 #include <SDL3/SDL.h>
 #include <cctype>
 #include <fmt/format.h>
@@ -21,6 +22,13 @@ namespace
             else
                 out += fmt::format("%{:02X}", c);
         return out;
+    }
+
+    void OpenIssue(const std::string& title, const std::string& body)
+    {
+        SDL_OpenURL(("https://github.com/mflr0/Arkeyan-Launcher/issues/new?title=" + UrlEncode(title) +
+                     "&body=" + UrlEncode(body))
+                .c_str());
     }
 
     // The folder in the file manager: a file URL on macOS and Linux, the path itself on Windows (ShellExecute).
@@ -52,9 +60,15 @@ launcher_report::Sources CurrentReportSources(
     const std::string& configPath, const LauncherConfig& config, const std::string& gameId, const std::string& iso)
 {
     launcher_report::Sources sources;
-    sources.runtimeFolder = RuntimeLogFolder();
+    sources.runtimeFolder = gameId == ActiveGame() ? RuntimeLogFolder() : GameDataFolder(gameId);
     sources.logFolder = GameLogFolder();
-    sources.lastRun = LastGameLog();
+    // The capture is every game's: only this game's run goes in its report.
+    const std::vector<std::pair<std::string, std::filesystem::path>> own{ { gameId,
+        runtime_names::ReadLog(sources.runtimeFolder) } };
+    sources.lastRun = NewestGameLog(sources.logFolder / CaptureLogName, own);
+    if (sources.lastRun.game != gameId)
+        sources.lastRun = NewestGameLog({}, own);
+    sources.lastRun.game = gameId;
     sources.settingsFile = datadir::FromText(configPath);
     sources.iso = iso;
     std::string kit;
@@ -105,7 +119,8 @@ void ShowGameStopped(const GameInfo& game, int exitCode, const std::string& conf
             return;
         if (pressed == 1)
         {
-            SDL_SetClipboardText(GameLogText().c_str());
+            SDL_SetClipboardText(
+                launcher_report::Anonymous(GameLogText(), launcher_report::CurrentIdentity("")).c_str());
             continue;
         }
         ReportGameStopped(game, exitCode, configPath, config, iso);
@@ -122,7 +137,13 @@ void ReportGameStopped(const GameInfo& game, int exitCode, const std::string& co
                        (saved.file.empty() ? std::string("The report file could not be saved; the log is below.\n")
                                            : "The report file is " + saved.file.filename().string() +
                                                  " (on my Desktop or in the logs folder); I attach it here:\n\n");
-    SDL_OpenURL(
-        ("https://github.com/mflr0/Arkeyan-Launcher/issues/new?title=" + UrlEncode(title) + "&body=" + UrlEncode(body))
-            .c_str());
+    OpenIssue(title, body);
+}
+
+void OpenProblemIssue(const GameInfo& game, const std::string& reportFile)
+{
+    std::string body = fmt::format("Game: {}\n\nWhat happened:\n\n\n", game.name);
+    body += reportFile.empty() ? std::string("I attach the problem report here:\n\n")
+                               : "The report file is " + reportFile + "; I attach it here:\n\n";
+    OpenIssue(fmt::format("{}: ", game.name), body);
 }

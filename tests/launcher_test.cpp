@@ -831,6 +831,11 @@ namespace
             model.Shelf(forPlayer, shown);
             EXPECT(!shown.empty() && std::all_of(shown.begin(), shown.end(),
                                          [](const collection::Figure& f) { return collection::HasProgress(f); }));
+            launcher_ui::ShelfFilter fits;
+            fits.fitsGame = true;
+            model.Shelf(fits, shown);
+            EXPECT(std::none_of(
+                shown.begin(), shown.end(), [&](const collection::Figure& f) { return model.Incompatible(f); }));
             launcher_ui::ShelfFilter water;
             water.element = int(collection::Element::Water);
             model.Shelf(water, shown);
@@ -2436,6 +2441,16 @@ static void PadWalkChecks(const std::filesystem::path& scratch, const std::strin
             views = std::atoi(line.c_str() + 9);
     }
     EXPECT(views == 51);
+    // The smallest window: the sidebar fits.
+    const std::string smallWindow = "SKY_LAUNCHER_TEST_SIZE=1024x680 SKY_LAUNCHER_TEST_PADWALK_VIEW=01- " + command;
+    EXPECT(std::system(smallWindow.c_str()) == 0);
+    std::ifstream smallOut(root / "out.txt");
+    while (std::getline(smallOut, line))
+    {
+        if (line.find("FAIL") != std::string::npos)
+            fprintf(stderr, "%s\n", line.c_str());
+        EXPECT(line.find("FAIL") == std::string::npos);
+    }
     printf("Pad walk: %d views, every control reached, B and LB / RB checked\n", views);
 }
 

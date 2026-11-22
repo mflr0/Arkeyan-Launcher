@@ -114,10 +114,30 @@ namespace ui
         if (caps)
         {
             ImVec2 cap = DrawKeyCap(
-                draw, ImVec2(start.x, start.y + (rowH - stroke::Selection) / 2), PadButton::LeftBumper, Ctx().glyphs);
+                draw, ImVec2(start.x, start.y + (rowH - stroke::Selection) / 2), PadButton::LeftTrigger, Ctx().glyphs);
             ImGui::SetCursorScreenPos(ImVec2(start.x + cap.x + space::M, start.y));
         }
-        PushText(TextStyle::Label);
+        // A row too long for its room first narrows its gaps, down to M (room for a focus ring), then sets its labels smaller.
+        const float room = ImGui::GetContentRegionAvail().x -
+                           (caps ? space::M + KeyCapWidth(PadButton::RightTrigger, Ctx().glyphs) + stroke::Hairline
+                                 : 0.0f); // the hairline: the cap's smoothed edge
+        float gap = space::XL, size = SizeOf(TextStyle::Label);
+        auto wordsWidth = [&](float at) {
+            ImGui::PushFont(FontOf(TextStyle::Label), at);
+            float words = 0;
+            for (const char* label : labels)
+                words += ImGui::CalcTextSize(label, LabelEnd(label)).x;
+            ImGui::PopFont();
+            return words;
+        };
+        if (count > 1)
+        {
+            float words = wordsWidth(size);
+            while (size > type::Caption && words + float(count - 1) * space::M > room)
+                words = wordsWidth(--size);
+            gap = std::floor(std::clamp((room - words) / float(count - 1), space::M, space::XL));
+        }
+        ImGui::PushFont(FontOf(TextStyle::Label), size);
         for (int i = 0; i < count; i++)
         {
             const char* label = labels[i];
@@ -139,21 +159,21 @@ namespace ui
             DrawText(draw, textAt, Col(ink), label);
             if (active)
                 draw->AddRectFilled(ImVec2(at.x, at.y + rowH - stroke::Selection), ImVec2(at.x + text.x, at.y + rowH),
-                    Col(color::AccentFillPressed));
+                    Col(Ctx().accent));
             else if (state.hovered)
                 draw->AddRectFilled(
                     ImVec2(at.x, at.y + rowH - 1), ImVec2(at.x + text.x, at.y + rowH), Col(color::Hairline));
             if (state.focused) // the label's row with S of air at its sides: the ring is not drawn on the letters
                 FocusRing(
                     ImVec2(at.x - space::S, at.y), ImVec2(at.x + text.x + space::S, at.y + rowH), radius::Control);
-            ImGui::SameLine(0, space::XL);
+            ImGui::SameLine(0, gap);
         }
         PopText();
         if (caps)
         {
             ImVec2 at = ImGui::GetCursorScreenPos();
-            DrawKeyCap(draw, ImVec2(at.x - space::XL + space::M, at.y + (rowH - stroke::Selection) / 2),
-                PadButton::RightBumper, Ctx().glyphs);
+            DrawKeyCap(draw, ImVec2(at.x - gap + space::M, at.y + (rowH - stroke::Selection) / 2),
+                PadButton::RightTrigger, Ctx().glyphs);
         }
         ImGui::NewLine();
         ImGui::PopID();

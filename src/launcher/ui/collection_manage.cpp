@@ -277,8 +277,6 @@ namespace launcher_ui
                 OpenFolder(std::filesystem::path(std::u8string(path.begin(), path.end())));
             }
         }
-        ImGui::Dummy(ImVec2(0, ui::space::XS));
-        ui::Text(ui::TextStyle::Caption, collection::Folder().c_str(), ui::color::Dim);
     }
 
     void CollectionPage::DrawUnknown()
@@ -532,6 +530,7 @@ namespace launcher_ui
         m_details = false;
         m_confirm.clear();
         m_choosing = -1;
+        m_searchChoosing = m_allGames = false;
         m_filter = ShelfFilter{};
         m_search[0] = 0;
         m_addSearch[0] = 0;

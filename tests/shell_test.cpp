@@ -1381,6 +1381,28 @@ namespace
         SHELL_EXPECT(launcher_report::Redact("before /Users/alice after", identity) == "before ~ after");
         SHELL_EXPECT(launcher_report::Redact("", identity).empty());
 
+        // launcher.ini names every game's disc and the Games folder: none of those folders is in a report, whatever game
+        // it is for.
+        {
+            const std::filesystem::path other = scratch / "reportfolders";
+            std::filesystem::create_directories(other);
+            WriteBytes(other / "launcher.ini", "[launcher]\ngames=E:\\Alice SSD\\Games\n[ssa]\niso=D:\\Discs\\SSA.iso\n"
+                                               "[giants]\niso=/Volumes/Alice Backup/Giants.iso\n");
+            launcher_report::Sources paths;
+            paths.settingsFile = other / "launcher.ini";
+            paths.runtimeFolder = paths.logFolder = other;
+            paths.iso = "D:\\Discs\\SSA.iso";
+            const std::string anonymous = launcher_report::BuildReport(paths);
+            SHELL_EXPECT(anonymous.find("Alice SSD") == std::string::npos);
+            SHELL_EXPECT(anonymous.find("Alice Backup") == std::string::npos);
+            // A disc the settings no longer name, quoted by an older log (the report's and Copy game log's).
+            const std::string quoted = "[disc] image /Volumes/Alice Old/SSA.iso opened\n[disc] H:\\Alice USB\\G.ISO\n";
+            WriteBytes(other / "install.prev.log", quoted);
+            const std::string older = launcher_report::BuildReport(paths);
+            SHELL_EXPECT(older.find("Alice Old") == std::string::npos && older.find("Alice USB") == std::string::npos);
+            const std::string copied = launcher_report::Anonymous(quoted, {});
+            SHELL_EXPECT(copied.find("Alice") == std::string::npos && copied.find("SSA.iso") != std::string::npos);
+        }
         // The whole report: every file, the versions and the GPU line, all redacted.
         std::filesystem::path data = scratch / "reportdata";
         std::filesystem::path game = data / "SSA";

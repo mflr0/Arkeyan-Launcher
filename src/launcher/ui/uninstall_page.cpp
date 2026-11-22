@@ -271,9 +271,9 @@ namespace launcher_ui
     {
         switch (m_testStep)
         {
-        case 0: // Settings > Launcher, the section
+        case 0: // Settings > General, the section
             m_page = Page::Settings;
-            m_tab = SettingsTab::Launcher;
+            m_tab = SettingsTab::General;
             m_testScrollEnd = true;
             m_testAt = now + 700;
             break;

@@ -214,8 +214,8 @@ namespace ui
         ImGui::Dummy(ImVec2(w + label, h));
         Track(min, max);
         if (fraction > 0) // a whole cap at both ends, even when nearly empty
-            ImGui::GetWindowDrawList()->AddRectFilled(min,
-                ImVec2(min.x + std::max(w * std::min(fraction, 1.0f), BarH), max.y), Col(color::AccentFill), BarH / 2);
+            ImGui::GetWindowDrawList()->AddRectFilled(
+                min, ImVec2(min.x + std::max(w * std::min(fraction, 1.0f), BarH), max.y), Col(Ctx().accent), BarH / 2);
         if (showPercent)
         {
             PushText(TextStyle::Caption);
@@ -237,12 +237,12 @@ namespace ui
             // Still: short dashes along the whole track, which no one reads as a percentage.
             for (float x = min.x; x + BarH < max.x; x += 3 * BarH)
                 draw->AddRectFilled(
-                    ImVec2(x, min.y), ImVec2(x + 1.5f * BarH, max.y), Col(color::AccentFill, 0.7f), BarH / 2);
+                    ImVec2(x, min.y), ImVec2(x + 1.5f * BarH, max.y), Col(Ctx().accent, 0.7f), BarH / 2);
             return;
         }
         const float band = w * 0.3f, from = min.x - band + (w + band) * Phase(motion::Spin * 2);
         draw->PushClipRect(min, max, true);
-        draw->AddRectFilled(ImVec2(from, min.y), ImVec2(from + band, max.y), Col(color::AccentFill), BarH / 2);
+        draw->AddRectFilled(ImVec2(from, min.y), ImVec2(from + band, max.y), Col(Ctx().accent), BarH / 2);
         draw->PopClipRect();
     }
 

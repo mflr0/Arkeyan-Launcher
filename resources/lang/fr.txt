@@ -36,7 +36,6 @@ Dec	déc.
 \n- {} (media ID {:08X}, version {})	\n- {} (ID du média {:08X}, version {})
 Can't read the disc image ({}).{}	Impossible de lire l'image disque ({}).{}
 Test	Tester
-Custom packs folder	Dossier des packs personnalisés
 The copy failed	La copie a échoué
 The disc image isn't there. Choose it again.	L'image disque est introuvable. Choisissez-la à nouveau.
 That's a folder: choose the disc image (.iso).	C'est un dossier : choisissez l'image disque (.iso).
@@ -142,9 +141,7 @@ Disc not found	Disque introuvable
 Downloading Arkeyan Launcher	Téléchargement d'Arkeyan Launcher
 Downloading the game tools	Téléchargement des outils du jeu
 Downloading tools	Téléchargement des outils
-Dump textures	Extraire les textures
 Stopping keeps the files already copied.	Arrêter garde les fichiers déjà copiés.
-Game art comes from your own disc.	Les images viennent de votre propre disque.
 Finding default.xex	Recherche de default.xex
 Fingerprinting default.xex (SHA-256)	Calcul de l'empreinte de default.xex (SHA-256)
 Finishing	Finalisation
@@ -192,7 +189,6 @@ Game uninstalled	Jeu désinstallé
 Game voices	Voix du jeu
 Gamepad	Manette
 GitHub says: {}	GitHub répond : {}
-Custom texture packs	Packs de textures personnalisés
 HID portals	Portails HID
 Hide details	Masquer
 Hold to rebuild the game.	Maintenez pour reconstruire le jeu.
@@ -206,7 +202,6 @@ INSTALLATION INTERRUPTED	INSTALLATION INTERROMPUE
 INSTALLATION STOPPED	INSTALLATION ARRÊTÉE
 INSTALLING THE GAME	INSTALLATION DU JEU
 The test failed	Le test a échoué
-Toy Box keys	Commandes Toy Box
 UPDATING THE GAME	MISE À JOUR DU JEU
 INSTALLING...	INSTALLATION...
 The install stops and can resume later.	L'installation s'arrête ; vous pourrez la reprendre.
@@ -220,11 +215,9 @@ Interrupted: {} of {} copied	Interrompue : {} sur {} copiés
 Keep installing	Continuer l'installation
 Keyboard	Clavier
 Keyboard bindings reset	Touches du clavier réinitialisées
-Library	Bibliothèque
 Language	Langue
 Last checked {}	Dernière vérification : {}
 Later	Plus tard
-Launcher	Launcher
 Licenses	Licences
 Linking the game	Assemblage du jeu
 Log copied	Journal copié
@@ -257,7 +250,6 @@ Open logs folder	Dossier des journaux
 Auto-open Toy Box	Toy Box automatique
 Game files	Fichiers du jeu
 Opening the disc image	Ouverture de l'image disque
-Opens a new issue on GitHub	Ouvre un nouveau ticket sur GitHub
 Original resolution	Résolution d'origine
 The 3D scene at the console's size.	La scène 3D à la taille de la console.
 Edge smoothing	Lissage des bords
@@ -293,7 +285,6 @@ Remove	Retirer
 Remove the copy	Supprimer la copie
 The file stays where it is.	Le fichier reste en place.
 Repair the copy	Réparer la copie
-Replaces the game's textures with your pack.	Remplace les textures du jeu par celles de votre pack.
 Report	Signaler
 Report a bug	Signaler un bug
 Report a problem	Signaler un problème
@@ -357,7 +348,6 @@ Arkeyan Launcher {} is installed. Restart to use it.	Arkeyan Launcher {} est ins
 Something went wrong while {}.	Un problème est survenu pendant l'étape « {} ».
 Starting the installer	Démarrage de l'installateur
 Stop	Arrêter
-Support	Assistance
 System default	Langue du système
 Test the portal	Tester le portail
 Testing...	Test en cours...
@@ -426,7 +416,6 @@ The disc image is damaged. Copy the disc again.	L'image disque est endommagée. 
 The disc image is incomplete. Copy the disc again.	L'image disque est incomplète. Copiez à nouveau le disque.
 This disc image is {}, not {}.	Cette image disque est celle de {}, pas de {}.
 This game has no folder.	Ce jeu n'a pas de dossier.
-Anonymous: your names are removed. Save it, then add it to a GitHub issue.	Anonyme : vos noms sont retirés. Enregistrez-le, puis joignez-le à une issue GitHub.
 This is {}, but this disc version isn't supported yet (media ID {:08X}, version {}).\n\nSupported:{}	C'est {}, mais cette version du disque n'est pas encore prise en charge (ID du média {:08X}, version {}).\n\nPrises en charge :{}
 This key is used by another action	Cette touche est déjà utilisée par une autre action
 This looks like the {} disc of {}, but it's damaged or modified. Copy the disc again.	On dirait le disque {} de {}, mais il est endommagé ou modifié. Copiez à nouveau le disque.
@@ -467,7 +456,6 @@ What's new in {}	Nouveautés de {}
 Widescreen	Écran large
 Without a real portal, the game uses its virtual one (the Toy Box).	Sans vrai portail, le jeu utilise son portail virtuel (la Toy Box).
 Working	En cours
-For pack makers: saves the textures as DDS files.	Pour les créateurs de packs : enregistre les textures en DDS.
 Wrong disc	Mauvais disque
 Xbox One / Series	Xbox One / Series
 Xbox portal	Portail Xbox
@@ -529,8 +517,6 @@ Later games	Jeux suivants
 Move to the trash	Mettre à la corbeille
 Move {} to the trash? It stays there for 30 days.	Mettre {} à la corbeille ? Elle y reste 30 jours.
 Name	Nom
-Name, element, game, level...	Nom, élément, jeu, niveau...
-On the portal for	Sur le portail pour
 No figures yet. Add one, or drop your figure files on the window.	Aucune figurine. Ajoutez-en une, ou déposez vos fichiers de figurines sur la fenêtre.
 Reset	Réinitialiser
 Restore a backup...	Restaurer une copie de secours...
@@ -789,7 +775,7 @@ On its own	Seul
 No other bottom to take.	Pas d'autre bas à prendre.
 No other top to take.	Pas d'autre haut à prendre.
 Couldn't change it: 	Impossible de le changer : 
-Changed	Changé
+Changed	Modifié
 UPDATE	MISE À JOUR
 Play without updating	Jouer sans mettre à jour
 {} · {} · ~{} min	{} · {} · ~{} min
@@ -956,7 +942,6 @@ yesterday	hier
 On the portal	Sur le portail
 Live	En direct
 {} · empty	{} · libre
-Not installed yet	Pas encore installé
 Installing · {}	Installation · {}
 Ready · {} played	Prêt · {} de jeu
 Show the game	Afficher le jeu
@@ -1063,7 +1048,7 @@ Edit my profile	Modifier mon profil
 Edit profile	Modifier le profil
 New profile	Nouveau profil
 Nickname	Surnom
-Picture	Photo
+Picture	Image
 Import an image...	Importer une image...
 Initials	Initiales
 Color	Couleur
@@ -1071,7 +1056,6 @@ Create the profile	Créer le profil
 Couldn't read this image	Impossible de lire cette image
 Welcome, {}	Bienvenue, {}
 Profiles	Profils
-Manage profiles	Gérer les profils
 Each has its own Toy Box, saves, keys and achievements.	Chacun a sa Toy Box, ses sauvegardes, ses touches et ses succès.
 {} (active)	{} (actif)
 Not played yet	Pas encore joué
@@ -1152,7 +1136,6 @@ Real figure · on the portal	Vraie figurine · sur le portail
 Start a game first	Lancez d’abord un jeu
 The Toy Box in its own window, to keep beside the game	La Toy Box dans sa propre fenêtre, à garder à côté du jeu
 The other seats: in the Toy Box window	Les autres places : dans la fenêtre Toy Box
-The Toy Box window opens each time you play	La fenêtre Toy Box s’ouvre à chaque partie
 The game cannot read this figure there	Le jeu ne peut pas lire cette figurine ici
 The game did not find this figure	Le jeu n’a pas trouvé cette figurine
 The game has no virtual portal now	Le jeu n’a pas de portail virtuel pour l’instant
@@ -1239,10 +1222,7 @@ The disc image of {} is damaged	L'image disque de {} est endommagée
 Reset to defaults	Valeurs par défaut
 Hold to reset every key of this game.	Maintenez pour réinitialiser toutes les touches de ce jeu.
 Hold to reset every button of this game.	Maintenez pour réinitialiser tous les boutons de ce jeu.
-Use the global setting	Utiliser le réglage global
-Use the default	Utiliser la valeur par défaut
-Dimmed values follow Launcher settings.	Les valeurs grisées suivent les Réglages du launcher.
-Games use these unless their own settings change them.	Les jeux les utilisent, sauf si leurs propres réglages les changent.
+Games use these unless their own settings change them.	Tous les jeux les utilisent, sauf ceux qui ont leurs propres réglages.
 Buttons	Boutons
 Stats / Info	Stats / Infos
 
@@ -1259,7 +1239,7 @@ Toy Box in the game: {}, or {} on a controller.	Toy Box en jeu : {}, ou {} sur 
 
 # Figure pictures (Settings > Launcher > Collection, the figure sheet).
 Figure pictures	Images des figurines
-Which game's pictures the figures show.	Le jeu dont les figurines prennent les images.
+Which game's pictures the figures show.	Le jeu d'où viennent les images des figurines.
 Original game	Jeu d'origine
 Newest game	Jeu le plus récent
 Figure picture	Image de la figurine
@@ -1298,3 +1278,24 @@ Swap players?	Échanger les joueurs ?
 Swap	Échanger
 {} goes on {}, and {} on {}.	{} va sur {}, et {} sur {}.
 Players swapped	Joueurs échangés
+Search {} figure	Rechercher parmi {} figurine
+Search {} figures	Rechercher parmi {} figurines
+Back to the common setting	Reprendre le réglage commun
+A dot marks what was changed for this game.	Un point signale les réglages propres à ce jeu.
+Sound and language	Son et langue
+Repair or uninstall	Réparer ou désinstaller
+Get started	Pour commencer
+Choose a disc	Choisir un disque
+Drop an .iso here, or choose it.	Déposez un .iso ici ou choisissez-le.
+1. Choose a disc   2. Install   3. Play	1. Choisir un disque   2. Installer   3. Jouer
+Save the report	Enregistrer le rapport
+Open GitHub	Ouvrir GitHub
+Anonymous: your names are removed.	Anonyme : vos noms sont retirés.
+Attach the saved report to the issue.	Joignez le rapport enregistré à l'issue GitHub.
+See what the report contains	Voir ce que contient le rapport
+General	Général
+Help	Aide
+Keys for all games	Touches pour tous les jeux
+Toy Box shortcuts	Raccourcis de la Toy Box
+Manage profiles...	Gérer les profils...
+Use the default	Utiliser la valeur par défaut

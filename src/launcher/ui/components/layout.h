@@ -2,6 +2,7 @@
 
 // What holds and arranges: Card, ListRow, SectionHeader, Modal (one dialog shell: title, body, actions), Menu (a popover),
 // Tooltip and EmptyState.
+#include "launcher/ui/components/buttons.h"
 #include "launcher/ui/components/core.h"
 #include "launcher/ui/components/feedback.h"
 #include <functional>
@@ -74,6 +75,22 @@ namespace ui
     // buttons end on the column's edge.
     void AlignRight(float width);
 
+    // ---- Disclosure: the one row that unfolds what is under it, on every page and in every dialog. The whole row opens and
+    // closes it; its chevron is at the right end (right: closed, down: open), after the row's own action when it has one.
+    //     if (ui::BeginDisclosure("##saves", title, &open, options)) { ...; ui::EndDisclosure(); } ----
+    struct DisclosureOptions
+    {
+        const char* summary = nullptr; // the state, under the title
+        const char* action = nullptr; // a button of the row's own ("Change..."), before the chevron
+        bool* actionPressed = nullptr; // set when that button is pressed
+        ButtonOptions actionOptions; // its look
+        bool reveal = false; // scroll it into view this frame (a link to the section)
+        bool divider = true; // a hairline above it
+        bool disabled = false;
+    };
+    bool BeginDisclosure(const char* id, const char* title, bool* open, const DisclosureOptions& options = {});
+    void EndDisclosure();
+
     // ---- SectionHeader: a section's title in a card or a page, a divider above it unless it is the first. ----
     void SectionHeader(const char* title, const char* subtitle = nullptr, bool divider = true);
 
@@ -102,7 +119,8 @@ namespace ui
     // (then labelled as given, "Close"). Pressing either closes the dialog.
     // The room EndModal's pad legend takes under the actions (0 while the keyboard is in use): a dialog sized to the window keeps it free.
     float ModalLegendHeight();
-    ModalResult ModalActions(bool* open, const char* confirm, const char* cancel, ModalKind kind = ModalKind::Normal);
+    ModalResult ModalActions(bool* open, const char* confirm, const char* cancel, ModalKind kind = ModalKind::Normal,
+        bool canConfirm = true); // canConfirm false: the confirm button shows, disabled
     // `back` overrides the cancellation label (for a step inside a dialog); otherwise ModalActions supplies it.
     void EndModal(const char* back = nullptr);
     // A whole confirmation: title, one sentence, the two buttons.

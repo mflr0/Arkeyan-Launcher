@@ -670,6 +670,8 @@ namespace launcher_ui
                     (*hidden)++; // the game made it on its own: not the player's (Manage > Tidy)
                 continue;
             }
+            if (filter.fitsGame && filter.game.empty() && Incompatible(figure))
+                continue;
             const collection::Toy* toy = figure.toy;
             if (filter.seat >= 0)
             {

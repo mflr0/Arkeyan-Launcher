@@ -74,7 +74,6 @@ Anisotropic 16x	Anisotrópico 16x
 Anisotropic 2x	Anisotrópico 2x
 Anisotropic 4x	Anisotrópico 4x
 Anisotropic 8x	Anisotrópico 8x
-Anonymous: your names are removed. Save it, then add it to a GitHub issue.	Anónimo: os teus nomes são removidos. Guarda-o e junta-o a um issue no GitHub.
 Appears once the game's disc is checked.	Aparece quando o disco do jogo for verificado.
 Apr	abr
 Arkeyan Launcher can't remove itself from here: delete it by hand.	O Arkeyan Launcher não se consegue remover daqui: apaga-o manualmente.
@@ -291,7 +290,6 @@ Drag Arkeyan Launcher to Applications, replacing the old one.	Arrasta o Arkeyan 
 Drift (vehicle)	Derrapar (veículo)
 Drop figure files or a folder on the window.	Larga ficheiros de figuras ou uma pasta na janela.
 Drop to 30 FPS when needed	Baixar para 30 FPS quando preciso
-Dump textures	Extrair texturas
 Duplicate	Duplicar
 Duplicated: 	Duplicado: 
 Each has its own Toy Box, saves, keys and achievements.	Cada um tem a sua Toy Box, gravações, teclas e conquistas.
@@ -340,7 +338,6 @@ Finishing	A concluir
 Fire	Fogo
 Flocked	Aveludado
 Folders	Pastas
-For pack makers: saves the textures as DDS files.	Para criadores de pacotes: guarda as texturas como ficheiros DDS.
 For {}	Para {}
 Forward side button	Botão lateral de avanço
 Found	Encontrado
@@ -377,7 +374,6 @@ Width	Largura
 Height	Altura
 {} or more	{} ou mais
 Game	Jogo
-Game art comes from your own disc.	A arte do jogo vem do teu próprio disco.
 Game data	Dados do jogo
 Game data copies	Cópias dos dados do jogo
 Game data damaged	Dados do jogo danificados
@@ -406,7 +402,6 @@ GitHub says: {}	O GitHub diz: {}
 Glow in the Dark	Brilha no Escuro
 Gold	Ouro
 Greek	Grego
-Custom texture packs	Pacotes de texturas personalizados
 Use HD textures	Usar texturas HD
 HD textures ready	Texturas HD prontas
 HD textures removed	Texturas HD removidas
@@ -480,7 +475,6 @@ Last played	Última sessão
 Last played: {}	Última sessão: {}
 Later	Mais tarde
 Later games	Jogos futuros
-Launcher	Launcher
 Launcher settings	Definições do launcher
 Left	Esquerda
 Left Alt	Alt esquerdo
@@ -491,7 +485,6 @@ Left click: attack 1. Right click: attack 2. The game keeps the pointer.	Clique 
 Legendary	Lendário
 Level in {}	Nível em {}
 Level {}	Nível {}
-Library	Biblioteca
 Licenses	Licenças
 Life	Vida
 Light	Luz
@@ -512,7 +505,6 @@ Magic item	Item
 Making the HD textures	A criar as texturas HD
 Making the HD textures. You can keep using the launcher; the game waits.	A criar as texturas HD. Podes continuar a usar o launcher; o jogo espera.
 Manage	Gerir
-Manage profiles	Gerir perfis
 Mar	mar
 Mark as not in use	Marcar como não em uso
 Mark as not in use · {}	Marcar como não em uso · {}
@@ -539,7 +531,6 @@ My Team	A Minha Equipa
 Name	Nome
 Name (optional)	Nome (opcional)
 Name this toy	Nomear o brinquedo
-Name, element, game, level...	Nome, elemento, jogo, nível...
 Named: shown at the next start	Com nome: aparece no próximo arranque
 Native PC ports	Ports nativos para PC
 Native PC ports of Skylanders. No game code or art: it comes from your disc.	Ports nativos de Skylanders para PC. Sem código nem arte do jogo: vêm do teu disco.
@@ -583,7 +574,6 @@ Not enough space: {} needed, {} free.	Espaço insuficiente: {} necessários, {} 
 Not for this game	Outro jogo
 Not for {}	Não é para {}
 Not in the catalog. Name one to show it.	Não está no catálogo. Dá-lhe um nome para o mostrar.
-Not installed yet	Ainda não instalado
 Not needed: the game plays from its copied data.	Não é preciso: o jogo corre a partir dos dados copiados.
 Not now	Agora não
 Not played yet	Ainda não jogado
@@ -601,7 +591,6 @@ Older folders	Pastas antigas
 On	Em uso
 On its own	Sozinho
 On the portal	No portal
-On the portal for	No portal para
 On the portal in {}: read-only	No portal em {}: só de leitura
 On the wheel	Na roda
 On the wheel: {}	Na roda: {}
@@ -613,7 +602,6 @@ Open logs folder	Abrir pasta dos registos
 Open the Toy Box	Abrir a Toy Box
 Open the folder	Abrir a pasta
 Opening the disc image	A abrir a imagem do disco
-Opens a new issue on GitHub	Abre um novo issue no GitHub
 Opens the Toy Box when the game asks for a figure.	Abre a Toy Box quando o jogo pede uma figura.
 Or drop your .iso on this window. It stays on this computer.	Ou larga o teu .iso nesta janela. Fica neste computador.
 Original resolution	Resolução original
@@ -699,7 +687,6 @@ Repair builds the game again from your disc.	Reparar cria o jogo outra vez a par
 Repair downloads the game tools again.	Reparar transfere as ferramentas do jogo outra vez.
 Repair needs the disc of {}	Reparar requer o disco de {}
 Repair the copy	Reparar a cópia
-Replaces the game's textures with your pack.	Substitui as texturas do jogo pelo teu pacote.
 Report	Relatório
 Report a bug	Reportar um erro
 Report a problem	Reportar um problema
@@ -787,7 +774,6 @@ Stopping keeps the files already copied.	Parar mantém os ficheiros já copiados
 Stopping...	A parar...
 Strong	Forte
 SuperChargers	SuperChargers
-Support	Suporte
 Swap Force bottoms	Swap Force (baixo)
 Swap Force tops	Swap Force (cima)
 Swapper	Swapper
@@ -800,7 +786,6 @@ Test	Testar
 Test the portal	Testar o portal
 Testing...	A testar...
 Texture filtering	Filtragem de texturas
-Custom packs folder	Pasta dos pacotes personalizados
 That's a folder: choose the disc image (.iso).	Isto é uma pasta: escolhe a imagem do disco (.iso).
 The 3D scene at the console's size.	A cena 3D no tamanho da consola.
 The HD textures stopped before they were made.	As texturas HD pararam antes de serem criadas.
@@ -876,7 +861,6 @@ Total	Total
 Touchpad	Touchpad
 Toy	Brinquedo
 Toy Box	Toy Box
-Toy Box keys	Teclas da Toy Box
 Toy type {}	Tipo de brinquedo {}
 Translating the game code	A traduzir o código do jogo
 Translating the shaders	A traduzir os shaders
@@ -1123,7 +1107,6 @@ Real figure · on the portal	Figura real · no portal
 Start a game first	Inicia primeiro um jogo
 The Toy Box in its own window, to keep beside the game	A Toy Box na sua própria janela, ao lado do jogo
 The other seats: in the Toy Box window	Os outros lugares: na janela da Toy Box
-The Toy Box window opens each time you play	A janela da Toy Box abre sempre que jogas
 The game cannot read this figure there	O jogo não consegue ler esta figura aí
 The game did not find this figure	O jogo não encontrou esta figura
 The game has no virtual portal now	O jogo não tem portal virtual agora
@@ -1209,9 +1192,6 @@ The disc image of {} is damaged	A imagem do disco de {} está danificada
 Reset to defaults	Repor predefinições
 Hold to reset every key of this game.	Mantém premido para repor todas as teclas deste jogo.
 Hold to reset every button of this game.	Mantém premido para repor todos os botões deste jogo.
-Use the global setting	Usar a definição global
-Use the default	Usar a predefinição
-Dimmed values follow Launcher settings.	Os valores esbatidos seguem as Definições do launcher.
 Games use these unless their own settings change them.	Os jogos usam estas, a menos que as suas definições as alterem.
 Buttons	Botões
 Stats / Info	Estatísticas / Info
@@ -1268,3 +1248,24 @@ Swap players?	Trocar os jogadores?
 Swap	Trocar
 {} goes on {}, and {} on {}.	{} vai para {} e {} para {}.
 Players swapped	Jogadores trocados
+Search {} figure	Pesquisar em {} figura
+Search {} figures	Pesquisar em {} figuras
+Back to the common setting	Voltar à definição comum
+A dot marks what was changed for this game.	Um ponto assinala o que foi alterado para este jogo.
+Sound and language	Som e idioma
+Repair or uninstall	Reparar ou desinstalar
+Get started	Para começar
+Choose a disc	Escolher um disco
+Drop an .iso here, or choose it.	Larga um .iso aqui ou escolhe-o.
+1. Choose a disc   2. Install   3. Play	1. Escolher um disco   2. Instalar   3. Jogar
+Save the report	Guardar o relatório
+Open GitHub	Abrir o GitHub
+Anonymous: your names are removed.	Anónimo: os teus nomes são removidos.
+Attach the saved report to the issue.	Junta o relatório guardado ao issue.
+See what the report contains	Ver o que o relatório contém
+General	Geral
+Help	Ajuda
+Keys for all games	Teclas para todos os jogos
+Toy Box shortcuts	Atalhos da Toy Box
+Manage profiles...	Gerir perfis...
+Use the default	Usar a predefinição

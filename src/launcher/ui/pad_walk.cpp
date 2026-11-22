@@ -163,11 +163,11 @@ namespace launcher_ui
             { "17-swapforce-game", BackTo::GamePage, false },
             { "18-achievements", BackTo::GamePage, false },
             { "19-settings-controls", BackTo::Home, true },
-            { "20-settings-launcher", BackTo::Home, false },
+            { "20-settings-general", BackTo::Home, false },
             { "21-uninstall-list", BackTo::Collection /* checked by hand below */, false },
-            { "22-settings-support", BackTo::Home, false },
+            { "22-settings-help", BackTo::Home, false },
             { "23-problem-report", BackTo::Closes, false },
-            { "24-settings-about", BackTo::Home, false },
+            { "24-settings-portal", BackTo::Home, false },
             { "25-collection", BackTo::Home, true },
             { "26-collection-choosing", BackTo::Collection, false },
             { "27-figure-sheet", BackTo::Closes, false },
@@ -181,7 +181,7 @@ namespace launcher_ui
             { "35-install-ready", BackTo::Home, false },
             { "36-profile-menu", BackTo::Closes, false },
             { "37-profile-editor", BackTo::Closes, false },
-            { "38-settings-profiles", BackTo::Home, false },
+            { "38-profiles-dialog", BackTo::Closes, false },
             { "39-file-check", BackTo::Closes, false },
             { "40-game-trapteam", BackTo::Home, true },
             { "41-game-superchargers", BackTo::Home, true },
@@ -301,6 +301,7 @@ namespace launcher_ui
             m_integrityOpen = false;
             m_findings.clear();
             m_profileEditor.open = false;
+            m_profilesOpen = false;
             if (name == "00-first-start")
                 ; // as the launcher opens: Home, the focus in the sidebar
             else if (name == "01-home")
@@ -323,16 +324,22 @@ namespace launcher_ui
             }
             else if (name.find("-ssa-") != std::string_view::npos || name.starts_with("06-") || name.starts_with("13-"))
             {
-                static const std::pair<const char*, GameTab> Tabs[] = { { "video", GameTab::Video },
-                    { "keyboard", GameTab::Keyboard }, { "controller", GameTab::Controller },
-                    { "sound", GameTab::Sound }, { "language", GameTab::Language }, { "disc", GameTab::Disc },
-                    { "saves", GameTab::Saves }, { "game", GameTab::Game } };
                 game("ssa");
                 GoTo(Page::GameSettings);
-                m_gameTab = GameTab::Game;
-                for (const auto& [tab, value] : Tabs)
-                    if (name.ends_with(tab))
-                        m_gameTab = value;
+                if (name.ends_with("video"))
+                    ShowGameTab(GameTab::Picture);
+                else if (name.ends_with("keyboard"))
+                    ShowGameTab(GameTab::Controls, GameSection::Keyboard);
+                else if (name.ends_with("controller"))
+                    ShowGameTab(GameTab::Controls, GameSection::Controller);
+                else if (name.ends_with("sound") || name.ends_with("language"))
+                    ShowGameTab(GameTab::Sound);
+                else if (name.ends_with("disc"))
+                    ShowGameTab(GameTab::Manage, GameSection::Disc);
+                else if (name.ends_with("saves"))
+                    ShowGameTab(GameTab::Manage, GameSection::Saves);
+                else
+                    ShowGameTab(GameTab::Manage, GameSection::Repair);
                 m_portableAsk = name.starts_with("13-");
                 if (m_portableAsk) // the copy is offered for an installed game with its disc only (the checks run with no disc image)
                 {
@@ -345,13 +352,17 @@ namespace launcher_ui
             {
                 game("giants");
                 GoTo(Page::GameSettings);
-                m_gameTab = name.starts_with("14-") ? GameTab::Keyboard : GameTab::Controller;
+                ShowGameTab(
+                    GameTab::Controls, name.starts_with("14-") ? GameSection::Keyboard : GameSection::Controller);
             }
             else if (name.starts_with("16-") || name.starts_with("17-"))
             {
                 game("swapforce");
                 GoTo(Page::GameSettings);
-                m_gameTab = name.starts_with("16-") ? GameTab::Keyboard : GameTab::Game;
+                if (name.starts_with("16-"))
+                    ShowGameTab(GameTab::Controls, GameSection::Keyboard);
+                else
+                    ShowGameTab(GameTab::Manage, GameSection::Repair);
             }
             else if (name.starts_with("18-"))
             {
@@ -364,9 +375,10 @@ namespace launcher_ui
             {
                 GoTo(Page::Settings);
                 m_tab = name.starts_with("19-")                              ? SettingsTab::Controls
-                        : name.starts_with("20-") || name.starts_with("21-") ? SettingsTab::Launcher
-                        : name.starts_with("24-")                            ? SettingsTab::About
-                                                                             : SettingsTab::Support;
+                        : name.starts_with("20-") || name.starts_with("21-") ? SettingsTab::General
+                        : name.starts_with("24-")                            ? SettingsTab::Portal
+                                                                             : SettingsTab::Help;
+                m_globalKeysOpen = m_toyboxShortcutsOpen = name.starts_with("19-"); // the walk reaches what they hold
                 if (name.starts_with("21-"))
                     OpenUninstall();
                 if (name.starts_with("23-"))
@@ -382,8 +394,8 @@ namespace launcher_ui
             {
                 if (m_profiles.profiles.size() < 2) // a second profile, to have something to switch to
                     profiles::Add(m_profiles, "Kaos", 7);
-                GoTo(name.starts_with("38-") ? Page::Settings : Page::Home);
-                m_tab = SettingsTab::Profiles;
+                GoTo(Page::Home);
+                m_profilesOpen = name.starts_with("38-");
                 m_testOpenProfileMenu = name.starts_with("36-");
                 if (name.starts_with("37-"))
                     OpenProfileEditor({});
@@ -405,7 +417,7 @@ namespace launcher_ui
             {
                 game("ssa");
                 GoTo(Page::GameSettings);
-                m_gameTab = GameTab::Game;
+                ShowGameTab(GameTab::Manage, GameSection::Repair);
                 m_s->installed.runtime.clear();
                 m_portableAsk = true; // set as a dialog left open on an earlier page would be
             }
@@ -413,7 +425,10 @@ namespace launcher_ui
             {
                 game(name[1] <= '4' ? "trapteam" : name[1] <= '6' ? "superchargers" : "imaginators");
                 GoTo(Page::GameSettings);
-                m_gameTab = name.ends_with("controller") ? GameTab::Controller : GameTab::Game;
+                if (name.ends_with("controller"))
+                    ShowGameTab(GameTab::Controls, GameSection::Controller);
+                else
+                    ShowGameTab(GameTab::Manage, GameSection::Repair);
             }
             else
             {
@@ -530,6 +545,10 @@ namespace launcher_ui
                     fail("a settings legend must contain LT RT Tabs");
                 if (modal && !has(ui::PadButton::LeftTrigger) && hints.size() != 2)
                     fail("a dialog without tabs must only name Select and its back action");
+                if (m_drawn["sidebar-fit"] == "cut")
+                    fail("the sidebar's games and Coming later must fit the window");
+                if (name.starts_with("37-") && m_drawn["profile-confirm"] != "shown")
+                    fail("New profile must show its Create button before a name is typed");
             }
             w.phase = 2;
             return;
@@ -637,7 +656,7 @@ namespace launcher_ui
                 !ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopupId | ImGuiPopupFlags_AnyPopupLevel))
             {
                 w.indexAt = m_page == Page::Settings ? int(m_tab) : int(m_gameTab);
-                const int count = m_page == Page::Settings ? 5 : 8;
+                const int count = m_page == Page::Settings ? int(SettingsTab::Help) + 1 : int(GameTab::Manage) + 1;
                 w.stepDir = w.indexAt == count - 1 ? -1 : 1;
                 press(w.stepDir > 0 ? ImGuiKey_GamepadR2 : ImGuiKey_GamepadL2);
                 w.phase = 11;
@@ -663,8 +682,7 @@ namespace launcher_ui
             }
             bool ok = true;
             BackTo back = view.back;
-            if (name.starts_with(
-                    "21-")) // the uninstall list is a step of the Launcher tab: B closes it, Settings stays
+            if (name.starts_with("21-")) // the uninstall list is a step of the General tab: B closes it, Settings stays
                 ok = m_page == Page::Settings && m_un.stage == UninstallStage::Closed;
             else if (name.starts_with("18-") && w.pageAt != Page::Achievements)
                 ok = true; // no achievements without the disc's list: the game page was shown

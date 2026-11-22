@@ -1,6 +1,6 @@
 #include "shared/runtime_names.h"
-// Support in Settings: the game's logs (Copy game log, Open logs folder), "Report a problem" (one text file with the
-// logs and the player's versions, shown before anything is saved or copied; nothing is uploaded) and "Test the portal"
+// Support in Settings: the game's logs (Copy game log, Open logs folder), "Report a problem" (one text file with a
+// game's logs and versions to save, then GitHub to attach it to; nothing is uploaded) and "Test the portal"
 // (docs/support.md).
 #include "launcher/problem_report.h"
 #include "launcher/report.h"
@@ -21,6 +21,7 @@ namespace launcher_ui
         // the window tells the player on its next frame.
         std::mutex g_saveMutex;
         bool g_saveOk = false, g_saveFailed = false;
+        std::string g_savedText, g_savedName;
     }
 
     void SDLCALL SaveReport(void* userdata, const char* const* files, int)
@@ -41,19 +42,31 @@ namespace launcher_ui
         if (out)
         {
             g_saveOk = true;
+            g_savedText = *text;
+            g_savedName = datadir::Text(datadir::FromText(files[0]).filename());
         }
         else
             g_saveFailed = true;
     }
 
-    // One text file with the last logs, the settings and the versions; it is shown before it can be saved or copied.
     void App::OpenProblemReport()
     {
-        launcher_report::Sources sources = CurrentReportSources(m_configPath, m_config, m_s->game.id, m_s->discPath);
-        if (!m_s->installed.kitVersion.empty())
-            sources.versions.kit = m_s->installed.kitVersion;
-        m_reportText = launcher_report::BuildReport(sources);
+        m_reportGame = m_s->game.id;
+        m_reportDetails = false;
+        BuildProblemReport();
         m_reportOpen = true;
+    }
+
+    // One text file with the picked game's last logs, the settings and the versions.
+    void App::BuildProblemReport()
+    {
+        const GameInfo* game = FindGame(m_reportGame);
+        const GameSlot& slot = game != nullptr ? SlotFor(*game) : *m_s;
+        launcher_report::Sources sources = CurrentReportSources(m_configPath, m_config, slot.game.id, slot.discPath);
+        if (!slot.installed.kitVersion.empty())
+            sources.versions.kit = slot.installed.kitVersion;
+        m_reportText = launcher_report::BuildReport(sources);
+        m_reportFile.clear();
     }
 
     void App::DrawProblemReport()
@@ -65,6 +78,8 @@ namespace launcher_ui
             {
                 Toast(Tr("Report saved"), ui::ToastKind::Success);
                 g_saveOk = false;
+                if (g_savedText == m_reportText) // not another game's, picked while the save dialog was up
+                    m_reportFile = g_savedName;
             }
             else if (g_saveFailed)
             {
@@ -75,50 +90,99 @@ namespace launcher_ui
 
         if (!ui::BeginModal("##problemreport", Tr("Report a problem"), &m_reportOpen, ui::ModalSize::Large))
             return;
-        ui::Text(ui::TextStyle::Caption,
-            Tr("Anonymous: your names are removed. Save it, then add it to a GitHub issue."), ui::color::Dim);
-        // The room under the text is the title, the line above and the actions (Normal high); the rest is the report.
-        const float room =
-            ImGui::GetIO().DisplaySize.y - 2 * ui::space::XL - 3 * ui::height::Large - ui::ModalLegendHeight();
-        ui::BeginCard("##reporttext",
-            ImVec2(0, std::clamp(room, 3.0f * ui::height::Large, 8.0f * ui::height::Large - ui::ModalLegendHeight())),
-            { .inset = true, .padding = ui::space::M });
-        ImGui::SetScrollX(0.0f);
-        ImGui::PushFont(m_monoFont, ui::type::Caption); // logs keep the monospaced font (null: the text font)
-        ImGui::PushTextWrapPos(0);
-        ImGui::TextUnformatted(m_reportText.c_str());
-        ImGui::PopTextWrapPos();
-        ImGui::PopFont();
-        ui::EndCard();
-        // Save to Desktop is the action (the same file the game's F3 menu writes: on the Desktop, else in the logs folder);
-        // Save as... and Copy stay at the left of the same row.
-        ui::ModalResult result = ui::ModalActions(&m_reportOpen, Tr("Save to Desktop"), Tr("Close"));
-        const float afterY = ImGui::GetCursorPosY();
-        ImGui::SetCursorScreenPos(ImVec2(
-            ImGui::GetWindowPos().x + ImGui::GetCursorStartPos().x, ImGui::GetItemRectMin().y)); // on the actions' row
-        if (ui::Button(Tr("Save as...")))
+        const GameInfo* game = FindGame(m_reportGame);
+        // Kept until EndSettings, which draws the labels.
+        const std::string saveStep = fmt::format("1. {}", Tr("Save the report"));
+        const std::string sendStep = fmt::format("2. {}", Tr("Open GitHub"));
+        if (ui::BeginSettings("##reportsteps"))
         {
-            std::filesystem::path folder = GameLogFolder();
-            std::string name = launcher_report::FileName();
-            std::string start = datadir::Text(folder / name);
-            static const SDL_DialogFileFilter Filters[] = { { "Text file", "txt" } };
-            SDL_ShowSaveFileDialog(SaveReport, new std::string(m_reportText), m_window, Filters, 1, start.c_str());
+            ui::SettingRow(Tr("Game"));
+            const char* shown = GameName(m_reportGame, GameNameForm::Short);
+            if (ui::BeginSelect("##reportgame", shown != nullptr ? shown : ""))
+            {
+                for (const GameInfo& each : g_games)
+                {
+                    if (FindEnabledGame(each.id, m_config) == nullptr)
+                        continue;
+                    const char* name = GameName(each.id, GameNameForm::Short);
+                    if (ui::SelectOption(name != nullptr ? name : each.name, m_reportGame == each.id) &&
+                        m_reportGame != each.id)
+                    {
+                        m_reportGame = each.id;
+                        game = &each;
+                        BuildProblemReport();
+                    }
+                }
+                ui::EndSelect();
+            }
+            const bool saved = !m_reportFile.empty();
+            ui::SettingRow(saveStep.c_str(), Tr("Anonymous: your names are removed."));
+            ui::ButtonOptions save;
+            save.kind = saved ? ui::ButtonKind::Secondary : ui::ButtonKind::Primary;
+            // The same file as the game's F3 menu writes: on the Desktop, else in the logs folder.
+            if (ui::Button(Tr("Save to Desktop"), save))
+            {
+                const SavedReport written = SaveProblemReportText(m_reportText);
+                m_reportFile = written.file.empty() ? std::string() : datadir::Text(written.file.filename());
+                if (m_reportFile.empty())
+                    Toast(Tr("Couldn't save the report"), ui::ToastKind::Error);
+                else
+                    Toast(Tf("Report saved: {}", m_reportFile), ui::ToastKind::Success);
+            }
+            if (ImGui::IsWindowAppearing())
+                ImGui::SetItemDefaultFocus();
+            ui::SettingRow(sendStep.c_str(), Tr("Attach the saved report to the issue."));
+            ui::ButtonOptions send;
+            send.kind = saved ? ui::ButtonKind::Primary : ui::ButtonKind::Secondary;
+            send.icon = ui::Icon::External;
+            if (ui::Button(Tr("Open GitHub"), send) && game != nullptr)
+                OpenProblemIssue(*game, m_reportFile);
+            ui::EndSettings();
         }
-        ImGui::SameLine(0, ui::space::S);
-        if (ui::Button(Tr("Copy")))
+        if (!m_reportFile.empty())
+            ui::Text(ui::TextStyle::Caption, Tf("Report saved: {}", m_reportFile).c_str(), ui::color::Dim);
+
+        ui::ButtonOptions fold;
+        fold.kind = ui::ButtonKind::Ghost;
+        fold.trailing = m_reportDetails ? ui::Icon::ChevronUp : ui::Icon::ChevronDown;
+        if (ui::Button(Tr("See what the report contains"), fold))
+            m_reportDetails = !m_reportDetails;
+        if (m_reportDetails)
         {
-            SDL_SetClipboardText(m_reportText.c_str());
-            Toast(Tr("Report copied"), ui::ToastKind::Success);
+            // What the window leaves under the steps, less the actions' row.
+            const float room = ImGui::GetIO().DisplaySize.y - 2 * ui::space::XL - ImGui::GetCursorPosY() -
+                               ui::height::Normal - 2 * ui::space::L - ui::ModalLegendHeight();
+            ui::BeginCard("##reporttext",
+                ImVec2(0, std::clamp(room, 2.0f * ui::height::Large, 6.0f * ui::height::Large)),
+                { .inset = true, .padding = ui::space::M });
+            ImGui::SetScrollX(0.0f);
+            ImGui::PushFont(m_monoFont, ui::type::Caption); // logs keep the monospaced font (null: the text font)
+            ImGui::PushTextWrapPos(0);
+            ImGui::TextUnformatted(m_reportText.c_str());
+            ImGui::PopTextWrapPos();
+            ImGui::PopFont();
+            ui::EndCard();
+            if (ui::Button(Tr("Copy")))
+            {
+                SDL_SetClipboardText(m_reportText.c_str());
+                Toast(Tr("Report copied"), ui::ToastKind::Success);
+            }
+            ImGui::SameLine(0, ui::space::S);
+            if (ui::Button(Tr("Save as...")))
+            {
+                const std::string start = datadir::Text(GameLogFolder() / launcher_report::FileName());
+                static const SDL_DialogFileFilter Filters[] = { { "Text file", "txt" } };
+                SDL_ShowSaveFileDialog(SaveReport, new std::string(m_reportText), m_window, Filters, 1, start.c_str());
+            }
+            ImGui::SameLine(0, ui::space::S);
         }
-        ImGui::SetCursorPosY(afterY);
-        ImGui::Dummy(ImVec2(0, 0)); // the cursor went back and forth: an item ends it
-        if (result == ui::ModalResult::Confirm)
+        // Not ModalActions: alone there, Close would take the first focus from step 1.
+        const char* close = Tr("Close");
+        ui::AlignRight(ui::ButtonWidth(close));
+        if (ui::Button(close))
         {
-            SavedReport saved = SaveProblemReportText(m_reportText);
-            if (saved.file.empty())
-                Toast(Tr("Couldn't save the report"), ui::ToastKind::Error);
-            else
-                Toast(Tf("Report saved: {}", datadir::Text(saved.file.filename())), ui::ToastKind::Success);
+            m_reportOpen = false;
+            ImGui::CloseCurrentPopup();
         }
         ui::EndModal();
     }
@@ -240,7 +304,8 @@ namespace launcher_ui
         copy.disabled = !any;
         if (ui::Button(Tr("Copy game log"), copy))
         {
-            SDL_SetClipboardText(GameLogText().c_str());
+            SDL_SetClipboardText(
+                launcher_report::Anonymous(GameLogText(), launcher_report::CurrentIdentity("")).c_str());
             Toast(Tr("Game log copied"), ui::ToastKind::Success);
         }
         ui::SettingRow(Tr("Logs folder"), nullptr);

@@ -58,14 +58,14 @@ namespace ui
         const ImVec2 centre(at.x + height::Normal / 2, at.y + height::Normal / 2);
         ImDrawList* draw = ImGui::GetWindowDrawList();
         if (active)
-            draw->AddCircleFilled(centre, height::Normal / 2, Col(color::AccentFill));
+            draw->AddCircleFilled(centre, height::Normal / 2, Col(Ctx().accent));
         else
             draw->AddCircle(centre, height::Normal / 2, Col(color::Edge), 0, stroke::Hairline);
         const std::string value = std::to_string(number);
         PushText(TextStyle::Label, true);
         DrawText(draw,
             ImVec2(centre.x - ImGui::CalcTextSize(value.c_str()).x / 2, centre.y - CapMiddle(TextStyle::Label, true)),
-            Col(active ? color::OnAccent : color::InkSoft), value.c_str());
+            Col(active ? InkOn(Ctx().accent, color::OnAccent) : color::InkSoft), value.c_str());
         PopText();
         ImGui::SetCursorScreenPos(ImVec2(at.x + lead, at.y));
         Text(TextStyle::Label, title, color::Ink, textWidth, true);
@@ -408,6 +408,90 @@ namespace ui
 
     // ---- SectionHeader ---------------------------------------------------------------------------------------------
 
+    bool BeginDisclosure(const char* id, const char* title, bool* open, const DisclosureOptions& options)
+    {
+        ImGui::PushID(id);
+        ImDrawList* draw = ImGui::GetWindowDrawList();
+        const ImVec2 min = ImGui::GetCursorScreenPos();
+        const float width = ImGui::GetContentRegionAvail().x;
+        const ImVec2 max(min.x + width, min.y + height::Large);
+        const float chevronX = max.x - height::Normal;
+        const float actionW = options.action != nullptr ? ButtonWidth(options.action, options.actionOptions) : 0;
+        const float actionX = chevronX - actionW;
+        // The focus's stop ends before the action, so the pad reaches both; the chevron is the pointer's twin of the row.
+        const float stopEnd = options.action != nullptr ? actionX - space::S : max.x;
+        if (options.divider)
+            draw->AddLine(ImVec2(min.x, min.y + 0.5f), ImVec2(max.x, min.y + 0.5f), Col(color::Hairline, 110 / 255.0f),
+                stroke::Hairline);
+        ImGui::BeginDisabled(options.disabled);
+        bool toggled = Hit("##row", ImVec2(stopEnd - min.x, height::Large));
+        if (options.reveal)
+            ImGui::ScrollToItem(ImGuiScrollFlags_AlwaysCenterY);
+        State state = ItemState(options.disabled);
+        if (options.action != nullptr)
+        {
+            ImGui::SetCursorScreenPos(ImVec2(chevronX, min.y));
+            ImGui::PushItemFlag(ImGuiItemFlags_NoNav, true);
+            toggled |= ImGui::InvisibleButton("##chevron", ImVec2(max.x - chevronX, height::Large));
+            state.hovered |= ImGui::IsItemHovered();
+            ImGui::PopItemFlag();
+        }
+        if (toggled)
+            *open = !*open;
+        if (state.hovered || state.pressed)
+            draw->AddRectFilled(min, ImVec2(max.x, max.y),
+                Col(state.pressed ? color::RaisedPressed : color::RaisedHover, 0.55f), radius::Control);
+        const float mid = std::round((min.y + max.y) / 2), x = min.x + space::XS;
+        const float room = stopEnd - space::XS - x - (options.action != nullptr ? 0 : height::Normal);
+        const float block = options.summary != nullptr ? CapTop(TextStyle::Body, true) + SizeOf(TextStyle::Body) +
+                                                             space::XXS + Baseline(TextStyle::Caption)
+                                                       : 0;
+        const float top = options.summary != nullptr ? std::round(mid - block / 2)
+                                                     : std::round(mid - CapMiddle(TextStyle::Body, true));
+        PushText(TextStyle::Body, true);
+        DrawText(draw, ImVec2(x, top), Col(color::Ink), Ellipsize(title, room).c_str());
+        PopText();
+        if (options.summary != nullptr)
+        {
+            PushText(TextStyle::Caption);
+            DrawText(draw, ImVec2(x, top + SizeOf(TextStyle::Body) + space::XXS), Col(color::Dim),
+                Ellipsize(options.summary, room).c_str());
+            PopText();
+        }
+        DrawIcon(draw, *open ? Icon::ChevronDown : Icon::ChevronRight, ImVec2(chevronX + height::Normal / 2, mid),
+            icon::Normal, Col(color::InkSoft));
+        if (state.focused)
+            FocusRing(min, ImVec2(stopEnd, max.y), radius::Control);
+        if (options.action != nullptr)
+        {
+            ImGui::SetCursorScreenPos(ImVec2(actionX, mid - height::Normal / 2));
+            if (Button(options.action, options.actionOptions) && options.actionPressed != nullptr)
+                *options.actionPressed = true;
+        }
+        ImGui::EndDisabled();
+        ImGui::SetCursorScreenPos(ImVec2(min.x, max.y));
+        ImGui::Dummy(ImVec2(width, 0));
+        if (!*open || options.disabled)
+        {
+            ImGui::PopID();
+            return false;
+        }
+        // What is unfolded lines up under the title, with the same air on both sides.
+        ImGui::Indent(space::XS);
+        ImGui::PushItemWidth(-space::XS);
+        ImGui::BeginGroup();
+        return true;
+    }
+
+    void EndDisclosure()
+    {
+        ImGui::EndGroup();
+        ImGui::PopItemWidth();
+        ImGui::Unindent(space::XS);
+        ImGui::Dummy(ImVec2(0, space::S));
+        ImGui::PopID();
+    }
+
     void SectionHeader(const char* title, const char* subtitle, bool divider)
     {
         if (divider)
@@ -509,7 +593,7 @@ namespace ui
         return true;
     }
 
-    ModalResult ModalActions(bool* open, const char* confirm, const char* cancel, ModalKind kind)
+    ModalResult ModalActions(bool* open, const char* confirm, const char* cancel, ModalKind kind, bool canConfirm)
     {
         g_modalBack.back() = cancel;
         ModalResult result = ModalResult::None;
@@ -517,19 +601,20 @@ namespace ui
         ButtonOptions cancelOptions;
         ButtonOptions confirmOptions;
         confirmOptions.kind = kind == ModalKind::Danger ? ButtonKind::Danger : ButtonKind::Primary;
+        confirmOptions.disabled = !canConfirm;
         float width = ButtonWidth(cancel, cancelOptions) +
                       (confirm != nullptr ? space::S + ButtonWidth(confirm, confirmOptions) : 0);
         ImGui::SetCursorPosX(ImGui::GetCursorPosX() + std::max(0.0f, ImGui::GetContentRegionAvail().x - width));
         if (Button(cancel, cancelOptions))
             result = ModalResult::Cancel;
-        if ((kind == ModalKind::Danger || confirm == nullptr) && ImGui::IsWindowAppearing())
+        if ((kind == ModalKind::Danger || confirm == nullptr || !canConfirm) && ImGui::IsWindowAppearing())
             ImGui::SetItemDefaultFocus();
         if (confirm != nullptr)
         {
             ImGui::SameLine(0, space::S);
             if (Button(confirm, confirmOptions))
                 result = ModalResult::Confirm;
-            if (kind != ModalKind::Danger && ImGui::IsWindowAppearing())
+            if (kind != ModalKind::Danger && canConfirm && ImGui::IsWindowAppearing())
                 ImGui::SetItemDefaultFocus();
         }
         if (result != ModalResult::None)

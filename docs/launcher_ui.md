@@ -112,7 +112,7 @@ hint) are centred from the first line's capitals to the last one's baseline.
 the shown game's colour on its pages (Spyro's Adventure's blue, Giants' gold, Swap Force's green: `GameStyle::glow`), the
 launcher's blue elsewhere. It shows only with the keyboard or the pad: the pointer moving, pressing or scrolling hides it
 (`App::HandleEvent`), the next key or button that moves the focus shows it. Never on what is not pressed (the sidebar's
-title is a link for the pointer only, not a stop). A page's first stop is its main action: Home, the card of the game
+title is a link for the pointer only, not a stop). A page's first stop is its main action: Home, its top button, else the card of the game
 shown last; the game page, the main action; a settings page, its selected tab.
 
 **Colours by role** (`ui::color`, values from `launcher_theme.h`).
@@ -206,7 +206,7 @@ portal names prominent and empty seats as tall as occupied ones, without changin
 | | |
 |---|---|
 | When | The pages of a settings screen (two to six words). |
-| API | `TabChange ui::Tabs(id, labels, &current, TabsOptions{bumpers, focusSelected, showFocus})`: `None`, `Click` or `Bumper`. LT / RT change tab (LB / RB change the main page), in a dialog's tabs too; with a pad in use their key caps show at the row's ends. Height `Normal`, `space::XL` between tabs. |
+| API | `TabChange ui::Tabs(id, labels, &current, TabsOptions{bumpers, focusSelected, showFocus})`: `None`, `Click` or `Bumper`. LT / RT change tab (LB / RB change the main page), in a dialog's tabs too; with a pad in use their key caps (LT and RT) show at the row's ends. Height `Normal`, `space::XL` between tabs; a row too long for its room narrows the gaps to `M`, then the labels (down to `Caption`). |
 | States | The selected tab bold `Ink` with the accent line (`stroke::Selection`); others `Dim`, `Ink` under the pointer with a hairline; focus ring. |
 
 ### Segmented
@@ -372,6 +372,12 @@ portal names prominent and empty seats as tall as occupied ones, without changin
 
 ## Consistency
 Phase B applies these on every screen it touches.
+- **A game's colour**: its sidebar badge is its `GameStyle::glow` (Imaginators its `bottom`, the deep blue of its card, apart
+  from Spyro's Adventure's sky blue), the initials white or dark, whichever reads. On that game's pages the selected tab's
+  line, the step in progress, the progress bars and the focus ring wear it too (`Context::accent`); switches, sliders and
+  primary buttons keep the launcher's blue.
+- **The pad legend** is at the window's foot, edge to edge, on every page (`App::DrawFootLegend`). A settings page keeps
+  its scrollbar's room on every tab and shows the bar only with something to scroll.
 - **Game names**: `GameName(id, GameNameForm::Full | Short)` (`game_names.h`) is the only source. The **full** name
   ("Skylanders: Giants") in titles, headers, Home's cards, messages, dialogs and file names; the **short** one ("Giants")
   where room is tight: the sidebar's rows, chips, filters, a select's rows, the coming-later list, a logo's stand-in. All
@@ -412,7 +418,7 @@ Phase B applies these on every screen it touches.
   Menu rows follow the same icons ("Show in folder" `Folder`, "Delete..." `Trash`). Changed in wave 49: "Update all"
   (`Download` to `Update`), "Export everything...", "Export for ..." and "Export first" (`ArrowUp`; `Folder` or none),
   both "Stop" buttons (`Stop`), the gallery's "Show in folder" (`Folder`). The tester checks: the gallery
-  (`SKY_LAUNCHER_TEST_GALLERY=1`), Settings > Launcher > Uninstall everything (`SKY_LAUNCHER_TEST_UNINSTALL=1`).
+  (`SKY_LAUNCHER_TEST_GALLERY=1`), Settings > General > Uninstall everything (`SKY_LAUNCHER_TEST_UNINSTALL=1`).
 - **Writing** (below) still holds: short help lines, no path in running text, errors say what happened then what to do.
 
 ## Gallery
@@ -506,23 +512,25 @@ down, left and right beside it: the player's letters, Z Q S D on AZERTY, W A S D
 stick after it, the **right stick's** as another cross when the game uses it (titled with its action, "Shake / Insert /
 Swing"), a hairline, then a settings row per other action (its name, its pad button as the row's note, the key cap at the
 column's right); a key being changed is the accent with "...", a key two actions share a warning icon and edge; a key the game
-does not set itself (it follows the global layout or its default) dimmed (`KeyButtonOptions::inherited`; a list's
-`SelectOptions::inherited`), one it sets in normal text with a reset arrow (an `IconButton` with `Icon::Reset` before the
+does not set itself (it follows the global layout or its default) in normal text, one it sets with an accent dot at
+the row's left and a reset arrow (an `IconButton` with `Icon::Reset` before the
 control; one beside a cross's title for its four keys); one Danger hold "Reset to defaults". Launcher settings >
-Controls (`ui/controls_page.cpp`) has, under the controller choice, **All games**: one settings table with two control columns
+Controls (`ui/controls_page.cpp`) has, under the controller choice, the Mouse switch and the Rumble, then two folded
+sections, Toy Box shortcuts and, first, **Keys for all games**: one settings table with two control columns
 headed Keyboard and Controller (`ui::BeginSettings` with a second width), a row per shared action (its key cap, its pad button's
-list; a dash where a side has none), then the Mouse switch, the Rumble and the Toy Box keys, never dimmed. The Toy Box keys are key caps in settings rows, two columns at the
+list; a dash where a side has none), never dimmed. The Toy Box keys are key caps in settings rows, two columns at the
 row's right: the keyboard's and physical controller pickers named for the pad in use or chosen, else Xbox's. Swap wheel
 captures one held button; Open the Toy Box and Game menu capture two different buttons in order (Escape cancels).
 Add and clear figures keep a controller dash; Game menu shows its fixed F3 key. A controller shortcut used by a game's
 action is marked red, except the default Back/View, Back/View + Y and Back/View + Start buttons. The section ends with a
-hold Reset to defaults for the global controller buttons, rumble and shortcuts. The Controller tab names an unchanged button's job "Default".
+hold Reset to defaults for the global controller buttons, rumble and shortcuts. The Controller tab shows an unchanged button by its own name ("A").
 Save backups are ListRows (when, files, size) with a Danger hold "Restore" beside each; the update check's last time and the
-backups' times use `FormatWhen`. The problem report is `ui::BeginModal(Large)` with `ModalActions` (Close, Save as...) and Copy
-at the left. Uninstall's list is ListRows with the size as `trailing` (not focusable: nobody presses them), "Also delete my saves
+backups' times use `FormatWhen`. The problem report is `ui::BeginModal(Large)`: settings rows (the Game select, 1 Save the report,
+2 Open GitHub, the step to take Primary), then "See what the report contains", folded, with the text, Copy and Save as...; Close
+at the right (a Button: step 1 keeps the first focus). Uninstall's list is ListRows with the size as `trailing` (not focusable: nobody presses them), "Also delete my saves
 and my figures" a Checkbox, Cancel then the Danger hold "Uninstall everything" at the right. Text is Caption, Body and Display
 through `ui::Text`; the portal test's verdicts name the game with `GameName`. The shots are listed in "Screenshot test"
-(`17-` to `19-` are Support, About and the report).
+(`17-` to `19-` are Help, its About and the report).
 
 **3. The Collection, its sheets and dialogs** (`collection_page.cpp`, `collection_figure.cpp`, `collection_add.cpp`,
 `collection_manage.cpp`) - **done (phase B, 2026-10-28)**. What was decided: the portal's game is a Select after "On the portal
@@ -583,29 +591,27 @@ shells, the toast kinds.)
 
 ## Layout
 The launcher opens on Home, the menu page (the ARKEYAN LAUNCHER title goes back to it): empty for now, with "Report a bug" (a new
-GitHub issue) and the GitHub link bottom right. The launcher's own language is in Settings > Launcher > Language
-(`docs/translations.md`); the game's text and voice languages are in that game's settings (Language tab). The game shown last is selected in the sidebar (`[launcher] game=`); the other is one click away.
+GitHub issue) and the GitHub link bottom right. The launcher's own language is in Settings > General > Language
+(`docs/translations.md`); the game's text and voice languages are in that game's settings (Sound and language tab). The game shown last is selected in the sidebar (`[launcher] game=`); the other is one click away.
 1. Left sidebar (grey, fixed width) - the seven games as full-width rows (Spyro's Adventure, Giants, Swap Force, Trap Team, SuperChargers
    and Imaginators enabled; SuperChargers Racing "Coming later"; an old `[launcher] experimental_superchargers` line is ignored), then Collection and Settings at the bottom. Each enabled row shows its game's icon
    and its live state (every game's disc is checked at start-up, one after the other: "A game's states"); the
    selected game's row has the bar while its Play page is open. Rows are reachable with the keyboard and the pad like the others.
 2. Play (no tabs) - a hero over the disc's background, with continuous dark shades on the left and bottom.
-   The disc logo (else the name), state, main action and separate settings button form the left column. Controller and
-   portal pills sit below them. The right column shows the three first-run steps before a disc is chosen, otherwise the
+   The disc logo (else the name), state, main action and separate settings button, with the controller picker below them, form the left column. The right column shows the three first-run steps before a disc is chosen, otherwise the
    collection's portal seats, an Open the Toy Box link and a Live badge while running. See "Game page hero" below.
 3. Collection - see below.
-4. Settings (the gear) - **the launcher's own settings and what both games share**, in four tabs: Controls (device, portal, glyphs), Launcher (language slot, updates, data folder, **Remove Arkeyan Launcher**: "Uninstall everything", below), Support (report a problem, logs), About (version, credits).
+4. Settings (the gear) - **the launcher's own settings and what both games share**, in four tabs: General (language slot, updates, data folder, **Remove Arkeyan Launcher**: "Uninstall everything", below), Controls (device, glyphs, mouse, rumble, the keys), Portal (state, choice, test, automatic Toy Box), Help (report a problem: the one entry, for the game picked in it; logs, then About: version, credits). The profiles are a dialog, from the profile menu's Manage profiles...
    Clicking a game goes back to Play; clicking the gear again, or B / Escape, goes back to the page you came from.
-5. Game settings (the Settings button on a game's Play page) - **that game's own settings**, eight tabs in the order a player
-   looks for them (0.9.4): the picture and performance, the controls, the sound, the language, then the game's files: Video,
-   Keyboard, Controller, Sound, Language, Disc, Saves, Game (the sidebar keeps the game selected; B / Escape or **Back** return
-   to its Play page):
-   - Video, in three sections: **Display** (fullscreen, widescreen, frame rate limit and Drop to 30 FPS at 60, VSync, FPS
+5. Game settings (the Settings button on a game's Play page) - **that game's own settings**, four tabs: Picture, Controls
+   (Keyboard or Controller), Sound and language, Manage (compact rows: difficulty, disc, saves, desktop shortcut, portable
+   copy, folders, then Repair or uninstall; Disc, Saves and the last unfold in place, and a link to one opens it). The
+   sidebar keeps the game selected; B / Escape or **Back** return to its Play page:
+   - Picture, in three sections: **Display** (fullscreen, widescreen, frame rate limit and Drop to 30 FPS at 60, VSync, FPS
      counter, skip intro movies), **Image quality** (resolution scale, FSR 3 (a switch) with FSR 3 quality and Frame generation
      shown while it is on, Original resolution (Swap Force only), texture filtering, edge smoothing (Swap Force, Trap Team)),
-     **Textures** (**Use HD textures** (every game; below), Custom texture packs and their folder, dump textures: these three
-     greyed, "Coming later", since 0.9.4). Frame generation is greyed and off too ("Coming later"); the frame rate limit lists
-     30 and 60 only.
+     **Textures** (**Use HD textures**: every game; below). Frame generation is greyed and off ("Coming later"); the frame
+     rate limit lists 30 and 60 only.
      The game's own copy, `[<game>.video]` (docs/settings.md).
      **Use HD textures** ("Texture pack" in the first 0.9.4 builds, "HD textures" before) is a switch, off by default, `[<game>] hd_textures`; its line says what
      it does and the disk it takes for that game (2.3 GB Spyro's Adventure, 4.8 Giants, 2.2 Swap Force, 2.6 SuperChargers, 3.0 Imaginators and Trap Team [?]). On a built game with its disc at hand,
@@ -619,13 +625,13 @@ GitHub issue) and the GitHub link bottom right. The launcher's own language is i
      disabled with its reason on a kit that does not know the option (a kit before 0.9.1: "Needs newer game tools: reinstall the
      game to get them."), with no disc image at hand, or while the game runs. Spyro's Adventure and Giants have no switch: their
      disc is not read for textures yet (`docs/tools/hd_textures.md`, [Lux]).
-   - Keyboard: one row per action **the game uses**, named as the game names it with the pad button in brackets ("Attack 1 (X)",
+   - Controls > Keyboard: one row per action **the game uses**, named as the game names it with the pad button in brackets ("Attack 1 (X)",
      "1st Power / Accept (A)"), two rows a line: the key's button (click it, press a key; Escape cancels), red when another row of
-     the game or a Toy Box key has the same key, dimmed when the game follows the global layout, with a reset arrow when it sets its
+     the game or a Toy Box key has the same key, with a dot and a reset arrow when the game sets its
      own, and **Reset to defaults** (held). The game's own lines, `[<game>.input]`, over the global `[input]` (docs/settings.md,
      "The global layout and each game's keys", which also lists each game's rows and where their names come from).
-   - Sound (0.9.4): volume, speakers (Auto, Stereo, 5.1) and Trap Team's portal sound, `[<game>.audio]` (docs/settings.md).
-   - Language: game text and game voices (`[<game>] language`, `voice_language`). Giants' disc has twelve languages for both (English,
+   - Sound and language, Sound: volume, speakers (Auto, Stereo, 5.1) and Trap Team's portal sound, `[<game>.audio]` (docs/settings.md).
+   - Sound and language, Language: game text and game voices (`[<game>] language`, `voice_language`). Giants' disc has twelve languages for both (English,
      French, German, Spanish, Latin-American Spanish `es-419`, Italian, Dutch, Portuguese, Swedish, Norwegian, Danish, Finnish) and its
      voices default to **Same as text** (an empty `voice_language`); Spyro's Adventure has ten, its voices default to English; Swap Force's
      disc has English and French (USA, Australia) or Spanish and Italian (Europe); Trap Team's has two (English and German, or French
@@ -657,10 +663,12 @@ Pause), keyboard and controller side by side. What each game names its own way (
 "2nd Power") is set on that game's Keyboard and Controller tabs, which also change an All games row for that game only
 (`game_keys.h`).
 
-The launcher opens on **Home**, the menu page (the ARKEYAN LAUNCHER title goes back to it): the **library**, a card per
-playable game (its painting from the disc behind its logo, its name and state; the game's colours before its disc was
-ever read), then the games **coming later** as quiet chips in their colours; "Report a bug" (a new GitHub issue) and the
-GitHub link bottom right. A card opens its game's page. The launcher's own language is in Settings > Launcher > Language
+The launcher opens on **Home**, the menu page (the ARKEYAN LAUNCHER title goes back to it): a **top block** (Continue: the
+game played last, when and how long; else Ready to play: an installed game; else Get started: the steps and Choose a
+disc; its button is that game page's main action), then a card per playable game, three a row (its painting from the disc
+behind its logo, or its short name, and its state; the game's colours before its disc was ever read), then the games
+**coming later** as quiet chips in their colours; "Report a problem" (the report's dialog), the Discord and the GitHub
+links bottom right. A card opens its game's page. A disc dropped or chosen on Home selects the game it holds. The launcher's own language is in Settings > General > Language
 (`docs/translations.md`); the game's text and voice languages are in that game's settings ("Game text", "Game voices"). The game shown last is selected
 in the sidebar (`[launcher] game=`); the other is one click away. At start-up its disc is checked first, then the other games'
 discs, one after the other in the background (`App::CheckQueuedDiscs`: each as its first visit would, never two at once), so
@@ -669,7 +677,7 @@ every game shows its real state and art at once ("Update all" on Home's title li
    - The title, **ARKEYAN LAUNCHER**, with the launcher's version beside it on its baseline, small and dim (`v0.6.0`, from
      `LAUNCHER_VERSION`: `LauncherVersion()`), then "Native PC ports" (XXS under it) and, L below, YOUR GAMES; all on the
      rows' content edge. The title is Home's link for the pointer (a hand on it), not a keyboard or pad stop: no ring.
-   - The three playable games as rows (Spyro's Adventure, Giants and Swap Force), then one "Coming later" row for the four others. An enabled game whose disc has been read (this session or an earlier one) shows **its logo**, the
+   - The three playable games as rows (Spyro's Adventure, Giants and Swap Force), then one "Coming later" row for the others. An enabled game whose disc has been read (this session or an earlier one) shows **its logo**, the
      art with "Skylanders" on it, in the row's left column (`GameLogoW` x `GameLogoH`); before that, and for the games
      coming later (no disc, so never any game art), a neutral badge: the initials (SA, G, SF) on the game's colour.
    - The name, then under it the game's state: **its icon and its words on one line** (`IconOf(SlotState)`, "A game's
@@ -679,8 +687,10 @@ every game shows its real state and art at once ("Update all" on Home's title li
      icons of Collection and Settings centred in it): all the titles start on one edge.
    - Collection and Settings at the bottom (sentence case), rows with an icon, L from the window's foot.
    - Rows are reachable with the keyboard and the pad like the others.
+   - In the smallest window the games' rows shrink (from `Large` down to `Normal` + XS), so the list and its Coming later
+     row fit without scrolling.
 2. **Play** (the game page, no tabs): see "Game page hero" below. The disc's art fills the page; title,
-   state, commands and device pills sit on it, with the collection's portal at the right. There is no bottom bar.
+   state, commands and controller picker sit on it, with the collection's portal at the right. There is no bottom bar.
    - The speaker at the top right switches game music on or off for every game; it is shown only when the disc theme is cached.
 3. Collection - see below.
 4. Settings (the gear) - Graphics, Controls (device, portal), Language, Game data, About. Clicking a game
@@ -696,9 +706,9 @@ keeps the logo and the status line readable). Without art the current night sky 
 The portal column narrows from 400 to 264 points at small window sizes; longer names wrap or ellipsize inside their column.
 
 - **Ready**: the logo or name, Ready to play (with the recorded play time and last-played date when available), Play,
-  a separate settings button, and the device and portal pills below. Change disc remains available at the top; copied
-  game data continues to use the existing Disc settings. The achievements pill still opens Achievements.
-- **Needs a disc**: Not installed yet, Choose disc and settings; the hint explains window-wide .iso dropping and local
+  a separate settings button, and only the controller picker below. The top right has achievements, chests and music. The disc
+  is changed in the game's settings; Change disc... shows here only for a damaged disc (without one, Choose disc).
+- **Needs a disc**: Needs your disc (the sidebar's words), Choose disc and settings; the hint explains window-wide .iso dropping and local
   reading. The right card gives Choose your disc, Install (the existing time and space estimates), and Play.
 - **Installing**: the title stays visible, with the current checklist step, overall percentage and progress bar, four
   milestones, Cancel, Show details and settings. The milestones collect tools/disc, recompilation, shaders, and the
@@ -708,8 +718,8 @@ The portal column narrows from 400 to 264 points at small window sizes; longer n
   seconds count from the successful process start on a monotonic clock, survive page changes, and reset after the game
   ends. A game detected by its marker counts from its first observation in this launcher.
   STOP has a filled square icon, a dark red tinted fill and a red outline. Show the game has a monitor icon; the two
-  actions sit side by side at the same Large height. There is no settings button in this row and no controller or portal
-  picker while running. The only hint is `Toy Box in the game: {}, or {} on a controller.`, filled with the chosen key and physical buttons, fitted onto one line.
+  actions sit side by side at the same Large height. There is no settings button and no controller picker while running, and the
+  portal's line is plain words. The only hint is `Toy Box in the game: {}, or {} on a controller.`, filled with the chosen key and physical buttons, fitted onto one line.
   The portal panel keeps its existing behavior. Stop addresses only the PID started by
   this launcher: WM_CLOSE on Windows, SIGTERM (SDL's quit event) on macOS and Linux, then a forced end after five seconds.
   Polling keeps the page responsive, returns the page and sidebar to their ready states, and suppresses crash reporting
@@ -728,13 +738,13 @@ ring and plus. Activating a seat opens Collection's existing chooser; while runn
 read-only rules. Open the Toy Box opens Collection, the launcher's existing figure view; while the game runs the same
 button reads **Toy Box window** ("Toy Box" when the card is narrow) and opens the game's Toy Box in a window of its own
 (`toybox_window.md`). The device picker keeps its
-existing menu and choices; the portal pill still opens Launcher settings > Controls. Virtual portal is shown even when
+existing menu and choices; a line under the seats says Portal or Virtual portal and opens the portal's settings. Virtual portal is shown even when
 no hardware detector is available. Buttons, pills and rows use their usual keyboard and gamepad focus rings.
 
 ## A game's states
 One function decides: `App::SlotStatus(slot)` returns the game's `SlotState`, its line and the main button's label (its icon and colour: `IconOf` and `StatusOf`)
 and whether it can be pressed. The sidebar, Home's cards and the Play page's main button all read it, so they cannot
-disagree; the page's other lines (the disc's status, the install card, the game settings' Disc tab) say more about the same
+disagree; the page's other lines (the disc's status, the install card, the game settings' Manage > Disc) say more about the same
 `DiscState` / install state. In this order (the first that applies):
 | State | Sidebar and Home line | Icon | Main button |
 |---|---|---|---|
@@ -793,7 +803,7 @@ secondary text colour, after its name in the sidebar ("Giants · 0.8.2"); nothin
 "Ready to play" needs both the build and a verified source: the disc image, **or the copied game data** ("Game data" below).
 With no source or a refused one the game says what it needs, even if it was built (the game reads the disc image while it runs). The Play page's disc line says more
 ("Disc verified: 8.1 GB", the refusal's reason, "Drop your disc image here..."), the install card is shown while
-`installView`, and the game settings' Disc tab shows the same `DiscState`. The window has one fixed title.
+`installView`, and the game settings' Manage > Disc shows the same `DiscState`. The window has one fixed title.
 
 The percentage is the install card's overall fraction (`MakeInstallChecklist`), the same as the band's button. The text is
 cut with "..." to the column (the sidebar is a fixed width at every window size) and the bar is drawn over the row's own
@@ -920,7 +930,7 @@ the window is `ui/game_data_page.cpp` (+ `game_settings_page.cpp` for the tab). 
 
 ## The wrong disc, offered to the right game
 When the check finds the other supported game's disc ("This disc image is Skylanders: Spyro's Adventure, not Skylanders: Giants.", status
-`WrongGame`, `GameSourceCheck::otherGame`), the Play page and the Disc tab add one button, **Use it for <that game>** (`App::UseDiscForOtherGame`):
+`WrongGame`, `GameSourceCheck::otherGame`), the Play page and Manage > Disc add one button, **Use it for <that game>** (`App::UseDiscForOtherGame`):
 the window switches to that game, checks the image there, and remembers it as that game's disc once it is verified. The game it was chosen
 for goes back to the disc it had (or none); a stale `iso=` that was this image is dropped. Refused with a toast while the other game installs,
 copies or checks its own disc. A game that already plays from a copy only switches ("already plays from its copied game data").
@@ -950,7 +960,7 @@ The previous split-button component option remains available to existing callers
 `NavigationColumns` records enabled controls while the page is drawn: up/down stays within a column, left/right visits
 neighbours in the same row before crossing to the other column. It uses ImGui focus, keyboard arrows and gamepad
 navigation, and leaves Tab and open menus to ImGui. This prevents wide portal rows from diverting a downward move past
-the device pills. The screenshot test visits every enabled control with both input methods.
+the controller picker. The screenshot test visits every enabled control with both input methods.
 
 `SKY_LAUNCHER_TEST_BUTTONS=1` (with `SKY_LAUNCHER_SHOTS`, a `[launcher] kit=` that is the fake kit, and both games' `iso=`)
 shoots the button's states: for each game `00-install`, `01-hover`, `02-pressed`, `03-focused`, `04-settings-hover`,
@@ -1046,14 +1056,14 @@ its existing layout and shortcuts; pad-only legends and extra banner height are 
 | Home | LB RB Pages, A Select, B Back (to the sidebar). |
 | Game page | LB RB Pages, Y Game settings when no game is running, A Select, B Back. |
 | Install card and compact installation progress | The game-page legend plus X Show details / Hide details. A selects the enabled Retry, Resume, Copy log, Logs, details or Cancel control. Opening a detailed card focuses its first enabled footer action. |
-| Settings: Controls, Launcher, Support, About, Profiles | LB RB Tabs, A Select, B Back. B closes the uninstall list before leaving Settings. The profile editor's ten color choices use the shared focus ring and navigation stops. |
-| Game settings: Video, Keyboard, Controller, Sound, Language, Disc, Saves, Game | LB RB Tabs, A Select, B Back to the game page. |
+| Settings: General, Controls, Portal, Help | LB RB Pages, LT RT Tabs, A Select, B Back. B closes the uninstall list before leaving Settings. The profile editor's ten color choices use the shared focus ring and navigation stops. |
+| Game settings: Video, Keyboard, Controller, Sound, Language, Disc, Saves, Game | LB RB Pages, LT RT Tabs, A Select, B Back to the game page. |
 | Achievements | LB RB Pages, A Select, B Back to the game page. |
 | Collection | LB RB Pages, the available X action, Y Search, LT RT Other seat when seats exist, A Select, B Back. |
 | Figure sheet, Add a figure | A Select, B Close; Edit and Change the top/bottom use B Back for their inner step. |
-| Manage | LB RB Tabs, A Select, B Close. |
+| Manage | LT RT Tabs, A Select, B Close. |
 | Confirmations, profile editor and portable export question | A Select, B Cancel (or the question's actual cancellation label). Destructive confirmations keep the safe default focus. |
-| Crash/problem report, release notes and file-integrity dialog | A Select, B Close. Save, copy, release-page and repair actions are reachable controls selected with A. |
+| Crash/problem report, release notes and file-integrity dialog | A Select, B Close. Game choice, save, GitHub, fold, copy, release-page and repair actions are reachable controls selected with A. |
 | Quit during installation and Defender notice | A Select, B Keep installing or B Not now, respectively. |
 | Update banner: offer, downloading, failed, done | A Select when buttons exist; B Later, Cancel or Close respectively. B acts on the banner only while it has focus. |
 | Update banner: checking/installing or restart required | B Back; A Select appears only when a button exists (Restart now). |
@@ -1070,9 +1080,9 @@ B and tab bumper behavior; it requires a window and is separate from the standal
   hand call `App::FocusRing`, which draws the same ring. The page's columns are `ImGuiChildFlags_NavFlattened`.
 - **Pad and keyboard** ("Navigation model"). The sidebar and the page are separate windows: B / Escape on Home moves the focus
   to the sidebar's current row; A on a row opens its page with the focus on its first control (`App::GoTo`, `TakeFocus`).
-  LB / RB change the tab (`App::DrawTabBar`, Manage) where present, otherwise the main page; LT / RT change the seat the
+  LT / RT change the tab (`App::DrawTabBar`, Manage), LB / RB the main page; in the Collection LT / RT change the seat the
   Collection chooses for. The launcher starts with the focus in the sidebar. The ARKEYAN LAUNCHER title is not a stop (it is Home's link for the pointer):
-  Home is the start page, and its games are the sidebar's rows.
+  B and LB / RB lead there, and the games are the sidebar's rows.
 - **Hold to confirm.** What deletes or overwrites is a red button held for a second (`App::HoldButton`, the state in
   `hold_confirm.h`): Reset and Delete (Figure page), Delete for good (trash), Mark as not in use (a stale lock), Restore
   (a save backup), Reset to defaults (a game's keyboard and controller), Reinstall, Delete saves and data, Remove game. The fill shows the time; releasing, or the pointer
@@ -1139,8 +1149,11 @@ so it runs beside the installed launcher). `main` decides first, before any wind
 ## Collection
 See `docs/collection_ui.md`: the page shows ArkeyanRuntime's shared collection (the game's folder, locks, favorites, backups
 and six-game catalogue) with the Toy Box's model: the portal at the next start (the game's seats on top), the bar
-(the search field and Sort and filter: Sort by, then Element, Works in, Type; the tags), the shelf (every figure once, in the sort's sections), the figure sheet (Put on the portal, Edit,
-Favorite, `...`, Details), Add a figure and Manage. The icons are the shown game's portraits from its disc, else the
+(the search field, its hint the count of figures, and Sort and filter: Sort by, then Element, Works in, Type; the tags), the shelf (every figure once, in the sort's sections), the figure sheet (Put on the portal, Edit,
+Favorite, `...`, Details), Add a figure and Manage. The header is three rows: the title, the game, the portal's state
+(where it fits), Add a figure and `...` (Manage); the seats; the bar, whose row the choose banner takes while a seat is
+chosen for (Y brings the search back there). The shelf hides what the shown game can't take: Works in > All games shows
+those too, dimmed. The icons are the shown game's portraits from its disc, else the
 other game's, else the toy's family picture, else the generated ones (`figures::IconStyle`): "Disc art" below.
 
 ## Disc art
@@ -1221,7 +1234,7 @@ The launcher's texts are short. A player reads them to decide or to know what to
 Developer details (the runtime's name, an option's file, the SHA-256 a check uses) belong in these docs, not in the window.
 
 ## Uninstall everything
-Settings > Launcher > **Remove Arkeyan Launcher** > **Uninstall everything...** opens, in the tab, the list of what goes (`ui/uninstall_page.cpp`;
+Settings > General > **Remove Arkeyan Launcher** > **Uninstall everything...** opens, in the tab, the list of what goes (`ui/uninstall_page.cpp`;
 what it removes and the safety rules are in `docs/install.md`, "Uninstall everything"):
 
 - **What goes**: one row per built game, then Game data copies, Game tools, Caches and logs, Settings, Desktop shortcuts and Arkeyan Launcher,
@@ -1275,13 +1288,13 @@ SKY_LAUNCHER_FONT_DIR="$PWD/resources/fonts" \
 It writes `01-no-iso.png`, `02-verified.png`, `03-graphics.png`, `04-controls.png`, `05-collection.png`, `06-home.png`,
 `07-figure-sheet.png`, `08-new-figure.png`, `09-play-with.png` (the controller menu), `10-language.png`, `11-game-disc.png`,
 `12-game-saves.png`, `13-game-data.png`, `14-launcher-settings.png`, `15-disc-gone.png`, `16-logo-drop.png`, `17-launcher-support.png`, `18-launcher-about.png` and `19-problem-report.png` (INSTALL on an image that moved; `03-` is the
-game's Video tab, `04-` the launcher's Controls) (it creates a few figures in `SKY_COLLECTION` first: set it to a scratch folder). With `SKY_LAUNCHER_TEST_COLLECTION=1` it shows the collection's screens instead (`docs/collection_ui.md`).
+game's Picture tab, `04-` the launcher's Controls) (it creates a few figures in `SKY_COLLECTION` first: set it to a scratch folder). With `SKY_LAUNCHER_TEST_COLLECTION=1` it shows the collection's screens instead (`docs/collection_ui.md`).
 
 `07-figure-sheet.png`, `08-new-figure.png`, `09-play-with.png` (the controller menu), `10-language.png`, `11-disc-gone.png`
 (INSTALL on an image that moved) and `12-logo-drop.png` (the logo early in its fall) (it creates a few figures in `SKY_COLLECTION` first: set it to a scratch folder). With `SKY_LAUNCHER_TEST_COLLECTION=1` it shows the collection's screens instead (`docs/collection_ui.md`).
 With `SKY_LAUNCHER_TEST_NAV=1` it sends keys as a player would (`40-` to `53-`): B to Home, B to the sidebar, down past the three
-games and Coming later, A into Collection, Y for the search, the D-pad to a seat, A to choose for it, down three times (Cancel, the search's
-row, the shelf) and A to put a card there, X for a card's sheet, B back, then down to Settings, A, RT to its Launcher tab, Escape. Each step's page is checked ("FAIL nav step";
+games and Coming later, A into Collection, Y for the search, the D-pad to a seat, A to choose for it, down once (the
+shelf) and A to put a card there, X for a card's sheet, B back, then down to Settings, A, RT to its Controls tab, Escape. Each step's page is checked ("FAIL nav step";
 a timeout stops a run that went astray); `ArkeyanLauncherTest` runs it (`NavChecks`).
 With `SKY_LAUNCHER_TEST_PADWALK=1` it walks every page, tab and dialog with the pad ("Navigation model"; `pad_walk.cpp`):
 `00-first-start` to `50-ssa-sound` (`50-` the Sound tab, 0.9.4; since 0.9.2 with the Profiles menu, editor and tab, the file check's dialog, the pages and game settings of Trap Team, SuperChargers and Imaginators with their portal panel and Toy Box button), each shot as a pad player arrives there, then walked, every result a `padwalk` line
@@ -1301,7 +1314,7 @@ stopped). `--scratch` and `--shots` select separate directories inside `.scratch
 without a window; `SKY_LAUNCHER_TEST_HERO_REAL_PORTAL=1` shows the running card with a real portal plugged in
 (toybox_window.md). Run at `--size 1024x720` and `--size 1600x900`, with and without `--no-show`, and with
 `--language fr` to check the translated row. Each running capture checks the action bounds, translated session status
-and navigation controls: the settings button and both pickers must be absent, and Show must match the fixture's window
+and navigation controls: the settings button, the controller picker and the portal's link must be absent, and Show must match the fixture's window
 availability.
 Compare the Ready captures with the same size's previous captures to verify its layout remains unchanged.
 It writes `hero-<ready|needs-disc|installing|running>-<art|noart>.png`. The four states and two figures are in-memory display
@@ -1332,7 +1345,7 @@ Swap Force not opened); with `pad` each page's first stop has its ring and the p
 `SKY_LAUNCHER_TEST_SIZE` and `SKY_LAUNCHER_TEST_SCALE=2` (a Retina screen's density, the same layout) set the rest
 (`docs/polish_audit.md`, "Model screens").
 `SKY_LAUNCHER_TEST_SCREENS=portal` (0.9.5; `SKY_LAUNCHER_TEST_DROP=<SSA disc>`, `SKY_LAUNCHER_TEST_SIZE=1280x1000` shows the
-whole result) shoots `portal-not-answering` (Settings > Controls, a probe fixture: the original Wii portal on Linux, opened,
+whole result) shoots `portal-not-answering` (Settings > Portal, a probe fixture: the original Wii portal on Linux, opened,
 no answer), `portal-found` (an Xbox 360 portal that answers beside a Wii portal that won't open) and `portal-chip` (the game
 page with an Xbox 360 portal on the chip). Nothing runs the game: the probe's output is a fixture.
 `SKY_LAUNCHER_TEST_EXPERIMENTAL=<id>` (`superchargers`, `imaginators`, `trapteam`...; `1` is SuperChargers, `SKY_LAUNCHER_TEST_TRAPTEAM=1` Trap Team) with `SKY_LAUNCHER_TEST_DROP=<that game's disc>` verifies the disc and shoots Home, the game's page and Home again with its card (`<id>-01-home`, `<id>-02-page`, `<id>-03-home`), in its colours.
@@ -1341,21 +1354,21 @@ first stop with its ring.
 `SKY_LAUNCHER_TEST_RUNNING=1` (with `SKY_LAUNCHER_RUNTIME` a stand-in game and `SKY_LAUNCHER_TEST_DROP` Spyro's Adventure's disc)
 shoots one game at a time ("A game running"): `running-1-game`, `running-2-other`, `running-3-ended`.
 `SKY_LAUNCHER_TEST_GAMETABS=<game>` shoots every tab of that game's settings, FSR 3 and frame generation on so their rows show
-(`tabs-<game>-<NN>-<tab>`; `SKY_LAUNCHER_LANGUAGE` the language, `SKY_LAUNCHER_TEST_SIZE=1280x1650` a window tall enough for the Video tab).
+(`tabs-<game>-<NN>-<tab>`; `SKY_LAUNCHER_LANGUAGE` the language, `SKY_LAUNCHER_TEST_SIZE=1280x1650` a window tall enough for the Picture tab).
 `SKY_LAUNCHER_TEST_KEYS=1` shoots each game's Keyboard tab (`keys-<game>` for the six games; `SKY_LAUNCHER_LANGUAGE=fr` for the French ones).
 `SKY_LAUNCHER_TEST_PAD=1` shoots each game's Controller tab with a few buttons given other jobs (`pad-ssa`, `pad-giants`, `pad-swapforce`)
-and Swap Force's Game tab with Nightmare from the start on (`game-swapforce`).
+and Swap Force's Manage tab with Nightmare from the start on (`game-swapforce`).
 `SKY_LAUNCHER_TEST_LOGO=1` shoots each game's page (`logo-ssa`, `logo-giants`, `logo-swapforce`) from the art already cached in
 `SKYLANDERS_DATA`; `SKY_LAUNCHER_TEST_SIZE=<w>x<h>` sets the window (the default one, a large one).
 `SKY_LAUNCHER_TEST_HDTEX=<game>` (with `SKY_LAUNCHER_TEST_DROP=<its disc>`, `SKY_LAUNCHER_KIT=<a kit>`, scratch data) records the game as built with a
-stand-in executable, opens its Video tab at the bottom, flips the Use HD textures switch as a click would and shoots `hdtex-<game>-1-off`,
+stand-in executable, opens its Picture tab at the bottom, flips the Use HD textures switch as a click would and shoots `hdtex-<game>-1-off`,
 `-2-running` and `-3-done` (`-3-failed`, or `-3-stopped` with `SKY_LAUNCHER_TEST_HDTEX_CANCEL=1`); each outcome is checked ("ok hdtex: ...", "FAIL hdtex: ...").
 With the tests' fake kit (`build/fake-kit`, `FAKE_ARKEYAN_BUILDER_FAIL=hdtextures` for a failure) or a real one. A kit that does not know the option ends after `-1-off`.
 `SKY_LAUNCHER_TEST_UPDATE=1` with `SKY_LAUNCHER_UPDATE_URL=file://<fake latest.json>` shows the update screens (`20-` to `24-`).
 `ArkeyanLauncherTest --no-disc <absolute scratch dir>` runs only the checks that need no disc image (the unit parts; `tools/ci/run.sh` runs it on
 the three systems); the full run is `ArkeyanLauncherTest <disc> <scratch dir>`.
 Its `SKY_LAUNCHER_TEST_RUNNING=controls` subprocess checks the live session timer, hidden window action, missing running
-pickers and gear, disabled STOP during a delayed clean stop, and the return to Ready, using only a windowless stand-in.
+picker and gear, disabled STOP during a delayed clean stop, and the return to Ready, using only a windowless stand-in.
 `ArkeyanLauncherTest` removes its scratch folder at the end; `SKY_LAUNCHER_TEST_KEEP=1` keeps it with its screenshots.
 `SKY_LAUNCHER_TEST_INSTALL=real` runs the real kit. `private/shoot.sh <out dir> [VAR=value...]` is the wrapper used in this
 repository's working copy (its own HOME, the offscreen driver).
@@ -1369,7 +1382,7 @@ Settings, achievements and game settings are silent. Any install or kit download
 
 The speaker sits at the top right over the painting, beside the achievement pill when present, using
 `ui::IconButton` with Lucide's volume and mute glyphs (mute when off or at 0). It opens a small menu
-(`ui::BeginMenu`, right-aligned) with the **Game music** switch and the level's slider. Settings > Launcher has
+(`ui::BeginMenu`, right-aligned) with the **Game music** switch and the level's slider. Settings > General has
 the same two in its **Game music** section. Both set every game through `launcher.ini`: `[launcher] game_music`
 (on by default, `0` off) and `game_music_volume`, remembered across restarts. Moving the slider while the music
 is off turns it back on. Muting fades out; unmuting fades in. Starting muted is silent immediately. The

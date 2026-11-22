@@ -234,7 +234,8 @@ namespace launcher_ui
         bool Busy(const collection::Figure& figure) const { return CardOf(figure).Busy(); }
         // Busy, but not by the game whose portal the Toy Box window shows: that game moves its own figures between seats.
         bool SeatBusy(const collection::Figure& figure) const;
-        void DrawLiveLine(); // the Toy Box window's line over the seats: the game, live or waiting, Open with the game
+        void DrawLiveLine(ImVec2 at,
+            float room); // the Toy Box window's line over the seats: the game, live or waiting, Open with the game
         void DrawRealSeat(ImDrawList* draw, size_t seat, ImVec2 at, ImVec2 end); // a real toy on the portal (read only)
         void DrawBottom(ImDrawList* draw, const collection::Figure& bottom, ImVec2 at, float size);
         void CloseOverlay();
@@ -288,6 +289,8 @@ namespace launcher_ui
         std::string m_starterNames; // what the box of the game's starter pack holds
         ShelfFilter m_filter; // Sort, Element, Works in, Type (the search is m_search)
         char m_search[64] = {};
+        bool m_searchChoosing = false; // the search is shown in the choose banner's place
+        bool m_allGames = false; // Works in > All games: also what the shown game can't take
         bool m_openFilters =
             false; // the screenshot test opens the Sort and filter panel, and closes it at the next screen
         bool m_closeFilters = false;

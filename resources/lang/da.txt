@@ -74,7 +74,6 @@ Anisotropic 16x	Anisotropisk 16x
 Anisotropic 2x	Anisotropisk 2x
 Anisotropic 4x	Anisotropisk 4x
 Anisotropic 8x	Anisotropisk 8x
-Anonymous: your names are removed. Save it, then add it to a GitHub issue.	Anonym: Dine navne er fjernet. Gem den, og føj den til et GitHub-issue.
 Appears once the game's disc is checked.	Vises, når spillets disk er kontrolleret.
 Apr	apr.
 Arkeyan Launcher can't remove itself from here: delete it by hand.	Arkeyan Launcher kan ikke fjerne sig selv herfra: Slet den manuelt.
@@ -291,7 +290,6 @@ Drag Arkeyan Launcher to Applications, replacing the old one.	Træk Arkeyan Laun
 Drift (vehicle)	Drift (køretøj)
 Drop figure files or a folder on the window.	Træk figurfiler eller en mappe ind på vinduet.
 Drop to 30 FPS when needed	Skift til 30 FPS, når det er nødvendigt
-Dump textures	Dump teksturer
 Duplicate	Duplikér
 Duplicated: 	Duplikeret: 
 Each has its own Toy Box, saves, keys and achievements.	Hver har sin egen Toy Box, sine egne gemte spil, taster og præstationer.
@@ -340,7 +338,6 @@ Finishing	Afslutter
 Fire	Ild
 Flocked	Flocked
 Folders	Mapper
-For pack makers: saves the textures as DDS files.	Til pakkeudviklere: Gemmer teksturerne som DDS-filer.
 For {}	Til {}
 Forward side button	Sideknap fremad
 Found	Fundet
@@ -377,7 +374,6 @@ Width	Bredde
 Height	Højde
 {} or more	{} eller mere
 Game	Spil
-Game art comes from your own disc.	Spillets grafik kommer fra din egen disk.
 Game data	Spildata
 Game data copies	Spildatakopier
 Game data damaged	Spildata beskadiget
@@ -406,7 +402,6 @@ GitHub says: {}	GitHub siger: {}
 Glow in the Dark	Glow in the Dark
 Gold	Guld
 Greek	Græsk
-Custom texture packs	Egne teksturpakker
 Use HD textures	Brug HD-teksturer
 HD textures ready	HD-teksturerne er klar
 HD textures removed	HD-teksturerne er fjernet
@@ -480,7 +475,6 @@ Last played	Sidst spillet
 Last played: {}	Sidst spillet: {}
 Later	Senere
 Later games	Senere spil
-Launcher	Launcher
 Launcher settings	Launcher-indstillinger
 Left	Venstre
 Left Alt	Venstre Alt
@@ -491,7 +485,6 @@ Left click: attack 1. Right click: attack 2. The game keeps the pointer.	Venstre
 Legendary	Legendarisk
 Level in {}	Niveau i {}
 Level {}	Niveau {}
-Library	Bibliotek
 Licenses	Licenser
 Life	Liv
 Light	Lys
@@ -512,7 +505,6 @@ Magic item	Genstand
 Making the HD textures	Laver HD-teksturerne
 Making the HD textures. You can keep using the launcher; the game waits.	Laver HD-teksturerne. Du kan fortsætte med at bruge launcheren; spillet venter.
 Manage	Administrer
-Manage profiles	Administrer profiler
 Mar	mar.
 Mark as not in use	Markér som ikke i brug
 Mark as not in use · {}	Markér som ikke i brug · {}
@@ -539,7 +531,6 @@ My Team	Mit team
 Name	Navn
 Name (optional)	Navn (valgfrit)
 Name this toy	Navngiv dette legetøj
-Name, element, game, level...	Navn, element, spil, niveau...
 Named: shown at the next start	Navngivet: Vises ved næste start
 Native PC ports	Native pc-porte
 Native PC ports of Skylanders. No game code or art: it comes from your disc.	Native pc-porte af Skylanders. Ingen spilkode eller grafik: Den kommer fra din disk.
@@ -583,7 +574,6 @@ Not enough space: {} needed, {} free.	Ikke nok plads: {} kræves, {} ledig.
 Not for this game	Ikke til dette spil
 Not for {}	Ikke til {}
 Not in the catalog. Name one to show it.	Ikke i kataloget. Giv den et navn for at vise den.
-Not installed yet	Ikke installeret endnu
 Not needed: the game plays from its copied data.	Ikke nødvendigt: Spillet kører fra sine kopierede data.
 Not now	Ikke nu
 Not played yet	Ikke spillet endnu
@@ -601,7 +591,6 @@ Older folders	Ældre mapper
 On	På
 On its own	Af sig selv
 On the portal	På portalen
-On the portal for	På portalen til
 On the portal in {}: read-only	På portalen i {}: skrivebeskyttet
 On the wheel	På hjulet
 On the wheel: {}	På hjulet: {}
@@ -613,7 +602,6 @@ Open logs folder	Åbn logmappen
 Open the Toy Box	Åbn Toy Box
 Open the folder	Åbn mappen
 Opening the disc image	Åbner diskaftrykket
-Opens a new issue on GitHub	Opretter et nyt issue på GitHub
 Opens the Toy Box when the game asks for a figure.	Åbner Toy Box, når spillet beder om en figur.
 Or drop your .iso on this window. It stays on this computer.	Eller træk din .iso ind på dette vindue. Den bliver på denne computer.
 Original resolution	Oprindelig opløsning
@@ -699,7 +687,6 @@ Repair builds the game again from your disc.	Reparation bygger spillet igen fra 
 Repair downloads the game tools again.	Reparation henter spilværktøjerne igen.
 Repair needs the disc of {}	Reparation kræver disken til {}
 Repair the copy	Reparér kopien
-Replaces the game's textures with your pack.	Erstatter spillets teksturer med din pakke.
 Report	Rapportér
 Report a bug	Rapportér en fejl
 Report a problem	Rapportér et problem
@@ -787,7 +774,6 @@ Stopping keeps the files already copied.	Hvis du stopper, beholdes de filer, der
 Stopping...	Stopper...
 Strong	Kraftig
 SuperChargers	SuperChargers
-Support	Support
 Swap Force bottoms	Swap Force-bunde
 Swap Force tops	Swap Force-toppe
 Swapper	Swapper
@@ -800,7 +786,6 @@ Test	Test
 Test the portal	Test portalen
 Testing...	Tester...
 Texture filtering	Teksturfiltrering
-Custom packs folder	Mappe til egne pakker
 That's a folder: choose the disc image (.iso).	Det er en mappe: Vælg diskaftrykket (.iso).
 The 3D scene at the console's size.	3D-scenen i konsollens størrelse.
 The HD textures stopped before they were made.	HD-teksturerne stoppede, før de blev lavet.
@@ -876,7 +861,6 @@ Total	I alt
 Touchpad	Touchpad
 Toy	Legetøj
 Toy Box	Toy Box
-Toy Box keys	Toy Box-taster
 Toy type {}	Legetøjstype {}
 Translating the game code	Oversætter spilkoden
 Translating the shaders	Oversætter shaderne
@@ -1123,7 +1107,6 @@ Real figure · on the portal	Rigtig figur · på portalen
 Start a game first	Start et spil først
 The Toy Box in its own window, to keep beside the game	Toy Box i sit eget vindue, ved siden af spillet
 The other seats: in the Toy Box window	De andre pladser: i Toy Box-vinduet
-The Toy Box window opens each time you play	Toy Box-vinduet åbner hver gang du spiller
 The game cannot read this figure there	Spillet kan ikke læse denne figur der
 The game did not find this figure	Spillet fandt ikke denne figur
 The game has no virtual portal now	Spillet har ingen virtuel portal nu
@@ -1209,9 +1192,6 @@ The disc image of {} is damaged	Diskaftrykket for {} er beskadiget
 Reset to defaults	Nulstil til standard
 Hold to reset every key of this game.	Hold nede for at nulstille alle tasterne i dette spil.
 Hold to reset every button of this game.	Hold nede for at nulstille alle knapperne i dette spil.
-Use the global setting	Brug den globale indstilling
-Use the default	Brug standarden
-Dimmed values follow Launcher settings.	Nedtonede værdier følger Launcher-indstillinger.
 Games use these unless their own settings change them.	Spillene bruger disse, medmindre deres egne indstillinger ændrer dem.
 Buttons	Knapper
 Stats / Info	Statistik / Info
@@ -1268,3 +1248,24 @@ Swap players?	Byt spillere?
 Swap	Byt
 {} goes on {}, and {} on {}.	{} går til {} og {} til {}.
 Players swapped	Spillerne byttede plads
+Search {} figure	Søg i {} figur
+Search {} figures	Søg i {} figurer
+Back to the common setting	Tilbage til den fælles indstilling
+A dot marks what was changed for this game.	En prik markerer det, der er ændret for dette spil.
+Sound and language	Lyd og sprog
+Repair or uninstall	Reparer eller afinstaller
+Get started	Kom i gang
+Choose a disc	Vælg en disk
+Drop an .iso here, or choose it.	Træk en .iso hertil, eller vælg den.
+1. Choose a disc   2. Install   3. Play	1. Vælg en disk   2. Installér   3. Spil
+Save the report	Gem rapporten
+Open GitHub	Åbn GitHub
+Anonymous: your names are removed.	Anonymt: dine navne fjernes.
+Attach the saved report to the issue.	Vedhæft den gemte rapport til issuet.
+See what the report contains	Se, hvad rapporten indeholder
+General	Generelt
+Help	Hjælp
+Keys for all games	Taster til alle spil
+Toy Box shortcuts	Genveje til Toy Box
+Manage profiles...	Administrer profiler...
+Use the default	Brug standarden

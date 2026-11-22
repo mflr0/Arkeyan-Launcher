@@ -446,7 +446,7 @@ namespace launcher_ui
                 app.m_tab = SettingsTab(i);
                 Measure(app, ("settings_" + std::to_string(i)).c_str());
             }
-            for (int i = 0; i < 8; ++i)
+            for (int i = 0; i < 4; ++i)
             {
                 app.GoTo(Page::GameSettings);
                 app.m_gameTab = GameTab(i);

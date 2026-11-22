@@ -210,11 +210,8 @@ namespace launcher_ui
                 OpenProfileEditor({});
             if (ui::MenuItem(Tr("Edit my profile"), { ui::Icon::None }))
                 OpenProfileEditor(m_profiles.active);
-            if (ui::MenuItem(Tr("Manage profiles"), { ui::Icon::Gear }))
-            {
-                GoTo(Page::Settings);
-                m_tab = SettingsTab::Profiles;
-            }
+            if (ui::MenuItem(Tr("Manage profiles..."), { ui::Icon::Gear }))
+                m_profilesOpen = true;
             ui::EndMenu();
         }
     }
@@ -383,8 +380,10 @@ namespace launcher_ui
         ImGui::EndGroup();
         ImGui::SetCursorScreenPos(ImVec2(at.x, std::max(ImGui::GetCursorScreenPos().y, at.y + big + 8) + ui::space::M));
         const bool named = !preview.name.empty();
-        const ui::ModalResult result = ui::ModalActions(
-            &open, named ? (existing != nullptr ? Tr("Save") : Tr("Create the profile")) : nullptr, Tr("Cancel"));
+        const char* confirm = existing != nullptr ? Tr("Save") : Tr("Create the profile");
+        if (m_testPadWalk)
+            m_drawn["profile-confirm"] = confirm != nullptr ? "shown" : "hidden";
+        const ui::ModalResult result = ui::ModalActions(&open, confirm, Tr("Cancel"), ui::ModalKind::Normal, named);
         ui::EndModal();
         if (result == ui::ModalResult::Confirm && named)
         {
@@ -416,11 +415,17 @@ namespace launcher_ui
         editor.open = open && result == ui::ModalResult::None;
     }
 
-    void App::DrawProfilesTab()
+    void App::DrawProfiles()
     {
+        if (!ui::BeginModal("##profilesdialog", Tr("Profiles"), &m_profilesOpen, ui::ModalSize::Medium))
+        {
+            DrawProfileEditor(); // opened by itself, from the profile menu
+            return;
+        }
         // Every profile: its picture, its pseudo, its last game; Edit, and Remove (never the last one, never while a game runs).
         const bool running = !m_session.Running().empty();
-        ui::SectionHeader(Tr("Profiles"), Tr("Each has its own Toy Box, saves, keys and achievements."), false);
+        ui::Text(ui::TextStyle::Caption, Tr("Each has its own Toy Box, saves, keys and achievements."), ui::color::Dim);
+        ImGui::Dummy(ImVec2(0, ui::space::XS));
         {
             for (const profiles::Profile& profile : m_profiles.profiles)
             {
@@ -479,10 +484,15 @@ namespace launcher_ui
             if (!open || result != ui::ModalResult::None)
                 m_profileToRemove.clear();
         }
+        DrawProfileEditor(); // inside this dialog, so that B returns to it
+        ui::ModalActions(&m_profilesOpen, nullptr, Tr("Close"));
+        ui::EndModal();
+        if (!m_profilesOpen)
+            m_profileToRemove.clear();
     }
 
     // SKY_LAUNCHER_TEST_PROFILES (with SKY_LAUNCHER_SHOTS, scratch data): a second profile made, the sidebar, the profile menu,
-    // the new profile editor, the switch to the second profile, and Settings > Profiles.
+    // the new profile editor, the switch to the second profile, and the profiles dialog.
     void App::TestProfilesScript(uint64_t now)
     {
         switch (m_testStep)
@@ -511,9 +521,8 @@ namespace launcher_ui
             m_testShot = "profiles-04-switched";
             break;
         case 4:
-            m_page = Page::Settings;
-            m_tab = SettingsTab::Profiles;
-            m_testShot = "profiles-05-settings";
+            m_profilesOpen = true;
+            m_testShot = "profiles-05-manage";
             break;
         default: m_running = false; return;
         }

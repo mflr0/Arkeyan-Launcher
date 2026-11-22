@@ -75,7 +75,6 @@ Anisotropic 16x	Anisotrooppinen 16x
 Anisotropic 2x	Anisotrooppinen 2x
 Anisotropic 4x	Anisotrooppinen 4x
 Anisotropic 8x	Anisotrooppinen 8x
-Anonymous: your names are removed. Save it, then add it to a GitHub issue.	Anonyymi: nimesi poistetaan. Tallenna raportti ja liitä se GitHub-issueen.
 Appears once the game's disc is checked.	Näkyy, kun pelin levy on tarkistettu.
 Apr	huhti
 Arkeyan Launcher can't remove itself from here: delete it by hand.	Arkeyan Launcher ei voi poistaa itseään täältä: poista se käsin.
@@ -292,7 +291,6 @@ Drag Arkeyan Launcher to Applications, replacing the old one.	Vedä Arkeyan Laun
 Drift (vehicle)	Drift (ajoneuvo)
 Drop figure files or a folder on the window.	Pudota hahmotiedostot tai kansio ikkunaan.
 Drop to 30 FPS when needed	Laske 30 FPS:ään tarvittaessa
-Dump textures	Vie tekstuurit
 Duplicate	Monista
 Duplicated: 	Monistettu: 
 Each has its own Toy Box, saves, keys and achievements.	Jokaisella on oma Toy Box, tallennukset, näppäimet ja saavutukset.
@@ -341,7 +339,6 @@ Finishing	Viimeistellään
 Fire	Tuli
 Flocked	Samettinen
 Folders	Kansiot
-For pack makers: saves the textures as DDS files.	Pakettien tekijöille: tallentaa tekstuurit DDS-tiedostoina.
 For {}	Pelille {}
 Forward side button	Etusivupainike
 Found	Löytyi
@@ -378,7 +375,6 @@ Width	Leveys
 Height	Korkeus
 {} or more	{} tai enemmän
 Game	Peli
-Game art comes from your own disc.	Pelin grafiikka tulee omalta levyltäsi.
 Game data	Pelin tiedot
 Game data copies	Pelitietojen kopiot
 Game data damaged	Pelin tiedot vioittuneet
@@ -407,7 +403,6 @@ GitHub says: {}	GitHub sanoo: {}
 Glow in the Dark	Glow in the Dark
 Gold	Kulta
 Greek	kreikka
-Custom texture packs	Omat tekstuuripaketit
 Use HD textures	Käytä HD-tekstuureja
 HD textures ready	HD-tekstuurit valmiit
 HD textures removed	HD-tekstuurit poistettu
@@ -481,7 +476,6 @@ Last played	Viimeksi pelattu
 Last played: {}	Viimeksi pelattu: {}
 Later	Myöhemmin
 Later games	Myöhemmät pelit
-Launcher	Launcher
 Launcher settings	Launcher-asetukset
 Left	Vasen
 Left Alt	Vasen Alt
@@ -492,7 +486,6 @@ Left click: attack 1. Right click: attack 2. The game keeps the pointer.	Vasen k
 Legendary	Legendaarinen
 Level in {}	Taso pelissä {}
 Level {}	Taso {}
-Library	Kirjasto
 Licenses	Lisenssit
 Life	Elo
 Light	Valo
@@ -513,7 +506,6 @@ Magic item	Esine
 Making the HD textures	Tehdään HD-tekstuureja
 Making the HD textures. You can keep using the launcher; the game waits.	Tehdään HD-tekstuureja. Voit jatkaa käynnistimen käyttöä; peli odottaa.
 Manage	Hallitse
-Manage profiles	Hallitse profiileja
 Mar	maalis
 Mark as not in use	Merkitse vapaaksi
 Mark as not in use · {}	Merkitse vapaaksi · {}
@@ -540,7 +532,6 @@ My Team	Oma tiimi
 Name	Nimi
 Name (optional)	Nimi (valinnainen)
 Name this toy	Nimeä tämä lelu
-Name, element, game, level...	Nimi, elementti, peli, taso...
 Named: shown at the next start	Nimetty: näkyy seuraavassa käynnistyksessä
 Native PC ports	Natiivit PC-portit
 Native PC ports of Skylanders. No game code or art: it comes from your disc.	Skylandersin natiivit PC-portit. Ei pelikoodia eikä grafiikkaa: ne tulevat levyltäsi.
@@ -584,7 +575,6 @@ Not enough space: {} needed, {} free.	Tilaa ei ole tarpeeksi: tarvitaan {}, vapa
 Not for this game	Ei tälle pelille
 Not for {}	Ei pelille {}
 Not in the catalog. Name one to show it.	Ei luettelossa. Nimeä se, niin se näkyy.
-Not installed yet	Ei vielä asennettu
 Not needed: the game plays from its copied data.	Ei tarvita: peli toimii kopioiduilla tiedoillaan.
 Not now	Ei nyt
 Not played yet	Ei vielä pelattu
@@ -602,7 +592,6 @@ Older folders	Vanhemmat kansiot
 On	Päällä
 On its own	Omillaan
 On the portal	Portaalissa
-On the portal for	Portaalissa pelille
 On the portal in {}: read-only	Portaalissa pelissä {}: vain luku
 On the wheel	Pyörässä
 On the wheel: {}	Pyörässä: {}
@@ -614,7 +603,6 @@ Open logs folder	Avaa lokikansio
 Open the Toy Box	Avaa Toy Box
 Open the folder	Avaa kansio
 Opening the disc image	Avataan levykuvaa
-Opens a new issue on GitHub	Avaa uuden issuen GitHubissa
 Opens the Toy Box when the game asks for a figure.	Avaa Toy Boxin, kun peli pyytää hahmoa.
 Or drop your .iso on this window. It stays on this computer.	Tai pudota .iso-tiedostosi tähän ikkunaan. Se pysyy tällä tietokoneella.
 Original resolution	Alkuperäinen resoluutio
@@ -700,7 +688,6 @@ Repair builds the game again from your disc.	Korjaus rakentaa pelin uudelleen le
 Repair downloads the game tools again.	Korjaus lataa pelityökalut uudelleen.
 Repair needs the disc of {}	Korjaus tarvitsee pelin {} levyn
 Repair the copy	Korjaa kopio
-Replaces the game's textures with your pack.	Korvaa pelin tekstuurit omalla paketillasi.
 Report	Raportoi
 Report a bug	Ilmoita virheestä
 Report a problem	Ilmoita ongelmasta
@@ -788,7 +775,6 @@ Stopping keeps the files already copied.	Pysäyttäminen säilyttää jo kopioid
 Stopping...	Pysäytetään...
 Strong	Voimakas
 SuperChargers	SuperChargers
-Support	Tuki
 Swap Force bottoms	Swap Force -alaosat
 Swap Force tops	Swap Force -yläosat
 Swapper	Swapper
@@ -801,7 +787,6 @@ Test	Testaa
 Test the portal	Testaa portaali
 Testing...	Testataan...
 Texture filtering	Tekstuurien suodatus
-Custom packs folder	Omien pakettien kansio
 That's a folder: choose the disc image (.iso).	Tämä on kansio: valitse levykuva (.iso).
 The 3D scene at the console's size.	3D-kuva konsolin koossa.
 The HD textures stopped before they were made.	HD-tekstuurit pysähtyivät ennen valmistumista.
@@ -877,7 +862,6 @@ Total	Yhteensä
 Touchpad	Kosketuslevy
 Toy	Lelu
 Toy Box	Toy Box
-Toy Box keys	Toy Boxin näppäimet
 Toy type {}	Lelun tyyppi {}
 Translating the game code	Käännetään pelikoodia
 Translating the shaders	Käännetään varjostimia
@@ -1124,7 +1108,6 @@ Real figure · on the portal	Oikea hahmo · portaalissa
 Start a game first	Käynnistä ensin peli
 The Toy Box in its own window, to keep beside the game	Toy Box omassa ikkunassaan, pelin vieressä
 The other seats: in the Toy Box window	Muut paikat: Toy Box -ikkunassa
-The Toy Box window opens each time you play	Toy Box -ikkuna avautuu aina kun pelaat
 The game cannot read this figure there	Peli ei voi lukea tätä hahmoa siinä
 The game did not find this figure	Peli ei löytänyt tätä hahmoa
 The game has no virtual portal now	Pelillä ei ole nyt virtuaaliportaalia
@@ -1210,9 +1193,6 @@ The disc image of {} is damaged	Pelin {} levykuva on vioittunut
 Reset to defaults	Palauta oletukset
 Hold to reset every key of this game.	Pidä pohjassa nollataksesi tämän pelin kaikki näppäimet.
 Hold to reset every button of this game.	Pidä pohjassa nollataksesi tämän pelin kaikki painikkeet.
-Use the global setting	Käytä yleistä asetusta
-Use the default	Käytä oletusta
-Dimmed values follow Launcher settings.	Himmennetyt arvot seuraavat Launcher-asetuksia.
 Games use these unless their own settings change them.	Pelit käyttävät näitä, elleivät niiden omat asetukset muuta niitä.
 Buttons	Painikkeet
 Stats / Info	Tilastot / Tiedot
@@ -1269,3 +1249,24 @@ Swap players?	Vaihdetaanko pelaajat?
 Swap	Vaihda
 {} goes on {}, and {} on {}.	{} menee paikalle {} ja {} paikalle {}.
 Players swapped	Pelaajat vaihdettu
+Search {} figure	Hae {} hahmosta
+Search {} figures	Hae {} hahmosta
+Back to the common setting	Palaa yhteiseen asetukseen
+A dot marks what was changed for this game.	Piste merkitsee tätä peliä varten muutetut asetukset.
+Sound and language	Ääni ja kieli
+Repair or uninstall	Korjaa tai poista asennus
+Get started	Aloita
+Choose a disc	Valitse levy
+Drop an .iso here, or choose it.	Pudota .iso tähän tai valitse se.
+1. Choose a disc   2. Install   3. Play	1. Valitse levy   2. Asenna   3. Pelaa
+Save the report	Tallenna raportti
+Open GitHub	Avaa GitHub
+Anonymous: your names are removed.	Nimetön: nimesi poistetaan.
+Attach the saved report to the issue.	Liitä tallennettu raportti issueen.
+See what the report contains	Katso, mitä raportti sisältää
+General	Yleiset
+Help	Ohje
+Keys for all games	Kaikkien pelien näppäimet
+Toy Box shortcuts	Toy Boxin pikanäppäimet
+Manage profiles...	Hallitse profiileja...
+Use the default	Käytä oletusta

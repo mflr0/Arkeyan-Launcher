@@ -2,6 +2,7 @@
 // (issue #2). Report writes the report file and opens a GitHub issue to attach it to; Copy log copies the game's log and keeps
 // the dialog; Close. A game started from its shortcut without the window keeps the system message box (ShowGameStopped).
 #include "launcher/game_run.h"
+#include "launcher/report.h"
 #include "launcher/problem_report.h"
 #include "launcher/ui/launcher_app.h"
 #include "launcher/ui/launcher_ui.h"
@@ -38,7 +39,8 @@ namespace launcher_ui
             ImGui::SetCursorScreenPos(ImVec2(ImGui::GetWindowPos().x + ImGui::GetCursorStartPos().x, actionsY));
             if (ui::Button(Tr("Copy log"), { .kind = ui::ButtonKind::Ghost }))
             {
-                SDL_SetClipboardText(GameLogText().c_str());
+                SDL_SetClipboardText(
+                    launcher_report::Anonymous(GameLogText(), launcher_report::CurrentIdentity("")).c_str());
                 Toast(Tr("Log copied"), ui::ToastKind::Success);
             }
             ImGui::SetCursorPosY(afterY);

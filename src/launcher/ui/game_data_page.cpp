@@ -1,4 +1,4 @@
-// "Copy files" in the window (docs/launcher_ui.md "Game data"): the game settings' Disc tab section, where a game's disc
+// "Copy files" in the window (docs/launcher_ui.md "Game data"): the game settings' Manage > Disc section, where a game's disc
 // comes from at start (its copy or the remembered image), and the wrong-disc button. The files and the checks are
 // game_copy.h / shared/collection/game_data.h; the script at the end (SKY_LAUNCHER_TEST_COPY) drives all of it in an offscreen window.
 #include "launcher/ui/launcher_app.h"
@@ -322,7 +322,7 @@ namespace launcher_ui
         ContinueInstall();
     }
 
-    // The Disc tab's pill: the check's progress, then what it found.
+    // The Disc section's pill: the check's progress, then what it found.
     void App::DrawDiscCheck()
     {
         using disccheck::Verdict;
@@ -386,8 +386,8 @@ namespace launcher_ui
             {
                 SelectGame(*game);
                 GoTo(Page::GameSettings);
-                m_gameTab = GameTab::Disc;
-                Browse(); // the file dialog; the Disc tab shows the new image's check
+                ShowGameTab(GameTab::Manage, GameSection::Disc);
+                Browse(); // the file dialog; the Disc section shows the new image's check
             }
             ui::EndModal();
         }
@@ -420,9 +420,9 @@ namespace launcher_ui
             else
                 SDL_UnsetEnvironmentVariable(SDL_GetEnvironment(), name);
         };
-        auto shoot = [&](const char* name, GameTab tab, uint64_t wait = 400) {
+        auto shoot = [&](const char* name, GameSection section, uint64_t wait = 400) {
             m_page = Page::GameSettings;
-            m_gameTab = tab;
+            ShowGameTab(GameTab::Manage, section);
             m_testShot = fmt::format("{:02}-{}", m_testStep, name);
             m_testAt = now + wait;
         };
@@ -460,7 +460,7 @@ namespace launcher_ui
             m_testStep++;
             break;
         case 1:
-            shoot("wrong-disc", GameTab::Disc);
+            shoot("wrong-disc", GameSection::Disc);
             m_page = Page::Play;
             break;
         case 2: // the button: SSA gets the disc, Giants forgets it
@@ -507,7 +507,7 @@ namespace launcher_ui
                 "interrupted: partial, the disc image still plays");
             m_testStep++;
             break;
-        case 7: shoot("interrupted", GameTab::Disc); break;
+        case 7: shoot("interrupted", GameSection::Disc); break;
         case 8: // carried on
             StartCopy();
             m_testStep++;
@@ -522,7 +522,7 @@ namespace launcher_ui
                 "verified from the copy");
             m_testStep++;
             break;
-        case 10: shoot("copied", GameTab::Disc); break;
+        case 10: shoot("copied", GameSection::Disc); break;
         case 11: // no disc image at all (a launcher start with the image gone): still ready, from the copy
             m_config["ssa"].erase("iso");
             a.started = false;
@@ -555,7 +555,7 @@ namespace launcher_ui
             m_testStep++;
             break;
         case 14:
-            shoot("play-from-copy", GameTab::Disc);
+            shoot("play-from-copy", GameSection::Disc);
             m_page = Page::Play;
             break;
         case 15: // a file goes missing: PLAY notices, and with no disc image the state says so
@@ -569,7 +569,7 @@ namespace launcher_ui
             m_testStep++;
             break;
         case 16:
-            shoot("damaged-no-disc", GameTab::Disc);
+            shoot("damaged-no-disc", GameSection::Disc);
             m_page = Page::Play;
             break;
         case 17: // the disc image is chosen again: it is used, and the copy says what is wrong
@@ -586,7 +586,7 @@ namespace launcher_ui
                 "falls back to the disc image");
             m_testStep++;
             break;
-        case 19: shoot("damaged-fallback", GameTab::Disc); break;
+        case 19: shoot("damaged-fallback", GameSection::Disc); break;
         case 20: // repaired
             StartCopy();
             m_testStep++;
