@@ -1353,8 +1353,6 @@ Your game versions differ	Peliversionne eroavat
 Your games don't match	Pelinne eivät täsmää
 Your launchers aren't the same version	Käynnistysohjelmienne versiot eroavat
 Your router lets friends in from anywhere.	Reitittimesi päästää ystävät sisään mistä tahansa.
-fair	kohtalainen
-good	hyvä
 slow	hidas
 Port	Portti
 Start	Aloita
@@ -1421,3 +1419,8 @@ Your game stopped during the session. Play together again from where you saved.	
 {}'s PC played this game at about {} FPS: the session will go at that pace.	Pelaajan {} PC pyöritti peliä noin {} FPS:n nopeudella: istunto etenee sillä tahdilla.
 This connection is very slow: the game will be slow to answer your buttons.	Tämä yhteys on hyvin hidas: peli vastaa painikkeisiisi hitaasti.
 Your PC played this game at about {} FPS: the session will go at that pace.	PC:si pyöritti peliä noin {} FPS:n nopeudella: istunto etenee sillä tahdilla.
+perfect	täydellinen
+playable	pelattava
+very slow	hyvin hidas
+Testing the connection with your friend...	Testataan yhteyttä ystävääsi...
+The round trip varies by {} ms: the input delay grows to absorb it.	Vasteaika vaihtelee {} ms: ohjausviive kasvaa tasoittaakseen sen.

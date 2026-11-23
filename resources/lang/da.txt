@@ -1352,8 +1352,6 @@ Your game versions differ	Jeres spilversioner er forskellige
 Your games don't match	Jeres spil passer ikke sammen
 Your launchers aren't the same version	Jeres startprogrammer har forskellige versioner
 Your router lets friends in from anywhere.	Din router lukker venner ind, uanset hvor de er.
-fair	rimelig
-good	god
 slow	langsom
 Port	Port
 Start	Start
@@ -1420,3 +1418,8 @@ Your game stopped during the session. Play together again from where you saved.	
 {}'s PC played this game at about {} FPS: the session will go at that pace.	{}s pc kørte spillet med omkring {} FPS: sessionen går i det tempo.
 This connection is very slow: the game will be slow to answer your buttons.	Denne forbindelse er meget langsom: spillet svarer langsomt på dine knapper.
 Your PC played this game at about {} FPS: the session will go at that pace.	Din pc kørte spillet med omkring {} FPS: sessionen går i det tempo.
+perfect	perfekt
+playable	spilbar
+very slow	meget langsom
+Testing the connection with your friend...	Tester forbindelsen til din ven...
+The round trip varies by {} ms: the input delay grows to absorb it.	Svartiden svinger med {} ms: kontrolforsinkelsen vokser for at udjævne det.

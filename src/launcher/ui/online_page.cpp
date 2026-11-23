@@ -1338,18 +1338,33 @@ namespace launcher_ui
             ui::SectionHeader(
                 status.host ? Tr("Your room") : Tr("Your friend's room"), line.empty() ? nullptr : line.c_str(), false);
             DrawRoomPlayers(status);
-            if (status.haveRemote && status.rttMs >= 0)
+            if (status.haveRemote && status.rttMs >= 0 && !status.testDone)
+                ui::Text(
+                    ui::TextStyle::Body, Tr("Testing the connection with your friend..."), ui::color::InkSoft, width);
+            else if (status.haveRemote && status.rttMs >= 0)
             {
+                // The connection test's verdict once it is over, the live round trip after.
+                const double measured = status.testRttMs >= 0 ? status.testRttMs : status.rttMs;
+                const int verdict = ConnectionVerdict(measured, status.testJitterMs);
                 const int ms = int(std::lround(status.rttMs));
-                const char* quality = ms < 60 ? Tr("good") : ms < 150 ? Tr("fair") : Tr("slow");
+                const char* quality = verdict == 0   ? Tr("perfect")
+                                      : verdict == 1 ? Tr("playable")
+                                      : verdict == 2 ? Tr("slow")
+                                                     : Tr("very slow");
                 const std::string timing =
                     status.inputDelay == 1
                         ? Tf("Connection: {} · {} ms · input delay 1 frame", quality, ms)
                         : Tf("Connection: {} · {} ms · input delay {} frames", quality, ms, status.inputDelay);
                 ui::Text(
-                    ui::TextStyle::Body, timing.c_str(), ms < 150 ? ui::color::InkSoft : ui::color::Warning, width);
+                    ui::TextStyle::Body, timing.c_str(), verdict <= 1 ? ui::color::InkSoft : ui::color::Warning, width);
+                if (status.testJitterMs >= 30)
+                {
+                    const std::string jitter = Tf("The round trip varies by {} ms: the input delay grows to absorb it.",
+                        int(std::lround(status.testJitterMs)));
+                    ui::Text(ui::TextStyle::Body, jitter.c_str(), ui::color::Warning, width);
+                }
                 // Past 250 ms the game feels slow to answer: said plainly, the start left to the players.
-                if (ms > 250)
+                if (verdict == 3)
                     ui::Text(ui::TextStyle::Body,
                         Tr("This connection is very slow: the game will be slow to answer your buttons."),
                         ui::color::Warning, width);

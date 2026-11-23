@@ -183,6 +183,20 @@ namespace online
         return "";
     }
 
+    void Lobby::FinishTest()
+    {
+        m_status.testDone = true;
+        m_status.testSamples = uint32_t(m_testSamples.size());
+        if (m_testSamples.empty())
+            return;
+        std::vector<double> sorted = m_testSamples;
+        std::sort(sorted.begin(), sorted.end());
+        m_status.testRttMs = sorted[sorted.size() / 2];
+        m_status.testJitterMs = sorted[std::min(sorted.size() - 1, sorted.size() * 9 / 10)] - m_status.testRttMs;
+        SDL_Log("[online] connection test: %zu round trips, median %.0f ms, jitter %.0f ms", sorted.size(),
+            m_status.testRttMs, m_status.testJitterMs);
+    }
+
     void Lobby::End(Error error, Mismatch mismatch)
     {
         if (error != Error::None)
@@ -367,6 +381,8 @@ namespace online
         m_step = Step::Room;
         m_status.state = State::InRoom;
         m_nextPing = Now();
+        m_testStart = Now();
+        m_testSamples.clear();
         SDL_Log("[online] %s in the room", m_status.host ? "guest" : "host");
         SendRoomOpening();
     }
@@ -429,6 +445,8 @@ namespace online
             {
                 const double sample = double(Now() - stamp);
                 m_status.rttMs = m_status.rttMs < 0 ? sample : 0.75 * m_status.rttMs + 0.25 * sample;
+                if (!m_status.testDone && m_testSamples.size() < 1000)
+                    m_testSamples.push_back(sample);
                 const uint8_t fps = m_status.host ? m_hostOptions.settings.fpsLimit
                                                   : (m_status.haveSettings ? m_status.settings.fpsLimit : 30);
                 m_status.inputDelay = InputDelayFor(m_status.rttMs, 1000.0 / fps);
@@ -632,7 +650,10 @@ namespace online
             Writer w;
             w.U64(now);
             Send(MessageType::Ping, w.Bytes());
-            m_nextPing = now + PingEveryMs;
+            const bool testing = !m_status.testDone && now - m_testStart < TestMs;
+            m_nextPing = now + (testing ? TestPingEveryMs : PingEveryMs);
+            if (!testing && !m_status.testDone)
+                FinishTest();
         }
         // Read the clock again: the bytes just read set m_lastHeard after `now`, and the difference is unsigned.
         if (Now() - m_lastHeard > SilenceTimeoutMs)

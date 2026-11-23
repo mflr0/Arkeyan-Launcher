@@ -626,6 +626,19 @@ namespace
     void RoomChecks()
     {
         {
+            // The connection test: ten pings a second for ten seconds once both are in, then the median and jitter.
+            Room room;
+            ONLINE_EXPECT(room.Open());
+            room.Join(room.guest);
+            ONLINE_EXPECT(room.Until(
+                [&] { return room.host.Get().state == State::InRoom && room.guest.Get().state == State::InRoom; }));
+            ONLINE_EXPECT(!room.host.Get().testDone);
+            ONLINE_EXPECT(room.Until([&] { return room.host.Get().testDone && room.guest.Get().testDone; }));
+            ONLINE_EXPECT(room.host.Get().testSamples >= 50 && room.host.Get().testRttMs >= 0);
+            ONLINE_EXPECT(ConnectionVerdict(40, 5) == 0 && ConnectionVerdict(120, 20) == 1 &&
+                          ConnectionVerdict(200, 30) == 2 && ConnectionVerdict(300, 0) == 3);
+        }
+        {
             // The clock moves between the start of a poll and the bytes it reads: not a silence.
             Room room;
             room.ticking = true;

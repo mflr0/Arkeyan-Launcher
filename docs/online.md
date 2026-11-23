@@ -161,6 +161,14 @@ The public addresses come from one STUN binding request (RFC 5389, `src/launcher
 and over IPv6, to `stun.l.google.com:19302`, else `stun.cloudflare.com:3478`; only the mapped address of the answer is
 read. Without an answer the code holds the computer's local address.
 
+## The connection test
+
+For the room's first ten seconds with both players in, each side pings ten times a second; then the room shows a
+verdict from the median round trip plus its jitter (the 90th percentile above the median): perfect under 80 ms,
+playable under 170, slow under 270, very slow beyond (`ConnectionVerdict`), with the live round trip and input delay
+after it, and a line when the jitter reaches 30 ms. The log keeps `[online] connection test: <n> round trips, median
+<ms>, jitter <ms>`. During play the game's own delay follows the network.
+
 ## A slower PC, a slow connection
 
 Each player's card carries the PC's pace in this game: the median of the last twenty `[perf]` lines of the newest game

@@ -1352,8 +1352,6 @@ Your game versions differ	As vossas versões do jogo diferem
 Your games don't match	Os vossos jogos não correspondem
 Your launchers aren't the same version	Os vossos launchers têm versões diferentes
 Your router lets friends in from anywhere.	O router deixa entrar amigos de qualquer lugar.
-fair	razoável
-good	boa
 slow	lenta
 Port	Porta
 Start	Iniciar
@@ -1420,3 +1418,8 @@ Your game stopped during the session. Play together again from where you saved.	
 {}'s PC played this game at about {} FPS: the session will go at that pace.	O PC de {} correu este jogo a cerca de {} FPS: a sessão vai a esse ritmo.
 This connection is very slow: the game will be slow to answer your buttons.	Esta ligação é muito lenta: o jogo vai responder devagar aos teus botões.
 Your PC played this game at about {} FPS: the session will go at that pace.	O teu PC correu este jogo a cerca de {} FPS: a sessão vai a esse ritmo.
+perfect	perfeita
+playable	jogável
+very slow	muito lenta
+Testing the connection with your friend...	A testar a ligação com o teu amigo...
+The round trip varies by {} ms: the input delay grows to absorb it.	O tempo de ida e volta varia {} ms: o atraso dos comandos aumenta para o absorver.

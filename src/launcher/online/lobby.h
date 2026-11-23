@@ -84,6 +84,11 @@ namespace online
         Player remote;
         bool localReady = false, remoteReady = false;
         double rttMs = -1; // -1 until the first pong
+        // The connection test of the room's first ten seconds with both players in (ten pings a second): the median
+        // round trip, its jitter (the 90th percentile above the median) and whether the test is over.
+        double testRttMs = -1, testJitterMs = 0;
+        uint32_t testSamples = 0;
+        bool testDone = false;
         uint8_t inputDelay = 2;
         // The guest's copy of the host's settings and save (the host's own are its options).
         bool haveSettings = false;
@@ -103,6 +108,7 @@ namespace online
         static constexpr uint64_t SilenceTimeoutMs = 15000; // no byte at all from the other side
         static constexpr uint64_t PingEveryMs = 1000;
         static constexpr uint64_t RttLogEveryMs = 10000;
+        static constexpr uint64_t TestMs = 10000, TestPingEveryMs = 100;
 
         explicit Lobby(Clock clock = {});
         ~Lobby();
@@ -164,7 +170,9 @@ namespace online
         bool m_haveKeys = false;
         uint32_t m_sendSequence = 0, m_receiveSequence = 0;
         Step m_step = Step::AwaitHello;
-        uint64_t m_startedAt = 0, m_lastHeard = 0, m_nextPing = 0, m_nextRttLog = 0;
+        uint64_t m_startedAt = 0, m_lastHeard = 0, m_nextPing = 0, m_nextRttLog = 0, m_testStart = 0;
+        std::vector<double> m_testSamples;
+        void FinishTest();
         bool m_closeAfterFlush = false;
     };
 

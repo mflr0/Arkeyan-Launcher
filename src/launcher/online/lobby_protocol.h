@@ -223,5 +223,11 @@ namespace online
 
     // Frames needed between input and output at `frameMs` per frame for a round trip of `rttMs`: ceil(rtt / 2 / frame) + 1,
     // from 1 to 8.
+    // The connection test's verdict: 0 perfect, 1 playable, 2 slow, 3 very slow (docs/online.md, "The connection test").
+    inline int ConnectionVerdict(double rttMs, double jitterMs)
+    {
+        const double felt = rttMs + jitterMs;
+        return felt < 80 ? 0 : felt < 170 ? 1 : felt < 270 ? 2 : 3;
+    }
     uint8_t InputDelayFor(double rttMs, double frameMs);
 }

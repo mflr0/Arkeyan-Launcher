@@ -1353,8 +1353,6 @@ Your game versions differ	Era spelversioner skiljer sig
 Your games don't match	Era spel matchar inte
 Your launchers aren't the same version	Era startprogram har olika versioner
 Your router lets friends in from anywhere.	Din router släpper in vänner var de än är.
-fair	hyfsad
-good	bra
 slow	långsam
 Port	Port
 Start	Starta
@@ -1421,3 +1419,8 @@ Your game stopped during the session. Play together again from where you saved.	
 {}'s PC played this game at about {} FPS: the session will go at that pace.	{}s dator körde spelet i ungefär {} FPS: sessionen går i den takten.
 This connection is very slow: the game will be slow to answer your buttons.	Den här anslutningen är mycket långsam: spelet svarar långsamt på dina knappar.
 Your PC played this game at about {} FPS: the session will go at that pace.	Din dator körde spelet i ungefär {} FPS: sessionen går i den takten.
+perfect	perfekt
+playable	spelbar
+very slow	mycket långsam
+Testing the connection with your friend...	Testar anslutningen till din vän...
+The round trip varies by {} ms: the input delay grows to absorb it.	Svarstiden varierar med {} ms: kontrollfördröjningen ökar för att jämna ut det.

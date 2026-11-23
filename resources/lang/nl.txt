@@ -1352,8 +1352,6 @@ Your game versions differ	Jullie spelversies verschillen
 Your games don't match	Jullie spellen komen niet overeen
 Your launchers aren't the same version	Jullie launcherversies verschillen
 Your router lets friends in from anywhere.	Je router laat vrienden van overal binnen.
-fair	redelijk
-good	goed
 slow	traag
 Port	Poort
 Start	Starten
@@ -1420,3 +1418,8 @@ Your game stopped during the session. Play together again from where you saved.	
 {}'s PC played this game at about {} FPS: the session will go at that pace.	De pc van {} speelde dit spel op ongeveer {} FPS: de sessie gaat in dat tempo.
 This connection is very slow: the game will be slow to answer your buttons.	Deze verbinding is erg traag: het spel reageert traag op je knoppen.
 Your PC played this game at about {} FPS: the session will go at that pace.	Je pc speelde dit spel op ongeveer {} FPS: de sessie gaat in dat tempo.
+perfect	perfect
+playable	speelbaar
+very slow	erg traag
+Testing the connection with your friend...	De verbinding met je vriend wordt getest...
+The round trip varies by {} ms: the input delay grows to absorb it.	De reactietijd schommelt {} ms: de invoervertraging groeit om dat op te vangen.
