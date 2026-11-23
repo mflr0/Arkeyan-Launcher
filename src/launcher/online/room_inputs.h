@@ -51,6 +51,18 @@ namespace online
     }
     void WriteGameOnline(LauncherConfig& config, std::string_view game, const GameOnline& online);
 
+    // This PC's pace from a game log's "[perf]" lines (the median of the last twenty): its frame rate, and whether the
+    // GPU held it back (the CPU waited for it a third of a frame or more). Zero fps when the log has none.
+    struct PerfHint
+    {
+        uint8_t fps = 0;
+        bool gpuBound = false;
+    };
+    PerfHint ReadPerfHint(std::string_view log);
+    // The scale an online session starts this game at: one step down from the player's for a PC whose GPU holds it
+    // under 28 FPS, else 0 (the player's own).
+    int SessionScale(const PerfHint& hint, int playerScale);
+
     std::string RoomPlatform();
     Settings RoomSettings(const LauncherConfig& config, std::string_view game);
     RoomInputs ReadRoomInputs(const LauncherConfig& config, const profiles::Profile& profile,

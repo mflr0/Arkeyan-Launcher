@@ -687,6 +687,16 @@ namespace launcher_ui
         plan.save = status.host ? room.inputs.save : status.save;
         plan.localFigureFiles = room.inputs.localFigureFiles;
         std::string error;
+        // A PC whose GPU holds this game under 28 FPS starts the session one scale lower; its settings stay as they are.
+        const online::PerfHint pace{ room.inputs.player.fps, room.inputs.player.gpuBound };
+        const int scale = online::SessionScale(
+            pace, ResolutionScaleOf(SettingGet(m_config, GameVideoSection(room.game), "resolution_scale")));
+        if (scale > 0)
+        {
+            launch.variables.emplace_back("SKY_RESOLUTION_SCALE", std::to_string(scale));
+            SDL_Log("[online] this PC's GPU held the game at %u FPS: the session starts at scale %d",
+                unsigned(pace.fps), scale);
+        }
         if (launch.runtime.empty() ||
             !launcher_files::WriteAtomic(online_page::Root() / "destination.txt",
                 datadir::Text(room.realSaves) + "\n" + room.game + "\n" + status.remote.pseudo + "\n") ||
@@ -1338,6 +1348,24 @@ namespace launcher_ui
                         : Tf("Connection: {} · {} ms · input delay {} frames", quality, ms, status.inputDelay);
                 ui::Text(
                     ui::TextStyle::Body, timing.c_str(), ms < 150 ? ui::color::InkSoft : ui::color::Warning, width);
+                // Past 250 ms the game feels slow to answer: said plainly, the start left to the players.
+                if (ms > 250)
+                    ui::Text(ui::TextStyle::Body,
+                        Tr("This connection is very slow: the game will be slow to answer your buttons."),
+                        ui::color::Warning, width);
+                // Both games go at the slower PC's pace: said when one of them is known to stay under 28 FPS.
+                const Player& mine = room.inputs.player;
+                const Player& theirs = status.remote;
+                if (mine.fps != 0 && theirs.fps != 0 && std::min(mine.fps, theirs.fps) < 28)
+                {
+                    const std::string pace =
+                        mine.fps <= theirs.fps
+                            ? Tf("Your PC played this game at about {} FPS: the session will go at that pace.",
+                                  unsigned(mine.fps))
+                            : Tf("{}'s PC played this game at about {} FPS: the session will go at that pace.",
+                                  theirs.pseudo, unsigned(theirs.fps));
+                    ui::Text(ui::TextStyle::Body, pace.c_str(), ui::color::Warning, width);
+                }
             }
             if (!inputError.empty())
                 DrawOnlineHelp({ Tr("Something needs fixing"), { inputError },

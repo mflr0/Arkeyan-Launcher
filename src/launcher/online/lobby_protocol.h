@@ -73,6 +73,10 @@ namespace online
         uint8_t color = 0;
         std::vector<uint8_t> picture; // PNG, may be empty
         std::vector<Figure> figures;
+        // This PC's pace in this game from its last log (0: unknown), and whether its GPU held it back: the room says
+        // when the session will go at the slower one's pace, and that PC starts the session at a lower scale.
+        uint8_t fps = 0;
+        bool gpuBound = false;
     };
 
     // What the host's game uses and the guest's game must use too (docs/online.md, "Same game on both sides").

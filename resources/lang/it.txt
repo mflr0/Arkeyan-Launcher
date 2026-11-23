@@ -1417,3 +1417,6 @@ With Tailscale or ZeroTier, make a code for this computer's address in Details b
 Wrong room code	Codice stanza errato
 Your friend opens a room and sends you its code.	Il tuo amico apre una stanza e ti invia il codice.
 Your game stopped during the session. Play together again from where you saved.	Il tuo gioco si è fermato durante la sessione. Giocate di nuovo insieme da dove avete salvato.
+{}'s PC played this game at about {} FPS: the session will go at that pace.	Il PC di {} ha fatto girare questo gioco a circa {} FPS: la sessione andrà a quel ritmo.
+This connection is very slow: the game will be slow to answer your buttons.	Questa connessione è molto lenta: il gioco risponderà lentamente ai tuoi tasti.
+Your PC played this game at about {} FPS: the session will go at that pace.	Il tuo PC ha fatto girare questo gioco a circa {} FPS: la sessione andrà a quel ritmo.

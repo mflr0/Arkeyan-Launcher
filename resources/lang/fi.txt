@@ -1418,3 +1418,6 @@ With Tailscale or ZeroTier, make a code for this computer's address in Details b
 Wrong room code	Väärä huonekoodi
 Your friend opens a room and sends you its code.	Ystäväsi avaa huoneen ja lähettää sinulle sen koodin.
 Your game stopped during the session. Play together again from where you saved.	Pelisi pysähtyi istunnon aikana. Pelatkaa taas yhdessä viimeisimmästä tallennuksesta.
+{}'s PC played this game at about {} FPS: the session will go at that pace.	Pelaajan {} PC pyöritti peliä noin {} FPS:n nopeudella: istunto etenee sillä tahdilla.
+This connection is very slow: the game will be slow to answer your buttons.	Tämä yhteys on hyvin hidas: peli vastaa painikkeisiisi hitaasti.
+Your PC played this game at about {} FPS: the session will go at that pace.	PC:si pyöritti peliä noin {} FPS:n nopeudella: istunto etenee sillä tahdilla.

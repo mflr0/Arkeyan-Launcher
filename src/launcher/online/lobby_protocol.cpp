@@ -166,6 +166,8 @@ namespace online
             w.Text(figure.name);
             w.Blob(figure.dump);
         }
+        w.U8(player.fps);
+        w.U8(player.gpuBound ? 1 : 0);
         return std::move(w.Bytes());
     }
 
@@ -192,6 +194,11 @@ namespace online
                 return false;
             player.figures.push_back(std::move(figure));
         }
+        player.fps = r.U8();
+        const uint8_t gpu = r.U8();
+        if (player.fps > 240 || gpu > 1)
+            return false;
+        player.gpuBound = gpu == 1;
         const bool xuidOk = player.xuid.size() == 16 && std::all_of(player.xuid.begin(), player.xuid.end(),
                                                             [](char c) { return std::isxdigit(uint8_t(c)); });
         return r.AtEnd() && xuidOk && !player.pseudo.empty();

@@ -1415,3 +1415,6 @@ With Tailscale or ZeroTier, make a code for this computer's address in Details b
 Wrong room code	Falscher Raumcode
 Your friend opens a room and sends you its code.	Dein Freund öffnet einen Raum und schickt dir seinen Code.
 Your game stopped during the session. Play together again from where you saved.	Dein Spiel wurde während der Sitzung beendet. Spielt ab eurem letzten Speicherstand wieder zusammen.
+{}'s PC played this game at about {} FPS: the session will go at that pace.	{}s PC hat dieses Spiel mit etwa {} FPS gespielt: Die Sitzung läuft in diesem Tempo.
+This connection is very slow: the game will be slow to answer your buttons.	Diese Verbindung ist sehr langsam: Das Spiel reagiert langsam auf deine Tasten.
+Your PC played this game at about {} FPS: the session will go at that pace.	Dein PC hat dieses Spiel mit etwa {} FPS gespielt: Die Sitzung läuft in diesem Tempo.

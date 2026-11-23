@@ -161,6 +161,16 @@ The public addresses come from one STUN binding request (RFC 5389, `src/launcher
 and over IPv6, to `stun.l.google.com:19302`, else `stun.cloudflare.com:3478`; only the mapped address of the answer is
 read. Without an answer the code holds the computer's local address.
 
+## A slower PC, a slow connection
+
+Each player's card carries the PC's pace in this game: the median of the last twenty `[perf]` lines of the newest game
+log when it is this game's (`ReadPerfHint`), and whether the GPU held it back (the CPU waited for it a third of a frame or
+more). When one of the two stays under 28 FPS, the room says the session will go at that pace (both games follow the
+slower one, frame by frame). A PC whose GPU held it under 28 FPS starts the session one resolution scale lower
+(`SKY_RESOLUTION_SCALE`, this run only; its settings are not changed). Past a 250 ms round trip the room says the game
+will be slow to answer; the start stays the players' choice. During play the game's own input delay follows the round
+trip (the forge's netplay page, "Step 6").
+
 ## Play together again
 
 When a session stops, the room is set up again with the same code once the saves and figures are back. The game's

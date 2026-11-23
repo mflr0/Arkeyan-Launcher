@@ -1417,3 +1417,6 @@ With Tailscale or ZeroTier, make a code for this computer's address in Details b
 Wrong room code	Forkert rumkode
 Your friend opens a room and sends you its code.	Din ven åbner et rum og sender dig koden.
 Your game stopped during the session. Play together again from where you saved.	Dit spil stoppede under sessionen. Spil sammen igen fra der, hvor I gemte.
+{}'s PC played this game at about {} FPS: the session will go at that pace.	{}s pc kørte spillet med omkring {} FPS: sessionen går i det tempo.
+This connection is very slow: the game will be slow to answer your buttons.	Denne forbindelse er meget langsom: spillet svarer langsomt på dine knapper.
+Your PC played this game at about {} FPS: the session will go at that pace.	Din pc kørte spillet med omkring {} FPS: sessionen går i det tempo.

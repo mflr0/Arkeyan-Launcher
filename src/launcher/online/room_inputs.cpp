@@ -1,4 +1,6 @@
 #include "launcher/online/room_inputs.h"
+#include <vector>
+#include <cstdio>
 #include "launcher/game_install.h"
 #include "launcher/updater.h"
 #include "launcher/game_run.h"
@@ -135,6 +137,13 @@ namespace online
         inputs.hello.gameVersion = FindInstalledGame(config, xexSha256).gameVersion;
         inputs.hello.platform = RoomPlatform();
         inputs.hello.crossPlatform = ReadGameOnline(config, game.id).crossPlatform;
+        // This PC's pace in this game, from the newest game log when it is this game's.
+        if (const GameLog log = LastGameLog(); log.game == game.id && !log.file.empty())
+        {
+            const PerfHint hint = ReadPerfHint(ReadLogTail(log.file, 64 * 1024));
+            inputs.player.fps = hint.fps;
+            inputs.player.gpuBound = hint.gpuBound;
+        }
         inputs.player.pseudo = profile.name.empty() ? Tr("Player 1") : profile.name;
         inputs.player.xuid = profile.xuid;
         inputs.player.color = uint8_t(std::clamp(profile.color, 0, 9));
@@ -221,5 +230,43 @@ namespace online
         inputs.settings.saveBytes = uint32_t(total);
         inputs.settings.saveFiles = uint16_t(inputs.save.size());
         return inputs;
+    }
+
+    PerfHint ReadPerfHint(std::string_view log)
+    {
+        std::vector<double> fps, frame, gpu;
+        size_t at = 0;
+        while ((at = log.find("[perf] ", at)) != std::string_view::npos)
+        {
+            const size_t end = log.find('\n', at);
+            const std::string line(log.substr(at, end == std::string_view::npos ? std::string_view::npos : end - at));
+            at = end == std::string_view::npos ? log.size() : end;
+            double f = 0, median = 0, wait = 0;
+            const size_t medianAt = line.find("frame median "), waitAt = line.find("GPU wait ");
+            if (std::sscanf(line.c_str(), "[perf] %lf fps;", &f) != 1 || medianAt == std::string::npos ||
+                waitAt == std::string::npos || std::sscanf(line.c_str() + medianAt, "frame median %lf", &median) != 1 ||
+                std::sscanf(line.c_str() + waitAt, "GPU wait %lf", &wait) != 1)
+                continue;
+            fps.push_back(f);
+            frame.push_back(median);
+            gpu.push_back(wait);
+        }
+        PerfHint hint;
+        if (fps.empty())
+            return hint;
+        const auto medianOfLast = [](std::vector<double> values) {
+            if (values.size() > 20)
+                values.erase(values.begin(), values.end() - 20);
+            std::sort(values.begin(), values.end());
+            return values[values.size() / 2];
+        };
+        hint.fps = uint8_t(std::clamp(medianOfLast(fps) + 0.5, 0.0, 240.0));
+        hint.gpuBound = medianOfLast(gpu) * 3 >= medianOfLast(frame);
+        return hint;
+    }
+
+    int SessionScale(const PerfHint& hint, int playerScale)
+    {
+        return hint.fps != 0 && hint.fps < 28 && hint.gpuBound && playerScale > 1 ? playerScale - 1 : 0;
     }
 }

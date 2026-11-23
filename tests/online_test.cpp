@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <limits>
 #include "launcher/online/room_code.h"
+#include "launcher/online/room_inputs.h"
 #include "launcher/online/stun.h"
 #include "launcher/online/session_launch.h"
 #include "launcher/ui/collection_model.h"
@@ -301,6 +302,27 @@ namespace
                       !DecodeRoomCode("K7QD-M2XU", host, port, decoded) && !DecodeRoomCode("", host, port, decoded));
         ONLINE_EXPECT(net::ParseAddress(withPort, DefaultPort, host, port) && host == "203.0.113.4" && port == 5000);
         ONLINE_EXPECT(net::ParseAddress(v6, DefaultPort, host, port) && host == "2001:db8::7" && port == 47641);
+
+        // A PC's pace from its game log: the median of the last "[perf]" lines, and whether the GPU held it back.
+        {
+            std::string log = "[gpu] boot\n";
+            for (int i = 0; i < 30; ++i)
+                log +=
+                    "[perf] 19.5 fps; frame median 51.0 ms, p95 56.0 ms; per frame: 59 draws taking 0.7 ms, GPU wait "
+                    "20.0 ms, present 0.0 ms\n";
+            const PerfHint slow = ReadPerfHint(log);
+            ONLINE_EXPECT(slow.fps == 20 && slow.gpuBound);
+            ONLINE_EXPECT(SessionScale(slow, 2) == 1 && SessionScale(slow, 1) == 0);
+            const PerfHint cpu = ReadPerfHint("[perf] 19.0 fps; frame median 52.0 ms, p95 60.0 ms; per frame: 59 draws "
+                                              "taking 0.7 ms, GPU wait 2.0 ms, present 0.0 ms\n");
+            ONLINE_EXPECT(cpu.fps == 19 && !cpu.gpuBound && SessionScale(cpu, 2) == 0);
+            ONLINE_EXPECT(ReadPerfHint("no perf here").fps == 0 && SessionScale({}, 3) == 0);
+            Player paced = SamplePlayer("Pace", 3);
+            paced.fps = 20;
+            paced.gpuBound = true;
+            Player back;
+            ONLINE_EXPECT(Decode(Encode(paced), back) && back.fps == 20 && back.gpuBound);
+        }
 
         // STUN: the request's header, and the XOR-mapped address of an answer (IPv4, IPv6), the plain one as a fallback.
         const stun::Id id{ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };

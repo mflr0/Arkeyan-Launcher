@@ -1417,3 +1417,6 @@ With Tailscale or ZeroTier, make a code for this computer's address in Details b
 Wrong room code	Onjuiste kamercode
 Your friend opens a room and sends you its code.	Je vriend opent een kamer en stuurt je de code.
 Your game stopped during the session. Play together again from where you saved.	Je spel stopte tijdens de sessie. Speel weer samen vanaf waar jullie hebben opgeslagen.
+{}'s PC played this game at about {} FPS: the session will go at that pace.	De pc van {} speelde dit spel op ongeveer {} FPS: de sessie gaat in dat tempo.
+This connection is very slow: the game will be slow to answer your buttons.	Deze verbinding is erg traag: het spel reageert traag op je knoppen.
+Your PC played this game at about {} FPS: the session will go at that pace.	Je pc speelde dit spel op ongeveer {} FPS: de sessie gaat in dat tempo.
