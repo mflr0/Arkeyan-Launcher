@@ -215,6 +215,7 @@ add_library(ArkeyanLauncherCore STATIC
 target_sources(ArkeyanLauncherCore PRIVATE
     src/launcher/install_checklist.cpp
     src/launcher/game_run.cpp
+    src/launcher/launcher_log.cpp
     src/launcher/portal_probe_text.cpp
     src/launcher/discord_presence.cpp
     src/launcher/discord_images.cpp

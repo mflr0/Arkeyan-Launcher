@@ -10,6 +10,7 @@ In the "Skylanders" data folder (`%APPDATA%\Skylanders\` on Windows, `~/Library/
 | `SSA/Arkeyan.log` (`.prev.log`: the run before; `SSARecomp.log` from a game built by a kit up to 0.7.2, read when it is the newer) | the game runtime | its own log: version, OS, CPU, GPU, settings, `[perf]` |
 | `logs/skylauncher-game.log` (`.prev.log`) | the launcher | the runtime's stdout and stderr, from its first byte: early crashes, a missing DLL's message |
 | `SSA/install.log` (`.prev.log`), `SSA/install-logs/` | the launcher, Arkeyan-Builder | what Arkeyan-Builder printed during the install, and its own step logs kept after the build (docs/install.md) |
+| `logs/launcher.log` (`.prev.log`) | the launcher | its own messages: the online room's `[online]` lines (never an address), the updater's (`launcher_log.cpp`; a Windows app has no console) |
 | `logs/migration.log` | the first start after an update | what was moved from the older folders |
 
 Settings (the gear) > Support: **Report a problem** (one text file with the last logs, the crash location, the settings and the versions;

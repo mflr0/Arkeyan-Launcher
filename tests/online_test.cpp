@@ -1,6 +1,7 @@
 // ArkeyanLauncherTest's checks for the online room (launcher/online/): the messages and their limits, the keyed tags,
 // addresses, then whole rooms over the loopback address: a guest that joins, gets the host's settings and save, and both
 // start; a wrong room code, another disc, a full room, a guest that leaves, a silent one. Returns the number of failures.
+#include "launcher/launcher_log.h"
 #include "launcher/online/lobby.h"
 #include <algorithm>
 #include <limits>
@@ -12,6 +13,7 @@
 #include "shared/collection/datadir.h"
 #include <filesystem>
 #include <fstream>
+#include <iterator>
 #include <SDL3/SDL.h>
 #include <cstdio>
 #include <cstdlib>
@@ -933,9 +935,34 @@ namespace
     }
 }
 
+namespace
+{
+    // The room's lines reach logs/launcher.log, the run before kept as launcher.prev.log.
+    void LogFileChecks(const std::filesystem::path& scratch)
+    {
+        namespace fs = std::filesystem;
+        const fs::path folder = scratch / "launcher-log";
+        fs::remove_all(folder);
+        launcherlog::Start(folder);
+        SDL_Log("[online] first run");
+        launcherlog::Start(folder);
+        SDL_Log("[online] second run");
+        launcherlog::Stop();
+        const auto read = [](const fs::path& path) {
+            std::ifstream file(path);
+            return std::string(std::istreambuf_iterator<char>(file), {});
+        };
+        const std::string current = read(folder / "launcher.log"), previous = read(folder / "launcher.prev.log");
+        ONLINE_EXPECT(
+            current.find("[online] second run") != std::string::npos && current.find("first run") == std::string::npos);
+        ONLINE_EXPECT(previous.find("[online] first run") != std::string::npos);
+    }
+}
+
 int OnlineChecks(const std::filesystem::path& scratch)
 {
     g_failures = 0;
+    LogFileChecks(scratch);
     CipherChecks();
     MessageChecks();
     RoomChecks();

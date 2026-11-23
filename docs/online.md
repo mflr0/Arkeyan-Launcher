@@ -190,8 +190,8 @@ stopped without writing `online-ended.txt` (a crash; closing the window writes `
 
 ## The log
 
-The room writes `[online]` lines to the launcher's output, in words and never with an address (players share their
-logs): the room opening and its port; the router's answer (`port 47640 opened with UPnP (outside port 47640)`, or why
+The room writes `[online]` lines to the launcher's output and to `logs/launcher.log` (the run before:
+`launcher.prev.log`), in words and never with an address (players share their logs): the room opening and its port; the router's answer (`port 47640 opened with UPnP (outside port 47640)`, or why
 not); whether STUN found an IPv4 and an IPv6 address; the room code's reach when it changes; a guest joining (IPv4 or
 IPv6) and the other player's launcher, game, version and system; each side's readiness; the round trip and the input
 delay every 10 seconds; the start (input delay, round trip, frame rate, save size); and every end or refusal with its
