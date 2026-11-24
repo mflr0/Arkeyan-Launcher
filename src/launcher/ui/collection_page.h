@@ -12,6 +12,7 @@
 #include <functional>
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -114,7 +115,7 @@ namespace launcher_ui
         // B / Escape belongs to the page: an overlay is open, a seat is being chosen for, or a search is typed.
         bool TakesBack() const
         {
-            return m_overlay != Overlay::None || m_choosing >= 0 || m_search[0] != 0 || m_swapFrom >= 0;
+            return m_overlay != Overlay::None || m_choosing >= 0 || m_search[0] != 0 || m_swapFrom >= 0 || m_selecting;
         }
 
         // SKY_LAUNCHER_TEST_SEATX: the X of every seat, pressed by mouse, keyboard and pad (App::TestSeatXScript).
@@ -205,6 +206,18 @@ namespace launcher_ui
         void DrawUnknown();
         void DrawTidy();
         void HandleShortcuts();
+        // Select mode: the cards picked for one Reset or Delete, kept while a search or a filter hides them.
+        void StartSelecting(const std::string& path); // and picks that card (empty: none)
+        void StopSelecting();
+        void Pick(const std::string& path, bool range); // a click: ticks or unticks; `range`: ticks from the last one
+        void PickAll(); // every card shown
+        std::string PickKey(const collection::Figure& figure) const
+        {
+            return CardOf(figure).first->path;
+        } // a swapper by its top
+        void DrawSelectBar();
+        void DrawBatchConfirm();
+        void RunBatch(bool reset);
         // `villain`: the one a trap holds (HeldVillain), drawn small over the trap's picture (collection::TrapPicture).
         void DrawIcon(ImDrawList* draw, const collection::Toy* toy, collection::VariantKind kind, ImVec2 at, float size,
             bool large, uint16_t variant = 0, uint16_t villain = 0);
@@ -309,6 +322,11 @@ namespace launcher_ui
         std::string m_selected; // the card with the focus
         std::string m_toggleFavourite; // the card whose star was clicked this frame (HandleShortcuts applies it)
         std::string m_hovered; // the card under the mouse or the focus (X: its sheet)
+        bool m_selecting = false;
+        std::set<std::string> m_picked;
+        std::string m_pickAnchor; // the last card ticked: Shift-click ticks from it
+        int m_pickedGeneration = -1; // m_picked lost the figures gone since
+        std::string m_batchConfirm; // "reset", "delete": the question asked over the shelf
 
         // The overlays.
         Overlay m_overlay = Overlay::None;

@@ -82,6 +82,16 @@ namespace launcher_ui
         int seat = -1; // choosing for this seat of the model's game: only what goes there and the game reads
     };
 
+    // What one Reset or Delete over the picked cards did (select mode, docs/collection_ui.md).
+    struct BatchResult
+    {
+        int done = 0;
+        int inUse = 0; // skipped: a game uses it, or it sits on a seat that can't change now
+        int unchanged = 0; // skipped: nothing to reset (an item, a trap...)
+        int failed = 0;
+        std::string error; // the first failure's reason
+    };
+
     class CollectionModel
     {
     public:
@@ -133,6 +143,12 @@ namespace launcher_ui
         bool Delete(const std::string& path, std::string* error);
         // A swapper's card: both halves go to the trash.
         bool DeleteCard(const std::string& path, std::string* error);
+        // DeleteCard on each card (a swapper by either half), skipping the busy ones; the collection is read once, at the
+        // end. Paths no longer in the collection are left out of the counts.
+        BatchResult DeleteCards(const std::vector<std::string>& paths);
+        // collection::ResetToNew on each card's figure (a swapper's top, as its sheet does), skipping the busy ones and
+        // those with nothing to reset (collection::HasProgress).
+        BatchResult ResetCards(const std::vector<std::string>& paths);
         // collection::Tidy that leaves the figures on a seat alone, then reloads. Returns how many moved.
         int Tidy();
         std::vector<std::string> OnPortal() const; // the seated paths
@@ -156,6 +172,8 @@ namespace launcher_ui
         static std::string SignatureOf(const std::string& gameId);
         std::string Signature() const { return SignatureOf(gameId); }
         void LoadLive(); // seats and liveSeats from the link
+        bool Remove(const std::string& path, std::string* error); // Delete without the reload
+        collection::Card CardAt(const std::string& path) const; // the card a figure belongs to; first null: not found
         void Adopt(std::vector<collection::Figure> read, std::vector<std::string> readSeats, std::string signature);
         std::string m_signature;
         uint64_t m_nextPoll = 0;

@@ -590,6 +590,86 @@ namespace launcher_ui
                 expect(page.m_overlay == CollectionPage::Overlay::Add && page.m_addSeat == 1,
                     "the pad's X on an empty seat opens Add a figure for it");
             }
+            else if (mode == "select")
+            {
+                // Select mode (issue #187): the bar's Select or the pad's X on a card; A ticks and unticks, Shift a range
+                // in the shelf's order, Select all what the search shows and keeps what it hides; one question deletes
+                // every pick and empties its seat; B leaves.
+                const std::string gill = collection::Create(14), spyro = collection::Create(16),
+                                  anvil = collection::Create(200);
+                expect(!gill.empty() && !spyro.empty() && !anvil.empty(), "synthetic figures created");
+                page.Reload();
+                page.PutOn(0, gill);
+                app.Frame();
+                items.clear();
+                app.Frame();
+                const uint32_t select = item("Select");
+                expect(select != 0, "the bar's Select button");
+                if (select != 0)
+                {
+                    ImGui::ActivateItemByID(select);
+                    app.Frame();
+                    app.Frame();
+                }
+                expect(page.m_selecting && page.m_picked.empty() && page.TakesBack(), "Select starts the mode");
+                page.Pick(gill, false);
+                page.Pick(spyro, false);
+                page.Pick(spyro, false);
+                expect(page.m_picked == std::set<std::string>{ gill }, "a press ticks, a second one unticks");
+                std::vector<std::string> order;
+                for (const collection::Section& section : page.m_sections)
+                    for (size_t index : section.items)
+                        order.push_back(page.PickKey(page.m_list[index]));
+                expect(order.size() == 3, "three cards on the shelf");
+                if (order.size() == 3)
+                {
+                    page.StartSelecting(order[0]);
+                    page.Pick(order[2], true);
+                    expect(page.m_picked.size() == 3, "Shift ticks the range between");
+                }
+                page.StartSelecting(gill);
+                const collection::Toy* anvilToy = collection::Catalogue::Get().Find(200);
+                expect(anvilToy != nullptr, "catalogue toy");
+                if (anvilToy == nullptr)
+                    return 1;
+                snprintf(page.m_search, sizeof(page.m_search), "%s", anvilToy->name.c_str());
+                app.Frame();
+                page.PickAll();
+                expect((page.m_picked == std::set<std::string>{ gill, anvil }), "Select all keeps the hidden pick");
+                page.m_search[0] = 0;
+                page.m_batchConfirm = "delete";
+                app.Frame();
+                items.clear();
+                app.Frame();
+                const uint32_t move = item("Move to the trash");
+                expect(move != 0, "one question for the batch");
+                if (move != 0)
+                {
+                    ImGui::ActivateItemByID(move);
+                    app.Frame();
+                    app.Frame();
+                }
+                expect(page.m_model.Find(gill) == nullptr && page.m_model.Find(anvil) == nullptr &&
+                           page.m_model.Find(spyro) != nullptr && page.m_model.seats[0].empty() && !page.m_selecting,
+                    "both picks go to the trash, the seat empties, the mode ends");
+                // The pad: X on the focused card starts the mode on it, B leaves.
+                app.m_testPadInput = true;
+                page.m_focusCard = true;
+                app.Frame();
+                app.Frame();
+                ImGui::GetIO().AddKeyEvent(ImGuiKey_GamepadFaceLeft, true);
+                app.Frame();
+                ImGui::GetIO().AddKeyEvent(ImGuiKey_GamepadFaceLeft, false);
+                app.Frame();
+                expect(page.m_selecting && page.m_picked == std::set<std::string>{ spyro }, "X picks the focused card");
+                ImGui::GetIO().AddKeyEvent(ImGuiKey_GamepadFaceRight, true);
+                app.Frame();
+                ImGui::GetIO().AddKeyEvent(ImGuiKey_GamepadFaceRight, false);
+                app.Frame();
+                expect(!page.m_selecting && page.m_overlay == CollectionPage::Overlay::None &&
+                           app.m_page == Page::Collection,
+                    "B leaves the mode, not the page");
+            }
             ui::Ctx().testHeld = 0;
             ui::Ctx().testNavigationItems = nullptr;
             return failures == 0 ? 0 : 1;

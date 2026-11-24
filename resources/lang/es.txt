@@ -1268,3 +1268,22 @@ Frees {}.	Libera {}.
 Fits {}	Va en {}
 Use the default	Usar el predeterminado
 That file is not a disc the launcher can use	Ese archivo no es un disco que el launcher pueda usar
+
+# Collection: select mode (several figures reset or deleted at once)
+Pick several figures to reset or delete them	Elegir varias figuras para restablecerlas o borrarlas
+Click: tick · Shift-click: tick a range	Clic: marcar · Mayús-clic: marcar un tramo
+Done	Hecho
+Tick	Marcar
+Leave	Salir
+Picked: {} ({} hidden)	Elegidas: {} ({} ocultas)
+Picked: {}	Elegidas: {}
+Select all	Elegir todas
+Reset {} figures to new? Level, gold and upgrades are lost.	¿Restablecer {} figuras a nuevas? Se pierden nivel, oro y mejoras.
+Move {} figures to the trash? They stay there for 30 days.	¿Mover {} figuras a la papelera? Se quedan allí 30 días.
+One is on the portal for the next start: its spot empties.	Una está en el portal para el próximo inicio: su sitio queda libre.
+{} are on the portal for the next start: their spots empty.	{} están en el portal para el próximo inicio: sus sitios quedan libres.
+Reset to new: {}	Restablecidas a nuevas: {}
+Moved to the trash: {}	Movidas a la papelera: {}
+skipped, in use: {}	omitidas, en uso: {}
+skipped, nothing to reset: {}	omitidas, nada que restablecer: {}
+Couldn't change {} of them: {}	No se pudieron cambiar {}: {}

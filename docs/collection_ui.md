@@ -167,7 +167,8 @@ At the first visit to the page (`CollectionPage::Open`):
   It opens a small panel: **Sort by** (a Select), a divider, **Show only** over three Selects, **Element**, **Works in**
   (the toys a game reads: Giants reads every Spyro's Adventure toy, Spyro's Adventure no Giants toy) and **Type** (the
   types the collection has), then **Clear all** (it keeps the sort). Works in starts on the shown game: the shelf hides
-  what it can't take; All games shows those too, dimmed, to manage them.
+  what it can't take; All games shows those too, dimmed, to manage them. Last, **Select** (issue #187): select mode,
+  below.
   Under the bar, only when something is on, the **tags**: one filter Chip per filter (a check; a click turns it off), **Clear
   all**, and the count at the right ("12 figures", "1 figure"; French "12 figurines"). Nothing matches: an EmptyState "No figure
   matches" with "Clear search and filters"; an empty collection: an EmptyState with "Add a figure" and, under it, "Create the <game> starter pack" (the game chosen: its starter pack's figures).
@@ -275,12 +276,24 @@ At the first visit to the page (`CollectionPage::Open`):
   picture from a disc: SSA's potion, compass and paw icons), else `figures::GenerateIcon` (a shape, the element's colour, the
   variant's badge, initials for characters, and the Toy Box's mark for items, packs and sidekicks:
   `collection::KindGlyph`). Never an empty square.
+- **Select mode** (issue #187; `CollectionPage::StartSelecting`, `CollectionModel::DeleteCards` / `ResetCards`): opened
+  by the bar's **Select**, the pad's X on a card, or a Ctrl-click (Cmd-click on a Mac) on a card, which it ticks. A click
+  or A ticks or unticks a card (a swapper is one card), Shift-click ticks the range from the last one in the shelf's order,
+  **Select all** (Ctrl+A) every card the search and the filters show. Picks a later search or filter hides stay picked:
+  the bar under the shelf says so ("Picked: 7 (2 hidden)"), then Select all; Reset to new..., Delete..., Done on the
+  right. No sheet, drag or favorite star meanwhile; the star's corner holds the tick. One danger question for the batch
+  (the focus on Cancel), with how many sit on the portal for the next start: Delete empties their spots, as a single
+  delete does. A figure a game uses, or one with nothing to reset, is skipped; one toast says how many changed and how
+  many were skipped and why. The mode ends after the action, with Done, X, B or Escape (before anything else B does), or
+  when a seat is chosen for.
 - **Gamepad** (`docs/launcher_ui.md`, "Navigation model"): the d-pad moves in reading order (the seats, the bar, the
   tags, the shelf), A chooses (a seat: choose for it; a card: put it on the seat being chosen for, else its sheet), B goes back
-  (closes the overlay one step, stops choosing, clears the search; then to Home), X opens the sheet (on a seat with a figure:
-  takes it off; on an empty seat: Add a figure for it), Y the search, LT / RT choose for the previous/next seat, LB / RB the main page before and after. Cards scrolled out of view aren't drawn; Manage and
+  (closes the overlay one step, leaves select mode, stops choosing, clears the search; then to Home), X on a card starts
+  select mode (Done in it; the sheet while choosing for a seat, and F2 on the keyboard; on a seat with a figure: takes it
+  off; on an empty seat: Add a figure for it), Y the search, LT / RT choose for the previous/next seat, LB / RB the main page before and after. Cards scrolled out of view aren't drawn; Manage and
   the sheet read the trash and the backups once per change of the collection. While a pad is in use a **PadLegend** closes the
-  page (LB RB Pages, X Take it off, Add a figure or Figure sheet, Y Search, LT RT Other seat, A Select, B Back), and a card's tooltip shows under the pointer only.
+  page (LB RB Pages, X Take it off, Add a figure, Select or Figure sheet, Y Search, LT RT Other seat, A Select, B Back;
+  in select mode X Done, A Tick, B Leave), and a card's tooltip shows under the pointer only.
   Settings pages (the launcher's and each game's) end with a PadLegend (A Select, B Back) under their scrolling column, and
   every dialog (`ui::EndModal`) with one (A Select, B Close).
 
@@ -309,7 +322,9 @@ At the first visit to the page (`CollectionPage::Open`):
   values, changing games, and refusing an incompatible seat without changing `portal.txt`), the card's level ("Level 10"), and
   that Giants and Swap Force can be prepared but not the games without a runtime, **the swapper cards** (a swapper once on the
   shelf whichever half a search or a filter matches, one seat and two lines of `portal.txt` for it, a bottom first in the
-  file still one seat, Change the bottom, Delete and Undelete of both halves, a lone half deleted alone). Seat X: 12 of 12. Everything runs in a scratch
+  file still one seat, Change the bottom, Delete and Undelete of both halves, a lone half deleted alone), **select
+  mode's batches** (a swapper by either half and its seat emptied, a figure in use and an item with nothing to reset
+  skipped and counted). Seat X: 12 of 12. Everything runs in a scratch
   folder (`SKY_COLLECTION`, `SKY_SAVE_DIR`, `SKY_MIGRATE_FROM` set by the test).
 - Screenshots: `SKY_LAUNCHER_TEST_COLLECTION=1` with `SKY_LAUNCHER_SHOTS=<dir>` seeds a scratch `SKY_COLLECTION` (it
   refuses without it) and writes `20-collection` to `61-focus-seat`: the shelf, choosing for Player 1 and for the Magic
@@ -324,6 +339,9 @@ At the first visit to the page (`CollectionPage::Open`):
   to see them all), `54-mixed-swapper-sheet` and `55-add-swapper-versions` are written. Set `SKYLANDERS_DATA`
   to a folder holding the discs' cached pictures to see them (else the drawn icons). `62-trapteam-greyed` shows figures
   from several games with Trap Team selected, sorted by name, including the later figures greyed on the main shelf.
+  `71-select-mode` shows select mode with every card picked and some hidden by a filter, `72-select-delete` its question.
+- `ArkeyanLauncherTest`'s `select` review (issue #187): the bar's Select, a tick and an untick, a Shift range, Select all
+  keeping a pick the search hides, one question deleting every pick and emptying its seat, the pad's X on a card and B.
 - End to end with the real game: seats prepared by the launcher, the game started with the same
   `SKY_COLLECTION`/`SKY_SAVE_DIR`, no `SKY_PORTAL_PLACE`: its log says which figures it took and the launcher shows the
   locks while it runs and the stats after.

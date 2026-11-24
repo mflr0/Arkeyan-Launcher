@@ -1232,6 +1232,30 @@ namespace
                    swap.Find(blast.bottom) != nullptr);
             // Deleting a half on its own deletes only it.
             EXPECT(swap.Delete(lone, &error2) && swap.Find(lone) == nullptr && swap.Find(blast.top) != nullptr);
+
+            // Select mode (issue #187): one Reset or Delete over the picked cards. What a game uses, or an item with
+            // nothing to reset, is skipped and counted; a swapper goes whole and leaves its seat.
+            const collection::SwapperPaths picked = collection::CreateSwapper(2005, 1005);
+            const std::string hero = collection::Create(14), anvil = collection::Create(200),
+                              held = collection::Create(19);
+            swap.Load();
+            EXPECT(swap.SetSeat(0, picked.top) && swap.SeatOf(picked.top) == 0);
+            if (otherPid > 0)
+                std::ofstream(held + ".lock") << fmt::format("{{ \"game\": \"ssa\", \"pid\": {} }}", otherPid);
+            swap.Load();
+            launcher_ui::BatchResult reset = swap.ResetCards({ hero, anvil, held });
+            EXPECT(reset.done == 1 + (otherPid > 0 ? 0 : 1) && reset.unchanged == 1 &&
+                   reset.inUse == (otherPid > 0 ? 1 : 0) && reset.failed == 0);
+            trashBefore = collection::Trash().size();
+            launcher_ui::BatchResult removed = swap.DeleteCards({ picked.bottom, hero, held, "missing.sky" });
+            const int heldGone = otherPid > 0 ? 0 : 1;
+            EXPECT(removed.done == 2 + heldGone && removed.inUse == 1 - heldGone && removed.failed == 0);
+            EXPECT(swap.Find(picked.top) == nullptr && swap.Find(picked.bottom) == nullptr &&
+                   swap.Find(hero) == nullptr && (swap.Find(held) != nullptr) == (otherPid > 0));
+            EXPECT(collection::Trash().size() == trashBefore + 3 + size_t(heldGone) && swap.SeatOf(picked.top) < 0 &&
+                   launcher_ui::ReadSeats(sf, session)[0].empty());
+            collection::BreakLock(held);
+            EXPECT(swap.DeleteCards({ anvil }).done == 1 && swap.Find(anvil) == nullptr);
         }
         printf("Collection: library, migration, locks, seats, live refresh and icons checked\n");
     }
@@ -3318,7 +3342,7 @@ static int RunChecks(int argc, char** argv)
     if (noDisc)
     {
         for (const char* mode : { "backups", "sheet", "drag", "seat-add", "add-later", "sort", "pictures", "notes",
-                 "migration", "catalogue", "data", "uninstall", "paths" })
+                 "migration", "catalogue", "data", "uninstall", "paths", "select" })
         {
             const std::string root = (scratch / "review-ui" / mode).string();
             const char* arguments[] = { argv[0], "--review-ui", root.c_str(), mode, nullptr };
