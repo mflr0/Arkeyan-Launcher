@@ -610,6 +610,9 @@ Open the folder	Åpne mappen
 Opening the disc image	Åpner diskbildet
 Opens a new issue on GitHub	Åpner en ny sak på GitHub
 Opens the Toy Box when the game asks for a figure.	Åpner Toy Box når spillet ber om en figur.
+Keep a copy of real toys	Behold en kopi av ekte figurer
+Play each toy you put on the portal later, without it.	Spill senere med hver figur du setter på portalen, uten den.
+A copy of your real toy. Changes here go to the toy the next time it is placed.	En kopi av den ekte figuren din. Endringer her går til figuren neste gang den settes på.
 Or drop your .iso on this window. It stays on this computer.	Eller slipp .iso-filen din på dette vinduet. Den blir på denne datamaskinen.
 Original resolution	Opprinnelig oppløsning
 Other	Annet

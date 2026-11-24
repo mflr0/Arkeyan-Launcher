@@ -247,6 +247,10 @@ namespace launcher_ui
     // The level for the portal's game, the way to the next one, gold and play time, last played.
     void CollectionPage::DrawFigureFacts(const Figure& f)
     {
+        if (f.realCopy)
+            ui::Text(ui::TextStyle::Body,
+                Tr("A copy of your real toy. Changes here go to the toy the next time it is placed."),
+                ui::color::InkSoft);
         if (!collection::HasProgress(f) && f.toy != nullptr)
             ui::Text(ui::TextStyle::Body, Tf("{} keep no level or gold.", CategoryLabel(f.toy->category)).c_str(),
                 ui::color::InkSoft);

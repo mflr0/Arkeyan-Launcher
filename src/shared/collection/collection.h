@@ -65,6 +65,7 @@ namespace collection
         // A Swap Force half linked to the other half of its swapper (file name; empty: none, the half is a card of its
         // own). Set only when the link is good: both dumps exist, link each other, and are one top and one bottom.
         std::string partner;
+        bool realCopy = false; // the copy of a real toy, synced with it (SyncRealCopy)
         struct Use
         {
             std::string game, lastUsed; // ISO 8601, UTC

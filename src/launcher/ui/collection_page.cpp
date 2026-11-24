@@ -1819,6 +1819,13 @@ namespace launcher_ui
         }
         ui::DrawIcon(draw, ui::Icon::Star, starAt, starSize,
             ui::Col(figure.favourite || starHovered ? ui::color::Warning : ui::color::Dim));
+        if (figure.realCopy) // a real toy's copy (Settings > Controls > Portal of Power), left of the star
+        {
+            const char* toy = Tr("Toy");
+            ui::DrawBadge(draw,
+                ImVec2(starAt.x - starSize / 2 - ui::space::XXS - ui::BadgeSize(toy).x, at.y + ui::space::XS), toy,
+                ui::color::Raised);
+        }
         if (seat >= 0)
             ui::DrawBadge(draw, ImVec2(at.x + ui::space::XS, picture.y + art - ui::space::L),
                 SeatTag(size_t(seat)).c_str(), ui::color::AccentFill, ui::color::OnAccent);
