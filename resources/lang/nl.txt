@@ -1268,3 +1268,22 @@ Frees {}.	Maakt {} vrij.
 Fits {}	Past op {}
 Use the default	Standaard gebruiken
 That file is not a disc the launcher can use	Dit bestand is geen schijf die de launcher kan gebruiken
+
+# Collection: select mode (several figures reset or deleted at once)
+Pick several figures to reset or delete them	Kies meerdere figuren om terug te zetten of te verwijderen
+Click: tick · Shift-click: tick a range	Klik: aanvinken · Shift-klik: een reeks aanvinken
+Done	Klaar
+Tick	Aanvinken
+Leave	Verlaten
+Picked: {} ({} hidden)	Gekozen: {} ({} verborgen)
+Picked: {}	Gekozen: {}
+Select all	Alles kiezen
+Reset {} figures to new? Level, gold and upgrades are lost.	{} figuren terugzetten naar nieuw? Niveau, goud en upgrades gaan verloren.
+Move {} figures to the trash? They stay there for 30 days.	{} figuren naar de prullenbak verplaatsen? Ze blijven daar 30 dagen.
+One is on the portal for the next start: its spot empties.	Eén staat bij de volgende start op het portaal: die plek komt vrij.
+{} are on the portal for the next start: their spots empty.	{} staan bij de volgende start op het portaal: die plekken komen vrij.
+Reset to new: {}	Teruggezet naar nieuw: {}
+Moved to the trash: {}	Naar de prullenbak verplaatst: {}
+skipped, in use: {}	overgeslagen, in gebruik: {}
+skipped, nothing to reset: {}	overgeslagen, niets terug te zetten: {}
+Couldn't change {} of them: {}	{} konden niet worden gewijzigd: {}

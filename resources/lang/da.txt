@@ -1268,3 +1268,22 @@ Frees {}.	Frigør {}.
 Fits {}	Passer på {}
 Use the default	Brug standarden
 That file is not a disc the launcher can use	Den fil er ikke en disk, som launcheren kan bruge
+
+# Collection: select mode (several figures reset or deleted at once)
+Pick several figures to reset or delete them	Vælg flere figurer, der skal nulstilles eller slettes
+Click: tick · Shift-click: tick a range	Klik: sæt flueben · Skift-klik: sæt flueben ved et område
+Done	Færdig
+Tick	Sæt flueben
+Leave	Forlad
+Picked: {} ({} hidden)	Valgt: {} ({} skjult)
+Picked: {}	Valgt: {}
+Select all	Vælg alle
+Reset {} figures to new? Level, gold and upgrades are lost.	Nulstil {} figurer til nye? Niveau, guld og opgraderinger går tabt.
+Move {} figures to the trash? They stay there for 30 days.	Læg {} figurer i papirkurven? De bliver der i 30 dage.
+One is on the portal for the next start: its spot empties.	Én står på portalen ved næste start: dens plads bliver tom.
+{} are on the portal for the next start: their spots empty.	{} står på portalen ved næste start: deres pladser bliver tomme.
+Reset to new: {}	Nulstillet til ny: {}
+Moved to the trash: {}	Lagt i papirkurven: {}
+skipped, in use: {}	sprunget over, i brug: {}
+skipped, nothing to reset: {}	sprunget over, intet at nulstille: {}
+Couldn't change {} of them: {}	{} kunne ikke ændres: {}

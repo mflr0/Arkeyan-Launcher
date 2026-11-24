@@ -1266,3 +1266,22 @@ Frees {}.	Gibt {} frei.
 Fits {}	Passt auf {}
 Use the default	Standard verwenden
 That file is not a disc the launcher can use	Diese Datei ist keine Disc, die der Launcher verwenden kann
+
+# Collection: select mode (several figures reset or deleted at once)
+Pick several figures to reset or delete them	Mehrere Figuren zum Zurücksetzen oder Löschen auswählen
+Click: tick · Shift-click: tick a range	Klick: abhaken · Umschalt-Klick: einen Bereich abhaken
+Done	Fertig
+Tick	Abhaken
+Leave	Verlassen
+Picked: {} ({} hidden)	Ausgewählt: {} ({} ausgeblendet)
+Picked: {}	Ausgewählt: {}
+Select all	Alle auswählen
+Reset {} figures to new? Level, gold and upgrades are lost.	{} Figuren auf neu zurücksetzen? Stufe, Gold und Verbesserungen gehen verloren.
+Move {} figures to the trash? They stay there for 30 days.	{} Figuren in den Papierkorb legen? Dort bleiben sie 30 Tage.
+One is on the portal for the next start: its spot empties.	Eine steht beim nächsten Start auf dem Portal: ihr Platz wird frei.
+{} are on the portal for the next start: their spots empty.	{} stehen beim nächsten Start auf dem Portal: ihre Plätze werden frei.
+Reset to new: {}	Auf neu zurückgesetzt: {}
+Moved to the trash: {}	In den Papierkorb gelegt: {}
+skipped, in use: {}	übersprungen, in Gebrauch: {}
+skipped, nothing to reset: {}	übersprungen, nichts zurückzusetzen: {}
+Couldn't change {} of them: {}	{} konnten nicht geändert werden: {}

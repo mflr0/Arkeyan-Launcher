@@ -1034,7 +1034,8 @@ and menu behaves the same way, the in-game Toy Box's:
   settings"))) GoTo(Page::GameSettings);`. The call puts its hint in the legend and is true when the button is pressed while
   its window has the input (no dialog or menu over it, no field being typed in): a hint never shows without its action, nor an
   action without its hint. The game page: Y Game settings (not while the game runs). The collection: X Take it off (a seat with
-  a figure) or Figure sheet (a card), Y Search, LT / RT Other seat.
+  a figure), Select (a card; Done in select mode) or Figure sheet (a card, while choosing for a seat), Y Search, LT / RT
+  Other seat.
 - **The legend** (`ui::PageLegend(back, width, pages, select)`): the current window's actions, A Select and its B action.
   LB RB Pages appears on main views without tabs; LT RT Tabs is added on tabbed views. Actions come from the
   current frame, scoped to their top window: a tab or page change cannot inherit the previous view's shortcuts.
@@ -1067,7 +1068,7 @@ its existing layout and shortcuts; pad-only legends and extra banner height are 
 | Settings: General, Controls, Portal, Help | LB RB Pages, LT RT Tabs, A Select, B Back. B closes the uninstall list before leaving Settings. The profile editor's ten color choices use the shared focus ring and navigation stops. |
 | Game settings: Picture, Controls, Sound and language, Manage | LB RB Pages, LT RT Tabs, A Select, B Back to the game page. |
 | Achievements | LB RB Pages, A Select, B Back to the game page. |
-| Collection | LB RB Pages, the available X action, Y Search, LT RT Other seat when seats exist, A Select, B Back. |
+| Collection | LB RB Pages, the available X action, Y Search, LT RT Other seat when seats exist, A Select, B Back; in select mode A Tick, X Done, B Leave. |
 | Figure sheet, Add a figure | A Select, B Close; Edit and Change the top/bottom use B Back for their inner step. |
 | Manage | LT RT Tabs, A Select, B Close. |
 | Confirmations, profile editor and portable export question | A Select, B Cancel (or the question's actual cancellation label). Destructive confirmations keep the safe default focus. |

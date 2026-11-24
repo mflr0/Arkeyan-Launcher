@@ -18,6 +18,7 @@
 #include <filesystem>
 #include <fmt/format.h>
 #include <map>
+#include <set>
 
 namespace launcher_ui
 {
@@ -605,6 +606,14 @@ namespace launcher_ui
 
     bool CollectionModel::Delete(const std::string& path, std::string* error)
     {
+        if (!Remove(path, error))
+            return false;
+        Load();
+        return true;
+    }
+
+    bool CollectionModel::Remove(const std::string& path, std::string* error)
+    {
         const auto before = seats;
         const int seat = SeatOf(path);
         if (seat >= 0 && !SetSeat(size_t(seat), ""))
@@ -625,8 +634,68 @@ namespace launcher_ui
             }
             return false;
         }
-        Load();
         return true;
+    }
+
+    collection::Card CollectionModel::CardAt(const std::string& path) const
+    {
+        const collection::Figure* figure = Find(path);
+        if (figure == nullptr)
+            return {};
+        return collection::CardOf(figures, size_t(figure - figures.data()));
+    }
+
+    BatchResult CollectionModel::DeleteCards(const std::vector<std::string>& paths)
+    {
+        BatchResult result;
+        std::set<std::string> seen; // a swapper picked by both halves counts once
+        for (const std::string& path : paths)
+        {
+            const collection::Card card = CardAt(path);
+            if (card.first == nullptr || !seen.insert(card.first->path).second)
+                continue;
+            if (card.Busy() || (SeatOf(card.first->path) >= 0 && !CanEditSeats()))
+            {
+                result.inUse++;
+                continue;
+            }
+            // Copied first: the halves point into `figures`, which stays as it is until the Load at the end.
+            std::vector<std::string> halves;
+            for (const collection::Figure* half : card.Halves())
+                halves.push_back(half->path);
+            std::string error;
+            bool removed = true;
+            for (const std::string& half : halves)
+                removed = removed && Remove(half, &error);
+            if (removed)
+                result.done++;
+            else if (result.failed++ == 0)
+                result.error = error;
+        }
+        Load();
+        return result;
+    }
+
+    BatchResult CollectionModel::ResetCards(const std::vector<std::string>& paths)
+    {
+        BatchResult result;
+        std::set<std::string> seen; // a swapper picked by both halves counts once
+        for (const std::string& path : paths)
+        {
+            const collection::Card card = CardAt(path);
+            if (card.first == nullptr || !seen.insert(card.first->path).second)
+                continue;
+            if (card.Busy())
+                result.inUse++;
+            else if (!collection::HasProgress(*card.first))
+                result.unchanged++;
+            else if (std::string error; collection::ResetToNew(card.first->path, &error))
+                result.done++;
+            else if (result.failed++ == 0)
+                result.error = error;
+        }
+        Load();
+        return result;
     }
 
     bool CollectionModel::DeleteCard(const std::string& path, std::string* error)

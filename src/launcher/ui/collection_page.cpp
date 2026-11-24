@@ -762,6 +762,8 @@ namespace launcher_ui
             m_shelfTop = seat >= 0; // choosing starts at the shelf's first row, never under a half-hidden one
         }
         m_choosing = seat;
+        if (seat >= 0)
+            StopSelecting();
     }
 
     std::string CollectionPage::Refusal(size_t seat, const Figure& figure, ui::ToastKind* kind) const
@@ -1010,6 +1012,11 @@ namespace launcher_ui
         if (m_choosing >= 0 && !m_model.CanEditSeats())
             m_choosing = -1; // a game started meanwhile
         Rebuild();
+        if (m_selecting && m_pickedGeneration != m_generation)
+        {
+            std::erase_if(m_picked, [&](const std::string& path) { return m_model.Find(path) == nullptr; });
+            m_pickedGeneration = m_generation;
+        }
 
         float available = ImGui::GetContentRegionAvail().x;
         float width = std::min(available, PageMax);
@@ -1023,7 +1030,9 @@ namespace launcher_ui
         // The shelf has room round its cards (their focus rings, the choose banner's border).
         const bool pad = ui::Ctx().glyphs != ui::Glyphs::Keyboard;
         const float legend = pad ? ui::height::Normal + ImGui::GetStyle().ItemSpacing.y : 0;
-        ui::BeginRoomyChild("##shelf", ImVec2(0, -legend), ImGuiChildFlags_NavFlattened, ImGuiWindowFlags_NoBackground);
+        const float selectBar = m_selecting ? ui::height::Normal + ImGui::GetStyle().ItemSpacing.y : 0;
+        ui::BeginRoomyChild(
+            "##shelf", ImVec2(0, -legend - selectBar), ImGuiChildFlags_NavFlattened, ImGuiWindowFlags_NoBackground);
         ImGui::SetScrollX(0.0f);
         if (m_shelfTop)
         {
@@ -1041,6 +1050,8 @@ namespace launcher_ui
                 TakeOff(*static_cast<const size_t*>(payload->Data));
             ImGui::EndDragDropTarget();
         }
+        if (m_selecting)
+            DrawSelectBar();
         HandleShortcuts();
         if (pad) // the legend's room in the column
             ImGui::Dummy(ImVec2(width, ui::height::Normal));
@@ -1049,6 +1060,7 @@ namespace launcher_ui
             m_app.DrawFootLegend(); // with the page's pad actions (HandleShortcuts)
 
         DrawSwapQuestion();
+        DrawBatchConfirm();
         DrawOverlay();
     }
 
@@ -1735,8 +1747,12 @@ namespace launcher_ui
         for (int sort = 0; sort < int(collection::Sort::Count); sort++)
             width = std::max(width, ui::ButtonWidth(buttonText(collection::Sort(sort), FilterCount).c_str(), button));
         button.width = width;
-        const float searchWidth = std::max(
-            ui::height::SettingControl / 2, ImGui::GetContentRegionAvail().x - width - ui::space::S - cancelWidth);
+        ui::ButtonOptions select;
+        select.kind = m_selecting ? ui::ButtonKind::Primary : ui::ButtonKind::Secondary;
+        select.tooltip = Tr("Pick several figures to reset or delete them");
+        const float selectWidth = choosing ? 0 : ui::ButtonWidth(Tr("Select"), select) + ui::space::S;
+        const float searchWidth = std::max(ui::height::SettingControl / 2,
+            ImGui::GetContentRegionAvail().x - width - ui::space::S - cancelWidth - selectWidth);
         const int count = FoundCount();
         const std::string hint = choosing     ? seat
                                  : count == 0 ? std::string(Tr("Search"))
@@ -1755,6 +1771,17 @@ namespace launcher_ui
         if (pressed || m_openFilters)
             ui::OpenMenu("##filtersmenu", { .alignRight = true });
         m_openFilters = false;
+        if (!choosing)
+        {
+            ImGui::SameLine(0, ui::space::S);
+            if (ui::Button(Tr("Select"), select))
+            {
+                if (m_selecting)
+                    StopSelecting();
+                else
+                    StartSelecting("");
+            }
+        }
         if (choosing)
         {
             ImGui::SameLine(0, ui::space::S);
@@ -1949,7 +1976,8 @@ namespace launcher_ui
             m_hovered = figure.path;
         if (focused)
             m_selected = figure.path;
-        if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceNoPreviewTooltip))
+        const bool picked = m_selecting && m_picked.contains(PickKey(figure));
+        if (!m_selecting && ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceNoPreviewTooltip))
         {
             ImGui::SetDragDropPayload("SKYFIG", figure.path.c_str(), figure.path.size() + 1);
             DrawDragged(figure);
@@ -1965,10 +1993,11 @@ namespace launcher_ui
                 tip += "\n" + Tf("Not for {}", FullGameName(m_model.gameId));
             else if (busy)
                 tip += "\n" + Tf("On the portal in {}: read-only", LiveGame(figure));
-            else if (m_choosing >= 0)
-                tip += "\n" + Tf("Click: put it on {}", SeatName(size_t(m_choosing)));
-            else
-                tip += std::string("\n") + Tr("Click: sheet · drag to a seat");
+            if (m_selecting)
+                tip += std::string("\n") + Tr("Click: tick · Shift-click: tick a range");
+            else if (!dim && !busy)
+                tip += "\n" + (m_choosing >= 0 ? Tf("Click: put it on {}", SeatName(size_t(m_choosing)))
+                                               : std::string(Tr("Click: sheet · drag to a seat")));
             ui::Bubble(tip.c_str(), ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
         }
         if (hovered && m_app.m_testPadWalk)
@@ -1978,7 +2007,11 @@ namespace launcher_ui
         if (pressed)
         {
             m_selected = figure.path;
-            if (dim)
+            if (m_selecting)
+                Pick(PickKey(figure), ImGui::GetIO().KeyShift);
+            else if (m_choosing < 0 && ImGui::GetIO().KeyCtrl) // Cmd on a Mac (ImGui swaps them)
+                StartSelecting(PickKey(figure));
+            else if (dim)
                 Toast(Tf("{} is not for {}", Name(figure), FullGameName(m_model.gameId)), ui::ToastKind::Error);
             else if (m_choosing >= 0)
                 PutOn(size_t(m_choosing), figure.path);
@@ -1995,7 +2028,10 @@ namespace launcher_ui
         const int seat = m_model.SeatOf(figure.path);
         const bool selected = m_selected == figure.path && focused;
         ui::DrawFigureFrame(draw, at, end,
-            { .raised = hovered, .accent = seat >= 0, .edged = selected || hovered, .thick = seat >= 0 || selected });
+            { .raised = hovered,
+                .accent = seat >= 0 || picked,
+                .edged = selected || hovered,
+                .thick = seat >= 0 || selected || picked });
         if (const collection::Card card = CardOf(figure); !DrawSwapper(draw, card, picture, art))
         {
             DrawIcon(draw, figure.toy, figure.Kind(), picture, art, false, figure.variant, HeldVillain(figure));
@@ -2029,7 +2065,7 @@ namespace launcher_ui
         const float starSize = ui::icon::Small;
         // Its button exists only under the pointer: the pad's walk and the grid's layout never see it.
         bool starred = false, starHovered = false;
-        if (ImGui::IsMouseHoveringRect(at, end))
+        if (!m_selecting && ImGui::IsMouseHoveringRect(at, end))
         {
             const ImVec2 cursor = ImGui::GetCursorScreenPos();
             ImGui::SetCursorScreenPos(ImVec2(starAt.x - starSize, starAt.y - starSize));
@@ -2047,7 +2083,22 @@ namespace launcher_ui
         if (starred && !busy)
             m_toggleFavourite =
                 figure.path; // after the shelf is drawn: reloading now would pull the figures from under it
-        if (figure.favourite)
+        if (m_selecting)
+        {
+            // In select mode the star's corner holds the tick: a ring, filled and checked once picked.
+            const float r = starSize * 0.6f;
+            if (picked)
+            {
+                draw->AddCircleFilled(starAt, r, ui::Col(ui::color::AccentFill));
+                ui::DrawIcon(draw, ui::Icon::Check, starAt, starSize * 0.8f, ui::Col(ui::color::OnAccent));
+            }
+            else
+            {
+                draw->AddCircleFilled(starAt, r, ui::FigureCardFill(hovered));
+                draw->AddCircle(starAt, r, ui::Col(ui::color::Edge), 0, 1.5f);
+            }
+        }
+        else if (figure.favourite)
         {
             // Lucide's star is an outline: its inside filled under it (the star's points on a 24-unit grid).
             ImVec2 points[10];
@@ -2059,8 +2110,9 @@ namespace launcher_ui
             }
             draw->AddConcavePolyFilled(points, 10, ui::Col(ui::color::Warning));
         }
-        ui::DrawIcon(draw, ui::Icon::Star, starAt, starSize,
-            ui::Col(figure.favourite || starHovered ? ui::color::Warning : ui::color::Dim));
+        if (!m_selecting)
+            ui::DrawIcon(draw, ui::Icon::Star, starAt, starSize,
+                ui::Col(figure.favourite || starHovered ? ui::color::Warning : ui::color::Dim));
         if (seat >= 0)
         {
             const std::string tag = SeatTag(size_t(seat));
@@ -2149,16 +2201,25 @@ namespace launcher_ui
             Reload();
         }
         // The pad's actions, declared every frame: their hints are the legend's (false under a dialog, a menu or a field).
-        // X takes the focused seat's figure off (Delete), opens Add a figure for a focused empty seat, else opens the focused
-        // card's sheet (F2); Y the search (F3); LT / RT choose for the seat before or after (Page Up / Page Down).
+        // X takes the focused seat's figure off (Delete), opens Add a figure for a focused empty seat, else starts select
+        // mode on the focused card (Done in it), or opens its sheet while a seat is being chosen for (F2 always does); Y
+        // the search (F3); LT / RT choose for the seat before or after (Page Up / Page Down).
         const collection::Game* seatsOf = m_model.Game();
         const bool seatFocused = m_navSeat >= 0 && size_t(m_navSeat) < m_model.seats.size();
         const bool onSeat = seatFocused && !m_model.seats[size_t(m_navSeat)].empty();
         const bool takeOff = onSeat && ui::PadAction(ui::PadButton::West, Tr("Take it off"), nullptr, ImGuiKey_Delete);
         const bool addHere = seatFocused && !onSeat && m_model.CanEditSeats() && !m_model.RealSeat(size_t(m_navSeat)) &&
                              ui::PadAction(ui::PadButton::West, Tr("Add a figure"));
-        const bool sheet =
-            !onSeat && m_navSeat < 0 && ui::PadAction(ui::PadButton::West, Tr("Figure sheet"), "F2", ImGuiKey_F2);
+        const bool onCard = !onSeat && m_navSeat < 0;
+        bool sheet =
+            onCard && m_choosing >= 0 && ui::PadAction(ui::PadButton::West, Tr("Figure sheet"), "F2", ImGuiKey_F2);
+        const bool pick =
+            onCard && m_choosing < 0 && ui::PadAction(ui::PadButton::West, m_selecting ? Tr("Done") : Tr("Select"));
+        if (m_selecting) // A ticks the card (DrawCard), B leaves the mode (below)
+        {
+            ui::PadAction(ui::PadButton::South, Tr("Tick"));
+            ui::PadAction(ui::PadButton::East, Tr("Leave"));
+        }
         const bool search = ui::PadAction(ui::PadButton::North, Tr("Search"), "F3", ImGuiKey_F3);
         bool before = false, after = false;
         if (seatsOf != nullptr && !seatsOf->seats.empty())
@@ -2173,6 +2234,19 @@ namespace launcher_ui
         };
         if (ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopupId))
             return;
+        sheet = sheet || (onCard && m_choosing < 0 && !m_selecting && ImGui::IsKeyPressed(ImGuiKey_F2, false));
+        if (pick)
+        {
+            const std::string& path = !m_hovered.empty() ? m_hovered : m_selected;
+            const Figure* figure = m_model.Find(path);
+            if (m_selecting)
+                StopSelecting();
+            else
+                StartSelecting(figure != nullptr ? PickKey(*figure) : std::string());
+            return;
+        }
+        if (m_selecting && ImGui::IsKeyChordPressed(ImGuiMod_Ctrl | ImGuiKey_A))
+            PickAll();
         if (takeOff)
         {
             TakeOff(size_t(m_navSeat));
@@ -2207,13 +2281,161 @@ namespace launcher_ui
             if (!path.empty() && m_model.Find(path) != nullptr)
                 OpenFigure(path);
         }
-        // B, Escape: stop choosing, then clear the search.
+        // B, Escape: leave select mode, stop choosing, then clear the search.
         if (pressed(ImGuiKey_Escape, ImGuiKey_GamepadFaceRight))
         {
-            if (m_choosing >= 0)
+            if (m_selecting)
+                StopSelecting();
+            else if (m_choosing >= 0)
                 Choose(-1);
             else if (m_search[0] != 0)
                 m_search[0] = 0;
         }
+    }
+
+    // ---- Select mode ----------------------------------------------------------------------------------------------
+
+    void CollectionPage::StartSelecting(const std::string& path)
+    {
+        m_selecting = true;
+        m_picked.clear();
+        m_pickedGeneration = m_generation;
+        m_pickAnchor = path;
+        if (!path.empty())
+            m_picked.insert(path);
+    }
+
+    void CollectionPage::StopSelecting()
+    {
+        m_selecting = false;
+        m_picked.clear();
+        m_pickAnchor.clear();
+        m_batchConfirm.clear();
+    }
+
+    void CollectionPage::Pick(const std::string& path, bool range)
+    {
+        // The shelf's order is its sections' (m_list is the filter's, before the cut).
+        std::vector<std::string> order;
+        if (range && !m_pickAnchor.empty())
+            for (const Section& section : m_sections)
+                for (size_t index : section.items)
+                    order.push_back(PickKey(m_list[index]));
+        const auto from = std::find(order.begin(), order.end(), m_pickAnchor),
+                   to = std::find(order.begin(), order.end(), path);
+        if (from != order.end() && to != order.end())
+            m_picked.insert(std::min(from, to), std::max(from, to) + 1);
+        else if (!m_picked.erase(path))
+            m_picked.insert(path);
+        m_pickAnchor = path;
+    }
+
+    void CollectionPage::PickAll()
+    {
+        for (const Section& section : m_sections)
+            for (size_t index : section.items)
+                m_picked.insert(PickKey(m_list[index]));
+    }
+
+    // Under the shelf while picking: how many are picked (and hidden by the search or a filter), Select all; Reset,
+    // Delete and Done on the right.
+    void CollectionPage::DrawSelectBar()
+    {
+        size_t shown = 0;
+        for (const Section& section : m_sections)
+            for (size_t index : section.items)
+                shown += m_picked.contains(PickKey(m_list[index]));
+        const size_t hidden = m_picked.size() - std::min(shown, m_picked.size());
+        const std::string count =
+            hidden > 0 ? Tf("Picked: {} ({} hidden)", m_picked.size(), hidden) : Tf("Picked: {}", m_picked.size());
+        const ImVec2 at = ImGui::GetCursorScreenPos();
+        const float right = at.x + ImGui::GetContentRegionAvail().x;
+        ImDrawList* draw = ImGui::GetWindowDrawList();
+        ui::ButtonOptions all, reset, remove, done;
+        reset.disabled = remove.disabled = m_picked.empty();
+        remove.icon = ui::Icon::Trash;
+        done.kind = ui::ButtonKind::Primary;
+        const float buttons = ui::ButtonWidth(Tr("Reset to new..."), reset) + ui::ButtonWidth(Tr("Delete..."), remove) +
+                              ui::ButtonWidth(Tr("Done"), done) + 2 * ui::space::S;
+        const float allWidth = ui::ButtonWidth(Tr("Select all"), all);
+        const float room = right - buttons - allWidth - 2 * ui::space::S - at.x;
+        PutText(draw, ImVec2(at.x, at.y + (ui::height::Normal - ui::type::Body) / 2), ui::TextStyle::Body, true,
+            ui::color::Ink, count, room);
+        ui::PushText(ui::TextStyle::Body, true);
+        const float countWidth = std::min(room, ImGui::CalcTextSize(count.c_str()).x);
+        ui::PopText();
+        ImGui::SetCursorScreenPos(ImVec2(at.x + countWidth + ui::space::S, at.y));
+        if (ui::Button(Tr("Select all"), all))
+            PickAll();
+        ImGui::SetCursorScreenPos(ImVec2(right - buttons, at.y));
+        if (ui::Button(Tr("Reset to new..."), reset))
+            m_batchConfirm = "reset";
+        ImGui::SameLine(0, ui::space::S);
+        if (ui::Button(Tr("Delete..."), remove))
+            m_batchConfirm = "delete";
+        ImGui::SameLine(0, ui::space::S);
+        if (ui::Button(Tr("Done"), done))
+            StopSelecting();
+    }
+
+    // One danger question for the whole batch, the focus on Cancel.
+    void CollectionPage::DrawBatchConfirm()
+    {
+        if (m_batchConfirm.empty())
+            return;
+        if (m_picked.empty())
+        {
+            m_batchConfirm.clear();
+            return;
+        }
+        const bool reset = m_batchConfirm == "reset";
+        const Figure* one = m_picked.size() == 1 ? m_model.Find(*m_picked.begin()) : nullptr;
+        std::string body;
+        if (reset)
+            body = one != nullptr ? Tf("Reset {} to new? Level, gold and upgrades are lost.", Name(*one))
+                                  : Tf("Reset {} figures to new? Level, gold and upgrades are lost.", m_picked.size());
+        else
+        {
+            body = one != nullptr ? Tf("Move {} to the trash? It stays there for 30 days.", Name(*one))
+                                  : Tf("Move {} figures to the trash? They stay there for 30 days.", m_picked.size());
+            int seated = 0;
+            for (const std::string& path : m_picked)
+                seated += m_model.SeatOf(path) >= 0;
+            if (seated == 1)
+                body += "\n" + std::string(Tr("One is on the portal for the next start: its spot empties."));
+            else if (seated > 1)
+                body += "\n" + Tf("{} are on the portal for the next start: their spots empty.", seated);
+        }
+        bool open = true;
+        const ui::ModalResult result =
+            ui::ConfirmDialog("##confirmpicked", reset ? Tr("Reset to new") : Tr("Move to the trash"), body.c_str(),
+                reset ? Tr("Reset") : Tr("Move to the trash"), Tr("Cancel"), &open, ui::ModalKind::Danger);
+        if (result == ui::ModalResult::None && open)
+            return;
+        m_batchConfirm.clear();
+        if (result == ui::ModalResult::Confirm)
+            RunBatch(reset);
+    }
+
+    // The batch, then one toast: how many changed, and how many were skipped and why. Select mode ends.
+    void CollectionPage::RunBatch(bool reset)
+    {
+        const std::vector<std::string> paths(m_picked.begin(), m_picked.end());
+        const BatchResult result = reset ? m_model.ResetCards(paths) : m_model.DeleteCards(paths);
+        std::string text;
+        if (result.done == 1 && result.inUse == 0 && result.unchanged == 0)
+            text = reset ? Tr("Reset to new") : Tr("Moved to the trash");
+        else
+            text = reset ? Tf("Reset to new: {}", result.done) : Tf("Moved to the trash: {}", result.done);
+        if (result.inUse > 0)
+            text += " · " + Tf("skipped, in use: {}", result.inUse);
+        if (result.unchanged > 0)
+            text += " · " + Tf("skipped, nothing to reset: {}", result.unchanged);
+        if (result.done + result.inUse + result.unchanged > 0)
+            Toast(text, result.done > 0 ? ui::ToastKind::Success : ui::ToastKind::Info);
+        if (result.failed > 0)
+            Toast(Tf("Couldn't change {} of them: {}", result.failed, result.error), ui::ToastKind::Error);
+        m_generation++;
+        StopSelecting();
     }
 }

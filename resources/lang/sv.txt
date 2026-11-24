@@ -1269,3 +1269,22 @@ Frees {}.	Frigör {}.
 Fits {}	Passar på {}
 Use the default	Använd standard
 That file is not a disc the launcher can use	Den filen är inte en skiva som launchern kan använda
+
+# Collection: select mode (several figures reset or deleted at once)
+Pick several figures to reset or delete them	Välj flera figurer att nollställa eller radera
+Click: tick · Shift-click: tick a range	Klicka: bocka för · Skift-klicka: bocka för ett område
+Done	Klar
+Tick	Bocka för
+Leave	Lämna
+Picked: {} ({} hidden)	Valda: {} ({} dolda)
+Picked: {}	Valda: {}
+Select all	Välj alla
+Reset {} figures to new? Level, gold and upgrades are lost.	Nollställ {} figurer till nya? Nivå, guld och uppgraderingar går förlorade.
+Move {} figures to the trash? They stay there for 30 days.	Flytta {} figurer till papperskorgen? De ligger kvar där i 30 dagar.
+One is on the portal for the next start: its spot empties.	En står på portalen vid nästa start: dess plats töms.
+{} are on the portal for the next start: their spots empty.	{} står på portalen vid nästa start: deras platser töms.
+Reset to new: {}	Nollställda till nya: {}
+Moved to the trash: {}	Flyttade till papperskorgen: {}
+skipped, in use: {}	hoppade över, används: {}
+skipped, nothing to reset: {}	hoppade över, inget att nollställa: {}
+Couldn't change {} of them: {}	{} kunde inte ändras: {}

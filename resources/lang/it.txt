@@ -1268,3 +1268,22 @@ Frees {}.	Libera {}.
 Fits {}	Va su {}
 Use the default	Usa il predefinito
 That file is not a disc the launcher can use	Questo file non è un disco che il launcher può usare
+
+# Collection: select mode (several figures reset or deleted at once)
+Pick several figures to reset or delete them	Scegli più figure da riportare a nuovo o eliminare
+Click: tick · Shift-click: tick a range	Clic: spunta · Maiusc-clic: spunta un intervallo
+Done	Fatto
+Tick	Spunta
+Leave	Esci
+Picked: {} ({} hidden)	Scelte: {} ({} nascoste)
+Picked: {}	Scelte: {}
+Select all	Scegli tutte
+Reset {} figures to new? Level, gold and upgrades are lost.	Riportare {} figure a nuovo? Livello, oro e potenziamenti vanno persi.
+Move {} figures to the trash? They stay there for 30 days.	Spostare {} figure nel cestino? Ci restano per 30 giorni.
+One is on the portal for the next start: its spot empties.	Una è sul portale al prossimo avvio: il suo posto si libera.
+{} are on the portal for the next start: their spots empty.	{} sono sul portale al prossimo avvio: i loro posti si liberano.
+Reset to new: {}	Riportate a nuovo: {}
+Moved to the trash: {}	Spostate nel cestino: {}
+skipped, in use: {}	saltate, in uso: {}
+skipped, nothing to reset: {}	saltate, niente da riportare a nuovo: {}
+Couldn't change {} of them: {}	Impossibile modificarne {}: {}

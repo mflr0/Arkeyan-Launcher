@@ -1269,3 +1269,22 @@ Frees {}.	Vapauttaa {}.
 Fits {}	Sopii paikalle: {}
 Use the default	Käytä oletusta
 That file is not a disc the launcher can use	Tiedosto ei ole levy, jota launcher voi käyttää
+
+# Collection: select mode (several figures reset or deleted at once)
+Pick several figures to reset or delete them	Valitse useita hahmoja nollattavaksi tai poistettavaksi
+Click: tick · Shift-click: tick a range	Klikkaa: merkitse · Vaihto-klikkaa: merkitse väli
+Done	Valmis
+Tick	Merkitse
+Leave	Poistu
+Picked: {} ({} hidden)	Valittu: {} ({} piilossa)
+Picked: {}	Valittu: {}
+Select all	Valitse kaikki
+Reset {} figures to new? Level, gold and upgrades are lost.	Nollataanko {} hahmoa uudeksi? Taso, kulta ja päivitykset menetetään.
+Move {} figures to the trash? They stay there for 30 days.	Siirretäänkö {} hahmoa roskakoriin? Ne säilyvät siellä 30 päivää.
+One is on the portal for the next start: its spot empties.	Yksi on portaalilla seuraavassa käynnistyksessä: sen paikka tyhjenee.
+{} are on the portal for the next start: their spots empty.	{} on portaalilla seuraavassa käynnistyksessä: niiden paikat tyhjenevät.
+Reset to new: {}	Nollattu uudeksi: {}
+Moved to the trash: {}	Siirretty roskakoriin: {}
+skipped, in use: {}	ohitettu, käytössä: {}
+skipped, nothing to reset: {}	ohitettu, ei nollattavaa: {}
+Couldn't change {} of them: {}	{} ei voitu muuttaa: {}

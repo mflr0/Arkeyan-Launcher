@@ -1269,3 +1269,22 @@ Frees {}.	Frigjør {}.
 Fits {}	Passer på {}
 Use the default	Bruk standard
 That file is not a disc the launcher can use	Den filen er ikke en plate launcheren kan bruke
+
+# Collection: select mode (several figures reset or deleted at once)
+Pick several figures to reset or delete them	Velg flere figurer som skal tilbakestilles eller slettes
+Click: tick · Shift-click: tick a range	Klikk: huk av · Skift-klikk: huk av et område
+Done	Ferdig
+Tick	Huk av
+Leave	Forlat
+Picked: {} ({} hidden)	Valgt: {} ({} skjult)
+Picked: {}	Valgt: {}
+Select all	Velg alle
+Reset {} figures to new? Level, gold and upgrades are lost.	Tilbakestill {} figurer til nye? Nivå, gull og oppgraderinger går tapt.
+Move {} figures to the trash? They stay there for 30 days.	Flytt {} figurer til papirkurven? De blir der i 30 dager.
+One is on the portal for the next start: its spot empties.	Én står på portalen ved neste start: plassen dens blir tom.
+{} are on the portal for the next start: their spots empty.	{} står på portalen ved neste start: plassene deres blir tomme.
+Reset to new: {}	Tilbakestilt til ny: {}
+Moved to the trash: {}	Flyttet til papirkurven: {}
+skipped, in use: {}	hoppet over, i bruk: {}
+skipped, nothing to reset: {}	hoppet over, ingenting å tilbakestille: {}
+Couldn't change {} of them: {}	{} kunne ikke endres: {}
