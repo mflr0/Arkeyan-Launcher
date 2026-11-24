@@ -20,14 +20,12 @@ namespace launcher_ui
         using MapFunction = std::function<netplay::portmap::Mapping(const netplay::portmap::Options&)>;
         using UnmapFunction = std::function<void(const netplay::portmap::Mapping&, const netplay::portmap::Options&)>;
         using LookupFunction = std::function<online::stun::Result()>;
-        explicit RouterLease(
-            MapFunction map = netplay::portmap::Map, UnmapFunction unmap = netplay::portmap::Unmap,
-            std::chrono::milliseconds renewal = std::chrono::hours(1),
-            LookupFunction lookup = [] { return online::stun::Lookup(); })
+        explicit RouterLease(MapFunction map = netplay::portmap::Map, UnmapFunction unmap = netplay::portmap::Unmap,
+            std::chrono::milliseconds renewal = std::chrono::hours(1), LookupFunction lookup = {})
             : m_map(std::move(map)), m_unmap(std::move(unmap)), m_lookup(std::move(lookup)), m_renewal(renewal)
         {}
         ~RouterLease();
-        // Asks the router to open `port` when `map`, then the public addresses (stun.h) once per room.
+        // The lobby owns STUN so discovery and the room use the same UDP socket.
         void Open(uint16_t port, bool map = true);
         void Close();
         netplay::portmap::Mapping Get();

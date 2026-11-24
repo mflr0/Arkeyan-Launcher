@@ -1446,3 +1446,15 @@ All sound tests use `SDL_AUDIO_DRIVER=dummy` and disposable HOME and data paths.
   `SKY_LAUNCHER_TEST_SWAPFORCE_ISO` for the Swap Force disc and its pictures). A swapper in the Collection is one card
   (`docs/collection_ui.md`, "Swappers").
 - `launcher: ui scale` is logged once, then only when the scale changes (a display change, Ctrl +/-/0), not at every window event.
+
+## Room connection and tunnels
+
+The room connects over reliable UDP, using the same port as the game. The guest sees **Trying to reach your friend's
+room...** while the launcher tries the code's address and port. After ten seconds without an answer, the help card
+says the friend's router may block it: the host's room shows how to fix it.
+The invite's **How to fix it** help names Radmin VPN, ZeroTier and Tailscale for players without an open port.
+The router details describe UDP only. Existing direct, home, IPv6 and manual port-forwarding choices remain.
+The alternate-address field accepts a UDP `host:port` (name or IP); DNS and code creation run on the `Discovery` worker.
+Its caption asks for this computer's address on Radmin VPN, ZeroTier, Tailscale or playit.gg, with its port.
+The code shares the room's secret with the main invite. The launcher uses no server for the room.
+See [Online co-op](online.md) for the transport and virtual network or tunnel setup.

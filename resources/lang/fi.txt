@@ -1292,10 +1292,8 @@ How PLAY starts the game	Miten PELAA aloittaa pelin
 How it works	Näin se toimii
 How to fix it	Näin korjaat ongelman
 I'm ready	Olen valmis
-If your router refuses, open (forward) port {} for UDP and TCP to this computer in your router's settings.	Jos reititin kieltäytyy, avaa (ohjaa) portti {} UDP- ja TCP-liikenteelle tähän tietokoneeseen reitittimen asetuksissa.
 Invite your friend	Kutsu ystäväsi
 JOIN A ROOM	LIITY HUONEESEEN
-Joining your friend's room...	Liitytään ystäväsi huoneeseen...
 Lets friends outside your home in. Most routers allow it.	Päästää kodin ulkopuolella olevat ystävät sisään. Useimmat reitittimet sallivat sen.
 No figures on the portal yet	Portaalissa ei ole vielä hahmoja
 Not in the same home? Their router may block it: their room shows them how to fix it.	Ette ole samassa kodissa? Ystäväsi reititin voi estää yhteyden: hänen huoneensa kertoo, miten ongelman voi korjata.
@@ -1326,7 +1324,6 @@ The connection was lost	Yhteys katkesi
 The one with the older version updates the game on its page, then you try again.	Vanhemman version käyttäjä päivittää pelin sen sivulla, sitten yritätte uudelleen.
 The room couldn't open	Huonetta ei voitu avata
 The room is closed	Huone on suljettu
-The room uses port {}, for UDP and TCP.	Huone käyttää porttia {} UDP- ja TCP-liikenteelle.
 This port is already in use	Tämä portti on jo käytössä
 This room is full	Tämä huone on täynnä
 Try again	Yritä uudelleen
@@ -1382,7 +1379,6 @@ Check the room code: ask them to copy it again.	Tarkista huonekoodi: pyydä yst�
 Get the room code	Hae huonekoodi
 Getting your room code...	Haetaan huonekoodia...
 In the same home, ask your friend for the code under How to fix it in their room.	Samassa kodissa: pyydä ystävältäsi koodia hänen huoneensa kohdasta Näin korjaat ongelman.
-Open port {} (UDP and TCP) to this computer in your router's settings: search the web for your router's name and "port forwarding".	Avaa portti {} (UDP ja TCP) tähän tietokoneeseen reitittimen asetuksista: hae verkosta reitittimesi nimeä ja "port forwarding".
 Paste your friend's room code first.	Liitä ensin ystäväsi huonekoodi.
 Room code	Huonekoodi
 Room code copied. Paste it in a message to your friend.	Huonekoodi kopioitu. Liitä se viestiin ystävällesi.
@@ -1402,7 +1398,6 @@ A room code is needed	Tarvitset huonekoodin
 An address alone can't open a room any more: ask your friend for the room code.	Pelkkä osoite ei enää avaa huonetta: pyydä ystävältäsi huonekoodi.
 Code for another address	Koodi toiselle osoitteelle
 Copy the whole room code from your friend's room: letters and digits in groups of four.	Kopioi ystäväsi huoneen koko koodi: kirjaimia ja numeroita neljän ryhmissä.
-Enter this computer's Tailscale or ZeroTier address, with its port.	Anna tämän tietokoneen Tailscale- tai ZeroTier-osoite ja portti.
 Guests paused for 30 seconds	Vieraat estetty 30 sekunniksi
 In the room, copy your room code and send it to them by message.	Kopioi huonekoodi huoneessa ja lähetä se ystävällesi viestillä.
 No access to the router? Both install the same free virtual network, such as Tailscale or ZeroTier, then make its code in the room's Details.	Etkö pääse reitittimen asetuksiin? Asentakaa sama ilmainen virtuaaliverkko, kuten Tailscale tai ZeroTier, ja luokaa koodi huoneen Lisätiedoissa.
@@ -1412,7 +1407,6 @@ The whole code your friend sent you.	Ystäväsi lähettämä koko koodi.
 This room code is wrong or old: ask your friend to copy it again.	Tämä huonekoodi on väärä tai vanha: pyydä ystävääsi kopioimaan se uudelleen.
 Too many wrong room codes. Wait 30 seconds, then try again.	Liian monta väärää huonekoodia. Odota 30 sekuntia ja yritä uudelleen.
 With Tailscale or ZeroTier, ask your friend to make a code in their room's Details.	Jos käytätte Tailscalea tai ZeroTieria, pyydä ystävääsi luomaan koodi huoneensa Lisätiedoissa.
-With Tailscale or ZeroTier, make a code for this computer's address in Details below.	Jos käytätte Tailscalea tai ZeroTieria, luo tämän tietokoneen osoitteelle koodi alla olevissa Lisätiedoissa.
 Wrong room code	Väärä huonekoodi
 Your friend opens a room and sends you its code.	Ystäväsi avaa huoneen ja lähettää sinulle sen koodin.
 Your game stopped during the session. Play together again from where you saved.	Pelisi pysähtyi istunnon aikana. Pelatkaa taas yhdessä viimeisimmästä tallennuksesta.
@@ -1424,3 +1418,10 @@ playable	pelattava
 very slow	hyvin hidas
 Testing the connection with your friend...	Testataan yhteyttä ystävääsi...
 The round trip varies by {} ms: the input delay grows to absorb it.	Vasteaika vaihtelee {} ms: ohjausviive kasvaa tasoittaakseen sen.
+
+Enter this computer's address on Radmin VPN, ZeroTier, Tailscale or playit.gg, with its port.	Anna tämän tietokoneen osoite Radmin VPN:ssä, ZeroTierissä, Tailscalessa tai playit.gg:ssä sekä portti.
+If your router refuses, open (forward) port {} for UDP to this computer in your router's settings.	Jos reititin kieltäytyy, avaa (ohjaa) portti {} UDP-liikenteelle tähän tietokoneeseen reitittimen asetuksissa.
+Open port {} (UDP) to this computer in your router's settings: search the web for your router's name and "port forwarding".	Avaa portti {} (UDP) tähän tietokoneeseen reitittimen asetuksista: hae verkosta reitittimesi nimeä ja "port forwarding".
+The room uses port {}, for UDP.	Huone käyttää porttia {} UDP-liikenteelle.
+Trying to reach your friend's room...	Yritetään yhdistää ystäväsi huoneeseen...
+No open port? Both of you can join one virtual network (Radmin VPN, ZeroTier or Tailscale), then make a code for this computer's address there in Details below.	Ei avointa porttia? Liittykää molemmat samaan virtuaaliverkkoon (Radmin VPN, ZeroTier tai Tailscale) ja luokaa koodi tämän tietokoneen osoitteelle siinä verkossa alla olevissa Tiedoissa.

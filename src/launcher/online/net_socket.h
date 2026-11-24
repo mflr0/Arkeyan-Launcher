@@ -1,12 +1,12 @@
 #pragma once
 
-// Non-blocking TCP for the online lobby (online/lobby.h): a listener on every address of this computer (IPv6 with IPv4
-// mapped where the system allows it), and a connection to the address a player pasted. BSD sockets on macOS and Linux,
-// Winsock on Windows. Nothing here waits: the lobby polls every frame of the window.
+// Non-blocking datagrams shared by the room stream, punching and STUN.
 #include <cstddef>
 #include <cstdint>
 #include <string>
 #include <string_view>
+#include <span>
+#include <vector>
 
 namespace online::net
 {
@@ -14,24 +14,39 @@ namespace online::net
     constexpr Handle Invalid = -1;
 
     bool Startup();
-    // Listens on `port` (TCP). Invalid with `error` (the system's words) when the port is taken or refused.
-    Handle Listen(uint16_t port, std::string& error);
-    // The next connection waiting, with the peer's address for the log. Invalid when none waits.
-    Handle Accept(Handle listener, std::string& peer);
-    // Starts connecting to `host` (a name, IPv4 or IPv6), `port`. Invalid with `error` when the name does not resolve.
-    Handle Connect(const std::string& host, uint16_t port, std::string& error);
-    enum class Progress
+    struct Endpoint
     {
-        Pending,
-        Connected,
-        Failed,
+        std::string ip;
+        uint16_t port = 0;
+        bool operator==(const Endpoint&) const = default;
     };
-    Progress Connecting(Handle handle);
-    // > 0: bytes read; 0: the peer closed; -1: nothing to read now; -2: the connection broke.
-    long Receive(Handle handle, uint8_t* buffer, size_t capacity);
-    // Bytes taken (0: the system's buffer is full, try again), -1: the connection broke.
-    long Send(Handle handle, const uint8_t* bytes, size_t size);
+    Handle BindUdp(uint16_t port, std::string& error);
+    uint16_t LocalPort(Handle handle);
+    // Names may block: callers resolve them on a worker; numeric addresses never use DNS.
+    std::vector<Endpoint> Resolve(const std::string& host, uint16_t port, bool numeric = false);
+    std::string Address(const Endpoint& endpoint);
+    // -1: nothing waiting; -2: socket error.
+    long ReceiveFrom(Handle handle, uint8_t* bytes, size_t capacity, Endpoint& peer);
+    long SendTo(Handle handle, std::span<const uint8_t> bytes, const Endpoint& peer);
     void Close(Handle handle);
+
+    // The room can substitute a deterministic datagram link in its in-process tests.
+    class DatagramIo
+    {
+    public:
+        virtual ~DatagramIo() = default;
+        virtual Handle Bind(uint16_t port, std::string& error) { return BindUdp(port, error); }
+        virtual uint16_t Port(Handle handle) { return LocalPort(handle); }
+        virtual long Receive(Handle handle, uint8_t* bytes, size_t size, Endpoint& from)
+        {
+            return ReceiveFrom(handle, bytes, size, from);
+        }
+        virtual long Send(Handle handle, std::span<const uint8_t> bytes, const Endpoint& to)
+        {
+            return SendTo(handle, bytes, to);
+        }
+        virtual void Release(Handle handle) { Close(handle); }
+    };
 
     // "1.2.3.4:5", "[2001:db8::1]:5", "name:5", or an address alone (then `defaultPort`). False on a malformed text.
     bool ParseAddress(std::string_view text, uint16_t defaultPort, std::string& host, uint16_t& port);

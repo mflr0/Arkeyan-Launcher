@@ -1292,10 +1292,8 @@ How PLAY starts the game	Så startar SPELA spelet
 How it works	Så fungerar det
 How to fix it	Så löser du det
 I'm ready	Jag är redo
-If your router refuses, open (forward) port {} for UDP and TCP to this computer in your router's settings.	Om routern nekar, öppna (vidarebefordra) port {} för UDP och TCP till den här datorn i routerns inställningar.
 Invite your friend	Bjud in din vän
 JOIN A ROOM	GÅ MED I ETT RUM
-Joining your friend's room...	Går med i din väns rum...
 Lets friends outside your home in. Most routers allow it.	Släpper in vänner utanför ditt hem. De flesta routrar tillåter det.
 No figures on the portal yet	Inga figurer på portalen ännu
 Not in the same home? Their router may block it: their room shows them how to fix it.	Är ni inte i samma hem? Din väns router kan blockera anslutningen: rummet visar din vän hur det går att lösa.
@@ -1326,7 +1324,6 @@ The connection was lost	Anslutningen bröts
 The one with the older version updates the game on its page, then you try again.	Den som har den äldre versionen uppdaterar spelet på dess sida, sedan försöker ni igen.
 The room couldn't open	Rummet kunde inte öppnas
 The room is closed	Rummet är stängt
-The room uses port {}, for UDP and TCP.	Rummet använder port {} för UDP och TCP.
 This port is already in use	Den här porten används redan
 This room is full	Det här rummet är fullt
 Try again	Försök igen
@@ -1382,7 +1379,6 @@ Check the room code: ask them to copy it again.	Kontrollera rumskoden: be din v�
 Get the room code	Hämta rumskoden
 Getting your room code...	Hämtar rumskoden...
 In the same home, ask your friend for the code under How to fix it in their room.	I samma hem: be din vän om koden under Så löser du det i hens rum.
-Open port {} (UDP and TCP) to this computer in your router's settings: search the web for your router's name and "port forwarding".	Öppna port {} (UDP och TCP) till den här datorn i routerns inställningar: sök på webben efter routerns namn och "port forwarding".
 Paste your friend's room code first.	Klistra in din väns rumskod först.
 Room code	Rumskod
 Room code copied. Paste it in a message to your friend.	Rumskoden kopierad. Klistra in den i ett meddelande till din vän.
@@ -1402,7 +1398,6 @@ A room code is needed	En rumskod behövs
 An address alone can't open a room any more: ask your friend for the room code.	Enbart en adress kan inte längre öppna ett rum: be din vän om rumskoden.
 Code for another address	Kod för annan adress
 Copy the whole room code from your friend's room: letters and digits in groups of four.	Kopiera hela rumskoden från din väns rum: bokstäver och siffror i grupper om fyra.
-Enter this computer's Tailscale or ZeroTier address, with its port.	Ange den här datorns Tailscale- eller ZeroTier-adress med port.
 Guests paused for 30 seconds	Gäster nekas i 30 sekunder
 In the room, copy your room code and send it to them by message.	Kopiera din rumskod i rummet och skicka den till din vän i ett meddelande.
 No access to the router? Both install the same free virtual network, such as Tailscale or ZeroTier, then make its code in the room's Details.	Ingen åtkomst till routern? Installera samma gratis virtuella nätverk, som Tailscale eller ZeroTier, och skapa koden under Detaljer i rummet.
@@ -1412,7 +1407,6 @@ The whole code your friend sent you.	Hela koden som din vän skickade till dig.
 This room code is wrong or old: ask your friend to copy it again.	Den här rumskoden är fel eller gammal: be din vän att kopiera den igen.
 Too many wrong room codes. Wait 30 seconds, then try again.	För många felaktiga rumskoder. Vänta 30 sekunder och försök igen.
 With Tailscale or ZeroTier, ask your friend to make a code in their room's Details.	Med Tailscale eller ZeroTier ber du din vän att skapa en kod under Detaljer i sitt rum.
-With Tailscale or ZeroTier, make a code for this computer's address in Details below.	Med Tailscale eller ZeroTier skapar du en kod för den här datorns adress under Detaljer nedan.
 Wrong room code	Fel rumskod
 Your friend opens a room and sends you its code.	Din vän öppnar ett rum och skickar koden till dig.
 Your game stopped during the session. Play together again from where you saved.	Ditt spel stoppade under sessionen. Spela tillsammans igen från där ni sparade.
@@ -1424,3 +1418,10 @@ playable	spelbar
 very slow	mycket långsam
 Testing the connection with your friend...	Testar anslutningen till din vän...
 The round trip varies by {} ms: the input delay grows to absorb it.	Svarstiden varierar med {} ms: kontrollfördröjningen ökar för att jämna ut det.
+
+Enter this computer's address on Radmin VPN, ZeroTier, Tailscale or playit.gg, with its port.	Ange den här datorns adress på Radmin VPN, ZeroTier, Tailscale eller playit.gg, med porten.
+If your router refuses, open (forward) port {} for UDP to this computer in your router's settings.	Om routern nekar, öppna (vidarebefordra) port {} för UDP till den här datorn i routerns inställningar.
+Open port {} (UDP) to this computer in your router's settings: search the web for your router's name and "port forwarding".	Öppna port {} (UDP) till den här datorn i routerns inställningar: sök på webben efter routerns namn och "port forwarding".
+The room uses port {}, for UDP.	Rummet använder port {} för UDP.
+Trying to reach your friend's room...	Försöker nå din väns rum...
+No open port? Both of you can join one virtual network (Radmin VPN, ZeroTier or Tailscale), then make a code for this computer's address there in Details below.	Ingen öppen port? Anslut er båda till samma virtuella nätverk (Radmin VPN, ZeroTier eller Tailscale) och skapa en kod för den här datorns adress där under Detaljer nedan.

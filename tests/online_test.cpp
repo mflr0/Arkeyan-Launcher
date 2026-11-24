@@ -3,6 +3,8 @@
 // start; a wrong room code, another disc, a full room, a guest that leaves, a silent one. Returns the number of failures.
 #include "launcher/launcher_log.h"
 #include "launcher/online/lobby.h"
+#include "test_env.h"
+#include "datagram_fake.h"
 #include <algorithm>
 #include <limits>
 #include "launcher/online/room_code.h"
@@ -368,17 +370,22 @@ namespace
     }
 
     // Two rooms' worth of polling on one thread, on a clock the test moves.
+    bool realSockets = false;
     struct Room
     {
+        std::shared_ptr<net::DatagramIo> io =
+            realSockets ? std::make_shared<net::DatagramIo>() : std::make_shared<online_tests::DatagramFake>();
         uint64_t now = 1000;
         bool ticking = false; // each reading of the clock a millisecond later, as a real clock moves during a poll
-        Lobby host{ [this] { return ticking ? now++ : now; } };
-        Lobby guest{ [this] { return ticking ? now++ : now; } };
+        Lobby host{ [this] { return ticking ? now++ : now; }, io };
+        Lobby guest{ [this] { return ticking ? now++ : now; }, io };
         uint16_t port = 0;
+        std::function<void()> extra;
 
         bool Open(std::vector<SaveFile> save = {})
         {
             HostOptions options;
+            options.discover = false;
             options.hello = SampleHello();
             options.player = SamplePlayer("Host", 1);
             options.settings.fpsLimit = 30;
@@ -400,6 +407,7 @@ namespace
         void Join(Lobby& who, bool wrong = false, Hello hello = SampleHello())
         {
             JoinOptions options;
+            options.discover = false;
             options.address = EncodeRoomCode("127.0.0.1", port, host.Secret() ^ uint64_t(wrong));
             options.hello = hello;
             options.player = SamplePlayer("Guest", 2);
@@ -409,10 +417,12 @@ namespace
 
         // Polls both until `done` or 3000 rounds (each a few ms of the test clock).
         template <typename Done>
-        bool Until(Done done, Lobby* other = nullptr)
+        bool Until(Done done, Lobby* other = nullptr, int rounds = 3000)
         {
-            for (int i = 0; i < 3000; ++i)
+            for (int i = 0; i < rounds; ++i)
             {
+                if (extra)
+                    extra();
                 host.Poll();
                 guest.Poll();
                 if (other)
@@ -420,7 +430,8 @@ namespace
                 if (done())
                     return true;
                 now += 5;
-                SDL_Delay(1);
+                if (realSockets)
+                    SDL_Delay(1);
             }
             return false;
         }
@@ -432,50 +443,72 @@ namespace
         FrameReader reader;
         Keys keys;
         std::vector<uint8_t> wire;
-        ~WireGuest() { net::Close(socket); }
+        std::unique_ptr<Punch> punch;
+        std::unique_ptr<UdpStream> stream;
+        Room* room = nullptr;
+        ~WireGuest()
+        {
+            if (room)
+                room->extra = {};
+            if (room)
+                room->io->Release(socket);
+        }
 
         bool Send(const std::vector<uint8_t>& frame)
         {
-            size_t at = 0;
-            for (int i = 0; i < 3000 && at < frame.size(); ++i)
-            {
-                const long sent = net::Send(socket, frame.data() + at, frame.size() - at);
-                if (sent < 0)
-                    return false;
-                at += size_t(sent);
-                if (!sent)
-                    SDL_Delay(1);
-            }
-            return at == frame.size();
+            if (!stream || !stream->Write(frame))
+                return false;
+            stream->Poll(room->now);
+            return true;
         }
 
         void Read()
         {
-            uint8_t bytes[16384];
+            punch->Poll(room->now);
             for (;;)
             {
-                const long got = net::Receive(socket, bytes, sizeof bytes);
-                if (got <= 0)
+                uint8_t bytes[2048];
+                net::Endpoint from;
+                const long got = room->io->Receive(socket, bytes, sizeof bytes, from);
+                if (got < 0)
                     break;
-                wire.insert(wire.end(), bytes, bytes + got);
-                reader.Feed(std::span(bytes, size_t(got)));
+                const auto packet = std::span(bytes, size_t(got));
+                if (punch->Receive(from, packet, room->now))
+                {
+                    if (punch->Connected() && !stream)
+                        stream = std::make_unique<UdpStream>(room->now, punch->StreamKey(false), punch->StreamKey(true),
+                            [this](auto data) { room->io->Send(socket, data, punch->Peer()); });
+                }
+                else if (stream && from == punch->Peer())
+                    stream->Receive(packet, room->now);
             }
+            if (!stream)
+                return;
+            stream->Poll(room->now);
+            const auto bytes = stream->Read();
+            wire.insert(wire.end(), bytes.begin(), bytes.end());
+            reader.Feed(bytes);
         }
 
-        bool Enter(Room& room)
+        bool Enter(Room& target, bool wrongProof = false)
         {
+            room = &target;
             std::string error;
-            socket = net::Connect("127.0.0.1", room.port, error);
-            if (socket == net::Invalid ||
-                !room.Until([&] { return net::Connecting(socket) == net::Progress::Connected; }))
+            socket = room->io->Bind(0, error);
+            if (socket == net::Invalid)
+                return false;
+            punch = std::make_unique<Punch>(room->host.Secret(), false, room->now,
+                [this](const auto& to, auto bytes) { room->io->Send(socket, bytes, to); });
+            punch->Add({ { "127.0.0.1", room->port } }, room->now);
+            room->extra = [this] { Read(); };
+            if (!room->Until([&] { return bool(stream); }))
                 return false;
             Hello hello = SampleHello();
             RandomBytes(hello.nonce);
             if (!Send(Frame(MessageType::Hello, 0, Encode(hello), nullptr)))
                 return false;
             std::optional<Received> reply;
-            if (!room.Until([&] {
-                    Read();
+            if (!room->Until([&] {
                     reply = reader.Next();
                     return bool(reply);
                 }))
@@ -483,13 +516,12 @@ namespace
             Hello hostHello;
             if (reply->type != MessageType::Hello || !Decode(reply->payload, hostHello))
                 return false;
-            keys = DeriveKeys(room.host.Secret(), hostHello.nonce, hello.nonce);
+            keys = DeriveKeys(room->host.Secret() ^ uint64_t(wrongProof), hostHello.nonce, hello.nonce);
             const auto proof = ProofOf(keys, false);
             if (!Send(Frame(MessageType::Proof, 1, proof, &keys, false)))
                 return false;
-            return room.Until([&] {
-                Read();
-                return room.host.Get().state == State::InRoom;
+            return room->Until([&] {
+                return wrongProof ? room->host.Get().state == State::Waiting : room->host.Get().state == State::InRoom;
             });
         }
     };
@@ -513,10 +545,8 @@ namespace
             ONLINE_EXPECT(room.Open());
             for (int attempt = 0; attempt < 5; ++attempt)
             {
-                room.Join(room.guest, true);
-                ONLINE_EXPECT(room.Until(
-                    [&] { return room.guest.Get().state == State::Ended && room.host.Get().state == State::Waiting; }));
-                ONLINE_EXPECT(room.guest.Get().error == Error::WrongCode);
+                WireGuest guest;
+                ONLINE_EXPECT(guest.Enter(room, true));
                 ONLINE_EXPECT(
                     room.host.Get().lastRefusal.error == (attempt == 4 ? Error::TooManyCodes : Error::WrongCode));
             }
@@ -534,8 +564,8 @@ namespace
             ONLINE_EXPECT(room.Open());
             for (int attempt = 0; attempt < 5; ++attempt)
             {
-                room.Join(room.guest, true);
-                ONLINE_EXPECT(room.Until([&] { return room.guest.Get().state == State::Ended; }));
+                WireGuest guest;
+                ONLINE_EXPECT(guest.Enter(room, true));
                 ONLINE_EXPECT(room.host.Get().lastRefusal.error == Error::WrongCode);
                 room.now += 60001;
             }
@@ -625,6 +655,39 @@ namespace
         }
     }
 
+    void LossyRoomChecks()
+    {
+        Room room;
+        std::static_pointer_cast<online_tests::DatagramFake>(room.io)->impaired = true;
+        std::vector<uint8_t> bytes(5 * 1024 * 1024);
+        for (size_t i = 0; i < bytes.size(); ++i)
+            bytes[i] = uint8_t(i * 31);
+        ONLINE_EXPECT(room.Open({ { "slot.bin", bytes } }));
+        room.Join(room.guest);
+        ONLINE_EXPECT(room.Until(
+            [&] {
+                return room.guest.Get().saveReceived == bytes.size() && room.host.Get().haveRemote &&
+                       room.guest.Get().haveRemote;
+            },
+            nullptr, 60000));
+        const auto localPort = room.guest.Get().localPort;
+        ONLINE_EXPECT(!room.guest.Get().save.empty() && room.guest.Get().save[0].bytes == bytes);
+        ONLINE_EXPECT(localPort != 0 && room.host.Get().endpoint.port == localPort);
+        room.host.SetReady(true);
+        room.guest.SetReady(true);
+        ONLINE_EXPECT(room.Until([&] { return room.host.Get().CanStart(); }));
+        ONLINE_EXPECT(room.host.StartGame());
+        ONLINE_EXPECT(room.host.Get().state != State::Started);
+        ONLINE_EXPECT(room.Until(
+            [&] { return room.host.Get().state == State::Started && room.guest.Get().state == State::Started; }));
+        ONLINE_EXPECT(room.host.Get().start.sessionKey == room.guest.Get().start.sessionKey);
+        std::string error;
+        const auto reboundHost = room.io->Bind(room.port, error), reboundGuest = room.io->Bind(localPort, error);
+        ONLINE_EXPECT(reboundHost != net::Invalid && reboundGuest != net::Invalid);
+        room.io->Release(reboundHost);
+        room.io->Release(reboundGuest);
+    }
+
     void RoomChecks()
     {
         {
@@ -693,8 +756,8 @@ namespace
             ONLINE_EXPECT(room.Open());
             room.Join(room.guest, true);
             ONLINE_EXPECT(room.Until([&] { return room.guest.Get().state == State::Ended; }));
-            ONLINE_EXPECT(room.guest.Get().error == Error::WrongCode);
-            ONLINE_EXPECT(room.Until([&] { return room.host.Get().lastRefusal.error == Error::WrongCode; }));
+            ONLINE_EXPECT(room.guest.Get().error == Error::CannotConnect);
+            ONLINE_EXPECT(room.host.Get().lastRefusal.error == Error::None);
             ONLINE_EXPECT(room.host.Get().state == State::Waiting);
             // The room stays open: the right code gets in after a wrong one.
             room.Join(room.guest);
@@ -715,7 +778,7 @@ namespace
             ONLINE_EXPECT(room.Open());
             room.Join(room.guest);
             ONLINE_EXPECT(room.Until([&] { return room.guest.Get().state == State::InRoom; }));
-            Lobby third([&room] { return room.now; });
+            Lobby third([&room] { return room.now; }, room.io);
             room.Join(third);
             ONLINE_EXPECT(room.Until([&] { return third.Get().state == State::Ended; }, &third));
             ONLINE_EXPECT(third.Get().error == Error::RoomFull && room.guest.Get().state == State::InRoom);
@@ -824,6 +887,8 @@ namespace
 
         SessionPlan plan;
         plan.host = true;
+        plan.peerEndpoint = "198.51.100.7:50000";
+        plan.localPort = 50001;
         plan.start.port = 47641;
         plan.start.inputDelay = 3;
         plan.start.sessionKey[0] = 0xAB;
@@ -846,6 +911,8 @@ namespace
                       Variable(launch, "SKY_PLAYER2_XUID") == "E0000000000000CD");
         ONLINE_EXPECT(
             Variable(launch, "SKY_NETPLAY_HOST") == "47641" && Variable(launch, "SKY_NETPLAY_JOIN") == "<unset>");
+        ONLINE_EXPECT(Variable(launch, "SKY_NETPLAY_PEER") == "198.51.100.7:50000" &&
+                      Variable(launch, "SKY_NETPLAY_LOCAL_PORT") == "<unset>");
         ONLINE_EXPECT(Variable(launch, "SKY_NETPLAY_DELAY") == "3" && Variable(launch, "SKY_NETPLAY_FPS") == "60" &&
                       Variable(launch, "SKY_LANGUAGE") == "fr" &&
                       Variable(launch, "SKY_NETPLAY_SCHEDULE") == "cooperative");
@@ -889,6 +956,8 @@ namespace
         ONLINE_EXPECT(PrepareSession(*game, plan, root, guestLaunch, error));
         ONLINE_EXPECT(Variable(guestLaunch, "SKY_NETPLAY_JOIN") == "[2001:db8::7]:47641" &&
                       Variable(guestLaunch, "SKY_NETPLAY_HOST") == "<unset>");
+        ONLINE_EXPECT(Variable(guestLaunch, "SKY_NETPLAY_LOCAL_PORT") == "50001" &&
+                      Variable(guestLaunch, "SKY_NETPLAY_PEER") == "<unset>");
         std::ofstream(root / "saves" / "slot0" / "save.bin", std::ios::binary | std::ios::trunc) << "guest played";
         std::ofstream(root / "figures" / "p2-0.sky", std::ios::binary | std::ios::trunc)
             << std::string(FigureDumpBytes, char(7));
@@ -959,14 +1028,29 @@ namespace
     }
 }
 
+int UdpChecks();
+
 int OnlineChecks(const std::filesystem::path& scratch)
 {
     g_failures = 0;
     LogFileChecks(scratch);
     CipherChecks();
     MessageChecks();
+    g_failures += UdpChecks();
     RoomChecks();
     SecurityChecks();
+    LossyRoomChecks();
+    std::string error;
+    const auto probe = net::BindUdp(0, error);
+    if (probe == net::Invalid)
+        fprintf(stderr, "SKIP online loopback checks: UDP bind refused: %s\n", error.c_str());
+    else
+    {
+        net::Close(probe);
+        realSockets = true;
+        RoomChecks();
+        SecurityChecks();
+    }
     SessionChecks(scratch);
     if (g_failures == 0)
         printf("online room checks: all passed\n");

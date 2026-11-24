@@ -146,6 +146,9 @@ add_library(ArkeyanLauncherCore STATIC
     src/launcher/online/room_code.cpp
     src/launcher/online/room_inputs.cpp
     src/launcher/online/session_launch.cpp
+    src/launcher/online/udp_stream.cpp
+    src/launcher/online/punch.cpp
+    src/launcher/online/discovery.cpp
     src/launcher/online/stun.cpp
     src/shared/portmap.cpp
     src/launcher/i18n.cpp
@@ -323,7 +326,7 @@ add_dependencies(ArkeyanLauncherTest FakeArkeyanBuilder ArkeyanLauncher)
 target_compile_definitions(ArkeyanLauncherTest PRIVATE LAUNCHER_FAKE_KIT="${CMAKE_BINARY_DIR}/fake-kit" LAUNCHER_TEST_EXE="$<TARGET_FILE:ArkeyanLauncher>")
 
 # The launcher shell's checks (tests/shell_test.cpp), run by ArkeyanLauncherTest.
-target_sources(ArkeyanLauncherTest PRIVATE tests/shell_test.cpp tests/portal_text_test.cpp tests/settings_test.cpp tests/copy_test.cpp tests/portable_test.cpp tests/i18n_test.cpp tests/uninstall_test.cpp tests/text_fit_test.cpp tests/navigation_test.cpp tests/accent_test.cpp tests/music_test.cpp tests/profiles_test.cpp tests/single_instance_test.cpp tests/toybox_link_test.cpp tests/vfs_test.cpp tests/disc_check_test.cpp tests/lux_images_test.cpp tests/level_names_test.cpp tests/chests_test.cpp tests/online_test.cpp)
+target_sources(ArkeyanLauncherTest PRIVATE tests/shell_test.cpp tests/portal_text_test.cpp tests/settings_test.cpp tests/copy_test.cpp tests/portable_test.cpp tests/i18n_test.cpp tests/uninstall_test.cpp tests/text_fit_test.cpp tests/navigation_test.cpp tests/accent_test.cpp tests/music_test.cpp tests/profiles_test.cpp tests/single_instance_test.cpp tests/toybox_link_test.cpp tests/vfs_test.cpp tests/disc_check_test.cpp tests/lux_images_test.cpp tests/level_names_test.cpp tests/chests_test.cpp tests/online_test.cpp tests/udp_stream_test.cpp)
 target_compile_definitions(ArkeyanLauncherTest PRIVATE LAUNCHER_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
 target_sources(ArkeyanLauncherTest PRIVATE tests/ui_render_test.cpp)
 target_include_directories(ArkeyanLauncherTest PRIVATE lib/miniz)

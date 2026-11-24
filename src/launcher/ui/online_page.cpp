@@ -155,7 +155,7 @@ namespace launcher_ui
         auto renew = steady_clock::time_point::max();
         netplay::portmap::Mapping mapping;
         netplay::portmap::Options options;
-        options.alsoTcp = true;
+        options.alsoTcp = false;
         for (;;)
         {
             m_wake.wait_until(lock, renew, [&] { return m_quit || seen != m_generation; });
@@ -334,12 +334,12 @@ namespace launcher_ui
         if (automatic && !seen.v6.ip.empty())
         {
             invite.reach = Reach::Ipv6;
-            use(seen.v6.ip, port);
+            use(seen.v6.ip, seen.v6.port ? seen.v6.port : port);
             return invite;
         }
         invite.reach = !automatic ? Reach::Manual : mapping.ok ? Reach::Shared : Reach::Refused;
         const bool publicV4 = netplay::portmap::ParseIpv4(seen.v4.ip, ip) && netplay::portmap::IsPublicIpv4(ip);
-        use(publicV4 ? seen.v4.ip : localAddress, port);
+        use(publicV4 ? seen.v4.ip : localAddress, publicV4 && seen.v4.port ? seen.v4.port : port);
         return invite;
     }
 
@@ -677,10 +677,12 @@ namespace launcher_ui
             launch.variables.emplace_back("SKY_SETTINGS", GameSettingsPath());
         online::SessionPlan plan;
         plan.host = status.host;
-        plan.hostAddress = room.joinedHost;
+        plan.hostAddress = status.endpoint.ip;
+        plan.localPort = status.localPort;
+        plan.peerEndpoint = online::net::Address(status.endpoint);
         plan.start = status.start;
         if (!status.host)
-            plan.start.port = room.joinedPort;
+            plan.start.port = status.endpoint.port;
         plan.hostPlayer = status.host ? room.inputs.player : status.remote;
         plan.guestPlayer = status.host ? status.remote : room.inputs.player;
         plan.settings = status.host ? room.inputs.settings : status.settings;
@@ -858,9 +860,9 @@ namespace launcher_ui
                 const unsigned long port = std::strtoul(room.port, nullptr, 10);
                 const std::vector<std::string> lines =
                     settings.mode == Mode::Host
-                        ? std::vector<std::string>{ Tf("The room uses port {}, for UDP and TCP.", port),
+                        ? std::vector<std::string>{ Tf("The room uses port {}, for UDP.", port),
                               Tr("Open my router automatically asks your router with UPnP or NAT-PMP."),
-                              Tf("If your router refuses, open (forward) port {} for UDP and TCP to this computer in "
+                              Tf("If your router refuses, open (forward) port {} for UDP to this computer in "
                                  "your router's settings.",
                                   port),
                               Tr("No access to the router? Both install the same free virtual network, such as "
@@ -941,6 +943,7 @@ namespace launcher_ui
         {
             HostOptions options;
             options.port = port;
+            options.discover = m_shots.empty();
             options.hello = room.inputs.hello;
             options.player = room.inputs.player;
             options.settings = room.inputs.settings;
@@ -957,7 +960,7 @@ namespace launcher_ui
         }
         room.joinedHost = host;
         room.joinedPort = port;
-        return room.lobby.Join({ room.address, room.inputs.hello, room.inputs.player });
+        return room.lobby.Join({ room.address, room.inputs.hello, room.inputs.player, m_shots.empty() });
     }
 
     bool App::DrawOnlineHelp(const OnlineHelp& help)
@@ -1043,7 +1046,7 @@ namespace launcher_ui
         const auto seen = previewing
                               ? online::stun::Result{ { room.previewRouter == 1 ? "203.0.113.4" : "198.51.100.7", 0 },
                                     { room.previewRouter == 3 ? "2001:db8::7" : "", 0 } }
-                              : room.router.Seen();
+                              : status.mapped;
         const bool pending = room.preview ? room.previewRouter == 0 : room.router.Pending();
         const Invite invite =
             InviteFor(mapping, seen, pending, room.automatic, room.localAddress, port, room.lobby.Secret());
@@ -1116,13 +1119,14 @@ namespace launcher_ui
             if (invite.reach == Reach::Refused || invite.reach == Reach::Manual)
             {
                 const std::string forward =
-                    Tf("Open port {} (UDP and TCP) to this computer in your router's settings: search the web for "
+                    Tf("Open port {} (UDP) to this computer in your router's settings: search the web for "
                        "your router's name and \"port forwarding\".",
                         room.port);
                 ui::Text(ui::TextStyle::Body, forward.c_str(), ui::color::InkSoft, width);
             }
             ui::Text(ui::TextStyle::Body,
-                Tr("With Tailscale or ZeroTier, make a code for this computer's address in Details below."),
+                Tr("No open port? Both of you can join one virtual network (Radmin VPN, ZeroTier or Tailscale), then "
+                   "make a code for this computer's address there in Details below."),
                 ui::color::InkSoft, width);
             if (!invite.homeCode.empty() && invite.homeCode != invite.code)
             {
@@ -1136,29 +1140,26 @@ namespace launcher_ui
         if (room.showDetails)
         {
             ui::Text(ui::TextStyle::Label, Tr("Code for another address"), ui::color::Ink, width);
-            ui::Text(ui::TextStyle::Caption, Tr("Enter this computer's Tailscale or ZeroTier address, with its port."),
+            ui::Text(ui::TextStyle::Caption,
+                Tr("Enter this computer's address on Radmin VPN, ZeroTier, Tailscale or playit.gg, with its port."),
                 ui::color::InkSoft, width);
             ui::TextField(
                 "##otheraddress", room.otherAddress, sizeof room.otherAddress, { .hint = "100.64.0.2:47640" });
-            std::string host;
-            uint16_t otherPort = 0;
-            if (online::net::ParseAddress(room.otherAddress, port, host, otherPort))
+            room.lobby.ResolveCode(room.otherAddress, port);
+            const std::string code = room.lobby.OtherCode();
+            if (!code.empty())
             {
-                const std::string code = online::EncodeRoomCode(host, otherPort, room.lobby.Secret());
-                if (!code.empty())
+                const std::string shownCode = room.showAddress ? code : MaskedCode(code);
+                ui::Text(ui::TextStyle::Body, shownCode.c_str(), ui::color::Ink,
+                    std::max(40.0f, width - ui::ButtonWidth(Tr("Copy")) - ui::space::S));
+                ImGui::SameLine(0, ui::space::S);
+                ImGui::PushID("othercode");
+                if (ui::Button(Tr("Copy"), { .size = ui::Size::Small }))
                 {
-                    const std::string shownCode = room.showAddress ? code : MaskedCode(code);
-                    ui::Text(ui::TextStyle::Body, shownCode.c_str(), ui::color::Ink,
-                        std::max(40.0f, width - ui::ButtonWidth(Tr("Copy")) - ui::space::S));
-                    ImGui::SameLine(0, ui::space::S);
-                    ImGui::PushID("othercode");
-                    if (ui::Button(Tr("Copy"), { .size = ui::Size::Small }))
-                    {
-                        SDL_SetClipboardText(code.c_str());
-                        Toast(Tr("Room code copied. Paste it in a message to your friend."));
-                    }
-                    ImGui::PopID();
+                    SDL_SetClipboardText(code.c_str());
+                    Toast(Tr("Room code copied. Paste it in a message to your friend."));
                 }
+                ImGui::PopID();
             }
         }
     }
@@ -1309,7 +1310,7 @@ namespace launcher_ui
             ui::SectionHeader(Tr("Your friend's room"), nullptr, false);
             ui::Spinner();
             ImGui::SameLine(0, ui::space::S);
-            ui::Text(ui::TextStyle::Body, Tr("Joining your friend's room..."), ui::color::Ink, width);
+            ui::Text(ui::TextStyle::Body, Tr("Trying to reach your friend's room..."), ui::color::Ink, width);
             ImGui::Dummy(ImVec2(0, ui::space::S));
             if (ui::Button(Tr("Cancel")))
             {

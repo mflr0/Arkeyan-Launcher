@@ -17,6 +17,8 @@ namespace online
     {
         bool host = false;
         std::string hostAddress; // guest: the host as the room reached it (no port)
+        uint16_t localPort = 0;
+        std::string peerEndpoint;
         Start start;
         Player hostPlayer, guestPlayer; // Player 1 and Player 2 in both games
         Settings settings;              // the host's

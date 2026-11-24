@@ -1,6 +1,7 @@
 #include "launcher/online/net_socket.h"
 #include "launcher/online/room_code.h"
 #include <charconv>
+#include <algorithm>
 #include <cstring>
 #include <mutex>
 
@@ -13,7 +14,6 @@
 #include <fcntl.h>
 #include <netdb.h>
 #include <netinet/in.h>
-#include <netinet/tcp.h>
 #include <poll.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -36,11 +36,6 @@ namespace online::net
             ioctlsocket(raw, FIONBIO, &on);
         }
         std::string LastError() { return "error " + std::to_string(WSAGetLastError()); }
-        int PollOne(Raw raw, short events)
-        {
-            WSAPOLLFD fd{ raw, events, 0 };
-            return WSAPoll(&fd, 1, 0);
-        }
 #else
         using Raw = int;
         const Raw NoSocket = -1;
@@ -50,23 +45,7 @@ namespace online::net
         bool WouldBlock() { return errno == EAGAIN || errno == EWOULDBLOCK || errno == EINPROGRESS; }
         void NonBlocking(Raw raw) { fcntl(raw, F_SETFL, fcntl(raw, F_GETFL, 0) | O_NONBLOCK); }
         std::string LastError() { return std::strerror(errno); }
-        int PollOne(Raw raw, short events)
-        {
-            pollfd fd{ raw, events, 0 };
-            return poll(&fd, 1, 0);
-        }
 #endif
-
-        void Configure(Raw raw)
-        {
-            NonBlocking(raw);
-            const int on = 1;
-            // Lobby messages are small and the players wait on each one.
-            setsockopt(raw, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<const char*>(&on), sizeof(on));
-#if defined(__APPLE__)
-            setsockopt(raw, SOL_SOCKET, SO_NOSIGPIPE, &on, sizeof(on));
-#endif
-        }
 
         std::string AddressText(const sockaddr* address)
         {
@@ -75,7 +54,10 @@ namespace online::net
                 inet_ntop(AF_INET, &reinterpret_cast<const sockaddr_in*>(address)->sin_addr, text, sizeof(text));
             else if (address->sa_family == AF_INET6)
                 inet_ntop(AF_INET6, &reinterpret_cast<const sockaddr_in6*>(address)->sin6_addr, text, sizeof(text));
-            return text;
+            std::string result(text);
+            if (result.starts_with("::ffff:"))
+                result.erase(0, 7);
+            return result;
         }
     }
 
@@ -94,29 +76,24 @@ namespace online::net
 #endif
     }
 
-    Handle Listen(uint16_t port, std::string& error)
+    Handle BindUdp(uint16_t port, std::string& error)
     {
         if (!Startup())
-        {
-            error = "no network";
             return Invalid;
-        }
-        // IPv6 first, dual-stack, so an IPv4 guest and an IPv6 one both reach it; IPv4 alone where IPv6 is off.
         for (const int family : { AF_INET6, AF_INET })
         {
-            const Raw raw = socket(family, SOCK_STREAM, IPPROTO_TCP);
+            const Raw raw = socket(family, SOCK_DGRAM, IPPROTO_UDP);
             if (raw == NoSocket)
                 continue;
-            const int on = 1, off = 0;
-#if !defined(_WIN32)
-            setsockopt(raw, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
-#else
-            (void)on;
-#endif
             int bound = -1;
             if (family == AF_INET6)
             {
-                setsockopt(raw, IPPROTO_IPV6, IPV6_V6ONLY, reinterpret_cast<const char*>(&off), sizeof(off));
+                const int off = 0;
+                if (setsockopt(raw, IPPROTO_IPV6, IPV6_V6ONLY, reinterpret_cast<const char*>(&off), sizeof(off)) != 0)
+                {
+                    CloseRaw(raw);
+                    continue;
+                }
                 sockaddr_in6 address{};
                 address.sin6_family = AF_INET6;
                 address.sin6_addr = in6addr_any;
@@ -131,9 +108,9 @@ namespace online::net
                 address.sin_port = htons(port);
                 bound = bind(raw, reinterpret_cast<const sockaddr*>(&address), sizeof(address));
             }
-            if (bound == 0 && listen(raw, 4) == 0)
+            if (bound == 0)
             {
-                Configure(raw);
+                NonBlocking(raw);
                 return Wrap(raw);
             }
             error = LastError();
@@ -142,90 +119,92 @@ namespace online::net
         return Invalid;
     }
 
-    Handle Accept(Handle listener, std::string& peer)
+    uint16_t LocalPort(Handle handle)
     {
         sockaddr_storage address{};
         socklen_t size = sizeof(address);
-        const Raw raw = accept(ToRaw(listener), reinterpret_cast<sockaddr*>(&address), &size);
-        if (raw == NoSocket)
-            return Invalid;
-        Configure(raw);
-        peer = AddressText(reinterpret_cast<const sockaddr*>(&address));
-        return Wrap(raw);
+        if (getsockname(ToRaw(handle), reinterpret_cast<sockaddr*>(&address), &size) != 0)
+            return 0;
+        return ntohs(address.ss_family == AF_INET6 ? reinterpret_cast<sockaddr_in6*>(&address)->sin6_port
+                                                   : reinterpret_cast<sockaddr_in*>(&address)->sin_port);
     }
 
-    Handle Connect(const std::string& host, uint16_t port, std::string& error)
+    std::vector<Endpoint> Resolve(const std::string& host, uint16_t port, bool numeric)
     {
-        if (!Startup())
-        {
-            error = "no network";
-            return Invalid;
-        }
-        addrinfo hints{};
+        std::vector<Endpoint> result;
+        if (!Startup() || !port)
+            return result;
+        addrinfo hints{}, *found = nullptr;
         hints.ai_family = AF_UNSPEC;
-        hints.ai_socktype = SOCK_STREAM;
-        hints.ai_protocol = IPPROTO_TCP;
-        addrinfo* found = nullptr;
-        const std::string service = std::to_string(port);
-        if (getaddrinfo(host.c_str(), service.c_str(), &hints, &found) != 0 || !found)
+        hints.ai_socktype = SOCK_DGRAM;
+        hints.ai_flags = numeric ? AI_NUMERICHOST : 0;
+        if (getaddrinfo(host.c_str(), nullptr, &hints, &found) != 0)
+            return result;
+        for (auto* each = found; each; each = each->ai_next)
         {
-            error = "unknown address";
-            return Invalid;
-        }
-        Handle result = Invalid;
-        for (const addrinfo* each = found; each && result == Invalid; each = each->ai_next)
-        {
-            const Raw raw = socket(each->ai_family, each->ai_socktype, each->ai_protocol);
-            if (raw == NoSocket)
-                continue;
-            Configure(raw);
-            if (connect(raw, each->ai_addr, socklen_t(each->ai_addrlen)) == 0 || WouldBlock())
-                result = Wrap(raw);
-            else
-            {
-                error = LastError();
-                CloseRaw(raw);
-            }
+            Endpoint endpoint{ AddressText(each->ai_addr), port };
+            if (!endpoint.ip.empty() && std::find(result.begin(), result.end(), endpoint) == result.end())
+                result.push_back(std::move(endpoint));
         }
         freeaddrinfo(found);
         return result;
     }
 
-    Progress Connecting(Handle handle)
+    std::string Address(const Endpoint& endpoint)
     {
-        const Raw raw = ToRaw(handle);
-        const int ready = PollOne(raw, POLLOUT);
-        if (ready == 0)
-            return Progress::Pending;
-        int error = 0;
-        socklen_t size = sizeof(error);
-        if (ready < 0 || getsockopt(raw, SOL_SOCKET, SO_ERROR, reinterpret_cast<char*>(&error), &size) != 0 ||
-            error != 0)
-            return Progress::Failed;
-        return Progress::Connected;
+        return (endpoint.ip.find(':') == std::string::npos ? endpoint.ip : "[" + endpoint.ip + "]") + ":" +
+               std::to_string(endpoint.port);
     }
 
-    long Receive(Handle handle, uint8_t* buffer, size_t capacity)
+    long ReceiveFrom(Handle handle, uint8_t* bytes, size_t capacity, Endpoint& peer)
     {
-        const auto got = recv(ToRaw(handle), reinterpret_cast<char*>(buffer), int(capacity), 0);
-        if (got > 0)
-            return long(got);
-        if (got == 0)
-            return 0;
-        return WouldBlock() ? -1 : -2;
+        sockaddr_storage address{};
+        socklen_t size = sizeof(address);
+        const auto got = recvfrom(ToRaw(handle), reinterpret_cast<char*>(bytes), int(capacity), 0,
+            reinterpret_cast<sockaddr*>(&address), &size);
+        if (got < 0)
+            return WouldBlock() ? -1 : -2;
+        peer.ip = AddressText(reinterpret_cast<sockaddr*>(&address));
+        peer.port = ntohs(address.ss_family == AF_INET6 ? reinterpret_cast<sockaddr_in6*>(&address)->sin6_port
+                                                        : reinterpret_cast<sockaddr_in*>(&address)->sin_port);
+        return long(got);
     }
 
-    long Send(Handle handle, const uint8_t* bytes, size_t size)
+    long SendTo(Handle handle, std::span<const uint8_t> bytes, const Endpoint& peer)
     {
-#if defined(__linux__)
-        const int flags = MSG_NOSIGNAL;
-#else
-        const int flags = 0;
-#endif
-        const auto sent = send(ToRaw(handle), reinterpret_cast<const char*>(bytes), int(size), flags);
-        if (sent >= 0)
-            return long(sent);
-        return WouldBlock() ? 0 : -1;
+        sockaddr_storage local{};
+        socklen_t size = sizeof(local);
+        if (getsockname(ToRaw(handle), reinterpret_cast<sockaddr*>(&local), &size) != 0)
+            return -1;
+        sockaddr_storage address{};
+        socklen_t length = 0;
+        if (local.ss_family == AF_INET6)
+        {
+            auto* a = reinterpret_cast<sockaddr_in6*>(&address);
+            a->sin6_family = AF_INET6;
+            a->sin6_port = htons(peer.port);
+            if (peer.ip.find(':') == std::string::npos)
+            {
+                a->sin6_addr.s6_addr[10] = a->sin6_addr.s6_addr[11] = 0xff;
+                if (inet_pton(AF_INET, peer.ip.c_str(), a->sin6_addr.s6_addr + 12) != 1)
+                    return -1;
+            }
+            else if (inet_pton(AF_INET6, peer.ip.c_str(), &a->sin6_addr) != 1)
+                return -1;
+            length = sizeof(*a);
+        }
+        else
+        {
+            auto* a = reinterpret_cast<sockaddr_in*>(&address);
+            a->sin_family = AF_INET;
+            a->sin_port = htons(peer.port);
+            if (inet_pton(AF_INET, peer.ip.c_str(), &a->sin_addr) != 1)
+                return -1;
+            length = sizeof(*a);
+        }
+        const auto sent = sendto(ToRaw(handle), reinterpret_cast<const char*>(bytes.data()), int(bytes.size()), 0,
+            reinterpret_cast<const sockaddr*>(&address), length);
+        return sent >= 0 ? long(sent) : WouldBlock() ? 0 : -1;
     }
 
     void Close(Handle handle)
