@@ -610,6 +610,9 @@ Open the folder	Avaa kansio
 Opening the disc image	Avataan levykuvaa
 Opens a new issue on GitHub	Avaa uuden issuen GitHubissa
 Opens the Toy Box when the game asks for a figure.	Avaa Toy Boxin, kun peli pyytää hahmoa.
+Keep a copy of real toys	Säilytä kopio oikeista hahmoista
+Play each toy you put on the portal later, without it.	Pelaa myöhemmin jokaisella portaalille asettamallasi hahmolla ilman sitä.
+A copy of your real toy. Changes here go to the toy the next time it is placed.	Kopio oikeasta hahmostasi. Täällä tehdyt muutokset siirtyvät hahmoon, kun asetat sen seuraavan kerran.
 Or drop your .iso on this window. It stays on this computer.	Tai pudota .iso-tiedostosi tähän ikkunaan. Se pysyy tällä tietokoneella.
 Original resolution	Alkuperäinen resoluutio
 Other	Muu

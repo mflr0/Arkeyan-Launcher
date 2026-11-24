@@ -73,6 +73,7 @@ launcher saves the file (a comment over a key that is removed goes with it).
 | `input` | `glyphs` | `auto` (default), `xbox360`, `xboxone`, `playstation`, `nintendo`, `keyboard` (`xbox` is read as Xbox One / Series) | The button pictures the game shows | yes |
 | `portal` | `mode` | `auto` (default), `emulated` (Virtual), `real` (`hid` and `usb` still work) | Portal of Power backend | yes (`SKY_PORTAL`) |
 | `portal` | `toybox_auto_open` | `1` (default), `0` | The Toy Box opens by itself when the game asks for a figure | no: the game reads `launcher.ini` itself (Settings > Controls > Portal of Power) |
+| `portal` | `keep_real_copies` | `0` (default), `1` | Each toy put on a real portal keeps a copy in the collection, synced with the toy, that plays without it; the game's Toy Box asks which progress to keep when both changed | no: the game reads `launcher.ini` itself (Settings > Controls > Portal of Power) |
 | `portal` | `place` | figure file names, comma separated | Figures put on the emulated portal at start | yes (`SKY_PORTAL_PLACE`) |
 | `collection` | `favourites` | figure file names, comma separated | Old favorites; moved once into the shared collection's `collection.json` | read once (see `collection_ui.md`) |
 | `collection` | `moved` | `1` | Set once the old favorites and `[portal] place` were moved | launcher only |

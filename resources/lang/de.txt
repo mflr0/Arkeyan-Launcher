@@ -607,6 +607,9 @@ Open the folder	Ordner öffnen
 Opening the disc image	Disc-Abbild wird geöffnet
 Opens a new issue on GitHub	Öffnet ein neues Issue auf GitHub
 Opens the Toy Box when the game asks for a figure.	Öffnet die Toy Box, wenn das Spiel nach einer Figur fragt.
+Keep a copy of real toys	Kopie echter Figuren behalten
+Play each toy you put on the portal later, without it.	Spiele jede Figur, die du auf das Portal stellst, später auch ohne sie.
+A copy of your real toy. Changes here go to the toy the next time it is placed.	Eine Kopie deiner echten Figur. Änderungen hier gehen auf die Figur, wenn du sie das nächste Mal aufstellst.
 Or drop your .iso on this window. It stays on this computer.	Oder ziehe deine .iso auf dieses Fenster. Sie bleibt auf diesem Computer.
 Original resolution	Originalauflösung
 Other	Andere

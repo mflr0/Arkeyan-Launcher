@@ -169,7 +169,9 @@ At the first visit to the page (`CollectionPage::Open`):
   right click still opens its sheet. The saved `fold_foreign` setting has no effect on this shelf.
   The untouched starters the game made on its own
   are left out (Manage > Tidy). A card: the picture, the name (the label, else the toy's name with the game's nickname:
-  "Gill Grunt (Splash)"), the level line for the portal's game, the star, the variant's name, P1/P2/"On" for the seats.
+  "Gill Grunt (Splash)"), the level line for the portal's game, the star, the variant's name, P1/P2/"On" for the seats,
+  and a "Toy" badge left of the star on a real toy's copy (`Figure::realCopy`, Settings > Controls > Portal of Power >
+  Keep a copy of real toys); its sheet says that changes made here go to the toy the next time it is placed.
   The Toy Box draws the same card.
 - **The sheet** (a click on a card when no seat is being chosen, right click, X, F2): the picture with its element and
   type, in a Modal (Large, titled with the figure's name, the cross at the top right; B and Escape close it); the version,

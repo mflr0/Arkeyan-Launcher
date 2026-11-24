@@ -657,6 +657,7 @@ namespace collection
             figure.lastGame = entry["last_game"].AsString();
             figure.lastUsed = entry["last_used"].AsString();
             figure.origin = entry["origin"].AsString();
+            figure.realCopy = entry["real"].IsObject();
             for (const auto& [game, use] : entry["games"].Members())
                 figure.uses.push_back({ game, use["last_used"].AsString(), int(use["uses"].AsInt()) });
 

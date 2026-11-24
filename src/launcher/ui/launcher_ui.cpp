@@ -2825,6 +2825,11 @@ namespace launcher_ui
             bool autoOpen = ParseBool(SettingGet(m_config, "portal", "toybox_auto_open", "1"));
             if (ui::Toggle("##toyboxautoopen", &autoOpen))
                 Set("portal", "toybox_auto_open", autoOpen ? "1" : "0");
+            ui::SettingRow(
+                Tr("Keep a copy of real toys"), Tr("Play each toy you put on the portal later, without it."));
+            bool keepCopies = ParseBool(SettingGet(m_config, "portal", "keep_real_copies", "0"));
+            if (ui::Toggle("##keeprealcopies", &keepCopies))
+                Set("portal", "keep_real_copies", keepCopies ? "1" : "0");
             DrawPortalTest();
             ui::EndSettings();
         }

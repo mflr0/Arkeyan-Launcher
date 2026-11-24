@@ -609,6 +609,9 @@ Open the folder	De map openen
 Opening the disc image	Het schijfimage openen
 Opens a new issue on GitHub	Opent een nieuw issue op GitHub
 Opens the Toy Box when the game asks for a figure.	Opent de Toy Box wanneer het spel om een figuur vraagt.
+Keep a copy of real toys	Een kopie van echte figuren bewaren
+Play each toy you put on the portal later, without it.	Speel later met elk figuur dat je op het portaal zet, ook zonder het figuur.
+A copy of your real toy. Changes here go to the toy the next time it is placed.	Een kopie van je echte figuur. Wijzigingen hier gaan naar het figuur zodra je het weer neerzet.
 Or drop your .iso on this window. It stays on this computer.	Of sleep je .iso naar dit venster. Het blijft op deze computer.
 Original resolution	Originele resolutie
 Other	Overig

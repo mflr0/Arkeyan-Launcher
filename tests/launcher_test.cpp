@@ -511,6 +511,32 @@ namespace
         WriteFile(scratch / "junk.sky", std::vector<uint8_t>(100, 1));
         EXPECT(collection::Import({ (scratch / "junk.sky").string() }).invalid == 1);
 
+        // A real toy's copy (the game's [portal] keep_real_copies) is marked by its "real" entry; its progress stays
+        // editable (the next placement writes it to the toy).
+        {
+            const std::string index = collection::PathOf("collection.json");
+            std::ifstream input(index);
+            const std::string before{ std::istreambuf_iterator<char>(input), {} };
+            input.close();
+            collection::Json json, figures, entry, real = collection::Json::Object();
+            std::string why;
+            EXPECT(collection::Json::Parse(before, json, why));
+            figures = json["figures"];
+            entry = figures["014 Gill Grunt.sky"];
+            real.Set("type", collection::Json("14"));
+            entry.Set("real", real);
+            figures.Set("014 Gill Grunt.sky", entry);
+            json.Set("figures", figures);
+            std::ofstream(index, std::ios::trunc) << json.Dump();
+            collection::Figure marked, plain;
+            EXPECT(collection::Read(gill, marked) && marked.realCopy);
+            EXPECT(collection::Read(collection::PathOf("016 Spyro.sky"), plain) && !plain.realCopy);
+            marked.stats.gold = 77;
+            EXPECT(collection::WriteStats(gill, marked.stats) && collection::Read(gill, marked) &&
+                   marked.stats.gold == 77);
+            std::ofstream(index, std::ios::trunc) << before;
+        }
+
         // Locks: the game's JSON. Another live process holds the figure: nothing writes it. A dead one does not.
         std::string spyro = collection::PathOf("016 Spyro.sky");
         collection::Figure spyroFigure;

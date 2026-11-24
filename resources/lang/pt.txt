@@ -609,6 +609,9 @@ Open the folder	Abrir a pasta
 Opening the disc image	A abrir a imagem do disco
 Opens a new issue on GitHub	Abre um novo issue no GitHub
 Opens the Toy Box when the game asks for a figure.	Abre a Toy Box quando o jogo pede uma figura.
+Keep a copy of real toys	Guardar uma cópia das figuras reais
+Play each toy you put on the portal later, without it.	Joga mais tarde com cada figura que puseres no portal, sem ela.
+A copy of your real toy. Changes here go to the toy the next time it is placed.	Uma cópia da tua figura real. As alterações feitas aqui passam para a figura da próxima vez que a puseres.
 Or drop your .iso on this window. It stays on this computer.	Ou larga o teu .iso nesta janela. Fica neste computador.
 Original resolution	Resolução original
 Other	Outro

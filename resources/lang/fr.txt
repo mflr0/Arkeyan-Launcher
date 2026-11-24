@@ -970,6 +970,9 @@ Drop to 30 FPS when needed	Passer à 30 FPS si besoin
 Off: your rate stays, even if the picture stutters.	Désactivé : votre fréquence reste, même si l'image saccade.
 
 Opens the Toy Box when the game asks for a figure.	Ouvre la Toy Box quand le jeu demande une figurine.
+Keep a copy of real toys	Garder une copie des vrais jouets
+Play each toy you put on the portal later, without it.	Jouez plus tard avec chaque jouet posé sur le portail, même sans lui.
+A copy of your real toy. Changes here go to the toy the next time it is placed.	Une copie de votre vrai jouet. Les changements faits ici vont sur le jouet la prochaine fois qu'il est posé.
 Choose a type	Choisir un type
 The figure can't be read. Reopen it before saving.	La figurine est illisible. Rouvrez-la avant d’enregistrer.
 The figure was kept, but its seat couldn't be restored.	La figurine est conservée, mais sa place n’a pas pu être rétablie.
