@@ -32,6 +32,19 @@ namespace launcher_ui
         return list;
     }
 
+    // A racing trophy's villains (SuperChargers): the ones it can capture, in the order of their bits
+    // (figures::TrophyVillains). Empty for any other toy or a damaged trophy.
+    std::vector<const collection::Toy*> TrophyVillainsOf(const Figure& f)
+    {
+        std::vector<const collection::Toy*> list;
+        if (f.toy == nullptr || f.state == figures::AreaState::Damaged)
+            return list;
+        for (size_t i = 0; i < f.toy->racingVillains.size() && i < size_t(figures::TrophyVillainCount); i++)
+            if (const collection::Toy* villain = collection::Catalogue::Get().Find(f.toy->racingVillains[i]))
+                list.push_back(villain);
+        return list;
+    }
+
     float OverlayBody(float chrome, float least, float most)
     {
         return std::clamp(ImGui::GetIO().DisplaySize.y - 2 * ui::space::XL - chrome - ui::ModalLegendHeight(), least,
@@ -278,6 +291,14 @@ namespace launcher_ui
                 if (villain->id == f.stats.villain + figures::VillainResourceBase)
                     rows.push_back(
                         { Tr("Villain"), f.stats.villainEvolved ? Tf("{} · Evolved", villain->name) : villain->name });
+        if (const std::vector<const collection::Toy*> villains = TrophyVillainsOf(f); !villains.empty())
+        {
+            std::string captured;
+            for (size_t i = 0; i < villains.size(); i++)
+                if ((figures::TrophyVillains(f.stats) >> i & 1) != 0)
+                    captured += (captured.empty() ? "" : ", ") + villains[i]->name;
+            rows.push_back({ Tr("Captured"), captured.empty() ? std::string(Tr("None yet")) : captured });
+        }
         if (collection::HasProgress(f) && f.state == figures::AreaState::Valid)
             rows.push_back(
                 { Tr("Gold"), Tf("{} · {} played", ui::FormatNumber(f.stats.gold), PlayTime(f.stats.playSeconds)) });
@@ -923,6 +944,7 @@ namespace launcher_ui
     {
         bool stats = collection::HasProgress(f) && f.state != figures::AreaState::Damaged;
         const bool trap = IsTrap(f) && f.state != figures::AreaState::Damaged && !VillainsOf(f).empty();
+        const std::vector<const collection::Toy*> trophyVillains = TrophyVillainsOf(f);
         ui::Text(ui::TextStyle::Body,
             (f.variantInfo.name != Name(f) ? Name(f) + " · " + f.variantInfo.name : Name(f)).c_str(),
             ui::color::InkSoft);
@@ -963,6 +985,16 @@ namespace launcher_ui
                 }
                 ui::SettingRow(Tr("Evolved"), Tr("Its evolved look"));
                 ui::Toggle("##evolved", &m_edit.villainEvolved, m_edit.villain == 0);
+            }
+            // A racing trophy: one switch per villain it can capture. A captured one races in Racing, with its vehicle.
+            for (size_t i = 0; i < trophyVillains.size(); i++)
+            {
+                const uint8_t captured = figures::TrophyVillains(m_edit);
+                bool on = (captured >> i & 1) != 0;
+                ui::SettingRow(trophyVillains[i]->name.c_str(), Tr("Captured: it races in Racing"));
+                if (ui::Toggle(fmt::format("##captured{}", i).c_str(), &on))
+                    figures::SetTrophyVillains(
+                        m_edit, uint8_t(on ? captured | (1u << i) : captured & ~(1u << i) & 0x0F));
             }
             if (stats)
             {
@@ -1044,6 +1076,9 @@ namespace launcher_ui
             if (saved && trap && m_edit.villain != 0 &&
                 (m_edit.villain != m_editBase.villain || m_edit.villainEvolved != m_editBase.villainEvolved))
                 saved = collection::SetTrapVillain(f.path, uint8_t(m_edit.villain), m_edit.villainEvolved, &error);
+            if (saved && !trophyVillains.empty() &&
+                figures::TrophyVillains(m_edit) != figures::TrophyVillains(m_editBase))
+                saved = collection::SetTrophyVillains(f.path, figures::TrophyVillains(m_edit), &error);
             if (saved)
             {
                 Toast(Tr("Saved"), ui::ToastKind::Success);

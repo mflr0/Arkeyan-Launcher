@@ -450,6 +450,8 @@ They are made when the game is installed.	De skapas när spelet installeras.
 It plays on {} without the launcher or the disc image, with the same saves and settings as the installed game. It never updates: to update it, export it again. Up to {}.	Den spelas på {} utan launchern eller skivavbilden, med samma sparfiler och inställningar som det installerade spelet. Den uppdateras aldrig: exportera den igen för att uppdatera. Upp till {}.
 Item or adventure	Föremål
 Its evolved look	Dess utvecklade utseende
+Captured	Fångade
+Captured: it races in Racing	Fångad: den tävlar i racingläget
 Its name	Dess namn
 Jan	jan.
 Japanese	Japanska

@@ -490,6 +490,17 @@ namespace
             if (p1 != nullptr && core != nullptr && giant != nullptr && catalogue.Find(210) != nullptr)
                 EXPECT(launcher_ui::SeatTakes(*p1, *core) && launcher_ui::SeatTakes(*p1, *giant) &&
                        !launcher_ui::SeatTakes(*p1, *catalogue.Find(210)));
+            // Vehicle 1 takes Shark Tank, never a racing villain's vehicle (Toaster Bomber): the game crashes once one
+            // arrives outside a race.
+            const collection::Seat* v1 = nullptr;
+            for (size_t i = 0; game != nullptr && i < game->seats.size(); i++)
+                if (game->seats[i].id == "vehicle1")
+                    v1 = &game->seats[i];
+            const collection::Toy* tank = catalogue.Find(3225);
+            const collection::Toy* bomber = catalogue.Find(3470);
+            EXPECT(v1 != nullptr && tank != nullptr && bomber != nullptr);
+            if (v1 != nullptr && tank != nullptr && bomber != nullptr)
+                EXPECT(launcher_ui::SeatTakes(*v1, *tank) && !launcher_ui::SeatTakes(*v1, *bomber));
             EXPECT(!catalogue.Accepts(id, 3233) && !catalogue.Accepts(id, 3240));
             EXPECT(!catalogue.Accepts(id, 3423) && !catalogue.Accepts(id, 3424));
         }
@@ -3341,8 +3352,8 @@ static int RunChecks(int argc, char** argv)
         g_failures += LevelNameDiscChecks();
     if (noDisc)
     {
-        for (const char* mode : { "backups", "sheet", "drag", "seat-add", "add-later", "sort", "pictures", "notes",
-                 "migration", "catalogue", "data", "uninstall", "paths", "select" })
+        for (const char* mode : { "backups", "sheet", "drag", "trophy", "seat-add", "add-later", "sort", "pictures",
+                 "notes", "migration", "catalogue", "data", "uninstall", "paths", "select" })
         {
             const std::string root = (scratch / "review-ui" / mode).string();
             const char* arguments[] = { argv[0], "--review-ui", root.c_str(), mode, nullptr };

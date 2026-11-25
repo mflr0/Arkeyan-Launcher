@@ -169,6 +169,17 @@ namespace figures
         stats.swapForceExperience = gearbits < MaxGearbits ? gearbits : MaxGearbits;
     }
 
+    // SuperChargers' racing trophies (Sky 3500, Land 3501, Sea 3502) keep the villains they captured in the first area's
+    // 0x14 (FigureStats::ssaHat's low byte), in both copies: bit i, the trophy's i-th racing villain (the catalogue's
+    // racing_villains) [V: runs race1-11 of 2026-11-25, docs/runtime/host/figures.md "SuperChargers' trophies": each bit
+    // unlocks that villain at Racing's driver select, a captured one races]. The Kaos Trophy needs none (Kaos comes with it).
+    constexpr int TrophyVillainCount = 4;
+    inline uint8_t TrophyVillains(const FigureStats& stats) { return uint8_t(stats.ssaHat & 0x0F); }
+    inline void SetTrophyVillains(FigureStats& stats, uint8_t captured)
+    {
+        stats.ssaHat = uint16_t((stats.ssaHat & ~0x0F) | (captured & 0x0F));
+    }
+
     // Imaginators' creation crystals (toy types 680-689, one per element; the variant's low byte is the crystal's shape)
     // [V: the owner's dumps, docs/runtime/host/figures.md "Imaginators' crystals"]. The trap's pair of 21 data blocks
     // (A from block 8, B from 36, packed without trailers), the trap's three checksums except that 0x0A covers 16 blocks

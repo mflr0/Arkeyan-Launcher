@@ -450,6 +450,8 @@ They are made when the game is installed.	De lages når spillet installeres.
 It plays on {} without the launcher or the disc image, with the same saves and settings as the installed game. It never updates: to update it, export it again. Up to {}.	Det kan spilles på {} uten launcheren eller diskbildet, med samme lagringer og innstillinger som det installerte spillet. Det oppdateres aldri: eksporter det på nytt for å oppdatere. Opptil {}.
 Item or adventure	Gjenstand
 Its evolved look	Det utviklede utseendet
+Captured	Fanget
+Captured: it races in Racing	Fanget: den kjører i racingmodus
 Its name	Navnet
 Jan	jan.
 Japanese	Japansk

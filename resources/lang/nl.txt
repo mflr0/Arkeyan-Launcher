@@ -449,6 +449,8 @@ They are made when the game is installed.	Ze worden gemaakt zodra het spel is ge
 It plays on {} without the launcher or the disc image, with the same saves and settings as the installed game. It never updates: to update it, export it again. Up to {}.	Het draait op {} zonder de launcher of het schijfimage, met dezelfde savegames en instellingen als het geïnstalleerde spel. Het wordt nooit bijgewerkt: exporteer het opnieuw om het bij te werken. Maximaal {}.
 Item or adventure	Item
 Its evolved look	Zijn evolved uiterlijk
+Captured	Gevangen
+Captured: it races in Racing	Gevangen: hij racet in de racemodus
 Its name	Zijn naam
 Jan	jan.
 Japanese	Japans

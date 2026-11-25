@@ -101,7 +101,9 @@ At the first visit to the page (`CollectionPage::Open`):
   first seat that takes it (as the Toy Box does). The seats are per game (`catalogue.json` `games[].seats`):
   SuperChargers and Imaginators also have a Trap seat (a trap gives a boost in SuperChargers, gold in Imaginators), and
   their `rejects` keep the Wii-only toys off their seats: Clown Cruiser and Barrel Blaster, and their drivers Hammer
-  Slam Bowser and Turbo Charge Donkey Kong (neither disc defines them). Swap Force's
+  Slam Bowser and Turbo Charge Donkey Kong (neither disc defines them). A vehicle seat never takes a racing villain's
+  vehicle (Toaster Bomber and the 13 others, `villain_vehicle` in the catalogue; #256): SuperChargers crashes when one
+  comes outside a race. `SeatTakes` is the library's `Seat::Takes`, so the Toy Box and the Collection agree. Swap Force's
   portal has six slots (see "Swappers"): `SeatFirstSlot` and `SlotSeat` map the seats to them.
 - **While the game runs** the seats are read-only here, with a **Toy Box window** button beside "<game> is running": the Toy
   Box window is this page, live, the seats changed through the game (`toybox_window.md`).
@@ -220,6 +222,13 @@ At the first visit to the page (`CollectionPage::Open`):
   levels; Giants 1-15 on the first two parts of the experience; Swap Force 1-20, the game's own table), experience, Giants' **hat picker** (52 names, a Select), gold, hero points (text fields that take digits), the nickname the game shows.
   Save re-reads the figure and writes only the fields changed (a game may have played it meanwhile); a name alone
   writes no stats (and makes no backup).
+- **A racing trophy's villains** (#256, SuperChargers' Sky, Land and Sea Trophies): the sheet's "Captured" row names the
+  villains the trophy holds ("None yet"), and its Edit has one switch per villain it can capture (the catalogue's
+  `racing_villains`, four each), "Captured: it races in Racing"; Save writes them (`collection::SetTrophyVillains`). In
+  the game, Racing's driver select offers a captured villain with its own vehicle; the Kaos Trophy brings Kaos with no
+  switch. The racing villains and their vehicles are no toys: Add a figure never offers them and the shelf never shows a
+  dump of one (`Toy::FromTrophy`, the library's `List`). Check: `ArkeyanLauncherTest`'s `trophy` review, the screenshots
+  `73-trophy-sheet` and `74-trophy-edit`.
 - **Add a figure** (a Modal, Large): a game Select (the six games), a SearchField, a **Type** Select (as the bar's, led by
   "Fits <seat>" when opened from a seat's `+`), one wide
   card per character, as the Toy Box's: the element and type icons in a column, the picture, the name with the versions'
@@ -340,6 +349,7 @@ At the first visit to the page (`CollectionPage::Open`):
   to a folder holding the discs' cached pictures to see them (else the drawn icons). `62-trapteam-greyed` shows figures
   from several games with Trap Team selected, sorted by name, including the later figures greyed on the main shelf.
   `71-select-mode` shows select mode with every card picked and some hidden by a filter, `72-select-delete` its question.
+  `73-trophy-sheet` is a Sky Trophy's sheet with the villains it captured, `74-trophy-edit` its Edit.
 - `ArkeyanLauncherTest`'s `select` review (issue #187): the bar's Select, a tick and an untick, a Shift range, Select all
   keeping a pick the search hides, one question deleting every pick and emptying its seat, the pad's X on a card and B.
 - End to end with the real game: seats prepared by the launcher, the game started with the same

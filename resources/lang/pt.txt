@@ -449,6 +449,8 @@ They are made when the game is installed.	São criadas quando o jogo é instalad
 It plays on {} without the launcher or the disc image, with the same saves and settings as the installed game. It never updates: to update it, export it again. Up to {}.	Corre em {} sem o launcher nem a imagem do disco, com as mesmas gravações e definições do jogo instalado. Nunca se atualiza: para o atualizar, exporta-o outra vez. Até {}.
 Item or adventure	Item
 Its evolved look	O seu aspeto evoluído
+Captured	Capturados
+Captured: it races in Racing	Capturado: corre no modo Corrida
 Its name	O seu nome
 Jan	jan
 Japanese	Japonês
