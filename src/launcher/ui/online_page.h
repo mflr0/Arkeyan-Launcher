@@ -67,7 +67,7 @@ namespace launcher_ui
         std::string homeCode; // for a friend on the same network
     };
     Invite InviteFor(const netplay::portmap::Mapping& mapping, const online::stun::Result& seen, bool pending,
-        bool automatic, const std::string& localAddress, uint16_t port);
+        bool automatic, const std::string& localAddress, uint16_t port, uint64_t secret);
 
     // What went wrong, said for someone who knows nothing of networks: a title, the facts (each side's version), what to
     // do, and the button that does it.
@@ -96,12 +96,16 @@ namespace launcher_ui
         online::RoomInputs inputs;
         online::Mode mode = online::Mode::Host; // of the room open now
         std::string fieldsFor; // the game whose Online tab settings fill the fields below
-        char port[6] = "47640", address[256] = {}, password[128] = {};
+        char port[6] = "47640", address[256] = {}, otherAddress[256] = {};
         bool automatic = true, crossPlatform = false;
         bool showAddress = false, showDetails = false, showFix = false;
         float cardHeight = 0; // the taller player card's, last frame: both are drawn that tall
         int previewRouter = -1; // tests: 0 asking the router, 1 opened, 2 refused, 3 refused with IPv6
         int loggedReach = -1;   // the invite's reach last logged
+        // "Play together again": the host reopens its room with the last code; the guest joins again until the host's
+        // room answers (rejoinUntil, SDL ticks).
+        uint64_t lastSecret = 0, rejoinUntil = 0, rejoinAt = 0;
+        bool keepSecret = false;
         uint16_t joinedPort = online::DefaultPort;
         std::string game, joinedHost, localAddress, error, with;
         std::filesystem::path realSaves;
@@ -114,7 +118,7 @@ namespace launcher_ui
     };
 
     std::string MaskedAddress(std::string_view address); // dots for the IP, the port kept
-    std::string MaskedCode(std::string_view code);       // the letters hidden, the dashes kept
+    std::string MaskedCode(std::string_view code); // the letters hidden, the dashes kept
     const char* OnlineErrorText(online::Error error, online::Mismatch mismatch);
     std::string OnlineEndText(std::string_view reason);
 }

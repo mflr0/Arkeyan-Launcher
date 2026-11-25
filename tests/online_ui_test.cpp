@@ -95,7 +95,7 @@ namespace launcher_ui
                     "successful recovery consumes manifest, destination and end reason");
             };
             for (const char* reason : { "quit", "timeout", "desync", "transport", "protocol", "game", "image",
-                     "runtime", "platform", "fps", "seats", "invalid", "unknown", "" })
+                     "runtime", "platform", "fps", "seats", "invalid", "unknown" })
             {
                 prepare(true, *reason ? reason : nullptr);
                 LauncherConfig config;
@@ -119,6 +119,30 @@ namespace launcher_ui
                 App app(*FindGame("ssa"), LauncherConfigPath(), config);
                 recovered(false);
                 Expect(app.m_toasts.Items().empty(), "guest normal end is silent");
+            }
+            // "Play together again" from the game: once the saves are back, the room is set up again with its code.
+            prepare(true, "quit");
+            Write(session / "saves" / "online-replay.txt", "replay\n");
+            {
+                LauncherConfig config;
+                config["ssa.online"]["mode"] = "host";
+                App app(*FindGame("ssa"), LauncherConfigPath(), config);
+                app.m_online.lastSecret = 0x1234567890;
+                app.m_online.keepSecret = false;
+                app.RecoverOnline();
+                Expect(!fs::exists(session / "saves" / "online-replay.txt"), "the replay request is consumed");
+                // No disc in this test: opening the room stops at the disc check, which shows the game's page.
+                Expect(app.m_online.mode == online::Mode::Host, "play together again reopens the host's room");
+            }
+            // A game that stopped without a reason (a crash): the room offers to play together again.
+            prepare(false, nullptr);
+            {
+                LauncherConfig config;
+                config["ssa.online"]["mode"] = "join";
+                App app(*FindGame("ssa"), LauncherConfigPath(), config);
+                Expect(app.m_page == Page::Online && !app.m_online.error.empty() &&
+                           app.m_online.mode == online::Mode::Join && app.m_online.rejoinUntil != 0,
+                    "a game that stopped during a session offers to play together again");
             }
             {
                 LauncherConfig config;
@@ -285,11 +309,14 @@ int OnlineUiChecks(const std::filesystem::path& scratch)
         Expect(none.mode == online::Mode::Solo && none.port == online::DefaultPort && none.automatic &&
                    none.address.empty() && !none.crossPlatform,
             "a game never set up plays alone");
-        online::GameOnline set{ online::Mode::Join, 50000, false, "203.0.113.4:50000", "pw", true };
+        online::GameOnline set{ online::Mode::Join, 50000, false, "203.0.113.4:50000", true };
+        fresh["giants.online"]["password"] = "obsolete";
+        Expect(online::ReadGameOnline(fresh, "giants").address.empty(), "old passwords are ignored");
         online::WriteGameOnline(fresh, "giants", set);
+        Expect(!fresh["giants.online"].contains("password"), "saving removes an old room password");
         const auto back = online::ReadGameOnline(fresh, "giants");
         Expect(back.mode == online::Mode::Join && back.port == 50000 && !back.automatic &&
-                   back.address == set.address && back.password == "pw" && back.crossPlatform &&
+                   back.address == set.address && back.crossPlatform &&
                    online::ReadGameOnline(fresh, "ssa").mode == online::Mode::Solo,
             "online settings are kept per game");
         Expect(online::VersionLabel("0.10.0", true) == "0.10.0-o" &&
@@ -500,30 +527,34 @@ int OnlineUiChecks(const std::filesystem::path& scratch)
         const Mapping shared{ .ok = true, .externalIp = "100.64.0.9", .externalPort = 47640 };
         std::string host;
         uint16_t port = 0;
+        constexpr uint64_t secret = 0x9876543210;
+        uint64_t decoded = 0;
         auto holds = [&](const launcher_ui::Invite& invite, const char* ip, uint16_t to) {
-            return online::DecodeRoomCode(invite.code, host, port) && host == ip && port == to;
+            return online::DecodeRoomCode(invite.code, host, port, decoded) && host == ip && port == to &&
+                   decoded == secret;
         };
-        auto invite = launcher_ui::InviteFor(opened, both, true, true, "192.168.1.20", 47640);
+        auto invite = launcher_ui::InviteFor(opened, both, true, true, "192.168.1.20", 47640, secret);
         Expect(invite.reach == Reach::Asking && invite.code.empty(), "no room code while the router is asked");
-        invite = launcher_ui::InviteFor(opened, both, false, true, "192.168.1.20", 47640);
+        invite = launcher_ui::InviteFor(opened, both, false, true, "192.168.1.20", 47640, secret);
         Expect(invite.reach == Reach::Anywhere && holds(invite, "203.0.113.4", 47640) &&
                    invite.address == "203.0.113.4:47640",
             "an opened router: the code holds its public address");
-        Expect(online::DecodeRoomCode(invite.homeCode, host, port) && host == "192.168.1.20",
+        Expect(
+            online::DecodeRoomCode(invite.homeCode, host, port, decoded) && host == "192.168.1.20" && decoded == secret,
             "the code for a friend at home holds the local address");
-        invite = launcher_ui::InviteFor({}, both, false, true, "192.168.1.20", 47640);
+        invite = launcher_ui::InviteFor({}, both, false, true, "192.168.1.20", 47640, secret);
         Expect(invite.reach == Reach::Ipv6 && holds(invite, "2001:db8::7", 47640) &&
                    invite.address == "[2001:db8::7]:47640",
             "a refusing router with IPv6: the code holds the IPv6 address");
-        invite = launcher_ui::InviteFor(shared, v4, false, true, "192.168.1.20", 47640);
+        invite = launcher_ui::InviteFor(shared, v4, false, true, "192.168.1.20", 47640, secret);
         Expect(invite.reach == Reach::Shared && holds(invite, "198.51.100.7", 47640),
             "an address shared by the provider is told apart");
-        invite = launcher_ui::InviteFor({}, v4, false, true, "192.168.1.20", 47640);
+        invite = launcher_ui::InviteFor({}, v4, false, true, "192.168.1.20", 47640, secret);
         Expect(invite.reach == Reach::Refused && holds(invite, "198.51.100.7", 47640), "a refusing router");
-        invite = launcher_ui::InviteFor({}, both, false, false, "192.168.1.20", 47641);
+        invite = launcher_ui::InviteFor({}, both, false, false, "192.168.1.20", 47641, secret);
         Expect(invite.reach == Reach::Manual && holds(invite, "198.51.100.7", 47641),
             "automatic opening off: the public IPv4 address, for a forwarded port");
-        invite = launcher_ui::InviteFor({}, none, false, true, "192.168.1.20", 47640);
+        invite = launcher_ui::InviteFor({}, none, false, true, "192.168.1.20", 47640, secret);
         Expect(invite.reach == Reach::Refused && holds(invite, "192.168.1.20", 47640),
             "no public address known: the local one");
         Expect(launcher_ui::MaskedCode("K7QD-M2XA") == "****-****", "a masked code keeps only its dashes");

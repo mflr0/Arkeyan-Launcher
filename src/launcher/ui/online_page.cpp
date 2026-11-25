@@ -242,11 +242,14 @@ namespace launcher_ui
         {
         case Error::None: return "";
         case Error::PortInUse: return Tr("This port is busy; choose another port.");
+        case Error::CodeRequired:
+            return Tr("An address alone can't open a room any more: ask your friend for the room code.");
+        case Error::TooManyCodes: return Tr("Too many wrong room codes. Wait 30 seconds, then try again.");
         case Error::BadAddress: return Tr("This room code isn't valid; ask your friend to copy it again.");
         case Error::CannotConnect:
             return Tr("The host didn't answer; check the room code and ask them to open the room.");
         case Error::Timeout: return Tr("The other player stopped answering; check your connection and reconnect.");
-        case Error::WrongPassword: return Tr("The password doesn't match; ask the host and try again.");
+        case Error::WrongCode: return Tr("This room code is wrong or old: ask your friend to copy it again.");
         case Error::RoomFull: return Tr("This room is full; ask the host to open another room.");
         case Error::Left: return Tr("The other player left; open or join a room again.");
         case Error::Broken: return Tr("The connection failed; open or join a room again.");
@@ -308,17 +311,17 @@ namespace launcher_ui
     }
 
     Invite InviteFor(const netplay::portmap::Mapping& mapping, const online::stun::Result& seen, bool pending,
-        bool automatic, const std::string& localAddress, uint16_t port)
+        bool automatic, const std::string& localAddress, uint16_t port, uint64_t secret)
     {
         using Reach = Invite::Reach;
         Invite invite;
-        invite.homeCode = online::EncodeRoomCode(localAddress, port);
+        invite.homeCode = online::EncodeRoomCode(localAddress, port, secret);
         if (pending)
             return invite;
         const auto use = [&](const std::string& host, uint16_t to) {
             invite.address =
                 host.find(':') != std::string::npos ? fmt::format("[{}]:{}", host, to) : fmt::format("{}:{}", host, to);
-            invite.code = online::EncodeRoomCode(host, to);
+            invite.code = online::EncodeRoomCode(host, to, secret);
         };
         uint32_t ip = 0;
         if (mapping.ok && netplay::portmap::ParseIpv4(mapping.externalIp, ip) && netplay::portmap::IsPublicIpv4(ip))
@@ -421,10 +424,20 @@ namespace launcher_ui
                                     "47641, and send your friend the new room code."));
             help.action = Action::Settings;
             break;
+        case Error::CodeRequired:
+            help.title = Tr("A room code is needed");
+            help.lines.push_back(Tr("An address alone can't open a room any more: ask your friend for the room code."));
+            help.action = Action::Settings;
+            break;
+        case Error::TooManyCodes:
+            help.title = Tr("Guests paused for 30 seconds");
+            help.lines.push_back(Tr("Too many wrong room codes. Wait 30 seconds, then try again."));
+            help.action = Action::Retry;
+            break;
         case Error::BadAddress:
             help.title = Tr("This room code isn't right");
-            help.lines.push_back(Tr("It looks like K7QD-M2XA: letters and digits in groups of four. Ask your friend "
-                                    "to copy it again from their room and paste it whole."));
+            help.lines.push_back(
+                Tr("Copy the whole room code from your friend's room: letters and digits in groups of four."));
             help.action = Action::Settings;
             break;
         case Error::CannotConnect:
@@ -441,9 +454,9 @@ namespace launcher_ui
                                     "again."));
             help.action = Action::Retry;
             break;
-        case Error::WrongPassword:
-            help.title = Tr("Wrong password");
-            help.lines.push_back(Tr("Ask your friend for the room's password and type it in the Online tab."));
+        case Error::WrongCode:
+            help.title = Tr("Wrong room code");
+            help.lines.push_back(Tr("This room code is wrong or old: ask your friend to copy it again."));
             help.action = Action::Settings;
             break;
         case Error::RoomFull:
@@ -526,6 +539,12 @@ namespace launcher_ui
                 break;
             }
         ended.close();
+        // "Play together again" from the game's banner, or a game that stopped without saying why (a crash): the room
+        // is set up again with the same code once the saves are back.
+        const auto replayFile = online_page::Root() / "session" / "saves" / "online-replay.txt";
+        std::error_code exists;
+        const bool replay = std::filesystem::exists(replayFile, exists);
+        const bool stopped = reason.empty() && !replay && !std::filesystem::exists(endedFile, exists);
         std::string error;
         if (!online::FinishSession(online_page::Root() / "session", m_online.realSaves, error))
         {
@@ -536,15 +555,47 @@ namespace launcher_ui
         std::error_code ec;
         std::filesystem::remove(online_page::Root() / "destination.txt", ec);
         std::filesystem::remove(endedFile, ec);
+        std::filesystem::remove(replayFile, ec);
         if (const std::string text = OnlineEndText(reason); !text.empty())
             Toast(text, ui::ToastKind::Error);
         m_online.recovering = false;
         m_online.error.clear();
+        if ((replay || stopped) && !game.empty())
+        {
+            SDL_Log("[online] %s: setting the room up again with the same code",
+                replay ? "play together again" : "the game stopped during the session");
+            PlayTogetherAgain(game, replay);
+            return;
+        }
         if (!m_online.launched && m_session.Running().empty())
         {
             m_online.with.clear();
             m_online.game.clear();
         }
+    }
+
+    // The same room again after a session that stopped: the host reopens it with the last code at once; the guest
+    // joins with the code it has, again every 3 seconds for 2 minutes, while the host's launcher sets it up. A crash
+    // (`automatic` false) waits for the player's "Play together again" on the room's help card.
+    void App::PlayTogetherAgain(const std::string& game, bool automatic)
+    {
+        auto& room = m_online;
+        room.game.clear();
+        if (const auto* info = FindGame(game))
+            SelectGame(*info);
+        const auto settings = online::ReadGameOnline(m_config, game);
+        room.mode = settings.mode;
+        room.keepSecret = room.mode == online::Mode::Host && room.lastSecret != 0;
+        room.rejoinUntil = room.mode == online::Mode::Join ? SDL_GetTicks() + 120000 : 0;
+        // At startup (a launcher reopened after the session) the window and its focus are not there yet.
+        if (ImGui::GetCurrentContext())
+            GoTo(Page::Online);
+        else
+            m_page = Page::Online;
+        if (automatic)
+            BeginRoom();
+        else
+            room.error = Tr("Your game stopped during the session. Play together again from where you saved.");
     }
 
     void App::PollOnline()
@@ -558,6 +609,19 @@ namespace launcher_ui
         }
         m_online.lobby.Poll();
         const auto& status = m_online.lobby.Get();
+        if (m_online.rejoinUntil != 0)
+        {
+            const uint64_t now = SDL_GetTicks();
+            if (status.state == online::State::InRoom || now >= m_online.rejoinUntil)
+                m_online.rejoinUntil = 0;
+            else if (status.state == online::State::Ended && status.error == online::Error::CannotConnect &&
+                     now >= m_online.rejoinAt)
+            {
+                m_online.rejoinAt = now + 3000;
+                SDL_Log("[online] the host's room does not answer yet: trying again");
+                BeginRoom();
+            }
+        }
         if (status.state != m_online.lastState)
         {
             m_online.lastState = status.state;
@@ -623,6 +687,16 @@ namespace launcher_ui
         plan.save = status.host ? room.inputs.save : status.save;
         plan.localFigureFiles = room.inputs.localFigureFiles;
         std::string error;
+        // A PC whose GPU holds this game under 28 FPS starts the session one scale lower; its settings stay as they are.
+        const online::PerfHint pace{ room.inputs.player.fps, room.inputs.player.gpuBound };
+        const int scale = online::SessionScale(
+            pace, ResolutionScaleOf(SettingGet(m_config, GameVideoSection(room.game), "resolution_scale")));
+        if (scale > 0)
+        {
+            launch.variables.emplace_back("SKY_RESOLUTION_SCALE", std::to_string(scale));
+            SDL_Log("[online] this PC's GPU held the game at %u FPS: the session starts at scale %d",
+                unsigned(pace.fps), scale);
+        }
         if (launch.runtime.empty() ||
             !launcher_files::WriteAtomic(online_page::Root() / "destination.txt",
                 datadir::Text(room.realSaves) + "\n" + room.game + "\n" + status.remote.pseudo + "\n") ||
@@ -654,7 +728,6 @@ namespace launcher_ui
         const auto settings = online::ReadGameOnline(m_config, m_s->game.id);
         fmt::format_to_n(room.port, sizeof room.port - 1, "{}", settings.port).out[0] = '\0';
         fmt::format_to_n(room.address, sizeof room.address - 1, "{}", settings.address).out[0] = '\0';
-        fmt::format_to_n(room.password, sizeof room.password - 1, "{}", settings.password).out[0] = '\0';
         room.automatic = settings.automatic;
         room.crossPlatform = settings.crossPlatform;
         room.showAddress = false;
@@ -669,7 +742,6 @@ namespace launcher_ui
             settings.port = uint16_t(port);
         settings.automatic = room.automatic;
         settings.address = room.address;
-        settings.password = room.password;
         settings.crossPlatform = room.crossPlatform;
         online::WriteGameOnline(m_config, m_s->game.id, settings);
         if (!SaveConfig())
@@ -719,9 +791,7 @@ namespace launcher_ui
             {
                 ui::GuideStep(1, Tr("Press HOST A ROOM"), Tr("On the game's page, in place of PLAY."), width, true);
                 ui::GuideStep(2, Tr("Invite your friend"),
-                    Tr("In the room, copy your room code and send it to them by message, with the password if you set "
-                       "one."),
-                    width);
+                    Tr("In the room, copy your room code and send it to them by message."), width);
                 ui::GuideStep(3, Tr("Your friend joins"),
                     Tr("They choose Join in this tab, paste your room code, then press JOIN A ROOM."), width);
                 ui::GuideStep(4, Tr("Get ready and start"),
@@ -729,10 +799,9 @@ namespace launcher_ui
             }
             else
             {
-                ui::GuideStep(1, Tr("Get the room code"),
-                    Tr("Your friend opens a room and sends you its code, and the password if there is one."), width,
-                    true);
-                ui::GuideStep(2, Tr("Paste it below"), Tr("In Room code, with the password if there is one."), width);
+                ui::GuideStep(
+                    1, Tr("Get the room code"), Tr("Your friend opens a room and sends you its code."), width, true);
+                ui::GuideStep(2, Tr("Paste it below"), Tr("Paste the whole code in Room code."), width);
                 ui::GuideStep(3, Tr("Press JOIN A ROOM"), Tr("On the game's page, in place of PLAY."), width);
                 ui::GuideStep(4, Tr("Get ready"),
                     Tr("Choose your figures and press I'm ready. Your friend starts the game."), width);
@@ -753,21 +822,16 @@ namespace launcher_ui
                 }
                 else
                 {
-                    ui::SettingRow(Tr("Room code"), Tr("The one your friend sent you. An address works too."));
+                    ui::SettingRow(Tr("Room code"), Tr("The whole code your friend sent you."));
                     const float show = ui::ButtonWidth(room.showAddress ? Tr("Hide") : Tr("Show"));
                     changed |= ui::TextField("##onlineaddress", room.address, sizeof room.address,
-                        { .hint = "K7QD-M2XA",
+                        { .hint = "XXXX-XXXX-XXXX-XXXX-XXXX",
                             .width = ImGui::GetContentRegionAvail().x - show - ui::space::S,
                             .flags = room.showAddress ? 0 : ImGuiInputTextFlags_Password });
                     ImGui::SameLine(0, ui::space::S);
                     if (ui::Button(room.showAddress ? Tr("Hide") : Tr("Show")))
                         room.showAddress = !room.showAddress;
                 }
-                ui::SettingRow(Tr("Password"), settings.mode == Mode::Host
-                                                   ? Tr("Optional. Your friend types it to join.")
-                                                   : Tr("If your friend set one."));
-                changed |= ui::TextField(
-                    "##onlinepassword", room.password, sizeof room.password, { .flags = ImGuiInputTextFlags_Password });
                 ui::SettingRow(Tr("Cross-platform sessions"),
                     Tr("Play with a friend on another system. Not tested yet: both must turn it on."));
                 changed |= ui::Toggle("##onlinecrossplatform", &room.crossPlatform);
@@ -801,15 +865,15 @@ namespace launcher_ui
                                   port),
                               Tr("No access to the router? Both install the same free virtual network, such as "
                                  "Tailscale "
-                                 "or ZeroTier, and use the address it gives this computer."),
+                                 "or ZeroTier, then make its code in the room's Details."),
                               Tr("The room code holds your public address, found with a free STUN server. Share it "
                                  "only with your friend.") }
-                        : std::vector<std::string>{ Tr("The room code holds your friend's address. You can paste the "
-                                                       "address itself instead, like "
-                                                       "203.0.113.4:47640."),
+                        : std::vector<std::string>{
+                              Tr("The room code holds your friend's address and opens their room."),
                               Tr("In the same home, ask your friend for the code under How to fix it in their room."),
-                              Tr("With a virtual network such as Tailscale or ZeroTier, use the address it gives your "
-                                 "friend's computer.") };
+                              Tr("With Tailscale or ZeroTier, ask your friend to make a code in their room's "
+                                 "Details.")
+                          };
                 for (const auto& line : lines)
                     ui::Text(ui::TextStyle::Body, line.c_str(), ui::color::InkSoft, width);
             }
@@ -846,6 +910,7 @@ namespace launcher_ui
         room.showFix = false;
         room.cardHeight = 0;
         room.loggedReach = -1;
+        room.otherAddress[0] = '\0';
         const bool hosting = room.mode == Mode::Host;
         const auto* game = collection::Catalogue::Get().FindGame(m_s->game.id);
         uint16_t port = 0;
@@ -855,9 +920,10 @@ namespace launcher_ui
             room.error = Tr("This port isn't valid; choose a number from 1 to 65535.");
             return false;
         }
-        if (!hosting && !net::ParseAddress(room.address, DefaultPort, host, port))
+        uint64_t secret = 0;
+        if (!hosting && !DecodeRoomCode(room.address, host, port, secret))
         {
-            room.error = OnlineErrorText(Error::BadAddress, Mismatch::None);
+            room.lobby.Join({ room.address, {}, {} });
             return false;
         }
         if (!game || room.recovering || !DiscStillThere() || !m_session.Running().empty())
@@ -875,13 +941,15 @@ namespace launcher_ui
         {
             HostOptions options;
             options.port = port;
-            options.password = room.password;
             options.hello = room.inputs.hello;
             options.player = room.inputs.player;
             options.settings = room.inputs.settings;
             options.save = room.inputs.save;
+            options.secret = room.keepSecret ? room.lastSecret : 0;
+            room.keepSecret = false;
             if (!room.lobby.Host(std::move(options)))
                 return false;
+            room.lastSecret = room.lobby.Secret();
             room.localAddress = online_page::LocalAddress();
             if (m_shots.empty())
                 room.router.Open(port, room.automatic);
@@ -889,7 +957,7 @@ namespace launcher_ui
         }
         room.joinedHost = host;
         room.joinedPort = port;
-        return room.lobby.Join({ room.address, room.password, room.inputs.hello, room.inputs.player });
+        return room.lobby.Join({ room.address, room.inputs.hello, room.inputs.player });
     }
 
     bool App::DrawOnlineHelp(const OnlineHelp& help)
@@ -977,7 +1045,8 @@ namespace launcher_ui
                                     { room.previewRouter == 3 ? "2001:db8::7" : "", 0 } }
                               : room.router.Seen();
         const bool pending = room.preview ? room.previewRouter == 0 : room.router.Pending();
-        const Invite invite = InviteFor(mapping, seen, pending, room.automatic, room.localAddress, port);
+        const Invite invite =
+            InviteFor(mapping, seen, pending, room.automatic, room.localAddress, port, room.lobby.Secret());
         if (int(invite.reach) != room.loggedReach && !room.preview)
         {
             room.loggedReach = int(invite.reach);
@@ -992,13 +1061,10 @@ namespace launcher_ui
             ui::Text(ui::TextStyle::Caption, Tr("Getting your room code..."), ui::color::InkSoft, width);
             return;
         }
-        ui::Text(ui::TextStyle::Body,
-            room.password[0] != '\0' ? Tr("Send your friend this room code and the password:")
-                                     : Tr("Send your friend this room code:"),
-            ui::color::InkSoft, width);
+        ui::Text(ui::TextStyle::Body, Tr("Send your friend this room code:"), ui::color::InkSoft, width);
         const std::string shown = room.showAddress ? invite.code : MaskedCode(invite.code);
+        // The code on a line of its own, never broken (a player reads it out or copies it whole), the buttons under it.
         ui::Text(ui::TextStyle::Label, shown.c_str(), ui::color::Ink, -1, true);
-        ImGui::SameLine(0, ui::space::S);
         if (ui::Button(Tr("Copy"), { .size = ui::Size::Small }))
         {
             SDL_SetClipboardText(invite.code.c_str());
@@ -1014,7 +1080,7 @@ namespace launcher_ui
         case Reach::Anywhere:
             ui::Text(
                 ui::TextStyle::Caption, Tr("Your router lets friends in from anywhere."), ui::color::Success, width);
-            return;
+            break;
         case Reach::Ipv6:
             ui::Text(ui::TextStyle::Caption,
                 Tr("Your router didn't open, so this code uses IPv6. It works if your friend's internet has IPv6 "
@@ -1043,7 +1109,7 @@ namespace launcher_ui
         fix.kind = ui::ButtonKind::Ghost;
         fix.size = ui::Size::Small;
         fix.trailing = room.showFix ? ui::Icon::ChevronUp : ui::Icon::ChevronDown;
-        if (ui::Button(Tr("How to fix it"), fix))
+        if (invite.reach != Reach::Anywhere && ui::Button(Tr("How to fix it"), fix))
             room.showFix = !room.showFix;
         if (room.showFix)
         {
@@ -1056,14 +1122,43 @@ namespace launcher_ui
                 ui::Text(ui::TextStyle::Body, forward.c_str(), ui::color::InkSoft, width);
             }
             ui::Text(ui::TextStyle::Body,
-                Tr("Or both install the same free virtual network, such as Tailscale or ZeroTier, and send the address "
-                   "it gives this computer, with the port."),
+                Tr("With Tailscale or ZeroTier, make a code for this computer's address in Details below."),
                 ui::color::InkSoft, width);
             if (!invite.homeCode.empty() && invite.homeCode != invite.code)
             {
                 const std::string home = Tf("A friend in your home can use this code instead: {}",
                     room.showAddress ? invite.homeCode : MaskedCode(invite.homeCode));
                 ui::Text(ui::TextStyle::Body, home.c_str(), ui::color::InkSoft, width);
+            }
+        }
+        if (ui::Button(Tr("Details"), { .kind = ui::ButtonKind::Ghost, .size = ui::Size::Small }))
+            room.showDetails = !room.showDetails;
+        if (room.showDetails)
+        {
+            ui::Text(ui::TextStyle::Label, Tr("Code for another address"), ui::color::Ink, width);
+            ui::Text(ui::TextStyle::Caption, Tr("Enter this computer's Tailscale or ZeroTier address, with its port."),
+                ui::color::InkSoft, width);
+            ui::TextField(
+                "##otheraddress", room.otherAddress, sizeof room.otherAddress, { .hint = "100.64.0.2:47640" });
+            std::string host;
+            uint16_t otherPort = 0;
+            if (online::net::ParseAddress(room.otherAddress, port, host, otherPort))
+            {
+                const std::string code = online::EncodeRoomCode(host, otherPort, room.lobby.Secret());
+                if (!code.empty())
+                {
+                    const std::string shownCode = room.showAddress ? code : MaskedCode(code);
+                    ui::Text(ui::TextStyle::Body, shownCode.c_str(), ui::color::Ink,
+                        std::max(40.0f, width - ui::ButtonWidth(Tr("Copy")) - ui::space::S));
+                    ImGui::SameLine(0, ui::space::S);
+                    ImGui::PushID("othercode");
+                    if (ui::Button(Tr("Copy"), { .size = ui::Size::Small }))
+                    {
+                        SDL_SetClipboardText(code.c_str());
+                        Toast(Tr("Room code copied. Paste it in a message to your friend."));
+                    }
+                    ImGui::PopID();
+                }
             }
         }
     }
@@ -1243,16 +1338,49 @@ namespace launcher_ui
             ui::SectionHeader(
                 status.host ? Tr("Your room") : Tr("Your friend's room"), line.empty() ? nullptr : line.c_str(), false);
             DrawRoomPlayers(status);
-            if (status.haveRemote && status.rttMs >= 0)
+            if (status.haveRemote && status.rttMs >= 0 && !status.testDone)
+                ui::Text(
+                    ui::TextStyle::Body, Tr("Testing the connection with your friend..."), ui::color::InkSoft, width);
+            else if (status.haveRemote && status.rttMs >= 0)
             {
+                // The connection test's verdict once it is over, the live round trip after.
+                const double measured = status.testRttMs >= 0 ? status.testRttMs : status.rttMs;
+                const int verdict = ConnectionVerdict(measured, status.testJitterMs);
                 const int ms = int(std::lround(status.rttMs));
-                const char* quality = ms < 60 ? Tr("good") : ms < 150 ? Tr("fair") : Tr("slow");
+                const char* quality = verdict == 0   ? Tr("perfect")
+                                      : verdict == 1 ? Tr("playable")
+                                      : verdict == 2 ? Tr("slow")
+                                                     : Tr("very slow");
                 const std::string timing =
                     status.inputDelay == 1
                         ? Tf("Connection: {} · {} ms · input delay 1 frame", quality, ms)
                         : Tf("Connection: {} · {} ms · input delay {} frames", quality, ms, status.inputDelay);
                 ui::Text(
-                    ui::TextStyle::Body, timing.c_str(), ms < 150 ? ui::color::InkSoft : ui::color::Warning, width);
+                    ui::TextStyle::Body, timing.c_str(), verdict <= 1 ? ui::color::InkSoft : ui::color::Warning, width);
+                if (status.testJitterMs >= 30)
+                {
+                    const std::string jitter = Tf("The round trip varies by {} ms: the input delay grows to absorb it.",
+                        int(std::lround(status.testJitterMs)));
+                    ui::Text(ui::TextStyle::Body, jitter.c_str(), ui::color::Warning, width);
+                }
+                // Past 250 ms the game feels slow to answer: said plainly, the start left to the players.
+                if (verdict == 3)
+                    ui::Text(ui::TextStyle::Body,
+                        Tr("This connection is very slow: the game will be slow to answer your buttons."),
+                        ui::color::Warning, width);
+                // Both games go at the slower PC's pace: said when one of them is known to stay under 28 FPS.
+                const Player& mine = room.inputs.player;
+                const Player& theirs = status.remote;
+                if (mine.fps != 0 && theirs.fps != 0 && std::min(mine.fps, theirs.fps) < 28)
+                {
+                    const std::string pace =
+                        mine.fps <= theirs.fps
+                            ? Tf("Your PC played this game at about {} FPS: the session will go at that pace.",
+                                  unsigned(mine.fps))
+                            : Tf("{}'s PC played this game at about {} FPS: the session will go at that pace.",
+                                  theirs.pseudo, unsigned(theirs.fps));
+                    ui::Text(ui::TextStyle::Body, pace.c_str(), ui::color::Warning, width);
+                }
             }
             if (!inputError.empty())
                 DrawOnlineHelp({ Tr("Something needs fixing"), { inputError },
@@ -1340,7 +1468,8 @@ namespace launcher_ui
             { { 7, 0, 0, "Gill Grunt", std::vector<uint8_t>(FigureDumpBytes, 2) } } };
         auto setMode = [&](const char* mode) {
             m_config[std::string(m_s->game.id) + ".online"]["mode"] = mode;
-            m_config[std::string(m_s->game.id) + ".online"]["address"] = "203.0.113.4:47640";
+            m_config[std::string(m_s->game.id) + ".online"]["address"] =
+                online::EncodeRoomCode("203.0.113.4", online::DefaultPort, 0);
             room.fieldsFor.clear();
         };
         int step = m_testStep;
@@ -1419,7 +1548,7 @@ namespace launcher_ui
                 status.host = true;
                 status.state = State::Waiting;
                 room.previewRouter = 1;
-                status.lastRefusal.error = Error::WrongPassword;
+                status.lastRefusal.error = Error::WrongCode;
                 m_testShot = "online-refusal";
             }
             else if (step < 3)

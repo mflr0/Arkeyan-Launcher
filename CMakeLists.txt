@@ -140,6 +140,7 @@ add_library(ArkeyanLauncherCore STATIC
     src/launcher/launcher.cpp
     src/launcher/launcher_games.cpp
     src/launcher/online/lobby.cpp
+    src/launcher/online/chacha20.cpp
     src/launcher/online/lobby_protocol.cpp
     src/launcher/online/net_socket.cpp
     src/launcher/online/room_code.cpp
@@ -214,6 +215,7 @@ add_library(ArkeyanLauncherCore STATIC
 target_sources(ArkeyanLauncherCore PRIVATE
     src/launcher/install_checklist.cpp
     src/launcher/game_run.cpp
+    src/launcher/launcher_log.cpp
     src/launcher/portal_probe_text.cpp
     src/launcher/discord_presence.cpp
     src/launcher/discord_images.cpp

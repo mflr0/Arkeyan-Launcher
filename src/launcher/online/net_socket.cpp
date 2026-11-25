@@ -243,7 +243,8 @@ namespace online::net
             text.remove_suffix(1);
         if (text.empty())
             return false;
-        if (DecodeRoomCode(text, host, port))
+        uint64_t secret = 0;
+        if (DecodeRoomCode(text, host, port, secret))
             return true;
         std::string_view portText;
         if (text.front() == '[')

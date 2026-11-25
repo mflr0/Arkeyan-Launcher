@@ -25,16 +25,16 @@ namespace online
             bool port;
         };
         // Kind 0: IPv4 on the default port; 1: IPv4 and port; 2: IPv6 and port. Every shape fills its letters exactly.
-        constexpr std::array<Shape, 3> Shapes{ { { 8, 4, 8, false }, { 12, 4, 12, true }, { 32, 16, 16, true } } };
+        constexpr std::array<Shape, 3> Shapes{ { { 20, 4, 28, false }, { 24, 4, 32, true }, { 44, 16, 36, true } } };
 
-        uint32_t Check(size_t kind, std::span<const uint8_t> bytes)
+        uint64_t Check(size_t kind, std::span<const uint8_t> bytes)
         {
-            uint32_t hash = 2166136261u ^ uint32_t(kind + 1);
-            hash *= 16777619u;
+            uint64_t hash = 14695981039346656037ull ^ uint64_t(kind + 1);
+            hash *= 1099511628211ull;
             for (const uint8_t b : bytes)
             {
                 hash ^= b;
-                hash *= 16777619u;
+                hash *= 1099511628211ull;
             }
             return hash;
         }
@@ -52,7 +52,7 @@ namespace online
         }
     }
 
-    std::string EncodeRoomCode(std::string_view host, uint16_t port)
+    std::string EncodeRoomCode(std::string_view host, uint16_t port, uint64_t secret)
     {
         net::Startup();
         const std::string text(host);
@@ -71,9 +71,11 @@ namespace online
             bytes.push_back(uint8_t(port >> 8));
             bytes.push_back(uint8_t(port));
         }
-        const uint32_t check = Check(kind, bytes) >> (32 - shape.checkBits);
+        for (int i = 4; i >= 0; --i)
+            bytes.push_back(uint8_t(secret >> (8 * i)));
+        const uint64_t check = Check(kind, bytes) >> (64 - shape.checkBits);
 
-        // The bits, most significant first: the address, the port, then the check.
+        // The bits, most significant first: the address, the port, the secret, then the check.
         std::vector<bool> bits;
         for (const uint8_t b : bytes)
             for (int i = 7; i >= 0; --i)
@@ -94,7 +96,7 @@ namespace online
         return code;
     }
 
-    bool DecodeRoomCode(std::string_view text, std::string& host, uint16_t& port)
+    bool DecodeRoomCode(std::string_view text, std::string& host, uint16_t& port, uint64_t& secret)
     {
         std::vector<int> values;
         for (const char c : text)
@@ -119,23 +121,26 @@ namespace online
                 bits.push_back(((value >> i) & 1) != 0);
         size_t at = 0;
         const auto take = [&](size_t count) {
-            uint32_t result = 0;
+            uint64_t result = 0;
             for (size_t i = 0; i < count; ++i)
                 result = result * 2 + (bits[at++] ? 1 : 0);
             return result;
         };
         std::vector<uint8_t> bytes;
-        const size_t byteCount = shape.addressBytes + (shape.port ? 2 : 0);
+        const size_t byteCount = shape.addressBytes + (shape.port ? 2 : 0) + 5;
         for (size_t i = 0; i < byteCount; ++i)
             bytes.push_back(uint8_t(take(8)));
-        const uint32_t check = take(shape.checkBits);
-        if (check != Check(kind, bytes) >> (32 - shape.checkBits))
+        const uint64_t check = take(shape.checkBits);
+        if (check != Check(kind, bytes) >> (64 - shape.checkBits))
             return false;
 
         net::Startup();
         char address[INET6_ADDRSTRLEN] = {};
         if (!inet_ntop(shape.addressBytes == 4 ? AF_INET : AF_INET6, bytes.data(), address, sizeof(address)))
             return false;
+        secret = 0;
+        for (size_t i = byteCount - 5; i < byteCount; ++i)
+            secret = (secret << 8) | bytes[i];
         host = address;
         port = shape.port ? uint16_t((bytes[shape.addressBytes] << 8) | bytes[shape.addressBytes + 1]) : DefaultPort;
         return port != 0;

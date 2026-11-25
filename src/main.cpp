@@ -5,6 +5,7 @@
 #include "launcher/game_run.h"
 #include "launcher/game_settings.h"
 #include "launcher/launcher.h"
+#include "launcher/launcher_log.h"
 #include "launcher/problem_report.h"
 #include "launcher/shortcut.h"
 #include "launcher/single_instance.h"
@@ -79,6 +80,8 @@ int main(int argc, char** argv)
     }
     fprintf(stderr, "launcher: Arkeyan Launcher %s\n", LauncherVersion().c_str()); // which build a report came from
     datadir::MigrateOnce(); // the older folders into <data root> (docs/install.md), before any path is used
+    launcherlog::Start(GameLogFolder());
+    SDL_Log("launcher: Arkeyan Launcher %s", LauncherVersion().c_str());
     std::string configPath = LauncherConfigPath();
     LauncherConfig config = LoadLauncherConfig(configPath);
     MigrateFrameRates(config);

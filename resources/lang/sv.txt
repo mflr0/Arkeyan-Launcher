@@ -1268,7 +1268,6 @@ Leave	Lämna
 Online	Online
 Online with {}	Online med {}
 A player couldn't join: {}	En spelare kunde inte gå med: {}
-Ask your friend for the room's password and type it in the Online tab.	Be din vän om rummets lösenord och skriv det på fliken Online.
 Both choose the same game, then try again.	Välj båda samma spel och försök igen.
 Both update the launcher in Settings, then try again.	Uppdatera båda startprogrammet i Inställningar och försök igen.
 Change it only if another program uses it.	Ändra den bara om ett annat program använder den.
@@ -1293,13 +1292,11 @@ How PLAY starts the game	Så startar SPELA spelet
 How it works	Så fungerar det
 How to fix it	Så löser du det
 I'm ready	Jag är redo
-If your friend set one.	Om din vän har valt ett.
 If your router refuses, open (forward) port {} for UDP and TCP to this computer in your router's settings.	Om routern nekar, öppna (vidarebefordra) port {} för UDP och TCP till den här datorn i routerns inställningar.
 Invite your friend	Bjud in din vän
 JOIN A ROOM	GÅ MED I ETT RUM
 Joining your friend's room...	Går med i din väns rum...
 Lets friends outside your home in. Most routers allow it.	Släpper in vänner utanför ditt hem. De flesta routrar tillåter det.
-No access to the router? Both install the same free virtual network, such as Tailscale or ZeroTier, and use the address it gives this computer.	Ingen tillgång till routern? Installera båda samma kostnadsfria virtuella nätverk, som Tailscale eller ZeroTier, och använd adressen det ger den här datorn.
 No figures on the portal yet	Inga figurer på portalen ännu
 Not in the same home? Their router may block it: their room shows them how to fix it.	Är ni inte i samma hem? Din väns router kan blockera anslutningen: rummet visar din vän hur det går att lösa.
 Not ready	Inte redo
@@ -1312,9 +1309,6 @@ Open my router automatically	Öppna min router automatiskt
 Open my router automatically asks your router with UPnP or NAT-PMP.	"Öppna min router automatiskt" skickar en förfrågan till routern med UPnP eller NAT-PMP.
 Open or join a room again to play.	Öppna eller gå med i ett rum igen för att spela.
 Open the Online tab	Öppna fliken Online
-Optional. Your friend types it to join.	Valfritt. Din vän skriver det för att gå med.
-Or both install the same free virtual network, such as Tailscale or ZeroTier, and send the address it gives this computer, with the port.	Eller installera båda samma kostnadsfria virtuella nätverk, som Tailscale eller ZeroTier, och skicka adressen det ger den här datorn, tillsammans med porten.
-Password	Lösenord
 Paste it below	Klistra in den nedan
 Play with a friend on another system. Not tested yet: both must turn it on.	Spela med en vän på ett annat system. Inte testat ännu: båda måste slå på det.
 Play with a friend over the internet, each on your own computer.	Spela med en vän över internet, på varsin dator.
@@ -1340,8 +1334,6 @@ Try again. If it keeps failing, both restart the launcher.	Försök igen. Om det
 Waiting for player 2	Väntar på spelare 2
 Waiting for player 2 to join.	Väntar på att spelare 2 går med.
 Waiting for {} to be ready.	Väntar på att {} är redo.
-With a virtual network such as Tailscale or ZeroTier, use the address it gives your friend's computer.	Med ett virtuellt nätverk som Tailscale eller ZeroTier använder du adressen det ger din väns dator.
-Wrong password	Fel lösenord
 You both choose your figures and press I'm ready. Then you press Start.	Ni väljer båda era figurer och trycker på "Jag är redo". Sedan trycker du på Starta.
 You both need this game with the same disc edition, and the same launcher version.	Ni behöver båda det här spelet med samma skivutgåva och samma version av startprogrammet.
 You chose different games	Ni valde olika spel
@@ -1361,15 +1353,12 @@ Your game versions differ	Era spelversioner skiljer sig
 Your games don't match	Era spel matchar inte
 Your launchers aren't the same version	Era startprogram har olika versioner
 Your router lets friends in from anywhere.	Din router släpper in vänner var de än är.
-fair	hyfsad
-good	bra
 slow	långsam
 Port	Port
 Start	Starta
 The connection failed; open or join a room again.	Anslutningen misslyckades; öppna eller gå med i ett rum igen.
 The other player left; open or join a room again.	Den andra spelaren lämnade; öppna eller gå med i ett rum igen.
 The other player stopped answering; check your connection and reconnect.	Den andra spelaren slutade svara; kontrollera anslutningen och anslut igen.
-The password doesn't match; ask the host and try again.	Lösenordet stämmer inte; fråga värden och försök igen.
 This port is busy; choose another port.	Porten används redan; välj en annan port.
 This room is full; ask the host to open another room.	Rummet är fullt; be värden öppna ett annat rum.
 You chose different games; choose the same game.	Ni valde olika spel; välj samma spel.
@@ -1392,27 +1381,46 @@ Another program uses it. Choose another port in the Online tab, for example 4764
 Check the room code: ask them to copy it again.	Kontrollera rumskoden: be din vän kopiera den igen.
 Get the room code	Hämta rumskoden
 Getting your room code...	Hämtar rumskoden...
-In Room code, with the password if there is one.	I Rumskod, med lösenordet om det finns ett.
-In the room, copy your room code and send it to them by message, with the password if you set one.	Kopiera rumskoden i rummet och skicka den i ett meddelande, med lösenordet om du har satt ett.
 In the same home, ask your friend for the code under How to fix it in their room.	I samma hem: be din vän om koden under Så löser du det i hens rum.
-It looks like K7QD-M2XA: letters and digits in groups of four. Ask your friend to copy it again from their room and paste it whole.	Den ser ut som K7QD-M2XA: bokstäver och siffror i grupper om fyra. Be din vän kopiera den igen från sitt rum och klistra in hela.
 Open port {} (UDP and TCP) to this computer in your router's settings: search the web for your router's name and "port forwarding".	Öppna port {} (UDP och TCP) till den här datorn i routerns inställningar: sök på webben efter routerns namn och "port forwarding".
 Paste your friend's room code first.	Klistra in din väns rumskod först.
 Room code	Rumskod
 Room code copied. Paste it in a message to your friend.	Rumskoden kopierad. Klistra in den i ett meddelande till din vän.
-Send your friend this room code and the password:	Skicka din vän den här rumskoden och lösenordet:
 Send your friend this room code:	Skicka din vän den här rumskoden:
 The host didn't answer; check the room code and ask them to open the room.	Värden svarade inte; kontrollera rumskoden och be hen öppna rummet.
-The one your friend sent you. An address works too.	Den som din vän skickade. En adress fungerar också.
-The room code holds your friend's address. You can paste the address itself instead, like 203.0.113.4:47640.	Rumskoden innehåller din väns adress. Du kan också klistra in själva adressen, som 203.0.113.4:47640.
 The room code holds your public address, found with a free STUN server. Share it only with your friend.	Rumskoden innehåller din offentliga adress, hittad med en gratis STUN-server. Dela den bara med din vän.
 They choose Join in this tab, paste your room code, then press JOIN A ROOM.	Hen väljer Gå med på den här fliken, klistrar in din rumskod och trycker på GÅ MED I ETT RUM.
 This room code isn't right	Rumskoden stämmer inte
 This room code isn't valid; ask your friend to copy it again.	Rumskoden är ogiltig; be din vän kopiera den igen.
-Your friend opens a room and sends you its code, and the password if there is one.	Din vän öppnar ett rum och skickar koden till dig, och lösenordet om det finns ett.
 Your internet provider shares your address with other homes, so a friend elsewhere can't reach you this way.	Din internetleverantör delar din adress med andra hem, så en vän någon annanstans kan inte nå dig på det här sättet.
 Your router didn't let your friend in by itself, so a friend elsewhere can't join yet.	Din router släppte inte in din vän av sig själv, så en vän någon annanstans kan inte gå med än.
 Your router didn't open, so this code uses IPv6. It works if your friend's internet has IPv6 too.	Din router öppnades inte, så den här koden använder IPv6. Den fungerar om din väns internet också har IPv6.
 Your router isn't opened automatically: a friend elsewhere needs the port opened.	Din router öppnas inte automatiskt: en vän någon annanstans behöver att porten är öppen.
 {} (you)	{} (du)
 Not ready yet: choosing their figures	Inte redo än: väljer sina figurer
+A room code is needed	En rumskod behövs
+An address alone can't open a room any more: ask your friend for the room code.	Enbart en adress kan inte längre öppna ett rum: be din vän om rumskoden.
+Code for another address	Kod för annan adress
+Copy the whole room code from your friend's room: letters and digits in groups of four.	Kopiera hela rumskoden från din väns rum: bokstäver och siffror i grupper om fyra.
+Enter this computer's Tailscale or ZeroTier address, with its port.	Ange den här datorns Tailscale- eller ZeroTier-adress med port.
+Guests paused for 30 seconds	Gäster nekas i 30 sekunder
+In the room, copy your room code and send it to them by message.	Kopiera din rumskod i rummet och skicka den till din vän i ett meddelande.
+No access to the router? Both install the same free virtual network, such as Tailscale or ZeroTier, then make its code in the room's Details.	Ingen åtkomst till routern? Installera samma gratis virtuella nätverk, som Tailscale eller ZeroTier, och skapa koden under Detaljer i rummet.
+Paste the whole code in Room code.	Klistra in hela koden under Rumskod.
+The room code holds your friend's address and opens their room.	Rumskoden innehåller din väns adress och öppnar rummet.
+The whole code your friend sent you.	Hela koden som din vän skickade till dig.
+This room code is wrong or old: ask your friend to copy it again.	Den här rumskoden är fel eller gammal: be din vän att kopiera den igen.
+Too many wrong room codes. Wait 30 seconds, then try again.	För många felaktiga rumskoder. Vänta 30 sekunder och försök igen.
+With Tailscale or ZeroTier, ask your friend to make a code in their room's Details.	Med Tailscale eller ZeroTier ber du din vän att skapa en kod under Detaljer i sitt rum.
+With Tailscale or ZeroTier, make a code for this computer's address in Details below.	Med Tailscale eller ZeroTier skapar du en kod för den här datorns adress under Detaljer nedan.
+Wrong room code	Fel rumskod
+Your friend opens a room and sends you its code.	Din vän öppnar ett rum och skickar koden till dig.
+Your game stopped during the session. Play together again from where you saved.	Ditt spel stoppade under sessionen. Spela tillsammans igen från där ni sparade.
+{}'s PC played this game at about {} FPS: the session will go at that pace.	{}s dator körde spelet i ungefär {} FPS: sessionen går i den takten.
+This connection is very slow: the game will be slow to answer your buttons.	Den här anslutningen är mycket långsam: spelet svarar långsamt på dina knappar.
+Your PC played this game at about {} FPS: the session will go at that pace.	Din dator körde spelet i ungefär {} FPS: sessionen går i den takten.
+perfect	perfekt
+playable	spelbar
+very slow	mycket långsam
+Testing the connection with your friend...	Testar anslutningen till din vän...
+The round trip varies by {} ms: the input delay grows to absorb it.	Svarstiden varierar med {} ms: kontrollfördröjningen ökar för att jämna ut det.
