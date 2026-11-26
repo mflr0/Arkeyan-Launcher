@@ -5,10 +5,13 @@
 #include "launcher/env.h"
 #include "launcher/launcher.h"
 #include "launcher/game_settings.h"
+#include "launcher/game_install.h"
 #include "launcher/i18n.h"
 #include "shared/dir_list.h"
 #include "shared/collection/datadir.h"
 #include "shared/collection/json.h"
+#include "shared/collection/save_backup.h"
+#include <fstream>
 #include <SDL3/SDL.h>
 #include <algorithm>
 #include <chrono>
@@ -466,8 +469,21 @@ namespace launcher_ui
         return nullptr;
     }
 
+    bool OnlineSessionRunning()
+    {
+        return savebackup::GameRunning(LauncherDataFolder() / "online" / "session" / "saves");
+    }
+
     std::string CollectionModel::RunningGame() const
     {
+        if (OnlineSessionRunning())
+        {
+            std::ifstream destination(LauncherDataFolder() / "online" / "destination.txt");
+            std::string path, game;
+            std::getline(destination, path);
+            std::getline(destination, game);
+            return game.empty() ? gameId : game;
+        }
         if (FindGame(gameId) != nullptr && GameIsRunning(FoldersOf(gameId)))
             return gameId;
         // This game first: another game's busy figure must not hide it (and the other way round, the first one found is named).
@@ -502,6 +518,8 @@ namespace launcher_ui
 
     bool CollectionModel::CanEditSeats() const
     {
+        if (OnlineSessionRunning())
+            return false;
         const collection::Game* game = Game();
         if (live != nullptr)
             return game != nullptr && live->Current() == toyboxlinkclient::Client::State::Connected;
@@ -594,6 +612,12 @@ namespace launcher_ui
 
     bool CollectionModel::Delete(const std::string& path, std::string* error)
     {
+        if (OnlineSessionRunning())
+        {
+            if (error)
+                *error = Tr("During the session, change figures in the game (F3 > Toy Box).");
+            return false;
+        }
         const auto before = seats;
         const int seat = SeatOf(path);
         if (seat >= 0 && !SetSeat(size_t(seat), ""))
@@ -631,6 +655,8 @@ namespace launcher_ui
 
     int CollectionModel::Tidy()
     {
+        if (OnlineSessionRunning())
+            return 0;
         const int moved = collection::Tidy(OnPortal());
         Load();
         return moved;
@@ -726,6 +752,12 @@ namespace launcher_ui
     bool SaveEditedStats(const std::string& path, const figures::FigureStats& base, const figures::FigureStats& edited,
         const std::string& nickname, std::string* error)
     {
+        if (OnlineSessionRunning())
+        {
+            if (error)
+                *error = Tr("During the session, change figures in the game (F3 > Toy Box).");
+            return false;
+        }
         collection::Figure now;
         if (!collection::Read(path, now) || now.state == figures::AreaState::Damaged)
         {

@@ -274,14 +274,14 @@ namespace online
         m_punch.reset();
         m_discovery.Close();
         m_probes.clear();
-        if (m_status.state != State::Started && m_status.state != State::Idle)
+        if (m_status.state != State::Idle)
             m_status.state = State::Ended;
     }
 
-    void Lobby::UpdatePlayer(const Player& player)
+    bool Lobby::UpdatePlayer(const Player& player)
     {
-        if (m_startQueued || m_guestStartAt)
-            return;
+        if (m_startQueued || m_guestStartAt || m_status.state == State::Started)
+            return false;
         m_player = player;
         m_status.localReady = false;
         if (m_status.state == State::InRoom)
@@ -289,6 +289,7 @@ namespace online
             Send(MessageType::Player, Encode(m_player));
             Send(MessageType::Ready, { 0 });
         }
+        return true;
     }
 
     void Lobby::SetReady(bool ready)
@@ -409,6 +410,7 @@ namespace online
         }
         m_step = Step::Room;
         m_status.state = State::InRoom;
+        m_status.lastRefusal = {};
         m_nextPing = Now();
         m_testStart = Now();
         m_testSamples.clear();

@@ -11,6 +11,7 @@
 #include "launcher/ui/collection_model.h"
 #include "shared/collection/datadir.h"
 #include "test_env.h"
+#include "datagram_fake.h"
 #include <cstdio>
 #include <fstream>
 
@@ -37,6 +38,291 @@ namespace launcher_ui
 {
     struct OnlineUiChecks
     {
+        struct Context
+        {
+            Context() { ImGui::CreateContext(); }
+            ~Context() { ImGui::DestroyContext(); }
+        };
+
+        struct Room
+        {
+            App& app;
+            uint64_t now = 1000;
+            std::shared_ptr<online_tests::DatagramFake> io = std::make_shared<online_tests::DatagramFake>();
+            online::Lobby peer{ [this] { return now; }, io };
+            explicit Room(App& owner) : app(owner)
+            {
+                std::destroy_at(&app.m_online.lobby);
+                std::construct_at(&app.m_online.lobby, [this] { return now; }, io);
+                app.m_shots = "unused";
+            }
+            ~Room()
+            {
+                app.CloseOnline();
+                std::destroy_at(&app.m_online.lobby);
+                std::construct_at(&app.m_online.lobby);
+            }
+            bool Until(const std::function<bool()>& done, bool ui = false)
+            {
+                for (int i = 0; i < 3000; ++i, now += 5)
+                {
+                    if (ui)
+                        app.PollOnline();
+                    else
+                        app.m_online.lobby.Poll();
+                    peer.Poll();
+                    if (done())
+                        return true;
+                }
+                return false;
+            }
+            void Connect(bool hosting)
+            {
+                using namespace online_ui_checks;
+                auto& room = app.m_online;
+                const auto* game = collection::Catalogue::Get().FindGame("ssa");
+                room.game = "ssa";
+                room.realSaves = FoldersOf("ssa").saves;
+                room.inputs = online::ReadRoomInputs(app.m_config, app.m_profiles.Active(), *game, std::string(64, 'a'),
+                    hosting, SessionFile(*game), room.realSaves);
+                online::HostOptions host;
+                host.port = 47740;
+                host.discover = false;
+                host.hello = room.inputs.hello;
+                host.player = room.inputs.player;
+                host.settings = room.inputs.settings;
+                Expect((hosting ? room.lobby : peer).Host(host), "room bugs host fixture");
+                online::JoinOptions join;
+                join.discover = false;
+                join.address = online::EncodeRoomCode(std::array{ online::net::Endpoint{ "127.0.0.1", host.port } },
+                    (hosting ? room.lobby : peer).Secret());
+                join.hello = host.hello;
+                join.player = host.player;
+                Expect((hosting ? peer : room.lobby).Join(join), "room bugs guest fixture");
+                Expect(Until([&] { return room.lobby.Get().haveRemote && peer.Get().haveRemote; }),
+                    "room bugs connected fixture");
+                app.m_page = Page::Online;
+            }
+        };
+
+        static void RoomBugs(const std::filesystem::path& data)
+        {
+            TestSetEnv("SKY_LAUNCHER_LANGUAGE", "en");
+            i18n::SetLanguage("en");
+            using namespace online_ui_checks;
+            namespace fs = std::filesystem;
+            const auto* game = collection::Catalogue::Get().FindGame("ssa");
+            const std::string figure = collection::Create(16, 0, "room-bugs.sky");
+            std::vector<std::string> seats(game->seats.size());
+            seats[0] = figure;
+            Expect(WriteSeats(*game, SessionFile(*game), seats), "room bugs portal fixture");
+            const auto disc = data / "stand-in.iso";
+            Write(disc, "stand-in");
+            auto ready = [&](App& app) {
+                app.m_s->started = true;
+                app.m_s->disc = DiscState::Ready;
+                app.m_s->check.xexSha256 = std::string(64, 'a');
+                app.m_s->discPath = datadir::Text(disc);
+            };
+            for (bool hosting : { true, false })
+            {
+                LauncherConfig config;
+                config["ssa.online"]["mode"] = hosting ? "host" : "join";
+                config["ssa.online"]["port"] = "47741";
+                config["ssa.online"]["address"] =
+                    online::EncodeRoomCode(std::array{ online::net::Endpoint{ "192.0.2.10", 47741 } }, 0x1234567890);
+                const auto session = data / "online" / "session";
+                auto prepare = [&](bool replay) {
+                    online::SessionPlan plan;
+                    plan.host = hosting;
+                    plan.hostAddress = "192.0.2.10";
+                    GameLaunch launch;
+                    std::string error;
+                    Expect(online::PrepareSession(*game, plan, session, launch, error), "room replay fixture");
+                    Write(data / "online" / "destination.txt", datadir::Text(FoldersOf("ssa").saves) + "\nssa\n\n");
+                    if (replay)
+                    {
+                        Write(session / "saves" / "online-ended.txt", "reason=quit\n");
+                        Write(session / "saves" / "online-replay.txt", "replay\n");
+                    }
+                };
+                prepare(true);
+                {
+                    App app(*FindGame("ssa"), LauncherConfigPath(), config);
+                    Context context;
+                    Room room(app);
+                    app.m_s->disc = DiscState::Verifying;
+                    app.PollOnline();
+                    Expect(app.m_online.lobby.Get().state == online::State::Idle && app.m_page == Page::Online,
+                        "bug 2: restart waits for disc verification without joining an empty code");
+                    ready(app);
+                    app.PollOnline();
+                    Expect(std::string(app.m_online.port) == "47741" &&
+                               std::string(app.m_online.address) == config["ssa.online"]["address"] &&
+                               app.m_online.inputs.hello.xexSha256 == std::string(64, 'a') &&
+                               app.m_online.lobby.Get().state ==
+                                   (hosting ? online::State::Waiting : online::State::Connecting),
+                        "bug 2: verified restart uses saved port, code and disc edition");
+                }
+                for (bool replay : { true, false })
+                {
+                    prepare(replay);
+                    savebackup::SetGameRunning(true, session / "saves");
+                    App app(*FindGame("ssa"), LauncherConfigPath(), config);
+                    Context context;
+                    Room room(app);
+                    ready(app);
+                    SaveLauncherConfig(app.m_configPath, config);
+                    app.m_session.Poll(SDL_GetTicks());
+                    app.m_online.launched = true;
+                    savebackup::SetGameRunning(false, session / "saves");
+                    SDL_Delay(GameSession::MarkerMs + 1);
+                    app.PollGame();
+                    app.PollOnline();
+                    Expect(!app.m_online.launched && app.m_page == Page::Online &&
+                               (replay ? app.m_online.lobby.Get().state ==
+                                             (hosting ? online::State::Waiting : online::State::Connecting)
+                                       : !app.m_online.error.empty()),
+                        "bug 1: PollGame keeps the replay room or crash recovery message");
+                }
+            }
+            {
+                LauncherConfig config;
+                App app(*FindGame("ssa"), LauncherConfigPath(), config);
+                Context context;
+                Room room(app);
+                room.Connect(true);
+                app.m_online.lobby.SetReady(true);
+                room.peer.SetReady(true);
+                Expect(room.Until([&] { return app.m_online.lobby.Get().CanStart(); }), "start fixture ready");
+                Expect(app.m_online.lobby.StartGame(), "start fixture queues Start");
+                const auto before = online::Encode(app.m_online.inputs.player);
+                const auto files = app.m_online.inputs.localFigureFiles;
+                seats[0].clear();
+                WriteSeats(*game, SessionFile(*game), seats);
+                app.m_online.refreshAt = 0;
+                app.PollOnline();
+                Expect(online::Encode(app.m_online.inputs.player) == before &&
+                           app.m_online.inputs.localFigureFiles == files,
+                    "bug 9: figure refresh during Start keeps the agreed session inputs");
+                Expect(room.Until([&] { return room.peer.Get().state == online::State::Started; }),
+                    "start fixture completes");
+                app.PollOnline();
+                const auto error = app.m_online.error;
+                app.PollOnline();
+                Expect(app.m_online.lobby.Get().state != online::State::Started && !error.empty() &&
+                           app.m_online.error == error,
+                    "bug 3: failed launch closes Started once and preserves its help card");
+                app.m_online.port[0] = '\0';
+                app.m_online.mode = online::Mode::Host;
+                app.BeginRoom();
+                app.PollOnline();
+                Expect(app.m_online.error != error, "bug 3: invalid new room cannot launch the previous session");
+            }
+            {
+                LauncherConfig config;
+                App app(*FindGame("ssa"), LauncherConfigPath(), config);
+                Context context;
+                Room room(app);
+                room.Connect(false);
+                app.m_page = Page::Collection;
+                room.peer.Leave();
+                Expect(room.Until([&] { return app.m_online.lobby.Get().state == online::State::Ended; }, true),
+                    "room end fixture");
+                app.PollOnline();
+                Expect(app.m_toasts.Items().size() == 1 &&
+                           app.m_toasts.Items().front().text == "Your friend left the room",
+                    "bug 7: room end off the Online page toasts the reason once");
+                app.m_online.rejoinUntil = SDL_GetTicks() + 120000;
+                app.m_online.rejoinAt = 100;
+                app.CloseOnline();
+                Expect(app.m_online.rejoinUntil == 0 && app.m_online.rejoinAt == 0,
+                    "bug 10: closing a room cancels rejoin deadlines");
+            }
+            for (int scenario : { 0, 1, 2 })
+            {
+                LauncherConfig config;
+                App app(*FindGame("ssa"), LauncherConfigPath(), config);
+                Context context;
+                Room room(app);
+                room.Connect(true);
+                ready(app);
+                if (scenario == 0)
+                {
+                    SDL_Event event{};
+                    event.type = SDL_EVENT_DROP_FILE;
+                    const std::string path = datadir::Text(disc);
+                    event.drop.data = path.c_str();
+                    app.HandleEvent(event);
+                }
+                else
+                {
+                    app.m_page = Page::Collection;
+                    app.m_s->fromCopy = scenario == 2;
+                    app.m_s->discPath = datadir::Text(data / "missing.iso");
+                    app.DiscStillThere();
+                }
+                Expect(!app.RoomOpen() && app.m_page == Page::Play && !app.m_toasts.Items().empty(),
+                    "bug 8: dropped disc or missing disc/copy closes the room with a toast");
+            }
+            {
+                LauncherConfig config;
+                App app(*FindGame("ssa"), LauncherConfigPath(), config);
+                Context context;
+                Room room(app);
+                ready(app);
+                app.m_online.mode = online::Mode::Host;
+                app.LoadOnlineFields();
+                Write(FoldersOf("ssa").saves / "online-replay.txt", "stale replay");
+                app.BeginRoom();
+                Expect(!fs::exists(FoldersOf("ssa").saves / "online-replay.txt") &&
+                           std::none_of(app.m_online.inputs.save.begin(), app.m_online.inputs.save.end(),
+                               [](const auto& file) { return file.path == "online-replay.txt"; }),
+                    "bug 4: opening a room removes a replay marker left in real saves");
+                app.CloseOnline();
+            }
+            {
+                Write(data / "online" / "destination.txt", "unused\nssa\n\n");
+                savebackup::SetGameRunning(true, data / "online" / "session" / "saves");
+                LauncherConfig config;
+                App app(*FindGame("ssa"), LauncherConfigPath(), config);
+                app.m_session.Poll(SDL_GetTicks());
+                CollectionModel model;
+                model.Load();
+                Expect(model.RunningGame() == "ssa" && !model.CanEditSeats() && !model.SetSeat(0, figure),
+                    "bug 5: the session marker makes the player's portal read-only");
+                std::string error;
+                Expect(!model.Delete(figure, &error) && fs::exists(datadir::FromText(figure)),
+                    "bug 5: Collection cannot delete figures during a session");
+                collection::Figure current;
+                Expect(collection::Read(figure, current), "read-only figure fixture");
+                auto changed = current.stats;
+                changed.gold = 123;
+                const auto before = savebackup::ReadFile(datadir::FromText(figure));
+                Expect(!SaveEditedStats(figure, current.stats, changed, "", &error) &&
+                           savebackup::ReadFile(datadir::FromText(figure)) == before,
+                    "bug 5: a figure editor opened before the session cannot write back");
+                app.m_toybox = "ssa";
+                app.StartToyboxLink();
+                Expect(!app.m_link, "bug 5: a separate Toy Box cannot link to the player's portal during a session");
+                app.m_toybox.clear();
+                app.OpenToyboxWindow();
+                Expect(app.m_toyboxProcess == nullptr && !app.m_toasts.Items().empty() &&
+                           app.m_toasts.Items().back().text ==
+                               "During the session, change figures in the game (F3 > Toy Box).",
+                    "bug 5: the launcher's Toy Box stays closed during a session");
+                if (app.m_toyboxProcess)
+                {
+                    SDL_KillProcess(app.m_toyboxProcess, true);
+                    SDL_WaitProcess(app.m_toyboxProcess, true, nullptr);
+                    SDL_DestroyProcess(app.m_toyboxProcess);
+                    app.m_toyboxProcess = nullptr;
+                }
+                savebackup::SetGameRunning(false, data / "online" / "session" / "saves");
+                fs::remove(data / "online" / "destination.txt");
+            }
+        }
+
         static void Recovery(const std::filesystem::path& scratch)
         {
             using namespace online_ui_checks;
@@ -223,6 +509,7 @@ namespace launcher_ui
                                "L'autre joueur ne répond plus\u00a0; vérifiez votre connexion et reconnectez-vous",
                     "startup applies the launcher's language before making the end toast");
             }
+            RoomBugs(data);
             i18n::SetLanguage(language);
             for (const auto& [name, value] : variables)
                 if (value)

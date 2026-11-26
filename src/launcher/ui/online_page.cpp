@@ -503,7 +503,20 @@ namespace launcher_ui
         if (!m_online.recovering)
             m_online.error.clear();
         m_online.launched = false;
+        m_online.beginPending = m_online.keepSecret = false;
+        m_online.rejoinUntil = m_online.rejoinAt = 0;
         m_online.preview.reset();
+    }
+
+    void App::CloseOnlineForDisc()
+    {
+        const auto state = m_online.lobby.Get().state;
+        if (!m_online.launched && (RoomOpen() || m_online.beginPending || state == online::State::Connecting ||
+                                      state == online::State::Greeting))
+        {
+            CloseOnline();
+            Toast(Tr("The room closed: choose your disc image again"), ui::ToastKind::Error);
+        }
     }
 
     void App::RecoverOnline()
@@ -580,6 +593,7 @@ namespace launcher_ui
         room.game.clear();
         if (const auto* info = FindGame(game))
             SelectGame(*info);
+        LoadOnlineFields();
         const auto settings = online::ReadGameOnline(m_config, game);
         room.mode = settings.mode;
         room.keepSecret = room.mode == online::Mode::Host && room.lastSecret != 0;
@@ -589,9 +603,9 @@ namespace launcher_ui
             GoTo(Page::Online);
         else
             m_page = Page::Online;
-        if (automatic)
-            BeginRoom();
-        else
+        room.game = game;
+        room.beginPending = automatic;
+        if (!automatic)
             room.error = Tr("Your game stopped during the session. Play together again from where you saved.");
     }
 
@@ -599,6 +613,16 @@ namespace launcher_ui
     {
         if (m_online.preview)
             return;
+        // Recovery can run before the selected disc has been verified at startup.
+        if (m_online.beginPending && m_s->game.id == m_online.game && m_s->disc == DiscState::Ready &&
+            m_session.Running().empty())
+        {
+            m_online.beginPending = false;
+            LoadOnlineFields();
+            if (m_online.mode == online::Mode::Join)
+                m_online.rejoinUntil = SDL_GetTicks() + 120000;
+            BeginRoom();
+        }
         if (m_online.recovering && SDL_GetTicks() >= m_online.refreshAt)
         {
             m_online.refreshAt = SDL_GetTicks() + 1000;
@@ -643,6 +667,9 @@ namespace launcher_ui
         }
         if (status.state != m_online.lastState)
         {
+            if (status.state == online::State::Ended && m_page != Page::Online && status.error != online::Error::None)
+                Toast(OnlineHelpFor(status.error, status.mismatch, m_online.inputs.hello, status.remoteHello).title,
+                    ui::ToastKind::Error);
             m_online.lastState = status.state;
             if (m_page == Page::Online)
                 RequestFocus(FocusTo::Page);
@@ -668,11 +695,11 @@ namespace launcher_ui
             return;
         }
         m_online.error.clear();
-        if (online::Encode(inputs.player) != online::Encode(m_online.inputs.player))
+        if (online::Encode(inputs.player) != online::Encode(m_online.inputs.player) &&
+            m_online.lobby.UpdatePlayer(inputs.player))
         {
             m_online.inputs.player = inputs.player;
             m_online.inputs.localFigureFiles = std::move(inputs.localFigureFiles);
-            m_online.lobby.UpdatePlayer(inputs.player);
         }
     }
 
@@ -922,6 +949,7 @@ namespace launcher_ui
     {
         using namespace online;
         auto& room = m_online;
+        room.beginPending = false;
         room.error.clear();
         room.showFix = false;
         room.cardHeight = 0;
@@ -947,6 +975,8 @@ namespace launcher_ui
             return false;
         room.game = m_s->game.id;
         room.realSaves = FoldersOf(room.game).saves;
+        std::error_code replayError;
+        std::filesystem::remove(room.realSaves / "online-replay.txt", replayError);
         room.inputs = ReadRoomInputs(
             m_config, m_profiles.Active(), *game, m_s->check.xexSha256, hosting, SessionFile(*game), room.realSaves);
         if (room.inputs.error != InputError::None)
@@ -1407,7 +1437,9 @@ namespace launcher_ui
             {
                 OnlineHelp refused =
                     OnlineHelpFor(status.lastRefusal.error, status.lastRefusal.mismatch, room.inputs.hello, {});
-                refused.title = Tf("A player couldn't join: {}", refused.title);
+                refused.title = status.lastRefusal.error == Error::Left
+                                    ? Tr("Your friend left the room.")
+                                    : Tf("A player couldn't join: {}", refused.title);
                 refused.action = OnlineHelp::Action::None;
                 DrawOnlineHelp(refused);
             }

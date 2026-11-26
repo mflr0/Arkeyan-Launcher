@@ -1434,3 +1434,6 @@ The room code changed: copy it again.	O código da sala mudou: copia-o novamente
 No open port? Both of you can join one virtual network (Radmin VPN, ZeroTier or Tailscale): this code then holds it by itself.	Sem porta aberta? Ambos podem aderir a uma rede virtual (Radmin VPN, ZeroTier ou Tailscale): este código passa a incluí-la automaticamente.
 Tunnel address	Endereço do túnel
 A tunnel such as playit.gg gives an address and a port: enter them here and the room code holds them too.	Um túnel como playit.gg fornece um endereço e uma porta: introduz ambos aqui para os incluir no código da sala.
+During the session, change figures in the game (F3 > Toy Box).	Durante a sessão, muda as figuras no jogo (F3 > Toy Box).
+The room closed: choose your disc image again	A sala fechou: escolhe novamente a tua imagem de disco
+Your friend left the room.	O teu amigo saiu da sala.

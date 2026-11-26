@@ -1434,3 +1434,6 @@ The room code changed: copy it again.	De kamercode is gewijzigd: kopieer deze op
 No open port? Both of you can join one virtual network (Radmin VPN, ZeroTier or Tailscale): this code then holds it by itself.	Geen open poort? Jullie kunnen beiden een virtueel netwerk gebruiken (Radmin VPN, ZeroTier of Tailscale): deze code neemt het dan automatisch op.
 Tunnel address	Tunneladres
 A tunnel such as playit.gg gives an address and a port: enter them here and the room code holds them too.	Een tunnel zoals playit.gg geeft een adres en een poort: vul ze hier in om ze aan de kamercode toe te voegen.
+During the session, change figures in the game (F3 > Toy Box).	Wissel tijdens de sessie figuren in het spel (F3 > Toy Box).
+The room closed: choose your disc image again	De kamer is gesloten: kies je schijfkopie opnieuw
+Your friend left the room.	Je vriend heeft de kamer verlaten.

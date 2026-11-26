@@ -1435,3 +1435,6 @@ The room code changed: copy it again.	Huonekoodi muuttui: kopioi se uudelleen.
 No open port? Both of you can join one virtual network (Radmin VPN, ZeroTier or Tailscale): this code then holds it by itself.	Ei avointa porttia? Voitte molemmat liittyä samaan virtuaaliverkkoon (Radmin VPN, ZeroTier tai Tailscale): koodi sisältää sen sitten automaattisesti.
 Tunnel address	Tunnelin osoite
 A tunnel such as playit.gg gives an address and a port: enter them here and the room code holds them too.	Tunneli, kuten playit.gg, antaa osoitteen ja portin: syötä ne tähän, niin huonekoodi sisältää nekin.
+During the session, change figures in the game (F3 > Toy Box).	Vaihda hahmoja istunnon aikana pelissä (F3 > Toy Box).
+The room closed: choose your disc image again	Huone suljettiin: valitse levykuvasi uudelleen
+Your friend left the room.	Ystäväsi poistui huoneesta.

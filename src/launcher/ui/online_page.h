@@ -106,7 +106,7 @@ namespace launcher_ui
         // "Play together again": the host reopens its room with the last code; the guest joins again until the host's
         // room answers (rejoinUntil, SDL ticks).
         uint64_t lastSecret = 0, rejoinUntil = 0, rejoinAt = 0;
-        bool keepSecret = false;
+        bool keepSecret = false, beginPending = false;
         uint16_t joinedPort = online::DefaultPort;
         std::string game, joinedHost, error, with;
         std::vector<online::LocalAddress> localAddresses;

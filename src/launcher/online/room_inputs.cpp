@@ -52,8 +52,9 @@ namespace online
             for (const auto& part : relative)
             {
                 const std::string name = datadir::Text(part);
-                if (name == "portal.txt" || name == "backups" || name == "backup" || name == ".backups" ||
-                    name.ends_with("-backup") || name.ends_with(".bak") || name.ends_with(".backup"))
+                if (name == "portal.txt" || name == "online-replay.txt" || name == "backups" || name == "backup" ||
+                    name == ".backups" || name.ends_with("-backup") || name.ends_with(".bak") ||
+                    name.ends_with(".backup"))
                     return true;
             }
             return false;

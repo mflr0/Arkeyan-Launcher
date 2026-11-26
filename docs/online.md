@@ -241,6 +241,18 @@ slower one, frame by frame). A PC whose GPU held it under 28 FPS starts the sess
 will be slow to answer; the start stays the players' choice. During play the game's own input delay follows the round
 trip (the forge's netplay page, "Step 6").
 
+While a session runs, the launcher's Toy Box window stays closed and Collection is read-only, including figure
+imports, edits and deletion. It says: "During the session, change figures in the game (F3 > Toy Box)." This also
+applies after a launcher restart while the session's game is still running; the session's portal and figures belong
+to the game until write-back completes.
+
+A room ending while Collection or another page is shown reports its reason once in a toast. Dropping another disc
+image or losing the room's disc image or game data copy closes the room and shows a toast. Leaving also cancels any
+pending rejoin attempts. When a guest leaves, the host keeps the room open with "Your friend left the room."; the
+notice clears when a guest joins again. The room's player inputs stop changing as soon as Start is under way, so the
+game uses the figures both players agreed on. A completed or failed game launch consumes the lobby's Started state
+once; closing it cannot trigger another launch with the old session key.
+
 ## Play together again
 
 When a session stops, the room is set up again with the same code once the saves and figures are back. The game's
@@ -249,6 +261,11 @@ banner (R or Y while it waits for the other player) and its F3 menu after a sess
 guest's joins the code it has, again every 3 seconds for 2 minutes while the host's room is not there yet. A game that
 stopped without writing `online-ended.txt` (a crash; closing the window writes `quit`) opens the room's page with
 "Your game stopped during the session" and **Try again**, which does the same. Both start from the host's last save.
+
+The reopened room and a crash recovery's help card survive the game-ended path. After a launcher restart, reopening
+waits for the saved room fields to load and the disc to be verified: the host uses its saved port and the verified
+disc edition, and the guest uses its saved room code. `online-replay.txt` is session control data: it is never written
+back to the real saves, and a stale copy in the real saves is removed before a new room reads them.
 
 ## The log
 

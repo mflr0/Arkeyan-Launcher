@@ -79,6 +79,8 @@ namespace launcher_ui
         int seat = -1; // choosing for this seat of the model's game: only what goes there and the game reads
     };
 
+    bool OnlineSessionRunning();
+
     class CollectionModel
     {
     public:
