@@ -36,12 +36,24 @@ The line below it names the paths it holds: home, internet and recognised virtua
 router did not open stays in the code as a try, but the line does not promise the internet then.
 
 Each player's card shows their name (yours followed by "(you)"), picture, colour, role, readiness and the figures on
-their portal, with **Choose
-figures** (Collection) and, once both are in, **I'm ready**. Each player brings their own Player 1 figures; the host also
+their portal, with **Choose figures** and, once both are in, **I'm ready**. Choose figures opens a picker in the
+room, showing only the active profile's figures compatible with this game and seat. Each player chooses their own
+Skylander, including both halves of a swapper; the host also chooses the shared item and adventure pack. The picker
+writes the same portal seats as Collection. Escape or B closes it. With no compatible figures, **Add a figure** opens
+Collection's add flow while keeping the room open. Each player brings their own Player 1 figures; the host also
 brings the shared figures. The guest's figures occupy Player 2's seats in the game. The connection (good, fair or slow,
 the round trip and the input delay) appears once the guest is in; the host's frame rate and game languages head the room.
-Beside **Start** (host only) and **Leave**, one sentence says what the room waits for. **Leave**, Back, or changing page
-closes the room. A refused guest leaves a notice in the host's room.
+Beside **Start** (host only) and **Leave**, one sentence says what the room waits for. **Leave** closes the room.
+Back, sidebar navigation and LB/RB keep it open, including when browsing another game, Collection or Settings. The **Room** row under the profile returns to the room's game and Online page; its second line
+shows waiting, connecting, friend present, readiness or starting. A refused guest leaves a notice in the host's room.
+
+Away from the room, toasts announce a friend joining, becoming ready or leaving, the host starting, and a room ending
+with its reason. The room keeps polling on every page; a session started by the host launches from any page.
+
+Playing alone (including a shortcut, a second `--play` request or AutoPlay) and switching profile ask **Leave the room?**
+with **Stay** and **Leave**. Leave closes the room before continuing the requested action. When a friend is present,
+the confirmation warns that they will be disconnected. Closing the launcher asks the same only while a friend is
+present; an empty room closes with the window without a question.
 
 When something fails, the room shows a help card: what happened, both sides' values where they differ (launcher and game
 versions, systems, games), what to do, and a button that does it (**Try again**, **Open the Online tab**, **Go to the

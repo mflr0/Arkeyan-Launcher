@@ -375,6 +375,16 @@ namespace launcher_ui
 
     std::string CollectionPage::Folder() const { return collection::Folder(); }
 
+    void CollectionPage::OpenAdd()
+    {
+        if (!m_opened)
+            Open();
+        m_overlay = Overlay::Add;
+        m_addToy = 0xFFFF;
+        m_created.clear();
+        m_addGame = m_model.gameId;
+    }
+
     void CollectionPage::Toast(const std::string& text, ui::ToastKind kind) { m_app.Toast(text, kind); }
 
     void CollectionPage::Open()
@@ -874,16 +884,6 @@ namespace launcher_ui
                 ui::color::InkSoft, -1);
         ImGui::BeginDisabled(session);
         DrawHeader(width);
-        if (m_app.RoomOpen())
-        {
-            // Figures chosen from an online room: the way back to it, which stays open meanwhile.
-            ui::Text(ui::TextStyle::Body,
-                Tr("Your online room stays open. Put your figures on the portal, then go back."), ui::color::InkSoft,
-                -1);
-            ImGui::SameLine(0, ui::space::S);
-            if (ui::Button(Tr("Back to the room"), { .kind = ui::ButtonKind::Primary, .size = ui::Size::Small }))
-                m_app.GoTo(Page::Online);
-        }
         DrawSeats(width);
         DrawBar();
         // The shelf has room round its cards (their focus rings, the choose banner's border).
@@ -946,12 +946,7 @@ namespace launcher_ui
         const float row = std::max(title.y, buttonsY + ui::height::Normal - top.y);
         ImGui::SetCursorScreenPos(ImVec2(top.x + width - addWidth - ui::space::S - manageWidth, buttonsY));
         if (ui::Button(Tr("Add a figure"), add))
-        {
-            m_overlay = Overlay::Add;
-            m_addToy = 0xFFFF;
-            m_created.clear();
-            m_addGame = m_model.gameId;
-        }
+            OpenAdd();
         m_app.TakeFocus(FocusTo::Page);
         ImGui::SameLine(0, ui::space::S);
         if (ui::Button(Tr("Manage"), manage) || m_testMenu == 1)

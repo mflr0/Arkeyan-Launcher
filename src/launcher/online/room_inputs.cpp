@@ -174,7 +174,7 @@ namespace online
             add(seats[i], i);
             collection::Figure top;
             if (collection::Read(seats[i], top) && top.IsSwapTop() && !top.partner.empty())
-                add(collection::PathOf(top.partner), i);
+                add(launcher_ui::BesideFigure(top.path, top.partner), i);
         }
         inputs.settings = RoomSettings(config, game.id);
         if (!host || !readSave)

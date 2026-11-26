@@ -1255,7 +1255,6 @@ Swap	Wisselen
 Players swapped	Spelers gewisseld
 
 # Online
-Couldn't read a figure; choose your figures again in Collection.	Een figuur kon niet worden gelezen; kies je figuren opnieuw in Verzameling.
 Couldn't read your picture; choose it again in your profile.	Je afbeelding kon niet worden gelezen; kies die opnieuw in je profiel.
 Couldn't read your saves; check that their folder is accessible.	Je opgeslagen spellen konden niet worden gelezen; controleer de toegang tot de map.
 Couldn't restore the session's saves or figures; check the data folder and restart.	De opgeslagen spellen of figuren van de sessie konden niet worden hersteld; controleer de gegevensmap en start opnieuw.
@@ -1341,8 +1340,6 @@ Your friend joins	Je vriend neemt deel
 Your friend left the room	Je vriend heeft de kamer verlaten
 Your friend stopped answering. Check both internet connections, then try again.	Je vriend antwoordt niet meer. Controleer beide internetverbindingen en probeer het opnieuw.
 Your friend's room	De kamer van je vriend
-Your online room stays open. Put your figures on the portal, then go back.	Je onlinekamer blijft open. Zet je figuren op de portal en ga dan terug.
-Back to the room	Terug naar de kamer
 Your friend's room didn't answer	De kamer van je vriend heeft niet geantwoord
 Your friend: {}	Je vriend: {}
 Your game versions differ	Jullie spelversies verschillen
@@ -1437,3 +1434,22 @@ A tunnel such as playit.gg gives an address and a port: enter them here and the 
 During the session, change figures in the game (F3 > Toy Box).	Wissel tijdens de sessie figuren in het spel (F3 > Toy Box).
 The room closed: choose your disc image again	De kamer is gesloten: kies je schijfkopie opnieuw
 Your friend left the room.	Je vriend heeft de kamer verlaten.
+
+# Persistent room and figure picker.
+Room · {}	Kamer · {}
+Starting the session...	Sessie starten…
+Connecting...	Verbinden…
+Waiting for a friend	Wachten op een vriend
+Both players are ready	Beide spelers zijn klaar
+{} is ready	{} is klaar
+{} is here, not ready yet	{} is er, nog niet klaar
+{} joined the room	{} is de kamer binnengekomen
+{} left the room	{} heeft de kamer verlaten
+The host started the session	De host heeft de sessie gestart
+Leave the room?	De kamer verlaten?
+Your friend will be disconnected.	De verbinding met je vriend wordt verbroken.
+Your room will close.	Je kamer wordt gesloten.
+Stay	Blijven
+No figures for this game in your collection.	Geen figuren voor dit spel in je collectie.
+Couldn't change the portal figures. Try again.	De portaalfiguren konden niet worden gewijzigd. Probeer het opnieuw.
+Couldn't read a figure; choose your figures again in the room.	Een figuur kon niet worden gelezen; kies je figuren opnieuw in de kamer.

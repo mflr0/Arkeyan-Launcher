@@ -915,10 +915,7 @@ namespace launcher_ui
         case SDL_EVENT_QUIT:
         case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
             // Cmd+Q, Alt+F4, the window's close: during an install, ask first (it would stop the build).
-            if (AnyInstalling())
-                m_quitPrompt = true;
-            else
-                m_running = false;
+            RequestQuit();
             break;
         case SDL_EVENT_DROP_BEGIN:
         case SDL_EVENT_DROP_POSITION: m_dragOver = true; break;
@@ -1112,6 +1109,16 @@ namespace launcher_ui
 
     void App::PlayNow()
     {
+        const std::string game = m_s->game.id;
+        if (ConfirmRoomLeave([this, game] {
+                if (const auto* selected = FindGame(game))
+                    SelectGame(*selected);
+                PlayNow();
+            }))
+        {
+            m_launchPending = false;
+            return;
+        }
         if (GamesFolderMissingFirst([this] { PlayNow(); }))
         {
             m_launchPending = false;
@@ -1887,6 +1894,20 @@ namespace launcher_ui
             // Who plays (profiles_page.cpp).
             ImGui::SetCursorScreenPos(ImVec2(left - ui::space::S, y + ui::type::Caption + ui::space::M));
             DrawProfileButton();
+            if (RoomOpen())
+            {
+                const auto& status = m_online.preview ? *m_online.preview : m_online.lobby.Get();
+                const std::string title = Tf("Room · {}", ShortGameName(m_online.game));
+                const std::string subtitle = RoomStatusText(status);
+                ui::ListRowOptions options;
+                options.subtitle = subtitle.c_str();
+                options.selected = m_page == Page::Online;
+                options.dot = status.localReady && status.remoteReady ? ui::color::Success
+                              : status.haveRemote                     ? ui::color::Info
+                                                                      : ui::color::Warning;
+                if (ui::ListRow(title.c_str(), options))
+                    OpenRoomPage();
+            }
             y = ImGui::GetCursorScreenPos().y + ui::space::S;
             ui::PushText(ui::TextStyle::Caption, true);
             ui::DrawText(draw, ImVec2(left, y), ui::Col(ui::color::Dim), Tr("YOUR GAMES"));
@@ -3096,15 +3117,8 @@ namespace launcher_ui
             m_backPage = Page::Play;
         else if (page == Page::Settings && GameSubPage(m_page))
             m_backPage = Page::Play;
-        else if (page == Page::Collection && m_page == Page::Online)
-            m_backPage = Page::Online; // figures chosen while the room stays open
         else if (page == Page::Collection && GameSubPage(m_page))
             m_backPage = Page::Play;
-        const bool choosingFigures = (m_page == Page::Online && page == Page::Collection) ||
-                                     (m_page == Page::Collection && page == Page::Online);
-        if ((m_page == Page::Online || (m_page == Page::Collection && RoomOpen())) && page != m_page &&
-            !choosingFigures && !m_online.launched)
-            CloseOnline();
         m_page = page;
         m_capturing = nullptr;
         m_toyboxPadCapturing = nullptr;
@@ -3121,8 +3135,6 @@ namespace launcher_ui
             m_un.stage = UninstallStage::Closed;
         else if (GameSubPage(m_page))
             GoTo(Page::Play);
-        else if (m_page == Page::Collection && RoomOpen())
-            GoTo(Page::Online);
         else if (m_page != Page::Home)
             GoTo(Page::Home);
         else
@@ -3352,6 +3364,8 @@ namespace launcher_ui
             DrawIntegrity();
             DrawProfileEditor();
             DrawProblemReport();
+            DrawRoomPicker();
+            DrawRoomLeave();
             DrawQuitPrompt();
             DrawDefenderNotice();
             DrawGamesFolderMissing();
@@ -3363,7 +3377,8 @@ namespace launcher_ui
             m_pagesTaken = ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopupId | ImGuiPopupFlags_AnyPopupLevel) ||
                            ImGui::IsAnyItemActive() || m_toasts.HasFocus() || m_reportOpen || m_whatsNewOpen ||
                            m_downgradeOpen || m_integrityOpen || m_quitPrompt || m_defenderNoticeOpen ||
-                           m_gamesMissingOpen || m_gameStopped.has_value() || m_discOffer.has_value();
+                           m_gamesMissingOpen || m_gameStopped.has_value() || m_discOffer.has_value() ||
+                           m_online.picker || bool(m_afterRoomLeave);
             m_backTaken = m_pagesTaken || (m_page == Page::Collection && m_s->collection->TakesBack());
             m_focusTo = FocusTo::None; // a request no page answered (its item wasn't drawn) is dropped
         }

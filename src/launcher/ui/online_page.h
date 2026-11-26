@@ -99,7 +99,11 @@ namespace launcher_ui
         std::string fieldsFor; // the game whose Online tab settings fill the fields below
         char port[6] = "47640", address[256] = {}, otherAddress[256] = {};
         bool automatic = true, crossPlatform = false;
+        bool activeAutomatic = true;
         bool showAddress = false, showDetails = false, showFix = false;
+        bool picker = false;
+        bool hadRemote = false, wasRemoteReady = false;
+        std::string remoteName;
         float cardHeight = 0; // the taller player card's, last frame: both are drawn that tall
         int previewRouter = -1; // tests: 0 asking the router, 1 opened, 2 refused, 3 refused with IPv6
         int loggedReach = -1;   // the invite's reach last logged
@@ -125,4 +129,6 @@ namespace launcher_ui
     std::string MaskedCode(std::string_view code); // the letters hidden, the dashes kept
     const char* OnlineErrorText(online::Error error, online::Mismatch mismatch);
     std::string OnlineEndText(std::string_view reason);
+    bool RoomSeatAllowed(const collection::Seat& seat, bool host);
+    std::string RoomStatusText(const online::Status& status);
 }

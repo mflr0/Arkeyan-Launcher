@@ -523,6 +523,14 @@ namespace launcher_ui
         };
         void DrawPlay();
         void DrawOnline();
+        void OpenRoomPage();
+        void OpenRoomPicker();
+        void DrawRoomPicker();
+        bool SetRoomSeat(size_t seat, const std::string& path);
+        bool ConfirmRoomLeave(std::function<void()> action);
+        void ResolveRoomLeave(bool leave);
+        void DrawRoomLeave();
+        void RequestQuit();
         void DrawGameOnline(); // the game's Online tab: Solo, Host or Join, and what each needs
         void DrawRoomPlayers(const online::Status& status);
         void DrawRoomInvite(const online::Status& status);
@@ -946,6 +954,8 @@ namespace launcher_ui
         uint64_t m_requestAt = 0; // when the request file was last looked for
         uint64_t m_raiseUntil = 0; // a minimized window is raised once restored (macOS restores it with an animation)
         OnlineRoom m_online;
+        CollectionModel m_roomFigures;
+        std::function<void()> m_afterRoomLeave;
         GameSession m_session; // the game running: one at a time (game_run.h)
         uint64_t m_sessionStart = 0; // SDL_GetTicks when the game started: the time on the game page
         bool m_launchPending = false; // the page theme must finish fading before the process starts

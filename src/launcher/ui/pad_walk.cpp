@@ -198,6 +198,9 @@ namespace launcher_ui
             { "53-online-waiting", BackTo::GamePage, false },
             { "54-online-ready", BackTo::GamePage, false },
             { "55-online-guest", BackTo::GamePage, false },
+            { "56-room-picker-host", BackTo::Closes, false },
+            { "57-room-picker-guest", BackTo::Closes, false },
+            { "58-room-leave", BackTo::Closes, false },
         };
         ImGuiContext& g = *ImGui::GetCurrentContext();
         ImGuiIO& io = ImGui::GetIO();
@@ -406,7 +409,8 @@ namespace launcher_ui
                 GoTo(Page::Play);
             }
             else if (name.starts_with("51-") || name.starts_with("52-") || name.starts_with("53-") ||
-                     name.starts_with("54-") || name.starts_with("55-"))
+                     name.starts_with("54-") || name.starts_with("55-") || name.starts_with("56-") ||
+                     name.starts_with("57-") || name.starts_with("58-"))
             {
                 game("ssa");
                 GoTo(Page::Online);
@@ -416,7 +420,10 @@ namespace launcher_ui
                              : name.starts_with("52-") ? 2
                              : name.starts_with("53-") ? 4
                              : name.starts_with("54-") ? 6
-                                                       : 7;
+                             : name.starts_with("55-") ? 7
+                             : name.starts_with("56-") ? 9
+                             : name.starts_with("57-") ? 10
+                                                       : 17;
                 TestOnlineScript(now);
                 m_testStep = saved;
                 RequestFocus(FocusTo::Page);

@@ -845,6 +845,19 @@ quit is silent. Startup performs the same recovery after a closed launcher. Fren
 See [Online co-op](online.md) for the player steps, protocol, launch variables, write-back, router lease and screenshot
 fixtures (`SKY_LAUNCHER_TEST_ONLINE_UI=1` with `SKY_LAUNCHER_SHOTS`).
 
+While a room is open, a two-line **Room · <game>** row sits below the profile and above YOUR GAMES. It uses the sidebar's
+ListRow (`dot`, a token-sized flat status mark shown in the component gallery) and a short status subtitle. Waiting, connecting, friend present, ready and starting states
+remain visible across pages; the row is reachable by keyboard and controller and opens the room's game and Online page.
+Navigating with the sidebar, LB/RB or Back keeps the room open.
+
+**Choose figures** in the local player card opens the shared modal shell in place. A scrolling list groups compatible
+figures by the player's seat and, for the host, shared item/adventure-pack seats. The guest chooses their local first
+player seat, which the session maps to player two. Selecting a swapper keeps its paired halves. All rows and actions
+use the existing focus and modal navigation, including Escape/B to close. An empty collection offers **Add a figure**
+through Collection's add flow. The room continues polling and refreshing its inputs from the same seats file.
+Leaving for solo play or another profile uses a danger confirmation with Stay focused first; window close asks only
+when a friend is present. Room events on other pages use the standard toast stack.
+
 ## Achievements and play time
 
 The games have Xbox 360 achievements; the launcher lists them per game and shows how long the game was played. Nothing is shipped: the list is

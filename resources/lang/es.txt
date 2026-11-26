@@ -1255,7 +1255,6 @@ Swap	Intercambiar
 Players swapped	Jugadores intercambiados
 
 # Online
-Couldn't read a figure; choose your figures again in Collection.	No se pudo leer una figura; vuelve a elegir tus figuras en Colección.
 Couldn't read your picture; choose it again in your profile.	No se pudo leer tu imagen; vuelve a elegirla en tu perfil.
 Couldn't read your saves; check that their folder is accessible.	No se pudieron leer tus partidas; comprueba el acceso a su carpeta.
 Couldn't restore the session's saves or figures; check the data folder and restart.	No se pudieron recuperar las partidas o figuras de la sesión; revisa la carpeta de datos y reinicia.
@@ -1341,8 +1340,6 @@ Your friend joins	Tu amigo se une
 Your friend left the room	Tu amigo salió de la sala
 Your friend stopped answering. Check both internet connections, then try again.	Tu amigo dejó de responder. Comprobad ambas conexiones a internet y volved a intentarlo.
 Your friend's room	La sala de tu amigo
-Your online room stays open. Put your figures on the portal, then go back.	Tu sala en línea sigue abierta. Pon tus figuras en el portal y luego vuelve.
-Back to the room	Volver a la sala
 Your friend's room didn't answer	La sala de tu amigo no respondió
 Your friend: {}	Tu amigo: {}
 Your game versions differ	Vuestras versiones del juego son distintas
@@ -1437,3 +1434,22 @@ A tunnel such as playit.gg gives an address and a port: enter them here and the 
 During the session, change figures in the game (F3 > Toy Box).	Durante la sesión, cambia las figuras en el juego (F3 > Toy Box).
 The room closed: choose your disc image again	La sala se cerró: vuelve a elegir tu imagen de disco
 Your friend left the room.	Tu amigo salió de la sala.
+
+# Persistent room and figure picker.
+Room · {}	Sala · {}
+Starting the session...	Iniciando la sesión…
+Connecting...	Conectando…
+Waiting for a friend	Esperando a un amigo
+Both players are ready	Los dos jugadores están listos
+{} is ready	{} está listo
+{} is here, not ready yet	{} está aquí, aún no está listo
+{} joined the room	{} se ha unido a la sala
+{} left the room	{} ha salido de la sala
+The host started the session	El anfitrión ha iniciado la sesión
+Leave the room?	¿Salir de la sala?
+Your friend will be disconnected.	Tu amigo se desconectará.
+Your room will close.	Tu sala se cerrará.
+Stay	Quedarse
+No figures for this game in your collection.	No hay figuras para este juego en tu colección.
+Couldn't change the portal figures. Try again.	No se han podido cambiar las figuras del portal. Inténtalo de nuevo.
+Couldn't read a figure; choose your figures again in the room.	No se ha podido leer una figura; vuelve a elegir tus figuras en la sala.

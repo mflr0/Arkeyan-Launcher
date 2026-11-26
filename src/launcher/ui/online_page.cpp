@@ -22,7 +22,7 @@ namespace launcher_ui
             {
             case online::InputError::Picture: return Tr("Couldn't read your picture; choose it again in your profile.");
             case online::InputError::Figure:
-                return Tr("Couldn't read a figure; choose your figures again in Collection.");
+                return Tr("Couldn't read a figure; choose your figures again in the room.");
             case online::InputError::Save:
                 return Tr("Couldn't read your saves; check that their folder is accessible.");
             case online::InputError::SaveTooLarge: return Tr("Your saves exceed 64 MB; remove unused saves first.");
@@ -477,6 +477,11 @@ namespace launcher_ui
 
     bool App::OpenOnline()
     {
+        if (RoomOpen())
+        {
+            OpenRoomPage();
+            return false;
+        }
         if (!m_session.Running().empty() || m_s->installed.runtime.empty())
             return false;
         RecoverOnline();
@@ -496,6 +501,10 @@ namespace launcher_ui
 
     void App::CloseOnline()
     {
+        m_online.picker = false;
+        m_online.lastState = online::State::Idle;
+        m_online.hadRemote = m_online.wasRemoteReady = false;
+        m_online.remoteName.clear();
         m_online.lobby.Leave();
         m_online.router.Close();
         m_online.game.clear();
@@ -511,8 +520,9 @@ namespace launcher_ui
     void App::CloseOnlineForDisc()
     {
         const auto state = m_online.lobby.Get().state;
-        if (!m_online.launched && (RoomOpen() || m_online.beginPending || state == online::State::Connecting ||
-                                      state == online::State::Greeting))
+        if (m_online.game == m_s->game.id && !m_online.launched &&
+            (RoomOpen() || m_online.beginPending || state == online::State::Connecting ||
+                state == online::State::Greeting))
         {
             CloseOnline();
             Toast(Tr("The room closed: choose your disc image again"), ui::ToastKind::Error);
@@ -642,8 +652,9 @@ namespace launcher_ui
             }
             const uint16_t port = status.localPort;
             m_online.lobby.ResolveTunnel(m_online.otherAddress, port);
-            const auto invite = InviteFor(m_online.router.Get(), status.mapped, m_online.router.Pending(),
-                m_online.automatic, m_online.localAddresses, port, m_online.lobby.Secret(), m_online.lobby.Tunnel());
+            const auto invite =
+                InviteFor(m_online.router.Get(), status.mapped, m_online.router.Pending(), m_online.activeAutomatic,
+                    m_online.localAddresses, port, m_online.lobby.Secret(), m_online.lobby.Tunnel());
             if (!invite.code.empty() && invite.code != m_online.lastCode)
             {
                 if (!m_online.lastCode.empty())
@@ -665,6 +676,22 @@ namespace launcher_ui
                 BeginRoom();
             }
         }
+        if (m_page != Page::Online)
+        {
+            if (status.state == online::State::InRoom && status.haveRemote && !m_online.hadRemote)
+                Toast(Tf("{} joined the room", status.remote.pseudo), ui::ToastKind::Success);
+            if (status.state == online::State::InRoom && status.haveRemote && status.remoteReady &&
+                !m_online.wasRemoteReady)
+                Toast(Tf("{} is ready", status.remote.pseudo), ui::ToastKind::Success);
+            if (!status.haveRemote && m_online.hadRemote && status.state != online::State::Ended)
+                Toast(Tf("{} left the room", m_online.remoteName));
+            if (status.state == online::State::Started && m_online.lastState != online::State::Started)
+                Toast(Tr("The host started the session"));
+        }
+        m_online.hadRemote = status.haveRemote;
+        m_online.wasRemoteReady = status.haveRemote && status.remoteReady;
+        if (status.haveRemote)
+            m_online.remoteName = status.remote.pseudo;
         if (status.state != m_online.lastState)
         {
             if (status.state == online::State::Ended && m_page != Page::Online && status.error != online::Error::None)
@@ -677,7 +704,11 @@ namespace launcher_ui
         if (status.state == online::State::Ended)
             m_online.router.Close();
         if (status.state == online::State::Started && !m_online.launched)
+        {
+            ResolveRoomLeave(false);
+            m_online.picker = false;
             LaunchOnline();
+        }
         if (m_online.launched || m_online.game.empty() || SDL_GetTicks() < m_online.refreshAt)
             return;
         m_online.refreshAt = SDL_GetTicks() + 1000;
@@ -925,13 +956,200 @@ namespace launcher_ui
 
     bool App::RoomOpen() const
     {
-        const auto state = m_online.lobby.Get().state;
-        return !m_online.launched && !m_online.game.empty() && !m_online.preview &&
-               (state == online::State::Waiting || state == online::State::InRoom);
+        const auto state = m_online.preview ? m_online.preview->state : m_online.lobby.Get().state;
+        return !m_online.launched && !m_online.game.empty() &&
+               (m_online.beginPending || state == online::State::Waiting || state == online::State::Connecting ||
+                   state == online::State::Greeting || state == online::State::InRoom ||
+                   state == online::State::Started);
+    }
+
+    bool RoomSeatAllowed(const collection::Seat& seat, bool host)
+    {
+        // Each computer supplies its first player; the session assigns the guest to player two.
+        return seat.player == 1 || (host && seat.player == 0);
+    }
+
+    std::string RoomStatusText(const online::Status& status)
+    {
+        using online::State;
+        if (status.state == State::Started)
+            return Tr("Starting the session...");
+        if (status.state == State::Connecting || status.state == State::Greeting)
+            return Tr("Connecting...");
+        if (!status.haveRemote)
+            return Tr("Waiting for a friend");
+        if (status.localReady && status.remoteReady)
+            return Tr("Both players are ready");
+        return status.remoteReady ? Tf("{} is ready", status.remote.pseudo)
+                                  : Tf("{} is here, not ready yet", status.remote.pseudo);
+    }
+
+    void App::OpenRoomPage()
+    {
+        if (const auto* game = FindGame(m_online.game))
+            SelectGame(*game);
+        GoTo(Page::Online);
+    }
+
+    bool App::ConfirmRoomLeave(std::function<void()> action)
+    {
+        if (!RoomOpen())
+            return false;
+        if (!m_afterRoomLeave)
+            m_afterRoomLeave = std::move(action);
+        m_online.picker = false;
+        return true;
+    }
+
+    void App::ResolveRoomLeave(bool leave)
+    {
+        auto action = std::move(m_afterRoomLeave);
+        m_afterRoomLeave = {};
+        if (leave && action)
+        {
+            CloseOnline();
+            action();
+        }
+    }
+
+    void App::RequestQuit()
+    {
+        const auto& status = m_online.preview ? *m_online.preview : m_online.lobby.Get();
+        if (RoomOpen() && status.haveRemote && ConfirmRoomLeave([this] { RequestQuit(); }))
+            return;
+        if (AnyInstalling())
+            m_quitPrompt = true;
+        else
+        {
+            if (RoomOpen())
+                CloseOnline();
+            m_running = false;
+        }
+    }
+
+    void App::DrawRoomLeave()
+    {
+        if (!m_afterRoomLeave)
+            return;
+        const auto& status = m_online.preview ? *m_online.preview : m_online.lobby.Get();
+        bool open = true;
+        const auto result = ui::ConfirmDialog("##leaveroom", Tr("Leave the room?"),
+            status.haveRemote ? Tr("Your friend will be disconnected.") : Tr("Your room will close."), Tr("Leave"),
+            Tr("Stay"), &open, ui::ModalKind::Danger);
+        if (result == ui::ModalResult::Confirm)
+            ResolveRoomLeave(true);
+        else if (!open)
+            ResolveRoomLeave(false);
+    }
+
+    void App::OpenRoomPicker()
+    {
+        if (!RoomOpen())
+            return;
+        m_roomFigures.gameId = m_online.game;
+        // A profile switch sets it with SDL_setenv_unsafe, which on Windows changes the Win32 environment that getenv
+        // does not read: read it the same way.
+        const char* folder = skyenv::Get("SKY_COLLECTION", [](const char* name) { return SDL_getenv_unsafe(name); });
+        m_roomFigures.sourceFolder = folder && *folder ? folder : collection::Folder();
+        m_roomFigures.Load();
+        if (!m_online.preview)
+            m_online.lobby.SetReady(false);
+        m_online.picker = true;
+    }
+
+    bool App::SetRoomSeat(size_t seat, const std::string& path)
+    {
+        const auto& status = m_online.preview ? *m_online.preview : m_online.lobby.Get();
+        const auto* game = m_roomFigures.Game();
+        if (!RoomOpen() || status.state == online::State::Started || !game || game->id != m_online.game ||
+            seat >= game->seats.size() || !RoomSeatAllowed(game->seats[seat], status.host))
+            return false;
+        // Collection may have changed the other seats while this picker was open.
+        m_roomFigures.Load();
+        if (!m_roomFigures.SetSeat(seat, path))
+            return false;
+        if (!m_online.preview)
+            m_online.lobby.SetReady(false);
+        m_online.refreshAt = 0;
+        return true;
+    }
+
+    void App::DrawRoomPicker()
+    {
+        if (!m_online.picker)
+            return;
+        if (!RoomOpen())
+        {
+            m_online.picker = false;
+            return;
+        }
+        const auto& status = m_online.preview ? *m_online.preview : m_online.lobby.Get();
+        const auto* game = m_roomFigures.Game();
+        bool add = false;
+        std::optional<std::pair<size_t, std::string>> change;
+        if (game && ui::BeginModal("##roomfigures", Tr("Choose figures"), &m_online.picker, ui::ModalSize::Medium))
+        {
+            m_roomFigures.Poll(SDL_GetTicks());
+            const float body = OverlayBody(
+                ui::height::Large + ui::height::Normal + ui::space::XL, ui::height::Large, ui::height::Large * 5);
+            ui::BeginRoomyChild("##roomseats", ImVec2(0, body), ImGuiChildFlags_NavFlattened);
+            bool any = false;
+            for (const auto& figure : m_roomFigures.figures)
+                if (!m_roomFigures.Incompatible(figure))
+                    for (const auto& seat : game->seats)
+                        any |= RoomSeatAllowed(seat, status.host) && SeatAccepts(seat, figure);
+            if (!any)
+            {
+                ui::Text(ui::TextStyle::Body, Tr("No figures for this game in your collection."), ui::color::InkSoft);
+                add = ui::Button(Tr("Add a figure"), { .kind = ui::ButtonKind::Primary });
+            }
+            else
+                for (size_t seat = 0; seat < game->seats.size(); ++seat)
+                {
+                    if (!RoomSeatAllowed(game->seats[seat], status.host))
+                        continue;
+                    ImGui::PushID(int(seat));
+                    const std::string label =
+                        game->seats[seat].player == 1 && !status.host ? Tr("Player 2") : SeatTagText(game->seats[seat]);
+                    ui::SectionHeader(label.c_str(), nullptr, seat != 0);
+                    if (ui::ListRow(Tr("Empty"), { .selected = m_roomFigures.seats[seat].empty() }))
+                        change = { seat, {} };
+                    for (const auto& figure : m_roomFigures.figures)
+                    {
+                        if (m_roomFigures.Incompatible(figure) || !SeatAccepts(game->seats[seat], figure) ||
+                            figure.IsSwapBottom())
+                            continue;
+                        ImGui::PushID(figure.path.c_str());
+                        const std::string name = figure.DisplayName();
+                        if (ui::ListRow(name.c_str(), { .selected = m_roomFigures.seats[seat] == figure.path,
+                                                          .disabled = figure.lock.Busy() }))
+                            change = { seat, figure.path };
+                        ImGui::PopID();
+                    }
+                    ImGui::PopID();
+                }
+            ui::EndRoomyChild();
+            ui::ModalActions(&m_online.picker, nullptr, Tr("Close"));
+            ui::EndModal();
+        }
+        if (change && !SetRoomSeat(change->first, change->second))
+            Toast(Tr("Couldn't change the portal figures. Try again."), ui::ToastKind::Error);
+        if (add)
+        {
+            m_online.picker = false;
+            OpenRoomPage();
+            GoTo(Page::Collection);
+            m_s->collection->OpenAdd();
+        }
     }
 
     void App::StartOnline()
     {
+        if (RoomOpen())
+        {
+            OpenRoomPage();
+            return;
+        }
         LoadOnlineFields();
         const auto settings = online::ReadGameOnline(m_config, m_s->game.id);
         if (settings.mode == online::Mode::Join && settings.address.empty())
@@ -956,6 +1174,7 @@ namespace launcher_ui
         room.loggedReach = -1;
         room.otherAddress[0] = '\0';
         const bool hosting = room.mode == Mode::Host;
+        room.activeAutomatic = room.automatic;
         const auto* game = collection::Catalogue::Get().FindGame(m_s->game.id);
         uint16_t port = 0;
         std::string host;
@@ -1051,20 +1270,13 @@ namespace launcher_ui
             m_online.router.Close();
             BeginRoom();
             break;
-        case Action::Settings:
-            CloseOnline();
-            OpenOnlineTab();
-            break;
-        case Action::Update:
-            CloseOnline();
-            GoTo(Page::Play);
-            break;
+        case Action::Settings: OpenOnlineTab(); break;
+        case Action::Update: GoTo(Page::Play); break;
         case Action::Launcher:
-            CloseOnline();
             m_tab = SettingsTab::Launcher;
             GoTo(Page::Settings);
             break;
-        case Action::Collection: GoTo(Page::Collection); break;
+        case Action::Collection: OpenRoomPicker(); break;
         case Action::None: break;
         }
         return true;
@@ -1084,7 +1296,7 @@ namespace launcher_ui
         if (!status.host)
             return;
         using Reach = Invite::Reach;
-        const uint16_t port = uint16_t(std::strtoul(room.port, nullptr, 10));
+        const uint16_t port = room.preview ? uint16_t(std::strtoul(room.port, nullptr, 10)) : status.localPort;
         const bool previewing = room.preview && room.previewRouter >= 0;
         const auto mapping = previewing ? netplay::portmap::Mapping{ .ok = room.previewRouter == 1,
             .externalIp = room.previewRouter == 1 ? "203.0.113.4" : "",
@@ -1095,8 +1307,8 @@ namespace launcher_ui
                                     { room.previewRouter == 3 ? "2001:db8::7" : "", 0 } }
                               : status.mapped;
         const bool pending = room.preview ? room.previewRouter == 0 : room.router.Pending();
-        const Invite invite = InviteFor(mapping, seen, pending, room.automatic, room.localAddresses, port,
-            room.lobby.Secret(), room.lobby.Tunnel());
+        const Invite invite = InviteFor(mapping, seen, pending, room.preview ? room.automatic : room.activeAutomatic,
+            room.localAddresses, port, room.lobby.Secret(), room.lobby.Tunnel());
         if (int(invite.reach) != room.loggedReach && !room.preview)
         {
             room.loggedReach = int(invite.reach);
@@ -1187,7 +1399,7 @@ namespace launcher_ui
                     const std::string forward =
                         Tf("Open port {} (UDP) to this computer in your router's settings: search the web for "
                            "your router's name and \"port forwarding\".",
-                            room.port);
+                            port);
                     ui::Text(ui::TextStyle::Body, forward.c_str(), ui::color::InkSoft, width);
                 }
                 ui::Text(ui::TextStyle::Body,
@@ -1297,15 +1509,15 @@ namespace launcher_ui
                         TakeFocus(FocusTo::Page);
                     }
                     // No SameLine left open after the last button: the card's height is measured below it.
-                    if (!ready)
+                    if (status.state != State::Started)
                     {
                         // Beside the first button when it fits, else under it (a narrow window).
                         const float choose = ui::ButtonWidth(Tr("Choose figures"));
                         if (inRoom && ImGui::GetItemRectMax().x + ui::space::S + choose <=
                                           ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x)
                             ImGui::SameLine(0, ui::space::S);
-                        if (ui::Button(Tr("Choose figures")) && !room.preview)
-                            GoTo(Page::Collection);
+                        if (ui::Button(Tr("Choose figures")))
+                            OpenRoomPicker();
                     }
                 }
                 else if (!ready)
@@ -1358,7 +1570,7 @@ namespace launcher_ui
             ImGui::SameLine(0, ui::space::S);
             ui::Text(ui::TextStyle::Body, Tr("Trying to reach your friend's room..."), ui::color::Ink, width);
             ImGui::Dummy(ImVec2(0, ui::space::S));
-            if (ui::Button(Tr("Cancel")))
+            if (ui::Button(Tr("Leave")))
             {
                 CloseOnline();
                 GoTo(Page::Play);
@@ -1490,7 +1702,7 @@ namespace launcher_ui
         constexpr int MismatchCount = int(Mismatch::Platform) + 1;
         constexpr const char* endReasons[] = { "quit", "timeout", "desync", "transport", "protocol", "game", "image",
             "runtime", "platform", "fps", "seats", "invalid" };
-        constexpr int Rooms = 9, Inputs = 5, Extras = 5;
+        constexpr int Rooms = 18, Inputs = 5, Extras = 5;
         if (m_testStep >= Rooms + ErrorCount + MismatchCount + Inputs + Extras + int(std::size(endReasons)))
         {
             m_running = false;
@@ -1499,6 +1711,9 @@ namespace launcher_ui
         m_page = Page::Online;
         auto& room = m_online;
         room.preview = Status{};
+        room.picker = false;
+        m_afterRoomLeave = {};
+        room.game.clear();
         m_toasts.Clear();
         auto& status = *room.preview;
         room.error.clear();
@@ -1564,11 +1779,52 @@ namespace launcher_ui
                 status.inputDelay = step == 6 ? 3 : 1;
                 m_testShot = step == 6 ? "online-03-ready" : "online-guest";
             }
-            else
+            else if (step == 8)
             {
                 room.mode = Mode::Join;
                 status.state = State::Connecting;
                 m_testShot = "online-connecting";
+            }
+            else
+            {
+                room.game = m_s->game.id;
+                status.host = step != 10;
+                status.state = State::InRoom;
+                status.haveRemote = true;
+                status.remote = kaos;
+                status.remoteReady = step == 13 || step == 14;
+                status.localReady = step == 14;
+                status.haveSettings = true;
+                status.settings = room.inputs.settings;
+                if (step == 9 || step == 10)
+                {
+                    const std::string toy = collection::Create(16, 0, "room-picker.sky");
+                    collection::Create(200, 0, "room-item.sky");
+                    m_roomFigures.gameId = room.game;
+                    m_roomFigures.Load();
+                    m_roomFigures.SetSeat(0, toy);
+                    OpenRoomPicker();
+                    m_testShot = step == 9 ? "room-picker-host" : "room-picker-guest";
+                }
+                else if (step == 17)
+                {
+                    ConfirmRoomLeave([] {});
+                    m_testShot = "room-leave-confirmation";
+                }
+                else
+                {
+                    m_page = Page::Home;
+                    if (step == 11)
+                    {
+                        status.haveRemote = false;
+                        status.state = State::Waiting;
+                    }
+                    if (step == 15)
+                        status.state = State::Connecting;
+                    if (step == 16)
+                        status.state = State::Started;
+                    m_testShot = fmt::format("room-sidebar-{}", step);
+                }
             }
         }
         else if ((step -= Rooms) < ErrorCount)
