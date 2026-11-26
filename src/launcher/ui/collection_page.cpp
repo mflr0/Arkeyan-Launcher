@@ -733,6 +733,12 @@ namespace launcher_ui
     bool CollectionPage::Drop(const std::string& path)
     {
         std::error_code error;
+        if (OnlineSessionRunning() && (collection::IsDumpName(datadir::Text(datadir::FromText(path).filename())) ||
+                                          fs::is_directory(datadir::FromText(path), error)))
+        {
+            Toast(Tr("During the session, change figures in the game (F3 > Toy Box)."));
+            return true;
+        }
         if (fs::is_directory(datadir::FromText(path), error))
         {
             Import({ path });
@@ -862,6 +868,11 @@ namespace launcher_ui
         float width = std::min(available, PageMax);
         ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (available - width) / 2);
         m_app.BeginPageColumn("##collectioncolumn", width);
+        const bool session = OnlineSessionRunning() || m_app.m_online.launched;
+        if (session)
+            ui::Text(ui::TextStyle::Body, Tr("During the session, change figures in the game (F3 > Toy Box)."),
+                ui::color::InkSoft, -1);
+        ImGui::BeginDisabled(session);
         DrawHeader(width);
         if (m_app.RoomOpen())
         {
@@ -899,10 +910,13 @@ namespace launcher_ui
         HandleShortcuts();
         if (pad)
             ui::PageLegend(Tr("Back"), width, true); // with the page's pad actions (HandleShortcuts)
+        ImGui::EndDisabled();
         ImGui::EndChild();
 
+        ImGui::BeginDisabled(session);
         DrawSwapQuestion();
         DrawOverlay();
+        ImGui::EndDisabled();
     }
 
     void CollectionPage::DrawHeader(float width)
@@ -1925,6 +1939,11 @@ namespace launcher_ui
 
     void CollectionPage::HandleShortcuts()
     {
+        if (OnlineSessionRunning() || m_app.m_online.launched)
+        {
+            m_toggleFavourite.clear();
+            return;
+        }
         if (!m_toggleFavourite.empty()) // a card's star clicked while the shelf was drawn
         {
             if (const collection::Figure* figure = m_model.Find(m_toggleFavourite))

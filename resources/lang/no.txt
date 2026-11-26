@@ -1435,3 +1435,6 @@ The room code changed: copy it again.	Romkoden er endret: kopier den på nytt.
 No open port? Both of you can join one virtual network (Radmin VPN, ZeroTier or Tailscale): this code then holds it by itself.	Ingen åpen port? Dere kan begge koble dere til ett virtuelt nettverk (Radmin VPN, ZeroTier eller Tailscale): koden tar det da med automatisk.
 Tunnel address	Tunneladresse
 A tunnel such as playit.gg gives an address and a port: enter them here and the room code holds them too.	En tunnel som playit.gg gir en adresse og en port: skriv dem inn her, så tar romkoden dem med også.
+During the session, change figures in the game (F3 > Toy Box).	Bytt figurer i spillet under økten (F3 > Toy Box).
+The room closed: choose your disc image again	Rommet ble lukket: velg diskavbildningen din på nytt
+Your friend left the room.	Vennen din forlot rommet.

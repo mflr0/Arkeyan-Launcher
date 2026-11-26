@@ -702,6 +702,8 @@ namespace launcher_ui
 
     std::string App::Run()
     {
+        if (ToyboxWindow() && OnlineSessionRunning())
+            return {};
         if (!Init())
         {
             fprintf(stderr, "launcher: cannot open the window: %s\n", SDL_GetError());
@@ -929,12 +931,13 @@ namespace launcher_ui
                     (m_page == Page::Collection &&
                         std::filesystem::is_directory(datadir::FromText(event.drop.data)))) &&
                 m_s->collection->Drop(event.drop.data))
-                m_page = Page::Collection;
+                GoTo(Page::Collection);
             else if (event.drop.data != nullptr && Installing())
                 Toast(Tr("Wait for the installation to finish"));
             else if (event.drop.data != nullptr)
             {
-                m_page = Page::Play;
+                CloseOnlineForDisc();
+                GoTo(Page::Play);
                 StartVerify(event.drop.data);
             }
             break;
@@ -1080,7 +1083,8 @@ namespace launcher_ui
                 return true;
             m_s->fromCopy = false;
             m_s->installView = m_s->kitUsed = false;
-            m_page = Page::Play;
+            CloseOnlineForDisc();
+            GoTo(Page::Play);
             if (std::string iso = SettingGet(m_config, m_s->game.id, "iso"); !iso.empty())
             {
                 Toast(Tr("Game data damaged: using the disc image"), ui::ToastKind::Error);
@@ -1101,7 +1105,8 @@ namespace launcher_ui
         m_s->check.status = GameSourceStatus::NotFound;
         m_s->check.message = Tr(strings::DiscGone);
         m_s->installView = m_s->kitUsed = false;
-        m_page = Page::Play;
+        CloseOnlineForDisc();
+        GoTo(Page::Play);
         return false;
     }
 
@@ -1192,11 +1197,10 @@ namespace launcher_ui
         const bool fromRoom = m_online.launched || m_online.recovering;
         if (fromRoom)
         {
+            CloseOnline();
             RecoverOnline();
             if (m_online.recovering && !m_online.error.empty())
                 Toast(m_online.error, ui::ToastKind::Error);
-            m_online.with.clear();
-            CloseOnline();
         }
         const GameInfo* game = FindGame(ended->game);
         // The game's "Play online" (its F3 menu) quit to set online play up: this game's Online tab.

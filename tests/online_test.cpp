@@ -850,6 +850,9 @@ namespace
                           room.host.Get().start.sessionKey == room.guest.Get().start.sessionKey &&
                           room.guest.Get().start.port == room.port &&
                           room.host.Get().start.inputDelay == room.guest.Get().start.inputDelay);
+            room.host.Leave();
+            room.guest.Leave();
+            ONLINE_EXPECT(room.host.Get().state != State::Started && room.guest.Get().state != State::Started);
         }
         {
             Room room;
@@ -885,6 +888,9 @@ namespace
             room.guest.Leave();
             ONLINE_EXPECT(room.Until([&] { return room.host.Get().state == State::Waiting; }));
             ONLINE_EXPECT(room.host.Get().lastRefusal.error == Error::Left);
+            room.Join(room.guest);
+            ONLINE_EXPECT(room.Until([&] { return room.host.Get().haveRemote; }));
+            ONLINE_EXPECT(room.host.Get().lastRefusal.error == Error::None);
         }
         {
             Room room;
@@ -1035,6 +1041,7 @@ namespace
         fs::create_directories(root / "saves" / "slot1");
         std::ofstream(root / "saves" / "slot1" / "save.bin", std::ios::binary) << "first save";
         std::ofstream(root / "saves" / "online-ended.txt") << "reason=quit\n";
+        std::ofstream(root / "saves" / "online-replay.txt") << "replay\n";
         std::ofstream(root / "figures" / "p1-0.sky", std::ios::binary | std::ios::trunc)
             << std::string(FigureDumpBytes, char(5));
         std::ofstream(root / "figures" / "p2-0.sky", std::ios::binary | std::ios::trunc)
@@ -1042,6 +1049,7 @@ namespace
         ONLINE_EXPECT(FinishSession(root, realSaves, error));
         ONLINE_EXPECT(ReadText(realSaves / "slot0" / "save.bin") == "played");
         ONLINE_EXPECT(ReadText(realSaves / "slot1" / "save.bin") == "first save");
+        ONLINE_EXPECT(!fs::exists(realSaves / "online-replay.txt"));
         ONLINE_EXPECT(!fs::exists(realSaves / "online-ended.txt") && ReadText(realSaves / "portal.txt") == realPortal);
         ONLINE_EXPECT(ReadText(scratch / "online-real-saves-backup" / "slot0" / "save.bin") == "old save");
         ONLINE_EXPECT(ReadText(collectionDir / "Spyro.sky") == std::string(FigureDumpBytes, char(5)));

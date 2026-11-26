@@ -536,6 +536,7 @@ namespace launcher_ui
         bool OpenOnline();
         void PollOnline();
         void CloseOnline();
+        void CloseOnlineForDisc();
         void LaunchOnline();
         void RecoverOnline();
         void PlayTogetherAgain(const std::string& game, bool automatic);

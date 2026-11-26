@@ -128,7 +128,7 @@ namespace online
         bool Host(HostOptions options);
         bool Join(JoinOptions options);
         // The local player's figures or profile changed: sent again, and this side is no longer ready.
-        void UpdatePlayer(const Player& player);
+        bool UpdatePlayer(const Player& player);
         void SetReady(bool ready);
         // Host only, when Status::CanStart(): tells the guest and moves both to State::Started.
         bool StartGame();

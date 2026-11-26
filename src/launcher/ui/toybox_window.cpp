@@ -133,6 +133,11 @@ namespace launcher_ui
 
     void App::OpenToyboxWindow()
     {
+        if (m_online.launched || OnlineSessionRunning())
+        {
+            Toast(Tr("During the session, change figures in the game (F3 > Toy Box)."));
+            return;
+        }
         const std::string game = m_session.Running();
         if (game.empty())
         {
@@ -173,7 +178,7 @@ namespace launcher_ui
             // Once per game start: the window comes with the game when the player asked
             // for it.
             m_toyboxOpenedFor = running;
-            if (m_session.Ours() && ToyboxWithGame(true))
+            if (!m_online.launched && !OnlineSessionRunning() && m_session.Ours() && ToyboxWithGame(true))
                 OpenToyboxWindow();
         }
         int code = 0;
@@ -216,6 +221,11 @@ namespace launcher_ui
 
     void App::StartToyboxLink()
     {
+        if (OnlineSessionRunning())
+        {
+            m_running = false;
+            return;
+        }
         const collection::Game* game = collection::Catalogue::Get().FindGame(m_toybox);
         const std::string session = game != nullptr ? SessionFile(*game) : std::string();
         m_link = std::make_unique<toyboxlinkclient::Client>(toyboxlinkclient::LinkFileBeside(session), "toybox-window");
@@ -227,6 +237,11 @@ namespace launcher_ui
 
     void App::PollToyboxLink()
     {
+        if (OnlineSessionRunning())
+        {
+            m_running = false;
+            return;
+        }
         using State = toyboxlinkclient::Client::State;
         const uint64_t now = SDL_GetTicks();
         const State state = m_link->Current();

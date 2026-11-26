@@ -1464,3 +1464,6 @@ The room code changed: copy it again.	Le code du salon a changé : copiez-le à
 No open port? Both of you can join one virtual network (Radmin VPN, ZeroTier or Tailscale): this code then holds it by itself.	Pas de port ouvert ? Rejoignez tous deux le même réseau virtuel (Radmin VPN, ZeroTier ou Tailscale) : ce code l'inclut alors automatiquement.
 Tunnel address	Adresse du tunnel
 A tunnel such as playit.gg gives an address and a port: enter them here and the room code holds them too.	Un tunnel comme playit.gg fournit une adresse et un port : saisissez-les ici pour les ajouter au code du salon.
+During the session, change figures in the game (F3 > Toy Box).	Pendant la session, changez les figurines dans le jeu (F3 > Toy Box).
+The room closed: choose your disc image again	Le salon est fermé : choisissez à nouveau votre image disque
+Your friend left the room.	Votre ami a quitté le salon.

@@ -256,7 +256,8 @@ namespace online
                 {
                     std::string file = datadir::Text(it->path().lexically_relative(root / "saves"));
                     std::replace(file.begin(), file.end(), '\\', '/');
-                    if (file != "portal.txt" && file != "online-ended.txt" && file != "open-online.txt")
+                    if (file != "portal.txt" && file != "online-ended.txt" && file != "online-replay.txt" &&
+                        file != "open-online.txt")
                         saves.push_back(std::move(file));
                 }
             for (const std::string& file : saves)
