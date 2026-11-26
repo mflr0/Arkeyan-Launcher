@@ -74,7 +74,8 @@ namespace online
         RandomBytes(options.hello.nonce);
         std::string host, error;
         uint16_t port = 0;
-        if (!DecodeRoomCode(options.address, host, port, m_secret))
+        std::vector<net::Endpoint> endpoints;
+        if (!DecodeRoomCode(options.address, endpoints, m_secret))
         {
             End(net::ParseAddress(options.address, DefaultPort, host, port) ? Error::CodeRequired : Error::BadAddress);
             return false;
@@ -89,12 +90,12 @@ namespace online
         m_mine = options.hello;
         m_player = options.player;
         m_joinOptions = std::move(options);
-        m_status.peer = host;
+        m_status.peer = endpoints.front().ip;
         m_status.localPort = m_io->Port(m_socket);
         m_discovery.Start(m_joinOptions.discover);
         m_punch = std::make_unique<Punch>(
             m_secret, false, Now(), [this](const auto& to, auto bytes) { m_io->Send(m_socket, bytes, to); });
-        m_punch->Add(net::Resolve(host, port, true), Now());
+        m_punch->Add(endpoints, Now());
         m_status.state = State::Connecting;
         m_startedAt = Now();
         return true;

@@ -223,8 +223,13 @@ namespace online::net
         if (text.empty())
             return false;
         uint64_t secret = 0;
-        if (DecodeRoomCode(text, host, port, secret))
+        std::vector<Endpoint> endpoints;
+        if (DecodeRoomCode(text, endpoints, secret))
+        {
+            host = endpoints.front().ip;
+            port = endpoints.front().port;
             return true;
+        }
         std::string_view portText;
         if (text.front() == '[')
         {

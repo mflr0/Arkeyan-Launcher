@@ -264,20 +264,16 @@ namespace
             return host == "tunnel.invalid" ? std::vector<net::Endpoint>{ { "2001:db8::42", port } }
                                             : std::vector<net::Endpoint>{};
         });
-        resolver.ResolveCode("tunnel.invalid:55000", 47640, 42);
-        std::string ip;
-        uint16_t port = 0;
-        uint64_t secret = 0;
-        Expect(Wait([&] { return !resolver.Code().empty(); }) && DecodeRoomCode(resolver.Code(), ip, port, secret) &&
-                   ip == "2001:db8::42" && port == 55000 && secret == 42,
-            "tunnel hostname becomes an IP room code on the worker");
+        resolver.ResolveTunnel("tunnel.invalid:55000", 47640);
+        Expect(Wait([&] { return !resolver.Tunnel().ip.empty(); }) &&
+                   resolver.Tunnel() == net::Endpoint{ "2001:db8::42", 55000 },
+            "tunnel hostname becomes an endpoint on the worker");
         Expect(resolvedOffThread, "name resolution leaves the calling thread free");
-        resolver.ResolveCode("tunnel.invalid", 47641, 43);
-        Expect(Wait([&] { return !resolver.Code().empty(); }) && DecodeRoomCode(resolver.Code(), ip, port, secret) &&
-                   port == 47641 && secret == 43,
-            "address code follows changes to the room port and secret");
-        resolver.ResolveCode("", 47641, 43);
-        Expect(resolver.Code().empty(), "clearing the address clears the old code");
+        resolver.ResolveTunnel("tunnel.invalid", 47641);
+        Expect(Wait([&] { return !resolver.Tunnel().ip.empty(); }) && resolver.Tunnel().port == 47641,
+            "tunnel endpoint follows changes to the room port");
+        resolver.ResolveTunnel("", 47641);
+        Expect(resolver.Tunnel().ip.empty(), "clearing the address clears the old endpoint");
 
         std::atomic<unsigned> resolutions = 0;
         Discovery discovery([&](const std::string&, uint16_t port) {
@@ -285,9 +281,10 @@ namespace
             return std::vector<net::Endpoint>{ { "192.0.2.1", port } };
         });
         discovery.Start(false);
-        discovery.ResolveCode("tunnel.invalid", 47640, 42);
-        Expect(Wait([&] { return !discovery.Code().empty(); }) && resolutions == 1 && discovery.StunServers().empty(),
-            "disabled STUN discovery still resolves an alternate address");
+        discovery.ResolveTunnel("tunnel.invalid", 47640);
+        Expect(
+            Wait([&] { return !discovery.Tunnel().ip.empty(); }) && resolutions == 1 && discovery.StunServers().empty(),
+            "disabled STUN discovery still resolves a tunnel address");
         discovery.Start();
         Expect(Wait([&] { return discovery.StunServers().size() == stun::Servers.size(); }),
             "STUN server names resolve on the worker without sending requests");
@@ -311,13 +308,13 @@ namespace
                 "STUN resolution starts off the calling thread");
         }
         closing.Close();
-        closing.ResolveCode("tunnel.invalid", 47640, 42);
+        closing.ResolveTunnel("tunnel.invalid", 47640);
         {
             std::lock_guard lock(gateMutex);
             release = true;
         }
         gate.notify_one();
-        Expect(Wait([&] { return !closing.Code().empty(); }) && closing.StunServers().empty(),
+        Expect(Wait([&] { return !closing.Tunnel().ip.empty(); }) && closing.StunServers().empty(),
             "a late STUN lookup cannot restore servers after closing");
     }
 }

@@ -136,11 +136,8 @@ namespace online
         void Poll();
         const Status& Get() const { return m_status; }
         uint64_t Secret() const { return m_secret; }
-        void ResolveCode(const std::string& address, uint16_t port)
-        {
-            m_discovery.ResolveCode(address, port, m_secret);
-        }
-        std::string OtherCode() { return m_discovery.Code(); }
+        void ResolveTunnel(const std::string& address, uint16_t port) { m_discovery.ResolveTunnel(address, port); }
+        net::Endpoint Tunnel() { return m_discovery.Tunnel(); }
 
     private:
         enum class Step

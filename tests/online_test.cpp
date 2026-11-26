@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <limits>
 #include "launcher/online/room_code.h"
+#include "launcher/online/local_addresses.h"
 #include "launcher/online/room_inputs.h"
 #include "launcher/online/stun.h"
 #include "launcher/online/session_launch.h"
@@ -263,47 +264,60 @@ namespace
                       !net::ParseAddress("a:70000", 1, host, port) && !net::ParseAddress("a:", 1, host, port) &&
                       !net::ParseAddress("[::1", 1, host, port) && !net::ParseAddress("a b:1", 1, host, port));
 
-        // Room codes: the three lengths, read back whatever the case, dashes and look-alike letters; a typo refused.
         constexpr uint64_t secret = 0x9876543210;
         uint64_t decoded = 0;
-        const std::string shortCode = EncodeRoomCode("203.0.113.4", DefaultPort, secret);
+        const std::vector<net::Endpoint> one{ { "203.0.113.4", DefaultPort } };
+        const std::string shortCode = EncodeRoomCode(one, secret);
         ONLINE_EXPECT(shortCode.size() == 24 && shortCode[4] == '-');
-        ONLINE_EXPECT(DecodeRoomCode(shortCode, host, port, decoded) && host == "203.0.113.4" && port == DefaultPort &&
-                      decoded == secret);
-        const std::string withPort = EncodeRoomCode("203.0.113.4", 5000, secret);
-        ONLINE_EXPECT(withPort.size() == 29 && withPort != shortCode);
-        ONLINE_EXPECT(DecodeRoomCode(withPort, host, port, decoded) && host == "203.0.113.4" && port == 5000 &&
-                      decoded == secret);
-        const std::string v6 = EncodeRoomCode("2001:db8::7", 47641, secret);
-        ONLINE_EXPECT(v6.size() == 54);
-        ONLINE_EXPECT(
-            DecodeRoomCode(v6, host, port, decoded) && host == "2001:db8::7" && port == 47641 && decoded == secret);
-        ONLINE_EXPECT(EncodeRoomCode("my-pc.local", 1, secret).empty() && EncodeRoomCode("", 1, secret).empty());
+        std::vector<net::Endpoint> endpoints;
+        ONLINE_EXPECT(DecodeRoomCode(shortCode, endpoints, decoded) && endpoints == one && decoded == secret);
+        const std::vector<net::Endpoint> six{ { "203.0.113.4", 5000 }, { "192.168.1.20", 5000 },
+            { "2001:db8::7", 47641 }, { "26.1.2.3", 5000 }, { "100.64.1.2", DefaultPort }, { "2001:db8::8", 6000 } };
+        for (size_t count = 1; count <= six.size(); ++count)
         {
-            std::string loose;
-            for (const char c : shortCode)
-                if (c != '-')
-                    loose += char(c == '0' ? 'o' : c == '1' ? 'l' : (c >= 'A' && c <= 'Z') ? c - 'A' + 'a' : c);
-            ONLINE_EXPECT(
-                DecodeRoomCode(" " + loose.substr(0, 4) + " " + loose.substr(4) + "\n", host, port, decoded) &&
-                host == "203.0.113.4");
-            int refused = 0;
-            for (size_t i = 0; i < shortCode.size(); ++i)
+            const auto input = std::span(six).first(count);
+            const auto code = EncodeRoomCode(input, secret);
+            ONLINE_EXPECT(DecodeRoomCode(code, endpoints, decoded) &&
+                          endpoints == std::vector<net::Endpoint>(input.begin(), input.end()) && decoded == secret);
+            for (size_t i = 0; i < code.size(); ++i)
             {
-                if (shortCode[i] == '-')
+                if (code[i] == '-')
                     continue;
-                std::string typo = shortCode;
-                typo[i] = typo[i] == 'Z' ? 'Y' : char(typo[i] == '9' ? 'A' : typo[i] + 1);
-                std::string h;
-                uint16_t p = 0;
-                refused += DecodeRoomCode(typo, h, p, decoded) ? 0 : 1;
+                auto typo = code;
+                typo[i] = code[i] == '0' ? '1' : '0';
+                ONLINE_EXPECT(!DecodeRoomCode(typo, endpoints, decoded));
             }
-            ONLINE_EXPECT(refused == 20);
         }
-        ONLINE_EXPECT(EncodeRoomCode("203.0.113.4", DefaultPort, secret + 1) != shortCode);
-        ONLINE_EXPECT(EncodeRoomCode("203.0.113.4", DefaultPort, secret | (0xffull << 40)) == shortCode);
-        ONLINE_EXPECT(!DecodeRoomCode("K7QD-M2X", host, port, decoded) &&
-                      !DecodeRoomCode("K7QD-M2XU", host, port, decoded) && !DecodeRoomCode("", host, port, decoded));
+        std::vector<net::Endpoint> allV6;
+        for (uint16_t i = 0; i < 6; ++i)
+            allV6.push_back({ "2001:db8::" + std::to_string(i + 1), uint16_t(5000 + i) });
+        const auto longest = EncodeRoomCode(allV6, secret);
+        ONLINE_EXPECT(longest.size() == 234 && DecodeRoomCode(longest, endpoints, decoded) && endpoints == allV6);
+        const auto home =
+            EncodeRoomCode(std::array{ one.front(), net::Endpoint{ "192.168.1.20", DefaultPort } }, secret);
+        ONLINE_EXPECT(home.size() == 34);
+        const std::string withPort = EncodeRoomCode(std::array{ net::Endpoint{ "203.0.113.4", 5000 } }, secret);
+        ONLINE_EXPECT(withPort.size() == 29);
+        const std::string v6 = EncodeRoomCode(std::array{ net::Endpoint{ "2001:db8::7", 47641 } }, secret);
+        ONLINE_EXPECT(v6.size() == 54);
+        ONLINE_EXPECT(EncodeRoomCode({}, secret).empty());
+        auto tooMany = six;
+        tooMany.push_back(one.front());
+        ONLINE_EXPECT(EncodeRoomCode(tooMany, secret).empty());
+        for (const auto invalid :
+            { net::Endpoint{ "tunnel.invalid", 1 }, net::Endpoint{ "", 1 }, net::Endpoint{ "203.0.113.4", 0 } })
+            ONLINE_EXPECT(EncodeRoomCode(std::array{ invalid }, secret).empty());
+        std::string loose;
+        for (const char c : shortCode)
+            if (c != '-')
+                loose += char(c == '0' ? 'o' : c == '1' ? 'l' : (c >= 'A' && c <= 'Z') ? c - 'A' + 'a' : c);
+        ONLINE_EXPECT(DecodeRoomCode(" " + loose.substr(0, 4) + " " + loose.substr(4) + "\n", endpoints, decoded) &&
+                      endpoints == one);
+        ONLINE_EXPECT(EncodeRoomCode(one, secret + 1) != shortCode);
+        ONLINE_EXPECT(EncodeRoomCode(one, secret | (0xffull << 40)) == shortCode);
+        for (const auto invalid : { std::string{}, std::string("K7QD-M2XU"), shortCode.substr(1), shortCode + "0000",
+                 std::string(189, '0'), std::string(20, 'Z') })
+            ONLINE_EXPECT(!DecodeRoomCode(invalid, endpoints, decoded));
         ONLINE_EXPECT(net::ParseAddress(withPort, DefaultPort, host, port) && host == "203.0.113.4" && port == 5000);
         ONLINE_EXPECT(net::ParseAddress(v6, DefaultPort, host, port) && host == "2001:db8::7" && port == 47641);
 
@@ -408,7 +422,8 @@ namespace
         {
             JoinOptions options;
             options.discover = false;
-            options.address = EncodeRoomCode("127.0.0.1", port, host.Secret() ^ uint64_t(wrong));
+            options.address =
+                EncodeRoomCode(std::array{ net::Endpoint{ "127.0.0.1", port } }, host.Secret() ^ uint64_t(wrong));
             options.hello = hello;
             options.player = SamplePlayer("Guest", 2);
             options.player.xuid = "E0000000000000CD";
@@ -686,6 +701,91 @@ namespace
         ONLINE_EXPECT(reboundHost != net::Invalid && reboundGuest != net::Invalid);
         room.io->Release(reboundHost);
         room.io->Release(reboundGuest);
+    }
+
+    void LocalAddressChecks()
+    {
+        const std::vector<LocalAddress> interfaces{ { "radmin", "", "26.1.2.3" }, { "tailscale0", "", "100.64.1.2" },
+            { "zt0", "ZeroTier", "10.30.0.2" }, { "en0", "", "192.168.8.2" }, { "ham0", "Hamachi", "25.2.3.4" } };
+        const auto chosen = SelectLocalAddresses(interfaces);
+        ONLINE_EXPECT(
+            chosen.size() == 4 && chosen[0].address == "192.168.8.2" && NetworkFor(chosen[1]) == LocalNetwork::Radmin &&
+            NetworkFor(chosen[2]) == LocalNetwork::Tailscale && NetworkFor(chosen[3]) == LocalNetwork::ZeroTier);
+        ONLINE_EXPECT(NetworkFor(interfaces.back()) == LocalNetwork::Hamachi);
+        ONLINE_EXPECT(NetworkFor({ "tap0", "", "10.20.0.2" }) == LocalNetwork::Virtual);
+        auto bridges = interfaces;
+        bridges.resize(1);
+        for (const auto name : { "docker0", "br-ab", "veth0", "vmnet1", "vboxnet0", "bridge0", "VirtualBox", "VMware",
+                 "Hyper-V", "vEthernet (WSL)", "vEthernet (Default Switch)" })
+        {
+            bridges.push_back({ name, "", "10.20.0.3" });
+            bridges.push_back({ "adapter", name, "10.20.0.4" });
+        }
+        bridges.push_back({ "down", "", "192.168.8.3", false });
+        bridges.push_back({ "lo", "", "127.2.3.4" });
+        bridges.push_back({ "link", "", "169.254.1.2" });
+        bridges.push_back({ "v6", "", "2001:db8::1" });
+        bridges.push_back({ "empty", "", "" });
+        bridges.push_back(interfaces.front());
+        ONLINE_EXPECT(SelectLocalAddresses(bridges) == std::vector<LocalAddress>{ interfaces.front() });
+        const auto preferred = SelectLocalAddresses(interfaces, "192.168.8.2");
+        ONLINE_EXPECT(preferred == chosen);
+        auto joined = interfaces;
+        joined.erase(joined.begin());
+        ONLINE_EXPECT(SelectLocalAddresses(joined).size() == 4);
+    }
+
+    std::string Variable(const GameLaunch& launch, const std::string& name);
+
+    void ThirdEndpointChecks(const std::filesystem::path& scratch)
+    {
+        Room room;
+        std::static_pointer_cast<online_tests::DatagramFake>(room.io)->address = "192.0.2.44";
+        ONLINE_EXPECT(room.Open());
+        const std::vector<net::Endpoint> endpoints{ { "192.0.2.1", room.port }, { "2001:db8::1", room.port },
+            { "192.0.2.44", room.port } };
+        ONLINE_EXPECT(room.guest.Join(
+            { EncodeRoomCode(endpoints, room.host.Secret()), SampleHello(), SamplePlayer("Guest", 2), false }));
+        ONLINE_EXPECT(room.Until(
+            [&] { return room.guest.Get().state == State::InRoom && room.host.Get().state == State::InRoom; }));
+        ONLINE_EXPECT(room.guest.Get().endpoint == endpoints[2] && room.guest.Get().peer == endpoints[2].ip);
+        ONLINE_EXPECT(room.host.Get().endpoint.port == room.guest.Get().localPort);
+        room.host.SetReady(true);
+        room.guest.SetReady(true);
+        ONLINE_EXPECT(room.Until([&] { return room.host.Get().CanStart(); }));
+        ONLINE_EXPECT(room.host.StartGame());
+        ONLINE_EXPECT(room.Until(
+            [&] { return room.host.Get().state == State::Started && room.guest.Get().state == State::Started; }));
+        ONLINE_EXPECT(room.guest.Get().endpoint == endpoints[2] && room.guest.Get().localPort != 0);
+        const auto* game = collection::Catalogue::Get().FindGame("giants");
+        ONLINE_EXPECT(game);
+        if (!game)
+            return;
+        for (const bool hosting : { true, false })
+        {
+            const auto& status = hosting ? room.host.Get() : room.guest.Get();
+            SessionPlan plan;
+            plan.host = hosting;
+            plan.hostAddress = status.endpoint.ip;
+            plan.peerEndpoint = net::Address(status.endpoint);
+            plan.localPort = status.localPort;
+            plan.start = status.start;
+            if (!hosting)
+                plan.start.port = status.endpoint.port;
+            plan.hostPlayer = SamplePlayer("Host", 1);
+            plan.guestPlayer = SamplePlayer("Guest", 2);
+            GameLaunch launch;
+            std::string error;
+            ONLINE_EXPECT(
+                PrepareSession(*game, plan, scratch / (hosting ? "third-host" : "third-guest"), launch, error));
+            if (hosting)
+                ONLINE_EXPECT(Variable(launch, "SKY_NETPLAY_PEER") == net::Address(room.host.Get().endpoint));
+            else
+            {
+                ONLINE_EXPECT(Variable(launch, "SKY_NETPLAY_JOIN") == net::Address(endpoints[2]));
+                ONLINE_EXPECT(Variable(launch, "SKY_NETPLAY_LOCAL_PORT") == std::to_string(room.guest.Get().localPort));
+            }
+        }
     }
 
     void RoomChecks()
@@ -1037,6 +1137,8 @@ int OnlineChecks(const std::filesystem::path& scratch)
     CipherChecks();
     MessageChecks();
     g_failures += UdpChecks();
+    LocalAddressChecks();
+    ThirdEndpointChecks(scratch);
     RoomChecks();
     SecurityChecks();
     LossyRoomChecks();

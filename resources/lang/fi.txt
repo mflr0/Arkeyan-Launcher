@@ -1373,40 +1373,33 @@ The games lost sync; reopen the room and try again	Pelit eivät enää ole samas
 Your frame rates differ; choose the same frame rate	Kuvataajuutenne eroavat; valitkaa sama kuvataajuus
 The portal figures didn't match; choose your figures again in Collection	Portaalin hahmot eivät täsmää; valitse hahmosi uudelleen Kokoelmasta
 The online session ended unexpectedly; reopen the room and try again	Verkkopeli päättyi odottamatta; avaa huone uudelleen ja yritä taas
-A friend in your home can use this code instead: {}	Kotonasi oleva ystävä voi käyttää sen sijaan tätä koodia: {}
 Another program uses it. Choose another port in the Online tab, for example 47641, and send your friend the new room code.	Toinen ohjelma käyttää sitä. Valitse Online-välilehdeltä toinen portti, esimerkiksi 47641, ja lähetä ystävällesi uusi huonekoodi.
 Check the room code: ask them to copy it again.	Tarkista huonekoodi: pyydä ystävääsi kopioimaan se uudelleen.
 Get the room code	Hae huonekoodi
 Getting your room code...	Haetaan huonekoodia...
-In the same home, ask your friend for the code under How to fix it in their room.	Samassa kodissa: pyydä ystävältäsi koodia hänen huoneensa kohdasta Näin korjaat ongelman.
 Paste your friend's room code first.	Liitä ensin ystäväsi huonekoodi.
 Room code	Huonekoodi
 Room code copied. Paste it in a message to your friend.	Huonekoodi kopioitu. Liitä se viestiin ystävällesi.
 Send your friend this room code:	Lähetä ystävällesi tämä huonekoodi:
 The host didn't answer; check the room code and ask them to open the room.	Isäntä ei vastannut; tarkista huonekoodi ja pyydä häntä avaamaan huone.
-The room code holds your public address, found with a free STUN server. Share it only with your friend.	Huonekoodi sisältää julkisen osoitteesi, joka on haettu ilmaiselta STUN-palvelimelta. Jaa se vain ystäväsi kanssa.
 They choose Join in this tab, paste your room code, then press JOIN A ROOM.	Hän valitsee tällä välilehdellä Liity, liittää huonekoodisi ja painaa LIITY HUONEESEEN.
 This room code isn't right	Huonekoodi ei ole oikein
 This room code isn't valid; ask your friend to copy it again.	Huonekoodi ei kelpaa; pyydä ystävääsi kopioimaan se uudelleen.
 Your internet provider shares your address with other homes, so a friend elsewhere can't reach you this way.	Internetliittymäsi tarjoaja jakaa osoitteesi muiden kotien kanssa, joten muualla oleva ystävä ei tavoita sinua näin.
-Your router didn't let your friend in by itself, so a friend elsewhere can't join yet.	Reititin ei päästänyt ystävääsi sisään itsestään, joten muualla oleva ystävä ei voi vielä liittyä.
+Your router didn't let your friend in by itself, so a friend elsewhere can't join over the internet yet.	Reititin ei päästänyt ystävääsi sisään itsestään, joten muualla oleva ystävä ei voi vielä liittyä internetin kautta.
 Your router didn't open, so this code uses IPv6. It works if your friend's internet has IPv6 too.	Reititin ei auennut, joten tämä koodi käyttää IPv6:ta. Se toimii, jos myös ystäväsi internetissä on IPv6.
-Your router isn't opened automatically: a friend elsewhere needs the port opened.	Reititintä ei avata automaattisesti: muualla oleva ystävä tarvitsee avatun portin.
+Your router isn't opened automatically: to join over the internet, a friend elsewhere needs the port opened.	Reititintä ei avata automaattisesti: muualla oleva ystävä tarvitsee avatun portin liittyäkseen internetin kautta.
 {} (you)	{} (sinä)
 Not ready yet: choosing their figures	Ei vielä valmis: valitsee hahmojaan
 A room code is needed	Tarvitset huonekoodin
 An address alone can't open a room any more: ask your friend for the room code.	Pelkkä osoite ei enää avaa huonetta: pyydä ystävältäsi huonekoodi.
-Code for another address	Koodi toiselle osoitteelle
 Copy the whole room code from your friend's room: letters and digits in groups of four.	Kopioi ystäväsi huoneen koko koodi: kirjaimia ja numeroita neljän ryhmissä.
 Guests paused for 30 seconds	Vieraat estetty 30 sekunniksi
 In the room, copy your room code and send it to them by message.	Kopioi huonekoodi huoneessa ja lähetä se ystävällesi viestillä.
-No access to the router? Both install the same free virtual network, such as Tailscale or ZeroTier, then make its code in the room's Details.	Etkö pääse reitittimen asetuksiin? Asentakaa sama ilmainen virtuaaliverkko, kuten Tailscale tai ZeroTier, ja luokaa koodi huoneen Lisätiedoissa.
 Paste the whole code in Room code.	Liitä koko koodi Huonekoodi-kenttään.
-The room code holds your friend's address and opens their room.	Huonekoodi sisältää ystäväsi osoitteen ja avaa hänen huoneensa.
 The whole code your friend sent you.	Ystäväsi lähettämä koko koodi.
 This room code is wrong or old: ask your friend to copy it again.	Tämä huonekoodi on väärä tai vanha: pyydä ystävääsi kopioimaan se uudelleen.
 Too many wrong room codes. Wait 30 seconds, then try again.	Liian monta väärää huonekoodia. Odota 30 sekuntia ja yritä uudelleen.
-With Tailscale or ZeroTier, ask your friend to make a code in their room's Details.	Jos käytätte Tailscalea tai ZeroTieria, pyydä ystävääsi luomaan koodi huoneensa Lisätiedoissa.
 Wrong room code	Väärä huonekoodi
 Your friend opens a room and sends you its code.	Ystäväsi avaa huoneen ja lähettää sinulle sen koodin.
 Your game stopped during the session. Play together again from where you saved.	Pelisi pysähtyi istunnon aikana. Pelatkaa taas yhdessä viimeisimmästä tallennuksesta.
@@ -1419,9 +1412,26 @@ very slow	hyvin hidas
 Testing the connection with your friend...	Testataan yhteyttä ystävääsi...
 The round trip varies by {} ms: the input delay grows to absorb it.	Vasteaika vaihtelee {} ms: ohjausviive kasvaa tasoittaakseen sen.
 
-Enter this computer's address on Radmin VPN, ZeroTier, Tailscale or playit.gg, with its port.	Anna tämän tietokoneen osoite Radmin VPN:ssä, ZeroTierissä, Tailscalessa tai playit.gg:ssä sekä portti.
 If your router refuses, open (forward) port {} for UDP to this computer in your router's settings.	Jos reititin kieltäytyy, avaa (ohjaa) portti {} UDP-liikenteelle tähän tietokoneeseen reitittimen asetuksissa.
 Open port {} (UDP) to this computer in your router's settings: search the web for your router's name and "port forwarding".	Avaa portti {} (UDP) tähän tietokoneeseen reitittimen asetuksista: hae verkosta reitittimesi nimeä ja "port forwarding".
 The room uses port {}, for UDP.	Huone käyttää porttia {} UDP-liikenteelle.
 Trying to reach your friend's room...	Yritetään yhdistää ystäväsi huoneeseen...
-No open port? Both of you can join one virtual network (Radmin VPN, ZeroTier or Tailscale), then make a code for this computer's address there in Details below.	Ei avointa porttia? Liittykää molemmat samaan virtuaaliverkkoon (Radmin VPN, ZeroTier tai Tailscale) ja luokaa koodi tämän tietokoneen osoitteelle siinä verkossa alla olevissa Tiedoissa.
+
+from your home	kodistasi
+over the internet	internetin kautta
+over Radmin VPN	Radmin VPNin kautta
+over Hamachi	Hamachin kautta
+over Tailscale	Tailscalen kautta
+over ZeroTier	ZeroTierin kautta
+over a virtual network	virtuaaliverkon kautta
+{} or {}	{} tai {}
+{}, {}	{}, {}
+Your friend can join {}.	Ystäväsi voi liittyä {}.
+A shared virtual network is added to your room code automatically.	Yhteinen virtuaaliverkko lisätään huonekoodiin automaattisesti.
+The room code holds your addresses. Share it only with your friend.	Huonekoodi sisältää osoitteesi. Jaa se vain ystäväsi kanssa.
+One room code works at home, over the internet or on your shared virtual network.	Yksi huonekoodi toimii kotona, internetissä tai yhteisessä virtuaaliverkossanne.
+For a virtual network, both of you must join the same one.	Virtuaaliverkkoa varten teidän molempien on liityttävä samaan verkkoon.
+The room code changed: copy it again.	Huonekoodi muuttui: kopioi se uudelleen.
+No open port? Both of you can join one virtual network (Radmin VPN, ZeroTier or Tailscale): this code then holds it by itself.	Ei avointa porttia? Voitte molemmat liittyä samaan virtuaaliverkkoon (Radmin VPN, ZeroTier tai Tailscale): koodi sisältää sen sitten automaattisesti.
+Tunnel address	Tunnelin osoite
+A tunnel such as playit.gg gives an address and a port: enter them here and the room code holds them too.	Tunneli, kuten playit.gg, antaa osoitteen ja portin: syötä ne tähän, niin huonekoodi sisältää nekin.

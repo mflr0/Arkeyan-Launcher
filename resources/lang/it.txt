@@ -1372,40 +1372,33 @@ The games lost sync; reopen the room and try again	I giochi non sono più sincro
 Your frame rates differ; choose the same frame rate	Le vostre frequenze dei fotogrammi sono diverse; scegliete la stessa
 The portal figures didn't match; choose your figures again in Collection	Le figure sul portale non corrispondono; scegli di nuovo le tue figure in Collezione
 The online session ended unexpectedly; reopen the room and try again	La partita online è terminata in modo imprevisto; riapri la stanza e riprova
-A friend in your home can use this code instead: {}	Un amico a casa tua può usare invece questo codice: {}
 Another program uses it. Choose another port in the Online tab, for example 47641, and send your friend the new room code.	Un altro programma la usa. Scegli un'altra porta nella scheda Online, per esempio 47641, e invia al tuo amico il nuovo codice della stanza.
 Check the room code: ask them to copy it again.	Controlla il codice della stanza: chiedigli di copiarlo di nuovo.
 Get the room code	Ottieni il codice della stanza
 Getting your room code...	Recupero del codice della stanza...
-In the same home, ask your friend for the code under How to fix it in their room.	Nella stessa casa, chiedi al tuo amico il codice sotto Come risolvere, nella sua stanza.
 Paste your friend's room code first.	Incolla prima il codice della stanza del tuo amico.
 Room code	Codice della stanza
 Room code copied. Paste it in a message to your friend.	Codice della stanza copiato. Incollalo in un messaggio al tuo amico.
 Send your friend this room code:	Invia al tuo amico questo codice della stanza:
 The host didn't answer; check the room code and ask them to open the room.	L'host non ha risposto; controlla il codice della stanza e chiedigli di aprire la stanza.
-The room code holds your public address, found with a free STUN server. Share it only with your friend.	Il codice della stanza contiene il tuo indirizzo pubblico, trovato con un server STUN gratuito. Condividilo solo con il tuo amico.
 They choose Join in this tab, paste your room code, then press JOIN A ROOM.	Sceglie Unisciti in questa scheda, incolla il tuo codice della stanza, poi preme UNISCITI A UNA STANZA.
 This room code isn't right	Questo codice della stanza non è giusto
 This room code isn't valid; ask your friend to copy it again.	Questo codice della stanza non è valido; chiedi al tuo amico di copiarlo di nuovo.
 Your internet provider shares your address with other homes, so a friend elsewhere can't reach you this way.	Il tuo fornitore di internet condivide il tuo indirizzo con altre case, quindi un amico altrove non può raggiungerti così.
-Your router didn't let your friend in by itself, so a friend elsewhere can't join yet.	Il router non ha fatto entrare il tuo amico da solo, quindi un amico altrove non può ancora unirsi.
+Your router didn't let your friend in by itself, so a friend elsewhere can't join over the internet yet.	Il router non ha fatto entrare il tuo amico da solo, quindi un amico altrove non può ancora unirsi via internet.
 Your router didn't open, so this code uses IPv6. It works if your friend's internet has IPv6 too.	Il router non si è aperto, quindi questo codice usa IPv6. Funziona se anche l'internet del tuo amico ha IPv6.
-Your router isn't opened automatically: a friend elsewhere needs the port opened.	Il router non viene aperto automaticamente: per un amico altrove la porta deve essere aperta.
+Your router isn't opened automatically: to join over the internet, a friend elsewhere needs the port opened.	Il router non viene aperto automaticamente: per unirsi via internet, un amico altrove ha bisogno della porta aperta.
 {} (you)	{} (tu)
 Not ready yet: choosing their figures	Non ancora pronto: sceglie le sue figure
 A room code is needed	Serve un codice stanza
 An address alone can't open a room any more: ask your friend for the room code.	Un indirizzo da solo non apre più una stanza: chiedi al tuo amico il codice stanza.
-Code for another address	Codice per un altro indirizzo
 Copy the whole room code from your friend's room: letters and digits in groups of four.	Copia il codice completo della stanza del tuo amico: lettere e cifre in gruppi di quattro.
 Guests paused for 30 seconds	Ospiti bloccati per 30 secondi
 In the room, copy your room code and send it to them by message.	Nella stanza, copia il tuo codice e invialo al tuo amico con un messaggio.
-No access to the router? Both install the same free virtual network, such as Tailscale or ZeroTier, then make its code in the room's Details.	Non puoi accedere al router? Installate la stessa rete virtuale gratuita, come Tailscale o ZeroTier, poi create il codice nei Dettagli della stanza.
 Paste the whole code in Room code.	Incolla il codice completo in Codice stanza.
-The room code holds your friend's address and opens their room.	Il codice contiene l'indirizzo del tuo amico e apre la sua stanza.
 The whole code your friend sent you.	Il codice completo che ti ha inviato il tuo amico.
 This room code is wrong or old: ask your friend to copy it again.	Questo codice stanza è errato o vecchio: chiedi al tuo amico di copiarlo di nuovo.
 Too many wrong room codes. Wait 30 seconds, then try again.	Troppi codici stanza errati. Attendi 30 secondi, poi riprova.
-With Tailscale or ZeroTier, ask your friend to make a code in their room's Details.	Con Tailscale o ZeroTier, chiedi al tuo amico di creare un codice nei Dettagli della sua stanza.
 Wrong room code	Codice stanza errato
 Your friend opens a room and sends you its code.	Il tuo amico apre una stanza e ti invia il codice.
 Your game stopped during the session. Play together again from where you saved.	Il tuo gioco si è fermato durante la sessione. Giocate di nuovo insieme da dove avete salvato.
@@ -1418,9 +1411,26 @@ very slow	molto lenta
 Testing the connection with your friend...	Test della connessione con il tuo amico...
 The round trip varies by {} ms: the input delay grows to absorb it.	Il tempo di andata e ritorno varia di {} ms: il ritardo dei comandi cresce per assorbirlo.
 
-Enter this computer's address on Radmin VPN, ZeroTier, Tailscale or playit.gg, with its port.	Inserisci l’indirizzo di questo computer su Radmin VPN, ZeroTier, Tailscale o playit.gg, con la porta.
 If your router refuses, open (forward) port {} for UDP to this computer in your router's settings.	Se il router rifiuta, apri (inoltra) la porta {} per UDP verso questo computer nelle impostazioni del router.
 Open port {} (UDP) to this computer in your router's settings: search the web for your router's name and "port forwarding".	Apri la porta {} (UDP) verso questo computer nelle impostazioni del router: cerca sul web il nome del tuo router e "port forwarding".
 The room uses port {}, for UDP.	La stanza usa la porta {}, per UDP.
 Trying to reach your friend's room...	Tentativo di raggiungere la stanza del tuo amico...
-No open port? Both of you can join one virtual network (Radmin VPN, ZeroTier or Tailscale), then make a code for this computer's address there in Details below.	Nessuna porta aperta? Unitevi alla stessa rete virtuale (Radmin VPN, ZeroTier o Tailscale), poi create un codice per l’indirizzo di questo computer su quella rete nei Dettagli qui sotto.
+
+from your home	da casa tua
+over the internet	tramite internet
+over Radmin VPN	tramite Radmin VPN
+over Hamachi	tramite Hamachi
+over Tailscale	tramite Tailscale
+over ZeroTier	tramite ZeroTier
+over a virtual network	tramite una rete virtuale
+{} or {}	{} o {}
+{}, {}	{}, {}
+Your friend can join {}.	Il tuo amico può unirsi {}.
+A shared virtual network is added to your room code automatically.	Una rete virtuale condivisa viene aggiunta automaticamente al codice della stanza.
+The room code holds your addresses. Share it only with your friend.	Il codice della stanza contiene i tuoi indirizzi. Condividilo solo con il tuo amico.
+One room code works at home, over the internet or on your shared virtual network.	Un solo codice funziona a casa, tramite internet o sulla vostra rete virtuale condivisa.
+For a virtual network, both of you must join the same one.	Per una rete virtuale, dovete unirvi entrambi alla stessa rete.
+The room code changed: copy it again.	Il codice della stanza è cambiato: copialo di nuovo.
+No open port? Both of you can join one virtual network (Radmin VPN, ZeroTier or Tailscale): this code then holds it by itself.	Nessuna porta aperta? Potete unirvi entrambi a una rete virtuale (Radmin VPN, ZeroTier o Tailscale): il codice la include automaticamente.
+Tunnel address	Indirizzo del tunnel
+A tunnel such as playit.gg gives an address and a port: enter them here and the room code holds them too.	Un tunnel come playit.gg fornisce un indirizzo e una porta: inseriscili qui e il codice della stanza li includerà.

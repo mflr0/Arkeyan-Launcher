@@ -1372,40 +1372,33 @@ The games lost sync; reopen the room and try again	Spillene er ikke længere syn
 Your frame rates differ; choose the same frame rate	Jeres billedhastigheder er forskellige; vælg den samme
 The portal figures didn't match; choose your figures again in Collection	Portalfigurerne passer ikke sammen; vælg dine figurer igen i Samling
 The online session ended unexpectedly; reopen the room and try again	Onlinespillet sluttede uventet; åbn rummet igen og prøv på ny
-A friend in your home can use this code instead: {}	En ven hjemme hos dig kan bruge denne kode i stedet: {}
 Another program uses it. Choose another port in the Online tab, for example 47641, and send your friend the new room code.	Et andet program bruger den. Vælg en anden port under fanen Online, for eksempel 47641, og send din ven den nye rumkode.
 Check the room code: ask them to copy it again.	Tjek rumkoden: bed din ven kopiere den igen.
 Get the room code	Hent rumkoden
 Getting your room code...	Henter rumkoden...
-In the same home, ask your friend for the code under How to fix it in their room.	I samme hjem: bed din ven om koden under Sådan løser du det i vennens rum.
 Paste your friend's room code first.	Indsæt først din vens rumkode.
 Room code	Rumkode
 Room code copied. Paste it in a message to your friend.	Rumkoden er kopieret. Indsæt den i en besked til din ven.
 Send your friend this room code:	Send din ven denne rumkode:
 The host didn't answer; check the room code and ask them to open the room.	Værten svarede ikke; tjek rumkoden, og bed værten åbne rummet.
-The room code holds your public address, found with a free STUN server. Share it only with your friend.	Rumkoden indeholder din offentlige adresse, fundet med en gratis STUN-server. Del den kun med din ven.
 They choose Join in this tab, paste your room code, then press JOIN A ROOM.	Vennen vælger Deltag under denne fane, indsætter din rumkode og trykker på DELTAG I ET RUM.
 This room code isn't right	Rumkoden passer ikke
 This room code isn't valid; ask your friend to copy it again.	Rumkoden er ugyldig; bed din ven kopiere den igen.
 Your internet provider shares your address with other homes, so a friend elsewhere can't reach you this way.	Din internetudbyder deler din adresse med andre hjem, så en ven et andet sted kan ikke nå dig på denne måde.
-Your router didn't let your friend in by itself, so a friend elsewhere can't join yet.	Din router lukkede ikke din ven ind af sig selv, så en ven et andet sted kan ikke deltage endnu.
+Your router didn't let your friend in by itself, so a friend elsewhere can't join over the internet yet.	Din router lukkede ikke din ven ind af sig selv, så en ven et andet sted kan ikke deltage over internettet endnu.
 Your router didn't open, so this code uses IPv6. It works if your friend's internet has IPv6 too.	Din router blev ikke åbnet, så denne kode bruger IPv6. Den virker, hvis din vens internet også har IPv6.
-Your router isn't opened automatically: a friend elsewhere needs the port opened.	Din router åbnes ikke automatisk: en ven et andet sted har brug for, at porten er åben.
+Your router isn't opened automatically: to join over the internet, a friend elsewhere needs the port opened.	Din router åbnes ikke automatisk: for at deltage over internettet har en ven et andet sted brug for, at porten er åben.
 {} (you)	{} (dig)
 Not ready yet: choosing their figures	Ikke klar endnu: vælger sine figurer
 A room code is needed	Der kræves en rumkode
 An address alone can't open a room any more: ask your friend for the room code.	En adresse alene kan ikke længere åbne et rum: bed din ven om rumkoden.
-Code for another address	Kode til anden adresse
 Copy the whole room code from your friend's room: letters and digits in groups of four.	Kopiér hele rumkoden fra din vens rum: bogstaver og tal i grupper på fire.
 Guests paused for 30 seconds	Gæster afvises i 30 sekunder
 In the room, copy your room code and send it to them by message.	Kopiér din rumkode i rummet, og send den til din ven i en besked.
-No access to the router? Both install the same free virtual network, such as Tailscale or ZeroTier, then make its code in the room's Details.	Ingen adgang til routeren? Installér det samme gratis virtuelle netværk, som Tailscale eller ZeroTier, og opret koden under Detaljer i rummet.
 Paste the whole code in Room code.	Indsæt hele koden under Rumkode.
-The room code holds your friend's address and opens their room.	Rumkoden indeholder din vens adresse og åbner rummet.
 The whole code your friend sent you.	Hele koden, som din ven sendte dig.
 This room code is wrong or old: ask your friend to copy it again.	Denne rumkode er forkert eller gammel: bed din ven om at kopiere den igen.
 Too many wrong room codes. Wait 30 seconds, then try again.	For mange forkerte rumkoder. Vent 30 sekunder, og prøv igen.
-With Tailscale or ZeroTier, ask your friend to make a code in their room's Details.	Med Tailscale eller ZeroTier skal din ven oprette en kode under Detaljer i sit rum.
 Wrong room code	Forkert rumkode
 Your friend opens a room and sends you its code.	Din ven åbner et rum og sender dig koden.
 Your game stopped during the session. Play together again from where you saved.	Dit spil stoppede under sessionen. Spil sammen igen fra der, hvor I gemte.
@@ -1418,9 +1411,26 @@ very slow	meget langsom
 Testing the connection with your friend...	Tester forbindelsen til din ven...
 The round trip varies by {} ms: the input delay grows to absorb it.	Svartiden svinger med {} ms: kontrolforsinkelsen vokser for at udjævne det.
 
-Enter this computer's address on Radmin VPN, ZeroTier, Tailscale or playit.gg, with its port.	Indtast denne computers adresse på Radmin VPN, ZeroTier, Tailscale eller playit.gg med porten.
 If your router refuses, open (forward) port {} for UDP to this computer in your router's settings.	Hvis routeren afviser det, skal du åbne (videresende) port {} for UDP til denne computer i routerens indstillinger.
 Open port {} (UDP) to this computer in your router's settings: search the web for your router's name and "port forwarding".	Åbn port {} (UDP) til denne computer i routerens indstillinger: søg på nettet efter routerens navn og "port forwarding".
 The room uses port {}, for UDP.	Rummet bruger port {} til UDP.
 Trying to reach your friend's room...	Forsøger at nå din vens rum...
-No open port? Both of you can join one virtual network (Radmin VPN, ZeroTier or Tailscale), then make a code for this computer's address there in Details below.	Ingen åben port? Tilslut jer begge samme virtuelle netværk (Radmin VPN, ZeroTier eller Tailscale), og lav en kode til denne computers adresse dér under Detaljer nedenfor.
+
+from your home	fra dit hjem
+over the internet	via internettet
+over Radmin VPN	via Radmin VPN
+over Hamachi	via Hamachi
+over Tailscale	via Tailscale
+over ZeroTier	via ZeroTier
+over a virtual network	via et virtuelt netværk
+{} or {}	{} eller {}
+{}, {}	{}, {}
+Your friend can join {}.	Din ven kan deltage {}.
+A shared virtual network is added to your room code automatically.	Et fælles virtuelt netværk føjes automatisk til din rumkode.
+The room code holds your addresses. Share it only with your friend.	Rumkoden indeholder dine adresser. Del den kun med din ven.
+One room code works at home, over the internet or on your shared virtual network.	Én rumkode virker hjemme, via internettet eller på jeres fælles virtuelle netværk.
+For a virtual network, both of you must join the same one.	Til et virtuelt netværk skal I begge tilslutte jer det samme netværk.
+The room code changed: copy it again.	Rumkoden er ændret: kopiér den igen.
+No open port? Both of you can join one virtual network (Radmin VPN, ZeroTier or Tailscale): this code then holds it by itself.	Ingen åben port? I kan begge tilslutte jer ét virtuelt netværk (Radmin VPN, ZeroTier eller Tailscale): koden indeholder det så automatisk.
+Tunnel address	Tunneladresse
+A tunnel such as playit.gg gives an address and a port: enter them here and the room code holds them too.	En tunnel som playit.gg giver en adresse og en port: indtast dem her, så rumkoden også indeholder dem.

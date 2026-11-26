@@ -10,15 +10,6 @@
 #include <fstream>
 #include <fmt/format.h>
 #include <stb_image_write.h>
-#if defined(_WIN32)
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#undef DrawText // windows.h's macro would rename ui::DrawText
-#else
-#include <ifaddrs.h>
-#include <arpa/inet.h>
-#include <net/if.h>
-#endif
 
 namespace launcher_ui
 {
@@ -38,58 +29,6 @@ namespace launcher_ui
             case online::InputError::None: return "";
             }
             return "";
-        }
-        std::string LocalAddress()
-        {
-#if defined(_WIN32)
-            online::net::Startup();
-            char hostname[256] = {};
-            if (gethostname(hostname, sizeof hostname) == 0)
-            {
-                addrinfo hints{}, *addresses = nullptr;
-                hints.ai_family = AF_INET;
-                if (getaddrinfo(hostname, nullptr, &hints, &addresses) == 0)
-                {
-                    std::string result;
-                    for (auto* a = addresses; a; a = a->ai_next)
-                    {
-                        char text[INET_ADDRSTRLEN] = {};
-                        const auto* address = reinterpret_cast<const sockaddr_in*>(a->ai_addr);
-                        if (inet_ntop(AF_INET, &address->sin_addr, text, sizeof text) &&
-                            std::string_view(text) != "127.0.0.1")
-                        {
-                            result = text;
-                            break;
-                        }
-                    }
-                    freeaddrinfo(addresses);
-                    if (!result.empty())
-                        return result;
-                }
-            }
-#else
-            ifaddrs* addresses = nullptr;
-            if (getifaddrs(&addresses) == 0)
-            {
-                std::string result;
-                for (auto* a = addresses; a; a = a->ifa_next)
-                {
-                    if (!a->ifa_addr || a->ifa_addr->sa_family != AF_INET || !(a->ifa_flags & IFF_UP) ||
-                        (a->ifa_flags & IFF_LOOPBACK))
-                        continue;
-                    char text[INET_ADDRSTRLEN] = {};
-                    if (inet_ntop(AF_INET, &reinterpret_cast<sockaddr_in*>(a->ifa_addr)->sin_addr, text, sizeof text))
-                    {
-                        result = text;
-                        break;
-                    }
-                }
-                freeifaddrs(addresses);
-                if (!result.empty())
-                    return result;
-            }
-#endif
-            return "127.0.0.1";
         }
     }
 
@@ -311,35 +250,93 @@ namespace launcher_ui
     }
 
     Invite InviteFor(const netplay::portmap::Mapping& mapping, const online::stun::Result& seen, bool pending,
-        bool automatic, const std::string& localAddress, uint16_t port, uint64_t secret)
+        bool automatic, std::span<const online::LocalAddress> localAddresses, uint16_t port, uint64_t secret,
+        const online::net::Endpoint& tunnel)
     {
         using Reach = Invite::Reach;
+        using Network = online::LocalNetwork;
         Invite invite;
-        invite.homeCode = online::EncodeRoomCode(localAddress, port, secret);
-        if (pending)
-            return invite;
-        const auto use = [&](const std::string& host, uint16_t to) {
-            invite.address =
-                host.find(':') != std::string::npos ? fmt::format("[{}]:{}", host, to) : fmt::format("{}:{}", host, to);
-            invite.code = online::EncodeRoomCode(host, to, secret);
+        std::vector<std::string> paths;
+        const auto path = [&](std::string text) {
+            if (std::find(paths.begin(), paths.end(), text) == paths.end())
+                paths.push_back(std::move(text));
+        };
+        const auto add = [&](const online::net::Endpoint& endpoint) {
+            if (endpoint.ip.empty() || !endpoint.port ||
+                std::find(invite.endpoints.begin(), invite.endpoints.end(), endpoint) != invite.endpoints.end())
+                return false;
+            invite.endpoints.push_back(endpoint);
+            return true;
         };
         uint32_t ip = 0;
-        if (mapping.ok && netplay::portmap::ParseIpv4(mapping.externalIp, ip) && netplay::portmap::IsPublicIpv4(ip))
-        {
-            invite.reach = Reach::Anywhere;
-            use(mapping.externalIp, mapping.externalPort);
-            return invite;
-        }
-        // No public IPv4 address opened: IPv6 needs no router opening on most home connections.
-        if (automatic && !seen.v6.ip.empty())
-        {
-            invite.reach = Reach::Ipv6;
-            use(seen.v6.ip, seen.v6.port ? seen.v6.port : port);
-            return invite;
-        }
-        invite.reach = !automatic ? Reach::Manual : mapping.ok ? Reach::Shared : Reach::Refused;
+        const bool opened =
+            mapping.ok && netplay::portmap::ParseIpv4(mapping.externalIp, ip) && netplay::portmap::IsPublicIpv4(ip);
         const bool publicV4 = netplay::portmap::ParseIpv4(seen.v4.ip, ip) && netplay::portmap::IsPublicIpv4(ip);
-        use(publicV4 ? seen.v4.ip : localAddress, publicV4 && seen.v4.port ? seen.v4.port : port);
+        invite.reach = pending               ? Reach::Asking
+                       : opened              ? Reach::Anywhere
+                       : !automatic          ? Reach::Manual
+                       : !seen.v6.ip.empty() ? Reach::Ipv6
+                       : mapping.ok          ? Reach::Shared
+                                             : Reach::Refused;
+        // The router's answer changes the code: none is shown before it, so a friend never gets a stale one.
+        if (pending)
+            return invite;
+        if (opened)
+            add({ mapping.externalIp, mapping.externalPort });
+        else
+        {
+            if (publicV4)
+                add({ seen.v4.ip, seen.v4.port ? seen.v4.port : port });
+            if (!seen.v6.ip.empty())
+                add({ seen.v6.ip, seen.v6.port ? seen.v6.port : port });
+        }
+        // A public address the router did not open stays in the code as a try, without promising it.
+        const bool internet = invite.reach == Reach::Anywhere || invite.reach == Reach::Ipv6;
+        const auto locals = online::SelectLocalAddresses(localAddresses);
+        const bool extraTunnel =
+            !tunnel.ip.empty() && tunnel.port &&
+            std::find(invite.endpoints.begin(), invite.endpoints.end(), tunnel) == invite.endpoints.end() &&
+            std::none_of(locals.begin(), locals.end(),
+                [&](const auto& local) { return local.address == tunnel.ip && port == tunnel.port; });
+        const size_t limit = extraTunnel ? 5 : 6;
+        bool home = false;
+        for (const auto& local : locals)
+        {
+            if (invite.endpoints.size() >= limit)
+                break;
+            if (!add({ local.address, port }))
+                continue;
+            switch (online::NetworkFor(local))
+            {
+            case Network::Home:
+                if (!home) // a second home address (Ethernet and Wi-Fi) is the same path
+                {
+                    path(Tr("from your home"));
+                    home = true;
+                }
+                break;
+            case Network::Radmin: path(Tr("over Radmin VPN")); break;
+            case Network::Hamachi: path(Tr("over Hamachi")); break;
+            case Network::Tailscale: path(Tr("over Tailscale")); break;
+            case Network::ZeroTier: path(Tr("over ZeroTier")); break;
+            case Network::Virtual: path(Tr("over a virtual network")); break;
+            }
+        }
+        if (add(tunnel) || internet)
+        {
+            const auto position = paths.begin() + (home ? 1 : 0);
+            paths.insert(position, Tr("over the internet"));
+        }
+        invite.code = online::EncodeRoomCode(invite.endpoints, secret);
+        if (!invite.endpoints.empty())
+            invite.address = online::net::Address(invite.endpoints.front());
+        std::string joined;
+        for (size_t i = 0; i < paths.size(); ++i)
+            joined = i == 0                  ? paths[i]
+                     : i + 1 == paths.size() ? Tf("{} or {}", joined, paths[i])
+                                             : Tf("{}, {}", joined, paths[i]);
+        if (!joined.empty())
+            invite.paths = Tf("Your friend can join {}.", joined);
         return invite;
     }
 
@@ -609,6 +606,28 @@ namespace launcher_ui
         }
         m_online.lobby.Poll();
         const auto& status = m_online.lobby.Get();
+        if (status.host && (status.state == online::State::Waiting || status.state == online::State::Greeting ||
+                               status.state == online::State::InRoom))
+        {
+            if (SDL_GetTicks() >= m_online.addressesAt)
+            {
+                const std::string preferred =
+                    m_online.localAddresses.empty() ? "" : m_online.localAddresses.front().address;
+                m_online.localAddresses = online::SelectLocalAddresses(online::LocalAddresses(), preferred);
+                m_online.addressesAt = SDL_GetTicks() + 5000;
+            }
+            const uint16_t port = status.localPort;
+            m_online.lobby.ResolveTunnel(m_online.otherAddress, port);
+            const auto invite = InviteFor(m_online.router.Get(), status.mapped, m_online.router.Pending(),
+                m_online.automatic, m_online.localAddresses, port, m_online.lobby.Secret(), m_online.lobby.Tunnel());
+            if (!invite.code.empty() && invite.code != m_online.lastCode)
+            {
+                if (!m_online.lastCode.empty())
+                    Toast(Tr("The room code changed: copy it again."));
+                m_online.lastCode = invite.code;
+            }
+        }
+
         if (m_online.rejoinUntil != 0)
         {
             const uint64_t now = SDL_GetTicks();
@@ -865,16 +884,11 @@ namespace launcher_ui
                               Tf("If your router refuses, open (forward) port {} for UDP to this computer in "
                                  "your router's settings.",
                                   port),
-                              Tr("No access to the router? Both install the same free virtual network, such as "
-                                 "Tailscale "
-                                 "or ZeroTier, then make its code in the room's Details."),
-                              Tr("The room code holds your public address, found with a free STUN server. Share it "
-                                 "only with your friend.") }
+                              Tr("A shared virtual network is added to your room code automatically."),
+                              Tr("The room code holds your addresses. Share it only with your friend.") }
                         : std::vector<std::string>{
-                              Tr("The room code holds your friend's address and opens their room."),
-                              Tr("In the same home, ask your friend for the code under How to fix it in their room."),
-                              Tr("With Tailscale or ZeroTier, ask your friend to make a code in their room's "
-                                 "Details.")
+                              Tr("One room code works at home, over the internet or on your shared virtual network."),
+                              Tr("For a virtual network, both of you must join the same one.")
                           };
                 for (const auto& line : lines)
                     ui::Text(ui::TextStyle::Body, line.c_str(), ui::color::InkSoft, width);
@@ -923,7 +937,8 @@ namespace launcher_ui
             return false;
         }
         uint64_t secret = 0;
-        if (!hosting && !DecodeRoomCode(room.address, host, port, secret))
+        std::vector<net::Endpoint> endpoints;
+        if (!hosting && !DecodeRoomCode(room.address, endpoints, secret))
         {
             room.lobby.Join({ room.address, {}, {} });
             return false;
@@ -953,13 +968,15 @@ namespace launcher_ui
             if (!room.lobby.Host(std::move(options)))
                 return false;
             room.lastSecret = room.lobby.Secret();
-            room.localAddress = online_page::LocalAddress();
+            room.localAddresses = online::LocalAddresses();
+            room.addressesAt = SDL_GetTicks() + 5000;
+            room.lastCode.clear();
             if (m_shots.empty())
                 room.router.Open(port, room.automatic);
             return true;
         }
-        room.joinedHost = host;
-        room.joinedPort = port;
+        room.joinedHost = endpoints.front().ip;
+        room.joinedPort = endpoints.front().port;
         return room.lobby.Join({ room.address, room.inputs.hello, room.inputs.player, m_shots.empty() });
     }
 
@@ -1048,8 +1065,8 @@ namespace launcher_ui
                                     { room.previewRouter == 3 ? "2001:db8::7" : "", 0 } }
                               : status.mapped;
         const bool pending = room.preview ? room.previewRouter == 0 : room.router.Pending();
-        const Invite invite =
-            InviteFor(mapping, seen, pending, room.automatic, room.localAddress, port, room.lobby.Secret());
+        const Invite invite = InviteFor(mapping, seen, pending, room.automatic, room.localAddresses, port,
+            room.lobby.Secret(), room.lobby.Tunnel());
         if (int(invite.reach) != room.loggedReach && !room.preview)
         {
             room.loggedReach = int(invite.reach);
@@ -1062,105 +1079,104 @@ namespace launcher_ui
         if (invite.code.empty())
         {
             ui::Text(ui::TextStyle::Caption, Tr("Getting your room code..."), ui::color::InkSoft, width);
-            return;
         }
-        ui::Text(ui::TextStyle::Body, Tr("Send your friend this room code:"), ui::color::InkSoft, width);
-        const std::string shown = room.showAddress ? invite.code : MaskedCode(invite.code);
-        // The code on a line of its own, never broken (a player reads it out or copies it whole), the buttons under it.
-        ui::Text(ui::TextStyle::Label, shown.c_str(), ui::color::Ink, -1, true);
-        if (ui::Button(Tr("Copy"), { .size = ui::Size::Small }))
+        else
         {
-            SDL_SetClipboardText(invite.code.c_str());
-            Toast(Tr("Room code copied. Paste it in a message to your friend."));
-        }
-        TakeFocus(FocusTo::Page);
-        ImGui::SameLine(0, ui::space::XS);
-        if (ui::Button(
-                room.showAddress ? Tr("Hide") : Tr("Show"), { .kind = ui::ButtonKind::Ghost, .size = ui::Size::Small }))
-            room.showAddress = !room.showAddress;
-        switch (invite.reach)
-        {
-        case Reach::Anywhere:
-            ui::Text(
-                ui::TextStyle::Caption, Tr("Your router lets friends in from anywhere."), ui::color::Success, width);
-            break;
-        case Reach::Ipv6:
-            ui::Text(ui::TextStyle::Caption,
-                Tr("Your router didn't open, so this code uses IPv6. It works if your friend's internet has IPv6 "
-                   "too."),
-                ui::color::Warning, width);
-            break;
-        case Reach::Shared:
-            ui::Text(ui::TextStyle::Caption,
-                Tr("Your internet provider shares your address with other homes, so a friend elsewhere can't reach "
-                   "you this way."),
-                ui::color::Warning, width);
-            break;
-        case Reach::Refused:
-            ui::Text(ui::TextStyle::Caption,
-                Tr("Your router didn't let your friend in by itself, so a friend elsewhere can't join yet."),
-                ui::color::Warning, width);
-            break;
-        case Reach::Manual:
-            ui::Text(ui::TextStyle::Caption,
-                Tr("Your router isn't opened automatically: a friend elsewhere needs the port opened."),
-                ui::color::Warning, width);
-            break;
-        case Reach::Asking: return;
-        }
-        ui::ButtonOptions fix;
-        fix.kind = ui::ButtonKind::Ghost;
-        fix.size = ui::Size::Small;
-        fix.trailing = room.showFix ? ui::Icon::ChevronUp : ui::Icon::ChevronDown;
-        if (invite.reach != Reach::Anywhere && ui::Button(Tr("How to fix it"), fix))
-            room.showFix = !room.showFix;
-        if (room.showFix)
-        {
-            if (invite.reach == Reach::Refused || invite.reach == Reach::Manual)
+            ui::Text(ui::TextStyle::Body, Tr("Send your friend this room code:"), ui::color::InkSoft, width);
+            const std::string shown = room.showAddress ? invite.code : MaskedCode(invite.code);
+            // Long invitations wrap between groups so every character remains readable and copy keeps the exact code.
+            std::string wrapped;
+            float lineWidth = 0;
+            for (size_t at = 0; at < shown.size(); at += 5)
             {
-                const std::string forward =
-                    Tf("Open port {} (UDP) to this computer in your router's settings: search the web for "
-                       "your router's name and \"port forwarding\".",
-                        room.port);
-                ui::Text(ui::TextStyle::Body, forward.c_str(), ui::color::InkSoft, width);
+                const std::string group = shown.substr(at, 5);
+                const float groupWidth = ui::TextSize(ui::TextStyle::Label, group.c_str(), nullptr, true).x;
+                if (lineWidth > 0 && lineWidth + groupWidth > width)
+                {
+                    wrapped += '\n';
+                    lineWidth = 0;
+                }
+                wrapped += group;
+                lineWidth += groupWidth;
             }
-            ui::Text(ui::TextStyle::Body,
-                Tr("No open port? Both of you can join one virtual network (Radmin VPN, ZeroTier or Tailscale), then "
-                   "make a code for this computer's address there in Details below."),
-                ui::color::InkSoft, width);
-            if (!invite.homeCode.empty() && invite.homeCode != invite.code)
+            ui::Text(ui::TextStyle::Label, wrapped.c_str(), ui::color::Ink, -1, true);
+            if (ui::Button(Tr("Copy"), { .size = ui::Size::Small }))
             {
-                const std::string home = Tf("A friend in your home can use this code instead: {}",
-                    room.showAddress ? invite.homeCode : MaskedCode(invite.homeCode));
-                ui::Text(ui::TextStyle::Body, home.c_str(), ui::color::InkSoft, width);
+                SDL_SetClipboardText(invite.code.c_str());
+                Toast(Tr("Room code copied. Paste it in a message to your friend."));
+            }
+            TakeFocus(FocusTo::Page);
+            ImGui::SameLine(0, ui::space::XS);
+            if (ui::Button(room.showAddress ? Tr("Hide") : Tr("Show"),
+                    { .kind = ui::ButtonKind::Ghost, .size = ui::Size::Small }))
+                room.showAddress = !room.showAddress;
+            ui::Text(ui::TextStyle::Caption, invite.paths.c_str(), ui::color::InkSoft, width);
+            switch (invite.reach)
+            {
+            case Reach::Anywhere:
+                ui::Text(ui::TextStyle::Caption, Tr("Your router lets friends in from anywhere."), ui::color::Success,
+                    width);
+                break;
+            case Reach::Ipv6:
+                ui::Text(ui::TextStyle::Caption,
+                    Tr("Your router didn't open, so this code uses IPv6. It works if your friend's internet has IPv6 "
+                       "too."),
+                    ui::color::Warning, width);
+                break;
+            case Reach::Shared:
+                ui::Text(ui::TextStyle::Caption,
+                    Tr("Your internet provider shares your address with other homes, so a friend elsewhere can't reach "
+                       "you this way."),
+                    ui::color::Warning, width);
+                break;
+            case Reach::Refused:
+                ui::Text(ui::TextStyle::Caption,
+                    Tr("Your router didn't let your friend in by itself, so a friend elsewhere can't join over the "
+                       "internet yet."),
+                    ui::color::Warning, width);
+                break;
+            case Reach::Manual:
+                ui::Text(ui::TextStyle::Caption,
+                    Tr("Your router isn't opened automatically: to join over the internet, a friend elsewhere needs "
+                       "the "
+                       "port opened."),
+                    ui::color::Warning, width);
+                break;
+            case Reach::Asking: break;
+            }
+            ui::ButtonOptions fix;
+            fix.kind = ui::ButtonKind::Ghost;
+            fix.size = ui::Size::Small;
+            fix.trailing = room.showFix ? ui::Icon::ChevronUp : ui::Icon::ChevronDown;
+            if (invite.reach != Reach::Anywhere && ui::Button(Tr("How to fix it"), fix))
+                room.showFix = !room.showFix;
+            if (room.showFix)
+            {
+                if (invite.reach == Reach::Refused || invite.reach == Reach::Manual)
+                {
+                    const std::string forward =
+                        Tf("Open port {} (UDP) to this computer in your router's settings: search the web for "
+                           "your router's name and \"port forwarding\".",
+                            room.port);
+                    ui::Text(ui::TextStyle::Body, forward.c_str(), ui::color::InkSoft, width);
+                }
+                ui::Text(ui::TextStyle::Body,
+                    Tr("No open port? Both of you can join one virtual network (Radmin VPN, ZeroTier or Tailscale): "
+                       "this code then holds it by itself."),
+                    ui::color::InkSoft, width);
             }
         }
         if (ui::Button(Tr("Details"), { .kind = ui::ButtonKind::Ghost, .size = ui::Size::Small }))
             room.showDetails = !room.showDetails;
         if (room.showDetails)
         {
-            ui::Text(ui::TextStyle::Label, Tr("Code for another address"), ui::color::Ink, width);
+            ui::Text(ui::TextStyle::Label, Tr("Tunnel address"), ui::color::Ink, width);
             ui::Text(ui::TextStyle::Caption,
-                Tr("Enter this computer's address on Radmin VPN, ZeroTier, Tailscale or playit.gg, with its port."),
+                Tr("A tunnel such as playit.gg gives an address and a port: enter them here and the room code holds "
+                   "them too."),
                 ui::color::InkSoft, width);
             ui::TextField(
-                "##otheraddress", room.otherAddress, sizeof room.otherAddress, { .hint = "100.64.0.2:47640" });
-            room.lobby.ResolveCode(room.otherAddress, port);
-            const std::string code = room.lobby.OtherCode();
-            if (!code.empty())
-            {
-                const std::string shownCode = room.showAddress ? code : MaskedCode(code);
-                ui::Text(ui::TextStyle::Body, shownCode.c_str(), ui::color::Ink,
-                    std::max(40.0f, width - ui::ButtonWidth(Tr("Copy")) - ui::space::S));
-                ImGui::SameLine(0, ui::space::S);
-                ImGui::PushID("othercode");
-                if (ui::Button(Tr("Copy"), { .size = ui::Size::Small }))
-                {
-                    SDL_SetClipboardText(code.c_str());
-                    Toast(Tr("Room code copied. Paste it in a message to your friend."));
-                }
-                ImGui::PopID();
-            }
+                "##tunneladdress", room.otherAddress, sizeof room.otherAddress, { .hint = "tunnel.example:47640" });
         }
     }
 
@@ -1457,7 +1473,7 @@ namespace launcher_ui
         room.mode = Mode::Host;
         room.previewRouter = -1;
         room.showFix = room.showDetails = false;
-        room.localAddress = "192.0.2.10";
+        room.localAddresses = { { "en0", "", "192.0.2.10" } };
         room.inputs.player = { "Spyro", "E000000000000001", 4, {},
             { { 16, 0, 0, "Spyro", std::vector<uint8_t>(FigureDumpBytes, 1) } } };
         room.inputs.settings = { 60, "en", "fr", false, 0, 0 };
@@ -1470,7 +1486,7 @@ namespace launcher_ui
         auto setMode = [&](const char* mode) {
             m_config[std::string(m_s->game.id) + ".online"]["mode"] = mode;
             m_config[std::string(m_s->game.id) + ".online"]["address"] =
-                online::EncodeRoomCode("203.0.113.4", online::DefaultPort, 0);
+                online::EncodeRoomCode(std::array{ online::net::Endpoint{ "203.0.113.4", online::DefaultPort } }, 0);
             room.fieldsFor.clear();
         };
         int step = m_testStep;
@@ -1495,6 +1511,10 @@ namespace launcher_ui
                 status.state = State::Waiting;
                 room.previewRouter = step == 4 ? 2 : 1;
                 room.showFix = step == 4;
+                room.showDetails = step == 4;
+                room.localAddresses.push_back({ "radmin", "", "26.1.2.3" });
+                room.localAddresses.push_back({ "tailscale0", "", "100.64.1.2" });
+                room.localAddresses.push_back({ "zt0", "", "10.30.0.2" });
                 m_testShot = step == 4 ? "online-02-waiting" : "online-waiting-open";
             }
             else if (step < 8)
