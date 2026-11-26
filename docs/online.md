@@ -26,12 +26,14 @@ until **Show**; **Copy** works either way) and how far it reaches (see "Room cod
 in, **How to fix it** gives the ways: forward the port (UDP) in the router's settings
 (when the router refused or automatic opening is off), or a virtual network on both computers.
 There is one room code for every path. Opening the router and finding the public address take a few seconds; the
-window stays usable, and local paths can already be copied.
+window stays usable, and no code is shown before the router answers, so a friend never gets one that changes right
+after.
 
 The room uses one UDP port, the same for the room and the game (47640 by default). The room's **Details** offers
 **Tunnel address** for a tunnel's UDP address and port. A hostname is resolved on the `Discovery` worker;
 the resolved endpoint is added to the same room code. Share the code only with the friend you want to let in.
-The line below it names the paths it holds: home, internet and recognised virtual networks.
+The line below it names the paths it holds: home, internet and recognised virtual networks. A public address the
+router did not open stays in the code as a try, but the line does not promise the internet then.
 
 Each player's card shows their name (yours followed by "(you)"), picture, colour, role, readiness and the figures on
 their portal, with **Choose
