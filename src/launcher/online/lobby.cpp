@@ -16,7 +16,9 @@ namespace online
 
     bool Status::CanStart() const { return host && state == State::InRoom && localReady && remoteReady && haveRemote; }
 
-    Lobby::Lobby(Clock clock) : m_clock(std::move(clock)) {}
+    Lobby::Lobby(Clock clock, std::shared_ptr<net::DatagramIo> io)
+        : m_clock(std::move(clock)), m_io(io ? std::move(io) : std::make_shared<net::DatagramIo>())
+    {}
 
     Lobby::~Lobby() { Leave(); }
 
@@ -44,8 +46,8 @@ namespace online
         for (const SaveFile& file : options.save)
             options.settings.saveBytes += uint32_t(file.bytes.size());
         std::string error;
-        m_listener = net::Listen(options.port, error);
-        if (m_listener == net::Invalid)
+        m_socket = m_io->Bind(options.port, error);
+        if (m_socket == net::Invalid)
         {
             m_status.state = State::Ended;
             m_status.error = Error::PortInUse;
@@ -56,6 +58,10 @@ namespace online
         m_player = options.player;
         m_hostOptions = std::move(options);
         m_status.state = State::Waiting;
+        m_status.localPort = m_io->Port(m_socket);
+        m_discovery.Start(m_hostOptions.discover);
+        m_punch = std::make_unique<Punch>(
+            m_secret, true, Now(), [this](const auto& to, auto bytes) { m_io->Send(m_socket, bytes, to); });
         SDL_Log("[online] room open on port %u", m_hostOptions.port);
         return true;
     }
@@ -73,8 +79,8 @@ namespace online
             End(net::ParseAddress(options.address, DefaultPort, host, port) ? Error::CodeRequired : Error::BadAddress);
             return false;
         }
-        m_connection = net::Connect(host, port, error);
-        if (m_connection == net::Invalid)
+        m_socket = m_io->Bind(0, error);
+        if (m_socket == net::Invalid)
         {
             SDL_Log("[online] cannot reach the room: %s", error.c_str());
             End(Error::CannotConnect);
@@ -84,6 +90,11 @@ namespace online
         m_player = options.player;
         m_joinOptions = std::move(options);
         m_status.peer = host;
+        m_status.localPort = m_io->Port(m_socket);
+        m_discovery.Start(m_joinOptions.discover);
+        m_punch = std::make_unique<Punch>(
+            m_secret, false, Now(), [this](const auto& to, auto bytes) { m_io->Send(m_socket, bytes, to); });
+        m_punch->Add(net::Resolve(host, port, true), Now());
         m_status.state = State::Connecting;
         m_startedAt = Now();
         return true;
@@ -105,34 +116,24 @@ namespace online
 
     void Lobby::Flush()
     {
-        while (m_connection != net::Invalid && m_outStart < m_out.size())
+        if (!m_stream)
+            return;
+        if (m_outStart < m_out.size())
         {
-            const long sent = net::Send(m_connection, m_out.data() + m_outStart, m_out.size() - m_outStart);
-            if (sent < 0)
+            if (!m_stream->Write(std::span(m_out).subspan(m_outStart)))
             {
-                Fail(m_status.state == State::Started ? Error::None : Error::Left);
+                Fail(Error::Broken);
                 return;
             }
-            if (sent == 0)
-                break;
-            m_outStart += size_t(sent);
-        }
-        if (m_outStart == m_out.size())
-        {
             m_out.clear();
             m_outStart = 0;
-            if (m_closeAfterFlush)
-            {
-                m_closeAfterFlush = false;
-                CloseConnection();
-            }
         }
+        m_stream->Poll(Now());
     }
 
     void Lobby::CloseConnection()
     {
-        net::Close(m_connection);
-        m_connection = net::Invalid;
+        m_stream.reset();
         m_connected = false;
         m_reader = {};
         m_out.clear();
@@ -140,6 +141,9 @@ namespace online
         m_haveKeys = false;
         m_sendSequence = m_receiveSequence = 0;
         m_step = Step::AwaitHello;
+        m_startQueued = false;
+        m_guestStartAt = 0;
+        m_failure.reset();
     }
 
     const char* ErrorName(Error error)
@@ -202,8 +206,10 @@ namespace online
         if (error != Error::None)
             SDL_Log("[online] room ended: %s%s", ErrorName(error), MismatchDetail(mismatch).c_str());
         CloseConnection();
-        net::Close(m_listener);
-        m_listener = net::Invalid;
+        m_io->Release(m_socket);
+        m_socket = net::Invalid;
+        m_punch.reset();
+        m_discovery.Close();
         m_status.error = error;
         m_status.mismatch = mismatch;
         if (m_status.state != State::Started)
@@ -218,36 +224,63 @@ namespace online
         m_status.lastRefusal = { error, mismatch, m_status.peer, Now() };
         CloseConnection();
         const Refusal refusal = m_status.lastRefusal;
+        const auto port = m_status.localPort;
+        const auto mapped = m_status.mapped;
         m_status = {};
         m_status.host = true;
+        m_status.localPort = port;
+        m_status.mapped = mapped;
         m_status.state = State::Waiting;
         m_status.lastRefusal = refusal;
+        m_punch = std::make_unique<Punch>(
+            m_secret, true, Now(), [this](const auto& to, auto bytes) { m_io->Send(m_socket, bytes, to); });
+        m_discovery.Start(m_hostOptions.discover);
     }
 
     void Lobby::Fail(Error error, Mismatch mismatch)
     {
-        if (m_status.host && m_status.state != State::Started)
-            DropGuest(error, mismatch);
-        else
+        if (!m_status.host || m_status.state == State::Started)
+        {
             End(error, mismatch);
+            return;
+        }
+        if (!m_stream || error == Error::Timeout || error == Error::Left || error == Error::None)
+        {
+            DropGuest(error, mismatch);
+            return;
+        }
+        if (!m_failure)
+        {
+            m_failure = { error, mismatch };
+            const ByeReason reason = error == Error::WrongCode      ? ByeReason::Code
+                                     : error == Error::TooManyCodes ? ByeReason::Limited
+                                     : error == Error::Mismatch     ? ByeReason::Mismatch
+                                                                    : ByeReason::Protocol;
+            SendBye(reason);
+        }
     }
 
     void Lobby::Leave()
     {
-        if (m_connection != net::Invalid && m_connected && m_status.state != State::Started)
+        if (m_stream && m_connected && m_status.state != State::Started)
         {
             SendBye(ByeReason::Left);
             Flush();
         }
         CloseConnection();
-        net::Close(m_listener);
-        m_listener = net::Invalid;
+        m_io->Release(m_socket);
+        m_socket = net::Invalid;
+        m_punch.reset();
+        m_discovery.Close();
+        m_probes.clear();
         if (m_status.state != State::Started && m_status.state != State::Idle)
             m_status.state = State::Ended;
     }
 
     void Lobby::UpdatePlayer(const Player& player)
     {
+        if (m_startQueued || m_guestStartAt)
+            return;
         m_player = player;
         m_status.localReady = false;
         if (m_status.state == State::InRoom)
@@ -259,7 +292,7 @@ namespace online
 
     void Lobby::SetReady(bool ready)
     {
-        if (m_status.state != State::InRoom || m_status.localReady == ready)
+        if (m_startQueued || m_guestStartAt || m_status.state != State::InRoom || m_status.localReady == ready)
             return;
         m_status.localReady = ready;
         SDL_Log("[online] you are %s", ready ? "ready" : "no longer ready");
@@ -268,7 +301,7 @@ namespace online
 
     bool Lobby::StartGame()
     {
-        if (!m_status.CanStart())
+        if (!m_status.CanStart() || m_startQueued)
             return false;
         Start start;
         RandomBytes(start.sessionKey);
@@ -279,14 +312,10 @@ namespace online
         Flush();
         m_status.start = start;
         m_status.inputDelay = start.inputDelay;
-        m_status.state = State::Started;
+        m_startQueued = true;
         SDL_Log("[online] starting: input delay %u frames, round trip %.0f ms, %u FPS, save %u bytes in %u files",
             start.inputDelay, m_status.rttMs, m_hostOptions.settings.fpsLimit, m_hostOptions.settings.saveBytes,
             unsigned(m_hostOptions.settings.saveFiles));
-        m_closeAfterFlush = true;
-        Flush();
-        net::Close(m_listener);
-        m_listener = net::Invalid;
         return true;
     }
 
@@ -338,8 +367,7 @@ namespace online
         {
             if (m_status.host)
             {
-                Flush();
-                DropGuest(Error::Mismatch, mismatch);
+                Fail(Error::Mismatch, mismatch);
             }
             else
                 End(Error::Mismatch, mismatch);
@@ -477,10 +505,9 @@ namespace online
             {
                 m_status.start = start;
                 m_status.inputDelay = start.inputDelay;
-                m_status.state = State::Started;
+                m_guestStartAt = Now() + UdpStream::MaxRto;
                 SDL_Log("[online] the host starts: input delay %u frames, round trip %.0f ms", start.inputDelay,
                     m_status.rttMs);
-                CloseConnection();
                 return;
             }
             break;
@@ -534,7 +561,7 @@ namespace online
                 m_refuseUntil = now + 30000;
                 m_wrongProofs.clear();
                 SDL_Log("[online] too many wrong codes: guests refused for 30 s");
-                DropGuest(Error::TooManyCodes);
+                Fail(Error::TooManyCodes);
                 return;
             }
         }
@@ -543,109 +570,158 @@ namespace online
 
     bool Lobby::ReadAll()
     {
-        uint8_t buffer[16384];
-        while (m_connection != net::Invalid)
+        if (!m_stream)
+            return true;
+        const auto bytes = m_stream->Read();
+        m_reader.Feed(bytes);
+        while (m_stream && !m_failure)
         {
-            const long got = net::Receive(m_connection, buffer, sizeof(buffer));
-            if (got == -1)
-                return true;
-            if (got <= 0)
-                return false;
-            m_lastHeard = Now();
-            m_reader.Feed(std::span(buffer, size_t(got)));
-            while (m_connection != net::Invalid)
+            auto frame = m_reader.Next();
+            if (!frame)
+                break;
+            Handle(*frame);
+        }
+        if (!m_failure && m_reader.Broken())
+            Fail(Error::Broken);
+        return true;
+    }
+
+    void Lobby::Discover(uint64_t now)
+    {
+        if (!m_punch)
+            return;
+        const auto servers = m_discovery.StunServers();
+        if (m_probes.empty() && !servers.empty())
+            for (const auto& server : servers)
             {
-                auto frame = m_reader.Next();
-                if (!frame)
-                    break;
-                const net::Handle before = m_connection;
-                Handle(*frame);
-                if (m_connection != before)
-                    return true;
+                Probe probe{};
+                probe.server = server;
+                RandomBytes(probe.id);
+                m_probes.push_back(probe);
             }
-            if (m_reader.Broken())
+        for (auto& probe : m_probes)
+        {
+            if (probe.attempts >= 3 && now >= probe.next + 20000)
             {
-                Fail(Error::Broken);
-                return true;
+                probe.attempts = 0;
+                RandomBytes(probe.id);
+            }
+            if (probe.attempts < 3 && now >= probe.next)
+            {
+                m_io->Send(m_socket, stun::BindingRequest(probe.id), probe.server);
+                probe.next = now + 500;
+                ++probe.attempts;
             }
         }
-        return true;
+    }
+
+    void Lobby::Connected(uint64_t now)
+    {
+        m_connected = true;
+        if (!m_status.host)
+            m_discovery.Close();
+        m_status.endpoint = m_punch->Peer();
+        m_status.peer = m_status.endpoint.ip;
+        m_status.state = State::Greeting;
+        m_startedAt = now;
+        m_stream = std::make_unique<UdpStream>(now, m_punch->StreamKey(m_status.host),
+            m_punch->StreamKey(!m_status.host), [this](auto bytes) { m_io->Send(m_socket, bytes, m_status.endpoint); });
+        if (m_status.host)
+            RandomBytes(m_mine.nonce);
+        else
+            Send(MessageType::Hello, Encode(m_mine));
     }
 
     void Lobby::Poll()
     {
-        const uint64_t now = Now();
-        if (m_status.host && m_listener != net::Invalid)
-        {
-            std::string peer;
-            const net::Handle incoming = net::Accept(m_listener, peer);
-            if (incoming != net::Invalid)
-            {
-                if (now < m_refuseUntil)
-                {
-                    const auto bye =
-                        Frame(MessageType::Bye, 0, std::vector<uint8_t>{ uint8_t(ByeReason::Limited) }, nullptr);
-                    net::Send(incoming, bye.data(), bye.size());
-                    net::Close(incoming);
-                    m_status.lastRefusal = { Error::TooManyCodes, Mismatch::None, peer, now };
-                }
-                else if (m_connection != net::Invalid)
-                {
-                    // One guest per room: the newcomer hears why.
-                    const auto bye =
-                        Frame(MessageType::Bye, 0, std::vector<uint8_t>{ uint8_t(ByeReason::Full) }, nullptr);
-                    net::Send(incoming, bye.data(), bye.size());
-                    net::Close(incoming);
-                }
-                else
-                {
-                    RandomBytes(m_mine.nonce);
-                    m_connection = incoming;
-                    m_connected = true;
-                    m_status.peer = peer;
-                    m_status.state = State::Greeting;
-                    m_startedAt = m_lastHeard = now;
-                    // The address is not logged: players share their logs.
-                    SDL_Log("[online] a guest is joining (%s)",
-                        peer.find(':') != std::string::npos && peer.rfind("::ffff:", 0) != 0 ? "IPv6" : "IPv4");
-                }
-            }
-        }
-        if (m_connection == net::Invalid)
+        if (m_socket == net::Invalid)
             return;
-        // Started: only the last bytes (the start message) are still going out.
-        if (m_status.state == State::Started)
+        const uint64_t now = Now();
+        Discover(now);
+        m_punch->Poll(now);
+        // Bound work per window tick, even if a stranger floods the socket.
+        for (size_t packets = 0; packets < 256; ++packets)
+        {
+            uint8_t buffer[2048];
+            net::Endpoint from;
+            const long got = m_io->Receive(m_socket, buffer, sizeof buffer, from);
+            if (got < 0)
+                break;
+            const auto packet = std::span(buffer, size_t(got));
+            bool stunAnswer = false;
+            for (const auto& probe : m_probes)
+                if (from == probe.server)
+                {
+                    stun::Endpoint mapped;
+                    if (stun::ParseBindingResponse(packet, probe.id, mapped))
+                    {
+                        auto& seen = mapped.ip.find(':') == std::string::npos ? m_status.mapped.v4 : m_status.mapped.v6;
+                        if (seen.ip != mapped.ip || seen.port != mapped.port)
+                        {
+                            seen = mapped;
+                            SDL_Log("[online] public address (STUN): %s found",
+                                mapped.ip.find(':') == std::string::npos ? "IPv4" : "IPv6");
+                        }
+                        stunAnswer = true;
+                        break;
+                    }
+                }
+            if (stunAnswer)
+                continue;
+            const bool other = m_connected && from != m_status.endpoint;
+            const ByeReason refuse = m_status.host && now < m_refuseUntil ? ByeReason::Limited
+                                     : m_status.host && other             ? ByeReason::Full
+                                                                          : ByeReason(0);
+            if (m_punch->Receive(from, packet, now, refuse))
+            {
+                if (!m_connected && m_punch->Connected())
+                    Connected(now);
+                if (refuse == ByeReason::Limited)
+                    m_status.lastRefusal = { Error::TooManyCodes, Mismatch::None, "", now };
+                continue;
+            }
+            if (m_stream && from == m_status.endpoint)
+                m_stream->Receive(packet, now);
+        }
+        if (m_punch->Refused() != ByeReason(0))
+        {
+            End(m_punch->Refused() == ByeReason::Full ? Error::RoomFull : Error::TooManyCodes);
+            return;
+        }
+        if (!m_stream)
+        {
+            if (m_punch->Expired(now))
+            {
+                SDL_Log("[online] no path to the host after 10 s");
+                End(Error::CannotConnect);
+            }
+            return;
+        }
+        m_stream->Poll(now);
+        ReadAll();
+        if (!m_stream)
+            return;
+        if (m_failure)
         {
             Flush();
-            return;
-        }
-        if (!m_connected)
-        {
-            const auto progress = net::Connecting(m_connection);
-            if (progress == net::Progress::Failed ||
-                (progress == net::Progress::Pending && now - m_startedAt > ConnectTimeoutMs))
+            if (m_stream && (m_stream->Drained() || m_stream->Closed()))
             {
-                End(Error::CannotConnect);
-                return;
+                const auto [error, mismatch] = *m_failure;
+                DropGuest(error, mismatch);
             }
-            if (progress == net::Progress::Pending)
-                return;
-            m_connected = true;
-            m_status.state = State::Greeting;
-            m_lastHeard = now;
-            Send(MessageType::Hello, Encode(m_mine));
+            return;
         }
-        if (!ReadAll())
+        if (m_stream->Closed())
         {
-            // The other side closed: a refusal it explained was handled with its Bye.
-            Fail(!m_status.host && m_status.state == State::Greeting
-                     ? (m_haveKeys ? Error::WrongCode : Error::CannotConnect)
-                     : Error::Left);
+            Fail(Error::Timeout);
             return;
         }
-        if (m_connection == net::Invalid)
+        if (m_status.state == State::Greeting && now - m_startedAt >= ConnectTimeoutMs)
+        {
+            Fail(Error::Timeout);
             return;
-        if (m_status.state == State::InRoom && now >= m_nextPing)
+        }
+        if (m_status.state == State::InRoom && !m_startQueued && !m_guestStartAt && now >= m_nextPing)
         {
             Writer w;
             w.U64(now);
@@ -655,12 +731,14 @@ namespace online
             if (!testing && !m_status.testDone)
                 FinishTest();
         }
-        // Read the clock again: the bytes just read set m_lastHeard after `now`, and the difference is unsigned.
-        if (Now() - m_lastHeard > SilenceTimeoutMs)
-        {
-            Fail(Error::Timeout);
-            return;
-        }
         Flush();
+        if (m_stream && ((m_startQueued && m_stream->Drained()) || (m_guestStartAt && now >= m_guestStartAt)))
+        {
+            m_status.state = State::Started;
+            CloseConnection();
+            m_io->Release(m_socket);
+            m_socket = net::Invalid;
+            m_discovery.Close();
+        }
     }
 }

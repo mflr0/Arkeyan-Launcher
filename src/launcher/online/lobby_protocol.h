@@ -1,7 +1,7 @@
 #pragma once
 
-// The online lobby's messages (docs/online.md): what two launchers say to each other before both start the game. One TCP
-// connection, the host listening; every frame is length-prefixed, and once both hellos are exchanged every frame carries a
+// The online lobby's messages (docs/online.md): what two launchers say to each other before both start the game. One reliable UDP
+// stream, the host listening; every frame is length-prefixed, and once both hellos are exchanged every frame carries a
 // tag and encryption keyed from the room secret and fresh random nonces, so strangers are refused.
 // Pure code: no socket here (online/lobby.h drives it), so the tests feed it bytes.
 #include "launcher/online/chacha20.h"
@@ -16,7 +16,7 @@
 
 namespace online
 {
-    inline constexpr uint16_t LobbyProtocolVersion = 2;
+    inline constexpr uint16_t LobbyProtocolVersion = 3;
     inline constexpr uint16_t DefaultPort = 47640;
     inline constexpr size_t MaxFrameBytes = 4 * 1024 * 1024; // a whole frame: the biggest is a save chunk
     inline constexpr size_t SaveChunkBytes = 64 * 1024;

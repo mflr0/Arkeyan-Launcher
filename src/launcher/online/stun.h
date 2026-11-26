@@ -2,7 +2,7 @@
 
 // The host's public address, as the internet sees it (docs/online.md, "Room codes"): one STUN binding request (RFC 5389)
 // to a free public server, over IPv4 and over IPv6. Only the address in the answer is used; nothing else is sent or kept.
-// Lookup blocks for a few seconds at most: the room's router worker calls it.
+// The lobby sends BindingRequest and parses replies on its own socket; Lookup is a blocking standalone helper.
 #include <array>
 #include <chrono>
 #include <cstdint>

@@ -11,8 +11,8 @@ three choices: **Solo** (the game alone, as before), **Host** (PLAY opens a room
 room). The choice stays after a session, so the same friends play again in one press. The tab shows the four steps of
 the chosen mode, then its fields: on Host, **Open my router automatically**; on Join, the
 **Room code** the friend sent (hidden until **Show**). An address alone cannot open a room. **Details for your router** holds the technical
-part: the port (47640, changed only when another program uses it), UDP and TCP, what the automatic opening does, and the
-virtual network way (Tailscale, ZeroTier) for a router that cannot be opened. The settings live in `[<game>.online]` of
+part: the port (47640, changed only when another program uses it), UDP, what the automatic opening does, and the
+tunnel way (Radmin VPN, ZeroTier, Tailscale or playit.gg) for a router that cannot be opened. The settings live in `[<game>.online]` of
 `launcher.ini` (`mode`, `port`, `open_port`, `address`, `cross_platform`). The old room password is ignored and removed when the Online settings are saved.
 
 While a game is set to Host or Join, the sidebar shows `-o` after its version (`0.10.0-o`), as the game does in a
@@ -23,14 +23,15 @@ opens the Online tab. Join without a room code opens the tab instead. The friend
 
 The host's room shows two cards side by side, the same height. The empty one invites: the room code to send (hidden
 until **Show**; **Copy** works either way) and how far it reaches (see "Room codes"). When a friend elsewhere cannot get
-in, the card says why, and **How to fix it** gives the ways: forward the port (UDP and TCP) in the router's settings
+in, **How to fix it** gives the ways: forward the port (UDP) in the router's settings
 (when the router refused or automatic opening is off), a virtual network on both computers, and the code for a friend in
 the same home (the computer's local address). Opening the router and finding the public address take a few seconds; the
 window stays usable.
 
-The room's **Details** offers **Code for another address**: enter this computer's virtual-network address
-(such as Tailscale or ZeroTier), with its port, then **Copy** the resulting code. It carries the same room secret
-as the public and home codes. Share a code only with the friend you want to let in.
+The room uses one UDP port, the same for the room and the game (47640 by default). The room's **Details** offers
+**Code for another address** for a virtual network or tunnel. A hostname is resolved on the `Discovery` worker when
+making the code; the code contains the resolved IP and the same room secret as the public and home codes.
+Share a code only with the friend you want to let in.
 
 Each player's card shows their name (yours followed by "(you)"), picture, colour, role, readiness and the figures on
 their portal, with **Choose
@@ -53,7 +54,7 @@ leaves `open-online.txt`, its id, in its saves; the launcher reads and removes i
 
 ## Room protocol
 
-`src/launcher/online/lobby_protocol.h` defines protocol version 2. One TCP connection carries little-endian frames:
+`src/launcher/online/lobby_protocol.h` defines protocol version 3. One reliable UDP stream carries the existing little-endian frames:
 `u32 length`, `u8 type`, `u32 sequence`, payload, a 16-byte authentication tag. Frames are at most 4 MB. Text is prefixed
 by a 16-bit byte count, blobs by a 32-bit count. Hellos carry random 32-byte nonces, fresh for each connection. The room's 40-bit secret, as five bytes in
 most-significant-byte order, and both nonces derive separate HMAC-SHA256 tag keys and ChaCha20 encryption keys
@@ -65,8 +66,9 @@ the ChaCha20 block counter starts at 1. A sequence must be exactly the next one;
 
 The host counts failed proofs in a sliding 60-second window. The fifth starts a 30-second pause for all new guests,
 including guests with a correct code, with a refusal notice in the room. Existing size, player, seat and save checks
-still apply. A rejected guest leaves the host's room open. Full-room and paused-room refusals before the hellos are
-unauthenticated; after the hellos every frame requires authentication and encryption.
+still apply. A rejected guest leaves the host's room open. Full-room and paused-room refusals are authenticated punch replies, bound to the guest's nonce. A code with a different
+secret is ignored before a stream exists; the guest then gets the help card of a room that didn't answer. Failed proofs after a valid punch
+still count toward the pause. After the hellos every frame requires authentication and encryption.
 
 | Type | Value | Payload and purpose |
 |---|---|---|
@@ -90,8 +92,9 @@ player description; the source paths stay local and are used only for write-back
 
 ## Starting and recovery
 
-`PrepareGameLaunch` builds the normal launch; `PrepareSession` adds the agreed room to it. The guest's host address is the
-address it joined with, without the port; the guest sends UDP to that address's port, including when the router assigned a different external port. The session lives at `<data>/online/session/`:
+`PrepareGameLaunch` builds the normal launch; `PrepareSession` adds the agreed room to it. The guest uses the host endpoint actually reached, including a different public UDP port. The host passes the guest endpoint
+it reached. Start stays in the reliable stream until the host receives its transport acknowledgement. The guest keeps
+answering duplicates for a two-second handoff interval; each launcher closes the socket before launching its game. The session lives at `<data>/online/session/`:
 
 - `saves/`: the host's save and the session's `portal.txt`.
 - `figures/`: the figures from both players; a swapper's bottom half is `<top>-bottom.sky`, seated in the slot after
@@ -116,6 +119,8 @@ launch may replace a session pending recovery. A game's session save marker is c
 | `SKY_NETPLAY_SCHEDULE` | `cooperative` |
 | `SKY_NETPLAY_HOST` | Host only: UDP port |
 | `SKY_NETPLAY_JOIN` | Guest only: host address and UDP port |
+| `SKY_NETPLAY_LOCAL_PORT` | Guest only: the launcher socket's local UDP port; the game binds the same port |
+| `SKY_NETPLAY_PEER` | Host only: the reached guest endpoint, including its public UDP port |
 | `SKY_NETPLAY_PASSWORD` | Hex session key agreed by the room |
 | `SKY_NETPLAY_DELAY` | Agreed input delay in frames |
 
@@ -135,7 +140,7 @@ the room.
 
 ## Room codes
 
-A room code holds the host's address and a fresh random 40-bit secret chosen with `RandomBytes` when the room opens: no server holds rooms. Closing and reopening the room invalidates its old codes. The secret is required to enter, even when the address and port are known. `src/launcher/online/room_code.h`
+A room code holds the host's address and a fresh random 40-bit secret chosen with `RandomBytes` when the room opens. Closing and reopening the room invalidates its old codes. The secret is required to enter, even when the address and port are known. `src/launcher/online/room_code.h`
 writes it in Crockford's base 32 (`0-9` and `A-Z` without `I L O U`; on reading, case, dashes and spaces are ignored and
 `O`, `I`, `L` read as `0`, `1`, `1`), in groups of four, with a check made from 64-bit FNV-1a over the kind and the address, optional port and five secret bytes (most significant first):
 
@@ -157,9 +162,49 @@ an address and port. Which address the code holds (`InviteFor` in `src/launcher/
 | refused | the router refused | the public IPv4 address, for a port forwarded by hand |
 | not opened automatically | automatic opening off | the public IPv4 address |
 
-The public addresses come from one STUN binding request (RFC 5389, `src/launcher/online/stun.h`) per room, over IPv4
-and over IPv6, to `stun.l.google.com:19302`, else `stun.cloudflare.com:3478`; only the mapped address of the answer is
-read. Without an answer the code holds the computer's local address.
+Public endpoints come from STUN binding requests (RFC 5389, `src/launcher/online/stun.h`) over IPv4 and IPv6,
+to `stun.l.google.com:19302` and `stun.cloudflare.com:3478`. DNS runs on the `Discovery` worker (`discovery.{h,cpp}`). Requests and responses
+use the room's **own UDP socket**, keeping the mapped port rather than borrowing the address of a separate socket.
+Transaction ids and source endpoints are checked. Initial probes retry three times, then refresh while waiting.
+Without an answer the code holds the computer's LAN address. A public router mapping takes precedence for the invite.
+
+## Reliable UDP and finding a path
+
+`udp_stream.{h,cpp}` implements the stream from datagrams without outside transport code. Each datagram is at most
+1200 bytes: magic, 32-bit sequence, cumulative ACK, 64-bit selective ACK bitmap, 16-bit payload size, payload and a
+16-byte HMAC-SHA256 tag. All integers are little-endian. Data sequences start at 1; sequence 0 is an ACK/keepalive.
+The cumulative ACK is the last contiguous received sequence; bitmap bit 0 covers the next sequence. The 64-segment
+send window stays anchored at the earliest unacknowledged sequence, even with selective ACKs beyond a gap. Delivery
+is in order and duplicate data is discarded. RTT samples from transmissions not retried estimate a smoothed RTT
+and variation; RTO is their sum with four times the variation, clamped to 100–2000 ms (initially 300 ms). Each retry
+doubles that segment's timeout, capped at two seconds. An idle stream sends a keepalive every second and closes after
+15 seconds without a valid datagram. Queues and receive windows are bounded; sequence exhaustion closes the stream.
+The existing lobby frames, their encryption and their tags are unchanged inside this stream.
+
+`punch.{h,cpp}` first establishes the datagram peer. At Join, the guest tries only the address and port in the code,
+sending authenticated probes every 100 ms for up to ten seconds. The host answers incoming probes; the guest's
+confirmation selects the endpoint on the host. Replies echo fresh random nonces, and confirmations repeat so a lost
+final packet does not strand one peer. Host and guest roles, both fresh nonces and the room secret derive distinct
+directional stream tag keys. A full room refuses another authenticated guest with RoomFull and preserves its existing
+stream. The lobby never obtains other addresses from a service or tries a different address after the code's endpoint.
+
+The connecting view says **Trying to reach your friend's room...**. After ten seconds without an answer, its help card
+says the friend's router may block it and that the host's room shows how to fix it (the router, or a virtual network).
+
+## No open port
+
+When the router cannot open or forward a UDP port, both players can run the same virtual network: Radmin VPN,
+ZeroTier or Tailscale, joined to the same network. The host opens a room, expands **Details**, and enters this computer's
+address on that network with the room's port under **Code for another address**, then copies the resulting code to the
+guest. The guest joins with that code.
+
+A tunnel such as playit.gg can instead forward a public UDP address to the host's room port. Enter that tunnel's
+UDP address and port in the same field; a hostname works too. A public playit.gg tunnel runs on the host and the guest
+uses its code directly. For a virtual network, both players must use the same one.
+
+The launcher does not use any server for the room: the room's messages, profiles and saves travel directly over UDP
+between the two players. Optional STUN requests only discover the public address and port of the room's own socket;
+they do not exchange room messages or locate the other player.
 
 ## The connection test
 
@@ -197,13 +242,17 @@ IPv6) and the other player's launcher, game, version and system; each side's rea
 delay every 10 seconds; the start (input delay, round trip, frame rate, save size); and every end or refusal with its
 reason and, for a mismatch, both sides' values (`game version: 0.10.0 here, 0.9.17 there`).
 
+Additional path logs contain words and counts, never endpoints: `[online] punching: 1 candidates`,
+`[online] punched through (IPv4)` (or IPv6), and `[online] no path to the host after 10 s`.
+Room secrets, codes and endpoint addresses are never logged.
+
 ## Router lease
 
-The room's `RouterLease` worker calls `netplay::portmap::Map` with `Options::alsoTcp = true` (not with automatic opening
-off): the room needs TCP and the game needs UDP on the same port. UPnP is tried first, then NAT-PMP. The lease is renewed
-every hour. Then, once per room, the worker asks the public addresses (`stun::Lookup`), not for a room already closed. Closing the room or
-ending the game schedules `Unmap` on the same worker. If a room closes while mapping is in flight, the returned mapping
-is removed before the worker handles another room. The worker joins at window shutdown.
+The room's `RouterLease` worker calls `netplay::portmap::Map` with `Options::alsoTcp = false` when automatic opening
+is enabled. Both room and game now need UDP only. UPnP is tried first, then NAT-PMP. The lease is renewed every hour.
+STUN discovery lives with the lobby's shared socket; the router worker no longer opens a different STUN socket.
+Closing the room schedules `Unmap` on the same worker. A mapping returned after Leave is removed before the next room.
+The worker joins at window shutdown.
 
 ## Checks and screenshots
 
@@ -211,7 +260,12 @@ is removed before the worker handles another room. The worker joins at window sh
 startup and game-exit recovery, host and guest write-back, every end reason, and a failed recovery followed by retry.
 `SKY_LAUNCHER_TEST_ONLINE_UI_ONLY=1` selects it in `ArkeyanLauncherTest`. The existing `OnlineChecks` cover the room protocol,
 loopback peers, port mapping against local fixtures, room codes (every length, loose reading, typos) and STUN answers,
-and session preparation and write-back. Security checks include the RFC 8439 section 2.3.2 and 2.4.2 vectors,
+and session preparation and write-back. A deterministic fake datagram link runs the complete room scenarios without
+sockets too; if the sandbox refuses a UDP bind, the real loopback suite prints its skip reason. Stream tests send 5 MB
+in each direction with 20% loss, duplication and reordering, and check window anchoring, SACK, RTO, keepalive and silence.
+Punch tests simulate two NATs and a failed direct path, plus a direct handshake with a lost confirmation.
+Discovery checks inject a resolver to cover STUN server lookup, alternate-address codes and a late lookup after Close,
+without DNS or STUN requests. Security checks include the RFC 8439 section 2.3.2 and 2.4.2 vectors,
 wire captures without known profile/save plaintext, altered ciphertext, replay, failed-proof windows and cooldown,
 and oversized players, invalid save chunks and unknown messages followed by a successful join.
 

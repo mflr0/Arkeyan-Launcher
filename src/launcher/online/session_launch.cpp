@@ -201,10 +201,18 @@ namespace online
         Set(launch, "SKY_NETPLAY_DETERMINISTIC", "1");
         Set(launch, "SKY_NETPLAY_DELIVERY", "frame");
         Set(launch, "SKY_NETPLAY_SCHEDULE", "cooperative");
+        for (const char* key : { "SKY_NETPLAY_HOST", "SKY_NETPLAY_JOIN", "SKY_NETPLAY_LOCAL_PORT", "SKY_NETPLAY_PEER" })
+            std::erase_if(launch.variables, [&](const auto& entry) { return entry.first == key; });
         if (plan.host)
+        {
             Set(launch, "SKY_NETPLAY_HOST", std::to_string(plan.start.port));
+            if (!plan.peerEndpoint.empty())
+                Set(launch, "SKY_NETPLAY_PEER", plan.peerEndpoint);
+        }
         else
         {
+            if (plan.localPort)
+                Set(launch, "SKY_NETPLAY_LOCAL_PORT", std::to_string(plan.localPort));
             const bool v6 = plan.hostAddress.find(':') != std::string::npos;
             Set(launch, "SKY_NETPLAY_JOIN",
                 (v6 ? "[" + plan.hostAddress + "]" : plan.hostAddress) + ":" + std::to_string(plan.start.port));

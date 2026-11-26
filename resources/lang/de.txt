@@ -1289,10 +1289,8 @@ How PLAY starts the game	Wie SPIELEN das Spiel startet
 How it works	So funktioniert es
 How to fix it	So behebst du es
 I'm ready	Ich bin bereit
-If your router refuses, open (forward) port {} for UDP and TCP to this computer in your router's settings.	Falls dein Router es ablehnt, öffne Port {} für UDP und TCP zu diesem Computer in den Einstellungen deines Routers (Portweiterleitung).
 Invite your friend	Freund einladen
 JOIN A ROOM	RAUM BEITRETEN
-Joining your friend's room...	Dem Raum deines Freundes wird beigetreten...
 Lets friends outside your home in. Most routers allow it.	Lässt Freunde außerhalb deines Zuhauses herein. Die meisten Router erlauben es.
 No figures on the portal yet	Noch keine Figuren auf dem Portal
 Not in the same home? Their router may block it: their room shows them how to fix it.	Nicht im selben Haushalt? Der Router deines Freundes blockiert vielleicht die Verbindung: In seinem Raum steht, wie er das beheben kann.
@@ -1323,7 +1321,6 @@ The connection was lost	Die Verbindung wurde unterbrochen
 The one with the older version updates the game on its page, then you try again.	Wer die ältere Version hat, aktualisiert das Spiel auf seiner Seite. Dann versucht ihr es erneut.
 The room couldn't open	Der Raum konnte nicht geöffnet werden
 The room is closed	Der Raum ist geschlossen
-The room uses port {}, for UDP and TCP.	Der Raum verwendet Port {} für UDP und TCP.
 This port is already in use	Dieser Port wird bereits verwendet
 This room is full	Dieser Raum ist voll
 Try again	Erneut versuchen
@@ -1379,7 +1376,6 @@ Check the room code: ask them to copy it again.	Prüfe den Raumcode: Bitte ihn, 
 Get the room code	Raumcode holen
 Getting your room code...	Raumcode wird geholt...
 In the same home, ask your friend for the code under How to fix it in their room.	Im selben Zuhause: Frag deinen Freund nach dem Code unter So behebst du es in seinem Raum.
-Open port {} (UDP and TCP) to this computer in your router's settings: search the web for your router's name and "port forwarding".	Öffne Port {} (UDP und TCP) für diesen Computer in den Einstellungen deines Routers: Such im Web nach dem Namen deines Routers und "Portweiterleitung".
 Paste your friend's room code first.	Füge zuerst den Raumcode deines Freundes ein.
 Room code	Raumcode
 Room code copied. Paste it in a message to your friend.	Raumcode kopiert. Füge ihn in eine Nachricht an deinen Freund ein.
@@ -1399,7 +1395,6 @@ A room code is needed	Ein Raumcode wird benötigt
 An address alone can't open a room any more: ask your friend for the room code.	Eine Adresse allein öffnet keinen Raum mehr: Bitte deinen Freund um den Raumcode.
 Code for another address	Code für andere Adresse
 Copy the whole room code from your friend's room: letters and digits in groups of four.	Kopiere den ganzen Raumcode deines Freundes: Buchstaben und Ziffern in Vierergruppen.
-Enter this computer's Tailscale or ZeroTier address, with its port.	Gib die Tailscale- oder ZeroTier-Adresse dieses Computers mit Port ein.
 Guests paused for 30 seconds	Gäste für 30 Sekunden gesperrt
 In the room, copy your room code and send it to them by message.	Kopiere im Raum deinen Raumcode und schicke ihn deinem Freund als Nachricht.
 No access to the router? Both install the same free virtual network, such as Tailscale or ZeroTier, then make its code in the room's Details.	Kein Zugriff auf den Router? Installiert beide dasselbe kostenlose virtuelle Netzwerk, etwa Tailscale oder ZeroTier, und erstellt den Code unter Details im Raum.
@@ -1409,7 +1404,6 @@ The whole code your friend sent you.	Der ganze Code, den dein Freund dir geschic
 This room code is wrong or old: ask your friend to copy it again.	Dieser Raumcode ist falsch oder veraltet: Bitte deinen Freund, ihn erneut zu kopieren.
 Too many wrong room codes. Wait 30 seconds, then try again.	Zu viele falsche Raumcodes. Warte 30 Sekunden und versuche es erneut.
 With Tailscale or ZeroTier, ask your friend to make a code in their room's Details.	Mit Tailscale oder ZeroTier muss dein Freund einen Code unter Details in seinem Raum erstellen.
-With Tailscale or ZeroTier, make a code for this computer's address in Details below.	Erstelle mit Tailscale oder ZeroTier unten unter Details einen Code für die Adresse dieses Computers.
 Wrong room code	Falscher Raumcode
 Your friend opens a room and sends you its code.	Dein Freund öffnet einen Raum und schickt dir seinen Code.
 Your game stopped during the session. Play together again from where you saved.	Dein Spiel wurde während der Sitzung beendet. Spielt ab eurem letzten Speicherstand wieder zusammen.
@@ -1421,3 +1415,10 @@ playable	spielbar
 very slow	sehr langsam
 Testing the connection with your friend...	Die Verbindung zu deinem Freund wird getestet...
 The round trip varies by {} ms: the input delay grows to absorb it.	Die Antwortzeit schwankt um {} ms: Die Eingabeverzögerung wächst, um das aufzufangen.
+
+Enter this computer's address on Radmin VPN, ZeroTier, Tailscale or playit.gg, with its port.	Gib die Adresse dieses Computers bei Radmin VPN, ZeroTier, Tailscale oder playit.gg mit dem Port ein.
+If your router refuses, open (forward) port {} for UDP to this computer in your router's settings.	Falls dein Router es ablehnt, öffne Port {} für UDP zu diesem Computer in den Einstellungen deines Routers (Portweiterleitung).
+Open port {} (UDP) to this computer in your router's settings: search the web for your router's name and "port forwarding".	Öffne Port {} (UDP) für diesen Computer in den Einstellungen deines Routers: Such im Web nach dem Namen deines Routers und "Portweiterleitung".
+The room uses port {}, for UDP.	Der Raum verwendet Port {} für UDP.
+Trying to reach your friend's room...	Verbindung zum Raum deines Freundes wird versucht...
+No open port? Both of you can join one virtual network (Radmin VPN, ZeroTier or Tailscale), then make a code for this computer's address there in Details below.	Kein offener Port? Tretet beide demselben virtuellen Netzwerk bei (Radmin VPN, ZeroTier oder Tailscale) und erstellt unten unter Details einen Code für die dortige Adresse dieses Computers.

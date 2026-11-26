@@ -1291,10 +1291,8 @@ How PLAY starts the game	Come GIOCA avvia il gioco
 How it works	Come funziona
 How to fix it	Come risolvere
 I'm ready	Sono pronto
-If your router refuses, open (forward) port {} for UDP and TCP to this computer in your router's settings.	Se il router rifiuta, apri (inoltra) la porta {} per UDP e TCP verso questo computer nelle impostazioni del router.
 Invite your friend	Invita il tuo amico
 JOIN A ROOM	UNISCITI A UNA STANZA
-Joining your friend's room...	Accesso alla stanza del tuo amico...
 Lets friends outside your home in. Most routers allow it.	Fa entrare gli amici che non sono a casa tua. La maggior parte dei router lo permette.
 No figures on the portal yet	Nessuna figura sul portale per ora
 Not in the same home? Their router may block it: their room shows them how to fix it.	Non siete nella stessa casa? Il suo router potrebbe bloccare la connessione: la sua stanza gli mostra come risolvere.
@@ -1325,7 +1323,6 @@ The connection was lost	Connessione persa
 The one with the older version updates the game on its page, then you try again.	Chi ha la versione meno recente aggiorna il gioco dalla sua pagina, poi riprovate.
 The room couldn't open	Impossibile aprire la stanza
 The room is closed	La stanza è chiusa
-The room uses port {}, for UDP and TCP.	La stanza usa la porta {}, per UDP e TCP.
 This port is already in use	Questa porta è già in uso
 This room is full	Questa stanza è piena
 Try again	Riprova
@@ -1381,7 +1378,6 @@ Check the room code: ask them to copy it again.	Controlla il codice della stanza
 Get the room code	Ottieni il codice della stanza
 Getting your room code...	Recupero del codice della stanza...
 In the same home, ask your friend for the code under How to fix it in their room.	Nella stessa casa, chiedi al tuo amico il codice sotto Come risolvere, nella sua stanza.
-Open port {} (UDP and TCP) to this computer in your router's settings: search the web for your router's name and "port forwarding".	Apri la porta {} (UDP e TCP) verso questo computer nelle impostazioni del router: cerca sul web il nome del tuo router e "port forwarding".
 Paste your friend's room code first.	Incolla prima il codice della stanza del tuo amico.
 Room code	Codice della stanza
 Room code copied. Paste it in a message to your friend.	Codice della stanza copiato. Incollalo in un messaggio al tuo amico.
@@ -1401,7 +1397,6 @@ A room code is needed	Serve un codice stanza
 An address alone can't open a room any more: ask your friend for the room code.	Un indirizzo da solo non apre più una stanza: chiedi al tuo amico il codice stanza.
 Code for another address	Codice per un altro indirizzo
 Copy the whole room code from your friend's room: letters and digits in groups of four.	Copia il codice completo della stanza del tuo amico: lettere e cifre in gruppi di quattro.
-Enter this computer's Tailscale or ZeroTier address, with its port.	Inserisci l'indirizzo Tailscale o ZeroTier di questo computer, con la porta.
 Guests paused for 30 seconds	Ospiti bloccati per 30 secondi
 In the room, copy your room code and send it to them by message.	Nella stanza, copia il tuo codice e invialo al tuo amico con un messaggio.
 No access to the router? Both install the same free virtual network, such as Tailscale or ZeroTier, then make its code in the room's Details.	Non puoi accedere al router? Installate la stessa rete virtuale gratuita, come Tailscale o ZeroTier, poi create il codice nei Dettagli della stanza.
@@ -1411,7 +1406,6 @@ The whole code your friend sent you.	Il codice completo che ti ha inviato il tuo
 This room code is wrong or old: ask your friend to copy it again.	Questo codice stanza è errato o vecchio: chiedi al tuo amico di copiarlo di nuovo.
 Too many wrong room codes. Wait 30 seconds, then try again.	Troppi codici stanza errati. Attendi 30 secondi, poi riprova.
 With Tailscale or ZeroTier, ask your friend to make a code in their room's Details.	Con Tailscale o ZeroTier, chiedi al tuo amico di creare un codice nei Dettagli della sua stanza.
-With Tailscale or ZeroTier, make a code for this computer's address in Details below.	Con Tailscale o ZeroTier, crea un codice per l'indirizzo di questo computer nei Dettagli qui sotto.
 Wrong room code	Codice stanza errato
 Your friend opens a room and sends you its code.	Il tuo amico apre una stanza e ti invia il codice.
 Your game stopped during the session. Play together again from where you saved.	Il tuo gioco si è fermato durante la sessione. Giocate di nuovo insieme da dove avete salvato.
@@ -1423,3 +1417,10 @@ playable	giocabile
 very slow	molto lenta
 Testing the connection with your friend...	Test della connessione con il tuo amico...
 The round trip varies by {} ms: the input delay grows to absorb it.	Il tempo di andata e ritorno varia di {} ms: il ritardo dei comandi cresce per assorbirlo.
+
+Enter this computer's address on Radmin VPN, ZeroTier, Tailscale or playit.gg, with its port.	Inserisci l’indirizzo di questo computer su Radmin VPN, ZeroTier, Tailscale o playit.gg, con la porta.
+If your router refuses, open (forward) port {} for UDP to this computer in your router's settings.	Se il router rifiuta, apri (inoltra) la porta {} per UDP verso questo computer nelle impostazioni del router.
+Open port {} (UDP) to this computer in your router's settings: search the web for your router's name and "port forwarding".	Apri la porta {} (UDP) verso questo computer nelle impostazioni del router: cerca sul web il nome del tuo router e "port forwarding".
+The room uses port {}, for UDP.	La stanza usa la porta {}, per UDP.
+Trying to reach your friend's room...	Tentativo di raggiungere la stanza del tuo amico...
+No open port? Both of you can join one virtual network (Radmin VPN, ZeroTier or Tailscale), then make a code for this computer's address there in Details below.	Nessuna porta aperta? Unitevi alla stessa rete virtuale (Radmin VPN, ZeroTier o Tailscale), poi create un codice per l’indirizzo di questo computer su quella rete nei Dettagli qui sotto.

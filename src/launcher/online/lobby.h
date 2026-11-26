@@ -6,6 +6,11 @@
 // (online/session_launch.h). Polled from the window's loop: nothing here waits.
 #include "launcher/online/lobby_protocol.h"
 #include "launcher/online/net_socket.h"
+#include "launcher/online/udp_stream.h"
+#include "launcher/online/punch.h"
+#include "launcher/online/discovery.h"
+#include "launcher/online/stun.h"
+#include <memory>
 #include <cstdint>
 #include <functional>
 #include <string>
@@ -27,6 +32,7 @@ namespace online
         Settings settings; // saveBytes and saveFiles are filled in from `save`
         std::vector<SaveFile> save;
         uint64_t secret = 0; // the room code's secret; 0 draws a fresh one ("Play together again" keeps the last)
+        bool discover = true;
     };
 
     struct JoinOptions
@@ -34,6 +40,7 @@ namespace online
         std::string address; // as pasted: "host:port"
         Hello hello;
         Player player;
+        bool discover = true;
     };
 
     enum class State
@@ -78,7 +85,10 @@ namespace online
         Error error = Error::None;
         Mismatch mismatch = Mismatch::None;
         bool host = false;
-        std::string peer; // the other side's address, for the log
+        std::string peer; // the reached endpoint, kept local for the game
+        net::Endpoint endpoint;
+        uint16_t localPort = 0;
+        stun::Result mapped;
         Hello remoteHello;
         bool haveRemote = false;
         Player remote;
@@ -110,7 +120,7 @@ namespace online
         static constexpr uint64_t RttLogEveryMs = 10000;
         static constexpr uint64_t TestMs = 10000, TestPingEveryMs = 100;
 
-        explicit Lobby(Clock clock = {});
+        explicit Lobby(Clock clock = {}, std::shared_ptr<net::DatagramIo> io = {});
         ~Lobby();
         Lobby(const Lobby&) = delete;
         Lobby& operator=(const Lobby&) = delete;
@@ -126,6 +136,11 @@ namespace online
         void Poll();
         const Status& Get() const { return m_status; }
         uint64_t Secret() const { return m_secret; }
+        void ResolveCode(const std::string& address, uint16_t port)
+        {
+            m_discovery.ResolveCode(address, port, m_secret);
+        }
+        std::string OtherCode() { return m_discovery.Code(); }
 
     private:
         enum class Step
@@ -155,13 +170,29 @@ namespace online
         uint64_t m_secret = 0, m_refuseUntil = 0;
         std::vector<uint64_t> m_wrongProofs;
         Clock m_clock;
+        std::shared_ptr<net::DatagramIo> m_io;
         Status m_status;
         HostOptions m_hostOptions;
         JoinOptions m_joinOptions;
         Hello m_mine;
         Player m_player;
-        net::Handle m_listener = net::Invalid;
-        net::Handle m_connection = net::Invalid;
+        net::Handle m_socket = net::Invalid;
+        std::unique_ptr<UdpStream> m_stream;
+        std::unique_ptr<Punch> m_punch;
+        Discovery m_discovery;
+        struct Probe
+        {
+            stun::Id id;
+            net::Endpoint server;
+            uint64_t next = 0;
+            int attempts = 0;
+        };
+        std::vector<Probe> m_probes;
+        bool m_startQueued = false;
+        std::optional<std::pair<Error, Mismatch>> m_failure;
+        uint64_t m_guestStartAt = 0;
+        void Discover(uint64_t now);
+        void Connected(uint64_t now);
         bool m_connected = false;
         FrameReader m_reader;
         std::vector<uint8_t> m_out;
@@ -170,10 +201,9 @@ namespace online
         bool m_haveKeys = false;
         uint32_t m_sendSequence = 0, m_receiveSequence = 0;
         Step m_step = Step::AwaitHello;
-        uint64_t m_startedAt = 0, m_lastHeard = 0, m_nextPing = 0, m_nextRttLog = 0, m_testStart = 0;
+        uint64_t m_startedAt = 0, m_nextPing = 0, m_nextRttLog = 0, m_testStart = 0;
         std::vector<double> m_testSamples;
         void FinishTest();
-        bool m_closeAfterFlush = false;
     };
 
     // What went wrong, in words, for the log.

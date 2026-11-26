@@ -1291,10 +1291,8 @@ How PLAY starts the game	Hoe PLAY het spel start
 How it works	Hoe het werkt
 How to fix it	Zo los je het op
 I'm ready	Ik ben klaar
-If your router refuses, open (forward) port {} for UDP and TCP to this computer in your router's settings.	Als je router weigert, open poort {} voor UDP en TCP naar deze computer in de instellingen van je router (poort doorsturen).
 Invite your friend	Nodig je vriend uit
 JOIN A ROOM	DEELNEMEN AAN EEN KAMER
-Joining your friend's room...	Deelnemen aan de kamer van je vriend...
 Lets friends outside your home in. Most routers allow it.	Laat vrienden van buiten je huis binnen. De meeste routers staan dit toe.
 No figures on the portal yet	Nog geen figuren op de portal
 Not in the same home? Their router may block it: their room shows them how to fix it.	Niet in hetzelfde huis? De router van je vriend kan de verbinding blokkeren: in de kamer staat hoe je vriend dit kan oplossen.
@@ -1325,7 +1323,6 @@ The connection was lost	De verbinding is verbroken
 The one with the older version updates the game on its page, then you try again.	Wie de oudere versie heeft, werkt het spel bij op de spelpagina. Daarna proberen jullie het opnieuw.
 The room couldn't open	De kamer kon niet worden geopend
 The room is closed	De kamer is gesloten
-The room uses port {}, for UDP and TCP.	De kamer gebruikt poort {} voor UDP en TCP.
 This port is already in use	Deze poort is al in gebruik
 This room is full	Deze kamer is vol
 Try again	Opnieuw proberen
@@ -1381,7 +1378,6 @@ Check the room code: ask them to copy it again.	Controleer de kamercode: vraag o
 Get the room code	De kamercode ophalen
 Getting your room code...	Kamercode ophalen...
 In the same home, ask your friend for the code under How to fix it in their room.	In hetzelfde huis: vraag je vriend om de code onder Zo los je het op in zijn kamer.
-Open port {} (UDP and TCP) to this computer in your router's settings: search the web for your router's name and "port forwarding".	Open poort {} (UDP en TCP) naar deze computer in de instellingen van je router: zoek op internet de naam van je router en "port forwarding".
 Paste your friend's room code first.	Plak eerst de kamercode van je vriend.
 Room code	Kamercode
 Room code copied. Paste it in a message to your friend.	Kamercode gekopieerd. Plak hem in een bericht aan je vriend.
@@ -1401,7 +1397,6 @@ A room code is needed	Een kamercode is nodig
 An address alone can't open a room any more: ask your friend for the room code.	Met alleen een adres kun je geen kamer meer openen: vraag je vriend om de kamercode.
 Code for another address	Code voor ander adres
 Copy the whole room code from your friend's room: letters and digits in groups of four.	Kopieer de hele kamercode van je vriend: letters en cijfers in groepjes van vier.
-Enter this computer's Tailscale or ZeroTier address, with its port.	Vul het Tailscale- of ZeroTier-adres van deze computer in, met de poort.
 Guests paused for 30 seconds	Gasten 30 seconden geweigerd
 In the room, copy your room code and send it to them by message.	Kopieer in de kamer je kamercode en stuur die in een bericht naar je vriend.
 No access to the router? Both install the same free virtual network, such as Tailscale or ZeroTier, then make its code in the room's Details.	Geen toegang tot de router? Installeer allebei hetzelfde gratis virtuele netwerk, zoals Tailscale of ZeroTier, en maak de code bij Details in de kamer.
@@ -1411,7 +1406,6 @@ The whole code your friend sent you.	De hele code die je vriend je heeft gestuur
 This room code is wrong or old: ask your friend to copy it again.	Deze kamercode is onjuist of oud: vraag je vriend om hem opnieuw te kopiëren.
 Too many wrong room codes. Wait 30 seconds, then try again.	Te veel onjuiste kamercodes. Wacht 30 seconden en probeer het opnieuw.
 With Tailscale or ZeroTier, ask your friend to make a code in their room's Details.	Vraag je vriend met Tailscale of ZeroTier om een code te maken bij Details in diens kamer.
-With Tailscale or ZeroTier, make a code for this computer's address in Details below.	Maak met Tailscale of ZeroTier hieronder bij Details een code voor het adres van deze computer.
 Wrong room code	Onjuiste kamercode
 Your friend opens a room and sends you its code.	Je vriend opent een kamer en stuurt je de code.
 Your game stopped during the session. Play together again from where you saved.	Je spel stopte tijdens de sessie. Speel weer samen vanaf waar jullie hebben opgeslagen.
@@ -1423,3 +1417,10 @@ playable	speelbaar
 very slow	erg traag
 Testing the connection with your friend...	De verbinding met je vriend wordt getest...
 The round trip varies by {} ms: the input delay grows to absorb it.	De reactietijd schommelt {} ms: de invoervertraging groeit om dat op te vangen.
+
+Enter this computer's address on Radmin VPN, ZeroTier, Tailscale or playit.gg, with its port.	Voer het adres van deze computer op Radmin VPN, ZeroTier, Tailscale of playit.gg in, met de poort.
+If your router refuses, open (forward) port {} for UDP to this computer in your router's settings.	Als je router weigert, open poort {} voor UDP naar deze computer in de instellingen van je router (poort doorsturen).
+Open port {} (UDP) to this computer in your router's settings: search the web for your router's name and "port forwarding".	Open poort {} (UDP) naar deze computer in de instellingen van je router: zoek op internet de naam van je router en "port forwarding".
+The room uses port {}, for UDP.	De kamer gebruikt poort {} voor UDP.
+Trying to reach your friend's room...	Verbinding maken met de kamer van je vriend...
+No open port? Both of you can join one virtual network (Radmin VPN, ZeroTier or Tailscale), then make a code for this computer's address there in Details below.	Geen open poort? Sluit jullie allebei aan bij hetzelfde virtuele netwerk (Radmin VPN, ZeroTier of Tailscale) en maak hieronder bij Details een code voor het adres van deze computer op dat netwerk.

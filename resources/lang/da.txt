@@ -1291,10 +1291,8 @@ How PLAY starts the game	Sådan starter PLAY spillet
 How it works	Sådan fungerer det
 How to fix it	Sådan løser du det
 I'm ready	Jeg er klar
-If your router refuses, open (forward) port {} for UDP and TCP to this computer in your router's settings.	Hvis routeren afviser det, skal du åbne (videresende) port {} for UDP og TCP til denne computer i routerens indstillinger.
 Invite your friend	Inviter din ven
 JOIN A ROOM	DELTAG I ET RUM
-Joining your friend's room...	Deltager i din vens rum...
 Lets friends outside your home in. Most routers allow it.	Lukker venner uden for dit hjem ind. De fleste routere tillader det.
 No figures on the portal yet	Ingen figurer på portalen endnu
 Not in the same home? Their router may block it: their room shows them how to fix it.	Er I ikke i samme hjem? Din vens router blokerer måske forbindelsen: rummet viser din ven, hvordan det løses.
@@ -1325,7 +1323,6 @@ The connection was lost	Forbindelsen blev afbrudt
 The one with the older version updates the game on its page, then you try again.	Den med den ældre version opdaterer spillet på spillets side, og så prøver I igen.
 The room couldn't open	Rummet kunne ikke åbnes
 The room is closed	Rummet er lukket
-The room uses port {}, for UDP and TCP.	Rummet bruger port {} til UDP og TCP.
 This port is already in use	Denne port er allerede i brug
 This room is full	Dette rum er fuldt
 Try again	Prøv igen
@@ -1381,7 +1378,6 @@ Check the room code: ask them to copy it again.	Tjek rumkoden: bed din ven kopie
 Get the room code	Hent rumkoden
 Getting your room code...	Henter rumkoden...
 In the same home, ask your friend for the code under How to fix it in their room.	I samme hjem: bed din ven om koden under Sådan løser du det i vennens rum.
-Open port {} (UDP and TCP) to this computer in your router's settings: search the web for your router's name and "port forwarding".	Åbn port {} (UDP og TCP) til denne computer i routerens indstillinger: søg på nettet efter routerens navn og "port forwarding".
 Paste your friend's room code first.	Indsæt først din vens rumkode.
 Room code	Rumkode
 Room code copied. Paste it in a message to your friend.	Rumkoden er kopieret. Indsæt den i en besked til din ven.
@@ -1401,7 +1397,6 @@ A room code is needed	Der kræves en rumkode
 An address alone can't open a room any more: ask your friend for the room code.	En adresse alene kan ikke længere åbne et rum: bed din ven om rumkoden.
 Code for another address	Kode til anden adresse
 Copy the whole room code from your friend's room: letters and digits in groups of four.	Kopiér hele rumkoden fra din vens rum: bogstaver og tal i grupper på fire.
-Enter this computer's Tailscale or ZeroTier address, with its port.	Indtast denne computers Tailscale- eller ZeroTier-adresse med port.
 Guests paused for 30 seconds	Gæster afvises i 30 sekunder
 In the room, copy your room code and send it to them by message.	Kopiér din rumkode i rummet, og send den til din ven i en besked.
 No access to the router? Both install the same free virtual network, such as Tailscale or ZeroTier, then make its code in the room's Details.	Ingen adgang til routeren? Installér det samme gratis virtuelle netværk, som Tailscale eller ZeroTier, og opret koden under Detaljer i rummet.
@@ -1411,7 +1406,6 @@ The whole code your friend sent you.	Hele koden, som din ven sendte dig.
 This room code is wrong or old: ask your friend to copy it again.	Denne rumkode er forkert eller gammel: bed din ven om at kopiere den igen.
 Too many wrong room codes. Wait 30 seconds, then try again.	For mange forkerte rumkoder. Vent 30 sekunder, og prøv igen.
 With Tailscale or ZeroTier, ask your friend to make a code in their room's Details.	Med Tailscale eller ZeroTier skal din ven oprette en kode under Detaljer i sit rum.
-With Tailscale or ZeroTier, make a code for this computer's address in Details below.	Med Tailscale eller ZeroTier kan du oprette en kode til denne computers adresse under Detaljer nedenfor.
 Wrong room code	Forkert rumkode
 Your friend opens a room and sends you its code.	Din ven åbner et rum og sender dig koden.
 Your game stopped during the session. Play together again from where you saved.	Dit spil stoppede under sessionen. Spil sammen igen fra der, hvor I gemte.
@@ -1423,3 +1417,10 @@ playable	spilbar
 very slow	meget langsom
 Testing the connection with your friend...	Tester forbindelsen til din ven...
 The round trip varies by {} ms: the input delay grows to absorb it.	Svartiden svinger med {} ms: kontrolforsinkelsen vokser for at udjævne det.
+
+Enter this computer's address on Radmin VPN, ZeroTier, Tailscale or playit.gg, with its port.	Indtast denne computers adresse på Radmin VPN, ZeroTier, Tailscale eller playit.gg med porten.
+If your router refuses, open (forward) port {} for UDP to this computer in your router's settings.	Hvis routeren afviser det, skal du åbne (videresende) port {} for UDP til denne computer i routerens indstillinger.
+Open port {} (UDP) to this computer in your router's settings: search the web for your router's name and "port forwarding".	Åbn port {} (UDP) til denne computer i routerens indstillinger: søg på nettet efter routerens navn og "port forwarding".
+The room uses port {}, for UDP.	Rummet bruger port {} til UDP.
+Trying to reach your friend's room...	Forsøger at nå din vens rum...
+No open port? Both of you can join one virtual network (Radmin VPN, ZeroTier or Tailscale), then make a code for this computer's address there in Details below.	Ingen åben port? Tilslut jer begge samme virtuelle netværk (Radmin VPN, ZeroTier eller Tailscale), og lav en kode til denne computers adresse dér under Detaljer nedenfor.

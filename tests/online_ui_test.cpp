@@ -443,11 +443,11 @@ int OnlineUiChecks(const std::filesystem::path& scratch)
         return condition();
     };
     std::atomic<int> maps = 0, unmaps = 0, lookups = 0;
-    std::atomic<bool> bothProtocols = true;
+    std::atomic<bool> udpOnly = true;
     {
         launcher_ui::RouterLease lease(
             [&](const netplay::portmap::Options& options) {
-                bothProtocols = bothProtocols && options.alsoTcp && options.port == 47640;
+                udpOnly = udpOnly && !options.alsoTcp && options.port == 47640;
                 ++maps;
                 netplay::portmap::Mapping mapping;
                 mapping.ok = true;
@@ -467,7 +467,7 @@ int OnlineUiChecks(const std::filesystem::path& scratch)
         lease.Close();
         Expect(wait([&] { return unmaps == 1; }), "closing room removes the lease");
     }
-    Expect(bothProtocols, "router maps both TCP and UDP");
+    Expect(udpOnly, "router maps UDP only");
     std::mutex gateMutex;
     std::condition_variable gate;
     bool entered = false, release = false;
@@ -551,6 +551,10 @@ int OnlineUiChecks(const std::filesystem::path& scratch)
             "an address shared by the provider is told apart");
         invite = launcher_ui::InviteFor({}, v4, false, true, "192.168.1.20", 47640, secret);
         Expect(invite.reach == Reach::Refused && holds(invite, "198.51.100.7", 47640), "a refusing router");
+        invite =
+            launcher_ui::InviteFor({}, { { "198.51.100.7", 51000 }, {} }, false, false, "192.168.1.20", 47640, secret);
+        Expect(invite.reach == Reach::Manual && holds(invite, "198.51.100.7", 51000),
+            "a STUN mapped port supplies the code without promising outside access");
         invite = launcher_ui::InviteFor({}, both, false, false, "192.168.1.20", 47641, secret);
         Expect(invite.reach == Reach::Manual && holds(invite, "198.51.100.7", 47641),
             "automatic opening off: the public IPv4 address, for a forwarded port");
