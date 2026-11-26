@@ -1373,40 +1373,33 @@ The games lost sync; reopen the room and try again	Spillene er ikke lenger synkr
 Your frame rates differ; choose the same frame rate	Bildefrekvensene deres er ulike; velg samme bildefrekvens
 The portal figures didn't match; choose your figures again in Collection	Portalfigurene samsvarer ikke; velg figurene dine på nytt i Samling
 The online session ended unexpectedly; reopen the room and try again	Nettspillet ble avsluttet uventet; åpne rommet på nytt og prøv igjen
-A friend in your home can use this code instead: {}	En venn hjemme hos deg kan bruke denne koden i stedet: {}
 Another program uses it. Choose another port in the Online tab, for example 47641, and send your friend the new room code.	Et annet program bruker den. Velg en annen port i fanen Online, for eksempel 47641, og send vennen din den nye romkoden.
 Check the room code: ask them to copy it again.	Sjekk romkoden: be vennen din kopiere den på nytt.
 Get the room code	Hent romkoden
 Getting your room code...	Henter romkoden...
-In the same home, ask your friend for the code under How to fix it in their room.	I samme hjem: be vennen din om koden under Slik løser du det i rommet sitt.
 Paste your friend's room code first.	Lim inn vennens romkode først.
 Room code	Romkode
 Room code copied. Paste it in a message to your friend.	Romkoden er kopiert. Lim den inn i en melding til vennen din.
 Send your friend this room code:	Send vennen din denne romkoden:
 The host didn't answer; check the room code and ask them to open the room.	Verten svarte ikke; sjekk romkoden og be verten åpne rommet.
-The room code holds your public address, found with a free STUN server. Share it only with your friend.	Romkoden inneholder den offentlige adressen din, funnet med en gratis STUN-server. Del den bare med vennen din.
 They choose Join in this tab, paste your room code, then press JOIN A ROOM.	Vennen velger Bli med i denne fanen, limer inn romkoden din og trykker BLI MED I ET ROM.
 This room code isn't right	Romkoden stemmer ikke
 This room code isn't valid; ask your friend to copy it again.	Romkoden er ugyldig; be vennen din kopiere den på nytt.
 Your internet provider shares your address with other homes, so a friend elsewhere can't reach you this way.	Internettleverandøren din deler adressen din med andre hjem, så en venn et annet sted kan ikke nå deg på denne måten.
-Your router didn't let your friend in by itself, so a friend elsewhere can't join yet.	Ruteren slapp ikke inn vennen din av seg selv, så en venn et annet sted kan ikke bli med ennå.
+Your router didn't let your friend in by itself, so a friend elsewhere can't join over the internet yet.	Ruteren slapp ikke inn vennen din av seg selv, så en venn et annet sted kan ikke bli med over internett ennå.
 Your router didn't open, so this code uses IPv6. It works if your friend's internet has IPv6 too.	Ruteren ble ikke åpnet, så denne koden bruker IPv6. Den virker hvis vennens internett også har IPv6.
-Your router isn't opened automatically: a friend elsewhere needs the port opened.	Ruteren åpnes ikke automatisk: en venn et annet sted trenger at porten er åpen.
+Your router isn't opened automatically: to join over the internet, a friend elsewhere needs the port opened.	Ruteren åpnes ikke automatisk: for å bli med over internett trenger en venn et annet sted at porten er åpen.
 {} (you)	{} (deg)
 Not ready yet: choosing their figures	Ikke klar ennå: velger figurene sine
 A room code is needed	En romkode er nødvendig
 An address alone can't open a room any more: ask your friend for the room code.	En adresse alene kan ikke åpne et rom lenger: be vennen din om romkoden.
-Code for another address	Kode for annen adresse
 Copy the whole room code from your friend's room: letters and digits in groups of four.	Kopier hele romkoden fra vennens rom: bokstaver og sifre i grupper på fire.
 Guests paused for 30 seconds	Gjester avvises i 30 sekunder
 In the room, copy your room code and send it to them by message.	Kopier romkoden i rommet og send den til vennen din i en melding.
-No access to the router? Both install the same free virtual network, such as Tailscale or ZeroTier, then make its code in the room's Details.	Ingen tilgang til ruteren? Installer det samme gratis virtuelle nettverket, som Tailscale eller ZeroTier, og lag koden under Detaljer i rommet.
 Paste the whole code in Room code.	Lim inn hele koden under Romkode.
-The room code holds your friend's address and opens their room.	Romkoden inneholder vennens adresse og åpner rommet.
 The whole code your friend sent you.	Hele koden vennen din sendte deg.
 This room code is wrong or old: ask your friend to copy it again.	Denne romkoden er feil eller gammel: be vennen din kopiere den på nytt.
 Too many wrong room codes. Wait 30 seconds, then try again.	For mange feil romkoder. Vent 30 sekunder og prøv igjen.
-With Tailscale or ZeroTier, ask your friend to make a code in their room's Details.	Med Tailscale eller ZeroTier ber du vennen din lage en kode under Detaljer i rommet sitt.
 Wrong room code	Feil romkode
 Your friend opens a room and sends you its code.	Vennen din åpner et rom og sender deg koden.
 Your game stopped during the session. Play together again from where you saved.	Spillet ditt stoppet under økten. Spill sammen igjen fra der dere lagret.
@@ -1419,9 +1412,26 @@ very slow	svært treg
 Testing the connection with your friend...	Tester tilkoblingen til vennen din...
 The round trip varies by {} ms: the input delay grows to absorb it.	Svartiden varierer med {} ms: kontrollforsinkelsen øker for å jevne det ut.
 
-Enter this computer's address on Radmin VPN, ZeroTier, Tailscale or playit.gg, with its port.	Skriv inn denne datamaskinens adresse på Radmin VPN, ZeroTier, Tailscale eller playit.gg, med porten.
 If your router refuses, open (forward) port {} for UDP to this computer in your router's settings.	Hvis ruteren nekter, åpne (videresend) port {} for UDP til denne datamaskinen i ruterens innstillinger.
 Open port {} (UDP) to this computer in your router's settings: search the web for your router's name and "port forwarding".	Åpne port {} (UDP) til denne datamaskinen i ruterens innstillinger: søk på nettet etter ruterens navn og "port forwarding".
 The room uses port {}, for UDP.	Rommet bruker port {} for UDP.
 Trying to reach your friend's room...	Prøver å nå rommet til vennen din...
-No open port? Both of you can join one virtual network (Radmin VPN, ZeroTier or Tailscale), then make a code for this computer's address there in Details below.	Ingen åpen port? Bli begge med i samme virtuelle nettverk (Radmin VPN, ZeroTier eller Tailscale), og lag en kode for denne datamaskinens adresse der under Detaljer nedenfor.
+
+from your home	fra hjemmet ditt
+over the internet	over internett
+over Radmin VPN	via Radmin VPN
+over Hamachi	via Hamachi
+over Tailscale	via Tailscale
+over ZeroTier	via ZeroTier
+over a virtual network	via et virtuelt nettverk
+{} or {}	{} eller {}
+{}, {}	{}, {}
+Your friend can join {}.	Vennen din kan bli med {}.
+A shared virtual network is added to your room code automatically.	Et felles virtuelt nettverk legges automatisk til i romkoden din.
+The room code holds your addresses. Share it only with your friend.	Romkoden inneholder adressene dine. Del den bare med vennen din.
+One room code works at home, over the internet or on your shared virtual network.	Én romkode fungerer hjemme, over internett eller på deres felles virtuelle nettverk.
+For a virtual network, both of you must join the same one.	For et virtuelt nettverk må dere begge koble dere til det samme nettverket.
+The room code changed: copy it again.	Romkoden er endret: kopier den på nytt.
+No open port? Both of you can join one virtual network (Radmin VPN, ZeroTier or Tailscale): this code then holds it by itself.	Ingen åpen port? Dere kan begge koble dere til ett virtuelt nettverk (Radmin VPN, ZeroTier eller Tailscale): koden tar det da med automatisk.
+Tunnel address	Tunneladresse
+A tunnel such as playit.gg gives an address and a port: enter them here and the room code holds them too.	En tunnel som playit.gg gir en adresse og en port: skriv dem inn her, så tar romkoden dem med også.

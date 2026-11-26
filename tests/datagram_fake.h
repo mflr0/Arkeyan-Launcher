@@ -13,6 +13,7 @@ namespace online_tests
         using Handle = online::net::Handle;
         using Endpoint = online::net::Endpoint;
         bool impaired = false;
+        std::string address = "127.0.0.1";
         Handle Bind(uint16_t port, std::string& error) override
         {
             if (!port)
@@ -44,11 +45,11 @@ namespace online_tests
         long Send(Handle handle, std::span<const uint8_t> bytes, const Endpoint& to) override
         {
             for (auto& [id, socket] : m_sockets)
-                if (socket.port == to.port && to.ip == "127.0.0.1")
+                if (socket.port == to.port && to.ip == address)
                 {
                     if (impaired && Random() % 5 == 0)
                         continue;
-                    Packet packet{ { "127.0.0.1", Port(handle) }, { bytes.begin(), bytes.end() } };
+                    Packet packet{ { address, Port(handle) }, { bytes.begin(), bytes.end() } };
                     if (impaired && Random() % 2 == 0)
                         socket.packets.push_front(packet);
                     else

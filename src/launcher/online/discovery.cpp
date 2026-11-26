@@ -1,5 +1,4 @@
 #include "launcher/online/discovery.h"
-#include "launcher/online/room_code.h"
 #include "launcher/online/stun.h"
 
 namespace online
@@ -22,6 +21,10 @@ namespace online
     {
         std::lock_guard lock(m_mutex);
         m_servers.clear();
+        m_tunnel = {};
+        m_codeAddress.clear();
+        m_codePort = 0;
+        ++m_codeRevision;
         m_active = discover;
         ++m_generation;
         m_wake.notify_one();
@@ -31,6 +34,10 @@ namespace online
         std::lock_guard lock(m_mutex);
         m_active = false;
         m_servers.clear();
+        m_tunnel = {};
+        m_codeAddress.clear();
+        m_codePort = 0;
+        ++m_codeRevision;
         ++m_generation;
         m_wake.notify_one();
     }
@@ -39,22 +46,21 @@ namespace online
         std::lock_guard lock(m_mutex);
         return m_servers;
     }
-    void Discovery::ResolveCode(std::string address, uint16_t port, uint64_t secret)
+    void Discovery::ResolveTunnel(std::string address, uint16_t port)
     {
         std::lock_guard lock(m_mutex);
-        if (address == m_codeAddress && port == m_codePort && secret == m_codeSecret)
+        if (address == m_codeAddress && port == m_codePort)
             return;
         m_codeAddress = std::move(address);
         m_codePort = port;
-        m_codeSecret = secret;
-        m_code.clear();
+        m_tunnel = {};
         ++m_codeRevision;
         m_wake.notify_one();
     }
-    std::string Discovery::Code()
+    net::Endpoint Discovery::Tunnel()
     {
         std::lock_guard lock(m_mutex);
-        return m_code;
+        return m_tunnel;
     }
 
     void Discovery::Work()
@@ -71,19 +77,19 @@ namespace online
                 codeRevision = m_codeRevision;
                 const auto address = m_codeAddress;
                 const auto port = m_codePort;
-                const auto secret = m_codeSecret;
                 lock.unlock();
-                std::string host, code;
+                std::string host;
+                net::Endpoint tunnel;
                 uint16_t to = 0;
                 if (net::ParseAddress(address, port, host, to))
                 {
                     const auto endpoints = m_resolve(host, to);
                     if (!endpoints.empty())
-                        code = EncodeRoomCode(endpoints.front().ip, to, secret);
+                        tunnel = endpoints.front();
                 }
                 lock.lock();
                 if (codeRevision == m_codeRevision)
-                    m_code = std::move(code);
+                    m_tunnel = std::move(tunnel);
             }
             if (generation == m_generation)
                 continue;

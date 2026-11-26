@@ -3,6 +3,7 @@
 #include "launcher/online/room_inputs.h"
 #include "launcher/online/session_launch.h"
 #include "launcher/online/stun.h"
+#include "launcher/online/local_addresses.h"
 #include "shared/portmap.h"
 #include <condition_variable>
 #include <functional>
@@ -62,10 +63,12 @@ namespace launcher_ui
         };
         Reach reach = Reach::Asking;
         std::string code, address;
-        std::string homeCode; // for a friend on the same network
+        std::string paths;
+        std::vector<online::net::Endpoint> endpoints;
     };
     Invite InviteFor(const netplay::portmap::Mapping& mapping, const online::stun::Result& seen, bool pending,
-        bool automatic, const std::string& localAddress, uint16_t port, uint64_t secret);
+        bool automatic, std::span<const online::LocalAddress> localAddresses, uint16_t port, uint64_t secret,
+        const online::net::Endpoint& tunnel = {});
 
     // What went wrong, said for someone who knows nothing of networks: a title, the facts (each side's version), what to
     // do, and the button that does it.
@@ -105,7 +108,10 @@ namespace launcher_ui
         uint64_t lastSecret = 0, rejoinUntil = 0, rejoinAt = 0;
         bool keepSecret = false;
         uint16_t joinedPort = online::DefaultPort;
-        std::string game, joinedHost, localAddress, error, with;
+        std::string game, joinedHost, error, with;
+        std::vector<online::LocalAddress> localAddresses;
+        uint64_t addressesAt = 0;
+        std::string lastCode;
         std::filesystem::path realSaves;
         uint64_t refreshAt = 0;
         bool launched = false, recovering = false;

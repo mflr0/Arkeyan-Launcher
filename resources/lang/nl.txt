@@ -1372,40 +1372,33 @@ The games lost sync; reopen the room and try again	De spellen lopen niet meer ge
 Your frame rates differ; choose the same frame rate	Jullie beeldsnelheden verschillen; kies dezelfde beeldsnelheid
 The portal figures didn't match; choose your figures again in Collection	De portaalfiguren komen niet overeen; kies je figuren opnieuw in Verzameling
 The online session ended unexpectedly; reopen the room and try again	De onlinesessie is onverwacht gestopt; open de kamer opnieuw en probeer het nog eens
-A friend in your home can use this code instead: {}	Een vriend bij jou thuis kan in plaats daarvan deze code gebruiken: {}
 Another program uses it. Choose another port in the Online tab, for example 47641, and send your friend the new room code.	Een ander programma gebruikt hem. Kies een andere poort op het tabblad Online, bijvoorbeeld 47641, en stuur je vriend de nieuwe kamercode.
 Check the room code: ask them to copy it again.	Controleer de kamercode: vraag of hij hem opnieuw kopieert.
 Get the room code	De kamercode ophalen
 Getting your room code...	Kamercode ophalen...
-In the same home, ask your friend for the code under How to fix it in their room.	In hetzelfde huis: vraag je vriend om de code onder Zo los je het op in zijn kamer.
 Paste your friend's room code first.	Plak eerst de kamercode van je vriend.
 Room code	Kamercode
 Room code copied. Paste it in a message to your friend.	Kamercode gekopieerd. Plak hem in een bericht aan je vriend.
 Send your friend this room code:	Stuur je vriend deze kamercode:
 The host didn't answer; check the room code and ask them to open the room.	De host antwoordde niet; controleer de kamercode en vraag hem de kamer te openen.
-The room code holds your public address, found with a free STUN server. Share it only with your friend.	De kamercode bevat je openbare adres, gevonden met een gratis STUN-server. Deel hem alleen met je vriend.
 They choose Join in this tab, paste your room code, then press JOIN A ROOM.	Hij kiest Deelnemen op dit tabblad, plakt je kamercode en drukt op DEELNEMEN AAN EEN KAMER.
 This room code isn't right	Deze kamercode klopt niet
 This room code isn't valid; ask your friend to copy it again.	Deze kamercode is ongeldig; vraag je vriend hem opnieuw te kopiëren.
 Your internet provider shares your address with other homes, so a friend elsewhere can't reach you this way.	Je internetprovider deelt je adres met andere huishoudens, dus een vriend elders kan je zo niet bereiken.
-Your router didn't let your friend in by itself, so a friend elsewhere can't join yet.	Je router liet je vriend niet uit zichzelf binnen, dus een vriend elders kan nog niet deelnemen.
+Your router didn't let your friend in by itself, so a friend elsewhere can't join over the internet yet.	Je router liet je vriend niet uit zichzelf binnen, dus een vriend elders kan nog niet via internet deelnemen.
 Your router didn't open, so this code uses IPv6. It works if your friend's internet has IPv6 too.	Je router ging niet open, dus deze code gebruikt IPv6. Het werkt als het internet van je vriend ook IPv6 heeft.
-Your router isn't opened automatically: a friend elsewhere needs the port opened.	Je router wordt niet automatisch geopend: voor een vriend elders moet de poort open staan.
+Your router isn't opened automatically: to join over the internet, a friend elsewhere needs the port opened.	Je router wordt niet automatisch geopend: om via internet deel te nemen, moet voor een vriend elders de poort open staan.
 {} (you)	{} (jij)
 Not ready yet: choosing their figures	Nog niet klaar: kiest de figuren
 A room code is needed	Een kamercode is nodig
 An address alone can't open a room any more: ask your friend for the room code.	Met alleen een adres kun je geen kamer meer openen: vraag je vriend om de kamercode.
-Code for another address	Code voor ander adres
 Copy the whole room code from your friend's room: letters and digits in groups of four.	Kopieer de hele kamercode van je vriend: letters en cijfers in groepjes van vier.
 Guests paused for 30 seconds	Gasten 30 seconden geweigerd
 In the room, copy your room code and send it to them by message.	Kopieer in de kamer je kamercode en stuur die in een bericht naar je vriend.
-No access to the router? Both install the same free virtual network, such as Tailscale or ZeroTier, then make its code in the room's Details.	Geen toegang tot de router? Installeer allebei hetzelfde gratis virtuele netwerk, zoals Tailscale of ZeroTier, en maak de code bij Details in de kamer.
 Paste the whole code in Room code.	Plak de hele code bij Kamercode.
-The room code holds your friend's address and opens their room.	De kamercode bevat het adres van je vriend en opent diens kamer.
 The whole code your friend sent you.	De hele code die je vriend je heeft gestuurd.
 This room code is wrong or old: ask your friend to copy it again.	Deze kamercode is onjuist of oud: vraag je vriend om hem opnieuw te kopiëren.
 Too many wrong room codes. Wait 30 seconds, then try again.	Te veel onjuiste kamercodes. Wacht 30 seconden en probeer het opnieuw.
-With Tailscale or ZeroTier, ask your friend to make a code in their room's Details.	Vraag je vriend met Tailscale of ZeroTier om een code te maken bij Details in diens kamer.
 Wrong room code	Onjuiste kamercode
 Your friend opens a room and sends you its code.	Je vriend opent een kamer en stuurt je de code.
 Your game stopped during the session. Play together again from where you saved.	Je spel stopte tijdens de sessie. Speel weer samen vanaf waar jullie hebben opgeslagen.
@@ -1418,9 +1411,26 @@ very slow	erg traag
 Testing the connection with your friend...	De verbinding met je vriend wordt getest...
 The round trip varies by {} ms: the input delay grows to absorb it.	De reactietijd schommelt {} ms: de invoervertraging groeit om dat op te vangen.
 
-Enter this computer's address on Radmin VPN, ZeroTier, Tailscale or playit.gg, with its port.	Voer het adres van deze computer op Radmin VPN, ZeroTier, Tailscale of playit.gg in, met de poort.
 If your router refuses, open (forward) port {} for UDP to this computer in your router's settings.	Als je router weigert, open poort {} voor UDP naar deze computer in de instellingen van je router (poort doorsturen).
 Open port {} (UDP) to this computer in your router's settings: search the web for your router's name and "port forwarding".	Open poort {} (UDP) naar deze computer in de instellingen van je router: zoek op internet de naam van je router en "port forwarding".
 The room uses port {}, for UDP.	De kamer gebruikt poort {} voor UDP.
 Trying to reach your friend's room...	Verbinding maken met de kamer van je vriend...
-No open port? Both of you can join one virtual network (Radmin VPN, ZeroTier or Tailscale), then make a code for this computer's address there in Details below.	Geen open poort? Sluit jullie allebei aan bij hetzelfde virtuele netwerk (Radmin VPN, ZeroTier of Tailscale) en maak hieronder bij Details een code voor het adres van deze computer op dat netwerk.
+
+from your home	vanuit je huis
+over the internet	via internet
+over Radmin VPN	via Radmin VPN
+over Hamachi	via Hamachi
+over Tailscale	via Tailscale
+over ZeroTier	via ZeroTier
+over a virtual network	via een virtueel netwerk
+{} or {}	{} of {}
+{}, {}	{}, {}
+Your friend can join {}.	Je vriend kan {} meedoen.
+A shared virtual network is added to your room code automatically.	Een gedeeld virtueel netwerk wordt automatisch aan je kamercode toegevoegd.
+The room code holds your addresses. Share it only with your friend.	De kamercode bevat je adressen. Deel deze alleen met je vriend.
+One room code works at home, over the internet or on your shared virtual network.	Eén kamercode werkt thuis, via internet of op jullie gedeelde virtuele netwerk.
+For a virtual network, both of you must join the same one.	Voor een virtueel netwerk moeten jullie beiden hetzelfde netwerk gebruiken.
+The room code changed: copy it again.	De kamercode is gewijzigd: kopieer deze opnieuw.
+No open port? Both of you can join one virtual network (Radmin VPN, ZeroTier or Tailscale): this code then holds it by itself.	Geen open poort? Jullie kunnen beiden een virtueel netwerk gebruiken (Radmin VPN, ZeroTier of Tailscale): deze code neemt het dan automatisch op.
+Tunnel address	Tunneladres
+A tunnel such as playit.gg gives an address and a port: enter them here and the room code holds them too.	Een tunnel zoals playit.gg geeft een adres en een poort: vul ze hier in om ze aan de kamercode toe te voegen.

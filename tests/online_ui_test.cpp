@@ -525,42 +525,72 @@ int OnlineUiChecks(const std::filesystem::path& scratch)
             both{ { "198.51.100.7", 0 }, { "2001:db8::7", 0 } };
         const Mapping opened{ .ok = true, .externalIp = "203.0.113.4", .externalPort = 47640 };
         const Mapping shared{ .ok = true, .externalIp = "100.64.0.9", .externalPort = 47640 };
-        std::string host;
-        uint16_t port = 0;
+        std::vector<online::net::Endpoint> endpoints;
+        const std::vector<online::LocalAddress> locals{ { "en0", "", "192.168.1.20" },
+            { "vpn", "Radmin VPN", "26.1.2.3" } };
         constexpr uint64_t secret = 0x9876543210;
         uint64_t decoded = 0;
         auto holds = [&](const launcher_ui::Invite& invite, const char* ip, uint16_t to) {
-            return online::DecodeRoomCode(invite.code, host, port, decoded) && host == ip && port == to &&
-                   decoded == secret;
+            return online::DecodeRoomCode(invite.code, endpoints, decoded) &&
+                   endpoints.front() == online::net::Endpoint{ ip, to } && decoded == secret;
         };
-        auto invite = launcher_ui::InviteFor(opened, both, true, true, "192.168.1.20", 47640, secret);
-        Expect(invite.reach == Reach::Asking && invite.code.empty(), "no room code while the router is asked");
-        invite = launcher_ui::InviteFor(opened, both, false, true, "192.168.1.20", 47640, secret);
+        auto invite = launcher_ui::InviteFor(opened, both, true, true, locals, 47640, secret);
+        Expect(invite.reach == Reach::Asking && invite.code.empty() && invite.paths.empty(),
+            "no code while asking the router: its answer would change it");
+        invite = launcher_ui::InviteFor(opened, both, false, true, locals, 47640, secret);
         Expect(invite.reach == Reach::Anywhere && holds(invite, "203.0.113.4", 47640) &&
                    invite.address == "203.0.113.4:47640",
-            "an opened router: the code holds its public address");
-        Expect(
-            online::DecodeRoomCode(invite.homeCode, host, port, decoded) && host == "192.168.1.20" && decoded == secret,
-            "the code for a friend at home holds the local address");
-        invite = launcher_ui::InviteFor({}, both, false, true, "192.168.1.20", 47640, secret);
-        Expect(invite.reach == Reach::Ipv6 && holds(invite, "2001:db8::7", 47640) &&
-                   invite.address == "[2001:db8::7]:47640",
-            "a refusing router with IPv6: the code holds the IPv6 address");
-        invite = launcher_ui::InviteFor(shared, v4, false, true, "192.168.1.20", 47640, secret);
+            "an opened router: the code starts with its public address");
+        Expect(endpoints.size() == 3 && endpoints[1].ip == "192.168.1.20" && endpoints[2].ip == "26.1.2.3",
+            "the same code holds home and virtual network paths");
+        Expect(invite.paths == "Your friend can join from your home, over the internet or over Radmin VPN.",
+            "the invitation names the paths in the code");
+        invite = launcher_ui::InviteFor({}, both, false, true, locals, 47640, secret);
+        Expect(invite.reach == Reach::Ipv6 && holds(invite, "198.51.100.7", 47640) && endpoints.size() == 4 &&
+                   endpoints[1].ip == "2001:db8::7",
+            "without a public mapping both STUN families precede the local paths");
+        invite = launcher_ui::InviteFor(shared, v4, false, true, locals, 47640, secret);
         Expect(invite.reach == Reach::Shared && holds(invite, "198.51.100.7", 47640),
             "an address shared by the provider is told apart");
-        invite = launcher_ui::InviteFor({}, v4, false, true, "192.168.1.20", 47640, secret);
+        invite = launcher_ui::InviteFor({}, v4, false, true, locals, 47640, secret);
         Expect(invite.reach == Reach::Refused && holds(invite, "198.51.100.7", 47640), "a refusing router");
-        invite =
-            launcher_ui::InviteFor({}, { { "198.51.100.7", 51000 }, {} }, false, false, "192.168.1.20", 47640, secret);
-        Expect(invite.reach == Reach::Manual && holds(invite, "198.51.100.7", 51000),
+        Expect(invite.paths == "Your friend can join from your home or over Radmin VPN.",
+            "a public address the router did not open stays in the code without promising the internet");
+        const std::vector<online::LocalAddress> twoHome{ { "en0", "", "192.168.1.20" }, { "en1", "", "192.168.1.21" } };
+        invite = launcher_ui::InviteFor(opened, both, false, true, twoHome, 47640, secret);
+        Expect(holds(invite, "203.0.113.4", 47640) && endpoints.size() == 3 &&
+                   invite.paths == "Your friend can join from your home or over the internet.",
+            "Ethernet and Wi-Fi at home are one path, not a virtual network");
+        invite = launcher_ui::InviteFor({}, { { "198.51.100.7", 51000 }, {} }, false, false, locals, 47640, secret);
+        Expect(invite.reach == Reach::Manual && holds(invite, "198.51.100.7", 51000) && endpoints[1].port == 47640,
             "a STUN mapped port supplies the code without promising outside access");
-        invite = launcher_ui::InviteFor({}, both, false, false, "192.168.1.20", 47641, secret);
-        Expect(invite.reach == Reach::Manual && holds(invite, "198.51.100.7", 47641),
-            "automatic opening off: the public IPv4 address, for a forwarded port");
-        invite = launcher_ui::InviteFor({}, none, false, true, "192.168.1.20", 47640, secret);
+        invite = launcher_ui::InviteFor({}, both, false, false, locals, 47641, secret);
+        Expect(
+            invite.reach == Reach::Manual && holds(invite, "198.51.100.7", 47641) && endpoints[1].ip == "2001:db8::7",
+            "automatic opening off retains all available addresses");
+        invite = launcher_ui::InviteFor({}, none, false, true, locals, 47640, secret);
         Expect(invite.reach == Reach::Refused && holds(invite, "192.168.1.20", 47640),
             "no public address known: the local one");
+        const online::net::Endpoint tunnel{ "203.0.113.8", 55000 };
+        invite = launcher_ui::InviteFor(opened, both, false, true, locals, 47640, secret, tunnel);
+        Expect(holds(invite, "203.0.113.4", 47640) && endpoints.size() == 4 && endpoints.back() == tunnel,
+            "a public address, LAN, virtual network and tunnel share one code in order");
+        invite = launcher_ui::InviteFor(opened, both, false, true, locals, 47640, secret, { "26.1.2.3", 47640 });
+        Expect(holds(invite, "203.0.113.4", 47640) && endpoints.size() == 3,
+            "a tunnel already in the code is not duplicated");
+        auto many = locals;
+        many.push_back({ "tailscale0", "", "100.64.1.2" });
+        many.push_back({ "zt0", "", "10.30.0.2" });
+        invite = launcher_ui::InviteFor({}, both, false, true, many, 47640, secret, tunnel);
+        Expect(holds(invite, "198.51.100.7", 47640) && endpoints.size() == 6 && endpoints.back() == tunnel,
+            "the six endpoint limit reserves the last place for a tunnel");
+        invite = launcher_ui::InviteFor({}, both, false, true, many, 47640, secret, { "100.64.1.2", 47640 });
+        Expect(holds(invite, "198.51.100.7", 47640) && endpoints.size() == 6 && endpoints.back().ip == "10.30.0.2",
+            "a duplicate tunnel does not take a place from a local network");
+        invite = launcher_ui::InviteFor({}, none, false, true, {}, 47640, secret, tunnel);
+        Expect(holds(invite, "203.0.113.8", 55000) && endpoints.size() == 1 &&
+                   invite.paths == "Your friend can join over the internet.",
+            "a tunnel alone still offers one code");
         Expect(launcher_ui::MaskedCode("K7QD-M2XA") == "****-****", "a masked code keeps only its dashes");
     }
     launcher_ui::OnlineUiChecks::Recovery(scratch / "recovery");

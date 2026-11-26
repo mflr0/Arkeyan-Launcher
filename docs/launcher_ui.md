@@ -1450,11 +1450,12 @@ All sound tests use `SDL_AUDIO_DRIVER=dummy` and disposable HOME and data paths.
 ## Room connection and tunnels
 
 The room connects over reliable UDP, using the same port as the game. The guest sees **Trying to reach your friend's
-room...** while the launcher tries the code's address and port. After ten seconds without an answer, the help card
+room...** while the launcher tries every address in the code at once. After ten seconds without an answer, the help card
 says the friend's router may block it: the host's room shows how to fix it.
 The invite's **How to fix it** help names Radmin VPN, ZeroTier and Tailscale for players without an open port.
-The router details describe UDP only. Existing direct, home, IPv6 and manual port-forwarding choices remain.
-The alternate-address field accepts a UDP `host:port` (name or IP); DNS and code creation run on the `Discovery` worker.
-Its caption asks for this computer's address on Radmin VPN, ZeroTier, Tailscale or playit.gg, with its port.
-The code shares the room's secret with the main invite. The launcher uses no server for the room.
+The router details describe UDP only. One room code holds public, home and virtual network paths; the line below
+names them. Virtual networks are found automatically, with interfaces refreshed every five seconds while the room
+is open. A code change asks the host to copy it again once. Details keeps **Tunnel address**, a UDP `host:port`
+(name or IP); DNS runs on the `Discovery` worker and the resolved endpoint joins the same code. Its caption explains
+that a tunnel such as playit.gg supplies an address and port. The launcher uses no server for the room.
 See [Online co-op](online.md) for the transport and virtual network or tunnel setup.

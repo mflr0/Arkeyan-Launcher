@@ -17,9 +17,9 @@ namespace online
         void Start(bool discover = true);
         void Close();
         std::vector<net::Endpoint> StunServers();
-        // The text field calls this on changes; DNS and code creation happen on the worker.
-        void ResolveCode(std::string address, uint16_t port, uint64_t secret);
-        std::string Code();
+        // DNS stays off the window thread; a revision discards answers for an edited field.
+        void ResolveTunnel(std::string address, uint16_t port);
+        net::Endpoint Tunnel();
 
     private:
         void Work();
@@ -28,9 +28,10 @@ namespace online
         std::condition_variable m_wake;
         std::thread m_thread;
         bool m_quit = false, m_active = false;
-        uint64_t m_generation = 0, m_codeRevision = 0, m_codeSecret = 0;
+        uint64_t m_generation = 0, m_codeRevision = 0;
         uint16_t m_codePort = 0;
-        std::string m_codeAddress, m_code;
+        std::string m_codeAddress;
+        net::Endpoint m_tunnel;
         std::vector<net::Endpoint> m_servers;
     };
 }
