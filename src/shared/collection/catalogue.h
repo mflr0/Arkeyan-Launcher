@@ -90,7 +90,15 @@ namespace collection
         std::string
             elementIcon; // the element icon of a toy outside the ten elements (Kaos: "kaos"): JSON "element_icon"
         std::string ride; // [SuperChargers] a vehicle's terrain, a SuperCharger's vehicle's: "land", "sea", "sky"
+        bool villainVehicle = false; // [SuperChargers] a racing villain's vehicle: JSON "villain_vehicle"
+        // [SuperChargers] a racing trophy's villains, in the order of the bits the trophy keeps them by
+        // (figures::TrophyVillains: bit i, the i-th): JSON "racing_villains".
+        std::vector<uint16_t> racingVillains;
         std::vector<Variant> variants;
+
+        // [SuperChargers] a racing villain or its vehicle: no toy of its own. The game plays it only in a race, from a
+        // trophy that captured it (racingVillains); placed alone it is not playable, or crashes the game (issue #165).
+        bool FromTrophy() const { return category == Category::Villain || villainVehicle; }
     };
 
     // A place on the portal as the game's menus show it (docs/runtime/host/toybox_ux.md section 4): Player 1, Magic item...
@@ -99,6 +107,10 @@ namespace collection
         std::string id; // "p1", "p2", "item", "adventure", "trap", "vehicle1"
         int player = 0; // 1, 2 for a player's seats; 0 for shared ones
         std::vector<Category> accepts; // the toy families that go there
+
+        // A toy of those families, but never a racing villain's vehicle: SuperChargers crashes once one arrives
+        // outside a race (issue #135).
+        bool Takes(const Toy& toy) const;
     };
 
     // A villain a trap can hold (Trap Team): the game's own table. Its pictures are "<id>_villaincaptured" and

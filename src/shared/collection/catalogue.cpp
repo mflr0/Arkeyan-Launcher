@@ -73,6 +73,9 @@ namespace collection
             toy.battleClass = uint8_t(std::clamp<int64_t>(json["battle_class"].AsInt(), 0, 11));
             toy.elementIcon = json["element_icon"].AsString();
             toy.ride = json["ride"].AsString();
+            toy.villainVehicle = json["villain_vehicle"].AsBool();
+            for (const Json& item : json["racing_villains"].Items())
+                toy.racingVillains.push_back(uint16_t(item.AsInt(0)));
             toy.game = json["game"].AsString();
             if (toy.element == Element::Count || toy.category == Category::Count || toy.edition == VariantKind::Count)
             {
@@ -290,6 +293,11 @@ namespace collection
             if (game.year == year && game.year > origin->year)
                 return &game;
         return origin;
+    }
+
+    bool Seat::Takes(const Toy& toy) const
+    {
+        return !toy.villainVehicle && std::find(accepts.begin(), accepts.end(), toy.category) != accepts.end();
     }
 
     bool Catalogue::Accepts(const std::string& id, uint16_t type) const

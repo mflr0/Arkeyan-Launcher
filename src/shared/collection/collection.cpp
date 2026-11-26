@@ -659,24 +659,9 @@ namespace collection
             if (!LoadDump(path, tag))
                 return false;
             const Catalogue& catalogue = Catalogue::Get();
-            figure = {};
+            figure = FigureOf(tag);
             figure.path = path;
             figure.file = FileName(path);
-            figure.type = figures::ToyType(tag);
-            figure.variant = figures::Variant(tag);
-            figure.toy = catalogue.Find(figure.type);
-            figure.variantInfo = catalogue.Describe(figure.toy, figure.variant);
-            figure.state = figures::ReadStats(tag, figure.stats);
-            figure.level =
-                figures::LevelForExperience(figures::TotalExperience(figure.stats), figures::MaxLevelSwapForce);
-            figure.missingSignature = figures::NeedsFactorySignature(figure.type) && !figures::HasFactorySignature(tag);
-            if (figures::IsCrystalType(figure.type))
-            {
-                figures::CrystalStats crystal;
-                figures::ReadCrystalStats(tag, crystal);
-                figure.battleClass = crystal.battleClass;
-                figure.level = figures::CrystalLevel(crystal.experience);
-            }
             figure.lock = GetLock(path);
 
             const Json& entry = index["figures"][figure.file];
@@ -688,6 +673,7 @@ namespace collection
             figure.lastGame = entry["last_game"].AsString();
             figure.lastUsed = entry["last_used"].AsString();
             figure.origin = entry["origin"].AsString();
+            figure.realCopy = entry["real"].IsObject();
             for (const auto& [game, use] : entry["games"].Members())
                 figure.uses.push_back({ game, use["last_used"].AsString(), int(use["uses"].AsInt()) });
 
@@ -706,6 +692,27 @@ namespace collection
             }
             return true;
         }
+    }
+
+    Figure FigureOf(const FigureData& tag)
+    {
+        const Catalogue& catalogue = Catalogue::Get();
+        Figure figure;
+        figure.type = figures::ToyType(tag);
+        figure.variant = figures::Variant(tag);
+        figure.toy = catalogue.Find(figure.type);
+        figure.variantInfo = catalogue.Describe(figure.toy, figure.variant);
+        figure.state = figures::ReadStats(tag, figure.stats);
+        figure.level = figures::LevelForExperience(figures::TotalExperience(figure.stats), figures::MaxLevelSwapForce);
+        figure.missingSignature = figures::NeedsFactorySignature(figure.type) && !figures::HasFactorySignature(tag);
+        if (figures::IsCrystalType(figure.type))
+        {
+            figures::CrystalStats crystal;
+            figures::ReadCrystalStats(tag, crystal);
+            figure.battleClass = crystal.battleClass;
+            figure.level = figures::CrystalLevel(crystal.experience);
+        }
+        return figure;
     }
 
     std::string Figure::LastUsedIn(const std::string& game) const
@@ -730,6 +737,8 @@ namespace collection
         std::vector<Figure> list;
         Json index = LoadJson(PathOf(IndexName));
         auto passes = [&](const Figure& figure) {
+            if (figure.toy != nullptr && figure.toy->FromTrophy())
+                return false; // a racing villain or its vehicle: the game plays it from a trophy (Toy::FromTrophy)
             if (!filter.game.empty() && !catalogue.Accepts(filter.game, figure.type))
                 return false;
             if (filter.category >= 0 && (figure.toy == nullptr || int(figure.toy->category) != filter.category))
@@ -1058,6 +1067,19 @@ namespace collection
         return WriteStats(path, figure.stats, error);
     }
 
+    bool SetTrophyVillains(const std::string& path, uint8_t captured, std::string* error)
+    {
+        Figure figure;
+        if (!Read(path, figure))
+            return Refuse(error, "not a figure dump");
+        if (figure.toy == nullptr || figure.toy->racingVillains.empty())
+            return Refuse(error, "not a racing trophy");
+        if (figure.state == figures::AreaState::Damaged)
+            return Refuse(error, "damaged");
+        figures::SetTrophyVillains(figure.stats, captured);
+        return WriteStats(path, figure.stats, error);
+    }
+
     bool SetNickname(const std::string& path, const std::string& utf8, std::string* error)
     {
         Figure figure;
@@ -1254,20 +1276,30 @@ namespace collection
         return paths;
     }
 
+    namespace
+    {
+        // A free backups/<file>/<UTC date and time>.sky name for the dump.
+        std::string NewBackupPath(const std::string& path)
+        {
+            std::string folder = Folder() + "/backups/" + FileName(path);
+            SDL_CreateDirectory(folder.c_str());
+            std::string stamp = Now();
+            stamp.erase(std::remove(stamp.begin(), stamp.end(), ':'), stamp.end()); // 2026-10-24T101500Z
+            std::string backup = folder + "/" + stamp + ".sky";
+            for (int n = 2; Exists(backup); n++)
+            {
+                backup = Child(folder, stamp);
+                backup += '-';
+                backup += std::to_string(n);
+                backup += ".sky";
+            }
+            return backup;
+        }
+    }
+
     std::string Backup(const std::string& path)
     {
-        std::string folder = Folder() + "/backups/" + FileName(path);
-        SDL_CreateDirectory(folder.c_str());
-        std::string stamp = Now();
-        stamp.erase(std::remove(stamp.begin(), stamp.end(), ':'), stamp.end()); // 2026-10-24T101500Z
-        std::string backup = folder + "/" + stamp + ".sky";
-        for (int n = 2; Exists(backup); n++)
-        {
-            backup = Child(folder, stamp);
-            backup += '-';
-            backup += std::to_string(n);
-            backup += ".sky";
-        }
+        std::string backup = NewBackupPath(path);
         return CopyBytes(path, backup) ? backup : std::string();
     }
 
@@ -1875,6 +1907,276 @@ namespace collection
         return path;
     }
 
+    // --- Copies of real toys ---------------------------------------------------------------------------------------------
+
+    namespace
+    {
+        constexpr const char* OriginalsFolder = "originals";
+
+        // Block 0 (the serial) is never written, the sector trailers hold the keys: a sync compares the others.
+        bool SyncedBlock(size_t block) { return block > 0 && block % 4 != 3; }
+
+        bool SameBlock(const FigureData& a, const FigureData& b, size_t block)
+        {
+            return memcmp(a.data() + block * FigureBlockSize, b.data() + block * FigureBlockSize, FigureBlockSize) == 0;
+        }
+
+        std::string SerialText(const FigureData& tag)
+        {
+            char text[9];
+            snprintf(text, sizeof(text), "%02x%02x%02x%02x", tag[0], tag[1], tag[2], tag[3]);
+            return text;
+        }
+
+        std::string HexText(const uint8_t* bytes, size_t size)
+        {
+            static constexpr char Digits[] = "0123456789abcdef";
+            std::string text;
+            text.reserve(size * 2);
+            for (size_t i = 0; i < size; i++)
+            {
+                text += Digits[bytes[i] >> 4];
+                text += Digits[bytes[i] & 15];
+            }
+            return text;
+        }
+
+        bool FromHex(const std::string& text, uint8_t* bytes, size_t size)
+        {
+            if (text.size() != size * 2)
+                return false;
+            for (size_t i = 0; i < size; i++)
+            {
+                char pair[3] = { text[i * 2], text[i * 2 + 1], '\0' };
+                char* end = nullptr;
+                const unsigned long value = strtoul(pair, &end, 16);
+                if (end != pair + 2)
+                    return false;
+                bytes[i] = uint8_t(value);
+            }
+            return true;
+        }
+
+        // The "real" entry of a copy: the toy it copies, the image both sides held at the last sync, and the blocks the toy
+        // did not confirm (a 64-bit mask, as hexadecimal text: a JSON number is a double).
+        struct RealLink
+        {
+            FigureData base{};
+            uint64_t behind = 0;
+        };
+
+        bool LoadRealLink(const Json& entry, const FigureData& toy, RealLink& link)
+        {
+            const Json& real = entry["real"];
+            uint8_t behind[8] = {};
+            if (!real.IsObject() || real["serial"].AsString() != SerialText(toy) ||
+                real["type"].AsInt(-1) != figures::ToyType(toy) ||
+                !FromHex(real["base"].AsString(), link.base.data(), link.base.size()) ||
+                !FromHex(real["behind"].AsString(), behind, sizeof(behind)))
+                return false;
+            link.behind = 0;
+            for (uint8_t byte : behind)
+                link.behind = link.behind << 8 | byte;
+            return true;
+        }
+
+        bool SaveRealLink(const std::string& path, const FigureData& toy, const RealLink& link)
+        {
+            uint8_t behind[8];
+            for (int i = 0; i < 8; i++)
+                behind[i] = uint8_t(link.behind >> (56 - i * 8));
+            return UpdateFigure(path, [&](Json& entry) {
+                Json real = Json::Object();
+                real.Set("type", int(figures::ToyType(toy)));
+                real.Set("serial", SerialText(toy));
+                real.Set("base", HexText(link.base.data(), link.base.size()));
+                real.Set("behind", HexText(behind, sizeof(behind)));
+                entry.Set("real", std::move(real));
+            });
+        }
+
+        // The dump linked to the toy, empty if none.
+        std::string FindRealCopy(const FigureData& toy, FigureData& copy, RealLink& link)
+        {
+            const Json index = LoadJson(PathOf(IndexName));
+            for (const auto& [file, entry] : index["figures"].Members())
+            {
+                if (IsDumpName(file) && LoadRealLink(entry, toy, link) && LoadDump(PathOf(file), copy) &&
+                    SameToy(copy, toy))
+                    return PathOf(file);
+            }
+            return {};
+        }
+
+        // The toy's image as a dump keeps it: with the keys a real portal does not give.
+        FigureData AsDump(const FigureData& toy)
+        {
+            FigureData tag = toy;
+            figures::WriteSectorKeys(tag);
+            return tag;
+        }
+
+        bool BackupTag(const std::string& path, const FigureData& tag)
+        {
+            return SaveAtomically(
+                NewBackupPath(path), std::string(reinterpret_cast<const char*>(tag.data()), tag.size()));
+        }
+
+        struct RealDiff
+        {
+            uint64_t toy = 0, copy = 0, both = 0; // the blocks each side changed alone, and those both changed
+            uint64_t All() const { return toy | copy | both; }
+        };
+
+        RealDiff CompareReal(const FigureData& toy, const FigureData& copy, const RealLink& link)
+        {
+            RealDiff diff;
+            for (size_t block = 0; block < FigureBlockCount; block++)
+            {
+                if (!SyncedBlock(block) || SameBlock(toy, copy, block))
+                    continue;
+                const uint64_t bit = uint64_t(1) << block;
+                if ((link.behind & bit) != 0 || SameBlock(toy, link.base, block))
+                    diff.copy |= bit;
+                else if (SameBlock(copy, link.base, block))
+                    diff.toy |= bit;
+                else
+                    diff.both |= bit;
+            }
+            return diff;
+        }
+
+        // The copy takes the toy's progress, backed up first; its own keys stay.
+        RealCopy KeepToy(const std::string& path, const FigureData& toy, const FigureData& copy, std::string* error)
+        {
+            RealCopy result{ path, RealSide::ToyAhead, copy, 0 };
+            for (size_t block = 0; block < FigureBlockCount; block++)
+            {
+                if (SyncedBlock(block))
+                    memcpy(result.image.data() + block * FigureBlockSize, toy.data() + block * FigureBlockSize,
+                        FigureBlockSize);
+            }
+            if (Backup(path).empty() || !SaveDump(path, result.image) || !SaveRealLink(path, toy, { result.image, 0 }))
+                return Refuse(error, "cannot update the copy"), RealCopy{};
+            PruneBackups(path, RealBackups);
+            return result;
+        }
+
+        // The toy is to take the copy's progress: its own image backed up first, and from now on the base.
+        RealCopy KeepCopy(
+            const std::string& path, const FigureData& toy, const FigureData& copy, uint64_t write, std::string* error)
+        {
+            if (!BackupTag(path, AsDump(toy)) || !SaveRealLink(path, toy, { toy, 0 }))
+                return Refuse(error, "cannot back up the toy"), RealCopy{};
+            PruneBackups(path, RealBackups);
+            return { path, RealSide::CopyAhead, copy, write };
+        }
+
+        // The copy of `path` and its link, checked to be the toy's and free to change.
+        bool OpenRealCopy(
+            const std::string& path, const FigureData& toy, FigureData& copy, RealLink& link, std::string* error)
+        {
+            if (GetLock(path).Busy())
+                return Refuse(error, "in use by " + GetLock(path).game);
+            const Json index = LoadJson(PathOf(IndexName));
+            if (!LoadDump(path, copy) || !SameToy(copy, toy) ||
+                !LoadRealLink(index["figures"][FileName(path)], toy, link))
+                return Refuse(error, "not the copy of this toy");
+            return true;
+        }
+    }
+
+    std::string RealOriginalPath(const FigureData& toy)
+    {
+        return Folder() + "/" + OriginalsFolder + "/" + std::to_string(figures::ToyType(toy)) + "-" + SerialText(toy) +
+               ".sky";
+    }
+
+    RealCopy SyncRealCopy(const FigureData& toy, std::string* error)
+    {
+        if (!IsTag(std::string(reinterpret_cast<const char*>(toy.data()), toy.size())))
+            return Refuse(error, "not a complete tag"), RealCopy{};
+        // The toy as it was first read, for good: never replaced, pruned or deleted.
+        if (const std::string original = RealOriginalPath(toy); !Exists(original))
+        {
+            const FigureData tag = AsDump(toy);
+            SDL_CreateDirectory((Folder() + "/" + OriginalsFolder).c_str());
+            if (!SaveAtomically(original, std::string(reinterpret_cast<const char*>(tag.data()), tag.size())))
+                return Refuse(error, "cannot keep the toy's original"), RealCopy{};
+        }
+        FigureData copy;
+        RealLink link;
+        const std::string path = FindRealCopy(toy, copy, link);
+        if (path.empty())
+        {
+            const FigureData tag = AsDump(toy);
+            const std::string name = DefaultName(figures::ToyType(toy), figures::Variant(toy));
+            const std::string made = SaveNew(tag, name.substr(0, name.size() - 4) + " (portal).sky");
+            if (made.empty() || !SaveRealLink(made, toy, { tag, 0 }))
+                return Refuse(error, "cannot write the copy"), RealCopy{};
+            SetOrigin(made, "portal");
+            return { made, RealSide::New, tag, 0 };
+        }
+        if (GetLock(path).Busy())
+            return Refuse(error, "in use by " + GetLock(path).game), RealCopy{};
+        const RealDiff diff = CompareReal(toy, copy, link);
+        if (diff.both != 0 || (diff.toy != 0 && diff.copy != 0))
+            return { path, RealSide::Both, copy, 0 };
+        if (diff.toy != 0)
+            return KeepToy(path, toy, copy, error);
+        if (diff.copy != 0)
+            return KeepCopy(path, toy, copy, diff.copy, error);
+        // In sync; a base left behind by a write never recorded catches up.
+        if (link.behind != 0 || CompareReal(link.base, copy, {}).All() != 0)
+            SaveRealLink(path, toy, { copy, 0 });
+        return { path, RealSide::Same, copy, 0 };
+    }
+
+    RealCopy ChooseRealCopy(const std::string& path, const FigureData& toy, bool keepToy, std::string* error)
+    {
+        FigureData copy;
+        RealLink link;
+        if (!OpenRealCopy(path, toy, copy, link, error))
+            return {};
+        return keepToy ? KeepToy(path, toy, copy, error)
+                       : KeepCopy(path, toy, copy, CompareReal(toy, copy, link).All(), error);
+    }
+
+    bool WriteRealCopy(const std::string& path, const FigureData& image) { return SaveDump(path, image); }
+
+    std::string PairRealHalves(const std::string& path, const std::vector<std::string>& onPortal)
+    {
+        Figure half;
+        if (!Read(path, half) || !half.realCopy || !half.partner.empty() || !(half.IsSwapTop() || half.IsSwapBottom()))
+            return {};
+        for (const std::string& other : onPortal)
+        {
+            Figure candidate;
+            if (other == path || !Read(other, candidate) || !candidate.realCopy || !candidate.partner.empty())
+                continue;
+            if ((half.IsSwapTop() ? candidate.IsSwapBottom() : candidate.IsSwapTop()) && Pair(path, other))
+                return other;
+        }
+        return {};
+    }
+
+    bool RealCopyWritten(const std::string& path, const FigureData& image, int block, bool confirmed)
+    {
+        FigureData copy;
+        RealLink link;
+        if (block < 0 || size_t(block) >= FigureBlockCount || !OpenRealCopy(path, image, copy, link, nullptr))
+            return false;
+        const uint64_t bit = uint64_t(1) << block;
+        if (confirmed)
+        {
+            memcpy(link.base.data() + block * FigureBlockSize, image.data() + block * FigureBlockSize, FigureBlockSize);
+            link.behind &= ~bit;
+        }
+        else
+            link.behind |= bit;
+        return SaveRealLink(path, image, link);
+    }
+
     int Export(const std::vector<std::string>& paths, const std::string& folder)
     {
         SDL_CreateDirectory(folder.c_str());
@@ -2024,8 +2326,7 @@ namespace collection
                 return seats;
             for (const Seat& seat : g->seats)
             {
-                if (seat.player > 0 &&
-                    std::find(seat.accepts.begin(), seat.accepts.end(), figure.toy->category) != seat.accepts.end())
+                if (seat.player > 0 && seat.Takes(*figure.toy))
                     seats.push_back(seat.id);
             }
             return seats;

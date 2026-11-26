@@ -91,10 +91,7 @@ namespace launcher_ui
         return figure.toy != nullptr && SeatTakes(seat, *figure.toy);
     }
 
-    bool SeatTakes(const collection::Seat& seat, const collection::Toy& toy)
-    {
-        return std::find(seat.accepts.begin(), seat.accepts.end(), toy.category) != seat.accepts.end();
-    }
+    bool SeatTakes(const collection::Seat& seat, const collection::Toy& toy) { return seat.Takes(toy); }
 
     std::vector<std::string> ReadSeats(const collection::Game& game, const std::string& file)
     {

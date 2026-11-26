@@ -450,6 +450,8 @@ They are made when the game is installed.	Ne tehdään, kun peli asennetaan.
 It plays on {} without the launcher or the disc image, with the same saves and settings as the installed game. It never updates: to update it, export it again. Up to {}.	Se toimii ilman käynnistintä tai levykuvaa (alusta: {}), samoilla tallennuksilla ja asetuksilla kuin asennettu peli. Se ei päivity: päivitä viemällä se uudelleen. Enintään: {}.
 Item or adventure	Esine
 Its evolved look	Sen kehittynyt ulkoasu
+Captured	Vangitut
+Captured: it races in Racing	Vangittu: se kilpailee kilpa-ajotilassa
 Its name	Sen nimi
 Jan	tammi
 Japanese	japani

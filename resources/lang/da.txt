@@ -449,6 +449,8 @@ They are made when the game is installed.	De oprettes, når spillet installeres.
 It plays on {} without the launcher or the disc image, with the same saves and settings as the installed game. It never updates: to update it, export it again. Up to {}.	Det spilles på {} uden launcheren eller diskaftrykket, med de samme gemte spil og indstillinger som det installerede spil. Det opdateres aldrig: Eksportér det igen for at opdatere det. Op til {}.
 Item or adventure	Genstand
 Its evolved look	Dens udviklede udseende
+Captured	Fanget
+Captured: it races in Racing	Fanget: den kører i racertilstand
 Its name	Dens navn
 Jan	jan.
 Japanese	Japansk

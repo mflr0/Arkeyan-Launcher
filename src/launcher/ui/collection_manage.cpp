@@ -398,7 +398,7 @@ namespace launcher_ui
             "57-manage-menu", "58-figure-menu", "59-put-on-menu", "60-focus-card", "61-focus-seat", "62-trap-sheet",
             "63-trap-edit", "collection-bottom", "64-trapteam-greyed", "65-unknown-type", "66-unknown-named",
             "67-missing-figure", "68-seat-restored", "69-picture-menu", "70-add-for-trap-seat", "71-select-mode",
-            "72-select-delete" };
+            "72-select-delete", "73-trophy-sheet", "74-trophy-edit" };
     }
 
     const char* CollectionPage::TestShotName(int step) { return Shots[std::clamp(step, 0, int(std::size(Shots)) - 1)]; }
@@ -491,6 +491,9 @@ namespace launcher_ui
         // A Water Trap holding an evolved villain (shots 62 and 63).
         if (std::string trap = collection::Create(211, 0x3002); !trap.empty())
             collection::SetTrapVillain(trap, 9, true);
+        // A Sky Trophy that captured Chef Pepper Jack and Cap'n Cluck (shots 73 and 74).
+        if (std::string trophy = collection::Create(3500); !trophy.empty())
+            collection::SetTrophyVillains(trophy, 0x05);
         // Level 15 and a hat (Giants' part of the figure): Giants shows 15, Spyro's Adventure 10.
         std::string eruptor = collection::Create(9);
         Figure high;
@@ -831,6 +834,15 @@ namespace launcher_ui
                 OpenEdit(*figure);
             break;
         }
+        case 54: // SuperChargers: a Sky Trophy's sheet with the villains it captured, then its Edit (one switch each)
+        case 55:
+            SelectPortalGame("superchargers");
+            for (const Figure& figure : m_model.figures)
+                if (figure.type == 3500)
+                    OpenFigure(figure.path);
+            if (const Figure* figure = step == 55 ? m_model.Find(m_figure) : nullptr)
+                OpenEdit(*figure);
+            break;
         case 44: // the shelf scrolled to its very end
             m_testScrollBottom = true;
             break;

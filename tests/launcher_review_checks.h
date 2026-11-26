@@ -499,6 +499,47 @@ namespace launcher_ui
                 page.ProfileChanged();
                 expect(page.m_filter.sort == collection::Sort::Name, "another profile brings its own sort");
             }
+            else if (mode == "trophy")
+            {
+                // A racing trophy's Edit (#256): one switch per villain it can capture, Save writes them. Add a figure
+                // offers the trophies, never a racing villain or its vehicle (a trophy brings them).
+                const std::string trophy = collection::Create(3500);
+                expect(!trophy.empty(), "synthetic trophy created");
+                page.Reload();
+                page.OpenFigure(trophy);
+                const collection::Figure* figure = page.m_model.Find(trophy);
+                expect(figure != nullptr, "the trophy is on the shelf");
+                if (figure == nullptr)
+                    return 1;
+                page.OpenEdit(*figure);
+                app.Frame();
+                items.clear();
+                app.Frame();
+                const uint32_t first = item("##captured0"), fourth = item("##captured3");
+                expect(first != 0 && fourth != 0 && item("##captured4") == 0, "one switch per villain, four");
+                ImGui::ActivateItemByID(first);
+                app.Frame();
+                ImGui::ActivateItemByID(fourth);
+                app.Frame();
+                items.clear();
+                app.Frame();
+                const uint32_t save = item("Save");
+                expect(save != 0, "Save submitted");
+                ImGui::ActivateItemByID(save);
+                app.Frame();
+                app.Frame();
+                collection::Figure read;
+                expect(collection::Read(trophy, read) && figures::TrophyVillains(read.stats) == 0x09,
+                    "Save writes the villains captured");
+                expect(!page.m_editing, "and closes the Edit");
+                page.m_addFits = false;
+                page.m_addCategory = -1;
+                const collection::Catalogue& catalogue = collection::Catalogue::Get();
+                expect(!page.MatchesAddToy(*catalogue.Find(3440), "") &&
+                           !page.MatchesAddToy(*catalogue.Find(3470), "") &&
+                           page.MatchesAddToy(*catalogue.Find(3500), ""),
+                    "Add a figure: the trophies, never their villains");
+            }
             else if (mode == "seat-add")
             {
                 // An empty seat's + opens Add a figure for that seat, and the figure made there goes straight onto it;

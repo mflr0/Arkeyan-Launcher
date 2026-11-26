@@ -217,6 +217,8 @@ namespace launcher_ui
     {
         if (toy.category == Category::SwapBottom)
             return false; // the bottom comes with its top
+        if (toy.FromTrophy())
+            return false; // a racing villain or its vehicle: no toy, a trophy captures it
         if (m_addCategory >= 0 && int(toy.category) != m_addCategory)
             return false;
         if (const collection::Seat* seat = m_addFits ? AddSeat() : nullptr; seat != nullptr && !SeatTakes(*seat, toy))
