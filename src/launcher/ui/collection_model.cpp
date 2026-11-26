@@ -199,7 +199,7 @@ namespace launcher_ui
             collection::Figure top;
             if (TwoSlotSeats(game) && i < 2 && collection::Read(seats[i], top) && top.IsSwapTop() &&
                 !top.partner.empty())
-                text += fmt::format("{} {}\n", slot + 1, collection::PathOf(top.partner));
+                text += fmt::format("{} {}\n", slot + 1, BesideFigure(top.path, top.partner));
         }
         // UTF-8 paths (a user name with accents on Windows): FromText, never a narrow std::string, for std::filesystem.
         return launcher_files::WriteAtomic(datadir::FromText(file), text);
@@ -318,10 +318,35 @@ namespace launcher_ui
 
     const collection::Game* CollectionModel::Game() const { return collection::Catalogue::Get().FindGame(gameId); }
 
+    std::string BesideFigure(const std::string& figurePath, const std::string& file)
+    {
+        const size_t slash = figurePath.find_last_of("/\\");
+        return slash == std::string::npos ? file : figurePath.substr(0, slash) + "/" + file;
+    }
+
+    std::vector<collection::Figure> CollectionModel::ReadFigures(const std::string& folder)
+    {
+        if (folder.empty())
+            return collection::List();
+        std::vector<collection::Figure> read;
+        std::error_code error;
+        for (const auto& entry : ListDirectory(datadir::FromText(folder), error))
+        {
+            collection::Figure figure;
+            if (entry.is_regular_file(error) && collection::IsDumpName(datadir::Text(entry.path().filename())) &&
+                collection::Read(folder + "/" + datadir::Text(entry.path().filename()), figure))
+                read.push_back(std::move(figure));
+        }
+        std::sort(read.begin(), read.end(), [](const auto& a, const auto& b) {
+            return a.DisplayName() == b.DisplayName() ? a.file < b.file : a.DisplayName() < b.DisplayName();
+        });
+        return read;
+    }
+
     void CollectionModel::Load()
     {
         m_loads++;
-        std::vector<collection::Figure> read = collection::List();
+        std::vector<collection::Figure> read = ReadFigures(sourceFolder);
         const collection::Game* game = Game();
         std::vector<std::string> readSeats;
         if (live == nullptr && game != nullptr)
@@ -359,13 +384,14 @@ namespace launcher_ui
             }
     }
 
-    std::string CollectionModel::SignatureOf(const std::string& gameId)
+    std::string CollectionModel::SignatureOf(const std::string& gameId, const std::string& folder)
     {
         // Names, sizes and times of the folder's files (dumps, locks, collection.json), the session file's time, and
         // whether each lock's process still runs: a game that quits leaves its locks behind (docs/collection.md).
-        std::string signature;
+        std::string signature = folder;
         std::error_code error;
-        for (const fs::directory_entry& entry : ListDirectory(datadir::FromText(collection::Folder()), error))
+        for (const fs::directory_entry& entry :
+            ListDirectory(datadir::FromText(folder.empty() ? collection::Folder() : folder), error))
         {
             if (!entry.is_regular_file(error))
                 continue;
@@ -426,19 +452,19 @@ namespace launcher_ui
         if (now < m_nextPoll)
             return false;
         m_nextPoll = now + interval;
-        m_reload = std::async(
-            std::launch::async, [gameId = gameId, known = m_signature, loads = m_loads, withSeats = live == nullptr] {
-                Reloaded read;
-                read.loads = loads;
-                read.signature = SignatureOf(gameId);
-                if (read.signature == known)
-                    return read;
-                read.changed = true;
-                read.figures = collection::List();
-                if (const collection::Game* game = collection::Catalogue::Get().FindGame(gameId); withSeats && game)
-                    read.seats = ReadSeats(*game, SessionFile(*game));
+        m_reload = std::async(std::launch::async, [gameId = gameId, folder = sourceFolder, known = m_signature,
+                                                      loads = m_loads, withSeats = live == nullptr] {
+            Reloaded read;
+            read.loads = loads;
+            read.signature = SignatureOf(gameId, folder);
+            if (read.signature == known)
                 return read;
-            });
+            read.changed = true;
+            read.figures = ReadFigures(folder);
+            if (const collection::Game* game = collection::Catalogue::Get().FindGame(gameId); withSeats && game)
+                read.seats = ReadSeats(*game, SessionFile(*game));
+            return read;
+        });
         return false;
     }
 
@@ -552,7 +578,7 @@ namespace launcher_ui
             if (Find(spelled) == nullptr || !collection::Read(spelled, figure) || Incompatible(figure) ||
                 !SeatAccepts(Game()->seats[seat], figure) || figure.lock.Busy())
                 return false;
-            if (!figure.partner.empty() && collection::GetLock(collection::PathOf(figure.partner)).Busy())
+            if (!figure.partner.empty() && collection::GetLock(BesideFigure(figure.path, figure.partner)).Busy())
                 return false;
         }
         auto next = seats;

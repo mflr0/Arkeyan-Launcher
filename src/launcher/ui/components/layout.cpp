@@ -177,6 +177,12 @@ namespace ui
             DrawIcon(draw, options.icon, ImVec2(x + slot / 2, mid), icon::Normal, Col(color::InkSoft));
             x += slot + space::S;
         }
+        else if (options.dot != 0)
+        {
+            const float slot = std::max(icon::Small, options.leadWidth);
+            draw->AddCircleFilled(ImVec2(x + slot / 2, min.y + h / 2), space::XXS, Col(options.dot));
+            x += slot + space::S;
+        }
         else if (options.image)
         {
             const float slot = std::max(options.imageWidth, options.leadWidth);

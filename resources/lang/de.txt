@@ -1253,7 +1253,6 @@ Swap	Tauschen
 Players swapped	Spieler getauscht
 
 # Online
-Couldn't read a figure; choose your figures again in Collection.	Eine Figur konnte nicht gelesen werden; wähle deine Figuren erneut in der Sammlung.
 Couldn't read your picture; choose it again in your profile.	Dein Bild konnte nicht gelesen werden; wähle es erneut in deinem Profil.
 Couldn't read your saves; check that their folder is accessible.	Deine Spielstände konnten nicht gelesen werden; prüfe den Zugriff auf ihren Ordner.
 Couldn't restore the session's saves or figures; check the data folder and restart.	Spielstände oder Figuren der Sitzung konnten nicht wiederhergestellt werden; prüfe den Datenordner und starte neu.
@@ -1339,8 +1338,6 @@ Your friend joins	Dein Freund tritt bei
 Your friend left the room	Dein Freund hat den Raum verlassen
 Your friend stopped answering. Check both internet connections, then try again.	Dein Freund antwortet nicht mehr. Prüft beide Internetverbindungen und versucht es dann erneut.
 Your friend's room	Der Raum deines Freundes
-Your online room stays open. Put your figures on the portal, then go back.	Dein Online-Raum bleibt offen. Stell deine Figuren auf das Portal und kehr dann zurück.
-Back to the room	Zurück zum Raum
 Your friend's room didn't answer	Der Raum deines Freundes hat nicht geantwortet
 Your friend: {}	Dein Freund: {}
 Your game versions differ	Eure Spielversionen unterscheiden sich
@@ -1435,3 +1432,22 @@ A tunnel such as playit.gg gives an address and a port: enter them here and the 
 During the session, change figures in the game (F3 > Toy Box).	Wechsle Figuren während der Sitzung im Spiel (F3 > Toy Box).
 The room closed: choose your disc image again	Der Raum wurde geschlossen: Wähle dein Disc-Abbild erneut
 Your friend left the room.	Dein Freund hat den Raum verlassen.
+
+# Persistent room and figure picker.
+Room · {}	Raum · {}
+Starting the session...	Sitzung wird gestartet…
+Connecting...	Verbindung wird hergestellt…
+Waiting for a friend	Warten auf einen Freund
+Both players are ready	Beide Spieler sind bereit
+{} is ready	{} ist bereit
+{} is here, not ready yet	{} ist da, noch nicht bereit
+{} joined the room	{} ist dem Raum beigetreten
+{} left the room	{} hat den Raum verlassen
+The host started the session	Der Gastgeber hat die Sitzung gestartet
+Leave the room?	Den Raum verlassen?
+Your friend will be disconnected.	Die Verbindung deines Freundes wird getrennt.
+Your room will close.	Dein Raum wird geschlossen.
+Stay	Bleiben
+No figures for this game in your collection.	Keine Figuren für dieses Spiel in deiner Sammlung.
+Couldn't change the portal figures. Try again.	Die Portalfiguren konnten nicht geändert werden. Versuche es erneut.
+Couldn't read a figure; choose your figures again in the room.	Eine Figur konnte nicht gelesen werden; wähle deine Figuren im Raum erneut aus.

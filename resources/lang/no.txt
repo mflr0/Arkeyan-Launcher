@@ -1256,7 +1256,6 @@ Swap	Bytt
 Players swapped	Spillerne byttet plass
 
 # Online
-Couldn't read a figure; choose your figures again in Collection.	Kunne ikke lese en figur; velg figurene dine på nytt i Samling.
 Couldn't read your picture; choose it again in your profile.	Kunne ikke lese bildet ditt; velg det på nytt i profilen din.
 Couldn't read your saves; check that their folder is accessible.	Kunne ikke lese lagringene dine; sjekk at mappen er tilgjengelig.
 Couldn't restore the session's saves or figures; check the data folder and restart.	Kunne ikke gjenopprette øktens lagringer eller figurer; sjekk datamappen og start på nytt.
@@ -1342,8 +1341,6 @@ Your friend joins	Vennen din blir med
 Your friend left the room	Vennen din forlot rommet
 Your friend stopped answering. Check both internet connections, then try again.	Vennen din sluttet å svare. Sjekk begge internettforbindelsene, og prøv igjen.
 Your friend's room	Rommet til vennen din
-Your online room stays open. Put your figures on the portal, then go back.	Nettrommet ditt forblir åpent. Sett figurene dine på portalen, og gå så tilbake.
-Back to the room	Tilbake til rommet
 Your friend's room didn't answer	Rommet til vennen din svarte ikke
 Your friend: {}	Vennen din: {}
 Your game versions differ	Dere har ulike spillversjoner
@@ -1438,3 +1435,22 @@ A tunnel such as playit.gg gives an address and a port: enter them here and the 
 During the session, change figures in the game (F3 > Toy Box).	Bytt figurer i spillet under økten (F3 > Toy Box).
 The room closed: choose your disc image again	Rommet ble lukket: velg diskavbildningen din på nytt
 Your friend left the room.	Vennen din forlot rommet.
+
+# Persistent room and figure picker.
+Room · {}	Rom · {}
+Starting the session...	Starter økten…
+Connecting...	Kobler til…
+Waiting for a friend	Venter på en venn
+Both players are ready	Begge spillerne er klare
+{} is ready	{} er klar
+{} is here, not ready yet	{} er her, ikke klar ennå
+{} joined the room	{} ble med i rommet
+{} left the room	{} forlot rommet
+The host started the session	Verten startet økten
+Leave the room?	Forlate rommet?
+Your friend will be disconnected.	Vennen din blir koblet fra.
+Your room will close.	Rommet ditt blir lukket.
+Stay	Bli
+No figures for this game in your collection.	Ingen figurer for dette spillet i samlingen din.
+Couldn't change the portal figures. Try again.	Kunne ikke bytte portalfigurene. Prøv igjen.
+Couldn't read a figure; choose your figures again in the room.	Kunne ikke lese en figur; velg figurene dine på nytt i rommet.

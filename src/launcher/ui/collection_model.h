@@ -28,6 +28,9 @@ namespace launcher_ui
     // One path per seat of `game` (empty: a free seat), from the session file: a figure goes to the seat of its slot when
     // it fits there, else to the first free seat that takes it, as the game's Toy Box does. Paths of the old figure
     // folder lead to their copies in the collection.
+    // A file beside a figure, in the collection's own path format (collection::PathOf: folder, "/", file),
+    // so a swapper's other half compares equal to its path on every system.
+    std::string BesideFigure(const std::string& figurePath, const std::string& file);
     std::vector<std::string> ReadSeats(const collection::Game& game, const std::string& file);
     // Seat i in slot i; Swap Force's six slots: player 1 on 0 and 1, player 2 on 2 and 3, the item on 4, the adventure pack on
     // 5, a swapper's bottom (the top's partner) in the slot after its top. False if the file cannot be written.
@@ -86,6 +89,7 @@ namespace launcher_ui
     public:
         std::vector<collection::Figure> figures; // List(): every dump of the collection
         std::string gameId = "ssa"; // the game whose seats, views and sections are shown
+        std::string sourceFolder; // a room pins the active profile's folder instead of the library's startup folder
         std::vector<std::string> seats; // per seat of Game()
         // The Toy Box window (docs/toybox_window.md): the running game's seats come over its link (`live`), and every
         // change of a seat is sent to the game, which puts the figure on its portal at once and sends its seats back.
@@ -149,8 +153,9 @@ namespace launcher_ui
             std::vector<std::string> seats;
             uint64_t loads = 0;
         };
-        static std::string SignatureOf(const std::string& gameId);
-        std::string Signature() const { return SignatureOf(gameId); }
+        static std::vector<collection::Figure> ReadFigures(const std::string& folder);
+        static std::string SignatureOf(const std::string& gameId, const std::string& folder);
+        std::string Signature() const { return SignatureOf(gameId, sourceFolder); }
         void LoadLive(); // seats and liveSeats from the link
         void Adopt(std::vector<collection::Figure> read, std::vector<std::string> readSeats, std::string signature);
         std::string m_signature;

@@ -95,6 +95,7 @@ namespace launcher_ui
         std::vector<toyboxlink::Seat> TestLiveSeats() const { return m_model.liveSeats; }
 
         void Draw();
+        void OpenAdd();
         void DrawHeroPortal(ImVec2 at, ImVec2 size, bool live);
         void TestHeroPortal(bool installing, bool running);
         // The pictures come from the disc once it is verified: drop the cached textures.

@@ -1255,7 +1255,6 @@ Swap	Scambia
 Players swapped	Giocatori scambiati
 
 # Online
-Couldn't read a figure; choose your figures again in Collection.	Impossibile leggere una figura; scegli di nuovo le tue figure in Collezione.
 Couldn't read your picture; choose it again in your profile.	Impossibile leggere la tua immagine; sceglila di nuovo nel tuo profilo.
 Couldn't read your saves; check that their folder is accessible.	Impossibile leggere i tuoi salvataggi; verifica l'accesso alla loro cartella.
 Couldn't restore the session's saves or figures; check the data folder and restart.	Impossibile recuperare salvataggi o figure della sessione; controlla la cartella dei dati e riavvia.
@@ -1341,8 +1340,6 @@ Your friend joins	Il tuo amico si unisce
 Your friend left the room	Il tuo amico ha lasciato la stanza
 Your friend stopped answering. Check both internet connections, then try again.	Il tuo amico ha smesso di rispondere. Controllate entrambe le connessioni internet, poi riprovate.
 Your friend's room	La stanza del tuo amico
-Your online room stays open. Put your figures on the portal, then go back.	La tua stanza online resta aperta. Metti le tue figure sul portale, poi torna indietro.
-Back to the room	Torna alla stanza
 Your friend's room didn't answer	La stanza del tuo amico non ha risposto
 Your friend: {}	Il tuo amico: {}
 Your game versions differ	Le vostre versioni del gioco sono diverse
@@ -1437,3 +1434,22 @@ A tunnel such as playit.gg gives an address and a port: enter them here and the 
 During the session, change figures in the game (F3 > Toy Box).	Durante la sessione, cambia le figure nel gioco (F3 > Toy Box).
 The room closed: choose your disc image again	La stanza si è chiusa: scegli di nuovo la tua immagine disco
 Your friend left the room.	Il tuo amico ha lasciato la stanza.
+
+# Persistent room and figure picker.
+Room · {}	Stanza · {}
+Starting the session...	Avvio della sessione…
+Connecting...	Connessione…
+Waiting for a friend	In attesa di un amico
+Both players are ready	Entrambi i giocatori sono pronti
+{} is ready	{} è pronto
+{} is here, not ready yet	{} è qui, non ancora pronto
+{} joined the room	{} è entrato nella stanza
+{} left the room	{} ha lasciato la stanza
+The host started the session	L’host ha avviato la sessione
+Leave the room?	Lasciare la stanza?
+Your friend will be disconnected.	Il tuo amico verrà disconnesso.
+Your room will close.	La tua stanza verrà chiusa.
+Stay	Resta
+No figures for this game in your collection.	Nessuna statuetta per questo gioco nella tua collezione.
+Couldn't change the portal figures. Try again.	Impossibile cambiare le statuette sul portale. Riprova.
+Couldn't read a figure; choose your figures again in the room.	Impossibile leggere una statuetta; scegli di nuovo le statuette nella stanza.

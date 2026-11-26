@@ -1256,7 +1256,6 @@ Swap	Vaihda
 Players swapped	Pelaajat vaihdettu
 
 # Online
-Couldn't read a figure; choose your figures again in Collection.	Hahmoa ei voitu lukea; valitse hahmosi uudelleen Kokoelmasta.
 Couldn't read your picture; choose it again in your profile.	Kuvaasi ei voitu lukea; valitse se uudelleen profiilissasi.
 Couldn't read your saves; check that their folder is accessible.	Tallennuksiasi ei voitu lukea; tarkista, että niiden kansioon on pääsy.
 Couldn't restore the session's saves or figures; check the data folder and restart.	Pelin tallennuksia tai hahmoja ei voitu palauttaa; tarkista datakansio ja käynnistä uudelleen.
@@ -1342,8 +1341,6 @@ Your friend joins	Ystäväsi liittyy
 Your friend left the room	Ystäväsi poistui huoneesta
 Your friend stopped answering. Check both internet connections, then try again.	Ystäväsi lakkasi vastaamasta. Tarkistakaa molemmat internetyhteydet ja yrittäkää uudelleen.
 Your friend's room	Ystäväsi huone
-Your online room stays open. Put your figures on the portal, then go back.	Verkkohuoneesi pysyy auki. Aseta hahmosi portaalille ja palaa sitten takaisin.
-Back to the room	Takaisin huoneeseen
 Your friend's room didn't answer	Ystäväsi huone ei vastannut
 Your friend: {}	Ystäväsi: {}
 Your game versions differ	Peliversionne eroavat
@@ -1438,3 +1435,22 @@ A tunnel such as playit.gg gives an address and a port: enter them here and the 
 During the session, change figures in the game (F3 > Toy Box).	Vaihda hahmoja istunnon aikana pelissä (F3 > Toy Box).
 The room closed: choose your disc image again	Huone suljettiin: valitse levykuvasi uudelleen
 Your friend left the room.	Ystäväsi poistui huoneesta.
+
+# Persistent room and figure picker.
+Room · {}	Huone · {}
+Starting the session...	Aloitetaan istuntoa…
+Connecting...	Yhdistetään…
+Waiting for a friend	Odotetaan ystävää
+Both players are ready	Molemmat pelaajat ovat valmiina
+{} is ready	{} on valmis
+{} is here, not ready yet	{} on täällä, ei vielä valmis
+{} joined the room	{} liittyi huoneeseen
+{} left the room	{} poistui huoneesta
+The host started the session	Isäntä aloitti istunnon
+Leave the room?	Poistutaanko huoneesta?
+Your friend will be disconnected.	Ystäväsi yhteys katkaistaan.
+Your room will close.	Huoneesi suljetaan.
+Stay	Jää
+No figures for this game in your collection.	Kokoelmassasi ei ole hahmoja tähän peliin.
+Couldn't change the portal figures. Try again.	Portaalin hahmoja ei voitu vaihtaa. Yritä uudelleen.
+Couldn't read a figure; choose your figures again in the room.	Hahmoa ei voitu lukea; valitse hahmosi uudelleen huoneessa.

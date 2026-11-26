@@ -1285,7 +1285,6 @@ Swap	Échanger
 Players swapped	Joueurs échangés
 
 # Online
-Couldn't read a figure; choose your figures again in Collection.	Impossible de lire une figurine ; choisissez vos figurines dans Collection.
 Couldn't read your picture; choose it again in your profile.	Impossible de lire votre image ; choisissez-la dans votre profil.
 Couldn't read your saves; check that their folder is accessible.	Impossible de lire vos sauvegardes ; vérifiez l'accès à leur dossier.
 Couldn't restore the session's saves or figures; check the data folder and restart.	Impossible de récupérer les sauvegardes ou figurines de la partie ; vérifiez le dossier de données et redémarrez.
@@ -1371,8 +1370,6 @@ Your friend joins	Votre ami rejoint le salon
 Your friend left the room	Votre ami a quitté le salon
 Your friend stopped answering. Check both internet connections, then try again.	Votre ami ne répond plus. Vérifiez vos deux connexions Internet, puis réessayez.
 Your friend's room	Le salon de votre ami
-Your online room stays open. Put your figures on the portal, then go back.	Votre salon en ligne reste ouvert. Posez vos figurines sur le portail, puis revenez.
-Back to the room	Retour au salon
 Your friend's room didn't answer	Le salon de votre ami n'a pas répondu
 Your friend: {}	Votre ami : {}
 Your game versions differ	Vos versions du jeu diffèrent
@@ -1467,3 +1464,22 @@ A tunnel such as playit.gg gives an address and a port: enter them here and the 
 During the session, change figures in the game (F3 > Toy Box).	Pendant la session, changez les figurines dans le jeu (F3 > Toy Box).
 The room closed: choose your disc image again	Le salon est fermé : choisissez à nouveau votre image disque
 Your friend left the room.	Votre ami a quitté le salon.
+
+# Persistent room and figure picker.
+Room · {}	Salon · {}
+Starting the session...	Démarrage de la session…
+Connecting...	Connexion…
+Waiting for a friend	En attente d’un ami
+Both players are ready	Les deux joueurs sont prêts
+{} is ready	{} est prêt
+{} is here, not ready yet	{} est là, pas encore prêt
+{} joined the room	{} a rejoint le salon
+{} left the room	{} a quitté le salon
+The host started the session	L’hôte a démarré la session
+Leave the room?	Quitter le salon ?
+Your friend will be disconnected.	Votre ami sera déconnecté.
+Your room will close.	Votre salon sera fermé.
+Stay	Rester
+No figures for this game in your collection.	Aucune figurine pour ce jeu dans votre collection.
+Couldn't change the portal figures. Try again.	Impossible de changer les figurines du portail. Réessayez.
+Couldn't read a figure; choose your figures again in the room.	Impossible de lire une figurine ; choisissez à nouveau vos figurines dans le salon.

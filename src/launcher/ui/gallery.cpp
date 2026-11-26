@@ -421,7 +421,9 @@ namespace launcher_ui
             ui::BeginCard("##tile", ImVec2(cardW, cardH), tile);
             Caption("Card (tile): ListRow states");
             ui::ListRowOptions plain;
+            plain.dot = ui::color::Success;
             ui::ListRow(Tr("Language"), plain);
+            plain.dot = 0;
             ui::PreviewState({ .hovered = true });
             ui::ListRow(Tr("Video"), plain);
             ui::PreviewState({ .focused = true });

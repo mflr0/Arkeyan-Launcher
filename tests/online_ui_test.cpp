@@ -79,6 +79,13 @@ namespace launcher_ui
             void Connect(bool hosting)
             {
                 using namespace online_ui_checks;
+                app.CloseOnline();
+                peer.Leave();
+                io = std::make_shared<online_tests::DatagramFake>();
+                std::destroy_at(&app.m_online.lobby);
+                std::construct_at(&app.m_online.lobby, [this] { return now; }, io);
+                std::destroy_at(&peer);
+                std::construct_at(&peer, [this] { return now; }, io);
                 auto& room = app.m_online;
                 const auto* game = collection::Catalogue::Get().FindGame("ssa");
                 room.game = "ssa";
@@ -186,6 +193,198 @@ namespace launcher_ui
                         "bug 1: PollGame keeps the replay room or crash recovery message");
                 }
             }
+            for (bool hosting : { true, false })
+            {
+                LauncherConfig config;
+                App app(*FindGame("ssa"), LauncherConfigPath(), config);
+                Context context;
+                Room room(app);
+                room.Connect(hosting);
+                for (Page source : { Page::Online, Page::Collection })
+                    for (Page destination :
+                        { Page::Home, Page::Play, Page::Collection, Page::Settings, Page::GameSettings, Page::Online })
+                    {
+                        app.m_page = source;
+                        app.GoTo(destination);
+                        Expect(
+                            app.RoomOpen() && room.peer.Get().haveRemote, "navigation preserves host and guest rooms");
+                    }
+                app.m_page = Page::Online;
+                app.Back();
+                Expect(app.RoomOpen() && app.m_page == Page::Play, "Back keeps the room");
+                app.StepMainPage(1);
+                Expect(app.RoomOpen(), "LB/RB and game selection keep the room");
+                app.OpenRoomPage();
+                Expect(app.m_s->game.id == app.m_online.game && app.m_page == Page::Online,
+                    "sidebar returns to the room game");
+                app.m_page = Page::Collection;
+                app.PollOnline();
+                Expect(!app.m_toasts.Items().empty() && app.m_toasts.Items().back().text.ends_with(" joined the room"),
+                    "friend joins while browsing: toast");
+                app.m_toasts.Clear();
+                room.peer.SetReady(true);
+                Expect(room.Until([&] { return app.m_online.lobby.Get().remoteReady; }, true), "friend ready fixture");
+                Expect(app.m_toasts.Items().size() == 1 && app.m_toasts.Items().front().text.ends_with(" is ready"),
+                    "friend ready while browsing: one toast");
+                app.PollOnline();
+                Expect(app.m_toasts.Items().size() == 1, "unchanged readiness does not repeat toast");
+                app.OpenRoomPicker();
+                Expect(app.m_online.picker && app.m_page == Page::Collection, "picker opens without navigation");
+                const std::string replacement = collection::Create(7, 0, "room-replacement.sky");
+                Expect(app.SetRoomSeat(0, replacement), "picker writes own player seat");
+                Expect(ReadSeats(*game, SessionFile(*game))[0] == replacement, "picker persists Collection seats");
+                app.PollOnline();
+                Expect(app.m_online.inputs.localFigureFiles.front() == replacement,
+                    "room inputs refresh from picker seats");
+                const std::string item = collection::Create(200, 0, "room-shared.sky");
+                app.m_roomFigures.Load();
+                for (size_t seat = 0; seat < game->seats.size(); ++seat)
+                {
+                    const auto& definition = game->seats[seat];
+                    if (definition.player == 0 && SeatAccepts(definition, *app.m_roomFigures.Find(item)))
+                        Expect(app.SetRoomSeat(seat, item) == hosting, "only host can write shared item seat");
+                    if (definition.player == 2)
+                        Expect(!app.SetRoomSeat(seat, replacement), "picker cannot write the other player's seat");
+                }
+                ready(app);
+                app.m_s->installed.runtime = "display-only";
+                app.m_autoPlay = true;
+                app.AutoPlay();
+                Expect(bool(app.m_afterRoomLeave) && !app.m_autoPlay && app.RoomOpen(),
+                    "AutoPlay and shortcut requests ask before leaving");
+                app.ResolveRoomLeave(false);
+                app.PlayNow();
+                Expect(bool(app.m_afterRoomLeave) && app.RoomOpen() && app.m_session.Running().empty(),
+                    "solo play asks before leaving or launching");
+                app.ResolveRoomLeave(false);
+                Expect(app.RoomOpen() && !app.m_afterRoomLeave, "Stay cancels solo play");
+                bool continued = false;
+                app.ConfirmRoomLeave([&] { continued = !app.RoomOpen(); });
+                app.ResolveRoomLeave(true);
+                Expect(continued && !app.RoomOpen(), "Leave closes the room before continuing");
+                room.Connect(hosting);
+                app.RequestQuit();
+                Expect(bool(app.m_afterRoomLeave) && app.m_running, "window close with friend asks first");
+                app.ResolveRoomLeave(false);
+                Expect(app.RoomOpen() && app.m_running, "Stay cancels window close");
+                app.RequestQuit();
+                app.ResolveRoomLeave(true);
+                Expect(!app.RoomOpen() && !app.m_running, "Leave confirms window close");
+                app.m_running = true;
+                room.Connect(hosting);
+                app.m_page = Page::Collection;
+                app.m_toasts.Clear();
+                app.PollOnline();
+                app.m_toasts.Clear();
+                room.peer.Leave();
+                Expect(room.Until(
+                           [&] {
+                               return !app.m_online.lobby.Get().haveRemote ||
+                                      app.m_online.lobby.Get().state == online::State::Ended;
+                           },
+                           true),
+                    "friend leaves fixture");
+                if (hosting)
+                {
+                    Expect(app.RoomOpen() && !app.m_toasts.Items().empty() &&
+                               app.m_toasts.Items().back().text.ends_with(" left the room"),
+                        "host keeps empty room and announces friend's departure");
+                    app.RequestQuit();
+                    Expect(!app.m_running && !app.m_afterRoomLeave && !app.RoomOpen(),
+                        "window close without friend closes immediately");
+                }
+                else
+                    Expect(!app.RoomOpen() && !app.m_toasts.Items().empty(), "guest sees room closure reason");
+                seats[0] = figure;
+                WriteSeats(*game, SessionFile(*game), seats);
+            }
+            {
+                LauncherConfig config;
+                App app(*FindGame("ssa"), LauncherConfigPath(), config);
+                Context context;
+                Room room(app);
+                room.Connect(true);
+                const std::string original = app.m_profiles.active;
+                const std::string target = profiles::Add(app.m_profiles, "", 1).id;
+                app.SwitchProfile(target);
+                Expect(bool(app.m_afterRoomLeave) && app.m_profiles.active == original && app.RoomOpen(),
+                    "switching profile asks before changing data folders");
+                app.ResolveRoomLeave(false);
+                Expect(app.m_profiles.active == original && app.RoomOpen(), "Stay cancels profile switch");
+                app.SwitchProfile(target);
+                app.ResolveRoomLeave(true);
+                Expect(app.m_profiles.active == target && !app.RoomOpen(), "Leave then switches profile");
+                room.Connect(true);
+                app.OpenRoomPicker();
+                Expect(app.m_roomFigures.figures.empty() && !app.m_roomFigures.Find(figure),
+                    "picker reads only the active profile's collection");
+                Expect(!app.SetRoomSeat(0, figure), "picker refuses another profile's figure");
+                app.GoTo(Page::Collection);
+                app.m_s->collection->OpenAdd();
+                Expect(app.RoomOpen() && app.m_s->collection->TakesBack(),
+                    "empty picker Add opens Collection's add flow with the room open");
+                const fs::path own = datadir::FromText(app.m_roomFigures.sourceFolder) / "own.sky";
+                fs::create_directories(own.parent_path());
+                fs::copy_file(datadir::FromText(figure), own);
+                app.OpenRoomPicker();
+                Expect(app.SetRoomSeat(0, datadir::Text(own)), "picker seats the switched profile's own figure");
+                Expect(app.m_roomFigures.figures.size() == 1, "picker excludes the first profile's other figures");
+                app.CloseOnline();
+                app.SwitchProfile(original);
+            }
+            {
+                LauncherConfig config;
+                App app(*FindGame("swapforce"), LauncherConfigPath(), config);
+                Context context;
+                app.m_online.game = "swapforce";
+                app.m_online.preview = online::Status{};
+                app.m_online.preview->state = online::State::InRoom;
+                app.m_online.preview->host = false;
+                const auto halves = collection::CreateSwapper(2000, 1000);
+                const auto alternate = data / "alternate-collection";
+                fs::create_directories(alternate);
+                const auto top = alternate / datadir::FromText(halves.top).filename();
+                const auto bottom = alternate / datadir::FromText(halves.bottom).filename();
+                fs::copy_file(datadir::FromText(halves.top), top);
+                fs::copy_file(datadir::FromText(halves.bottom), bottom);
+                fs::copy_file(
+                    datadir::FromText(collection::Folder()) / "collection.json", alternate / "collection.json");
+                app.OpenRoomPicker();
+                app.m_roomFigures.sourceFolder = datadir::Text(alternate);
+                app.m_roomFigures.Load();
+                // The collection's own path format (collection::PathOf): the folder, "/", the file, on every system.
+                const std::string topPath = datadir::Text(alternate) + "/" + datadir::Text(top.filename());
+                const std::string bottomPath = datadir::Text(alternate) + "/" + datadir::Text(bottom.filename());
+                Expect(app.SetRoomSeat(0, topPath), "room picker seats a paired swapper");
+                const auto* swap = collection::Catalogue::Get().FindGame("swapforce");
+                auto inputs = online::ReadRoomInputs(config, app.m_profiles.Active(), *swap, std::string(64, 'a'),
+                    false, SessionFile(*swap), data, false);
+                Expect(inputs.player.figures.size() == 2 && inputs.localFigureFiles.size() == 2 &&
+                           inputs.localFigureFiles[0] == topPath && inputs.localFigureFiles[1] == bottomPath,
+                    "room picker and inputs preserve both halves from the selected collection");
+                Expect(!app.SetRoomSeat(1, halves.top), "guest cannot change the other seat");
+                WriteSeats(*game, SessionFile(*game), seats);
+            }
+            {
+                online::Status status;
+                status.state = online::State::Waiting;
+                Expect(RoomStatusText(status) == "Waiting for a friend", "sidebar waiting");
+                for (auto state : { online::State::Connecting, online::State::Greeting })
+                {
+                    status.state = state;
+                    Expect(RoomStatusText(status) == "Connecting...", "sidebar connecting and greeting");
+                }
+                status.state = online::State::InRoom;
+                status.haveRemote = true;
+                status.remote.pseudo = "Kaos";
+                Expect(RoomStatusText(status) == "Kaos is here, not ready yet", "sidebar friend present");
+                status.remoteReady = true;
+                Expect(RoomStatusText(status) == "Kaos is ready", "sidebar friend ready");
+                status.localReady = true;
+                Expect(RoomStatusText(status) == "Both players are ready", "sidebar both ready");
+                status.state = online::State::Started;
+                Expect(RoomStatusText(status) == "Starting the session...", "sidebar starting");
+            }
             {
                 LauncherConfig config;
                 App app(*FindGame("ssa"), LauncherConfigPath(), config);
@@ -195,6 +394,7 @@ namespace launcher_ui
                 app.m_online.lobby.SetReady(true);
                 room.peer.SetReady(true);
                 Expect(room.Until([&] { return app.m_online.lobby.Get().CanStart(); }), "start fixture ready");
+                app.m_page = Page::Settings;
                 Expect(app.m_online.lobby.StartGame(), "start fixture queues Start");
                 const auto before = online::Encode(app.m_online.inputs.player);
                 const auto files = app.m_online.inputs.localFigureFiles;
@@ -209,6 +409,9 @@ namespace launcher_ui
                     "start fixture completes");
                 app.PollOnline();
                 const auto error = app.m_online.error;
+                Expect(std::any_of(app.m_toasts.Items().begin(), app.m_toasts.Items().end(),
+                           [](const auto& toast) { return toast.text == "The host started the session"; }),
+                    "starting from another page announces the session before attempting launch");
                 app.PollOnline();
                 Expect(app.m_online.lobby.Get().state != online::State::Started && !error.empty() &&
                            app.m_online.error == error,
@@ -335,7 +538,7 @@ namespace launcher_ui
             const fs::path endedFile = session / "saves" / "online-ended.txt";
             std::vector<std::pair<std::string, std::optional<std::string>>> variables;
             for (const char* name : { "SKYLANDERS_DATA", "SKY_LAUNCHER_DATA", "SKY_LAUNCHER_INI", "SKY_SETTINGS",
-                     "SKY_SAVE_DIR", "SKY_LAUNCHER_LANGUAGE" })
+                     "SKY_SAVE_DIR", "SKY_LAUNCHER_LANGUAGE", "SKY_COLLECTION" })
             {
                 const char* value = SDL_getenv_unsafe(name);
                 variables.emplace_back(name, value ? std::optional<std::string>(value) : std::nullopt);
@@ -347,8 +550,9 @@ namespace launcher_ui
                 const fs::path path =
                     std::string_view(name) == "SKY_LAUNCHER_INI" || std::string_view(name) == "SKY_SETTINGS"
                         ? data / "launcher.ini"
-                    : std::string_view(name) == "SKY_SAVE_DIR" ? saves
-                                                               : data;
+                    : std::string_view(name) == "SKY_COLLECTION" ? datadir::FromText(collection::Folder())
+                    : std::string_view(name) == "SKY_SAVE_DIR"   ? saves
+                                                                 : data;
                 TestSetEnv(name, datadir::Text(path).c_str());
             }
             const std::string language = i18n::Current();

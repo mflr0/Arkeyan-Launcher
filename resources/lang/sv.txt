@@ -1256,7 +1256,6 @@ Swap	Byt
 Players swapped	Spelarna bytte plats
 
 # Online
-Couldn't read a figure; choose your figures again in Collection.	En figur kunde inte läsas; välj dina figurer igen i Samling.
 Couldn't read your picture; choose it again in your profile.	Din bild kunde inte läsas; välj den igen i din profil.
 Couldn't read your saves; check that their folder is accessible.	Dina sparfiler kunde inte läsas; kontrollera att deras mapp är tillgänglig.
 Couldn't restore the session's saves or figures; check the data folder and restart.	Sessionens sparfiler eller figurer kunde inte återställas; kontrollera datamappen och starta om.
@@ -1342,8 +1341,6 @@ Your friend joins	Din vän går med
 Your friend left the room	Din vän lämnade rummet
 Your friend stopped answering. Check both internet connections, then try again.	Din vän slutade svara. Kontrollera båda internetanslutningarna och försök igen.
 Your friend's room	Din väns rum
-Your online room stays open. Put your figures on the portal, then go back.	Ditt onlinerum förblir öppet. Ställ dina figurer på portalen och gå sedan tillbaka.
-Back to the room	Tillbaka till rummet
 Your friend's room didn't answer	Din väns rum svarade inte
 Your friend: {}	Din vän: {}
 Your game versions differ	Era spelversioner skiljer sig
@@ -1438,3 +1435,22 @@ A tunnel such as playit.gg gives an address and a port: enter them here and the 
 During the session, change figures in the game (F3 > Toy Box).	Byt figurer i spelet under sessionen (F3 > Toy Box).
 The room closed: choose your disc image again	Rummet stängdes: välj din skivavbildning igen
 Your friend left the room.	Din vän lämnade rummet.
+
+# Persistent room and figure picker.
+Room · {}	Rum · {}
+Starting the session...	Startar sessionen…
+Connecting...	Ansluter…
+Waiting for a friend	Väntar på en vän
+Both players are ready	Båda spelarna är redo
+{} is ready	{} är redo
+{} is here, not ready yet	{} är här, inte redo än
+{} joined the room	{} gick med i rummet
+{} left the room	{} lämnade rummet
+The host started the session	Värden startade sessionen
+Leave the room?	Lämna rummet?
+Your friend will be disconnected.	Din vän kopplas från.
+Your room will close.	Ditt rum stängs.
+Stay	Stanna
+No figures for this game in your collection.	Inga figurer för det här spelet i din samling.
+Couldn't change the portal figures. Try again.	Det gick inte att byta portalfigurer. Försök igen.
+Couldn't read a figure; choose your figures again in the room.	Det gick inte att läsa en figur; välj dina figurer igen i rummet.

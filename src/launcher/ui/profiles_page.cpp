@@ -104,6 +104,8 @@ namespace launcher_ui
     {
         if (m_profiles.Find(id) == nullptr || id == m_profiles.active || !m_session.Running().empty())
             return;
+        if (ConfirmRoomLeave([this, id] { SwitchProfile(id); }))
+            return;
         if (!SaveConfig())
             Toast(Tr("Couldn't save the settings"), ui::ToastKind::Error);
         if (!m_online.game.empty() && !m_online.launched)
