@@ -584,6 +584,13 @@ bool GameInstaller::Launch(const std::optional<InstallKit>& kit, const std::stri
         m_progress = {};
         m_progress.state = InstallProgress::State::Running;
         m_progress.hdTextures = hdTextures != nullptr && !hdOnly;
+        // Arkeyan-Builder's own default: a compiler per GB of memory past the first 2, at most one per thread.
+        m_progress.threads = std::max(1u, std::thread::hardware_concurrency());
+        const int memoryGb = SDL_GetSystemRAM() / 1024;
+        m_progress.jobs = std::clamp(unsigned(std::max(memoryGb - 2, 1)), 1u, m_progress.threads);
+        std::error_code error;
+        m_progress.rebuild = std::filesystem::exists(out / "arkeyan-work", error) ||
+                             std::filesystem::exists(out / "ssabuild-work", error);
     }
     auto fail = [&](std::string message) {
         std::lock_guard lock(m_mutex);

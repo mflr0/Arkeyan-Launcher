@@ -32,7 +32,7 @@ struct InstallChecklist
     int current = -1;           // the running (or failed) row
     float overall = 0;          // 0..1, the rows weighted by their usual share of the time
     uint64_t elapsedMs = 0;     // since the first step (0 when unknown)
-    int64_t etaMs = -1;         // time left; -1 until the current step has some progress to go by
+    int64_t etaMs = -1;         // time left; -1 when unknown (a rebuild, before a step measured the machine)
     std::string action;         // what Arkeyan-Builder is doing now, one short line
 };
 
