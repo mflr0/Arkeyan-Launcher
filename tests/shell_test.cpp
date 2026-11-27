@@ -57,16 +57,53 @@ namespace
         using RowState = InstallChecklist::RowState;
         // Nothing yet: eight waiting rows, the first one current.
         InstallChecklist empty = MakeInstallChecklist(Feed({}), 1000);
-        SHELL_EXPECT(empty.rows.size() == 8 && empty.current == 0 && empty.overall == 0 && empty.etaMs == -1);
+        SHELL_EXPECT(empty.rows.size() == 8 && empty.current == 0 && empty.overall == 0 && empty.etaMs > 0);
         SHELL_EXPECT(empty.rows.front().title == "Preparing the compiler" && empty.rows.back().id == "finish");
         SHELL_EXPECT(empty.action == "Starting the installer");
+        {
+            // A time left from the start, from each game's usual step times: SuperChargers with 7 compilers
+            // (a 16 GB PC with 12 threads) takes about 4 min, with 15 compilers about 2.
+            InstallProgress start = Feed({});
+            start.threads = 12;
+            start.jobs = 7;
+            const int64_t seven = MakeInstallChecklist(start, 1000, "superchargers").etaMs;
+            SHELL_EXPECT(seven > 150000 && seven < 320000);
+            start.threads = 16;
+            start.jobs = 15;
+            const int64_t fifteen = MakeInstallChecklist(start, 1000, "superchargers").etaMs;
+            SHELL_EXPECT(fifteen > 80000 && fifteen < seven * 3 / 5);
+            SHELL_EXPECT(MakeInstallChecklist(start, 1000, "giants").etaMs < fifteen);
+            // It counts down while a step that says nothing about the machine runs (the disc, the compiler
+            // download), and never reaches zero while steps are left.
+            InstallProgress disc = start;
+            disc.Apply("@step toolchain Preparing the compiler", 1000);
+            disc.Apply("@step disc Reading the disc", 2000);
+            disc.Apply("@progress 1 40", 3000);
+            const int64_t early = MakeInstallChecklist(disc, 5000, "trapteam").etaMs,
+                          later = MakeInstallChecklist(disc, 15000, "trapteam").etaMs,
+                          stuck = MakeInstallChecklist(disc, 600000, "trapteam").etaMs;
+            SHELL_EXPECT(early > later && later > stuck && stuck > 30000 && stuck < 120000);
+            // A rebuild of an installed game: most steps are up to date, so no time from the table.
+            start.rebuild = true;
+            SHELL_EXPECT(MakeInstallChecklist(start, 1000, "superchargers").etaMs == -1);
+            // Once steps that measure the machine have run, their pace scales the rest: a machine four times as
+            // slow as the table on the code and the shaders expects two to four times the table's compile.
+            InstallProgress slow = Feed({ { "@step toolchain Preparing the compiler", 1000 },
+                { "@step disc Reading the disc", 2000 }, { "@step recompile Translating the game code", 3000 },
+                { "@step shaders Translating the shaders", 15000 }, { "@step compile Compiling the game", 47000 } });
+            slow.threads = 16;
+            slow.jobs = 15;
+            const int64_t slowLeft = MakeInstallChecklist(slow, 47000, "superchargers").etaMs;
+            SHELL_EXPECT(slowLeft > 2 * 98000 && slowLeft < 4 * 98000);
+        }
 
-        // Each game's own shares: the compiler (skipped, so done) and the disc are
-        // most of Trap Team, a sliver of Giants (9 of 108).
+        // Each game's own shares: the compiler (skipped, so done) and the disc are a large part of Trap Team, a
+        // sliver of Giants. The compiler's time differs per system, so Giants is compared with Trap Team.
         InstallProgress read =
             Feed({ { "@step disc Reading the disc", 1000 }, { "@step recompile Translating the game code", 61000 } });
-        SHELL_EXPECT(MakeInstallChecklist(read, 62000, "trapteam").overall > 0.4f);
-        SHELL_EXPECT(MakeInstallChecklist(read, 62000, "giants").overall < 0.1f);
+        const float trapteamRead = MakeInstallChecklist(read, 62000, "trapteam").overall;
+        SHELL_EXPECT(
+            trapteamRead > 0.25f && MakeInstallChecklist(read, 62000, "giants").overall < trapteamRead - 0.25f);
 
         // Two steps done, the third running at a quarter: ticks with times, a
         // spinner, a bar, a time left.
@@ -79,16 +116,17 @@ namespace
         SHELL_EXPECT(list.rows[0].state == RowState::Done && list.rows[0].ms == 60000 && list.rows[1].ms == 30000);
         SHELL_EXPECT(list.rows[3].state == RowState::Waiting && list.rows[7].state == RowState::Waiting);
         SHELL_EXPECT(list.elapsedMs == 120000 && list.action == "ppc_recomp.12.cpp");
-        SHELL_EXPECT(list.overall > 0.08f && list.overall < 0.12f); // (8 + 2 + 6/4) of 104
-  // The current step: 30 s for a quarter, 90 s left of it; the rest at the
-  // measured pace (90 s for 6+2+2.5 weight).
+        SHELL_EXPECT(list.overall > 0.05f && list.overall < 0.35f); // the compiler, the disc, a quarter of the code
+        // The current step: 30 s for a quarter, 90 s left of it; the rest at the pace of that quarter, slower than
+        // the table.
         SHELL_EXPECT(list.etaMs > 90000 + 200000 && list.etaMs < 90000 + 900000);
         {
             // Four minutes on the disc, the rest of the install at a normal pace: no
             // estimate of hours, then or after.
             InstallProgress slow = Feed({ { "@step toolchain Preparing the compiler", 1000 },
                 { "@step disc Reading the disc", 2000 }, { "@progress 1 40", 60000 } });
-            SHELL_EXPECT(MakeInstallChecklist(slow, 120000).etaMs == -1);
+            const int64_t onDisc = MakeInstallChecklist(slow, 120000).etaMs;
+            SHELL_EXPECT(onDisc > 0 && onDisc < 600000);
             InstallProgress after = Feed({ { "@step toolchain Preparing the compiler", 1000 },
                 { "@step disc Reading the disc", 2000 }, { "@step recompile Translating the game code", 240000 },
                 { "@step shaders Translating the shaders", 245000 }, { "@progress 20 40", 275000 } });
@@ -104,7 +142,7 @@ namespace
         // A new step: its bar starts again, the time left waits for its progress.
         progress.Apply("@step shaders Translating the shaders", 130000);
         list = MakeInstallChecklist(progress, 131000);
-        SHELL_EXPECT(list.current == 3 && list.rows[3].fraction < 0 && list.etaMs == -1 && list.action == "Working");
+        SHELL_EXPECT(list.current == 3 && list.rows[3].fraction < 0 && list.etaMs > 0 && list.action == "Working");
 
         // After the movie shaders, the second pass is "Finishing", whose time adds
         // up.

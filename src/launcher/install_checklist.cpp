@@ -7,39 +7,68 @@
 
 namespace
 {
-    // Each step's usual share of an install (the compile and the shaders are most of it; measured on an Apple silicon Mac, a Windows
-    // first install adds the compiler download). Only the ratios matter.
+    // Each step's usual seconds in a clean install, measured on a Windows PC with 16 threads and 15 compilers (the
+    // first tester's, issue #139). The steps that use every compiler or every thread are scaled to this machine's.
+    enum class Scale
+    {
+        None,
+        Jobs,
+        Threads
+    };
+    constexpr float TableThreads = 16, TableJobs = 15;
     struct KnownStep
     {
         const char* id;
         const char* title;
-        float weight[5]; // Spyro's Adventure, Giants, Swap Force, Trap Team (measured shares of an install), other
+        Scale scale;
+        float seconds[7]; // Spyro's Adventure, Giants, Swap Force, Trap Team, SuperChargers, Imaginators, other
     };
+#ifdef _WIN32
+    constexpr float CompilerSeconds = 30; // llvm-mingw's download, the first install only
+#elif defined(__linux__)
+    constexpr float CompilerSeconds = 10;
+#else
+    constexpr float CompilerSeconds = 2;
+#endif
     constexpr KnownStep KnownSteps[] = {
-        { "check", N_("Checking the disc"), { 4, 4, 4, 4, 4 } }, // only when the install waited for the image check
-        { "kit", N_("Downloading the game tools"), { 6, 6, 6, 6, 6 } }, // only when the launcher fetched the kit itself
-        { "toolchain", N_("Preparing the compiler"), { 8, 8, 8, 8, 8 } },
-        { "disc", N_("Reading the disc"), { 1, 1, 1, 52, 2 } },
-        { "recompile", N_("Translating the game code"), { 4, 1, 3, 1, 6 } },
-        { "shaders", N_("Translating the shaders"), { 25, 62, 10, 12, 14 } },
-        { "compile", N_("Compiling the game"), { 68, 24, 62, 28, 42 } },
-        { "link", N_("Linking the game"), { 1, 1, 1, 1, 4 } },
-        { "movies", N_("Adding the movie shaders"), { 1, 5, 23, 5, 12 } },
-        { "finish", N_("Finishing"), { 1, 6, 1, 1, 12 } },
-        { "hdtextures", N_("Making the HD textures"),
-            { 20, 20, 20, 20,
-                20 } }, // only when asked for (Game settings > Video > Use HD textures): about 2 to 3 minutes
+        { "check", N_("Checking the disc"), Scale::None,
+            { 5, 5, 5, 5, 5, 5, 5 } }, // only when the install waited for the image check
+        { "kit", N_("Downloading the game tools"), Scale::None,
+            { 20, 20, 20, 20, 20, 20, 20 } }, // only when the launcher fetched the kit itself
+        { "toolchain", N_("Preparing the compiler"), Scale::None,
+            { CompilerSeconds, CompilerSeconds, CompilerSeconds, CompilerSeconds, CompilerSeconds, CompilerSeconds,
+                CompilerSeconds } },
+        { "disc", N_("Reading the disc"), Scale::Jobs, { 1, 2, 1, 19, 1, 1, 4 } },
+        { "recompile", N_("Translating the game code"), Scale::None, { 1, 1, 2, 1, 3, 3, 2 } },
+        { "shaders", N_("Translating the shaders"), Scale::Threads, { 11, 59, 9, 8, 8, 8, 17 } },
+        { "compile", N_("Compiling the game"), Scale::Jobs, { 34, 20, 67, 27, 93, 96, 56 } },
+        { "link", N_("Linking the game"), Scale::None, { 1, 2, 1, 1, 1, 1, 1 } },
+        { "movies", N_("Adding the movie shaders"), Scale::None, { 1, 8, 32, 7, 3, 3, 9 } },
+        { "finish", N_("Finishing"), Scale::None, { 1, 3, 1, 1, 1, 1, 2 } },
+        { "hdtextures", N_("Making the HD textures"), Scale::Threads,
+            { 120, 120, 120, 120, 120, 120,
+                120 } }, // only when asked for (Game settings > Video > Use HD textures): about 2 to 3 minutes
     };
-    constexpr float UnknownWeight = 4;
+    constexpr float UnknownSeconds = 4;
+
+    // The steps whose time tells this machine's speed; the others wait on the network or the disc.
+    bool MeasuresMachine(std::string_view id)
+    {
+        return id != "check" && id != "kit" && id != "toolchain" && id != "disc";
+    }
 }
 
 InstallChecklist MakeInstallChecklist(const InstallProgress& progress, uint64_t now, std::string_view game)
 {
-    const size_t column = game == "ssa"         ? 0
-                          : game == "giants"    ? 1
-                          : game == "swapforce" ? 2
-                          : game == "trapteam"  ? 3
-                                                : 4; // SuperChargers: "other" until measured
+    const size_t column = game == "ssa"             ? 0
+                          : game == "giants"        ? 1
+                          : game == "swapforce"     ? 2
+                          : game == "trapteam"      ? 3
+                          : game == "superchargers" ? 4
+                          : game == "imaginators"   ? 5
+                                                    : 6;
+    const float threads = progress.threads > 0 ? float(progress.threads) : TableThreads,
+                jobs = progress.jobs > 0 ? float(progress.jobs) : TableJobs;
     InstallChecklist list;
     std::vector<float> weights;
     auto has = [&](std::string_view id) {
@@ -57,7 +86,10 @@ InstallChecklist MakeInstallChecklist(const InstallProgress& progress, uint64_t 
                 [](const InstallProgress::Step& s) { return s.id == "hdtextures"; }))
             continue;
         list.rows.push_back({ step.id, Tr(step.title) });
-        weights.push_back(step.weight[column]);
+        const float scale = step.scale == Scale::Jobs      ? TableJobs / jobs
+                            : step.scale == Scale::Threads ? TableThreads / threads
+                                                           : 1;
+        weights.push_back(step.seconds[column] * scale * 1000);
     }
     auto rowOf = [&](const std::string& id) -> int {
         for (size_t i = 0; i < list.rows.size(); i++)
@@ -79,7 +111,7 @@ InstallChecklist MakeInstallChecklist(const InstallProgress& progress, uint64_t 
         {
             row = int(list.rows.size()) - 1; // before "finish"
             list.rows.insert(list.rows.begin() + row, { step.id, step.title });
-            weights.insert(weights.begin() + row, UnknownWeight);
+            weights.insert(weights.begin() + row, UnknownSeconds * 1000);
         }
         InstallChecklist::Row& r = list.rows[size_t(row)];
         // A step seen again (the finish pass's several steps) adds up its time.
@@ -141,29 +173,39 @@ InstallChecklist MakeInstallChecklist(const InstallProgress& progress, uint64_t 
         list.elapsedMs = end > progress.steps.front().startedAt ? end - progress.steps.front().startedAt : 0;
     }
 
-    // Time left, once the current step has progress: its own pace for the rest of it, and for the steps still to come
-    // the pace of the steps that took real time (an "up to date" step takes none and says nothing about the machine).
-    // Reading the disc says nothing either: its time is the disc's speed and the game's size, and its small weight turned
-    // four minutes of it into an estimate of three hours. No estimate until a step that measures the machine runs.
-    if (progress.state == State::Running && list.current >= 0 && list.rows[size_t(list.current)].id != "disc")
+    // Time left: each row's usual time (`weights`, in ms) at this machine's pace, the time the steps that measure it
+    // took against their usual time. Ten seconds at the usual pace go in first, so that one short step does not swing
+    // it. The current step goes by its own progress once it has some, else by its usual time. A rebuild gets no time
+    // until a step has measured the machine: most of its steps may be up to date.
+    if (progress.state == State::Running && list.current >= 0)
     {
         const InstallChecklist::Row& r = list.rows[size_t(list.current)];
-        float fraction = r.fraction;
-        if (fraction >= 0.02f && r.ms >= 2000)
+        const double usual = weights[size_t(list.current)];
+        const bool currentPace = MeasuresMachine(r.id) && r.fraction >= 0.02f && r.ms >= 2000;
+        double measuredMs = 10000, measuredUsual = 10000;
+        bool measured = false;
+        if (currentPace)
         {
-            float currentLeft = float(r.ms) / fraction * (1 - fraction);
-            double measuredMs = double(r.ms), measuredWeight = double(weights[size_t(list.current)]) * fraction;
-            for (size_t i = 0; i < size_t(list.current); i++)
-                if (list.rows[i].state == InstallChecklist::RowState::Done && list.rows[i].timed &&
-                    list.rows[i].ms >= 3000 && list.rows[i].id != "disc")
-                {
-                    measuredMs += double(list.rows[i].ms);
-                    measuredWeight += weights[i];
-                }
-            double perWeight = measuredMs / measuredWeight, rest = 0;
+            measuredMs += double(r.ms);
+            measuredUsual += usual * r.fraction;
+            measured = true;
+        }
+        for (size_t i = 0; i < size_t(list.current); i++)
+            if (list.rows[i].state == InstallChecklist::RowState::Done && list.rows[i].timed &&
+                list.rows[i].ms >= 3000 && MeasuresMachine(list.rows[i].id))
+            {
+                measuredMs += double(list.rows[i].ms);
+                measuredUsual += weights[i];
+                measured = true;
+            }
+        if (measured || !progress.rebuild)
+        {
+            const double pace = std::clamp(measuredMs / measuredUsual, 0.3, 6.0);
+            double left = currentPace ? double(r.ms) / r.fraction * (1 - r.fraction)
+                                      : std::max(usual * pace - double(r.ms), usual * pace / 10);
             for (size_t i = size_t(list.current) + 1; i < list.rows.size(); i++)
-                rest += weights[i] * perWeight;
-            list.etaMs = int64_t(currentLeft + rest);
+                left += weights[i] * pace;
+            list.etaMs = int64_t(left);
         }
     }
 

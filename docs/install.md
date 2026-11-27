@@ -24,9 +24,13 @@ The launcher finds the kit, runs it, shows its progress and then starts the game
      the shaders, Compiling the game, Linking the game, Adding the movie shaders, Finishing (the second shaders / compile /
      link pass Arkeyan-Builder runs after the movie shaders). Each is waiting, running (a spinner, its own bar from `@progress`
      and its time), done (a tick and how long it took) or failed. An unknown `@step` gets a row of its own;
-   - one **overall bar** with a percentage (each step weighted by its usual share: compiling is half), the elapsed time and
-     a **time left** that appears once the current step has some progress (its own pace for the rest of it, the pace of the
-     steps that really ran for the next ones; "up to date" steps say nothing about the machine);
+   - one **overall bar** with a percentage (each step weighted by its usual time for that game), the elapsed time and
+     a **time left** from the start: each step's usual seconds per game (measured on a 16-thread PC with 15 compilers),
+     the compile and the disc scaled to this machine's compilers (Arkeyan-Builder's rule: one per GB past the first 2, at
+     most one per thread), the shaders and the HD textures to its threads. Once a step that measures the machine has run
+     (not the disc, the compiler or the kit download, which wait on the disc or the network; not an "up to date" step),
+     its pace against the table scales the rest, and the current step goes by its own progress. A rebuild (the game
+     folder already holds `arkeyan-work`) shows no time until then: most of its steps may be up to date;
    - **one line** under the steps with Arkeyan-Builder's last `@log` of the step: it replaces itself, it is never a log;
    - **Show details**: the log in a scrollable monospace panel, the current step above it;
    - on **failure**: a human headline ("Couldn't download the compiler. Check your connection."), Arkeyan-Builder's

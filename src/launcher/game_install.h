@@ -163,6 +163,9 @@ struct InstallProgress
     std::string runtime; // @done
     std::string action; // the current step's last @log line
     bool hdTextures = false; // the build was asked for the HD textures: their step is expected after the others
+    unsigned threads = 0, jobs = 0; // this machine's threads and compilers, for the time left; 0: the table's machine
+    bool rebuild =
+        false; // the game folder holds an earlier build, whose steps may be up to date: no time from the table
     std::vector<std::string> log; // every line, @log text and anything else Arkeyan-Builder printed
     size_t logLines = 0; // lines in the full log (the copy may hold only the last ones)
 
